@@ -4,16 +4,16 @@ $Path = ".\Bin\NVIDIA-sib\ccminer_x11gost.exe"
 $Uri = "https://github.com/nicehash/ccminer-x11gost/releases/download/ccminer-x11gost_windows/ccminer_x11gost.7z"
 
 $Commands = [PSCustomObject]@{
-    "bitcore" = "" #Bitcore
-    "blake2s" = "" #Blake2s
-    "blakecoin" = "" #Blakecoin
+    #"bitcore" = "" #Bitcore
+    #"blake2s" = "" #Blake2s
+    #"blakecoin" = "" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
     #"groestl" = "" #Groestl
-    "hmq1725" = "" #hmq1725
+    #"hmq1725" = "" #hmq1725
     #"keccak" = "" #Keccak
     #"lbry" = "" #Lbry
     #"lyra2v2" = " --cuda-schedule 0" #Lyra2RE2
@@ -25,12 +25,12 @@ $Commands = [PSCustomObject]@{
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    #"sib" = "" #Sib
+    "sib" = "" #Sib
     #"skein" = "" #Skein
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"x11evo" = "" #X11evo
-    "x17" = "" #X17
+    #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
