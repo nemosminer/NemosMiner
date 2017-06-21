@@ -16,7 +16,7 @@ $Commands = [PSCustomObject]@{
     #"hmq1725" = "" #hmq1725
     #"keccak" = "" #Keccak
     #"lbry" = "" #Lbry
-    "lyra2v2" = " --cuda-schedule 0" #Lyra2RE2
+    "lyra2v2" = "" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     "myr-gr" = "" #MyriadGroestl
     "neoscrypt" = " -i 15" #NeoScrypt
@@ -30,7 +30,7 @@ $Commands = [PSCustomObject]@{
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"x11evo" = "" #X11evo
-    x17" = "" #X17
+    x17" = " -i 21" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
