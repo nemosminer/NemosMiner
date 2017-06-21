@@ -10,7 +10,7 @@
     [Parameter(Mandatory=$false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory=$false)]
-    [Int]$Interval = 110, #seconds before reading hash rate from miners
+    [Int]$Interval = 60, #seconds before reading hash rate from miners
     [Parameter(Mandatory=$false)]
     [String]$Location = "europe", #europe/us/asia
     [Parameter(Mandatory=$false)]
@@ -30,7 +30,7 @@
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
-    [Int]$Delay = 2 #seconds before opening each miner
+    [Int]$Delay = 0 #seconds before opening each miner
 )
 
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
