@@ -1,0 +1,12 @@
+[
+    {
+        "Type":  "NVIDIA",
+        "Path":  ".\\Bin\\Equihash-EWBF\\Zminer.exe",
+        "Uri":  "https://github.com/nemosminer/EWBF-Zec-Miner/releases/download/0.3.4b/0.3.4b.7z"
+        "Arguments":  "--api --server $($Pools.Equihash.Host) --user $($Pools.Equihash.User) --pass $($Pools.Equihash.Pass) --port $($Pools.Equihash.Port) --eexit 1 --fee 0 --solver 0",
+        "HashRates":  {"Equihash":  "$($Stats.EWBF0_Equihash_HashRate.Week)"},
+        "API":  "EWBF",
+        "Port":  "42000",
+        "Wrap":  false
+    }
+]
