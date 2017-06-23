@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-sib\ccminer_x11gost.exe"
+$Path = ".\Bin\NVIDIA-Alexis78cuda8.0\ccminer_x11gost.exe"
 $Uri = "https://github.com/nicehash/ccminer-x11gost/releases/download/ccminer-x11gost_windows/ccminer_x11gost.7z"
 
 $Commands = [PSCustomObject]@{
