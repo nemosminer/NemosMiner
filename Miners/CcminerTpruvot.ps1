@@ -5,8 +5,8 @@ $Uri = "https://github.com/tpruvot/ccminer/releases/download/v2.0-tpruvot/ccmine
 
 $Commands = [PSCustomObject]@{
     "bitcore" = "" #Bitcore
-    "blake2s" = "" #Blake2s
-    "blakecoin" = "" #Blakecoin
+    #"blake2s" = "" #Blake2s
+    #"blakecoin" = "" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
     #"decred" = "" #Decred
