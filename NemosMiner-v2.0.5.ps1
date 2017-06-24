@@ -30,7 +30,7 @@
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
-    [Int]$Delay = 0 #seconds before opening each miner
+    [Int]$Delay = 1 #seconds before opening each miner
 )
 
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
