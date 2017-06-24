@@ -2,6 +2,7 @@
     "blakecoin":  "Blakecoin",
     "groestl":  "Groestl",
     "yescrypt":  "Yescrypt",
+    "veltor":  "Veltor",
     "blake":  "Blakecoin",
     "equihash":  "Equihash",
     "skein":  "Skein",
