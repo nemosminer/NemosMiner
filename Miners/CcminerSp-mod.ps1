@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
     #"blake2s" = "" #Blake2s
     #"blakecoin" = "" #Blakecoin
-    "c11" = "" #C11
+    #"c11" = "" #C11
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
     #"decred" = "" #Decred
@@ -31,7 +31,7 @@ $Commands = [PSCustomObject]@{
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"x11evo" = "" #X11evo
-    "x17" = "" #X17
+    #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
