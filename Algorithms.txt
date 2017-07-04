@@ -1,5 +1,6 @@
 {
     "blakecoin":  "Blakecoin",
+    "c11":  "C11",
     "groestl":  "Groestl",
     "yescrypt":  "Yescrypt",
     "veltor":  "Veltor",
