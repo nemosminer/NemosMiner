@@ -20,6 +20,7 @@
     "sia":  "Sia",
     "vanilla":  "BlakeVanilla",
     "timetravel":  "Timetravel",
+    "tribus":  "Tribus",
     "qubitcoin":  "Qubit",
     "decred":  "Decred",
     "myriadcoingroestl":  "MyriadGroestl",
