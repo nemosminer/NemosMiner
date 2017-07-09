@@ -4,7 +4,7 @@
     [Parameter(Mandatory=$false)]
     [String]$UserName, 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NemosMiner-v2.0.6", 
+    [String]$WorkerName = "ID=NemosMiner-v2.0.7", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
@@ -59,7 +59,7 @@ if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
 $WalletDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
 $UserNameDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$WorkerNameDonate = "NemosMiner-v2.0.6"
+$WorkerNameDonate = "NemosMiner-v2.0.7"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
