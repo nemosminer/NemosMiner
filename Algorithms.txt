@@ -1,4 +1,5 @@
 {
+    "jha":  "Jha",
     "blakecoin":  "Blakecoin",
     "c11":  "C11",
     "groestl":  "Groestl",
