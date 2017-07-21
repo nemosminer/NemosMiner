@@ -4,6 +4,7 @@ $Path = ".\Bin\NVIDIA-skunkjha\ccminer-x64.exe"
 $Uri = "http://ccminer.org/preview/ccminer-2.2-skunk.7z"
 
 $Commands = [PSCustomObject]@{
+    "jha" = "" #Jha
     #"bitcore" = "" #Bitcore
     #"blake2s" = "" #Blake2s
     #"blakecoin" = "" #Blakecoin
