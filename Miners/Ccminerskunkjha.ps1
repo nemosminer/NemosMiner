@@ -1,10 +1,11 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-skunkjha\ccminer-x64.exe"
+$Path = ".\Bin\NVIDIA-ccminer-2.2\ccminer-x64.exe"
 $Uri = "http://ccminer.org/preview/ccminer-2.2-skunk.7z"
 
 $Commands = [PSCustomObject]@{
     "jha" = "" #Jha
+    "tribus" = "" #Tribus
     #"bitcore" = "" #Bitcore
     #"blake2s" = "" #Blake2s
     #"blakecoin" = "" #Blakecoin
