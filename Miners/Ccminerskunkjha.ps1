@@ -29,6 +29,7 @@ $Commands = [PSCustomObject]@{
     #"sib" = "" #Sib
     #"skein" = "" #Skein
     #"timetravel" = "" #Timetravel
+    "tribus" = "" #Tribus
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
