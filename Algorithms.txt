@@ -41,4 +41,5 @@
     "cryptonight":  "Cryptonight",
     "zuikkis":  "Scrypt",
     "nist5":  "Nist5"
+    "skunk":  "Skunk"
 }
