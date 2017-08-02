@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Nanashi\ccminer-1.7.6-r10\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Nanashi\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-nanashi/releases/download/1.7.6-r10/ccminer-1.7.6-r10.7z"
 
 $Commands = [PSCustomObject]@{
