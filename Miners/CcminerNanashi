@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-TPruvot\ccminer-x64.exe"
-$Uri = "https://github.com/tpruvot/ccminer/releases/download/v2.0-tpruvot/ccminer-2.0-release-x64-cuda-8.0.7z"
+$Path = ".\Bin\NVIDIA-Nanashi\ccminer.exe"
+$Uri = "http://cryptomining-blog.com/wp-content/download/ccminer-1.7.6-r10-neoscrypt.zip"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
