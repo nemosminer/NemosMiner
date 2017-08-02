@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Nanashi\ccminer-1.7.6-r10-neoscrypt\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Nanashi\ccminer-1.7.6-r10-neoscrypt\ccminer-1.7.6-r10-neoscrypt\ccminer.exe"
 $Uri = "http://cryptomining-blog.com/wp-content/download/ccminer-1.7.6-r10-neoscrypt.zip"
 
 $Commands = [PSCustomObject]@{
