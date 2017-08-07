@@ -5,7 +5,7 @@ $Uri = "https://github.com/nemosminer/ccminer-skunk-jha/releases/download/ccmine
 
 $Commands = [PSCustomObject]@{
     #jha" = "" #Jha
-    "skunk" = " -i 24" #Skunk
+    "skunk" = " -i 25" #Skunk
     #"bitcore" = "" #Bitcore
     #"blake2s" = "" #Blake2s
     #"blakecoin" = "" #Blakecoin
