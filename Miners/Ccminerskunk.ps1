@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-skunk\ccminer-x64-80.exe"
+$Path = ".\Bin\NVIDIA-ccminer-skunk-krnlx-80\ccminer-x64-80.exe"
 $Uri = "ccminer.org/preview/ccminer-skunk-krnlx-80.7z"
 
 $Commands = [PSCustomObject]@{
