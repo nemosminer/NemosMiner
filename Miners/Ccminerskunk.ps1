@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-skunk\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminer-skunk-jha/releases/download/ccminerskunk5/ccminer.7z"
+$Path = ".\Bin\NVIDIA-skunk\ccminer-x64-80.exe"
+$Uri = "https://ccminer.org/preview/ccminer-skunk-krnlx-80.7z"
 
 $Commands = [PSCustomObject]@{
     #jha" = "" #Jha
