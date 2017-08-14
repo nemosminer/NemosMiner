@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-TPruvot\ccminer-x64.exe"
-$Uri = "https://github.com/tpruvot/ccminer/releases/download/v2.0-tpruvot/ccminer-2.0-release-x64-cuda-8.0.7z"
+$Uri = "https://github.com/tpruvot/ccminer/releases/download/v2.2-tpruvot/ccminer-x64-2.2.7z"
 
 $Commands = [PSCustomObject]@{
     "bitcore" = "" #Bitcore
@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     #"ethash" = "" #Ethash
     #"groestl" = "" #Groestl
     "hmq1725" = "" #hmq1725
-    #"keccak" = "" #Keccak
+    "keccak" = "" #Keccak
     "lbry" = "" #Lbry
     #"lyra2v2" = "" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
@@ -27,7 +27,9 @@ $Commands = [PSCustomObject]@{
     #"sia" = "" #Sia
     "sib" = "" #Sib
     #"skein" = "" #Skein
+    "skunk" = "" #Skunk
     "timetravel" = "" #Timetravel
+    "tribus" = "" #Tribus
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     "x11evo" = "" #X11evo
