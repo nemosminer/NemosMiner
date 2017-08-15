@@ -5,8 +5,8 @@ $Uri = "https://github.com/nemosminer/ccminer-Alexis78/releases/download/ccminer
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
-    "blake2s" = "" #Blake2s
-    "blakecoin" = "" #Blakecoin
+    "blake2s" = " -d $SelGPUCC" #Blake2s
+    "blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
     #"decred" = "" #Decred
@@ -15,22 +15,22 @@ $Commands = [PSCustomObject]@{
     #"groestl" = "" #Groestl
     #"hmq1725" = "" #hmq1725
     #"keccak" = ",d=576 -i 29" #Keccak
-    "lbry" = "" #Lbry
-    "lyra2v2" = "" #Lyra2RE2
+    "lbry" = " -d $SelGPUCC" #Lbry
+    "lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
-    "myr-gr" = "" #MyriadGroestl
-    "neoscrypt" = " -i 15" #NeoScrypt
+    "myr-gr" = " -d $SelGPUCC" #MyriadGroestl
+    "neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
     "nist5" = "" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    "sib" = " -i 21" #Sib
-    "skein" = "" #Skein
+    "sib" = " -i 21 -d $SelGPUCC" #Sib
+    "skein" = " -d $SelGPUCC" #Skein
     #"timetravel" = "" #Timetravel
-    "c11" = " -i 21" #C11
+    "c11" = " -i 21 -d $SelGPUCC" #C11
     #"x11evo" = "" #X11evo
-    "x17" = " -i 21" #X17
+    "x17" = " -i 21 -d $SelGPUCC" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
