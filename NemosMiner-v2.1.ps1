@@ -1,5 +1,4 @@
 ﻿param(
-
     [Parameter(Mandatory=$false)]
     [String]$Wallet, 
     [Parameter(Mandatory=$false)]
@@ -19,7 +18,7 @@
     [Parameter(Mandatory=$false)]
     [Array]$Type = $null, #AMD/NVIDIA/CPU
     [Parameter(Mandatory=$false)]
-    [Array]$SelGPUEWBF = 0 1,
+    [Array]$SelGPUEWBF = ("0 1"),
     [Parameter(Mandatory=$false)]
     [Array]$SelGPUCC = ("0,1"), 
     [Parameter(Mandatory=$false)]
