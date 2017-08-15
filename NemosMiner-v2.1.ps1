@@ -18,9 +18,9 @@
     [Parameter(Mandatory=$false)]
     [Array]$Type = $null, #AMD/NVIDIA/CPU
     [Parameter(Mandatory=$false)]
-    [Array]$SelGPUEWBF = ("0 1"),
+    [String]$SelGPUEWBF = "0",
     [Parameter(Mandatory=$false)]
-    [Array]$SelGPUCC = ("0,1"), 
+    [String]$SelGPUCC = "0",
     [Parameter(Mandatory=$false)]
     [Array]$Algorithm = $null, #i.e. Ethash,Equihash,Cryptonight ect.
     [Parameter(Mandatory=$false)]
