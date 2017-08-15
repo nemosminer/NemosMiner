@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory=$false)]
-    [Array]$SelGPUEWBF = 0 1,
+    [Array]$SelGPUEWBF = ("0 1"),
     [Parameter(Mandatory=$false)]
     [Array]$SelGPUCC = ("0,1"), 
     [Parameter(Mandatory=$false)]
