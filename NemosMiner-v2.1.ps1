@@ -1,5 +1,9 @@
 ﻿param(
     [Parameter(Mandatory=$false)]
+    [String]$SelGPUEWBF,
+    [Parameter(Mandatory=$false)]
+    [String]$SelGPUCC,
+    [Parameter(Mandatory=$false)]
     [String]$Wallet, 
     [Parameter(Mandatory=$false)]
     [String]$UserName, 
