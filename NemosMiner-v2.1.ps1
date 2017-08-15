@@ -1,8 +1,8 @@
 ﻿param(
     [Parameter(Mandatory=$false)]
-    [String]$SelGPUEWBF 0 1,
+    [Array]$SelGPUEWBF = 0 1,
     [Parameter(Mandatory=$false)]
-    [String]$SelGPUCC 0,1,
+    [Array]$SelGPUCC = 0,1
     [Parameter(Mandatory=$false)]
     [String]$Wallet, 
     [Parameter(Mandatory=$false)]
