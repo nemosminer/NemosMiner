@@ -2,7 +2,7 @@
     [Parameter(Mandatory=$false)]
     [Array]$SelGPUEWBF = 0 1,
     [Parameter(Mandatory=$false)]
-    [Array]$SelGPUCC = 0,1
+    [Array]$SelGPUCC = ("0,1"), 
     [Parameter(Mandatory=$false)]
     [String]$Wallet, 
     [Parameter(Mandatory=$false)]
