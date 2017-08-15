@@ -1,8 +1,5 @@
 ﻿param(
-    [Parameter(Mandatory=$false)]
-    [Array]$SelGPUEWBF = $null,
-    [Parameter(Mandatory=$false)]
-    [Array]$SelGPUCC = $null, 
+
     [Parameter(Mandatory=$false)]
     [String]$Wallet, 
     [Parameter(Mandatory=$false)]
@@ -21,6 +18,10 @@
     [Switch]$SSL = $false, 
     [Parameter(Mandatory=$false)]
     [Array]$Type = $null, #AMD/NVIDIA/CPU
+    [Parameter(Mandatory=$false)]
+    [Array]$SelGPUEWBF = 0 1,
+    [Parameter(Mandatory=$false)]
+    [Array]$SelGPUCC = ("0,1"), 
     [Parameter(Mandatory=$false)]
     [Array]$Algorithm = $null, #i.e. Ethash,Equihash,Cryptonight ect.
     [Parameter(Mandatory=$false)]
