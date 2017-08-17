@@ -1,4 +1,4 @@
-. .\Include.ps1
+﻿. .\Include.ps1
 
 try {
     $Zpool_Request = Invoke-WebRequest "http://www.zpool.ca/api/status" -UseBasicParsing | ConvertFrom-Json
@@ -14,7 +14,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Location = "US"
 
 $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $Zpool_Host = "mine.zpool.ca"
+    $Zpool_Host = "$_.mine.zpool.ca"
     $Zpool_Port = $Zpool_Request.$_.port
     $Zpool_Algorithm = Get-Algorithm $Zpool_Request.$_.name
     $Zpool_Coin = ""
@@ -42,7 +42,7 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
             Host          = $Zpool_Host
             Port          = $Zpool_Port
             User          = $Wallet
-            Pass          = "$WorkerName,c=BTC,stats"
+            Pass          = "$WorkerName,c=BTC"
             Location      = $Location
             SSL           = $false
         }
