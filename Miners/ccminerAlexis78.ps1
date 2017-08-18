@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     #"ethash" = "" #Ethash
     #"groestl" = "" #Groestl
     #"hmq1725" = "" #hmq1725
-    #"keccak" = ",d=576 -i 29" #Keccak
+    "keccak" = " -i 29" #Keccak
     "lbry" = " -d $SelGPUCC" #Lbry
     "lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
