@@ -11,6 +11,7 @@
     "skein":  "Skein",
     "scrypt":  "Scrypt",
     "sib":  "Sib",
+    "X11Gost":  "X11Gost",
     "neoscrypt":  "NeoScrypt",
     "lbry":  "Lbry",
     "myrgr":  "MyriadGroestl",
