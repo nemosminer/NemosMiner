@@ -26,6 +26,7 @@ $Commands = [PSCustomObject]@{
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     "sib" = " -i 21 -d $SelGPUCC" #Sib
+    "X11Gost" = " -i 21 -d $SelGPUCC" #X11Gost
     "skein" = " -d $SelGPUCC" #Skein
     #"timetravel" = "" #Timetravel
     "c11" = " -i 21 -d $SelGPUCC" #C11
