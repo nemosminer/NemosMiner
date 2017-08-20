@@ -35,8 +35,8 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
         [PSCustomObject]@{
             Algorithm     = $Zpool_Algorithm
             Info          = $Zpool_Coin
-            Price         = $Stat.Hour
-            StablePrice   = $Stat.Day
+            Price         = $Stat.Day
+            StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
             Host          = $Zpool_Host
