@@ -7,6 +7,7 @@ thankyou to aaronsace for devoloping and maintaining "MultiPoolMiner"
 this is a free project feel free to donate be much appreciated:
 
 aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
+
 nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 
 
