@@ -9,6 +9,7 @@ $Commands = [PSCustomObject]@{
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
+    "veltor" = "" #Veltor
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
