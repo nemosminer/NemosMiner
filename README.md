@@ -4,13 +4,6 @@ NemosMiner-v2.2 Monitors mining pools in real-time in order to find the most pro
 Fully automated / 
 Auto Downloads Miners
 
-thankyou to aaronsace for devoloping and maintaining "MultiPoolMiner"
-this is a free project feel free to donate be much appreciated:
-
-aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
-
-nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
-
 edit: start.bat
 
 1.change BTC address to yours
@@ -34,7 +27,9 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 running multiple cards its recommend to increase Virtual Memory 32gb-64gb is optimal
 
-this is a free project feel free to donate be much appreciated: 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
+thankyou to aaronsace for devoloping and maintaining "MultiPoolMiner"
+this is a free project feel free to donate be much appreciated:
 
-Best Regards
-Nemo
+aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
+
+nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
