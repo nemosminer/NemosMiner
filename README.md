@@ -25,10 +25,13 @@ edit: start.bat
 
 If you have Windows 7, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
+
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
 https://www.microsoft.com/en-gb/download/details.aspx?id=40784
+
 CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
+
 running multiple cards its recommend to increase Virtual Memory 32gb-64gb is optimal
 
 this is a free project feel free to donate be much appreciated: 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
