@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-Palgin\ccminer.exe"
-$Uri = "https://github.com/palginpav/ccminer/releases/download/1.1.1/palginmod_1.1_x64.zip"
+$Uri = "https://github.com/palginpav/ccminer/releases/download/1.1/palginmod_1.1_x86.zip"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
