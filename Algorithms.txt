@@ -2,6 +2,7 @@
     "bitcore":  "Bitcore",
     "blake":  "Blakecoin",
     "blake2s":  "Blake2s",
+    "xevan":  "Xevan",
     "blakecoin":  "Blakecoin",
     "blakevanilla":  "BlakeVanilla",
     "c11":  "C11",
