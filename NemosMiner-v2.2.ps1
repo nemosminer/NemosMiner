@@ -28,7 +28,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Array]$PoolName = $null, 
     [Parameter(Mandatory=$false)]
-    [Array]$Currency = ("USD"), #i.e. GBP,USD,AUD,BTC,ETH ect.
+    [Array]$Currency = ("USD"), #i.e. GBP,USD,AUD ect.
     [Parameter(Mandatory=$false)]
     [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
     [Parameter(Mandatory=$false)]
