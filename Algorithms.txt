@@ -1,4 +1,5 @@
 {
+    "phi":  "Phi",
     "bitcore":  "Bitcore",
     "blake":  "Blakecoin",
     "blake2s":  "Blake2s",
