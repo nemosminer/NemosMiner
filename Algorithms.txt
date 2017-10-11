@@ -1,4 +1,5 @@
 {
+    "hsr":  "Hsr",
     "phi":  "Phi",
     "bitcore":  "Bitcore",
     "blake":  "Blakecoin",
