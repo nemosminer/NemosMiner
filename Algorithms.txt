@@ -50,7 +50,7 @@
     "vanilla":  "BlakeVanilla",
     "veltor":  "Veltor",
     "x11":  "X11",
-    "x11gost":  "Sib",
+    "x11gost":  "x11gost",
     "x11evo":  "X11evo",
     "x17":  "X17",
     "xmr":  "CryptoNight",
