@@ -28,7 +28,6 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 running multiple cards its recommend to increase Virtual Memory 32gb-64gb is optimal
 
 
-thankyou to aaronsace for devoloping and maintaining "MultiPoolMiner"
 this is a free project feel free to donate be much appreciated:
 
 aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
