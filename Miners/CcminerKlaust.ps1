@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-CcminerKlaust\ccminer.exe"
-$Uri = "https://github.com/KlausT/ccminer/releases/download/8.13/ccminer-813-x64.zip"
+$Uri = "https://github.com/KlausT/ccminer/releases/download/8.14beta/ccminer-814beta-x64-cuda9.zip"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -12,13 +12,13 @@ $Commands = [PSCustomObject]@{
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
-    "groestl" = " -d $SelGPUCC" #Groestl
+    #"groestl" = " -d $SelGPUCC" #Groestl
     #"hmq1725" = "" #hmq1725
     #"keccak" = "" #Keccak
     #"lbry" = "" #Lbry
     #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
-    "myr-gr" = " -d $SelGPUCC" #MyriadGroestl
+    #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
     "neoscrypt" = " -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
