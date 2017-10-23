@@ -22,18 +22,18 @@ $Commands = [PSCustomObject]@{
     #"lyra2z" = "" #Lyra2z
     "myr-gr" = " -d $SelGPUCC" #MyriadGroestl
     #"neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
-    #"nist5" = "" #Nist5
+    "nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     "sib" = " -i 21 -d $SelGPUCC" #Sib
     #"X11Gost" = " -i 21 -d $SelGPUCC" #X11Gost
-    #"skein" = " -d $SelGPUCC" #Skein
+    "skein" = " -d $SelGPUCC" #Skein
     #"timetravel" = "" #Timetravel
     "c11" = " -i 21 -d $SelGPUCC" #C11
     #"x11evo" = "" #X11evo
-    #"x17" = " -i 21 -d $SelGPUCC" #X17
+    "x17" = " -i 21 -d $SelGPUCC" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
