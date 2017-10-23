@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-TPruvot\ccminer.exe"
-$Uri = "https://github.com/tpruvot/ccminer/releases/download/v2.2-tpruvot/ccminer-x86-2.2.7z"
+$Uri = "https://github.com/nemosminer/tpruvot-ccminer/releases/download/v2.2-tpruvot/ccminer-x86-2.2.7z"
 
 $Commands = [PSCustomObject]@{
     "bitcore" = " -d $SelGPUCC" #Bitcore
