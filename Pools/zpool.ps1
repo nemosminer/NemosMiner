@@ -22,7 +22,7 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
     $Divisor = 1000000000
 	
     switch ($Zpool_Algorithm) {
-        "equihash" {$Divisor /= 1000}
+        "equihash" {$Divisor /= 10000}
         "blake2s" {$Divisor *= 1000}
         "blakecoin" {$Divisor *= 1000}
         "decred" {$Divisor *= 1000}
