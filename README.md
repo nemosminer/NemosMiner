@@ -25,7 +25,7 @@ https://www.microsoft.com/en-gb/download/details.aspx?id=40784
 CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-running multiple cards its recommend to increase Virtual Memory 32gb-64gb is optimal
+running multiple cards its recommended to increase Virtual Memory 32gb-64gb is optimal
 
 
 this is a free project feel free to donate be much appreciated:
