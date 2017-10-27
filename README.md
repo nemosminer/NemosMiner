@@ -12,7 +12,7 @@ edit: start.bat
 
 3.remove any algos you do not want to mine (default all supported algos enabled)
 
-4.there is a default 5minute per day fee, that can be disabled by changing -Doante 5 to 0
+4.there is a default 5minute per day fee, that can be disabled by changing -Donate 5 to 0
 
 5.run start.bat
 
