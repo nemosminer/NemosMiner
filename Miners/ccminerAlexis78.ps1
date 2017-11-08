@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Alexis78\ccminer-alexis.exe"
 $Uri = "https://github.com/nemosminer/ccminer-hcash/releases/download/alexishsr/ccminer-hsr-alexis-x86-cuda8.7z"
 
 $Commands = [PSCustomObject]@{
-    "hsr" = "" #Hsr
+    "hsr" = " -d $SelGPUCC" #Hsr
     #"bitcore" = "" #Bitcore
     "blake2s" = " -d $SelGPUCC" #Blake2s
     "blakecoin" = " -d $SelGPUCC" #Blakecoin
