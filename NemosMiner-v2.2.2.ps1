@@ -42,6 +42,7 @@ param(
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 Get-ChildItem . -Recurse | Unblock-File
+Write-host "INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow" 
 try{if((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)){Start-Process powershell -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath '$(Convert-Path .)'"}}catch{}
 
 if($Proxy -eq ""){$PSDefaultParameterValues.Remove("*:Proxy")}
@@ -89,6 +90,7 @@ while($true)
         $LastDonated = Get-Date
     }
 
+    Write-host "Loading BTC rate from 'api.coinbase.com'.." -foregroundcolor "Yellow" 
     $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
     $Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
 
@@ -97,11 +99,12 @@ while($true)
     if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stats | Add-Member $_.Name $_.Content}}
 
     #Load information about the Pools
+    Write-host "Loading pool stats.." -foregroundcolor "Yellow" 
     $AllPools = if(Test-Path "Pools"){Get-ChildItemContent "Pools" | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
         Where Location -EQ $Location | 
         Where SSL -EQ $SSL | 
         Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}}
-    if($AllPools.Count -eq 0){"" | Out-Host; sleep 10; continue}
+    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying in 10 seconds..`n" -foregroundcolor "Red"; sleep 10; continue}
     $Pools = [PSCustomObject]@{}
     $Pools_Comparison = [PSCustomObject]@{}
     $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
@@ -109,6 +112,7 @@ while($true)
 
     #Load information about the Miners
     #Messy...?
+    Write-host "Loading miners.." -foregroundcolor "Yellow" 
     $Miners = if(Test-Path "Miners"){Get-ChildItemContent "Miners" | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
         Where {$Type.Count -eq 0 -or (Compare $Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
         Where {$Algorithm.Count -eq 0 -or (Compare $Algorithm $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
@@ -117,6 +121,7 @@ while($true)
         $Miner = $_
         if((Test-Path $Miner.Path) -eq $false)
         {
+            Write-host "Downloading $($Miner.Name).." -foregroundcolor "Yellow" 
             if((Split-Path $Miner.URI -Leaf) -eq (Split-Path $Miner.Path -Leaf))
             {
                 New-Item (Split-Path $Miner.Path) -ItemType "Directory" | Out-Null
