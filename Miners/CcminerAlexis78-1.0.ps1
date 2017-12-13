@@ -1,40 +1,38 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-TPruvot\ccminer.exe"
-$Uri = "https://github.com/nemosminer/tpruvot-ccminer/releases/download/v2.2-tpruvot/ccminer-x86-2.2.7z"
+$Path = ".\Bin\NVIDIA-Alexis-1.0\ccminer.exe"
+$Uri = "https://github.com/GTANAdam/ccminer-Alexis78-1.0/releases/download/1.0/ccminer-alexis78-vs2013-cuda7.5-32bit.zip"
 
 $Commands = [PSCustomObject]@{
-    "bitcore" = " -d $SelGPUCC" #Bitcore
-    #"jha" = " -d $SelGPUCC" #Jha
-    #"blake2s" = " -d $SelGPUCC" #Blake2s
-    #"blakecoin" = " -d $SelGPUCC" #Blakecoin
+    #"bitcore" = "" #Bitcore
+    "blake2s" = " -d $SelGPUCC" #Blake2s
+    #"blakecoin" = "" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
-    #"cryptonight" = " -d $SelGPUCC" #Cryptonight
-    #"decred" = "" #Decred
+    #"cryptonight" = "" #Cryptonight
+    "decred" = " -d $SelGPUCC" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
-    #"groestl" = "" #Groestl
-    #"hmq1725" = " -d $SelGPUCC" #hmq1725
-    #"keccak" = "" #Keccak
-    #"lbry" = " -d $SelGPUCC" #Lbry
-    #"lyra2v2" = "" #Lyra2RE2
-    #"lyra2z" = " -d $SelGPUCC" #Lyra2z
-    #"myr-gr" = "" #MyriadGroestl
-    #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
-    #"nist5" = "" #Nist5
+    "groestl" = " -d $SelGPUCC" #Groestl
+    #"hmq1725" = "" #hmq1725
+    "keccak" = " -d $SelGPUCC" #Keccak
+    "lbry" = "" #Lbry
+    "lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
+    #"lyra2z" = "" #Lyra2z
+    "myr-gr" = " -d $SelGPUCC" #MyriadGroestl
+    "neoscrypt" = " -d $SelGPUCC" #NeoScrypt
+    "nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    #"sib" = "" #Sib
-    #"skein" = "" #Skein
-    #"skunk" = " -d $SelGPUCC" #Skunk
-    #"timetravel" = " -d $SelGPUCC" #Timetravel
-    #"tribus" = " -d $SelGPUCC" #Tribus
+    "sib" = " -d $SelGPUCC" #Sib
+    "skein" = " -d $SelGPUCC" #Skein
+    "skunk" = " -d $SelGPUCC" #Skunk
+    #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
-    #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -d $SelGPUCC" #X17
+    #"x11evo" = "" #X11evo
+    #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
