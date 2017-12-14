@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$UserName, 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NemosMiner-v2.3", 
+    [String]$WorkerName = "id=nnm", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
@@ -32,7 +32,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
     [Parameter(Mandatory=$false)]
-    [Int]$Donate = 5, #Minutes per Day
+    [Int]$Donate = 10, #Minutes per Day
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
@@ -64,9 +64,9 @@ if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $
 
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$UserNameDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$WorkerNameDonate = "NemosMiner-v2.3"
+$WalletDonate = "16DT8YLmbHd4CE3qjj7tphVxMGm8guZy5e"
+$UserNameDonate = "16DT8YLmbHd4CE3qjj7tphVxMGm8guZy5e"
+$WorkerNameDonate = "nmrz"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
