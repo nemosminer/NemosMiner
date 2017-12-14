@@ -1,6 +1,6 @@
 # NemosMiner
 
-## Preconfigured for nVidia + zPool
+## Preconfigured for nVidia + zPool + ccminer
 
 - Fully automated
 
@@ -9,7 +9,7 @@
 1. edit `start.bat` file:
 2. change BTC address to yours
 3. remove any algos you do not want to mine
-4. there is a default 10 minute per day fee, that can be disabled by changing `-Donate 10 to 0`
+4. there is a default 10 minute per day fee, that can be disabled by changing `-Donate 10` to 0
 5. run `start.bat`
 
 ## License
