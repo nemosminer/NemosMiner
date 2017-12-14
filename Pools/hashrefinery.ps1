@@ -2,12 +2,7 @@
 
 try
 {
-    $hashrefinery_Request = Invoke-WebRequest "http://pool.hashrefinery.com/api/status" -UseBasicParsing | ConvertFrom-Json
-}
-catch
-{
-    return
-}
+    $hashrefinery_Request = Invoke-WebRequest "http://pool.hashrefinery.com/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if(-not $hashrefinery_Request){return}
 
