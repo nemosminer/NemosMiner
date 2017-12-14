@@ -1,11 +1,7 @@
 . .\Include.ps1
 
 try {
-    $ahashpool_Request = Invoke-WebRequest "http://www.ahashpool.com/api/status" -UseBasicParsing | ConvertFrom-Json
-}
-catch {
-    return
-}
+    $ahashpool_Request = Invoke-WebRequest "http://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if (-not $ahashpool_Request) {return}
 
