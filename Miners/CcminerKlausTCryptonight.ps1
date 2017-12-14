@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-KlausTCryptonight\ccminer.exe"
+$Path = ".\Bin\NVIDIA-KlausTCryptonight\ccminer-cryptonight.exe"
 $Uri = "https://github.com/KlausT/ccminer-cryptonight/releases/download/2.06/ccminer-cryptonight-206-x64-cuda9.zip"
 
 $Commands = [PSCustomObject]@{
