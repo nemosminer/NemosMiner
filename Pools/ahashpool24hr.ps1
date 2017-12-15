@@ -1,19 +1,19 @@
 . .\Include.ps1
 
 try {
-    $Zpool_Request = Invoke-WebRequest "http://www.ahashpool.com/api/status" -UseBasicParsing | -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $ahashpool_Request = Invoke-WebRequest "http://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
-if (-not $Zpool_Request) {return}
+if (-not $ahashpool_Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Location = "US"
 
-$Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $Zpool_Host = "$_.mine.ahashpool.com"
-    $Zpool_Port = $Zpool_Request.$_.port
-    $Zpool_Algorithm = Get-Algorithm $Zpool_Request.$_.name
-    $Zpool_Coin = ""
+$ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $ahashpool_Host = "$_.mine.ahashpool.com"
+    $ahashpool_Port = $ahashpool_Request.$_.port
+    $ahashpool_Algorithm = Get-Algorithm $ahashpool_Request.$_.name
+    $ahashpool_Coin = ""
 
     $Divisor = 1000000000
 	
@@ -24,19 +24,19 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
         "decred" {$Divisor *= 1000}
     }
 
-    if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor)}
-    else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor)}
+    if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor)}
+    else {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor)}
 	
     if ($Wallet) {
         [PSCustomObject]@{
-            Algorithm     = $Zpool_Algorithm
-            Info          = $Zpool_Coin
+            Algorithm     = $ahashpool_Algorithm
+            Info          = $ahashpool_Coin
             Price         = $Stat.Live
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
-            Host          = $Zpool_Host
-            Port          = $Zpool_Port
+            Host          = $ahashpool_Host
+            Port          = $ahashpool_Port
             User          = $Wallet
             Pass          = "$WorkerName,c=$Passwordcurrency"
             Location      = $Location
