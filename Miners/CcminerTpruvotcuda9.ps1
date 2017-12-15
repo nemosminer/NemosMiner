@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-TPruvotcuda9\ccminer.exe"
-$Uri = "https://github.com/nemosminer/tpruvot-ccminer/releases/download/2.2.2-tpruvot/ccminer-x86-2.2.2-cuda9.7z"
+$Uri = "https://github.com/nemosminer/ccminer-tpruvot2.2.3-windows/releases/download/2.2.3/ccminertpruvot2.2.3.7z"
 
 $Commands = [PSCustomObject]@{
     "phi" = " -d $SelGPUCC" #Phi
@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     #"blake2s" = " -d $SelGPUCC" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
-    #"cryptonight" = "" #Cryptonight
+    "cryptonight" = "" #Cryptonight
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
