@@ -18,21 +18,16 @@ edit: start.bat
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
-
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
 https://www.microsoft.com/en-gb/download/details.aspx?id=40784
-
 CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
-
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
-
 Requires nvidia Driver Newer than 384
 
 this is a free project feel free to donate be much appreciated:
 
 aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
-
 nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 
 Licensed under the GNU General Public License v3.0
