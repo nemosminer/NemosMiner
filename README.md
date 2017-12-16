@@ -16,7 +16,7 @@ edit: start.bat
 
 5.run start.bat
 
-If you have Windows 7, please update PowerShell:
+If you have Windows 7 8 or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
 
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
@@ -27,7 +27,7 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-Requires Nvidia Driver Newer than 384
+Requires nvidia Driver Newer than 384
 
 this is a free project feel free to donate be much appreciated:
 
