@@ -16,7 +16,7 @@ edit: start.bat
 
 5.run start.bat
 
-If you have Windows 7 8 or 8.1, please update PowerShell:
+If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
 
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
