@@ -27,7 +27,7 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-Requires nvidia Driver Newer than 384
+Requires nvidia driver newer than 384
 
 this is a free project feel free to donate be much appreciated:
 
