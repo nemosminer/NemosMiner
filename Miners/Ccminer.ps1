@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-TPruvotcuda9\ccminer.exe"
+$Path = ".\Bin\ccminer\ccminer.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.3-tpruvot/ccminer-x86-2.2.3-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
