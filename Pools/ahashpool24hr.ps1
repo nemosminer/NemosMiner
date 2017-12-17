@@ -17,11 +17,11 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
 
     $Divisor = 1000000000
 	
-    switch ($Zpool_Algorithm) {
-        "equihash" {$Divisor /= 1000}
-        "blake2s" {$Divisor *= 1000}
-        "blakecoin" {$Divisor *= 1000}
-        "decred" {$Divisor *= 1000}
+    switch ($ahashpool_Algorithm) {
+        "equihash"{$Divisor /= 1000}
+        "blake2s"{$Divisor *= 1000}
+        "blakecoin"{$Divisor *= 1000}
+        "decred"{$Divisor *= 1000}
     }
 
     if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor)}
