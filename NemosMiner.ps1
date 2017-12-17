@@ -90,7 +90,7 @@ while($true)
         $LastDonated = Get-Date
     }
 
-    Write-host "Loading BTC rate from 'api.coinbase.com'.." -foregroundcolor "Yellow"
+    Write-host "Updating BTC rate from 'api.coinbase.com'..." -foregroundcolor "Yellow"
     $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
     $Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
 
@@ -99,12 +99,12 @@ while($true)
     if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stats | Add-Member $_.Name $_.Content}}
 
     #Load information about the Pools
-    Write-host "Loading pool stats.." -foregroundcolor "Yellow"
+    Write-host "Updating pool stats..." -foregroundcolor "Yellow"
     $AllPools = if(Test-Path "Pools"){Get-ChildItemContent "Pools" | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
         Where Location -EQ $Location | 
         Where SSL -EQ $SSL | 
         Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}}
-    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying in 10 seconds..`n" -foregroundcolor "Red"; sleep 10; continue}
+    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying in 20 seconds..`n" -foregroundcolor "Red"; sleep 20; continue}
     $Pools = [PSCustomObject]@{}
     $Pools_Comparison = [PSCustomObject]@{}
     $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
@@ -112,7 +112,7 @@ while($true)
 
     #Load information about the Miners
     #Messy...?
-    Write-host "Loading miners.." -foregroundcolor "Yellow"
+    Write-host "Updating miners list..." -foregroundcolor "Yellow"
     $Miners = if(Test-Path "Miners"){Get-ChildItemContent "Miners" | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
         Where {$Type.Count -eq 0 -or (Compare $Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
         Where {$Algorithm.Count -eq 0 -or (Compare $Algorithm $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
