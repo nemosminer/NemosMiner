@@ -278,6 +278,7 @@ while($true)
                 Sleep 1
                 # if miner starts from Schedler, CloseMainWindow() is now enought, we have to force stop process by Id
                 Stop-Process $_.Process.Id | Out-Null
+                Write-Host -ForegroundColor Yellow "closing current miner and switching"
                 Sleep 1
                 $_.Status = "Idle"
             }
