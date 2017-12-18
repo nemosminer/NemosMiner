@@ -45,7 +45,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         API = "DSTM"
         Port = 2222
         Wrap = $false
-       
-       
+        URI = $Uri
+    
     }
 }
