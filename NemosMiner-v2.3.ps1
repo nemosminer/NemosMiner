@@ -104,7 +104,7 @@ while($true)
         Where Location -EQ $Location | 
         Where SSL -EQ $SSL | 
         Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}}
-    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow"; sleep 1; continue}
+    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow" | Out-Host; sleep 1; continue}
     $Pools = [PSCustomObject]@{}
     $Pools_Comparison = [PSCustomObject]@{}
     $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
@@ -277,7 +277,7 @@ while($true)
                 $_.Process.CloseMainWindow() | Out-Null
                 Sleep 1
                 # if miner starts from Schedler, CloseMainWindow() is now enought, we have to force stop process by Id
-                Stop-Process $_.Process.Id | Out-Null
+                Stop-Process $_.Process | Out-Null
                 Write-Host -ForegroundColor Yellow "closing current miner and switching"
                 Sleep 1
                 $_.Status = "Idle"
