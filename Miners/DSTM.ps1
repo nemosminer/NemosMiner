@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-DSTM\zm.exe"
 $Uri = "https://github.com/nemosminer/DSTM-equihash-miner/releases/download/0.5.7/zm_0.5.7_win.zip"
 
 $Commands = [PSCustomObject]@{
-    "equihash" = " -d $SelCC" #Equihash
+    "equihash" = " -d $SelGPUCC" #Equihash
 }
 $Port = 2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
