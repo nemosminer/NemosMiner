@@ -34,7 +34,7 @@ $Commands = [PSCustomObject]@{
     #"c11" = " -i 21 -d $SelGPUCC" #C11
     #"x11evo" = "" #X11evo
     #"x17" = " -i 21  -d $SelGPUCC" #X17
-    "polytimos" = " -d $SelGPU" #polytimos
+    "polytimos" = " -d $SelGPUCC" #polytimos
 
 }
 
