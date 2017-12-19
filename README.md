@@ -8,7 +8,7 @@ edit: start.bat
 
 1.change BTC address to yours
 
-2.select how many gpu's you have eg: (1gpu ewbf 0 cc 0) (2gpu ewbf 0 1 cc 0,1) (6gpu ewbf 0 1 2 3 4 5 cc 0,1,2,3,4,5)
+2.select how many gpu's you have eg: (1gpu dstm 0 cc 0) (2gpu dstm 0 1 cc 0,1) (6gpu dstm 0 1 2 3 4 5 cc 0,1,2,3,4,5)
 
 3.remove any algos you do not want to mine
 
