@@ -24,7 +24,7 @@ if ($ArgumentList -ne "") {$Command += " $ArgumentList"}
 $PowerShell.AddScript("$Command 2>&1 | Write-Verbose -Verbose") | Out-Null
 $Result = $PowerShell.BeginInvoke()
 
-Write-Host "NemosMinerv2.0 Wrapper Started" -BackgroundColor Yellow -ForegroundColor Black
+Write-Host "NemosMinerv2.3 Wrapper Started" -BackgroundColor Yellow -ForegroundColor Black
 
 do {
     Start-Sleep 1
