@@ -20,8 +20,6 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$SelGPUEWBF = "0",
     [Parameter(Mandatory=$false)]
-    [String]$SelGPUDSTM = "0",
-    [Parameter(Mandatory=$false)]
     [String]$SelGPUCC = "0",
     [Parameter(Mandatory=$false)]
     [Array]$Algorithm = $null, #i.e. Ethash,Equihash,Cryptonight ect.
