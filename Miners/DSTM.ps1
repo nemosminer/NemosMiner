@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-DSTM\zm.exe"
 # Uri = "https://bitcointalk.org/index.php?topic=2021765.0"
 
 $Commands = [PSCustomObject]@{
-    "equihash" = " -d $SelGPUDSTM" #Equihash
+    "equihash" = " -d $SelGPUCC" #Equihash
 }
 $Port = 2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
