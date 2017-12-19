@@ -1,4 +1,4 @@
-﻿function Set-Stat {
+function Set-Stat {
     param(
         [Parameter(Mandatory = $true)]
         [String]$Name, 
