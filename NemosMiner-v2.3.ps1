@@ -18,7 +18,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Array]$Type = $null, #AMD/NVIDIA/CPU
     [Parameter(Mandatory=$false)]
-    [String]$SelGPUEWBF = "0",
+    [String]$SelGPUDSTM = "0",
     [Parameter(Mandatory=$false)]
     [String]$SelGPUCC = "0",
     [Parameter(Mandatory=$false)]
