@@ -359,7 +359,7 @@ while($true)
         #Benchmark timeout
         if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
         {
-            for($i = $Miner_HashRates.Count; $i -lt $_.Algorithms.Count; $i++)
+            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
             {
                 if((Get-Stat "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate") -eq $null)
                 {
