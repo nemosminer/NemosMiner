@@ -330,17 +330,17 @@ while($true)
 
     #Save current hash rates
     $ActiveMinerPrograms | ForEach {
-        $_.HashRate = 0
-        $Miner_HashRates = $null
-
-        if($_.New){$_.Benchmarked++}
-
         if($_.Process -eq $null -or $_.Process.HasExited)
         {
             if($_.Status -eq "Running"){$_.Status = "Failed"}
         }
         else
         {
+            $_.HashRate = 0
+            $Miner_HashRates = $null
+
+            if($_.New){$_.Benchmarked++}
+            
             $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
 
             $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count
