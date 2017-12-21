@@ -38,7 +38,7 @@ $Locations | ForEach-Object {
                 Protocol      = "stratum+tcp"
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
-                User          = "$Wallet.$WorkerName"
+                User          = "$Wallet"
                 Pass          = "x"
                 Location      = $Location
                 SSL           = $false
@@ -53,7 +53,7 @@ $Locations | ForEach-Object {
                 Protocol      = "stratum+ssl"
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
-                User          = "$Wallet.$WorkerName"
+                User          = "$Wallet"
                 Pass          = "x"
                 Location      = $Location
                 SSL           = $true
