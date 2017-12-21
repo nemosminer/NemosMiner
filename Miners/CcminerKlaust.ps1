@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-CcminerKlaust\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminer/releases/download/8.16/ccminer-8.16-x64-cuda9.1.7z"
+$Uri = "https://github.com/nemosminer/ccminer/releases/download/8.17/ccminer-817-cuda91-x64.zip"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
