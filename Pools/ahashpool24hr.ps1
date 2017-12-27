@@ -20,7 +20,7 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
         switch ($ahashpool_Algorithm) {
 
         "equihash"{$Divisor /= 1000}
-        "blake2s"{$Divisor *= 10000}
+        "blake2s"{$Divisor *= 1000}
         "blakecoin"{$Divisor *= 1000}
         "decred"{$Divisor *= 1000}
     }
