@@ -258,6 +258,28 @@ function Get-HashRate {
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
             }
+			"XMRig" {
+                $Message = "summary"
+
+                do {
+                  
+					$Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
+					
+					$Data = $Request | ConvertFrom-Json
+
+					$HashRate = [Double]$Data.hashrate.total[0]
+					if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
+                    if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[2]}
+					
+					if ($HashRate -eq $null) {$HashRates = @(); break}
+
+                    $HashRates += [Double]$HashRate
+
+                    if (-not $Safe) {break}
+					
+					Start-Sleep $Interval
+                }while ($HashRates.count -lt 6)
+            }
 			"dstm" {
                 $Message = "summary"
 
