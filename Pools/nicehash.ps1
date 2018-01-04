@@ -15,6 +15,7 @@ $Locations | ForEach-Object {
     switch ($NiceHash_Location) {
         "eu" {$Location = "Europe"}
         "usa" {$Location = "US"}
+        "jp" {$Location = "JP"}
         default {$Location = "Asia"}
     }
     

@@ -327,6 +327,7 @@ while($true)
 
     #Do nothing for a few seconds as to not overload the APIs
     Sleep $Interval
+    Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
 
     #Save current hash rates
     $ActiveMinerPrograms | ForEach {
