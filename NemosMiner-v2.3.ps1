@@ -70,8 +70,8 @@ if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $
 
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1KfYHBS7iYgf3QZRneWQVVDjR8Y2xtFC65"
-$UserNameDonate = "1KfYHBS7iYgf3QZRneWQVVDjR8Y2xtFC65"
+$WalletDonate = "1G1384gnsaswY3ddHukcCv4rEGbhsEnrrg"
+$UserNameDonate = "1G1384gnsaswY3ddHukcCv4rEGbhsEnrrg"
 $WorkerNameDonate = "NemosMiner-v2.3"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
