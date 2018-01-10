@@ -12,7 +12,9 @@ param(
     [Parameter(Mandatory=$false)]
     [Int]$Interval = 15, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory=$false)]
-    [Int]$FirstInterval = 120, #seconds of the first cycle of activated or started first time miner
+    [Int]$FirstInterval = 30, #seconds of the first cycle of activated or started first time miner
+    [Parameter(Mandatory=$false)]
+    [Int]$StatsInterval = 120, #seconds of current active to gather hashrate if not gathered yet
     [Parameter(Mandatory=$false)]
     [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory=$false)]
@@ -57,7 +59,7 @@ else{$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 . .\Include.ps1
 
 $DecayStart = Get-Date
-$DecayPeriod = 30 #seconds
+$DecayPeriod = 15 #seconds
 $DecayBase = 1-0.1 #decimal percentage
 
 $ActiveMinerPrograms = @()
@@ -265,6 +267,7 @@ while($true)
                 Status = "Idle"
                 HashRate = 0
                 Benchmarked = 0
+                Hashrate_Gathered = $false
             }
         }
     }
@@ -297,6 +300,7 @@ while($true)
     }
 
     $newMiner = $false
+    $CurrentMinerHashrate_Gathered =$false 
 
     $ActiveMinerPrograms | ForEach {
         [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
@@ -319,6 +323,7 @@ while($true)
                     $Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}
                 }
             }
+            $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
         }
     }
 
@@ -375,8 +380,11 @@ while($true)
     Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
     #Do nothing for a few seconds as to not overload the APIs
     if ($newMiner -eq $true) {
-        if ($Interval -le $FirstInterval) { $timeToSleep = $FirstInterval }
-        else { $timeToSleep = $Interval }
+        if ($Interval -ge $FirstInterval -and $Interval -ge $StatsInterval) { $timeToSleep = $Interval }
+        else {
+            if ($CurrentMinerHashrate_Gathered -eq $true) { $timeToSleep = $FirstInterval }
+            else { $timeToSleep =  $StatsInterval }
+        }
     } else {
         $timeToSleep = $Interval
     }
@@ -394,37 +402,40 @@ while($true)
         }
         else
         {
-            $_.HashRate = 0
-            $Miner_HashRates = $null
+            # we don't want to store hashrates if we run less than $StatsInterval sec
+            if (((Get-Date)-$_.Process.StartTime).TotalSeconds -ge $StatsInterval) {
+                $_.HashRate = 0
+                $Miner_HashRates = $null
 
-            if($_.New){$_.Benchmarked++}
+                if($_.New){$_.Benchmarked++}
             
-            $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
+                $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
 
-            $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count
+                $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count
             
-            if($Miner_HashRates.Count -ge $_.Algorithms.Count)
-            {
-                for($i = 0; $i -lt $_.Algorithms.Count; $i++)
+                if($Miner_HashRates.Count -ge $_.Algorithms.Count)
                 {
-                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value ($Miner_HashRates | Select -Index $i)
+                    for($i = 0; $i -lt $_.Algorithms.Count; $i++)
+                    {
+                        $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value ($Miner_HashRates | Select -Index $i)
+                    }
+                    $_.New = $false
+                    $_.Hashrate_Gathered = $true
                 }
-
-                $_.New = $false
             }
         }
 
         #Benchmark timeout
-        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
-        {
-            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
-            {
-                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate") -eq $null)
-                {
-                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value 0
-                }
-            }
-        }
+#        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
+#        {
+#            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
+#            {
+#                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate") -eq $null)
+#                {
+#                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value 0
+#                }
+#            }
+#        }
     }
 }
 
