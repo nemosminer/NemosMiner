@@ -283,10 +283,10 @@ while($true)
             $_.Active += (Get-Date)-$_.Process.StartTime
                 $_.Process.CloseMainWindow() | Out-Null
                 Sleep 1
-                # if miner starts from Schedler, CloseMainWindow() is now enought, we have to force stop process by Id
-                Stop-Process $_.Process | Out-Null
+                # # if miner starts from Schedler, CloseMainWindow() is now enought, we have to force stop
+                Stop-Process $_.Process -Force | Out-Null
                 Write-Host -ForegroundColor Yellow "closing current miner and switching"
-                Sleep 1
+                Sleep 2
                 $_.Status = "Idle"
             }
         }
