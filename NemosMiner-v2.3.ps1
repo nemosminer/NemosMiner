@@ -1,28 +1,28 @@
 param(
     [Parameter(Mandatory=$false)]
-    [String]$Wallet, 
+    [String]$Wallet = "1G1384gnsaswY3ddHukcCv4rEGbhsEnrrg", 
     [Parameter(Mandatory=$false)]
     [String]$UserName, 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NemosMiner-v2.3", 
+    [String]$WorkerName = "Noname", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory=$false)]
-    [Int]$Interval = 30, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 15, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory=$false)]
     [Int]$FirstInterval = 120, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory=$false)]
-    [String]$Location = "europe", #europe/us/asia
+    [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory=$false)]
     [Switch]$SSL = $false, 
     [Parameter(Mandatory=$false)]
-    [Array]$Type = $null, #AMD/NVIDIA/CPU
+    [Array]$Type = "nvidia", #AMD/NVIDIA/CPU
     [Parameter(Mandatory=$false)]
-    [String]$SelGPUDSTM = "0",
+    [String]$SelGPUDSTM = "0 1",
     [Parameter(Mandatory=$false)]
-    [String]$SelGPUCC = "0",
+    [String]$SelGPUCC = "0,1",
     [Parameter(Mandatory=$false)]
     [Array]$Algorithm = $null, #i.e. Ethash,Equihash,Cryptonight ect.
     [Parameter(Mandatory=$false)]
@@ -34,7 +34,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
     [Parameter(Mandatory=$false)]
-    [Int]$Donate = 5, #Minutes per Day
+    [Int]$Donate = 0, #Minutes per Day
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
@@ -57,7 +57,7 @@ else{$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 . .\Include.ps1
 
 $DecayStart = Get-Date
-$DecayPeriod = 60 #seconds
+$DecayPeriod = 30 #seconds
 $DecayBase = 1-0.1 #decimal percentage
 
 $ActiveMinerPrograms = @()
@@ -70,8 +70,8 @@ if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $
 
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$UserNameDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+$WalletDonate = "1KfYHBS7iYgf3QZRneWQVVDjR8Y2xtFC65"
+$UserNameDonate = "1KfYHBS7iYgf3QZRneWQVVDjR8Y2xtFC65"
 $WorkerNameDonate = "NemosMiner-v2.3"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
@@ -110,7 +110,7 @@ while($true)
         Where Location -EQ $Location | 
         Where SSL -EQ $SSL | 
         Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}}
-    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow" | Out-Host; sleep 1; continue}
+    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow" | Out-Host; sleep 5; continue}
     $Pools = [PSCustomObject]@{}
     $Pools_Comparison = [PSCustomObject]@{}
     $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
@@ -213,6 +213,7 @@ while($true)
         $Miner | Add-Member Profit $Miner_Profit
         $Miner | Add-Member Profit_Comparison $Miner_Profit_Comparison
         $Miner | Add-Member Profit_Bias $Miner_Profit_Bias
+        $Miner | Add-Member Profit_Bias_Orig $Miner_Profit_Bias
         
         $Miner | Add-Member Type $Miner_Types -Force
         $Miner | Add-Member Index $Miner_Indexes -Force
@@ -227,7 +228,7 @@ while($true)
         $Miner | Add-Member Device $Miner_Devices -Force
     }
 
-    #Don't penalize active miners
+    #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
     $ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}}
 
       #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
@@ -289,6 +290,9 @@ while($true)
                 Sleep 1
                 $_.Status = "Idle"
             }
+
+            #Restore Bias for non-active miners
+            $Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit_Bias_Orig}
         }
     }
 
@@ -311,12 +315,14 @@ while($true)
                 else {
                     $_.Status = "Running"
                     $newMiner = $true
+                    #Newely started miner should looks better than other in the first run too
+                    $Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}
                 }
             }
         }
     }
-    
-  #Display mining information
+
+    #Display mining information
     Clear-Host
 
     [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
