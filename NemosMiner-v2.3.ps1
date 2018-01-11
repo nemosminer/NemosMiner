@@ -112,7 +112,7 @@ while($true)
         Where Location -EQ $Location | 
         Where SSL -EQ $SSL | 
         Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}}
-    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow" | Out-Host; sleep 5; continue}
+    if($AllPools.Count -eq 0){Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow" | Out-Host; sleep 15; continue}
     $Pools = [PSCustomObject]@{}
     $Pools_Comparison = [PSCustomObject]@{}
     $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
