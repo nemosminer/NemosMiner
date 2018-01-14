@@ -337,7 +337,7 @@ while($true)
             @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
             @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
             @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-            @{Label = "Times"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
             @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
         ) | Out-Host
     }
@@ -360,7 +360,7 @@ while($true)
         @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
         @{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
         @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-        @{Label = "Times"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+        @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
         @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
     ) | Out-Host
 
@@ -371,7 +371,7 @@ while($true)
             @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
             @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
             @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-            @{Label = "Times"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
             @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
         ) | Out-Host
     }
@@ -403,7 +403,8 @@ while($true)
         else
         {
             # we don't want to store hashrates if we run less than $StatsInterval sec
-            if (((Get-Date)-$_.Process.StartTime).TotalSeconds -ge $StatsInterval) {
+            $WasActive = ((Get-Date)-$_.Process.StartTime).TotalSeconds
+            if ($WasActive -ge $StatsInterval) {
                 $_.HashRate = 0
                 $Miner_HashRates = $null
 
@@ -421,6 +422,7 @@ while($true)
                     }
                     $_.New = $false
                     $_.Hashrate_Gathered = $true
+                    Write-Host $_.Algorithms ": stats saved after" $WasActive " sec"
                 }
             }
         }
