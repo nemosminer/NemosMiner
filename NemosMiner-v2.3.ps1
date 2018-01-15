@@ -289,6 +289,7 @@ while($true)
                Sleep 1
                # simply "Kill with power"
                Stop-Process $_.Process -Force | Out-Null
+               Write-Host -ForegroundColor Yellow "closing current miner and switching"
                Sleep 1
                $_.Status = "Idle"
             }
