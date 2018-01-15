@@ -10,3 +10,5 @@ C:\Windows\System32\Taskkill /f /im ccminer_x86.exe
 C:\Windows\System32\Taskkill /f /im ccminer.exe
 C:\Windows\System32\Taskkill /f /im ccminer.exe
 C:\Windows\System32\Taskkill /f /im ccminer.exe 
+C:\Windows\System32\Taskkill /f /im ccminer.exe 
+
