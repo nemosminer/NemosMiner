@@ -45,25 +45,13 @@ do {
             }
 
             $HashRate | Set-Content ".\Wrapper_$Id.txt"
-            } elseif ($Line -like "*overall speed is*") {
-            $Words = $Line -split " "
-            $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -Last 1)
+        }
 
-            switch ($Words -like "*H/s*" -replace "[0-9.,]",'' | Select-Object -Last 1) {
-                "KH/s" {$HashRate *= [Math]::Pow(1000, 1)}
-                "mH/s" {$HashRate *= [Math]::Pow(1000, 2)}
-                "MH/s" {$HashRate *= [Math]::Pow(1000, 2)}
-            }
+        $Line
+    }
 
-            $HashRate | Set-Content ".\Wrapper_$Id.txt"
-            }
+    if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
+}
+until($Result.IsCompleted)
 
-            $Line
-            }
-    
-            if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
-            }    
-
-            until($Result.IsCompleted)
-
-            Remove-Item ".\Wrapper_$Id.txt" -ErrorAction Ignore
+Remove-Item ".\Wrapper_$Id.txt" -ErrorAction Ignore
