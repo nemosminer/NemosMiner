@@ -301,7 +301,8 @@ while($true)
 
     $newMiner = $false
     $CurrentMinerHashrate_Gathered =$false 
-
+    $newMiner = $false
+    $CurrentMinerHashrate_Gathered =$false 
     $ActiveMinerPrograms | ForEach {
         [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
         if($filtered.Count -gt 0)
@@ -321,6 +322,9 @@ while($true)
                     $newMiner = $true
                     #Newely started miner should looks better than other in the first run too
                     $Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}
+                    $newMiner = $true
+                    #Newely started miner should looks better than other in the first run too
+                    $Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}
                 }
             }
             $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
@@ -329,7 +333,6 @@ while($true)
 
     #Display mining information
     Clear-Host
-
     [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
     if ($processesIdle.Count -gt 0) {
         Write-Host "Idle: " $processesIdle.Count
@@ -341,7 +344,17 @@ while($true)
             @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
         ) | Out-Host
     }
-
+    [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
+    if ($processesIdle.Count -gt 0) {
+        Write-Host "Idle: " $processesIdle.Count
+        $processesIdle | Sort {if($_.Process -eq $null){(Get-Date)}else{$_.Process.ExitTime}} | Format-Table -Wrap (
+            @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+            @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
+            @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+            @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+        ) | Out-Host
+    }
     Write-Host "1BTC = " $Rates.$Currency "$Currency"
     $Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
     @{Label = "Miner"; Expression={$_.Name}}, 
@@ -353,6 +366,47 @@ while($true)
     @{Label = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
     ) | Out-Host
     
+    #Display active miners list
+    [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+    Write-Host "Running:"
+    $processRunning | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
+        @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+        @{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
+        @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+        @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+        @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+    ) | Out-Host
+
+    [Array] $processesFailed = $ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
+    if ($processesFailed.Count -gt 0) {
+        Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
+        $processesFailed | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Format-Table -Wrap (
+            @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+            @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
+            @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+            @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+        ) | Out-Host
+    }
+
+    Write-Host "--------------------------------------------------------------------------------"
+    Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
+    #Do nothing for a few seconds as to not overload the APIs
+    if ($newMiner -eq $true) {
+        if ($Interval -ge $FirstInterval -and $Interval -ge $StatsInterval) { $timeToSleep = $Interval }
+        else {
+            if ($CurrentMinerHashrate_Gathered -eq $true) { $timeToSleep = $FirstInterval }
+            else { $timeToSleep =  $StatsInterval }
+        }
+    } else {
+        $timeToSleep = $Interval
+    }
+
+    Write-Host "Sleep" $timeToSleep "sec"
+    Sleep $timeToSleep
+
+    Write-Host "--------------------------------------------------------------------------------"
+
     #Display active miners list
     [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
     Write-Host "Running:"
@@ -423,7 +477,11 @@ while($true)
                     $_.New = $false
                     $_.Hashrate_Gathered = $true
                     Write-Host $_.Algorithms ": stats saved after" $WasActive " sec"
+
                     Write-Host "--------------------------------------------------------------------------------"
+
+                    Write-Host "--------------------------------------------------------------------------------"
+
                 }
             }
         }
