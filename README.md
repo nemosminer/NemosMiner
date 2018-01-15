@@ -27,15 +27,13 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-Requires nvidia driver newer than 384
+Requires nvidia driver newer than 388
 
 this is a free project feel free to donate be much appreciated:
 
 aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
 
 nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
-
-yuriy = 1KfYHBS7iYgf3QZRneWQVVDjR8Y2xtFC65
 
 Licensed under the GNU General Public License v3.0
 Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/nemosminer/NemosMiner-v2.2/blob/master/LICENSE
