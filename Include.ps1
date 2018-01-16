@@ -425,7 +425,7 @@ function Get-HashRate {
                 do {
                     $HashRate = Get-Content ".\Wrapper_.txt"
                 
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = Get-Content ".\Wrapper_.txt"}
+                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
 
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 
