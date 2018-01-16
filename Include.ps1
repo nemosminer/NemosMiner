@@ -423,7 +423,7 @@ function Get-HashRate {
             }
             "wrapper" {
                 do {
-                    $HashRate = Get-Content ".\Wrapper_.txt"}
+                    $HashRate = Get-Content ".\Wrapper_.txt"
                 
                     if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = Get-Content ".\Wrapper_.txt"}
 
