@@ -40,7 +40,7 @@ $Locations | ForEach-Object {
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
                 User          = "$Wallet.$WorkerName"
-                Pass          = "$WorkerName"
+                Pass          = "x"
                 Location      = $Location
                 SSL           = $false
             }
@@ -55,7 +55,7 @@ $Locations | ForEach-Object {
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
                 User          = "$Wallet.$WorkerName"
-                Pass          = "$WorkerName"
+                Pass          = "x"
                 Location      = $Location
                 SSL           = $true
             }
