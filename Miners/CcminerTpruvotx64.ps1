@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-TPruvotx64\ccminer-x64.exe"
-$Uri = "https://github.com/nemosminer/ccminer-tpruvot2.2.3-windows/releases/download/2.2.3/ccminer-x64.7z"
+$Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccminer-x64-2.2.4-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
