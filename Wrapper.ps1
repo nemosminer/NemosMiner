@@ -44,7 +44,7 @@ do {
                 "ph/s" {$HashRate *= [Math]::Pow(1000, 5)}
             }
 
-            $HashRate | Set-Content ".\Wrapper_.txt"
+            $HashRate | Set-Content ".\Wrapper1.txt"
         } elseif ($Line -like "*overall speed is*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -Last 1)
@@ -55,7 +55,7 @@ do {
                 "MH/s" {$HashRate *= [Math]::Pow(1000, 2)}
             }
 
-            $HashRate | Set-Content ".\Wrapper_.txt"
+            $HashRate | Set-Content ".\Wrapper1.txt"
         }
 
         $Line
