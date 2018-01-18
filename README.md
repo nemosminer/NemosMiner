@@ -1,5 +1,5 @@
-# NemosMiner-v2.3
-NemosMiner-v2.3 Monitors mining pools in real-time in order to find the most profitable Algo /
+# NemosMiner-v2.4
+NemosMiner-v2.4 Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
 Fully automated / 
 Auto Downloads Miners
@@ -28,6 +28,8 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
 Requires nvidia driver newer than 388
+
+-ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
 
 24hr.bats.. eg. startahashpool24hr.bat  startzpool24hr.bat.. (uses last 24hour Actual API too request profit)
 
