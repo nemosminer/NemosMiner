@@ -42,7 +42,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory=$false)]
-    [Int]$ActiveMinerGainPct = 5, # percents of advantages that active mine has over candidates in term of profit
+    [Int]$ActiveMinerGainPct = 5, # percent of advantage that active mine has over candidates in term of profit
     [Parameter(Mandatory=$false)]
     [Float]$MarginOfError = 0.35 # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
 )
