@@ -5,6 +5,7 @@ Fully automated /
 Auto Downloads Miners
 
 instructions:
+
 edit startpoolname.bat
 
 1.change BTC address to yours
