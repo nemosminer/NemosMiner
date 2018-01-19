@@ -16,7 +16,7 @@ edit startpoolname.bat
 
 4.there is a 5minute per day fee (0.3%), that can be disabled by changing -Donate 5 to 0
 
-5.run startpoolname.bat
+5.save & run startpoolname.bat
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
