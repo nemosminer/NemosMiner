@@ -4,7 +4,8 @@ NemosMiner-v2.4 Monitors mining pools in real-time in order to find the most pro
 Fully automated / 
 Auto Downloads Miners
 
-edit: start.bat
+instructions:
+edit startpoolname.bat
 
 1.change BTC address to yours
 
@@ -14,7 +15,7 @@ edit: start.bat
 
 4.there is a 5minute per day fee (0.3%), that can be disabled by changing -Donate 5 to 0
 
-5.run start.bat
+5.run startpoolname.bat
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
