@@ -1,16 +1,16 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminerpolytimos\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerAlexis78-1.0\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerpolytimos/releases/download/Alexis78-1.0/ccminer-polytimos.7z"
 
 $Commands = [PSCustomObject]@{
     #"hsr" = " -d $SelGPUCC" #Hsr
     #"bitcore" = "" #Bitcore
-    #"blake2s" = " -d $SelGPUCC" #Blake2s
+    "blake2s" = " -d $SelGPUCC --api-remote" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
-    #"veltor" = " -i 23 -d $SelGPUCC" #Veltor
+    "veltor" = " -i 23 -d $SelGPUCC --api-remote" #Veltor
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
@@ -18,18 +18,18 @@ $Commands = [PSCustomObject]@{
     #"hmq1725" = "" #hmq1725
     #"keccak" = " -m 2 -i 29" #Keccak
     #"lbry" = " -d $SelGPUCC" #Lbry
-    #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
+    "lyra2v2" = " -d $SelGPUCC --api-remote" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
     #"neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
-    #"nist5" = " -d $SelGPUCC" #Nist5
+    "nist5" = " -d $SelGPUCC --api-remote" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     #"sib" = " -i 21 -d $SelGPUCC" #Sib
     #"X11Gost" = " -i 21 -d $SelGPUCC" #X11Gost
-    #"skein" = " -d $SelGPUCC" #Skein
+    "skein" = " -d $SelGPUCC --api-remote" #Skein
     #"timetravel" = "" #Timetravel
     #"c11" = " -i 21 -d $SelGPUCC" #C11
     #"x11evo" = "" #X11evo
