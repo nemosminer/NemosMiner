@@ -45,7 +45,7 @@ do {
             }
 
             $HashRate | Set-Content ".\PalginNeoHashrate.txt"
-        } elseif ($Line -like "*speed is*") {
+        } elseif ($Line -like "*overall speed is*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -Last 1)
 
@@ -54,7 +54,7 @@ do {
                 "mH/s" {$HashRate *= [Math]::Pow(1000, 2)}
                 "MH/s" {$HashRate *= [Math]::Pow(1000, 2)}
             }
-
+			$HashRate = [int]$HashRate
             $HashRate | Set-Content ".\PalginNeoHashrate.txt"
         }
 
