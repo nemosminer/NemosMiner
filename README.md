@@ -31,6 +31,8 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 Requires nvidia driver newer than 388
 
+Made For & Tested with 6x10603gb 6x1070 6x1070ti 6x1080ti 
+
 -ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
 
 24hr.bats.. eg. startahashpool24hr.bat  startzpool24hr.bat.. (uses last 24hour Actual API too request profit)
