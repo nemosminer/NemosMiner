@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Alexis78cuda8\ccminer-alexis.exe"
+$Path = ".\Bin\NVIDIA-Alexis78\ccminer-alexis.exe"
 $Uri = "https://github.com/nemosminer/ccminer-hcash/releases/download/alexishsr/ccminer-hsr-alexis-x86-cuda8.7z"
 
 $Commands = [PSCustomObject]@{
@@ -27,13 +27,13 @@ $Commands = [PSCustomObject]@{
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    "sib" = " -i 21 -d $SelGPUCC --api-remote" #Sib
+    #"sib" = " -i 21 -d $SelGPUCC --api-remote" #Sib
     #"X11Gost" = " -i 21 -d $SelGPUCC" #X11Gost
     #"skein" = " -d $SelGPUCC --api-remote" #Skein
     #"timetravel" = "" #Timetravel
-    "c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
+    #"c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
     #"x11evo" = "" #X11evo
-    "x17" = " -i 21 -d $SelGPUCC --api-remote" #X17
+    #"x17" = " -i 21 -d $SelGPUCC --api-remote" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
