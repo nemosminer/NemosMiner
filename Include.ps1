@@ -121,6 +121,9 @@ function Get-ChildItemContent {
         if ($_.Extension -eq ".ps1") {
             $Content = &$_.FullName
         }
+        else {
+            $Content = $_ | Get-Content | ConvertFrom-Json
+        }
         $Content | ForEach-Object {
             [PSCustomObject]@{Name = $Name; Content = $_}
         }
