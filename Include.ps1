@@ -255,6 +255,54 @@ function Get-HashRate {
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
             }
+	    "XMRig" {
+                $Message = "summary"
+
+                do {
+                  
+			$Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
+					
+			$Data = $Request | ConvertFrom-Json
+
+			$HashRate = [Double]$Data.hashrate.total[0]
+			if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
+                   	if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[2]}
+					
+			if ($HashRate -eq $null) {$HashRates = @(); break}
+
+                    	$HashRates += [Double]$HashRate
+
+                   	if (-not $Safe) {break}
+					
+			Start-Sleep $Interval
+                }while ($HashRates.count -lt 6)
+            }
+			"dstm" {
+                $Message = "summary"
+
+                do {
+                    $Client = New-Object System.Net.Sockets.TcpClient $server, $port
+                    $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
+                    $Reader = New-Object System.IO.StreamReader $Client.GetStream()
+                    $Writer.AutoFlush = $true
+
+                    $Writer.WriteLine($Message)
+                    $Request = $Reader.ReadLine()
+
+                    $Data = $Request | ConvertFrom-Json
+
+					$HashRate = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum
+		            if (-not $HashRate) {$HashRate = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum} #ewbf fix
+			
+                    if ($HashRate -eq $null) {$HashRates = @(); break}
+					
+					$HashRates += [Double]$HashRate
+                    
+					if (-not $Safe) {break}
+
+                    Start-Sleep $Interval
+                } while ($HashRates.Count -lt 6)
+			}
             "nicehashequihash" {
                 $Message = "status"
 
@@ -372,9 +420,9 @@ function Get-HashRate {
             }
             "wrapper" {
                 do {
-                    $HashRate = Get-Content ".\Wrapper_$Port.txt"
+                    $HashRate = Get-Content ".\PalginNeoHashrate.txt"
                 
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = Get-Content ".\Wrapper_$Port.txt"}
+                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
 
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 
