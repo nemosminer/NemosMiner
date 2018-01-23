@@ -28,7 +28,6 @@ $Commands = [PSCustomObject]@{
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     "sib" = " -i 21 -d $SelGPUCC --api-remote" #Sib
-    "x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11Gost
     #"skein" = " -d $SelGPUCC --api-remote" #Skein
     #"timetravel" = "" #Timetravel
     #"c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
