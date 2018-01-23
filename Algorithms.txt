@@ -2,7 +2,7 @@
     "hsr":  "Hsr",
     "phi":  "Phi",
     "bitcore":  "Bitcore",
-    "Polytimos":  "poly",
+    "polytimos":  "Poly",
     "blake":  "Blakecoin",
     "blake2s":  "Blake2s",
     "xevan":  "Xevan",
