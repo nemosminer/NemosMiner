@@ -1,13 +1,13 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Alexis78\ccminer-alexis.exe"
+$Path = ".\Bin\NVIDIA-Alexis78sib\ccminer-alexis.exe"
 $Uri = "https://github.com/nemosminer/ccminer-hcash/releases/download/alexishsr/ccminer-hsr-alexis-x86-cuda8.7z"
 
 $Commands = [PSCustomObject]@{
-    "hsr" = " -d $SelGPUCC --api-remote" #Hsr
+    #"hsr" = " -d $SelGPUCC --api-remote" #Hsr
     #"bitcore" = "" #Bitcore
     #"blake2s" = " -d $SelGPUCC --api-remote" #Blake2s
-    "blakecoin" = " -d $SelGPUCC --api-remote" #Blakecoin
+    #"blakecoin" = " -d $SelGPUCC --api-remote" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
     #"veltor" = " -i 23 -d $SelGPUCC --api-remote" #Veltor
@@ -20,14 +20,14 @@ $Commands = [PSCustomObject]@{
     #"lbry" = " -d $SelGPUCC" #Lbry
     #"lyra2v2" = " -d $SelGPUCC --api-remote" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
-    "myr-gr" = " -d $SelGPUCC --api-remote" #MyriadGroestl
+    #"myr-gr" = " -d $SelGPUCC --api-remote" #MyriadGroestl
     #"neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC --api-remote" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    "sib" = " -i 21 -d $SelGPUCC --api-remote" #Sib
+    "x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
     #"skein" = " -d $SelGPUCC --api-remote" #Skein
     #"timetravel" = "" #Timetravel
     #"c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
@@ -42,7 +42,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-a sib -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = 4068

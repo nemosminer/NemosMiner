@@ -423,7 +423,7 @@ function Get-HashRate {
             }
             "wrapper" {
                 do {
-                    Start-Sleep 600 #plus 10mins to HSRNeo Benchmark 
+                    Start-Sleep 480 #plus 10mins to HSRNeo Benchmark 
 
                     $HashRate = Get-Content ".\PalginNeoHashrate.txt"
                 

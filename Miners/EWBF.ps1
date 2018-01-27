@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-CcminerKlaust\ccminer.exe"
-$Uri = "https://github.com/KlausT/ccminer/releases/download/8.19/ccminer-819final-cuda91-x64.zip"
+$Path = ".\Bin\NVIDIA-EWBF\\Zminer.exe"
+$Uri = "https://github.com/nemosminer/EWBF-Zec-Miner/releases/download/0.3.4b/0.3.4b.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -12,15 +12,15 @@ $Commands = [PSCustomObject]@{
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
-    #"groestl" = " -d $SelGPUCC" #Groestl
+    #"groestl" = "" #Groestl
     #"hmq1725" = "" #hmq1725
     #"keccak" = "" #Keccak
     #"lbry" = "" #Lbry
-    #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
+    #"lyra2v2" = "" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
-    #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
-    #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
-    #"nist5" = " -d $SelGPUCC" #Nist5
+    #"myr-gr" = "" #MyriadGroestl
+    #"neoscrypt" = "" #NeoScrypt
+    #"nist5" = "" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
@@ -29,7 +29,6 @@ $Commands = [PSCustomObject]@{
     #"skein" = "" #Skein
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
-    #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
     #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
@@ -41,11 +40,12 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "--api --server $($Pools.(Get-Algorithm($_)).Host) --port $($Pools.(Get-Algorithm($_)).Port) --fee 0 --solver 0 --eexit 1 --user $($Pools.(Get-Algorithm($_)).User) --pass $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
-        API = "Ccminer"
-        Port = 4068
+        API = "EWBF"
+        Port = 42000
         Wrap = $false
         URI = $Uri
+    
     }
 }
