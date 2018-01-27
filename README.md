@@ -1,4 +1,4 @@
-# NemosMiner-v2.4.1
+ # NemosMiner-v2.4.1 - MineMoney Support
 NemosMiner-v2.4.1 Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
 Fully automated / 
