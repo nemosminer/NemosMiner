@@ -12,8 +12,8 @@ $Location = "US"
 
 $zergpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
     $zergpool_Host = "$_.zergpool.com"
-    $zergpool_Port = $Zpool_Request.$_.port
-    $zergpool_Algorithm = Get-Algorithm $Zpool_Request.$_.name
+    $zergpool_Port = $Zzergpool_Request.$_.port
+    $zergpool_Algorithm = Get-Algorithm $zergpool_Request.$_.name
     $zergpool_Coin = ""
 
     $Divisor = 1000000
