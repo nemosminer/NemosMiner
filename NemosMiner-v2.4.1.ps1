@@ -54,7 +54,7 @@ if($Proxy -eq ""){$PSDefaultParameterValues.Remove("*:Proxy")}
 else{$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 . .\Include.ps1
 $DecayStart = Get-Date
-$DecayPeriod = 15 #seconds
+$DecayPeriod = 30 #seconds
 $DecayBase = 1-0.1 #decimal percentage
 $ActiveMinerPrograms = @()
 #Start the log
@@ -238,7 +238,7 @@ while($true)
                 Status = "Idle"
                 HashRate = 0
                 Benchmarked = 0
-                Hashrate_Gathered = $false
+                Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
             }
         }
     }
