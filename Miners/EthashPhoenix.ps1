@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\\Bin\\Ethash-Phoenix\\PhoenixMiner.exe"
-$Uri = "https://github.com/nemosminer/PhoenixMiner-2.5d/releases/download/2.5d/PhoenixMiner_2.5d.zip"
+$Path = ".\\Bin\\Ethash-Phoenix\\EthDcrMiner64.exe"
+$Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/10.6/Claymore.s.Dual.Ethereum.Decred_Siacoin_Lbry_Pascal.AMD.NVIDIA.GPU.Miner.v10.6.zip"
 
 $Commands = [PSCustomObject]@{
     "ethash" = "" #Ethash
