@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-r 0 -esm 0 -mode 1 -epool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -ewal $($Pools.Ethash.User) -epass $($Pools.Ethash.Pass) -proto 4 -coin auto -nvidia"
+        Arguments = "-r 0 -esm 0 -mode 1 -epool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -ewal $($Pools.Ethash.User) -epass $($Pools.Ethash.Pass)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live}
         API = "Claymore"
         Port = 3333
