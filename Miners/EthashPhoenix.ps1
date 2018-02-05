@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\\Bin\\Ethash-Phoenix\\EthDcrMiner64.exe"
-$Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/10.6/Claymore.s.Dual.Ethereum.Decred_Siacoin_Lbry_Pascal.AMD.NVIDIA.GPU.Miner.v10.6.zip"
+$Path = ".\\Bin\\Ethash-Phoenix\\PhoenixMiner.exe"
+$Uri = "https://github.com/nemosminer/PhoenixMiner-2.5d/releases/download/2.5d/PhoenixMiner_2.5d.zip"
 
 $Commands = [PSCustomObject]@{
     "ethash" = "" #Ethash
@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-r 0 -allpools 1 -allcoins 1 -esm 0 -mode 1 -epool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -ewal $($Pools.Ethash.User) -epsw $($Pools.Ethash.Pass)"
+        Arguments = "-rmode 0 -cdmport 3333 -cdm 1 -pool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -wal $($Pools.Ethash.User) -pass $($Pools.Ethash.Pass) -proto 4 -coin auto -nvidia"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live}
         API = "Claymore"
         Port = 3333
