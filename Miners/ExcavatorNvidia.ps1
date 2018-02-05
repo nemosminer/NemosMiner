@@ -6,15 +6,15 @@ $Path = ".\\Bin\\Excavator\\excavator.exe"
 $Uri = "https://github.com/nicehash/excavator/releases/download/v1.4.3a/excavator_v1.4.3a_NVIDIA_Win64.zip"
 
 $Commands = [PSCustomObject]@{
-    "blake2s"			= @() #Blake2s
-    "decred"			= @() #Decred
-    "daggerhashimoto"	= @() #Ethash
-    "equihash"			= @() #Equihash
-    "lbry"				= @() #Lbry
-    "lyra2rev2"			= @() #Lyra2RE2
-    "neoscrypt"			= @() #NeoScrypt
-    "nist5"				= @() #nist5
-    "pascal"			= @() #Pascal
+    #"blake2s"			= @() #Blake2s
+    #"decred"			= @() #Decred
+    #"daggerhashimoto"	= @() #Ethash
+    #"equihash"			= @() #Equihash
+    #"lbry"				= @() #Lbry
+    #"lyra2rev2"		= @() #Lyra2RE2
+    #"neoscrypt"		= @() #NeoScrypt
+    #"nist5"			= @() #nist5
+    #"pascal"			= @() #Pascal
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
