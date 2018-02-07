@@ -10,7 +10,7 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory=$false)]
-    [Int]$Interval = 15, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 30, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory=$false)]
     [Int]$FirstInterval = 30, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory=$false)]
@@ -42,9 +42,9 @@ param(
     [Parameter(Mandatory=$false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory=$false)]
-    [Int]$ActiveMinerGainPct = 3, # percent of advantage that active miner has over candidates in term of profit
+    [Int]$ActiveMinerGainPct = 11, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory=$false)]
-    [Float]$MarginOfError = 0.35 # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Float]$MarginOfError = 0.4 # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
 )
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
