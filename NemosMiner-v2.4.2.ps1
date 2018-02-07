@@ -54,7 +54,7 @@ if($Proxy -eq ""){$PSDefaultParameterValues.Remove("*:Proxy")}
 else{$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 . .\Include.ps1
 $DecayStart = Get-Date
-$DecayPeriod = 30 #seconds
+$DecayPeriod = 120 #seconds
 $DecayBase = 1-0.1 #decimal percentage
 $ActiveMinerPrograms = @()
 #Start the log
