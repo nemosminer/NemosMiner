@@ -37,7 +37,7 @@ Made For & Tested with 6x10603gb 6x1070 6x1070ti 6x1080ti (users have reported u
 
 24hr.bats.. eg. startahashpool24hr.bat  startzpool24hr.bat.. (uses last 24hour Actual API too request profit)
 
-normal .bats use estimates.. eg. startahashpool.bat   startzpool.bat..   (uses current estimate and 24hr estimate API too request profit)
+normal .bats uses estimates.. eg. startahashpool.bat   startzpool.bat..   (uses current estimate and 24hr estimate API too request profit)
 
 this is a free project feel free to donate be much appreciated:
 
