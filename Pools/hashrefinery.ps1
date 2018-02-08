@@ -27,7 +27,7 @@ $hashrefinery_Request | Get-Member -MemberType NoteProperty | Select -ExpandProp
 	"x11"{$Divisor *= 100}
     }
 
-    if((Get-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit") -eq $null){$Stat = Set-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit" -Value ([Double]$hashrefinery_Request.$_.estimate_last24h/$Divisor)}
+    if((Get-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit") -eq $null){$Stat = Set-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit" -Value ([Double]$hashrefinery_Request.$_.estimate_last24h/$Divisor *(1-($hashrefinery_Request.$_.fees/100)))}
     else{$Stat = Set-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit" -Value ([Double]$hashrefinery_Request.$_.estimate_current/$Divisor *(1-($hashrefinery_Request.$_.fees/100)))}
 	
     if($Wallet)
