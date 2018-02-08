@@ -25,7 +25,7 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
         "decred"{$Divisor *= 1000}
     }
 
-    if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor)}
+    if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor *(1-($ahashpool_Request.$_.fees/100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor *(1-($ahashpool_Request.$_.fees/100)))}
 	
     if ($Wallet) {
