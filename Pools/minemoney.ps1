@@ -26,7 +26,7 @@ $MineMoney_Request | Get-Member -MemberType NoteProperty | Select -ExpandPropert
     }
 
     if((Get-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit") -eq $null){$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_last24h/$Divisor)}
-    else{$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_current/$Divisor)}
+    else{$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_current/$Divisor *(1-($MineMoney_Request.$_.fees/100)))}
 	
     if($Wallet)
     {
