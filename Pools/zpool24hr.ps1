@@ -25,8 +25,8 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
 	"keccak"{$Divisor *= 1000}
     }
 
-    if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor)}
-    else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor)}
+    if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor *(1-($Zpool_Request.$_.fees/100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor *(1-($Zpool_Request.$_.fees/100)))}
 	
     if ($Wallet) {
         [PSCustomObject]@{
