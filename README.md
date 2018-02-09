@@ -1,6 +1,4 @@
- # NemosMinerPlus-v2.4.2
- 
- Forked from the excellent work from Nemos.
+ # NemosMiner-v2.4.2
  
  Added functionality:
  
