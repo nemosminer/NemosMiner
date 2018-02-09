@@ -1,10 +1,10 @@
 param(
     [Parameter(Mandatory=$false)]
-    [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
+    [String]$Wallet = "1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P", 
     [Parameter(Mandatory=$false)]
-    [String]$UserName, 
+    [String]$UserName = "MrPlus", 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NemosMiner-v2.4.2", 
+    [String]$WorkerName = "ID=NemosMinerPlus-v2.4.2", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
@@ -36,7 +36,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
     [Parameter(Mandatory=$false)]
-    [Int]$Donate = 0, #Minutes per Day
+    [Int]$Donate = 5, #Minutes per Day
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
@@ -63,9 +63,9 @@ Start-Transcript -Path ".\Logs\miner.log" -Append -Force
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$UserNameDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$WorkerNameDonate = "NemosMiner-v2.4.2"
+$WalletDonate = "1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P"
+$UserNameDonate = "MrPlus"
+$WorkerNameDonate = "NemosMinerPlus-v2.4.2"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
@@ -277,6 +277,24 @@ while($true)
         {
             if($_.Process -eq $null -or $_.Process.HasExited -ne $false)
             {
+ 		# Log switching information to .\log\swicthing.log
+		[pscustomobject]@{date=(get-date);algo=$_.Algorithms} | export-csv .\Logs\switching.log -Append -NoTypeInformation
+				
+ 		# Launch prerun if exists
+		$PrerunName = ".\Prerun\"+$_.Algorithms+".bat"
+		$DefaultPrerunName = ".\Prerun\default.bat"
+                If (Test-Path $PrerunName) {
+			Write-Host -F Yellow "Launching Prerun: " $PrerunName
+			Start-Process $PrerunName -WorkingDirectory ".\Prerun"
+			Sleep 2
+		} else {
+			If (Test-Path $DefaultPrerunName) {
+				Write-Host -F Yellow "Launching Prerun: " $DefaultPrerunName
+				Start-Process $DefaultPrerunName -WorkingDirectory ".\Prerun"
+				Sleep 2
+				}
+		}
+		
                 Sleep $Delay #Wait to prevent BSOD
                 $DecayStart = Get-Date
                 $_.New = $true
