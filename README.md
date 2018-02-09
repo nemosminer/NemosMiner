@@ -20,6 +20,7 @@
       This shows less switching than following Current Estimate and more switching that following the 24hr Actual.
       Better profitability on our rigs.
       Test and share the results on yours.
+      Only for ahashpool. Working on expanding the feature to other pools.
  
    
  
