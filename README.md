@@ -15,7 +15,7 @@
    
       Added ahashpoolplus as a pool.
       Simply use -PoolName ahashpoolplus in start.bat
-      Uses calculations based on 24hr and currentestimate ahashpool prices to get more realistic estimate.
+      Uses calculations based on 24hractual and currentestimate ahashpool prices to get more realistic estimate.
       Includes some trust index based on past 1hr currentestimate variation from 24hr.
       This shows less switching than following Current Estimate and more switching that following the 24hr Actual
       Better profitability on our rigs
