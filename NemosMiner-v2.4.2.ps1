@@ -277,6 +277,9 @@ while($true)
         {
             if($_.Process -eq $null -or $_.Process.HasExited -ne $false)
             {
+ 		# Log switching information to .\log\swicthing.log
+		[pscustomobject]@{date=(get-date);algo=$_.Algorithms} | export-csv .\Logs\switching.log -Append -NoTypeInformation
+				
  		# Launch prerun if exists
 		$PrerunName = ".\Prerun\"+$_.Algorithms+".bat"
 		$DefaultPrerunName = ".\Prerun\default.bat"
