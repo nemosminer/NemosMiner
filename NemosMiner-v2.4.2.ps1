@@ -277,6 +277,19 @@ while($true)
         {
             if($_.Process -eq $null -or $_.Process.HasExited -ne $false)
             {
+ 				$PrerunName = ".\Prerun\"+$_.Algorithms+".bat"
+				$DefaultPrerunName = ".\Prerun\default.bat"
+                If (Test-Path $PrerunName) {
+					Write-Host -F Yellow "Launching Prerun: " $PrerunName
+					Start-Process $PrerunName -WorkingDirectory ".\Prerun"
+					Sleep 2
+				} else {
+					If (Test-Path $DefaultPrerunName) {
+						Write-Host -F Yellow "Launching Prerun: " $DefaultPrerunName
+						Start-Process $DefaultPrerunName -WorkingDirectory ".\Prerun"
+						Sleep 2
+					}
+				}
                 Sleep $Delay #Wait to prevent BSOD
                 $DecayStart = Get-Date
                 $_.New = $true
