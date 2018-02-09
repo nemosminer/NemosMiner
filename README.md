@@ -3,12 +3,23 @@
  Forked from the excellent work from Nemos.
  
  Added functionality:
+ 
    prerun feature
+   
       Ability to run a batch prior switching to a specific algo.
       For example, can be used to set OC via nvidiaInspector
       Simply create a file named <AlgoName>.bat in prerun folder
       If <AlgoName>.bat does not exist, will try to launch prerun/default.bat
  
+   ahashpoolplus
+   
+      Uses calculations based on 24hr and currentestimate ahashpool prices to get more realistic estimate.
+      Includes some trust index based on past 1hr currentestimate variation from 24hr.
+      This shows less switching than following Current Estimate and more switching that following the 24hr Actual
+      Better profitability on our rigs
+      Test and share the results on yours.
+ 
+   
  
  This is a free project feel free to donate be much appreciated:
 
@@ -18,7 +29,7 @@ nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 
 MrPlus = 
 
- ####
+*****
  
 NemosMiner-v2.4.2 Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
