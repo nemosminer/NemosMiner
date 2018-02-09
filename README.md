@@ -18,6 +18,7 @@
       Uses calculations based on 24hractual and currentestimate ahashpool prices to get more realistic estimate.
       Includes some trust index based on past 1hr currentestimate variation from 24hr.
       This shows less switching than following Current Estimate and more switching that following the 24hr Actual.
+      AND is NOT sensible to spikes.
       Better profitability on our rigs.
       Test and share the results on yours.
       Only for ahashpool. Working on expanding the feature to other pools.
