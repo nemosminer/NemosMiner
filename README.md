@@ -1,4 +1,24 @@
- # NemosMiner-v2.4.2
+ # NemosMinerPlus-v2.4.2
+ 
+ Forked from the excellent work from Nemos.
+ Added functionality:
+   prerun feature
+      Ability to run a batch prior switching to a specific algo.
+      For example, can be used to set OC via nvidiaInspector
+      Simply create a file named <AlgoName>.bat in prerun folder
+      If <AlgoName>.bat does not exist, will try to launch prerun/default.bat
+ 
+ 
+ This is a free project feel free to donate be much appreciated:
+
+aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
+
+nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
+
+MrPlus = 
+
+ ####
+ 
 NemosMiner-v2.4.2 Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
 Fully automated / 
