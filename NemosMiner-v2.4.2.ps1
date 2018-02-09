@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$Wallet = "1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P", 
     [Parameter(Mandatory=$false)]
-    [String]$UserName, 
+    [String]$UserName = "MrPlus", 
     [Parameter(Mandatory=$false)]
     [String]$WorkerName = "ID=NemosMiner-v2.4.2", 
     [Parameter(Mandatory=$false)]
