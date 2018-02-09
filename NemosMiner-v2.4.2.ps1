@@ -63,9 +63,9 @@ Start-Transcript -Path ".\Logs\miner.log" -Append -Force
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$UserNameDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$WorkerNameDonate = "NemosMiner-v2.4.2"
+$WalletDonate = "1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P"
+$UserNameDonate = "MrPlus"
+$WorkerNameDonate = "NemosMinerPlus-v2.4.2"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
