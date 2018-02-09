@@ -22,7 +22,11 @@
       Test and share the results on yours.
       Only for ahashpool. Working on expanding the feature to other pools.
  
+   Algo switching log
    
+      Added simple algo switching log in csv. switching.log file found in Logs folder.
+      Can be easily imported in excel as csv file.
+    
  
  This is a free project feel free to donate be much appreciated:
 
@@ -30,7 +34,8 @@ aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
 
 nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 
-MrPlus = 
+MrPlus = 1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P
+
 
 *****
  
