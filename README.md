@@ -1,6 +1,7 @@
  # NemosMinerPlus-v2.4.2
  
  Forked from the excellent work from Nemos.
+ 
  Added functionality:
    prerun feature
       Ability to run a batch prior switching to a specific algo.
