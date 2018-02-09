@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$UserName = "MrPlus", 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NemosMiner-v2.4.2", 
+    [String]$WorkerName = "ID=NemosMinerPlus-v2.4.2", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
