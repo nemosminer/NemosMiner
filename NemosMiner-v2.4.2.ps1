@@ -62,22 +62,29 @@ Start-Transcript -Path ".\Logs\miner.log" -Append -Force
 #Update stats with missing data and set to today's date/time
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 #Set donation parameters
-$LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P"
-$UserNameDonate = "MrPlus"
-$WorkerNameDonate = "NemosMinerPlus-v2.4.2"
-$WalletBackup = $Wallet
-$UserNameBackup = $UserName
-$WorkerNameBackup = $WorkerName
+#Randomly sets donation minutes per day between 0 - 5 minutes if not set
+If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
 {
     $DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated)
     {
-        if ($Wallet) {$Wallet = $WalletDonate}
-        if ($UserName) {$UserName = $UserNameDonate}
-        if ($WorkerName) {$WorkerName = $WorkerNameDonate}
+	# Get donation addresses randomly from agreed list
+	# This should fairly distribute donations to Devs
+	# Devs list and wallets is publicly available at: http://mytestenv.alwaysdata.net/servefiles/Donation.json 
+	# Feel free to give ;)
+	try {
+		$Donation = Invoke-WebRequest "http://mytestenv.alwaysdata.net/servefiles/Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+
+	if (-not $Donation) {return}
+	$DonateRandom = $Donation | Get-Random
+	$WalletBackup = $Wallet
+	$UserNameBackup = $UserName
+	$WorkerNameBackup = $WorkerName
+        if ($Wallet) {$Wallet = $DonateRandom.Wallet}
+        if ($UserName) {$UserName = $DonateRandom.UserName}
+        if ($WorkerName) {$WorkerName = "NemosMinerPlus-v2.4.2"}
     }
     if((Get-Date).AddDays(-1) -ge $LastDonated)
     {
