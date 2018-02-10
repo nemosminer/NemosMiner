@@ -72,7 +72,7 @@ while($true)
 {
     $DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
-    if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated)
+    if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup))
     {
 	# Get donation addresses randomly from agreed list
 	# This should fairly distribute donations to Devs
@@ -87,7 +87,7 @@ while($true)
         if ($UserName) {$UserName = $DonateRandom.UserName}
         if ($WorkerName) {$WorkerName = "NemosMinerPlus-v2.4.2"}
     }
-    if((Get-Date).AddDays(-1) -ge $LastDonated)
+    if((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup))
     {
         $Wallet = $WalletBackup
         $UserName = $UserNameBackup
