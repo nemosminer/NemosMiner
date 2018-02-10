@@ -63,6 +63,9 @@ Start-Transcript -Path ".\Logs\miner.log" -Append -Force
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
+$WalletBackup = $Wallet
+$UserNameBackup = $UserName
+$WorkerNameBackup = $WorkerName
 #Randomly sets donation minutes per day between 0 - 5 minutes if not set
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
@@ -80,9 +83,6 @@ while($true)
 
 	if (-not $Donation) {return}
 	$DonateRandom = $Donation | Get-Random
-	$WalletBackup = $Wallet
-	$UserNameBackup = $UserName
-	$WorkerNameBackup = $WorkerName
         if ($Wallet) {$Wallet = $DonateRandom.Wallet}
         if ($UserName) {$UserName = $DonateRandom.UserName}
         if ($WorkerName) {$WorkerName = "NemosMinerPlus-v2.4.2"}
