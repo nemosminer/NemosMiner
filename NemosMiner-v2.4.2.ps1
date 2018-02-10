@@ -62,6 +62,7 @@ Start-Transcript -Path ".\Logs\miner.log" -Append -Force
 #Update stats with missing data and set to today's date/time
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 #Set donation parameters
+$LastDonated = (Get-Date).AddDays(-1).AddHours(1)
 #Randomly sets donation minutes per day between 0 - 5 minutes if not set
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
