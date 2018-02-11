@@ -69,6 +69,8 @@ $WorkerNameDonate = "NemosMiner-v2.4.2"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
++#Randomly sets donation minutes per day between 0 - 5 minutes if not set
++If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
 {
     $DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
