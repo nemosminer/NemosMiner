@@ -63,23 +63,31 @@ Start-Transcript -Path ".\Logs\miner.log" -Append -Force
 if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
 #Set donation parameters
 $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$UserNameDonate = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-$WorkerNameDonate = "NemosMiner-v2.4.2"
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
+#Randomly sets donation minutes per day between 0 - 5 minutes if not set
+If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
 {
     $DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
-    if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated)
+    if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup))
     {
-        if ($Wallet) {$Wallet = $WalletDonate}
-        if ($UserName) {$UserName = $UserNameDonate}
-        if ($WorkerName) {$WorkerName = $WorkerNameDonate}
+      	# Get donation addresses randomly from agreed list
+	# This should fairly distribute donations to Devs
+	# Devs list and wallets is publicly available at: http://mytestenv.alwaysdata.net/servefiles/Donation.json 
+	# Feel free to give ;)
+	try {
+		$Donation = Invoke-WebRequest "http://mytestenv.alwaysdata.net/servefiles/Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+
+	if (-not $Donation) {return}
+	$DonateRandom = $Donation | Get-Random
+        if ($Wallet) {$Wallet = $DonateRandom.Wallet}
+        if ($UserName) {$UserName = $DonateRandom.UserName}
+        if ($WorkerName) {$WorkerName = "NemosMiner-v2.4.2"}
     }
-    if((Get-Date).AddDays(-1) -ge $LastDonated)
+    if((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup))
     {
         $Wallet = $WalletBackup
         $UserName = $UserNameBackup
