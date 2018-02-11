@@ -34,7 +34,7 @@ $Commands = [PSCustomObject]@{
     #"timetravel" = "" #Timetravel
     "c11" = " -i 21 -d $SelGPUCC" #C11
     #"x11evo" = "" #X11evo
-    "x17" = " -i 21  -d $SelGPUCC" #X17
+    "x17" = " -i 20  -d $SelGPUCC" #X17
     
 
 }
