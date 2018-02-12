@@ -4,5 +4,5 @@ REM Place yout code below
 echo prerun default file
 
 REM Example clock settings using nvidiaInspector
-REM nvidiaInspector.exe -setBaseClockOffset:0,0,150 -setMemoryClockOffset:0,0,250 -setVoltageOffset:0,0,0 -setPowerTarget:0,115 -setTempTarget:0,0,92 
+REM nvidiaInspector.exe -setBaseClockOffset:0,0,75 -setMemoryClockOffset:0,0,505 -setVoltageOffset:0,0,0 -setPowerTarget:0,75 -setTempTarget:0,0,82 
 
