@@ -77,7 +77,6 @@ while($true)
       	# Get donation addresses randomly from agreed list
 	# This should fairly distribute donations to Devs
 	# Devs list and wallets is publicly available at: http://mytestenv.alwaysdata.net/servefiles/Donation.json 
-	# Feel free to give ;)
 	try {
 		$Donation = Invoke-WebRequest "http://mytestenv.alwaysdata.net/servefiles/Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
