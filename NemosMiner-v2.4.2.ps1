@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory=$false)]
-    [String]$UserName = "NemosMiner", 
+    [String]$UserName = "Nemo", 
     [Parameter(Mandatory=$false)]
     [String]$WorkerName = "ID=NemosMiner-v2.4.2", 
     [Parameter(Mandatory=$false)]
@@ -324,18 +324,7 @@ while($true)
         }
     }
     #Display mining information
-    Clear-Host
-    [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
-    if ($processesIdle.Count -gt 0) {
-        Write-Host "Idle: " $processesIdle.Count
-        $processesIdle | Sort {if($_.Process -eq $null){(Get-Date)}else{$_.Process.ExitTime}} | Format-Table -Wrap (
-            @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-            @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
-            @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-            @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-        ) | Out-Host
-    }
+    Clear-Host    
     Write-Host "1BTC = " $Rates.$Currency "$Currency"
     $Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
     @{Label = "Miner"; Expression={$_.Name}}, 
