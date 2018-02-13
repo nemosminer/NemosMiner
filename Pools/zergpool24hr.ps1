@@ -2,7 +2,7 @@
 
 try
 {
-    $zergpool_Request = Invoke-WebRequest "http://zergpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $zergpool_Request = Invoke-WebRequest "http://api.zergpool.com:8080/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if(-not $zergpool_Request){return}
 
@@ -11,7 +11,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Location = "US"
 
 $zergpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
-    $zergpool_Host = "zergpool.com"
+    $zergpool_Host = "mine.zergpool.com"
     $zergpool_Port = $zergpool_Request.$_.port
     $zergpool_Algorithm = Get-Algorithm $zergpool_Request.$_.name
     $zergpool_Coin = ""
