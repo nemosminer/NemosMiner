@@ -53,7 +53,7 @@ edit startpoolname.bat
 
 3.remove any algos you do not want to mine
 
-4.there is a 5minute per day fee (0.3%)
+4.there is a 3minute per day fee (0.1%)
 
 5.save & run startpoolname.bat
 
