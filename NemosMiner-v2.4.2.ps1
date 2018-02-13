@@ -36,7 +36,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
     [Parameter(Mandatory=$false)]
-    [Int]$Donate = 5, #Minutes per Day
+    [Int]$Donate = 3, #Minutes per Day
     [Parameter(Mandatory=$false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory=$false)]
@@ -66,8 +66,8 @@ $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
-#Randomly sets donation minutes per day between 0 - 5 minutes if not set
-If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
+#Randomly sets donation minutes per day between 0 - 3 minutes if not set
+If ($Donate -lt 1) {$Donate = Get-Random -Maximum 3}
 while($true)
 {
     $DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
