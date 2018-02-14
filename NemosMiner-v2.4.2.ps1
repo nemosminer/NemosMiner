@@ -76,10 +76,10 @@ while($true)
     {
 	# Get donation addresses randomly from agreed list
 	# This should fairly distribute donations to Devs
-	# Devs list and wallets is publicly available at: http://bit.ly/2Hceyrj 
+	# Devs list and wallets is publicly available at: http://bit.ly/2EqYXGr 
 	# Feel free to give ;)
 	try {
-		$Donation = Invoke-WebRequest "http://bit.ly/2Hceyrj" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$Donation = Invoke-WebRequest "http://bit.ly/2EqYXGr" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 	if (-not $Donation) {return}
 	$DonateRandom = $Donation | Get-Random
