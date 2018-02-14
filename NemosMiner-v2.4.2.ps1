@@ -83,7 +83,7 @@ while($true)
 	# This should fairly distribute donations to Devs
 	# Devs list and wallets is publicly available at: http://mytestenv.alwaysdata.net/servefiles/Donation.json 
 	try {
-		$Donation = Invoke-WebRequest "https://miningpoolhubstats.com/donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$Donation = Invoke-WebRequest "http://mytestenv.alwaysdata.net/servefiles/Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 	if (-not $Donation) {return}
 	$DonateRandom = $Donation | Get-Random
