@@ -44,8 +44,13 @@ param(
     [Parameter(Mandatory=$false)]
     [Int]$ActiveMinerGainPct = 5, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory=$false)]
-    [Float]$MarginOfError = 0.4 # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Parameter(Mandatory = $false)]
+    [String]$MPHApiKey #API Key for MiningPoolHubStats.com
 )
+
+$Version = "2.4.2"
+
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
 Write-host "INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
@@ -78,7 +83,7 @@ while($true)
 	# This should fairly distribute donations to Devs
 	# Devs list and wallets is publicly available at: http://mytestenv.alwaysdata.net/servefiles/Donation.json 
 	try {
-		$Donation = Invoke-WebRequest "http://mytestenv.alwaysdata.net/servefiles/Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$Donation = Invoke-WebRequest "https://miningpoolhubstats.com/donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 	if (-not $Donation) {return}
 	$DonateRandom = $Donation | Get-Random
@@ -322,6 +327,11 @@ while($true)
             }
             $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
         }
+    }
+
+    #POST data to stats
+    if($MPHApiKey) {
+        .\ReportStatus.ps1 -WorkerName $WorkerName -Version $Version -ActiveMiners $ActiveMinerPrograms -Miners $Miners -MPHApiKey $MPHApiKey
     }
     #Display mining information
     Clear-Host    
