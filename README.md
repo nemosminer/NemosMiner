@@ -7,14 +7,13 @@ instructions:
 
 edit startpoolname.bat
 
-1.change BTC address to yours
+1.change BTC address to yours 
+
+(note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name, To enable MiningPoolHubStats.com support: add "-MPHApiKey <YOUR_KEY_HERE>)
 
 2.select how many gpu's you have eg: (1gpu dstm 0 cc 0) (2gpu dstm 0 1 cc 0,1) (6gpu dstm 0 1 2 3 4 5 cc 0,1,2,3,4,5)
 
 3.remove any algos you do not want to mine
-
-**3.1. To enable MiningPoolHubStats.com support: add "-MPHApiKey <YOUR_KEY_HERE>**
-
 
 4.there is a 3minute per day fee (0.1%)
 
