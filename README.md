@@ -53,6 +53,9 @@ edit startpoolname.bat
 
 3.remove any algos you do not want to mine
 
+**3.1. To enable MiningPoolHubStats.com support: add "-MPHApiKey <YOUR_KEY_HERE>**
+
+
 4.there is a 3minute per day fee (0.1%)
 
 5.save & run startpoolname.bat
