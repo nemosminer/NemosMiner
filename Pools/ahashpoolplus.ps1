@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 try {
-    $ahashpool_Request = Invoke-WebRequest "http://mytestenv.alwaysdata.net/servefiles/BrainToNemos6.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $ahashpool_Request = Invoke-WebRequest "http://bit.ly/2stFNdA" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if (-not $ahashpool_Request) {return}
 
