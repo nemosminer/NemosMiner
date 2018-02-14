@@ -357,7 +357,7 @@ while($true)
 				Write-Host "+++++" $Wallet $PoolName[0] "Balance="$Earnings.balance ("{0:P0}" -f ($Earnings.balance/$Earnings.PaymentThreshold)) -B Blue -F White
 				Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $Earnings.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*1000))
 				Write-Host "Average BTC/D                    BTC =" ("{0:N8}" -f ($Earnings.AvgHourlyGrowth*24)) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*24*1000)) -F Green
-				Write-Host "Estimated Pay Date              " $Earnings.EstimatedPayDate ">" $Earnings.PaymentThreshold "BTC" -F Green
+				Write-Host "Estimated Pay Date              " $Earnings.EstimatedPayDate ">" $Earnings.PaymentThreshold "BTC"
 				Write-Host "+++++" -F Blue
 				Write-Host "Current estimates based on" ($Earnings.Date - $Earnings.StartTime) "time span | Trust Level" ("{0:P0}" -f $Earnings.TrustLevel)
 			}
