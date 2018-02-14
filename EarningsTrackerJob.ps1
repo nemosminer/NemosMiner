@@ -28,12 +28,13 @@ If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 if (-not $APIUri){
 	try {
 		$poolapi = Invoke-WebRequest "http://bit.ly/2CkoxXK" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
-
 	if (-not $poolapi) {return} else {
+		If (($poolapi | ? {$_.Name -eq $pool}).EarnTrackSupport -eq "yes") {
 		$APIUri = ($poolapi | ? {$_.Name -eq $pool}).WalletUri
 		$PaymentThreshold = ($poolapi | ? {$_.Name -eq $pool}).PaymentThreshold
 		$BalanceJson = ($poolapi | ? {$_.Name -eq $pool}).Balance
 		$TotalJson = ($poolapi | ? {$_.Name -eq $pool}).Total
+		}else{return}
 	}		
 }
 
