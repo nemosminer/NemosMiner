@@ -359,7 +359,7 @@ while($true)
 				Write-Host "Average BTC/D                    BTC =" ("{0:N8}" -f ($Earnings.AvgHourlyGrowth*24)) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*24*1000)) -F Green
 				Write-Host "Estimated Pay Date              " $Earnings.EstimatedPayDate ">" $Earnings.PaymentThreshold "BTC" -F Green
 				Write-Host "+++++" -F Blue
-				Write-Host "Current estimates based on" ($Earnings.Date - ($Earnings.StartTime)).Days "Days" ($Earnings.Date - ($Earnings.StartTime)).Hours "Hours" ($Earnings.Date - ($Earnings.StartTime)).Minutes "Minutes | Trust Level" ("{0:P0}" -f $Earnings.TrustLevel)
+				Write-Host "Current estimates based on" ($Earnings.Date - $Earnings.StartTime) "time span | Trust Level" ("{0:P0}" -f $Earnings.TrustLevel)
 			}
 	}
     $Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
