@@ -66,6 +66,16 @@ $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
+
+# Starts Earnings Tracker Job
+$Params = @{
+	pool = $PoolName[0]
+	Wallet = $Wallet
+	Interval = 10
+	WorkingDirectory = ".\"
+}
+$EarningsTrackerJob = Start-Job -FilePath .\EarningsTrackerJob.ps1 -ArgumentList $Params
+
 #Randomly sets donation minutes per day between 0 - 5 minutes if not set
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
@@ -338,6 +348,20 @@ while($true)
         ) | Out-Host
     }
     Write-Host "1BTC = " $Rates.$Currency "$Currency"
+	# Get and display earnings stats
+	if ($EarningsTrackerJob) {$EarnTrack = $EarningsTrackerJob | Receive-Job
+		If ($EarnTrack) {
+			$Earnings = $EarnTrack[($EarnTrack.Count - 1)]
+		}
+			If ($Earnings) {
+				Write-Host "+++++" $Wallet $PoolName[0] "Balance="$Earnings.balance ("{0:P0}" -f ($Earnings.balance/$Earnings.PaymentThreshold)) -B Blue -F White
+				Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $Earnings.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*1000))
+				Write-Host "Average BTC/D                    BTC =" ("{0:N8}" -f ($Earnings.AvgHourlyGrowth*24)) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*24*1000)) -F Green
+				Write-Host "Estimated Pay Date              " $Earnings.EstimatedPayDate ">" $Earnings.PaymentThreshold "BTC" -F Green
+				Write-Host "+++++" -F Blue
+				Write-Host "Current estimates based on" ($Earnings.Date - ($Earnings.StartTime)).Days "Days" ($Earnings.Date - ($Earnings.StartTime)).Hours "Hours" ($Earnings.Date - ($Earnings.StartTime)).Minutes "Minutes | Trust Level" ("{0:P0}" -f $Earnings.TrustLevel)
+			}
+	}
     $Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
     @{Label = "Miner"; Expression={$_.Name}}, 
     @{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
