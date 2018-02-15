@@ -43,8 +43,15 @@ $TrustLevel = 0
 
 while ($true) {
 	$CurDate = Get-Date
-	try {
-	$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+	If ($Pool -eq "nicehash"){
+		try {
+		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		if (-not $BalanceData.$BalanceJson) {$BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
+		if (-not $BalanceData.$TotalJson) {$BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
+	} else {
+		try {
+		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+	}
 
 	$BalanceObjectS += [PSCustomObject]@{
 			Date			= $CurDate
@@ -63,6 +70,8 @@ while ($true) {
 	$AvgBTCHour = If ((($CurDate - ($BalanceObjectS[0].Date)).TotalHours) -ge 1) {(($BalanceObject.total_earned - $BalanceObjectS[0].total_earned) / ($CurDate - ($BalanceObjectS[0].Date)).TotalHours)} else {$Growth1}
 	$BTCd = 
 	$EarningsObject = [PSCustomObject]@{
+		Pool						= $pool
+		Wallet						= $Wallet
 		Date						= $CurDate
 		StartTime					= $BalanceObjectS[0].Date
 		balance						= $BalanceData.balance
