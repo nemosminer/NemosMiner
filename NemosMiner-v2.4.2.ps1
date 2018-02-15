@@ -88,7 +88,7 @@ if ($TrackEarnings){$PoolName | foreach {
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
 {
-    $DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
+	$DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup))
     {
@@ -343,6 +343,11 @@ while($true)
         }
     }
     #Display mining information
+	if($host.UI.RawUI.KeyAvailable){Switch (($host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")).Character) {
+			"s"	{if ($UIStyle -eq "Light"){$UIStyle="Full"}else{$UIStyle="Light"}}
+			"e"	{$TrackEarnings=-not $TrackEarnings}
+		}
+	}
     Clear-Host
     [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
 	IF ($UIStyle -eq "Full"){
@@ -367,7 +372,7 @@ while($true)
 				$Earnings.(($EarnTrack[($EarnTrack.Count - 1)]).Pool) = $EarnTrack[($EarnTrack.Count - 1)]
 			}
 		}
-	If ($Earnings) {
+	If ($Earnings -and $TrackEarnings) {
 		# $Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
 		$Earnings.Values | foreach {
 			Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance ("{0:P0}" -f ($_.balance/$_.PaymentThreshold))
