@@ -379,8 +379,7 @@ while($true)
 		}
 	}
 	Write-Host "+++++" -F Blue
-    Write-Host "Donation set to " $Donate "Minutes | " $DonateRandom.Wallet " | " $LastDonated
-	IF ($UIStyle -eq "Full"){
+ 	IF ($UIStyle -eq "Full"){
 
 		$Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
 		@{Label = "Miner"; Expression={$_.Name}}, 
