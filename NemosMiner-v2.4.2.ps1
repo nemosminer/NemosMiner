@@ -44,7 +44,11 @@ param(
     [Parameter(Mandatory=$false)]
     [Int]$ActiveMinerGainPct = 5, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory=$false)]
-    [Float]$MarginOfError = 0.4 # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Parameter(Mandatory=$false)]
+    [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
+    [Parameter(Mandatory=$false)]
+    [Bool]$TrackEarnings = $True # Display earnings information
 )
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
@@ -68,14 +72,18 @@ $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
 
 # Starts Earnings Tracker Job
-$Params = @{
-	pool = $PoolName[0]
-	Wallet = $Wallet
-	Interval = 10
-	WorkingDirectory = ".\"
+$EarningsTrackerJobs = @()
+$Earnings = @{}
+if ($TrackEarnings){$PoolName | foreach {
+	$Params = @{
+		pool = $_
+		Wallet = $Wallet
+		Interval = 10
+		WorkingDirectory = ".\"
+	}
+	$EarningsTrackerJobs += Start-Job -FilePath .\EarningsTrackerJob.ps1 -ArgumentList $Params
 }
-$EarningsTrackerJob = Start-Job -FilePath .\EarningsTrackerJob.ps1 -ArgumentList $Params
-
+}
 #Randomly sets donation minutes per day between 0 - 5 minutes if not set
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
@@ -337,64 +345,89 @@ while($true)
     #Display mining information
     Clear-Host
     [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
-    if ($processesIdle.Count -gt 0) {
-        Write-Host "Idle: " $processesIdle.Count
-        $processesIdle | Sort {if($_.Process -eq $null){(Get-Date)}else{$_.Process.ExitTime}} | Format-Table -Wrap (
-            @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-            @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
-            @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-            @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-        ) | Out-Host
-    }
-    Write-Host "1BTC = " $Rates.$Currency "$Currency"
-	# Get and display earnings stats
-	if ($EarningsTrackerJob) {$EarnTrack = $EarningsTrackerJob | Receive-Job
-		If ($EarnTrack) {
-			$Earnings = $EarnTrack[($EarnTrack.Count - 1)]
+	IF ($UIStyle -eq "Full"){
+		if ($processesIdle.Count -gt 0) {
+			Write-Host "Idle: " $processesIdle.Count
+			$processesIdle | Sort {if($_.Process -eq $null){(Get-Date)}else{$_.Process.ExitTime}} | Format-Table -Wrap (
+				@{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+				@{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
+				@{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+				@{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+				@{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+			) | Out-Host
 		}
-			If ($Earnings) {
-				Write-Host "+++++" $Wallet $PoolName[0] "Balance="$Earnings.balance ("{0:P0}" -f ($Earnings.balance/$Earnings.PaymentThreshold)) -B Blue -F White
-				Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $Earnings.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*1000))
-				Write-Host "Average BTC/D                    BTC =" ("{0:N8}" -f ($Earnings.AvgHourlyGrowth*24)) "| mBTC =" ("{0:N3}" -f ($Earnings.AvgHourlyGrowth*24*1000)) -F Green
-				Write-Host "Estimated Pay Date              " $Earnings.EstimatedPayDate ">" $Earnings.PaymentThreshold "BTC"
-				Write-Host "+++++" -F Blue
-				Write-Host "Current estimates based on" ($Earnings.Date - $Earnings.StartTime) "time span | Trust Level" ("{0:P0}" -f $Earnings.TrustLevel)
-			}
 	}
-    $Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
-    @{Label = "Miner"; Expression={$_.Name}}, 
-    @{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
-    @{Label = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}; Align='right'}, 
-    @{Label = "mBTC/Day"; Expression={$_.Profits.PSObject.Properties.Value*1000 | ForEach {if($_ -ne $null){$_.ToString("N3")}else{"Benchmarking"}}}; Align='right'}, 
-    @{Label = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){$_.ToString("N5")}else{"Benchmarking"}}}; Align='right'}, 
-    @{Label = "$Currency/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){($_ * $Rates.$Currency).ToString("N3")}else{"Benchmarking"}}}; Align='right'}, 
-    @{Label = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}; Align='right'},
-    @{Label = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
-    ) | Out-Host
-        #Display active miners list
-    [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-    Write-Host "Running:"
-    $processRunning | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
-        @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-        @{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
-        @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-        @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-        @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-    ) | Out-Host
-    [Array] $processesFailed = $ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
-    if ($processesFailed.Count -gt 0) {
-        Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
-        $processesFailed | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Format-Table -Wrap (
-            @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-            @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
-            @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-            @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-            @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-        ) | Out-Host
-    }
-    Write-Host "--------------------------------------------------------------------------------"
-    Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
+    Write-Host "      1BTC = " $Rates.$Currency "$Currency"
+	# Get and display earnings stats
+	$EarningsTrackerJobs | foreach {
+		$EarnTrack = $_ | Receive-Job
+			If ($EarnTrack) {
+				$EarningsPool = (($EarnTrack[($EarnTrack.Count - 1)]).Pool)
+				# $Earnings.$EarningsPool = $EarnTrack[($EarnTrack.Count - 1)]
+				$Earnings.(($EarnTrack[($EarnTrack.Count - 1)]).Pool) = $EarnTrack[($EarnTrack.Count - 1)]
+			}
+		}
+	If ($Earnings) {
+		# $Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
+		$Earnings.Values | foreach {
+			Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance ("{0:P0}" -f ($_.balance/$_.PaymentThreshold))
+			Write-Host "Trust Level                     " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))")]"
+			Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth*1000))
+			Write-Host "Average BTC/D" -NoNewline; Write-Host "                    BTC =" ("{0:N8}" -f ($_.AvgDailyGrowth)) "| mBTC =" ("{0:N3}" -f ($_.AvgDailyGrowth*1000)) -F Yellow
+			Write-Host "Estimated Pay Date              " $_.EstimatedPayDate ">" $_.PaymentThreshold "BTC"
+			# Write-Host "+++++" -F Blue
+		}
+	}
+	Write-Host "+++++" -F Blue
+    Write-Host "Donation set to " $Donate "Minutes | " $DonateRandom.Wallet " | " $LastDonated
+	IF ($UIStyle -eq "Full"){
+
+		$Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
+		@{Label = "Miner"; Expression={$_.Name}}, 
+		@{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
+		@{Label = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}; Align='right'}, 
+		@{Label = "mBTC/Day"; Expression={$_.Profits.PSObject.Properties.Value*1000 | ForEach {if($_ -ne $null){$_.ToString("N3")}else{"Benchmarking"}}}; Align='right'}, 
+		@{Label = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){$_.ToString("N5")}else{"Benchmarking"}}}; Align='right'}, 
+		@{Label = "$Currency/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){($_ * $Rates.$Currency).ToString("N3")}else{"Benchmarking"}}}; Align='right'}, 
+		@{Label = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}; Align='right'},
+		@{Label = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
+		) | Out-Host
+			#Display active miners list
+		[Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+		Write-Host "Running:"
+		$processRunning | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
+			@{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+			@{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
+			@{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+			@{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+			@{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+		) | Out-Host
+		[Array] $processesFailed = $ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
+		if ($processesFailed.Count -gt 0) {
+			Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
+			$processesFailed | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Format-Table -Wrap (
+				@{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+				@{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
+				@{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+				@{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+				@{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+			) | Out-Host
+		}
+		Write-Host "--------------------------------------------------------------------------------"
+    
+	} else {
+		[Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+		Write-Host "Running:"
+		$processRunning | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
+			@{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
+			@{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
+			@{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
+			@{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+			@{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+		) | Out-Host
+		Write-Host "--------------------------------------------------------------------------------"
+	}
+	Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
     #Do nothing for a few seconds as to not overload the APIs
     if ($newMiner -eq $true) {
         if ($Interval -ge $FirstInterval -and $Interval -ge $StatsInterval) { $timeToSleep = $Interval }
@@ -405,9 +438,13 @@ while($true)
     } else {
         $timeToSleep = $Interval
     }
-    Write-Host "Sleep" $timeToSleep "sec"
+	IF ($UIStyle -eq "Full"){Write-Host "Sleep" ($timeToSleep) "sec"} else {Write-Host "Sleep" ($timeToSleep*2) "sec"}
+	
+	
+	
     Sleep $timeToSleep
     Write-Host "--------------------------------------------------------------------------------"
+	IF ($UIStyle -eq "Full"){
     #Display active miners list
     [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
     Write-Host "Running:"
@@ -431,6 +468,7 @@ while($true)
     }
     Write-Host "--------------------------------------------------------------------------------"
     Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
+	}
     #Do nothing for a few seconds as to not overload the APIs
     if ($newMiner -eq $true) {
         if ($Interval -ge $FirstInterval -and $Interval -ge $StatsInterval) { $timeToSleep = $Interval }
@@ -441,9 +479,11 @@ while($true)
     } else {
     $timeToSleep = $Interval
     }
-    Write-Host "Sleep" $timeToSleep "sec"
-    Sleep $timeToSleep
-    Write-Host "--------------------------------------------------------------------------------"
+	IF ($UIStyle -eq "Full"){
+		Write-Host "Sleep" $timeToSleep "sec"
+		Sleep $timeToSleep
+		Write-Host "--------------------------------------------------------------------------------"
+	}
     #Save current hash rates
     $ActiveMinerPrograms | ForEach {
         if($_.Process -eq $null -or $_.Process.HasExited)
