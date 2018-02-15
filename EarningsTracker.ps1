@@ -1,8 +1,8 @@
 param(
     [Parameter(Mandatory=$false)]
     [String]$Pool = "ahashpool", 
-    [Parameter(Mandatory=$false)]
-    [String]$Wallet = "1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P", 
+    [Parameter(Mandatory=$true)]
+    [String]$Wallet = "", 
     [Parameter(Mandatory=$false)]
     [String]$APIUri, 
     [Parameter(Mandatory=$false)]
