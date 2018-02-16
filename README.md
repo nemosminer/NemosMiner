@@ -84,7 +84,7 @@ edit startpoolname.bat
 
 3.remove any algos you do not want to mine
 
-4.there is a 5minute per day fee (0.3%), that can be disabled by changing -Donate 5 to 0
+4.there is a 5minute per day fee (0.3%), that can be changed by modifying -Donate 5 to 0.
 
 5.save & run startpoolname.bat
 
@@ -120,4 +120,4 @@ nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 MrPlus = 1Hgmj84fzSbgYbv2QgrDmBNWSL7762Ry8P
 
 Licensed under the GNU General Public License v3.0
-Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/nemosminer/NemosMiner-v2.4.2/blob/master/LICENSE
+Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/mrplusgh/NPlusMiner/blob/master/LICENSE
