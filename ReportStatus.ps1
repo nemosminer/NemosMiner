@@ -1,4 +1,4 @@
-﻿using module .\Include.ps1
+using module .\Include.ps1
 
 param(
     [Parameter(Mandatory=$true)][String]$WorkerName,
@@ -7,8 +7,6 @@ param(
     [Parameter(Mandatory=$true)]$Miners,
     [Parameter(Mandatory=$true)]$MPHApiKey
 )
-
-$profit = ($ActiveMiners | Where-Object {$_.Activated -GT 0 -and $_.Status -eq "Running"} | Measure-Object Profit -Sum).Sum | ConvertTo-Json
 
 # Format the miner values for reporting.  Set relative path so the server doesn't store anything personal (like your system username, if running from somewhere in your profile)
 $minerreport = ConvertTo-Json @($ActiveMiners | Where-Object {$_.Activated -GT 0 -and $_.Status -eq "Running"} | Foreach-Object {
@@ -21,7 +19,7 @@ $MatchingMiner = $Miners | Where-Object {$_.Name -eq $ActiveMiner.Name -and $_.P
         Version        = $Version
         Path           = Resolve-Path -Relative $_.Path
         Type           = @($_.Type)
-        Active         = "{0:dd} Days {0:hh} Hours {0:mm} Minutes" -f $_.GetActiveTime()
+        Active         = "{0:dd} Days {0:hh} Hours {0:mm} Minutes" 
         Algorithm      = @($_.Algorithm)
         Pool           = @($MatchingMiner.Pools.PsObject.Properties.Value.Name)
         CurrentSpeed   = @($_.Speed_Live)
