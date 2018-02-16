@@ -1,7 +1,8 @@
 . .\Include.ps1
 
+$PlusPath = ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"\BrainPlus\zpoolplus\zpoolplus.json")
 Try{
-	$Zpool_Request = get-content (split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"BrainPlus\zpoolplus.json" | ConvertFrom-Json } catch { return }
+	$ahashpool_Request = get-content $PlusPath | ConvertFrom-Json } catch { return }
 
 if(-not $Zpool_Request){return}
 
