@@ -71,10 +71,6 @@ Estimations and forecast
 		Write-Host "Current data from pool" $Pool
 		$EarningsObject | ft | out-host
 	}
-	
-	# Only for debug
-	# $BalanceObjectS | Export-cliXml "c:\tmp\EarningTrack.xml"
-	
 	Sleep (($Interval -1)*60)
 }	
 }
