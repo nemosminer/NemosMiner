@@ -343,7 +343,7 @@ while($true)
         }
     }
     #Display mining information
-	if($host.UI.RawUI.KeyAvailable){Switch (($host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")).Character) {
+	if($host.UI.RawUI.KeyAvailable){Switch (($host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp")).Character) {
 			"s"	{if ($UIStyle -eq "Light"){$UIStyle="Full"}else{$UIStyle="Light"}}
 			"e"	{$TrackEarnings=-not $TrackEarnings}
 		}
