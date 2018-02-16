@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 try {
-    $blazepool_Request = Invoke-WebRequest "http://bit.ly/2EtUvCO" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $blazepool_Request = Invoke-WebRequest "http://tiny.cc/u255qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if (-not $blazepool_Request) {return}
 
