@@ -18,7 +18,7 @@ Additional features list
       For example, can be used to set per algo OC via nvidiaInspector
       Simply create a file named <AlgoName>.bat in prerun folder
       If <AlgoName>.bat does not exist, will try to launch prerun/default.bat
-      Use oveclock with caution
+      Use overclock with caution
  
    ahashpoolplus / zergpoolplus / zpoolplus / blazepoolplus
    
