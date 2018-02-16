@@ -74,7 +74,7 @@ $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
 # Check if new version is available
 try {
-	$Version = Invoke-WebRequest "http://bit.ly/2C1C5vw" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+	$Version = Invoke-WebRequest "http://tiny.cc/m155qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 # Starts Earnings Tracker Job
 $EarningsTrackerJobs = @()
 $Earnings = @{}
