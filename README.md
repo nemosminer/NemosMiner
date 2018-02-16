@@ -9,13 +9,16 @@ NPlusMiner Monitors mining pools in real-time in order to find the most profitab
  Forked from the excellent work from Nemo.
 
 Features list
+
    prerun feature
+   
       Ability to run a batch prior switching to a specific algo.
       For example, can be used to set OC via nvidiaInspector
       Simply create a file named <AlgoName>.bat in prerun folder
       If <AlgoName>.bat does not exist, will try to launch prerun/default.bat
  
    ahashpoolplus / zergpoolplus / zpoolplus / blazepoolplus
+   
       Simply use -PoolName ahashpoolplus or other <pool>plus in start.bat
       Uses calculations based on 24hractual and currentestimate ahashpool prices to get more realistic estimate.
       Includes some trust index based on past 1hr currentestimate variation from 24hr.
@@ -24,6 +27,7 @@ Features list
       Better profitability on our rigs.
 
    Earnings Tracker
+   
       Display BTC/H and BTC/D as well a estimation of when the payment threshold will be reached.
       Supported pools:
             ahashpool
@@ -35,20 +39,24 @@ Features list
       Press key e in the window to show/hide earnings
 
    Algo switching log
+   
       Added simple algo switching log in csv switching.log file found in Logs folder.
       You can easily track switching rate.
       
    Display Options
+   
       Use -UIStyle Light or -UIStyle Full in start.bat
             Full = Usual display
             Light = Show only currently mining info
 
    In session display toggle
+   
       Press key s in the window to switch between light and full display
       Press key e in the window to show/hide earnings 
       Will toggle display at next refresh
 
    New version notification
+   
       NPlusMiner will notify new version availability
 *****
  
