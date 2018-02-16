@@ -392,6 +392,7 @@ while($true)
 		}
 	}
 	Write-Host "+++++" -F Blue
+	if ($Miners | ? {$_.HashRates.PSObject.Properties.Value -eq $null}) {$UIStyle = "Full"}
  	IF ($UIStyle -eq "Full"){
 
 		$Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
