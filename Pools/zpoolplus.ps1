@@ -1,8 +1,7 @@
 . .\Include.ps1
 
-try
-{
-    $Zpool_Request = Invoke-WebRequest "hhttp://tiny.cc/j355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+Try{
+	$Zpool_Request = get-content (split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"BrainPlus\zpoolplus.json" | ConvertFrom-Json } catch { return }
 
 if(-not $Zpool_Request){return}
 
