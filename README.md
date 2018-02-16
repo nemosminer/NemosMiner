@@ -8,7 +8,7 @@
       There are troubles on the server side. You guys are too many and we’re not scaling.
       I’m working on getting calculations integrated to the miner to avoid this issue. Currently under test.
       Should be available tomorrow or next day.
-      If you see any problems with ahashpoolplus in the meantime, please go back to using ashpool24hr.
+      Please switch back to ahashpool24hr in the meantime.
 *****
 NPlusMiner Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
