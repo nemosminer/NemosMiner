@@ -2,7 +2,7 @@
 
 try
 {
-    $Zpool_Request = Invoke-WebRequest "http://bit.ly/2EtprTN" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $Zpool_Request = Invoke-WebRequest "hhttp://tiny.cc/j355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if(-not $Zpool_Request){return}
 
