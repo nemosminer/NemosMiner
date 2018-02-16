@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-try {
-    $ahashpool_Request = Invoke-WebRequest "http://tiny.cc/k755qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+Try{
+	$ahashpool_Request = get-content (split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"BrainPlus\ahashpoolplus.json" | ConvertFrom-Json } catch { return }
 
 if (-not $ahashpool_Request) {return}
 
