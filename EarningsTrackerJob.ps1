@@ -27,7 +27,7 @@ If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 
 if (-not $APIUri){
 	try {
-		$poolapi = Invoke-WebRequest "http://bit.ly/2CkoxXK" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$poolapi = Invoke-WebRequest "http://tiny.cc/l355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 	if (-not $poolapi) {return} else {
 		If (($poolapi | ? {$_.Name -eq $pool}).EarnTrackSupport -eq "yes") {
 		$APIUri = ($poolapi | ? {$_.Name -eq $pool}).WalletUri
