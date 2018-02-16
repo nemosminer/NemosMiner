@@ -1,5 +1,6 @@
  # NPlusMiner-v1.2
  Readme Updated 2018 Feb 16
+ 
  Instructions at bottom of the page.
    
 NPlusMiner Monitors mining pools in real-time in order to find the most profitable Algo /
