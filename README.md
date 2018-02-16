@@ -9,9 +9,9 @@ NPlusMiner Monitors mining pools in real-time in order to find the most profitab
 
  Forked from the excellent work from Nemo.
 *****
-Features list
+Additional features list
 
-   prerun feature
+   prerun
    
       Ability to run a batch prior switching to a specific algo.
       For example, can be used to set per algo OC via nvidiaInspector
@@ -28,9 +28,9 @@ Features list
       This shows less switching than following Current Estimate and more switching that following the 24hr Actual.
       Better profitability.
 
-   Earnings Tracker
+   Earnings Tracking
    
-      Displays BTC/H and BTC/D as well a estimation of when the payment threshold will be reached.
+      Displays BTC/H and BTC/D as well a estimation of when the pool payment threshold will be reached.
       Supported pools:
             ahashpool
             zergpool
