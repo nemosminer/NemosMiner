@@ -50,6 +50,8 @@ param(
     [Parameter(Mandatory=$false)]
     [Bool]$TrackEarnings = $True # Display earnings information
 )
+$CurrentProduct = "NPlusMiner"
+$CurrentVersion = 1.1
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
 Write-host "INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
@@ -70,7 +72,9 @@ $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
-
+# Check if new version is available
+try {
+	$Version = Invoke-WebRequest "http://bit.ly/2C1C5vw" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 # Starts Earnings Tracker Job
 $EarningsTrackerJobs = @()
 $Earnings = @{}
@@ -349,6 +353,10 @@ while($true)
 		}
 	}
     Clear-Host
+	If ($Version.Product -eq $CurrentProduct -and $version.Version -gt $CurrentVersion -and $Version.Update) {
+		Write-Host -f green "Version $($version.Version) available. (You are running $CurrentVersion)"
+		Write-Host -f green $Version.Message
+	}
     [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
 	IF ($UIStyle -eq "Full"){
 		if ($processesIdle.Count -gt 0) {
