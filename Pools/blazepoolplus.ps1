@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-try {
-    $blazepool_Request = Invoke-WebRequest "http://tiny.cc/u255qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+Try{
+	$blazepool_Request = get-content (split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"BrainPlus\blazepoolplus.json" | ConvertFrom-Json } catch { return }
 
 if (-not $blazepool_Request) {return}
 
