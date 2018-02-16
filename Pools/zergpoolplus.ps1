@@ -2,7 +2,7 @@
 
 try
 {
-    $zergpool_Request = Invoke-WebRequest "http://bit.ly/2HiUFyz" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $zergpool_Request = Invoke-WebRequest "http://tiny.cc/y255qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 if(-not $zergpool_Request){return}
 
