@@ -1,8 +1,7 @@
 . .\Include.ps1
 
-try
-{
-    $zergpool_Request = Invoke-WebRequest "http://tiny.cc/y255qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+Try{
+	$zergpool_Request = get-content (split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"BrainPlus\zergpoolplus.json" | ConvertFrom-Json } catch { return }
 
 if(-not $zergpool_Request){return}
 
