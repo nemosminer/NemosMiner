@@ -75,6 +75,15 @@ $WorkerNameBackup = $WorkerName
 # Check if new version is available
 try {
 	$Version = Invoke-WebRequest "http://tiny.cc/m155qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+# Starts Brains if necessary
+$BrainJobs = @()
+$PoolName | foreach {
+	$BrainPath = (Split-Path $MyInvocation.MyCommand.Path)+"\BrainPlus\"+$_
+	$BrainName = (".\BrainPlus\"+$_+"\Brain-2.1.ps1")
+	if (Test-Path $BrainName){
+		$BrainJobs += Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
+	}
+}
 # Starts Earnings Tracker Job
 $EarningsTrackerJobs = @()
 $Earnings = @{}
