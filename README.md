@@ -6,7 +6,7 @@ NPlusMiner Monitors mining pools in real-time in order to find the most profitab
  Auto Benchmarks Each algo to get optimal speeds / 
  Fully automated / 
  Auto Downloads Miners
-*****
+
  Forked from the excellent work from Nemo.
 *****
 Features list
