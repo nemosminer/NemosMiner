@@ -26,8 +26,8 @@ $blazepool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
         "decred"{$Divisor *= 1000}
     }
 
-    if ((Get-Stat -Name "$($Name)_$($blazepool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_Profit" -Value ([Double]$blazepool_Request.$_.estimate_last24h / $Divisor *(1-($blazepool_Request.$_.fees/100)))}
-    else {$Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_Profit" -Value ([Double]$blazepool_Request.$_.estimate_current / $Divisor *(1-($blazepool_Request.$_.fees/100)))}
+    if ((Get-Stat -Name "$($Name)_$($blazepool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_Profit" -Value ([Double]$blazepool_Request.$_.actual_last24h / $Divisor *(1-($blazepool_Request.$_.fees/100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($blazepool_Algorithm)_Profit" -Value ([Double]$blazepool_Request.$_.actual_last24h / $Divisor *(1-($blazepool_Request.$_.fees/100)))}
 	
     if ($Wallet) {
         [PSCustomObject]@{
