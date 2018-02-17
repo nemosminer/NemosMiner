@@ -16,10 +16,10 @@ $blazepool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
     $blazepool_Algorithm = Get-Algorithm $blazepool_Request.$_.name
     $blazepool_Coin = ""
 
-    $Divisor = 1000000
+    $Divisor = 1000000000
 	
-    switch ($blazepool_Algorithm) {
-    
+        switch ($blazepool_Algorithm) {
+
         "equihash"{$Divisor /= 1000}
         "blake2s"{$Divisor *= 1000}
         "blakecoin"{$Divisor *= 1000}
