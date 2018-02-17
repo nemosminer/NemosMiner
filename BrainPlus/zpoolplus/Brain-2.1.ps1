@@ -56,12 +56,12 @@ While ($true) {
 		$TrendSpanSizeMinutes = $Config.TrendSpanSizeMinutes
 		$SampleHalfPower = $Config.SampleHalfPower
 		$ManualPriceFactor = $Config.ManualPriceFactor
+		$Interval = $Config.Interval
 		$LogDataPath = $Config.LogDataPath
 		$TransferFile = $Config.TransferFile
 		$EnableLog = $Config.EnableLog
 		$PoolName = $Config.PoolName
 		$PoolStatusUri = $Config.PoolStatusUri
-		
 	} else {return}
 $CurDate = Get-Date
 try{$AlgoData = (Invoke-WebRequest $PoolStatusUri).content | ConvertFrom-Json}catch{return}
@@ -129,7 +129,7 @@ $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddDays(-1).AddHours(-1)}
 (($GroupMedSampleSize | ? {$_.Name -eq $Name}).Count)
 
 $MathObject = @()
-Sleep (60-(Get-Date).Second)
+Sleep ($Interval-(Get-Date).Second)
 }
 
 
