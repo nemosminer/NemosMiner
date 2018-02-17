@@ -2,7 +2,7 @@
 
 $PlusPath = ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory)+"\BrainPlus\blazepoolplus\blazepoolplus.json")
 Try{
-	$ahashpool_Request = get-content $PlusPath | ConvertFrom-Json } catch { return }
+	$blazepool_Request = get-content $PlusPath | ConvertFrom-Json } catch { return }
 
 if (-not $blazepool_Request) {return}
 
