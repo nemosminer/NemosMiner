@@ -50,7 +50,7 @@ Additional features list
 
    Algo switching log
    
-      Added simple algo switching log in csv switching.log file found in Logs folder.
+      Simple algo switching log in csv switching.log file found in Logs folder.
       You can easily track switching rate.
       
    Display Options
