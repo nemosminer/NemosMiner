@@ -1,0 +1,8 @@
+zpool
+hashrefinery
+ahashpool
+miningpoolhub
+nicehash
+zergpool
+minemoney
+blazepool
