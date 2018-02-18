@@ -14,7 +14,7 @@
       <S N="LogDataPath">.\BrainMemory-ahashpool.csv</S>
       <S N="TransferFile">.\ahashpoolplus.json</S>
       <S N="PoolName">ahashpool</S>
-      <S N="PoolStatusUri">http://www.ahashpool.com/api/status</S>
+      <S N="PoolStatusUri">https://www.ahashpool.com/api/status</S>
     </MS>
   </Obj>
 </Objs>
