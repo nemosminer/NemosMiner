@@ -110,7 +110,7 @@ while($true)
 	# Devs list and wallets is publicly available at: http://bit.ly/2EqYXGr 
 	# Feel free to give ;)
 	try {
-		$Donation = Invoke-WebRequest "http://bit.ly/2EqYXGr" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
 
 	if (-not $Donation) {return}
 	$DonateRandom = $Donation | Get-Random
