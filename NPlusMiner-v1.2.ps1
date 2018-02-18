@@ -51,7 +51,7 @@ param(
     [Bool]$TrackEarnings = $True # Display earnings information
 )
 $CurrentProduct = "NPlusMiner"
-$CurrentVersion = 1.2.1
+$CurrentVersion = 1.2
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
 Write-host "INFO: Adding NPlusMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
