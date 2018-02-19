@@ -1,4 +1,4 @@
-﻿. .\Include.ps1
+. .\Include.ps1
 
 try {
     $NiceHash_Request = Invoke-WebRequest "https://api.nicehash.com/api?method=simplemultialgo.info" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
