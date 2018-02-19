@@ -1,11 +1,9 @@
 REM This file will run for any algo if algo.bat does not exist
-REM Place your code below
+REM Place yout code below
 
 echo prerun default file
 
-REM Example clock settings using nvidiaInspector
-
-REM download nvidiaInspector and place nvidiaInspector.exe in the prerun folder the remove REM from "REM nvidiaInspector.exe" below and this defalut OC will work
-
-REM nvidiaInspector.exe -setBaseClockOffset:0,0,75 -setMemoryClockOffset:0,0,505 -setVoltageOffset:0,0,0 -setPowerTarget:0,75 -setTempTarget:0,0,90 
+REM Example clock settings using nvidiaInspector update nvidiaInspector.exe path accordingly or place it in prerun directory
+REM !!! USE OC WITH CAUTION !!!
+REM nvidiaInspector.exe -setBaseClockOffset:0,0,50 -setMemoryClockOffset:0,0,100 -setVoltageOffset:0,0,0 -setPowerTarget:0,75 -setTempTarget:0,0,92 
 
