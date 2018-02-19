@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$UserName = "MrPlus", 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NPlusMiner-v1.2", 
+    [String]$WorkerName = "ID=NPlusMiner-v1.3", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
@@ -51,7 +51,7 @@ param(
     [Bool]$TrackEarnings = $True # Display earnings information
 )
 $CurrentProduct = "NPlusMiner"
-$CurrentVersion = [Version]1.2
+$CurrentVersion = [Version]1.3
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
 Write-host "INFO: Adding NPlusMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
@@ -113,13 +113,13 @@ while($true)
 			} catch {
 				if ($Wallet) {$Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"}
 				if ($UserName) {$UserName = "mrplus"}
-				if ($WorkerName) {$WorkerName = "NPlusMiner-v1.2"}
+				if ($WorkerName) {$WorkerName = "NPlusMiner-v1.3"}
 			}
 		if ($Donation) {
 		$DonateRandom = $Donation | Get-Random
 			if ($Wallet) {$Wallet = $DonateRandom.Wallet}
 			if ($UserName) {$UserName = $DonateRandom.UserName}
-			if ($WorkerName) {$WorkerName = "NPlusMiner-v1.2"}
+			if ($WorkerName) {$WorkerName = "NPlusMiner-v1.3"}
 		}
     }
     if((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup))

@@ -1,4 +1,4 @@
- # NPlusMiner-v1.2
+ # NPlusMiner-v1.3
  Readme Updated 2018 Feb 17
  
  Instructions at bottom of the page.
