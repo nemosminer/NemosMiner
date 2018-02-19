@@ -133,7 +133,9 @@ while($true)
     if(Test-Path "Stats"){Get-ChildItemContent "Stats" | ForEach {$Stats | Add-Member $_.Name $_.Content}}
     #Load information about the Pools
     Write-host "Loading pool stats.." -foregroundcolor "Yellow"
-    $AllPools = if(Test-Path "Pools"){Get-ChildItemContent "Pools" | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
+	$PoolFilter = @()
+	$PoolName | foreach {$PoolFilter+=($_+=".*")}
+    $AllPools = if(Test-Path "Pools"){Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
         Where Location -EQ $Location | 
         Where SSL -EQ $SSL | 
         Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}}
