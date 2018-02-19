@@ -364,6 +364,8 @@ while($true)
 		}
 	}
     Clear-Host
+    # Note for self
+	# Will need to rework version handling
 	If ($Version.Product -eq $CurrentProduct -and $version.Version -gt $CurrentVersion -and $Version.Update) {
 		Write-Host -f green "Version $($version.Version) available. (You are running $CurrentVersion)"
 		Write-Host -f green $Version.Message
