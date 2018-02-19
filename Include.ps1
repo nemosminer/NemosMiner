@@ -112,7 +112,7 @@ function Get-Stat {
 function Get-ChildItemContent {
     param(
         [Parameter(Mandatory = $true)]
-        [String]$Path;
+        [String]$Path,
 		[Parameter(Mandatory = $false)]
 		[Array]$Include = @()
     )
