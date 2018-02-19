@@ -358,11 +358,12 @@ while($true)
         }
     }
     #Display mining information
-	if($host.UI.RawUI.KeyAvailable){Switch (($host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp")).Character) {
+	if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp")
+	If ($KeyPressed.KeyDown){
+	Switch ($KeyPressed.Character) {
 			"s"	{if ($UIStyle -eq "Light"){$UIStyle="Full"}else{$UIStyle="Light"}}
 			"e"	{$TrackEarnings=-not $TrackEarnings}
-		}
-	}
+	}}}
     Clear-Host
     # Note for self
 	# Will need to rework version handling
