@@ -358,7 +358,7 @@ while($true)
         }
     }
     #Display mining information
-	if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp")
+	if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp");sleep -Milliseconds 300;$host.UI.RawUI.FlushInputBuffer()
 	If ($KeyPressed.KeyDown){
 	Switch ($KeyPressed.Character) {
 			"s"	{if ($UIStyle -eq "Light"){$UIStyle="Full"}else{$UIStyle="Light"}}
