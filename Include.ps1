@@ -112,10 +112,12 @@ function Get-Stat {
 function Get-ChildItemContent {
     param(
         [Parameter(Mandatory = $true)]
-        [String]$Path
+        [String]$Path;
+		[Parameter(Mandatory = $false)]
+		[Array]$Include = @()
     )
 
-    $ChildItems = Get-ChildItem $Path | ForEach-Object {
+    $ChildItems = Get-ChildItem -Recurse -Path $Path -Include $Include | ForEach-Object {
         $Name = $_.BaseName
         $Content = @()
         if ($_.Extension -eq ".ps1") {
