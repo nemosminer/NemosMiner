@@ -130,7 +130,7 @@ $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddDays(-1).AddHours(-1)}
 (($GroupMedSampleSize | ? {$_.Name -eq $Name}).Count)
 
 $MathObject = @()
-Sleep ($Interval-(Get-Date).Second)
+Sleep ($Interval+$RetryInterval-(Get-Date).Second)
 }
 
 
