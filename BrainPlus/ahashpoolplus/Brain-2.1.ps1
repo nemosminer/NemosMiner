@@ -64,7 +64,8 @@ While ($true) {
 		$PoolStatusUri = $Config.PoolStatusUri
 	} else {return}
 $CurDate = Get-Date
-try{$AlgoData = (Invoke-WebRequest $PoolStatusUri).content | ConvertFrom-Json}catch{return}
+$RetryInterval = 0
+try{$AlgoData = (Invoke-WebRequest $PoolStatusUri).content | ConvertFrom-Json}catch{$RetryInterval=$Interval}
 Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
 		$AlgoObject += [PSCustomObject]@{
 			Date				= $CurDate
