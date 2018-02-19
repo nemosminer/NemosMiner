@@ -103,20 +103,24 @@ while($true)
 {
 	$DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
-    if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup))
-    {
-	# Get donation addresses randomly from agreed list
-	# This should fairly distribute donations to Devs
-	# Devs list and wallets is publicly available at: http://bit.ly/2EqYXGr 
-	# Feel free to give ;)
-	try {
-		$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
-
-	if (-not $Donation) {return}
-	$DonateRandom = $Donation | Get-Random
-        if ($Wallet) {$Wallet = $DonateRandom.Wallet}
-        if ($UserName) {$UserName = $DonateRandom.UserName}
-        if ($WorkerName) {$WorkerName = "NPlusMiner-v1.2"}
+    if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
+		# Get donation addresses randomly from agreed list
+		# This should fairly distribute donations to Devs
+		# Devs list and wallets is publicly available at: http://bit.ly/2EqYXGr 
+		# Feel free to give ;)
+		try {
+			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
+			} catch {
+				if ($Wallet) {$Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"}
+				if ($UserName) {$UserName = "mrplus"}
+				if ($WorkerName) {$WorkerName = "NPlusMiner-v1.2"}
+			}
+		if ($Donation) {
+		$DonateRandom = $Donation | Get-Random
+			if ($Wallet) {$Wallet = $DonateRandom.Wallet}
+			if ($UserName) {$UserName = $DonateRandom.UserName}
+			if ($WorkerName) {$WorkerName = "NPlusMiner-v1.2"}
+		}
     }
     if((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup))
     {
