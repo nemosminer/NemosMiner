@@ -108,9 +108,9 @@ while($true)
 		# This should fairly distribute donations to Devs
 		# Devs list and wallets is publicly available at: http://bit.ly/2EqYXGr 
 		# Feel free to give ;)
-		try {
+		try { 
 			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
-			} catch {
+			} catch { # Fall back in case web request fails
 				if ($Wallet) {$Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"}
 				if ($UserName) {$UserName = "mrplus"}
 				if ($WorkerName) {$WorkerName = "NPlusMiner-v1.3"}
