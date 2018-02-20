@@ -3,7 +3,7 @@
  
  Instructions at bottom of the page.
 *****
-NPlusMiner Monitors mining pools in real-time in order to find the most profitable Algo /
+NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
  Fully automated / 
  Auto Downloads Miners
