@@ -3,13 +3,6 @@
  
  Instructions at bottom of the page.
 *****
-# !!! Important update for ashapoolplus users !!!
-      There are troubles on the server side. You guys are too many and we’re not scaling.
-      Had no choice but to stop the ahashpoolplus service.
-      Calculations are now integrated in the last version of the miner. Please update your rigs.
-      
-      If using NemosMiner. Please delete ahapooplus.ps1 from the Pools directory.
-*****
 NPlusMiner Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
  Fully automated / 
