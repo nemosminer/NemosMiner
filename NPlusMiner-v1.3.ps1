@@ -76,6 +76,7 @@ $WorkerNameBackup = $WorkerName
 try {
  	$Version = Invoke-WebRequest "http://tiny.cc/m155qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 # Starts Brains if necessary
+Write-Host "Starting Brains for Plus..."
 $BrainJobs = @()
 $PoolName | foreach {
 	$BrainPath = (Split-Path $MyInvocation.MyCommand.Path)+"\BrainPlus\"+$_
