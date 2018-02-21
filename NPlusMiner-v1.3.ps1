@@ -46,7 +46,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
-    [String]$MPHApiKey #API Key for MiningPoolHubStats.com
+    [String]$MPHApiKey, #API Key for MiningPoolHubStats.com
     [Parameter(Mandatory=$false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory=$false)]
