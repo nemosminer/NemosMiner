@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\\NeoScrypt-Palgin\\hsrminer_neoscrypt.exe"
-$Uri = "https://github.com/palginpav/hsrminer/raw/master/Neoscrypt%20algo/Windows/hsrminer_neoscrypt.exe"
+$Path = ".\Bin\\NeoScrypt-Palgin\\hsrminer_neoscrypt_fork_hp.exe"
+$Uri = "https://github.com/justaminer/hsrm-fork/raw/master/hsrminer_neoscrypt_fork_hp.zip"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = " -d $SelGPUCC --api-remote" #Bitcore
@@ -45,10 +45,10 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         Type = "NVIDIA"
         Path = $Path
         Arguments = "-o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live *.99} # substract 1% devfee
-        API = "Wrapper"
-        Port = 23333
-        Wrap = $true
+        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live}
+        API = "Ccminer"
+        Port = 4068
+        Wrap = $false
         URI = $Uri
     }
 }
