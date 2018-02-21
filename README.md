@@ -8,7 +8,6 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
  Fully automated / 
  Auto Downloads Miners
 
- Forked from the excellent work from Nemo.
 *****
 Additional features list
 
