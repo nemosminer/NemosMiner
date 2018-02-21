@@ -27,14 +27,14 @@ If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 
 if (-not $APIUri){
 	try {
-		$poolapi = Invoke-WebRequest "http://tiny.cc/l355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
-	if (-not $poolapi) {return} else {
+		$poolapi = Invoke-WebRequest "http://tiny.cc/l355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
+	if ($poolapi) {
 		If (($poolapi | ? {$_.Name -eq $pool}).EarnTrackSupport -eq "yes") {
 		$APIUri = ($poolapi | ? {$_.Name -eq $pool}).WalletUri
 		$PaymentThreshold = ($poolapi | ? {$_.Name -eq $pool}).PaymentThreshold
 		$BalanceJson = ($poolapi | ? {$_.Name -eq $pool}).Balance
 		$TotalJson = ($poolapi | ? {$_.Name -eq $pool}).Total
-		}else{return}
+		}
 	}		
 }
 
@@ -45,12 +45,12 @@ while ($true) {
 	$CurDate = Get-Date
 	If ($Pool -eq "nicehash"){
 		try {
-		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 		if (-not $BalanceData.$BalanceJson) {$BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
 		if (-not $BalanceData.$TotalJson) {$BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
 	} else {
 		try {
-		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 	}
 
 	$BalanceObjectS += [PSCustomObject]@{
