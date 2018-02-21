@@ -45,12 +45,12 @@ param(
     [Int]$ActiveMinerGainPct = 5, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory=$false)]
     [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
-    [Parameter(Mandatory = $false)]
-    [String]$MPHApiKey, #API Key for MiningPoolHubStats.com
     [Parameter(Mandatory=$false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory=$false)]
-    [Bool]$TrackEarnings = $True # Display earnings information
+    [Bool]$TrackEarnings = $True, # Display earnings information
+    [Parameter(Mandatory = $false)]
+    [String]$MPHApiKey #API Key for MiningPoolHubStats.com
 )
 $CurrentProduct = "NPlusMiner"
 $CurrentVersion = [Version]1.3
