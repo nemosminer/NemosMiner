@@ -324,7 +324,7 @@ while($true)
             if($_.Process -eq $null -or $_.Process.HasExited -ne $false)
             {
  		# Log switching information to .\log\swicthing.log
-		[pscustomobject]@{date=(get-date);algo=$_.Algorithms;wallet=$Wallet;username=$UserName} | export-csv .\Logs\switching.log -Append -NoTypeInformation
+		[pscustomobject]@{date=(get-date);algo=$_.Algorithms;wallet=$Wallet;username=$UserName;Stratum=($_.Arguments.Split(" ") | ?{$_ -match "stratum"})} | export-csv .\Logs\switching.log -Append -NoTypeInformation
 				
  		# Launch prerun if exists
 		$PrerunName = ".\Prerun\"+$_.Algorithms+".bat"
