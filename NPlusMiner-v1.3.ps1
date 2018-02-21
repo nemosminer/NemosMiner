@@ -45,6 +45,8 @@ param(
     [Int]$ActiveMinerGainPct = 5, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory=$false)]
     [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Parameter(Mandatory = $false)]
+    [String]$MPHApiKey #API Key for MiningPoolHubStats.com
     [Parameter(Mandatory=$false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory=$false)]
@@ -362,6 +364,11 @@ while($true)
             $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
         }
     }
+    
+    #POST data to stats
+    if($MPHApiKey) {
+        .\ReportStatus.ps1 -WorkerName $WorkerName -Version $Version -ActiveMiners $ActiveMinerPrograms -Miners $Miners -MPHApiKey $MPHApiKey
+	}
     #Display mining information
 	if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp");sleep -Milliseconds 300;$host.UI.RawUI.FlushInputBuffer()
 	If ($KeyPressed.KeyDown){
