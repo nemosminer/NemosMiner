@@ -365,10 +365,10 @@ while($true)
         }
     }
     
-    #POST data to stats
-    if($MPHApiKey) {
+   #POST data to stats
+        if($MPHApiKey) {
         .\ReportStatus.ps1 -WorkerName $WorkerName -Version $Version -ActiveMiners $ActiveMinerPrograms -Miners $Miners -MPHApiKey $MPHApiKey
-	}
+       }
     #Display mining information
 	if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp");sleep -Milliseconds 300;$host.UI.RawUI.FlushInputBuffer()
 	If ($KeyPressed.KeyDown){
