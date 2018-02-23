@@ -1,5 +1,5 @@
  # NemosMiner-v2.5
- Readme Updated 2018 Feb 22
+ Updated 2018 Feb 24
  
  Instructions at bottom of the page.
 *****
@@ -87,7 +87,7 @@ edit startpoolname.bat
 
 5.save & run startpoolname.bat
 
-note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name,To enable MiningPoolHubStats.com support: add "-MPHApiKey <YOUR_KEY_HERE>
+note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
