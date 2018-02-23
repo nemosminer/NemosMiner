@@ -1,10 +1,10 @@
 param(
     [Parameter(Mandatory=$false)]
-    [String]$Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy", 
+    [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory=$false)]
-    [String]$UserName = "MrPlus", 
+    [String]$UserName = "nemo", 
     [Parameter(Mandatory=$false)]
-    [String]$WorkerName = "ID=NPlusMiner-v1.3", 
+    [String]$WorkerName = "ID=NemosMinerv2.5", 
     [Parameter(Mandatory=$false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory=$false)]
@@ -48,13 +48,13 @@ param(
     [Parameter(Mandatory=$false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory=$false)]
-    [Bool]$TrackEarnings = $True, # Display earnings information
-    [Parameter(Mandatory = $false)]
-    [String]$MPHApiKey #API Key for MiningPoolHubStats.com
-    )
-    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+    [Bool]$TrackEarnings = $True # Display earnings information
+)
 $CurrentProduct = "NPlusMiner"
-$CurrentVersion = [Version]1.3.1
+$CurrentVersion = [Version]"1.3.2"
+$ScriptStartDate = Get-Date
+# Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 Get-ChildItem . -Recurse | Unblock-File
 Write-host "INFO: Adding NPlusMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
@@ -105,6 +105,7 @@ if ($TrackEarnings){$PoolName | foreach {
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
 {
+	$host.UI.RawUI.WindowTitle = $CurrentProduct + " " + $CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date)-$ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
 	$DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
@@ -115,15 +116,15 @@ while($true)
 		try { 
 			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
 			} catch { # Fall back in case web request fails
-				if ($Wallet) {$Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"}
-				if ($UserName) {$UserName = "mrplus"}
-				if ($WorkerName) {$WorkerName = "NPlusMiner-v1.3"}
+				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
+				if ($UserName) {$UserName = "nemo"}
+				if ($WorkerName) {$WorkerName = "NemosMinerv2.5"}
 			}
 		if ($Donation) {
 		$DonateRandom = $Donation | Get-Random
 			if ($Wallet) {$Wallet = $DonateRandom.Wallet}
 			if ($UserName) {$UserName = $DonateRandom.UserName}
-			if ($WorkerName) {$WorkerName = "NPlusMiner-v1.3"}
+			if ($WorkerName) {$WorkerName = "NemosMinerv2.5"}
 		}
     }
     if((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup))
@@ -365,11 +366,6 @@ while($true)
             $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
         }
     }
-    
-   #POST data to stats
-        if($MPHApiKey) {
-        .\ReportStatus.ps1 -WorkerName $WorkerName -Version $Version -ActiveMiners $ActiveMinerPrograms -Miners $Miners -MPHApiKey $MPHApiKey
-       }
     #Display mining information
 	if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp");sleep -Milliseconds 300;$host.UI.RawUI.FlushInputBuffer()
 	If ($KeyPressed.KeyDown){
@@ -410,7 +406,7 @@ while($true)
 	If ($Earnings -and $TrackEarnings) {
 		# $Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
 		$Earnings.Values | foreach {
-			Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance $(If ($_.PaymentThreshold -gt 0) { ("{0:P0}" -f ($_.balance/$_.PaymentThreshold)) } Else { "Automatic payouts disabled" })
+			Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance ("{0:P0}" -f ($_.balance/$_.PaymentThreshold))
 			Write-Host "Trust Level                     " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))"]"
 			Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth*1000))
 			Write-Host "Average BTC/D" -NoNewline; Write-Host "                    BTC =" ("{0:N8}" -f ($_.AvgDailyGrowth)) "| mBTC =" ("{0:N3}" -f ($_.AvgDailyGrowth*1000)) -F Yellow
