@@ -51,7 +51,8 @@ param(
     [Bool]$TrackEarnings = $True, # Display earnings information
     [Parameter(Mandatory = $false)]
     [String]$MPHApiKey #API Key for MiningPoolHubStats.com
-)
+    )
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 $CurrentProduct = "NPlusMiner"
 $CurrentVersion = [Version]1.3
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
