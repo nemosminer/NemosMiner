@@ -68,7 +68,6 @@ while ($true) {
 	$Growth6 = If ((($CurDate - ($BalanceObjectS[0].Date)).TotalHours) -ge 6) {$BalanceObject.total_earned - (($BalanceObjectS | ? {$_.Date -ge $CurDate.AddHours(-6)}).total_earned | measure -Minimum).Minimum} Else {$Growth1*6}
 	$Growth24 = If ((($CurDate - ($BalanceObjectS[0].Date)).TotalDays) -ge 1) {$BalanceObject.total_earned - (($BalanceObjectS | ? {$_.Date -ge $CurDate.AddDays(-1)}).total_earned | measure -Minimum).Minimum} Else {$Growth1*24}
 	$AvgBTCHour = If ((($CurDate - ($BalanceObjectS[0].Date)).TotalHours) -ge 1) {(($BalanceObject.total_earned - $BalanceObjectS[0].total_earned) / ($CurDate - ($BalanceObjectS[0].Date)).TotalHours)} else {$Growth1}
-	$BTCd = 
 	$EarningsObject = [PSCustomObject]@{
 		Pool						= $pool
 		Wallet						= $Wallet
