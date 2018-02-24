@@ -83,9 +83,7 @@ edit startpoolname.bat
 
 3.remove any algos you do not want to mine
 
-4.there is a 5minute per day fee (0.3%)
-
-5.save & run startpoolname.bat
+4.save & run startpoolname.bat
 
 note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name
 
@@ -103,6 +101,8 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 Requires nvidia driver newer than 388
 
 Made For & Tested with 6x10603gb 6x1070 6x1070ti 6x1080ti (users have reported up to 12cards working have not tested myself)
+
+there is a 5minute per day fee (0.3%)
 
 -ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
 
