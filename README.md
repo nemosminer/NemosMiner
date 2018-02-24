@@ -1,5 +1,5 @@
  # NemosMiner-v2.5
- Updated 2018 Feb 24
+ Updated 2018 Feb 25
  
  Instructions at bottom of the page.
 *****
