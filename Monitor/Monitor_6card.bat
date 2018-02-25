@@ -9,6 +9,9 @@ FOR /L %%A IN (60,-1,0) DO (
 )
 :start
 cls
+PATH=%PATH%;"%PROGRAMFILES%\NVIDIA Corporation\NVSMI\"
+nvidia-smi --query-gpu=index,name,temperature.gpu,fan.speed,clocks.gr,clocks.mem,pstate,power.draw,power.limit --format=csv,noheader
+timeout /t 10 /nobreak >nul
 :measure
 for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage0=%%p
 for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=1 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage1=%%p
