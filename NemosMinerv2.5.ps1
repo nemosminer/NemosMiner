@@ -75,9 +75,6 @@ $LastDonated = (Get-Date).AddDays(-1).AddHours(1)
 $WalletBackup = $Wallet
 $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
-# Check if new version is available
-try {
- 	$Version = v2.5
 # Starts Brains if necessary
 Write-Host "Starting Brains for Plus..."
 $BrainJobs = @()
