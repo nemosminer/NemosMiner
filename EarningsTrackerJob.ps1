@@ -50,8 +50,9 @@ while ($true) {
 		if (-not $BalanceData.$TotalJson) {$BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
 	} else {
 		try {
-		$BalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
+		$TempBalanceData = Invoke-WebRequest ($APIUri+$Wallet) -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 	}
+	If ($TempBalanceData.$BalanceJson){$BalanceData = $TempBalanceData}
 
 	$BalanceObjectS += [PSCustomObject]@{
 			Date			= $CurDate
@@ -96,6 +97,6 @@ while ($true) {
 	If ($BalanceObjectS.Count -gt 1) {$BalanceObjectS = $BalanceObjectS | ? {$_.Date -ge $CurDate.AddDays(-1).AddHours(-1)}}
 
 	# Sleep until next update based on $Interval. Modulo $Interval.
-	Sleep (60*($Interval-((get-date).minute%$Interval))-(Get-Date).Second)
+	Sleep (60*($Interval-((get-date).minute%$Interval)))
 	
 }
