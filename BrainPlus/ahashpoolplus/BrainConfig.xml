@@ -9,7 +9,7 @@
       <I32 N="TrendSpanSizeMinutes">30</I32>
       <I32 N="SampleHalfPower">0</I32>
       <I32 N="ManualPriceFactor">1</I32>
-      <I32 N="Interval">120</I32>
+      <I32 N="Interval">60</I32>
       <B N="EnableLog">false</B>
       <S N="LogDataPath">.\BrainMemory-ahashpool.csv</S>
       <S N="TransferFile">.\ahashpoolplus.json</S>
