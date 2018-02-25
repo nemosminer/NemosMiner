@@ -77,7 +77,7 @@ $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
 # Check if new version is available
 try {
- 	$Version = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
+ 	$Version = Invoke-WebRequest "http://tiny.cc/m155qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 # Starts Brains if necessary
 Write-Host "Starting Brains for Plus..."
 $BrainJobs = @()
