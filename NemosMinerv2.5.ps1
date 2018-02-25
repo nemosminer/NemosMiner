@@ -378,7 +378,7 @@ while($true)
 	
 	Write-Host "      1BTC = " $Rates.$Currency "$Currency"
 	# Get and display earnings stats
-	$EarningsTrackerJobs | foreach {
+	$EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
 		$EarnTrack = $_ | Receive-Job
 			If ($EarnTrack) {
 				$EarningsPool = (($EarnTrack[($EarnTrack.Count - 1)]).Pool)
