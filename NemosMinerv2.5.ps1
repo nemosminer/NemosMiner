@@ -51,7 +51,7 @@ param(
     [Bool]$TrackEarnings = $True # Display earnings information
 )
 $CurrentProduct = "NemosMiner"
-$CurrentVersion = [Version]"v2.5"
+$CurrentVersion = [Version]"2.5"
 $ScriptStartDate = Get-Date
 # Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
