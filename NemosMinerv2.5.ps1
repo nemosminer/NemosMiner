@@ -50,8 +50,8 @@ param(
     [Parameter(Mandatory=$false)]
     [Bool]$TrackEarnings = $True # Display earnings information
 )
-$CurrentProduct = "NPlusMiner"
-$CurrentVersion = [Version]"1.3.1"
+$CurrentProduct = "NemosMiner"
+$CurrentVersion = [Version]"v2.5"
 $ScriptStartDate = Get-Date
 # Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
@@ -77,7 +77,7 @@ $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
 # Check if new version is available
 try {
- 	$Version = Invoke-WebRequest "http://tiny.cc/m155qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
+ 	$Version = v2.5
 # Starts Brains if necessary
 Write-Host "Starting Brains for Plus..."
 $BrainJobs = @()
