@@ -108,7 +108,7 @@ while($true)
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
 		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
-		# Devs list and wallets is publicly available at: http://bit.ly/2EqYXGr 
+		# Devs list and wallets is publicly available at: http://tiny.cc/r355qy 
 		# Feel free to give ;)
 		try { 
 			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
@@ -373,19 +373,10 @@ while($true)
     Clear-Host
 	If ($Version.Product -eq $CurrentProduct -and [Version]$version.Version -gt $CurrentVersion -and $Version.Update) {
 		Write-Host -f green "Version $($version.Version) available. (You are running $CurrentVersion)"
-		Write-Host -f green $Version.Message
-	}
-    [Array] $processesIdle = $ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
-	IF ($UIStyle -eq "Full"){
-		if ($processesIdle.Count -gt 0) {
-			Write-Host "Idle: " $processesIdle.Count
-			$processesIdle | Sort {if($_.Process -eq $null){(Get-Date)}else{$_.Process.ExitTime}} | Format-Table -Wrap (
-				@{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-				@{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-			) | Out-Host
-		}
-	}
-    Write-Host "      1BTC = " $Rates.$Currency "$Currency"
+        Write-Host -f green $Version.Message
+    }
+	
+	Write-Host "      1BTC = " $Rates.$Currency "$Currency"
 	# Get and display earnings stats
 	$EarningsTrackerJobs | foreach {
 		$EarnTrack = $_ | Receive-Job
