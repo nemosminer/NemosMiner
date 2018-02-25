@@ -51,7 +51,7 @@ param(
     [Bool]$TrackEarnings = $True # Display earnings information
 )
 $CurrentProduct = "NPlusMiner"
-$CurrentVersion = [Version]"1.3.2"
+$CurrentVersion = [Version]"1.3.1"
 $ScriptStartDate = Get-Date
 # Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
