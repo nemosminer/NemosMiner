@@ -58,9 +58,6 @@ Additional features list
       Press key e in the window to show/hide earnings 
       Will toggle display at next refresh
 
-   New version notification
-   
-      NPlusMiner will notify new version availability
 *****
  
  This is a free project feel free to donate be much appreciated:
