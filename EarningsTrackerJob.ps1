@@ -34,7 +34,7 @@ if (-not $APIUri){
 		$PaymentThreshold = ($poolapi | ? {$_.Name -eq $pool}).PaymentThreshold
 		$BalanceJson = ($poolapi | ? {$_.Name -eq $pool}).Balance
 		$TotalJson = ($poolapi | ? {$_.Name -eq $pool}).Total
-		}
+		} else {return}
 	}		
 }
 
