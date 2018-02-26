@@ -48,8 +48,8 @@ Additional features list
    Display Options
    
       Use -UIStyle Light or -UIStyle Full in start.bat
-            Full = Usual display
-            Light = Show only currently mining info (Default)
+            Full = Usual display (Default)
+            Light = Show only currently mining info 
       UIStyle automaticaly swtiches to Full during benchmarking.
 
    In session display toggle
