@@ -46,7 +46,7 @@ param(
     [Parameter(Mandatory=$false)]
     [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory=$false)]
-    [String]$UIStyle = "Full", # Light or Full. Defines level of info displayed
+    [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory=$false)]
     [Bool]$TrackEarnings = $True # Display earnings information
 )
@@ -108,10 +108,8 @@ while($true)
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
 		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
-		# Devs list and wallets is publicly available at: http://tiny.cc/r355qy 
-		# Feel free to give ;)
 		try { 
-			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
+			$Donation = Get-Content -Path ".\Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
 			} catch { # Fall back in case web request fails
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
