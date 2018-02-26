@@ -118,4 +118,4 @@ nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 MrPlus = 134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy
 
 Licensed under the GNU General Public License v3.0
-Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/mrplusgh/NPlusMiner/blob/master/LICENSE
+Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/nemosminer/NemosMiner-v2.5.1/blob/master/LICENSE
