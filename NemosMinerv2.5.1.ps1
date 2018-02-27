@@ -110,7 +110,7 @@ while($true)
 		# This should fairly distribute donations to Devs
 		try { 
 			$Donation = Get-Content -Path ".\Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
-			} catch { # Fall back in case web request fails
+			} catch { # Fall back
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
 				if ($WorkerName) {$WorkerName = "NemosMinerv2.5.1"}
