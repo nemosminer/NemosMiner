@@ -99,7 +99,7 @@ Requires nvidia driver newer than 388
 
 Made For & Tested with 6x10603gb 6x1070 6x1070ti 6x1080ti (users have reported up to 12cards working have not tested myself)
 
-there is a 5minute per day fee (0.3%)
+there is a 5minute per day fee (0.3%) that can be changed to minium 1minute per day by adding -Donate 1 to startpool.bat
 
 -ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
 
