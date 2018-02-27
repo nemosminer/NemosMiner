@@ -106,8 +106,9 @@ while($true)
 	$DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
-		# Get donation addresses randomly from agreed list
+			# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
+		# Devs list and wallets is publicly available at: http://tiny.cc/r355qy
 		try { 
 			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
 			} catch { # Fall back in case web request fails
