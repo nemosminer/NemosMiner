@@ -109,11 +109,11 @@ while($true)
 		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
 		try { 
-			$Donation = Get-Content -Path ".\BrainPlus\devlist.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
-			} catch { # Fall back
+			$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
+			} catch { # Fall back in case web request fails
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
-				if ($WorkerName) {$WorkerName = "NemosMinerv2.5.1"}
+				if ($WorkerName) {$WorkerName = "NemosMiner-v2.5.1"}
 			}
 		if ($Donation) {
 		$DonateRandom = $Donation | Get-Random
