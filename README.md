@@ -1,5 +1,5 @@
  # NemosMiner-v2.5.1
- Updated 2018 Feb 26
+ Updated 2018 Feb 27
  
  Instructions at bottom of the page.
 *****
@@ -56,7 +56,7 @@ Additional features list
    
       Press key s in the window to switch between light and full display
       Press key e in the window to show/hide earnings 
-      Will toggle display at next refresh
+      Will toggle(switch) display at next refresh
 
 *****
  
