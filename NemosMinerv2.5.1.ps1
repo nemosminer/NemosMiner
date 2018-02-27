@@ -109,7 +109,7 @@ while($true)
 		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
 		try { 
-			$Donation = Get-Content -Path ".\Donation.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
+			$Donation = Get-Content -Path ".\BrainPlus\devlist.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
 			} catch { # Fall back
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
