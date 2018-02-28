@@ -106,9 +106,9 @@ while($true)
 	$DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
     #Activate or deactivate donation
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
-			# Get donation addresses randomly from agreed list
+		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
-		# Devs list and wallets is publicly available at: http://tiny.cc/r355qy
+		# Refer Devlist.json in "BrainsPlus" folder for full dev list
 		try { 
 			$Donation = (Get-Content .\NemosMiner-v2.5.1-master\BrainPlus\Devlist.JSON) -join "`n" | ConvertFrom-Json
 			} catch { # Fall back in case web request fails
