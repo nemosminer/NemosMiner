@@ -111,7 +111,7 @@ while($true)
 		# This should fairly distribute donations to Devs
 		# Devs list and wallets is publicly available at: http://tiny.cc/r355qy
 		try { 
-			$Donation = (Get-Content .\NemosMiner-v2.5.1-master\BrainPlus\Donation.JSON) -join "`n" | ConvertFrom-Json
+			$Donation = (Get-Content .\NemosMiner-v2.5.1-master\BrainPlus\Devlist.JSON) -join "`n" | ConvertFrom-Json
 			} catch { # Fall back in case web request fails
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
