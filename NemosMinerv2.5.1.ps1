@@ -50,7 +50,6 @@ param(
     [Parameter(Mandatory=$false)]
     [Bool]$TrackEarnings = $True # Display earnings information
 )
-If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 $CurrentProduct = "NemosMiner"
 $CurrentVersion = [Version]"2.5.1"
 $ScriptStartDate = Get-Date
