@@ -60,8 +60,7 @@ Additional features list
       
  Update Notifier 
   
-  Will show update meassage when a new version of NemosMiner is Avavilible 
-
+     Will show update meassage when a new version of NemosMiner is Avavilible 
 *****
  
  This is a free project feel free to donate be much appreciated:
