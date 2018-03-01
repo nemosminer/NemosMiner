@@ -112,7 +112,7 @@ while($true)
 		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
 		try { 
-			$Donation = Invoke-WebRequest "https://nemosminer.github.io/jsonfiles/devlist.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
+			$Donation = Invoke-WebRequest "http://nemosminer.x10host.com/devlist.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
 			} catch { # Fall back in case web request fails
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
