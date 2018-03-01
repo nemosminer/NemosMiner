@@ -27,7 +27,7 @@ If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 
 if (-not $APIUri){
 	try {
-		$poolapi = (Get-Content .\NemosMiner-v2.5.1-master\BrainPlus\poolapiref.JSON) -join "`n" | ConvertFrom-Json } catch {  }
+		$poolapi = Invoke-WebRequest "https://nemosminer.github.io/jsonfiles/poolapiref.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 	if ($poolapi) {
 		If (($poolapi | ? {$_.Name -eq $pool}).EarnTrackSupport -eq "yes") {
 		$APIUri = ($poolapi | ? {$_.Name -eq $pool}).WalletUri
