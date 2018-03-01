@@ -1,4 +1,4 @@
-# NemosMiner
+# NemosMiner-v2.5.1
 multi algo profit switching NVIDIA miner [![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner-v2.5.1.svg)](https://github.com/nemosminer/NemosMiner-v2.5.1/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner-v2.5.1.svg)](https://github.com/nemosminer/NemosMiner-v2.5.1/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner-v2.5.1.svg)](https://github.com/nemosminer/NemosMiner-v2.5.1/issues)
 ### 
  
