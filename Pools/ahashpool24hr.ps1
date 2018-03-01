@@ -1,7 +1,9 @@
 . .\Include.ps1
 
 try {
-    $ahashpool_Request = Invoke-WebRequest "https://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+    $ahashpool_Request = Invoke-WebRequest "https://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+}
+catch { return }
 
 if (-not $ahashpool_Request) {return}
 
@@ -17,22 +19,22 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
 
     $Divisor = 1000000000
 	
-        switch ($ahashpool_Algorithm) {
+    switch ($ahashpool_Algorithm) {
 
-        "sha256"{$Divisor *= 1000000}
-        "sha256t"{$Divisor *= 1000000}
-        "blake"{$Divisor *= 1000}
-        "blake2s"{$Divisor *= 1000}
-	"blakecoin"{$Divisor *= 1000}
-        "decred"{$Divisor *= 1000}
-        "vanilla"{$Divisor *= 1000}
-	"x11"{$Divisor *= 1000}
-	"equihash"{$Divisor /= 1000}
-        "yescrypt"{$Divisor /= 1000}
+        "sha256" {$Divisor *= 1000000}
+        "sha256t" {$Divisor *= 1000000}
+        "blake" {$Divisor *= 1000}
+        "blake2s" {$Divisor *= 1000}
+        "blakecoin" {$Divisor *= 1000}
+        "decred" {$Divisor *= 1000}
+        "vanilla" {$Divisor *= 1000}
+        "x11" {$Divisor *= 1000}
+        "equihash" {$Divisor /= 1000}
+        "yescrypt" {$Divisor /= 1000}
     }
 
-    if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor *(1-($ahashpool_Request.$_.fees/100)))}
-    else {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor *(1-($ahashpool_Request.$_.fees/100)))}
+    if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor * (1 - ($ahashpool_Request.$_.fees / 100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor * (1 - ($ahashpool_Request.$_.fees / 100)))}
 	
     if ($Wallet) {
         [PSCustomObject]@{
