@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-Alexis78Phi\ccminer.exe"
-$Uri = "https://github.com/216k155/ccminer-phi-anxmod/releases/download/ccminer%2Fphi-1.0/ccminer-phi-1.0.zip"
+$Uri = "https://github.com/nemosminer/ccminer-phi-anxmod/releases/download/ccminer%2Fphi-1.0/ccminer-phi-1.0.zip"
 
 $Commands = [PSCustomObject]@{
     "phi" = " -d $SelGPUCC --api-remote" #Phi
