@@ -77,7 +77,7 @@ $UserNameBackup = $UserName
 $WorkerNameBackup = $WorkerName
 # Check if new version is available
 try {
- 	$Version = Invoke-WebRequest "https://nemosminer.github.io/jsonfiles/version.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
+ 	$Version = Invoke-WebRequest "http://nemosminer.x10host.com/version.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch {  }
 # Starts Brains if necessary
 Write-Host "Starting Brains for Plus..."
 $BrainJobs = @()
