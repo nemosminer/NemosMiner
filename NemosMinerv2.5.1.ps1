@@ -112,7 +112,7 @@ while($true)
 		# Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
 		try { 
-			$Donation = (Get-Content .\NemosMiner-v2.5.1-master\BrainPlus\devlist.JSON) -join "`n" | ConvertFrom-Json
+			$Donation = Invoke-WebRequest "https://nemosminer.github.io/jsonfiles/devlist.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
 			} catch { 
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
