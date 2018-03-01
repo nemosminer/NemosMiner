@@ -1,34 +1,35 @@
-REM This file will run for any algo if algo.bat does not exist
-REM Place your code below
+REM Example 1.
 
-set else=) else (
-set endif=)
-set greaterequal=GEQ
+REM set else=) else (
+REM set endif=)
+REM set greaterequal=GEQ
 
 REM total number of nvidiagpu
-set nvidiagpu=1
+REM set nvidiagpu=1
 
 echo prerun default file
 
 REM check nvidia gpu if they are working
-set /a gpu=0
-:loop
-for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=%gpu% --query-gpu^=memory.used --format^=csv^,noheader^,nounits') do set gpu_mem=%%p
-echo.%gpu_mem% | findstr /C:"Unknown">nul && (
-echo %DATE% %TIME% %title% gpu %gpu%>> GPU_Lost.txt
-NV_Inspector\nvidiaInspector.exe -restartDisplayDriver
+REM set /a gpu=0
+REM :loop
+REM for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=%gpu% --query-gpu^=memory.used --format^=csv^,noheader^,nounits') do set gpu_mem=%%p
+REM echo.%gpu_mem% | findstr /C:"Unknown">nul && (
+REM echo %DATE% %TIME% %title% gpu %gpu%>> GPU_Lost.txt
+REM NV_Inspector\nvidiaInspector.exe -restartDisplayDriver
 REM increase when more GPUs are present
-timeout 4
-goto oc
-)
-set /a gpu+=1
-if %gpu% %greaterequal% %nvidiagpu% %then%
-goto oc
-%else%
-goto loop
-%endif%
+REM timeout 4
+REM goto oc
+REM )
+REM set /a gpu+=1
+REM if %gpu% %greaterequal% %nvidiagpu% %then%
+REM goto oc
+REM %else%
+REM goto loop
+REM %endif%
 
-:oc
+REM :oc
+
+REM example 2.
 REM Example clock settings using nvidiaInspector update nvidiaInspector.exe path accordingly or place it in prerun directory
 REM !!! USE OC WITH CAUTION !!!
 REM nvidiaInspector.exe -setBaseClockOffset:0,0,50 -setMemoryClockOffset:0,0,100 -setVoltageOffset:0,0,0 -setPowerTarget:0,75 -setTempTarget:0,0,92 
