@@ -113,7 +113,7 @@ while($true)
 		# This should fairly distribute donations to Devs
 		try { 
 			$Donation = Invoke-WebRequest "https://nemosminer.github.io/jsonfiles/devlist.json" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
-			} catch { 
+			} catch { # Fall back in case web request fails
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
 				if ($UserName) {$UserName = "nemo"}
 				if ($WorkerName) {$WorkerName = "NemosMiner-v2.5.1"}
