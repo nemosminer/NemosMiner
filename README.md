@@ -57,6 +57,10 @@ Additional features list
       Press key s in the window to switch between light and full display
       Press key e in the window to show/hide earnings 
       Will toggle(switch) display at next refresh
+      
+ Update Notifier 
+  
+  Will show update meassage when a new version of NemosMiner is Avavilible 
 
 *****
  
