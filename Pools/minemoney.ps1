@@ -1,10 +1,11 @@
 . .\Include.ps1
 
-try
-{
-    $MineMoney_Request = Invoke-WebRequest "https://www.minemoney.co/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+try {
+    $MineMoney_Request = Invoke-WebRequest "https://www.minemoney.co/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+}
+catch { return }
 
-if(-not $MineMoney_Request){return}
+if (-not $MineMoney_Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
@@ -20,29 +21,28 @@ $MineMoney_Request | Get-Member -MemberType NoteProperty | Select -ExpandPropert
 	
     switch ($MineMoney_Algorithm) {
         "blake2s" {$Divisor *= 1000}
-	"blakecoin" {$Divisor *= 1000}
+        "blakecoin" {$Divisor *= 1000}
         "decred" {$Divisor *= 1000}
-	"keccak" {$Divisor *= 1000}
+        "keccak" {$Divisor *= 1000}
     }
 
-    if((Get-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit") -eq $null){$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_last24h/$Divisor *(1-($MineMoney_Request.$_.fees/100)))}
-    else{$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_current/$Divisor *(1-($MineMoney_Request.$_.fees/100)))}
+    if ((Get-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_last24h / $Divisor * (1 - ($MineMoney_Request.$_.fees / 100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_current / $Divisor * (1 - ($MineMoney_Request.$_.fees / 100)))}
 	
-    if($Wallet)
-    {
+    if ($Wallet) {
         [PSCustomObject]@{
-            Algorithm = $MineMoney_Algorithm
-            Info = $MineMoney
-            Price = $Stat.Live
-            StablePrice = $Stat.Week
+            Algorithm     = $MineMoney_Algorithm
+            Info          = $MineMoney
+            Price         = $Stat.Live
+            StablePrice   = $Stat.Week
             MarginOfError = $Stat.Fluctuation
-            Protocol = "stratum+tcp"
-            Host = $MineMoney_Host
-            Port = $MineMoney_Port
-            User = $Wallet
-            Pass = "$WorkerName,c=$Passwordcurrency"
-            Location = $Location
-            SSL = $false
+            Protocol      = "stratum+tcp"
+            Host          = $MineMoney_Host
+            Port          = $MineMoney_Port
+            User          = $Wallet
+            Pass          = "$WorkerName,c=$Passwordcurrency"
+            Location      = $Location
+            SSL           = $false
         }
     }
 }
