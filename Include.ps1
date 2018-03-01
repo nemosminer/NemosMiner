@@ -113,8 +113,8 @@ function Get-ChildItemContent {
     param(
         [Parameter(Mandatory = $true)]
         [String]$Path,
-		[Parameter(Mandatory = $false)]
-		[Array]$Include = @()
+        [Parameter(Mandatory = $false)]
+        [Array]$Include = @()
     )
 
     $ChildItems = Get-ChildItem -Recurse -Path $Path -Include $Include | ForEach-Object {
@@ -260,29 +260,29 @@ function Get-HashRate {
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
             }
-	    "XMRig" {
+            "XMRig" {
                 $Message = "summary"
 
                 do {
                   
-			$Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
+                    $Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
 					
-			$Data = $Request | ConvertFrom-Json
+                    $Data = $Request | ConvertFrom-Json
 
-			$HashRate = [Double]$Data.hashrate.total[0]
-			if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
+                    $HashRate = [Double]$Data.hashrate.total[0]
+                    if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
                    	if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[2]}
 					
-			if ($HashRate -eq $null) {$HashRates = @(); break}
+                    if ($HashRate -eq $null) {$HashRates = @(); break}
 
-                    	$HashRates += [Double]$HashRate
+                    $HashRates += [Double]$HashRate
 
                    	if (-not $Safe) {break}
 					
-			Start-Sleep $Interval
+                    Start-Sleep $Interval
                 }while ($HashRates.count -lt 6)
             }
-			"dstm" {
+            "dstm" {
                 $Message = "summary"
 
                 do {
@@ -296,18 +296,18 @@ function Get-HashRate {
 
                     $Data = $Request | ConvertFrom-Json
 
-					$HashRate = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum
-		            if (-not $HashRate) {$HashRate = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum} #ewbf fix
+                    $HashRate = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum
+                    if (-not $HashRate) {$HashRate = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum} #ewbf fix
 			
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 					
-					$HashRates += [Double]$HashRate
+                    $HashRates += [Double]$HashRate
                     
-					if (-not $Safe) {break}
+                    if (-not $Safe) {break}
 
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
-			}
+            }
             "nicehashequihash" {
                 $Message = "status"
 
@@ -429,7 +429,8 @@ function Get-HashRate {
 
                     $HashRate = Get-Content ".\PalginNeoHashrate.txt"
                 
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
+                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
+                    }
 
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 
