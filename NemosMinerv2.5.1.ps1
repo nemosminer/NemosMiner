@@ -98,17 +98,15 @@ if ($TrackEarnings){$PoolName | foreach {
 	$EarningsTrackerJobs += Start-Job -FilePath .\EarningsTrackerJob.ps1 -ArgumentList $Params
 }
 }
-#Randomly sets donation minutes per day between 0 - 5 minutes if not set
 If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
 while($true)
 {
 	$host.UI.RawUI.WindowTitle = $CurrentProduct + " " + $CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date)-$ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
 	$DecayExponent = [int](((Get-Date)-$DecayStart).TotalSeconds/$DecayPeriod)
-    #Activate or deactivate donation
+  
     if((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)){
-			# Get donation addresses randomly from agreed list
+	        # Get donation addresses randomly from agreed list
 		# This should fairly distribute donations to Devs
-		# Devs list and wallets is publicly available at: http://tiny.cc/r355qy
 		try { 
 			$Donation = (Get-Content .\NemosMiner-v2.5.1-master\BrainPlus\devlist.JSON) -join "`n" | ConvertFrom-Json } catch {  }
 				if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
