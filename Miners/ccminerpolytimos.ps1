@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminerpolytimos\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerpoly\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerpolytimos/releases/download/Alexis78-1.0/ccminer-polytimos.7z"
 
 $Commands = [PSCustomObject]@{
