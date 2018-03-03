@@ -14,4 +14,3 @@ data2['algo'] = sys.argv[1]
 out= str.replace(json.dumps(data2,separators=(',', ':')   ),"//","\/\/")
 
 print "CCMINERCONF='" + out + "'"
-
