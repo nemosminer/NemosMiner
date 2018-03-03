@@ -185,7 +185,7 @@ function Get-HashRate {
         [Bool]$Safe = $false
     )
     
-    $Server = "localhost"
+    $Server = "192.168.0.22"
     
     $Multiplier = 1000
     $Delta = 0.05
