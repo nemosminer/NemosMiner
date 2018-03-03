@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Alexis78\ccminer-alexis.exe"
+$Path = ".\Bin\NVIDIA-Alexis78cuda8\ccminer-alexis.exe"
 $Uri = "http://ccminer.org/preview/ccminer-hsr-alexis-x86-cuda8.7z"
 
 $Commands = [PSCustomObject]@{
