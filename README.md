@@ -1,3 +1,21 @@
+ # HIVE compatibile
+ 
+ To use this you need
+ 1. https://gitforwindows.org/  and generate ssh rsa keys to login into your hive node withoud prompt for password
+ 2. file Include.ps1  line 188  - change to your Hive IP node - this is used for benchmark results
+ 3. file /Bin/ccminer.bat   - change to you Hive IP or/and add more nodes
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  # NemosMiner-v2.5.1
  Updated 2018 Feb 27
  
