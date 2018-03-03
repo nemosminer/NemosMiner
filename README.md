@@ -1,7 +1,7 @@
  # HIVE compatibile
  
  To use this you need
- 1. https://gitforwindows.org/  and generate ssh rsa keys to login into your hive node withoud prompt for password
+ 1. https://gitforwindows.org/  and generate ssh rsa keys to login into your Hive node ( user user ) without prompt for password,  only one node will by used for benchmarks. (more info https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/ )
  2. file Include.ps1  line 188  - change to your Hive IP node - this is used for benchmark results
  3. file /Bin/ccminer.bat   - change to you Hive IP or/and add more nodes
 
