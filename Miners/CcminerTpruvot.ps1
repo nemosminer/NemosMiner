@@ -1,17 +1,17 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-TPruvot\ccminer.exe"
+$Path = ".\Bin\ccminer.bat"
 $Uri = "https://github.com/nemosminer/tpruvot-ccminer/releases/download/v2.2-tpruvot/ccminer-x86-2.2.7z"
 
 $Commands = [PSCustomObject]@{
-    "bitcore" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Bitcore
+    "bitcore" = " -d $SelGPUCC --api-remote" #Bitcore
     #"jha" = " -d $SelGPUCC" #Jha
     #"blake2s" = " -d $SelGPUCC" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = " -d $SelGPUCC" #Cryptonight
     #"decred" = "" #Decred
-    #"equihash" = "" #Equihash
+    #"equihash" = " -d $SelGPUCC --api-remote" Equihash
     #"ethash" = "" #Ethash
     #"groestl" = "" #Groestl
     #"hmq1725" = " -d $SelGPUCC" #hmq1725
@@ -44,7 +44,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b 0.0.0.0:4068 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "tpruvot -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live}
         API = "Ccminer"
         Port = 4068
