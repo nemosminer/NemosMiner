@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Alexis78\ccminer-alexis.exe"
 $Uri = "http://ccminer.org/preview/ccminer-hsr-alexis-x86-cuda8.7z"
 
 $Commands = [PSCustomObject]@{
-    "hsr" = " -d $SelGPUCC --api-remote" #Hsr
+    #"hsr" = " -d $SelGPUCC --api-remote" #Hsr
     #"bitcore" = "" #Bitcore
     #"blake2s" = " -d $SelGPUCC --api-remote" #Blake2s
     "blakecoin" = " -d $SelGPUCC --api-remote" #Blakecoin
