@@ -1,4 +1,5 @@
 {
+    "keccakc":  "Keccakc", 
     "hsr":  "Hsr",
     "phi":  "Phi",
     "bitcore":  "Bitcore",
