@@ -25,6 +25,7 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty Na
         "blakecoin" {$Divisor *= 1000}
         "decred" {$Divisor *= 1000}
         "keccak" {$Divisor *= 1000}
+	"keccakc" {$Divisor *= 1000}
     }
 
     if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.estimate_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
