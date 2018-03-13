@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMinerv2.5.1", 
+    [String]$WorkerName = "ID=NemosMinerv2.5.2", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -192,13 +192,13 @@ while ($true) {
             # Fall back in case web request fails
             if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
             if ($UserName) {$UserName = "nemo"}
-            if ($WorkerName) {$WorkerName = "NemosMiner-v2.5.1"}
+            if ($WorkerName) {$WorkerName = "NemosMiner-v2.5.2"}
         }
         if ($Donation) {
             $DonateRandom = $Donation | Get-Random
             if ($Wallet) {$Wallet = $DonateRandom.Wallet}
             if ($UserName) {$UserName = $DonateRandom.UserName}
-            if ($WorkerName) {$WorkerName = "NemosMinerv2.5.1"}
+            if ($WorkerName) {$WorkerName = "NemosMinerv2.5.2"}
         }
     }
     if ((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup)) {
