@@ -88,6 +88,8 @@ edit startpoolname.bat
 
 note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name
 
+there is a 5minute per day fee (0.3%) that can be changed to minimum 1minute per day by adding -Donate 1 to startpoolname.bat
+
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
 
@@ -102,8 +104,6 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 Requires nvidia driver newer than 388
 
 Made For & Tested with 6x10603gb 6x1070 6x1070ti 6x1080ti (users have reported up to 12cards working have not tested myself)
-
-there is a 5minute per day fee (0.3%) that can be changed to minimum 1minute per day by adding -Donate 1 to startpoolname.bat
 
 -ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
 
