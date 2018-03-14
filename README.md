@@ -88,7 +88,7 @@ edit startpoolname.bat
 
 note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name
 
-there is a 5minute per day fee (0.3%) that can be changed to minimum 1minute per day by adding -Donate 1 to startpoolname.bat
+there is a 5minute per day fee (0.3%) that can be changed to minimum 1minute per day by changing -Donate 5 to -Doante 1
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
