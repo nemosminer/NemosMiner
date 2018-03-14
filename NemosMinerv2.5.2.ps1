@@ -290,19 +290,10 @@ while ($true) {
             $Miner_Pools_Comparison | Add-Member $_ ([PSCustomObject]$Pools_Comparison.$_)
 			$Miner_Profits | Add-Member $_ (([Double]$Miner.HashRates.$_ * $Pools.$_.Price))
             $Miner_TrueProfits | Add-Member $_ (([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency)
-            #$HMS_Profit = ([Double]$Miner.HashRates.$_ * $Pools.$_.Price)
-            #$HMS_ProfitCost = (([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*0.28)/$Rates.$Currency)
-            #Write-Host -BackgroundColor Yellow -ForegroundColor Black "Price $HMS_Profit Price-Cost $HMS_ProfitCost "
             $Miner_Profits_Comparison | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)
             $Miner_TrueProfits_Comparison | Add-Member $_ (([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency)
-            #$HMS_Profit = ([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)
-            #$HMS_ProfitCost = (([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)-((($consumption.($_).consumption*24)/1000)*0.28)/$Rates.$Currency)
-            #Write-Host -BackgroundColor Yellow -ForegroundColor Black "Price $HMS_Profit Price-Cost $HMS_ProfitCost "
             $Miner_Profits_Bias | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools.$_.Price * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))
-            $Miner_TrueProfits_Bias | Add-Member $_ ((([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency) * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))
-            #$HMS_Profit = ((([Double]$Miner.HashRates.$_ * $Pools.$_.Price)) * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))
-            #$HMS_ProfitCost = ((([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*0.28)/$Rates.$Currency) * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))
-            #Write-Host -BackgroundColor Yellow -ForegroundColor Black "Price $HMS_Profit Price-Cost $HMS_ProfitCost "
+            $Miner_TrueProfits_Bias | Add-Member $_ ((([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency) * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))            
         }
         $Miner_Profit = [Double]($Miner_Profits.PSObject.Properties.Value | Measure -Sum).Sum
 		$Miner_TrueProfit = [Double]($Miner_TrueProfits.PSObject.Properties.Value | Measure -Sum).Sum
