@@ -1,4 +1,3 @@
- ![alt text](https://github.com/nemosminer/NemosMiner-v2.0/blob/2.1/NPM.png)
  # Nemosminer-v3.0
  Updated 2018 Mar 16
  
