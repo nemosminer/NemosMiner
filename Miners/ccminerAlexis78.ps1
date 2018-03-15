@@ -32,7 +32,7 @@ $Commands = [PSCustomObject]@{
     #"timetravel" = "" #Timetravel
     "c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
     #"x11evo" = "" #X11evo
-    "x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
+    #"x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
     "x17" = " -i 20 -d $SelGPUCC --api-remote" #X17
     #"yescrypt" = "" #Yescrypt
 }
