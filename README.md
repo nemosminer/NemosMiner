@@ -14,8 +14,8 @@ Additional features list
 
    GUI
    
-      Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
-	  Relies on config files. No need to edit bat files. Simply run NemosMiner With ConfigFile.bat (Not the .ps1) 
+          Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
+	  Relies on config files. No need to edit bat files. Simply run NemosMiner-v3.0.bat (Not the .ps1) 
 	  Set the config on the config tab, save, close, run
  
    prerun
