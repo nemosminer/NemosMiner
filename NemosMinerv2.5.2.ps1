@@ -127,7 +127,7 @@ function Set-QuickEdit() {
     )
 }
 
-$consumption = Get-Content 'C:\Mining\GPU\NemosMiner-v2.5.2-windows-master\Consumption\Consumption.json' | Out-String | ConvertFrom-Json
+$consumption = Get-Content '.\Consumption\Consumption.json' | Out-String | ConvertFrom-Json
 
 $CurrentProduct = "NemosMiner"
 $CurrentVersion = [Version]"2.5.2"
