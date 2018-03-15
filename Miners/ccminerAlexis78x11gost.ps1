@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Alexis78\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Alexis78x11gost\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/3%2F3%2F2018/ccminer-Alexis78.zip"
 
 $Commands = [PSCustomObject]@{
