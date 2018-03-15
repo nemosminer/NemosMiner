@@ -21,16 +21,18 @@ $Locations | ForEach-Object {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([decimal]$_.profit / 1000000000)
         $Price = (($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
-        
+
+        $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+	
         [PSCustomObject]@{
             Algorithm   = $Algorithm
             Info        = $Coin
-            Price       = $Price
+            Price       = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice = $Stat.Week
             Protocol    = 'stratum+tcp'
             Host        = $_.all_host_list.split(";") | Sort-Object -Descending {$_ -ilike "$Location*"} | Select-Object -First 1
             Port        = $_.algo_switch_port
-            User        = '$UserName.$WorkerName'
+            User        = "$($Config.PoolsConfig.$ConfName.UserName).$($Config.PoolsConfig.$ConfName.WorkerName)"
             Pass        = 'x'
             Location    = $Location
             SSL         = $false
@@ -39,15 +41,17 @@ $Locations | ForEach-Object {
         [PSCustomObject]@{
             Algorithm   = $Algorithm
             Info        = $Coin
-            Price       = $Price
+            Price       = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice = $Stat.Week
             Protocol    = 'stratum+ssl'
             Host        = $_.all_host_list.split(";") | Sort-Object -Descending {$_ -ilike "$Location*"} | Select-Object -First 1
             Port        = $_.algo_switch_port
-            User        = '$UserName.$WorkerName'
+            User        = "$($Config.PoolsConfig.$ConfName.UserName).$($Config.PoolsConfig.$ConfName.WorkerName)"
             Pass        = 'x'
             Location    = $Location
             SSL         = $true
         }
     }
 }
+
+
