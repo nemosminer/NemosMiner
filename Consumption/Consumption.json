@@ -1,0 +1,30 @@
+[{
+    "C11":  {
+                "name":  "C11",
+                "consumption":  245
+            },
+    "lyra2v2":  {
+                    "name":  "lyra2v2",
+                    "consumption":  255
+                },
+    "lyra2z":  {
+                   "name":  "lyra2z",
+                   "consumption":  255
+               },
+    "neoscrypt":  {
+                      "name":  "neoscrypt",
+                      "consumption":  255
+                  },
+    "ethash":  {
+                      "name":  "ethash",
+                      "consumption":  240
+                  },
+    "equihash":  {
+                      "name":  "equihash",
+                      "consumption":  240
+                  },
+    "x16r":  {
+                      "name":  "x16r",
+                      "consumption":  255
+                  }
+}]
