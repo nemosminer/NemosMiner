@@ -31,7 +31,7 @@
     "Currency":  "USD",
     "Delay":  1,
     "DisableGPU0":  false,
-    "Donate":  2,
+    "Donate":  5,
     "FirstInterval":  30,
     "Interval":  60,
     "Location":  "US",
