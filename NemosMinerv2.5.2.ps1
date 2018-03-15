@@ -4,17 +4,17 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMinerv2.5.2", 
+    [String]$WorkerName = "ID=NemosMiner-v3.0", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory = $false)]
-    [Int]$Interval = 60, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 180, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
     [Int]$FirstInterval = 30, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory = $false)]
-    [Int]$StatsInterval = 240, #seconds of current active to gather hashrate if not gathered yet
+    [Int]$StatsInterval = 300, #seconds of current active to gather hashrate if not gathered yet
     [Parameter(Mandatory = $false)]
     [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory = $false)]
@@ -42,6 +42,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory = $false)]
+    [Int]$GPUCount = 1, # Number of GPU on the system
+    [Parameter(Mandatory = $false)]
     [Int]$ActiveMinerGainPct = 5, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory = $false)]
     [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
@@ -49,647 +51,892 @@ param(
     [String]$UIStyle = "Full", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
     [Bool]$TrackEarnings = $True, # Display earnings information
-	[Parameter(Mandatory = $false)]
-    [Bool]$UseTrueProfit = $True, # Display earnings information
     [Parameter(Mandatory = $false)]
-    [Float]$ElectricityCost = 0.23 # Display earnings information
+    [String]$ConfigFile = ".\Config\config.json"
 )
-$QuickEditCodeSnippet = @" 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
 
 
-public static class DisableConsoleQuickEdit
-{
-
-const uint ENABLE_QUICK_EDIT = 0x0040;
-
-// STD_INPUT_HANDLE (DWORD): -10 is the standard input device.
-const int STD_INPUT_HANDLE = -10;
-
-[DllImport("kernel32.dll", SetLastError = true)]
-static extern IntPtr GetStdHandle(int nStdHandle);
-
-[DllImport("kernel32.dll")]
-static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
-
-[DllImport("kernel32.dll")]
-static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
-
-public static bool SetQuickEdit(bool SetEnabled)
-{
-
-    IntPtr consoleHandle = GetStdHandle(STD_INPUT_HANDLE);
-
-    // get current console mode
-    uint consoleMode;
-    if (!GetConsoleMode(consoleHandle, out consoleMode))
-    {
-        // ERROR: Unable to get console mode.
-        return false;
-    }
-
-    // Clear the quick edit bit in the mode flags
-    if (SetEnabled)
-    {
-        consoleMode &= ~ENABLE_QUICK_EDIT;
-    }
-    else
-    {
-        consoleMode |= ENABLE_QUICK_EDIT;
-    }
-
-    // set the new mode
-    if (!SetConsoleMode(consoleHandle, consoleMode))
-    {
-        // ERROR: Unable to set console mode
-        return false;
-    }
-
-    return true;
-}
-}
-
-"@
-
-$QuickEditMode = add-type -TypeDefinition $QuickEditCodeSnippet -Language CSharp
-
-
-function Set-QuickEdit() {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, HelpMessage = "This switch will disable Console QuickEdit option")]
-        [switch]$DisableQuickEdit = $false
-    )
-}
-
-$consumption = Get-Content '.\Consumption\Consumption.json' | Out-String | ConvertFrom-Json
-
-$CurrentProduct = "NemosMiner"
-$CurrentVersion = [Version]"2.5.2"
-$ScriptStartDate = Get-Date
-# Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
-Get-ChildItem . -Recurse | Unblock-File
-Write-host "INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)" -foregroundcolor "Yellow"
-try {if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {Start-Process powershell -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath '$(Convert-Path .)'"}}catch {}
-if ($Proxy -eq "") {$PSDefaultParameterValues.Remove("*:Proxy")}
-else {$PSDefaultParameterValues["*:Proxy"] = $Proxy}
 . .\Include.ps1
-$DecayStart = Get-Date
-$DecayPeriod = 120 #seconds
-$DecayBase = 1 - 0.1 #decimal percentage
-$ActiveMinerPrograms = @()
-#Start the log
-Start-Transcript -Path ".\Logs\miner.log" -Append -Force
-#Update stats with missing data and set to today's date/time
-if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
-#Set donation parameters
-$LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-$WalletBackup = $Wallet
-$UserNameBackup = $UserName
-$WorkerNameBackup = $WorkerName
-# Check if new version is available
-try {
-    $Version = Invoke-WebRequest "http://nemosminer.x10host.com/version.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
-}
-catch {  }
-# Starts Brains if necessary
-Write-Host "Starting Brains for Plus..."
-$BrainJobs = @()
-$PoolName | foreach {
-    $BrainPath = (Split-Path $MyInvocation.MyCommand.Path) + "\BrainPlus\" + $_
-    $BrainName = (".\BrainPlus\" + $_ + "\Brain-2.1.ps1")
-    if (Test-Path $BrainName) {
-        $BrainJobs += Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
-    }
-}
-# Starts Earnings Tracker Job
-$EarningsTrackerJobs = @()
-$Earnings = @{}
-if ($TrackEarnings) {
-    $PoolName | foreach {
-        $Params = @{
-            pool             = $_
-            Wallet           = $Wallet
-            Interval         = 10
-            WorkingDirectory = ".\"
-        }
-        $EarningsTrackerJobs += Start-Job -FilePath .\EarningsTrackerJob.ps1 -ArgumentList $Params
-    }
-}
-#Randomly sets donation minutes per day between 0 - 5 minutes if not set
-If ($Donate -lt 1) {$Donate = Get-Random -Maximum 5}
-while ($true) {
-    $host.UI.RawUI.WindowTitle = $CurrentProduct + " " + $CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date) - $ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
-    $DecayExponent = [int](((Get-Date) - $DecayStart).TotalSeconds / $DecayPeriod)
-   
-    if ((Get-Date).AddDays(-1).AddMinutes($Donate) -ge $LastDonated -and ($Wallet -eq $WalletBackup -or $UserName -eq $UserNameBackup)) {
-        # Get donation addresses randomly from agreed list
-        # This should fairly distribute donations to Devs
-        try { 
-            $Donation = Invoke-WebRequest "http://nemosminer.x10host.com/devlist.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
-        }
-        catch {
-            # Fall back in case web request fails
-            if ($Wallet) {$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"}
-            if ($UserName) {$UserName = "nemo"}
-            if ($WorkerName) {$WorkerName = "NemosMiner-v2.5.2"}
-        }
-        if ($Donation) {
-            $DonateRandom = $Donation | Get-Random
-            if ($Wallet) {$Wallet = $DonateRandom.Wallet}
-            if ($UserName) {$UserName = $DonateRandom.UserName}
-            if ($WorkerName) {$WorkerName = "NemosMinerv2.5.2"}
-        }
-    }
-    if ((Get-Date).AddDays(-1) -ge $LastDonated -and ($Wallet -ne $WalletBackup -or $UserName -ne $UserNameBackup)) {
-        $Wallet = $WalletBackup
-        $UserName = $UserNameBackup
-        $WorkerName = $WorkerNameBackup
-        $LastDonated = Get-Date
-    }
-    Write-host "Loading BTC rate from 'api.coinbase.com'.." -foregroundcolor "Yellow"
-    $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
-    $Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
-    #Load the Stats
-    $Stats = [PSCustomObject]@{}
-    if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach {$Stats | Add-Member $_.Name $_.Content}}
-    #Load information about the Pools
-    Write-host "Loading pool stats.." -foregroundcolor "Yellow"
-    $PoolFilter = @()
-    $PoolName | foreach {$PoolFilter += ($_ += ".*")}
-    $AllPools = if (Test-Path "Pools") {Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
-            Where Location -EQ $Location | 
-            Where SSL -EQ $SSL | 
-            Where {$PoolName.Count -eq 0 -or (Compare $PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}
-    }
-    if ($AllPools.Count -eq 0) {Write-host "Error contacting pool, retrying..`n" -foregroundcolor "Yellow" | Out-Host; sleep 15; continue}
-    $Pools = [PSCustomObject]@{}
-    $Pools_Comparison = [PSCustomObject]@{}
-    $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
-    $AllPools.Algorithm | Select -Unique | ForEach {$Pools_Comparison | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort StablePrice -Descending | Select -First 1)}
-    #Load information about the Miners
-    #Messy...?
-    Write-host "Loading miners.." -foregroundcolor "Yellow"
-    $Miners = if (Test-Path "Miners") {Get-ChildItemContent "Miners" | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
-            Where {$Type.Count -eq 0 -or (Compare $Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
-            Where {$Algorithm.Count -eq 0 -or (Compare $Algorithm $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
-            Where {$MinerName.Count -eq 0 -or (Compare $MinerName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}
-    }
-    $Miners = $Miners | ForEach {
-        $Miner = $_
-        if ((Test-Path $Miner.Path) -eq $false) {
-            Write-host "Downloading $($Miner.Name).." -foregroundcolor "Yellow"
-            if ((Split-Path $Miner.URI -Leaf) -eq (Split-Path $Miner.Path -Leaf)) {
-                New-Item (Split-Path $Miner.Path) -ItemType "Directory" | Out-Null
-                Invoke-WebRequest $Miner.URI -OutFile $_.Path -UseBasicParsing
-            }
-            elseif (([IO.FileInfo](Split-Path $_.URI -Leaf)).Extension -eq '') {
-                $Path_Old = Get-PSDrive -PSProvider FileSystem | ForEach {Get-ChildItem -Path $_.Root -Include (Split-Path $Miner.Path -Leaf) -Recurse -ErrorAction Ignore} | Sort LastWriteTimeUtc -Descending | Select -First 1
-                $Path_New = $Miner.Path
+. .\Core-v3.0.ps1
 
-                if ($Path_Old -ne $null) {
-                    if (Test-Path (Split-Path $Path_New)) {(Split-Path $Path_New) | Remove-Item -Recurse -Force}
-                    (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
+Function TimerCycle_Tick() {
+    $LabelStatus.Text = ""
+    $MainForm.Number += 1
+    $timerCycle.Interval = $Config.Interval
+    $MainForm.Text = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date) - $Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
+    NPMCycle
+    If (Test-Path ".\Logs\switching.log") {$log = Import-Csv ".\Logs\switching.log" | Select -Last 8}
+    $SwitchingArray = [System.Collections.ArrayList]@($Log)
+    $SwitchingDGV.DataSource = $SwitchingArray
+
+    If ($Variables.Earnings -and $Config.TrackEarnings) {
+        $DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | select @(
+                @{Name = "Pool"; Expression = {$_.Pool}},
+                @{Name = "Trust Level"; Expression = {"{0:P0}" -f $_.TrustLevel}},
+                @{Name = "Wallet"; Expression = {$_.Wallet}},
+                @{Name = "Balance"; Expression = {$_.Balance}},
+                @{Name = "BTC/D"; Expression = {"{0:N8}" -f ($_.AvgDailyGrowth)}},
+                @{Name = "mBTC/D"; Expression = {"{0:N3}" -f ($_.AvgDailyGrowth * 1000)}},
+                @{Name = "Estimated Pay Date"; Expression = {$_.EstimatedPayDate}},
+                @{Name = "PaymentThreshold"; Expression = {$_.PaymentThreshold}}
+            ) | Sort "BTC/D" -Descending)
+        $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
+        $EarningsDGV.ClearSelection()
+    }
+
+    $DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Select @(
+            @{Name = "Miner"; Expression = {$_.Name}},
+            @{Name = "Algorithm"; Expression = {$_.HashRates.PSObject.Properties.Name}},
+            @{Name = "Speed"; Expression = {$_.HashRates.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {"$($_ | ConvertTo-Hash)/s"}else {"Benchmarking"}}}},
+            @{Name = "mBTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value * 1000 | ForEach {if ($_ -ne $null) {$_.ToString("N3")}else {"Benchmarking"}}}},
+            @{Name = "BTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {$_.ToString("N5")}else {"Benchmarking"}}}},
+            @{Name = "BTC/GH/Day"; Expression = {$_.Pools.PSObject.Properties.Value.Price | ForEach {($_ * 1000000000).ToString("N5")}}},
+            @{Name = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
+        ) | sort "mBTC/Day" -Descending)
+    $EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
+    $EstimationsDGV.ClearSelection()
+
+    $SwitchingDGV.ClearSelection()
+	
+    If ($Variables.Earnings.Values -ne $Null) {
+        $LabelBTCD.Text = ("{0:N8}" -f ($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum) + " BTC/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * 1000)) + " mBTC/D"
+    }
+    else {
+        $LabelBTCD.Text = "Waiting data from pools."
+    }
+	
+    [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+    If ($ProcessRunning -ne $null) {
+        $LabelRunning.ForeColor = "Green"
+        $processRunning = $processRunning | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Select -First (1)
+        $LabelRunning.Text = "Mining $($processRunning.Algorithms) at $($processRunning.HashRate | ConvertTo-Hash)/s on $($processRunning.Arguments.Split(" ") | ?{$_ -match "stratum"})"
+    }
+    else {
+        $LabelRunning.ForeColor = "Red"
+        $LabelRunning.Text = "No miner running"
+    }
+    $LabelBTCPrice.text = If ($Variables.Rates.$Currency -gt 0) {"BTC/$($Config.Currency) $($Variables.Rates.($Config.Currency))"}
+	
+    $MainForm.Refresh
+}
+Function Form_Load {
+    $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+    $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+    $timerCycle.Interval = 1000
+    $MainForm.Number = 0
+    $timerCycle.Stop()
+}
+
+Function CheckBox_Click ($Control) {
+    If ($Control.Checked) {[Array]$Config.($Control.Tag.Name) += $Control.Tag.Value} else {$Config.($Control.Tag.Name) = $Config.($Control.Tag.Name) | ? {$_ -ne $Control.Tag.Value}}
+    $Config.($Control.Tag.Name) = $Config.($Control.Tag.Name) | select -Unique
+}
+
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Application]::EnableVisualStyles()
+
+If (Test-Path ".\Logs\switching.log") {$log = Import-Csv ".\Logs\switching.log" | Select -Last 8}
+$SwitchingArray = [System.Collections.ArrayList]@($Log)
+
+$MainForm = New-Object system.Windows.Forms.Form
+$NPMIcon = New-Object system.drawing.icon (".\NPM.ICO")
+$MainForm.Icon = $NPMIcon
+$MainForm.ClientSize = '740,450' # best to keep under 800,600
+$MainForm.text = "Form"
+$MainForm.TopMost = $false
+$MainForm.FormBorderStyle = 'Fixed3D'
+$MainForm.MaximizeBox = $false
+
+$MainForm.add_Shown( {
+        # Check if new version is available
+        Update-Status("Checking version")
+        try {
+            $Version = Invoke-WebRequest "http://nemosminer.x10host.com/version.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+        }
+        catch {$Version = Get-content ".\Config\version.json" | Convertfrom-json}
+        If ($Version -ne $null) {$Version | ConvertTo-json | Out-File ".\Config\version.json"}
+        If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$version.Version -gt $Variables.CurrentVersion -and $Version.Update) {
+            Update-Status("Version $($version.Version) available. (You are running $Variables.CurrentVersion)")
+            $LabelNewVersion.ForeColor = "Green"
+            $LabelNewVersion.Text = "Version $([Version]$version.Version) available"
+        }
+	
+        # TimerCheckVersion
+        $TimerCheckVersion = New-Object System.Windows.Forms.Timer
+        $TimerCheckVersion.Enabled = $true
+        $TimerCheckVersion.Interval = 1440 * 60 * 1000
+        $TimerCheckVersion.Add_Tick( {
+                Update-Status("Checking version")
+                try {
+                    $Version = Invoke-WebRequest "http://nemosminer.x10host.com/version.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
                 }
-                else {
-                    Write-Host -BackgroundColor Yellow -ForegroundColor Black "Cannot find $($Miner.Path) distributed at $($Miner.URI). "
+                catch {$Version = Get-content ".\Config\version.json" | Convertfrom-json}
+                If ($Version -ne $null) {$Version | ConvertTo-json | Out-File ".\Config\version.json"}
+                If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$version.Version -gt $Variables.CurrentVersion -and $Version.Update) {
+                    Update-Status("Version $($version.Version) available. (You are running $Variables.CurrentVersion)")
+                    $LabelNewVersion.ForeColor = "Green"
+                    $LabelNewVersion.Text = "Version $([Version]$version.Version) available"
                 }
+            })
+        # Detects GPU count if 0 or Null in config
+        If ($Config.GPUCount -eq $null -or $Config.GPUCount -lt 1) {
+            If ($Config -eq $null) {$Config = [PSCustomObject]@{}
             }
-            else {
-                Expand-WebRequest $Miner.URI (Split-Path $Miner.Path)
-            }
+            $Config | Add-Member -Force @{GPUCount = DetectGPUCount}
+            $TBGPUCount.Text = $Config.GPUCount
+            Write-Config -ConfigFile $ConfigFile -Config $Config
         }
-        else {
-            $Miner
-        }
-    }
-    if ($Miners.Count -eq 0) {"No Miners!" | Out-Host; sleep $Interval; continue}
-    $Miners | ForEach {
-        $Miner = $_
-        $Miner_HashRates = [PSCustomObject]@{}
-        $Miner_Pools = [PSCustomObject]@{}
-        $Miner_Pools_Comparison = [PSCustomObject]@{}
-        $Miner_Profits = [PSCustomObject]@{}
-		$Miner_TrueProfits = [PSCustomObject]@{}
-        $Miner_Profits_Comparison = [PSCustomObject]@{}
-		$Miner_TrueProfits_Comparison = [PSCustomObject]@{}
-        $Miner_Profits_Bias = [PSCustomObject]@{}
-		$Miner_TrueProfits_Bias = [PSCustomObject]@{}
-        $Miner_Types = $Miner.Type | Select -Unique
-        $Miner_Indexes = $Miner.Index | Select -Unique
-        $Miner.HashRates | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
-            $Miner_HashRates | Add-Member $_ ([Double]$Miner.HashRates.$_)
-            $Miner_Pools | Add-Member $_ ([PSCustomObject]$Pools.$_)
-            $Miner_Pools_Comparison | Add-Member $_ ([PSCustomObject]$Pools_Comparison.$_)
-			$Miner_Profits | Add-Member $_ (([Double]$Miner.HashRates.$_ * $Pools.$_.Price))
-            $Miner_TrueProfits | Add-Member $_ (([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency)
-            $Miner_Profits_Comparison | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)
-            $Miner_TrueProfits_Comparison | Add-Member $_ (([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency)
-            $Miner_Profits_Bias | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools.$_.Price * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))
-            $Miner_TrueProfits_Bias | Add-Member $_ ((([Double]$Miner.HashRates.$_ * $Pools.$_.Price)-((($consumption.($_).consumption*24)/1000)*$ElectricityCost)/$Rates.$Currency) * (1 - ($MarginOfError * [Math]::Pow($DecayBase, $DecayExponent))))            
-        }
-        $Miner_Profit = [Double]($Miner_Profits.PSObject.Properties.Value | Measure -Sum).Sum
-		$Miner_TrueProfit = [Double]($Miner_TrueProfits.PSObject.Properties.Value | Measure -Sum).Sum
-        $Miner_Profit_Comparison = [Double]($Miner_Profits_Comparison.PSObject.Properties.Value | Measure -Sum).Sum
-		$Miner_TrueProfit_Comparison = [Double]($Miner_TrueProfits_Comparison.PSObject.Properties.Value | Measure -Sum).Sum
-        $Miner_Profit_Bias = [Double]($Miner_Profits_Bias.PSObject.Properties.Value | Measure -Sum).Sum
-		$Miner_TrueProfit_Bias = [Double]($Miner_TrueProfits_Bias.PSObject.Properties.Value | Measure -Sum).Sum
-        $Miner.HashRates | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
-            if (-not [String]$Miner.HashRates.$_) {
-                $Miner_HashRates.$_ = $null
-                $Miner_Profits.$_ = $null
-                $Miner_Profits_Comparison.$_ = $null
-                $Miner_Profits_Bias.$_ = $null
-                $Miner_Profit = $null
-                $Miner_Profit_Comparison = $null
-                $Miner_Profit_Bias = $null
-				
-				$Miner_TrueProfits.$_ = $null
-                $Miner_TrueProfits_Comparison.$_ = $null
-                $Miner_TrueProfits_Bias.$_ = $null
-                $Miner_TrueProfit = $null
-                $Miner_TrueProfit_Comparison = $null
-                $Miner_TrueProfit_Bias = $null
-            }
-        }
-        if ($Miner_Types -eq $null) {$Miner_Types = $Miners.Type | Select -Unique}
-        if ($Miner_Indexes -eq $null) {$Miner_Indexes = $Miners.Index | Select -Unique}
-        if ($Miner_Types -eq $null) {$Miner_Types = ""}
-        if ($Miner_Indexes -eq $null) {$Miner_Indexes = 0}
-        $Miner.HashRates = $Miner_HashRates
-        $Miner | Add-Member Pools $Miner_Pools
-        $Miner | Add-Member Profits $Miner_Profits
-        $Miner | Add-Member Profits_Comparison $Miner_Profits_Comparison
-        $Miner | Add-Member Profits_Bias $Miner_Profits_Bias
-        $Miner | Add-Member Profit $Miner_Profit
-        $Miner | Add-Member Profit_Comparison $Miner_Profit_Comparison
-        $Miner | Add-Member Profit_Bias $Miner_Profit_Bias
-        $Miner | Add-Member Profit_Bias_Orig $Miner_Profit_Bias
-		
-		$Miner | Add-Member TrueProfits $Miner_TrueProfits
-        $Miner | Add-Member TrueProfits_Comparison $Miner_TrueProfits_Comparison
-        $Miner | Add-Member TrueProfits_Bias $Miner_TrueProfits_Bias
-        $Miner | Add-Member TrueProfit $Miner_TrueProfit
-        $Miner | Add-Member TrueProfit_Comparison $Miner_TrueProfit_Comparison
-        $Miner | Add-Member TrueProfit_Bias $Miner_TrueProfit_Bias
-        $Miner | Add-Member TrueProfit_Bias_Orig $Miner_TrueProfit_Bias
-		
-        $Miner | Add-Member Type $Miner_Types -Force
-        $Miner | Add-Member Index $Miner_Indexes -Force
-        $Miner.Path = Convert-Path $Miner.Path
-    }
-    $Miners | ForEach {
-        $Miner = $_
-        $Miner_Devices = $Miner.Device | Select -Unique
-        if ($Miner_Devices -eq $null) {$Miner_Devices = ($Miners | Where {(Compare $Miner.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}).Device | Select -Unique}
-        if ($Miner_Devices -eq $null) {$Miner_Devices = $Miner.Type}
-        $Miner | Add-Member Device $Miner_Devices -Force
-    }
-    
-	if ($UseTrueProfit) 
-	{
-		#Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
-		$ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.TrueProfit_Bias = $_.TrueProfit * (1 + $ActiveMinerGainPct / 100)}}
-		#Get most profitable miner combination i.e. AMD+NVIDIA+CPU
-		$BestMiners = $Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where TrueProfit -EQ $null | Measure).Count}, {($_ | Measure TrueProfit_Bias -Sum).Sum}, {($_ | Where TrueProfit -NE 0 | Measure).Count} | Select -First 1)}
-		$BestDeviceMiners = $Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where TrueProfit -EQ $null | Measure).Count}, {($_ | Measure TrueProfit_Bias -Sum).Sum}, {($_ | Where TrueProfit -NE 0 | Measure).Count} | Select -First 1)}
-		$BestMiners_Comparison = $Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where TrueProfit -EQ $null | Measure).Count}, {($_ | Measure TrueProfit_Comparison -Sum).Sum}, {($_ | Where TrueProfit -NE 0 | Measure).Count} | Select -First 1)}
-		$BestDeviceMiners_Comparison = $Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where TrueProfit -EQ $null | Measure).Count}, {($_ | Measure TrueProfit_Comparison -Sum).Sum}, {($_ | Where TrueProfit -NE 0 | Measure).Count} | Select -First 1)}
-		$Miners_Type_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Miners | Select Type -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Type -Unique) ($_.Combination | Select -ExpandProperty Type) | Measure).Count -eq 0})
-		$Miners_Index_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Miners | Select Index -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Index -Unique) ($_.Combination | Select -ExpandProperty Index) | Measure).Count -eq 0})
-		$Miners_Device_Combos = (Get-Combination ($Miners | Select Device -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Device -Unique) ($_.Combination | Select -ExpandProperty Device) | Measure).Count -eq 0})
-		$BestMiners_Combos = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
-		$BestMiners_Combos += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
-		$BestMiners_Combos_Comparison = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners_Comparison | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
-		$BestMiners_Combos_Comparison += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners_Comparison | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
-		$BestMiners_Combo = $BestMiners_Combos | Sort -Descending {($_.Combination | Where TrueProfit -EQ $null | Measure).Count}, {($_.Combination | Measure TrueProfit_Bias -Sum).Sum}, {($_.Combination | Where TrueProfit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
-		$BestMiners_Combo_Comparison = $BestMiners_Combos_Comparison | Sort -Descending {($_.Combination | Where TrueProfit -EQ $null | Measure).Count}, {($_.Combination | Measure TrueProfit_Comparison -Sum).Sum}, {($_.Combination | Where TrueProfit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
-	}
-	else
-	{
-		#Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
-		$ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}}
-		#Get most profitable miner combination i.e. AMD+NVIDIA+CPU
-		$BestMiners = $Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-		$BestDeviceMiners = $Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-		$BestMiners_Comparison = $Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Comparison -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-		$BestDeviceMiners_Comparison = $Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Comparison -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-		$Miners_Type_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Miners | Select Type -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Type -Unique) ($_.Combination | Select -ExpandProperty Type) | Measure).Count -eq 0})
-		$Miners_Index_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Miners | Select Index -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Index -Unique) ($_.Combination | Select -ExpandProperty Index) | Measure).Count -eq 0})
-		$Miners_Device_Combos = (Get-Combination ($Miners | Select Device -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Device -Unique) ($_.Combination | Select -ExpandProperty Device) | Measure).Count -eq 0})
-		$BestMiners_Combos = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
-		$BestMiners_Combos += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
-		$BestMiners_Combos_Comparison = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners_Comparison | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
-		$BestMiners_Combos_Comparison += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners_Comparison | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
-		$BestMiners_Combo = $BestMiners_Combos | Sort -Descending {($_.Combination | Where Profit -EQ $null | Measure).Count}, {($_.Combination | Measure Profit_Bias -Sum).Sum}, {($_.Combination | Where Profit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
-		$BestMiners_Combo_Comparison = $BestMiners_Combos_Comparison | Sort -Descending {($_.Combination | Where Profit -EQ $null | Measure).Count}, {($_.Combination | Measure Profit_Comparison -Sum).Sum}, {($_.Combination | Where Profit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
-	}
-    #Add the most profitable miners to the active list
-    $BestMiners_Combo | ForEach {
-        if (($ActiveMinerPrograms | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments).Count -eq 0) {
-            $ActiveMinerPrograms += [PSCustomObject]@{
-                Name              = $_.Name
-                Path              = $_.Path
-                Arguments         = $_.Arguments
-                Wrap              = $_.Wrap
-                Process           = $null
-                API               = $_.API
-                Port              = $_.Port
-                Algorithms        = $_.HashRates.PSObject.Properties.Name
-                New               = $false
-                Active            = [TimeSpan]0
-                Activated         = 0
-                Status            = "Idle"
-                HashRate          = 0
-                Benchmarked       = 0
-                Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
-            }
-        }
-    }
-    #Stop or start miners in the active list depending on if they are the most profitable
-    # We have to stop processes first or the port would be busy
-    $ActiveMinerPrograms | ForEach {
-        [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
-        if ($filtered.Count -eq 0) {
-            if ($_.Process -eq $null) {
-                $_.Status = "Failed"
-            }
-            elseif ($_.Process.HasExited -eq $false) {
-                $_.Active += (Get-Date) - $_.Process.StartTime
-                $_.Process.CloseMainWindow() | Out-Null
-                Sleep 1
-                # simply "Kill with power"
-                Stop-Process $_.Process -Force | Out-Null
-                Write-Host -ForegroundColor Yellow "closing current miner and switching"
-                Sleep 1
-                $_.Status = "Idle"
-            }
-			
-			if ($UseTrueProfit) 
-			{
-				#Restore Bias for non-active miners
-				$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.TrueProfit_Bias = $_.TrueProfit_Bias_Orig}
-			}
-			else
-			{
-				#Restore Bias for non-active miners
-				$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit_Bias_Orig}
-			}
-        }
-    }
-    $newMiner = $false
-    $CurrentMinerHashrate_Gathered = $false 
-    $newMiner = $false
-    $CurrentMinerHashrate_Gathered = $false 
-    $ActiveMinerPrograms | ForEach {
-        [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
-        if ($filtered.Count -gt 0) {
-            if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
-                # Log switching information to .\log\swicthing.log
-                [pscustomobject]@{date = (get-date); algo = $_.Algorithms; wallet = $Wallet; username = $UserName; Stratum = ($_.Arguments.Split(" ") | ? {$_ -match "stratum"})} | export-csv .\Logs\switching.log -Append -NoTypeInformation
-				
-                # Launch prerun if exists
-                $PrerunName = ".\Prerun\" + $_.Algorithms + ".bat"
-                $DefaultPrerunName = ".\Prerun\default.bat"
-                If (Test-Path $PrerunName) {
-                    Write-Host -F Yellow "Launching Prerun: " $PrerunName
-                    Start-Process $PrerunName -WorkingDirectory ".\Prerun"
-                    Sleep 2
-                }
-                else {
-                    If (Test-Path $DefaultPrerunName) {
-                        Write-Host -F Yellow "Launching Prerun: " $DefaultPrerunName
-                        Start-Process $DefaultPrerunName -WorkingDirectory ".\Prerun"
-                        Sleep 2
+        # Start on load if Autostart
+        If ($Config.Autostart) {$ButtonStart.PerformClick()}
+    })
+
+$MainForm.Add_FormClosing( {
+        Get-Job | Stop-Job | Remove-Job
+        If ($Variables.ActiveMinerPrograms) {
+            $Variables.ActiveMinerPrograms | ForEach {
+                [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+                if ($filtered.Count -eq 0) {
+                    if ($_.Process -eq $null) {
+                        $_.Status = "Failed"
+                    }
+                    elseif ($_.Process.HasExited -eq $false) {
+                        $_.Active += (Get-Date) - $_.Process.StartTime
+                        $_.Process.CloseMainWindow() | Out-Null
+                        Sleep 1
+                        # simply "Kill with power"
+                        Stop-Process $_.Process -Force | Out-Null
+                        Write-Host -ForegroundColor Yellow "closing miner"
+                        Sleep 1
+                        $_.Status = "Idle"
                     }
                 }
-		
-                Sleep $Delay #Wait to prevent BSOD
-                $DecayStart = Get-Date
-                $_.New = $true
-                $_.Activated++
-                if ($_.Process -ne $null) {$_.Active += $_.Process.ExitTime - $_.Process.StartTime}
-                if ($_.Wrap) {$_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$($_.Arguments)' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru}
-                else {$_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $_.Arguments -WorkingDirectory (Split-Path $_.Path)}
-                if ($_.Process -eq $null) {$_.Status = "Failed"}
-                else {
-                    $_.Status = "Running"
-                    $newMiner = $true
-					
-					if ($UseTrueProfit) 
-					{
-						#Newely started miner should looks better than other in the first run too
-						$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.TrueProfit_Bias = $_.TrueProfit * (1 + $ActiveMinerGainPct / 100)}
-						$newMiner = $true
-						#Newely started miner should looks better than other in the first run too
-						$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.TrueProfit_Bias = $_.TrueProfit * (1 + $ActiveMinerGainPct / 100)}
-					}
-					else
-					{
-						#Newely started miner should looks better than other in the first run too
-						$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}
-						$newMiner = $true
-						#Newely started miner should looks better than other in the first run too
-						$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $ActiveMinerGainPct / 100)}
-					}
-                }
-            }
-            $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
-        }
-    }
-    #Display mining information
-    if ($host.UI.RawUI.KeyAvailable) {
-        $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"); sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
-        If ($KeyPressed.KeyDown) {
-            Switch ($KeyPressed.Character) {
-                "s"	{if ($UIStyle -eq "Light") {$UIStyle = "Full"}else {$UIStyle = "Light"}}
-                "e"	{$TrackEarnings = -not $TrackEarnings}
             }
         }
-    }
-    Clear-Host
-    If ($Version.Product -eq $CurrentProduct -and [Version]$version.Version -gt $CurrentVersion -and $Version.Update) {
-        Write-Host -f green "Version $($version.Version) available. (You are running $CurrentVersion)"
-        Write-Host -f green $Version.Message
-    }
-	
-    Write-Host "      1BTC = " $Rates.$Currency "$Currency"
-    # Get and display earnings stats
-    $EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
-        $EarnTrack = $_ | Receive-Job
-        If ($EarnTrack) {
-            $EarningsPool = (($EarnTrack[($EarnTrack.Count - 1)]).Pool)
-            # $Earnings.$EarningsPool = $EarnTrack[($EarnTrack.Count - 1)]
-            $Earnings.(($EarnTrack[($EarnTrack.Count - 1)]).Pool) = $EarnTrack[($EarnTrack.Count - 1)]
-        }
-    }
-    If ($Earnings -and $TrackEarnings) {
-        # $Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
-        $Earnings.Values | foreach {
-            Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance $(If ($_.PaymentThreshold -gt 0) { ("{0:P0}" -f ($_.balance / $_.PaymentThreshold)) } Else { "balance info disabled(cant retrive info)" })
-            Write-Host "Trust Level                     " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " Avg based on [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))"]"
-            Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth * 1000))
-            Write-Host "Average BTC/D" -NoNewline; Write-Host "                    BTC =" ("{0:N8}" -f ($_.AvgDailyGrowth)) "| mBTC =" ("{0:N3}" -f ($_.AvgDailyGrowth * 1000)) -F Yellow
-            Write-Host "Estimated Pay Date              " $_.EstimatedPayDate ">" $_.PaymentThreshold "BTC"
-            # Write-Host "+++++" -F Blue
-        }
-    }
-    Write-Host "+++++" -F Blue
-    if ($Miners | ? {$_.HashRates.PSObject.Properties.Value -eq $null}) {$UIStyle = "Full"}
-    IF ($UIStyle -eq "Full") {
+    })
 
-        $Miners | Sort -Descending Type, TrueProfit | Format-Table -GroupBy Type (
-            @{Label = "Miner"; Expression = {$_.Name}}, 
-            @{Label = "Algorithm"; Expression = {$_.HashRates.PSObject.Properties.Name}}, 
-            @{Label = "Speed"; Expression = {$_.HashRates.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {"$($_ | ConvertTo-Hash)/s"}else {"Benchmarking"}}}; Align = 'right'}, 
-            @{Label = "mBTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value * 1000 | ForEach {if ($_ -ne $null) {$_.ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
-			@{Label = "True-mBTC/Day"; Expression = {$_.TrueProfits.PSObject.Properties.Value * 1000 | ForEach {if ($_ -ne $null) {$_.ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
-            @{Label = "BTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {$_.ToString("N5")}else {"Benchmarking"}}}; Align = 'right'},
-			@{Label = "True-BTC/Day"; Expression = {$_.TrueProfits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {$_.ToString("N5")}else {"Benchmarking"}}}; Align = 'right'}, 			
-            @{Label = "$Currency/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {($_ * $Rates.$Currency).ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
-			@{Label = "True-$Currency/Day"; Expression = {$_.TrueProfits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {($_ * $Rates.$Currency).ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
-            @{Label = "BTC/GH/Day"; Expression = {$_.Pools.PSObject.Properties.Value.Price | ForEach {($_ * 1000000000).ToString("N5")}}; Align = 'right'},
-            @{Label = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
-        ) | Out-Host
-        #Display active miners list
-        [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-        Write-Host "Running:"
-        $processRunning | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
-            @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
-            @{Label = "Started"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.StartTime}) }},
-            @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
-            @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-            @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-        ) | Out-Host
-        [Array] $processesFailed = $ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
-        if ($processesFailed.Count -gt 0) {
-            Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
-            $processesFailed | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Format-Table -Wrap (
-                @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
-                @{Label = "Exited"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.ExitTime}) }},
-                @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
-                @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-                @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-            ) | Out-Host
-        }
-        Write-Host "--------------------------------------------------------------------------------"
-    
+$Config = Load-Config -ConfigFile $ConfigFile
+
+$Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value {
+    If (Test-Path ".\Config\PoolsConfig.json") {
+        get-content ".\Config\PoolsConfig.json" | ConvertFrom-json
     }
     else {
-        [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-        Write-Host "Running:"
-        $processRunning | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
-            @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
-            @{Label = "Started"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.StartTime}) }},
-            @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
-            @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-            @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-        ) | Out-Host
-        Write-Host "--------------------------------------------------------------------------------"
-    }
-    Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
-    #Do nothing for a few seconds as to not overload the APIs
-    if ($newMiner -eq $true) {
-        if ($Interval -ge $FirstInterval -and $Interval -ge $StatsInterval) { $timeToSleep = $Interval }
-        else {
-            if ($CurrentMinerHashrate_Gathered -eq $true) { $timeToSleep = $FirstInterval }
-            else { $timeToSleep = $StatsInterval }
-        }
-    }
-    else {
-        $timeToSleep = $Interval
-    }
-    IF ($UIStyle -eq "Full") {Write-Host "Sleep" ($timeToSleep) "sec"} else {Write-Host "Sleep" ($timeToSleep * 2) "sec"}
-	
-	
-	
-    Sleep $timeToSleep
-    Write-Host "--------------------------------------------------------------------------------"
-    IF ($UIStyle -eq "Full") {
-        #Display active miners list
-        [Array] $processRunning = $ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-        Write-Host "Running:"
-        $processRunning | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Select -First (1) | Format-Table -Wrap (
-            @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
-            @{Label = "Started"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.StartTime}) }},
-            @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
-            @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-            @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-        ) | Out-Host
-        [Array] $processesFailed = $ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
-        if ($processesFailed.Count -gt 0) {
-            Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
-            $processesFailed | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Format-Table -Wrap (
-                @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
-                @{Label = "Exited"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.ExitTime}) }},
-                @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
-                @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-                @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-            ) | Out-Host
-        }
-        Write-Host "--------------------------------------------------------------------------------"
-        Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
-    }
-    #Do nothing for a few seconds as to not overload the APIs
-    if ($newMiner -eq $true) {
-        if ($Interval -ge $FirstInterval -and $Interval -ge $StatsInterval) { $timeToSleep = $Interval }
-        else {
-            if ($CurrentMinerHashrate_Gathered -eq $true) { $timeToSleep = $FirstInterval }
-            else { $timeToSleep = $StatsInterval }
-        }
-    }
-    else {
-        $timeToSleep = $Interval
-    }
-    IF ($UIStyle -eq "Full") {
-        Write-Host "Sleep" $timeToSleep "sec"
-        Sleep $timeToSleep
-        Write-Host "--------------------------------------------------------------------------------"
-    }
-    #Save current hash rates
-    $ActiveMinerPrograms | ForEach {
-        if ($_.Process -eq $null -or $_.Process.HasExited) {
-            if ($_.Status -eq "Running") {$_.Status = "Failed"}
-        }
-        else {
-            # we don't want to store hashrates if we run less than $StatsInterval sec
-            $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
-            if ($WasActive -ge $StatsInterval) {
-                $_.HashRate = 0
-                $Miner_HashRates = $null
-                if ($_.New) {$_.Benchmarked++}         
-                $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
-                $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count           
-                if ($Miner_HashRates.Count -ge $_.Algorithms.Count) {
-                    for ($i = 0; $i -lt $_.Algorithms.Count; $i++) {
-                        $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate" -Value ($Miner_HashRates | Select -Index $i)
-                    }
-                    $_.New = $false
-                    $_.Hashrate_Gathered = $true
-                    Write-Host "Stats '"$_.Algorithms"' -> "($Miner_HashRates | ConvertTo-Hash)"after"$WasActive" sec"
-                    Write-Host "--------------------------------------------------------------------------------"
-                }
+        [PSCustomObject]@{default = [PSCustomObject]@{
+                Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+                UserName = "nemo"
+                WorkerName = "NemosMiner-v3.0"
+                PricePenaltyFactor = 1
             }
         }
-        #Benchmark timeout
-        #        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
-        #        {
-        #            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
-        #            {
-        #                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate") -eq $null)
-        #                {
-        #                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate" -Value 0
-        #                }
-        #            }
-        #        }
     }
 }
-#Stop the log
-Stop-Transcript
+
+$MainForm | Add-Member -Name "Config" -Value $Config -MemberType NoteProperty -Force
+
+$SelGPUDSTM = $Config.SelGPUDSTM
+$SelGPUCC = $Config.SelGPUCC
+$Variables = [PSCustomObject]@{}
+$MainForm | Add-Member -Name "Variables" -Value $Variables -MemberType NoteProperty -Force
+$Variables | Add-Member -Force @{CurrentProduct = "NemosMiner"}
+$Variables | Add-Member -Force @{CurrentVersion = [Version]"3.0"}
+$Variables | Add-Member -Force @{StatusText = "Idle"}
+
+$TabControl = New-object System.Windows.Forms.TabControl
+$RunPage = New-Object System.Windows.Forms.TabPage
+$RunPage.Text = "Run"
+$ConfigPage = New-Object System.Windows.Forms.TabPage
+$ConfigPage.Text = "Config"
+$EstimationsPage = New-Object System.Windows.Forms.TabPage
+$EstimationsPage.Text = "Benchmarks"
+
+$tabControl.DataBindings.DefaultDataSourceUpdateMode = 0
+$tabControl.Location = New-Object System.Drawing.Point(10, 91)
+$tabControl.Name = "tabControl"
+$tabControl.width = 720
+$tabControl.height = 359
+$MainForm.Controls.Add($tabControl)
+$TabControl.Controls.AddRange(@($RunPage, $ConfigPage, $EstimationsPage))
+
+# Form Controls
+$MainFormControls = @()
+
+$LabelStatus = New-Object system.Windows.Forms.TextBox
+$LabelStatus.MultiLine = $true
+$LabelStatus.Scrollbars = "Vertical" 
+$LabelStatus.text = ""
+$LabelStatus.AutoSize = $true
+$LabelStatus.width = 400
+$LabelStatus.height = 50
+$LabelStatus.location = New-Object System.Drawing.Point(10, 39)
+$LabelStatus.Font = 'Microsoft Sans Serif,10'
+$MainFormControls += $LabelStatus
+
+$LabelRunning = New-Object system.Windows.Forms.Label
+$LabelRunning.text = ""
+$LabelRunning.AutoSize = $False
+$LabelRunning.width = 360
+$LabelRunning.height = 35
+$LabelRunning.location = New-Object System.Drawing.Point(10, 2)
+$LabelRunning.Font = 'Microsoft Sans Serif,10'
+$LabelRunning.TextAlign = "MiddleLeft"
+$LabelRunning.ForeColor = "Green"
+$MainFormControls += $LabelRunning
+
+$LabelBTCD = New-Object system.Windows.Forms.Label
+$LabelBTCD.text = "BTC/D"
+$LabelBTCD.AutoSize = $False
+$LabelBTCD.width = 360
+$LabelBTCD.height = 35
+$LabelBTCD.location = New-Object System.Drawing.Point(370, 2)
+$LabelBTCD.Font = 'Microsoft Sans Serif,14'
+$LabelBTCD.TextAlign = "MiddleRight"
+$LabelBTCD.ForeColor = "Green"
+$MainFormControls += $LabelBTCD
+
+$LabelBTCPrice = New-Object system.Windows.Forms.Label
+$LabelBTCPrice.text = If ($Variables.Rates.$Currency -gt 0) {"BTC/$($Config.Currency) $($Variables.Rates.$Currency)"}
+$LabelBTCPrice.AutoSize = $false
+$LabelBTCPrice.width = 400
+$LabelBTCPrice.height = 20
+$LabelBTCPrice.location = New-Object System.Drawing.Point(630, 39)
+$LabelBTCPrice.Font = 'Microsoft Sans Serif,8'
+# $LabelBTCPrice.ForeColor				= "Gray"
+$MainFormControls += $LabelBTCPrice
+
+$ButtonStart = New-Object system.Windows.Forms.Button
+$ButtonStart.text = "Start"
+$ButtonStart.width = 60
+$ButtonStart.height = 30
+$ButtonStart.location = New-Object System.Drawing.Point(670, 62)
+$ButtonStart.Font = 'Microsoft Sans Serif,10'
+$MainFormControls += $ButtonStart
+
+$LabelNewVersion = New-Object system.Windows.Forms.Label
+$LabelNewVersion.text = If ($ConfigFile -ne ".\Config\config.json") {"Using: $($ConfigFile | Split-Path -Leaf)"}
+$LabelNewVersion.AutoSize = $false
+$LabelNewVersion.width = 200
+$LabelNewVersion.height = 20
+# $LabelNewVersion.location                 = New-Object System.Drawing.Point(200,91)
+$LabelNewVersion.location = New-Object System.Drawing.Point(415, 39)
+$LabelNewVersion.Font = 'Microsoft Sans Serif,10'
+$LabelNewVersion.ForeColor = "Gray"
+$MainFormControls += $LabelNewVersion
+
+$LabelGitHub = New-Object System.Windows.Forms.LinkLabel
+$LabelGitHub.Location = New-Object System.Drawing.Size(415, 62)
+$LabelGitHub.Size = New-Object System.Drawing.Size(160, 20)
+$LabelGitHub.LinkColor = "BLUE"
+$LabelGitHub.ActiveLinkColor = "RED"
+$LabelGitHub.Text = "NemosMiner-v3.0 on GitHub"
+$LabelGitHub.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner-v2.5.2-windows/releases")})
+$MainFormControls += $LabelGitHub
+
+# Run Page Controls
+$EarningsDGV = New-Object system.Windows.Forms.DataGridView
+$EarningsDGV.width = 712
+$EarningsDGV.height = 120
+$EarningsDGV.location = New-Object System.Drawing.Point(2, 2)
+$EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$EarningsDGV.AutoSizeColumnsMode = "Fill"
+$EarningsDGV.RowHeadersVisible = $False
+
+
+$SwitchingDGV = New-Object system.Windows.Forms.DataGridView
+$SwitchingDGV.width = 712
+$SwitchingDGV.height = 250
+$SwitchingDGV.location = New-Object System.Drawing.Point(2, 124)
+$SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$SwitchingDGV.AutoSizeColumnsMode = "Fill"
+$SwitchingDGV.RowHeadersVisible = $False
+$SwitchingDGV.DataSource = $SwitchingArray
+
+# Estimations Page Controls
+$EstimationsDGV = New-Object system.Windows.Forms.DataGridView
+$EstimationsDGV.width = 712
+$EstimationsDGV.height = 350
+$EstimationsDGV.location = New-Object System.Drawing.Point(2, 2)
+$EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$EstimationsDGV.AutoSizeColumnsMode = "Fill"
+$EstimationsDGV.RowHeadersVisible = $False
+
+# Config Page Controls
+$ConfigPageControls = @()
+	
+$LabelAddress = New-Object system.Windows.Forms.Label
+$LabelAddress.text = "Wallet address"
+$LabelAddress.AutoSize = $false
+$LabelAddress.width = 120
+$LabelAddress.height = 20
+$LabelAddress.location = New-Object System.Drawing.Point(2, 2)
+$LabelAddress.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelAddress
+
+$TBAddress = New-Object system.Windows.Forms.TextBox
+$TBAddress.Tag = "Wallet"
+$TBAddress.MultiLine = $False
+# $TBAddress.Scrollbars				= "Vertical" 
+$TBAddress.text = $Config.Wallet
+$TBAddress.AutoSize = $false
+$TBAddress.width = 300
+$TBAddress.height = 20
+$TBAddress.location = New-Object System.Drawing.Point(122, 2)
+$TBAddress.Font = 'Microsoft Sans Serif,10'
+# $TBAddress.TextAlign                = "Right"
+$ConfigPageControls += $TBAddress
+
+$LabelUserName = New-Object system.Windows.Forms.Label
+$LabelUserName.text = "MPH UserName"
+$LabelUserName.AutoSize = $false
+$LabelUserName.width = 120
+$LabelUserName.height = 20
+$LabelUserName.location = New-Object System.Drawing.Point(2, 24)
+$LabelUserName.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelUserName
+
+$TBUserName = New-Object system.Windows.Forms.TextBox
+$TBUserName.Tag = "UserName"
+$TBUserName.MultiLine = $False
+# $TBUserName.Scrollbars				= "Vertical" 
+$TBUserName.text = $Config.UserName
+$TBUserName.AutoSize = $false
+$TBUserName.width = 300
+$TBUserName.height = 20
+$TBUserName.location = New-Object System.Drawing.Point(122, 24)
+$TBUserName.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBUserName
+
+$LabelWorkerName = New-Object system.Windows.Forms.Label
+$LabelWorkerName.text = "Worker Name"
+$LabelWorkerName.AutoSize = $false
+$LabelWorkerName.width = 120
+$LabelWorkerName.height = 20
+$LabelWorkerName.location = New-Object System.Drawing.Point(2, 46)
+$LabelWorkerName.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelWorkerName
+
+$TBWorkerName = New-Object system.Windows.Forms.TextBox
+$TBWorkerName.Tag = "WorkerName"
+$TBWorkerName.MultiLine = $False
+# $TBWorkerName.Scrollbars				= "Vertical" 
+$TBWorkerName.text = $Config.WorkerName
+$TBWorkerName.AutoSize = $false
+$TBWorkerName.width = 300
+$TBWorkerName.height = 20
+$TBWorkerName.location = New-Object System.Drawing.Point(122, 46)
+$TBWorkerName.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBWorkerName
+
+$LabelInterval = New-Object system.Windows.Forms.Label
+$LabelInterval.text = "Interval"
+$LabelInterval.AutoSize = $false
+$LabelInterval.width = 120
+$LabelInterval.height = 20
+$LabelInterval.location = New-Object System.Drawing.Point(2, 68)
+$LabelInterval.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelInterval
+
+$TBInterval = New-Object system.Windows.Forms.TextBox
+$TBInterval.Tag = "Interval"
+$TBInterval.MultiLine = $False
+# $TBWorkerName.Scrollbars				= "Vertical" 
+$TBInterval.text = $Config.Interval
+$TBInterval.AutoSize = $false
+$TBInterval.width = 300
+$TBInterval.height = 20
+$TBInterval.location = New-Object System.Drawing.Point(122, 68)
+$TBInterval.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBInterval
+
+$LabelLocation = New-Object system.Windows.Forms.Label
+$LabelLocation.text = "Location"
+$LabelLocation.AutoSize = $false
+$LabelLocation.width = 120
+$LabelLocation.height = 20
+$LabelLocation.location = New-Object System.Drawing.Point(2, 90)
+$LabelLocation.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelLocation
+
+$TBLocation = New-Object system.Windows.Forms.TextBox
+$TBLocation.Tag = "Location"
+$TBLocation.MultiLine = $False
+# $TBLocation.Scrollbars				= "Vertical" 
+$TBLocation.text = $Config.Location
+$TBLocation.AutoSize = $false
+$TBLocation.width = 300
+$TBLocation.height = 20
+$TBLocation.location = New-Object System.Drawing.Point(122, 90)
+$TBLocation.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBLocation
+
+$LabelGPUCount = New-Object system.Windows.Forms.Label
+$LabelGPUCount.text = "GPU Count"
+$LabelGPUCount.AutoSize = $false
+$LabelGPUCount.width = 120
+$LabelGPUCount.height = 20
+$LabelGPUCount.location = New-Object System.Drawing.Point(2, 112)
+$LabelGPUCount.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelGPUCount
+
+$TBGPUCount = New-Object system.Windows.Forms.TextBox
+$TBGPUCount.Tag = "GPUCount"
+$TBGPUCount.MultiLine = $False
+# $TBGPUCount.Scrollbars				= "Vertical" 
+$TBGPUCount.text = $Config.GPUCount
+$TBGPUCount.AutoSize = $false
+$TBGPUCount.width = 50
+$TBGPUCount.height = 20
+$TBGPUCount.location = New-Object System.Drawing.Point(122, 112)
+$TBGPUCount.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBGPUCount
+
+$CheckBoxDisableGPU0 = New-Object system.Windows.Forms.CheckBox
+$CheckBoxDisableGPU0.Tag = "DisableGPU0"
+$CheckBoxDisableGPU0.text = "Disable GPU0"
+$CheckBoxDisableGPU0.AutoSize = $false
+$CheckBoxDisableGPU0.width = 140
+$CheckBoxDisableGPU0.height = 20
+$CheckBoxDisableGPU0.location = New-Object System.Drawing.Point(177, 112)
+$CheckBoxDisableGPU0.Font = 'Microsoft Sans Serif,10'
+$CheckBoxDisableGPU0.Checked =	$Config.DisableGPU0
+$ConfigPageControls += $CheckBoxDisableGPU0
+	
+$ButtonDetectGPU = New-Object system.Windows.Forms.Button
+$ButtonDetectGPU.text = "Detect GPU"
+$ButtonDetectGPU.width = 100
+$ButtonDetectGPU.height = 20
+$ButtonDetectGPU.location = New-Object System.Drawing.Point(320, 112)
+$ButtonDetectGPU.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $ButtonDetectGPU
+
+$ButtonDetectGPU.Add_Click( {$TBGPUCount.text = DetectGPUCount})
+
+$LabelAlgos = New-Object system.Windows.Forms.Label
+$LabelAlgos.text = "Algorithm"
+$LabelAlgos.AutoSize = $false
+$LabelAlgos.width = 120
+$LabelAlgos.height = 20
+$LabelAlgos.location = New-Object System.Drawing.Point(2, 134)
+$LabelAlgos.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelAlgos
+
+$TBAlgos = New-Object system.Windows.Forms.TextBox
+$TBAlgos.Tag = "Algorithm"
+$TBAlgos.MultiLine = $False
+# $TBAlgos.Scrollbars				= "Vertical" 
+$TBAlgos.text = $Config.Algorithm -Join ","
+$TBAlgos.AutoSize = $false
+$TBAlgos.width = 300
+$TBAlgos.height = 20
+$TBAlgos.location = New-Object System.Drawing.Point(122, 134)
+$TBAlgos.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBAlgos
+
+$LabelCurrency = New-Object system.Windows.Forms.Label
+$LabelCurrency.text = "Currency"
+$LabelCurrency.AutoSize = $false
+$LabelCurrency.width = 120
+$LabelCurrency.height = 20
+$LabelCurrency.location = New-Object System.Drawing.Point(2, 156)
+$LabelCurrency.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelCurrency
+
+$TBCurrency = New-Object system.Windows.Forms.TextBox
+$TBCurrency.Tag = "Currency"
+$TBCurrency.MultiLine = $False
+# $TBCurrency.Scrollbars				= "Vertical" 
+$TBCurrency.text = $Config.Currency
+$TBCurrency.AutoSize = $false
+$TBCurrency.width = 300
+$TBCurrency.height = 20
+$TBCurrency.location = New-Object System.Drawing.Point(122, 156)
+$TBCurrency.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBCurrency
+
+$LabelPwdCurrency = New-Object system.Windows.Forms.Label
+$LabelPwdCurrency.text = "Pwd Currency"
+$LabelPwdCurrency.AutoSize = $false
+$LabelPwdCurrency.width = 120
+$LabelPwdCurrency.height = 20
+$LabelPwdCurrency.location = New-Object System.Drawing.Point(2, 178)
+$LabelPwdCurrency.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelPwdCurrency
+
+$TBPwdCurrency = New-Object system.Windows.Forms.TextBox
+$TBPwdCurrency.Tag = "Passwordcurrency"
+$TBPwdCurrency.MultiLine = $False
+# $TBPwdCurrency.Scrollbars				= "Vertical" 
+$TBPwdCurrency.text = $Config.Passwordcurrency
+$TBPwdCurrency.AutoSize = $false
+$TBPwdCurrency.width = 300
+$TBPwdCurrency.height = 20
+$TBPwdCurrency.location = New-Object System.Drawing.Point(122, 178)
+$TBPwdCurrency.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBPwdCurrency
+
+$LabelDonate = New-Object system.Windows.Forms.Label
+$LabelDonate.text = "Donate (min)"
+$LabelDonate.AutoSize = $false
+$LabelDonate.width = 120
+$LabelDonate.height = 20
+$LabelDonate.location = New-Object System.Drawing.Point(2, 200)
+$LabelDonate.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelDonate
+
+$TBDonate = New-Object system.Windows.Forms.TextBox
+$TBDonate.Tag = "Donate"
+$TBDonate.MultiLine = $False
+# $TBDonate.Scrollbars				= "Vertical" 
+$TBDonate.text = $Config.Donate
+$TBDonate.AutoSize = $false
+$TBDonate.width = 300
+$TBDonate.height = 20
+$TBDonate.location = New-Object System.Drawing.Point(122, 200)
+$TBDonate.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBDonate
+
+$LabelProxy = New-Object system.Windows.Forms.Label
+$LabelProxy.text = "Proxy"
+$LabelProxy.AutoSize = $false
+$LabelProxy.width = 120
+$LabelProxy.height = 20
+$LabelProxy.location = New-Object System.Drawing.Point(2, 222)
+$LabelProxy.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelProxy
+
+$TBProxy = New-Object system.Windows.Forms.TextBox
+$TBProxy.Tag = "Proxy"
+$TBProxy.MultiLine = $False
+# $TBProxy.Scrollbars				= "Vertical" 
+$TBProxy.text = $Config.Proxy
+$TBProxy.AutoSize = $false
+$TBProxy.width = 300
+$TBProxy.height = 20
+$TBProxy.location = New-Object System.Drawing.Point(122, 222)
+$TBProxy.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBProxy
+
+$LabelActiveMinerGainPct = New-Object system.Windows.Forms.Label
+$LabelActiveMinerGainPct.text = "ActiveMinerGain%"
+$LabelActiveMinerGainPct.AutoSize = $false
+$LabelActiveMinerGainPct.width = 120
+$LabelActiveMinerGainPct.height = 20
+$LabelActiveMinerGainPct.location = New-Object System.Drawing.Point(2, 244)
+$LabelActiveMinerGainPct.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelActiveMinerGainPct
+
+$TBActiveMinerGainPct = New-Object system.Windows.Forms.TextBox
+$TBActiveMinerGainPct.Tag = "ActiveMinerGainPct"
+$TBActiveMinerGainPct.MultiLine = $False
+# $TBActiveMinerGainPct.Scrollbars				= "Vertical" 
+$TBActiveMinerGainPct.text = $Config.ActiveMinerGainPct
+$TBActiveMinerGainPct.AutoSize = $false
+$TBActiveMinerGainPct.width = 300
+$TBActiveMinerGainPct.height = 20
+$TBActiveMinerGainPct.location = New-Object System.Drawing.Point(122, 244)
+$TBActiveMinerGainPct.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $TBActiveMinerGainPct
+
+$CheckBoxAutostart = New-Object system.Windows.Forms.CheckBox
+$CheckBoxAutostart.Tag = "Autostart"
+$CheckBoxAutostart.text = "Autostart"
+$CheckBoxAutostart.AutoSize = $false
+$CheckBoxAutostart.width = 100
+$CheckBoxAutostart.height = 20
+$CheckBoxAutostart.location = New-Object System.Drawing.Point(432, 202)
+$CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAutostart.Checked =	$Config.Autostart
+$ConfigPageControls += $CheckBoxAutostart
+	
+$ButtonLoadDefaultPoolsAlgos = New-Object system.Windows.Forms.Button
+$ButtonLoadDefaultPoolsAlgos.text = "Load default algos for selected pools"
+$ButtonLoadDefaultPoolsAlgos.width = 100
+$ButtonLoadDefaultPoolsAlgos.height = 50
+$ButtonLoadDefaultPoolsAlgos.location = New-Object System.Drawing.Point(577, 237)
+$ButtonLoadDefaultPoolsAlgos.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $ButtonLoadDefaultPoolsAlgos
+	
+$ButtonLoadDefaultPoolsAlgos.Add_Click( {
+        try {
+            $PoolsAlgos = Invoke-WebRequest "http://nemosminer.x10host.com/PoolsAlgos.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json; $PoolsAlgos | ConvertTo-json | Out-File ".\Config\PoolsAlgos.json" 
+        }
+        catch { $PoolsAlgos = Get-content ".\Config\PoolsAlgos.json" | Convertfrom-json}
+        If ($PoolsAlgos) {
+            $PoolsAlgos = $PoolsAlgos.PSObject.Properties | ? {$_.Name -in $Config.PoolName}
+            $PoolsAlgos = $PoolsAlgos.Value | sort -Unique
+            $TBAlgos.text = $PoolsAlgos -Join ","
+        }
+    })
+	
+$ButtonWriteConfig = New-Object system.Windows.Forms.Button
+$ButtonWriteConfig.text = "Save Config"
+$ButtonWriteConfig.width = 100
+$ButtonWriteConfig.height = 30
+$ButtonWriteConfig.location = New-Object System.Drawing.Point(577, 202)
+$ButtonWriteConfig.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $ButtonWriteConfig
+
+$ButtonWriteConfig.Add_Click( {
+        If ($Config -eq $null) {$Config = [PSCustomObject]@{}
+        }
+        $ConfigPageControls | ? {(($_.gettype()).Name -eq "CheckBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Checked}}
+        $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Text}}
+        $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "GPUCount")} | foreach {
+            $Config | Add-Member -Force @{$_.Tag = [Int]$_.Text}
+            If ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1) {$FirstGPU = 1}else {$FirstGPU = 0}
+            $Config | Add-Member -Force @{SelGPUCC = (($FirstGPU..($_.Text - 1)) -join ",")}
+            $Config | Add-Member -Force @{SelGPUDSTM = (($FirstGPU..($_.Text - 1)) -join " ")}
+        }
+        $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "Algorithm")} | foreach {
+            $Config | Add-Member -Force @{$_.Tag = @($_.Text -split ",")}
+        }
+        $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct"))} | foreach {
+            $Config | Add-Member -Force @{$_.Tag = [Int]$_.Text}
+        }
+        Write-Config -ConfigFile $ConfigFile -Config $Config
+        $MainForm.Refresh
+        # [windows.forms.messagebox]::show("Please restart NPlusMiner",'Config saved','ok','Information') | out-null
+    }
+)
+	
+# ***
+$GroupboxPools = New-Object system.Windows.Forms.Groupbox
+$GroupboxPools.height = 200
+$GroupboxPools.width = 250
+$GroupboxPools.text = "Pools"
+$GroupboxPools.location = New-Object System.Drawing.Point(427, 2)
+$ConfigPageControls += $GroupboxPools
+$GroupboxPoolsControls = @()
+	
+$CheckBoxAhashpool = New-Object system.Windows.Forms.CheckBox
+$CheckBoxAhashpool.Tag = @{name = "PoolName"; Value = "ahashpool"}
+$CheckBoxAhashpool.text = "ahashpool"
+$CheckBoxAhashpool.AutoSize = $false
+$CheckBoxAhashpool.width = 100
+$CheckBoxAhashpool.height = 20
+$CheckBoxAhashpool.location = New-Object System.Drawing.Point(5, 15)
+$CheckBoxAhashpool.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAhashpool.Checked =	$Config.PoolName -contains "ahashpool"
+$GroupboxPoolsControls += $CheckBoxAhashpool
+	
+$CheckBoxAhashpoolplus = New-Object system.Windows.Forms.CheckBox
+$CheckBoxAhashpoolplus.Tag = @{name = "PoolName"; Value = "ahashpoolplus"}
+$CheckBoxAhashpoolplus.text = "Plus"
+$CheckBoxAhashpoolplus.AutoSize = $false
+$CheckBoxAhashpoolplus.width = 60
+$CheckBoxAhashpoolplus.height = 20
+$CheckBoxAhashpoolplus.location = New-Object System.Drawing.Point(110, 15)
+$CheckBoxAhashpoolplus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAhashpoolplus.Checked =	$Config.PoolName -contains "ahashpoolplus"
+$GroupboxPoolsControls += $CheckBoxAhashpoolplus
+	
+$CheckBoxAhashpool24hr = New-Object system.Windows.Forms.CheckBox
+$CheckBoxAhashpool24hr.Tag = @{name = "PoolName"; Value = "ahashpool24hr"}
+$CheckBoxAhashpool24hr.text = "24hr"
+$CheckBoxAhashpool24hr.AutoSize = $false
+$CheckBoxAhashpool24hr.width = 60
+$CheckBoxAhashpool24hr.height = 20
+$CheckBoxAhashpool24hr.location = New-Object System.Drawing.Point(175, 15)
+$CheckBoxAhashpool24hr.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAhashpool24hr.Checked =	$Config.PoolName -contains "ahashpool24hr"
+$GroupboxPoolsControls += $CheckBoxAhashpool24hr
+	
+$CheckBoxBlazepool = New-Object system.Windows.Forms.CheckBox
+$CheckBoxBlazepool.Tag = @{name = "PoolName"; Value = "blazepool"}
+$CheckBoxBlazepool.text = "blazepool"
+$CheckBoxBlazepool.AutoSize = $false
+$CheckBoxBlazepool.width = 100
+$CheckBoxBlazepool.height = 20
+$CheckBoxBlazepool.location = New-Object System.Drawing.Point(5, 37)
+$CheckBoxBlazepool.Font = 'Microsoft Sans Serif,10'
+$CheckBoxBlazepool.Checked =	$Config.PoolName -contains "blazepool"
+$GroupboxPoolsControls += $CheckBoxBlazepool
+
+$CheckBoxBlazepoolplus = New-Object system.Windows.Forms.CheckBox
+$CheckBoxBlazepoolplus.Tag = @{name = "PoolName"; Value = "blazepoolPlus"}
+$CheckBoxBlazepoolplus.text = "Plus"
+$CheckBoxBlazepoolplus.AutoSize = $false
+$CheckBoxBlazepoolplus.width = 60
+$CheckBoxBlazepoolplus.height = 20
+$CheckBoxBlazepoolplus.location = New-Object System.Drawing.Point(110, 37)
+$CheckBoxBlazepoolplus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxBlazepoolplus.Checked =	$Config.PoolName -contains "blazepoolPlus"
+$GroupboxPoolsControls += $CheckBoxBlazepoolplus
+	
+$CheckBoxBlazepool24hr = New-Object system.Windows.Forms.CheckBox
+$CheckBoxBlazepool24hr.Tag = @{name = "PoolName"; Value = "blazepool24hr"}
+$CheckBoxBlazepool24hr.text = "24hr"
+$CheckBoxBlazepool24hr.AutoSize = $false
+$CheckBoxBlazepool24hr.width = 60
+$CheckBoxBlazepool24hr.height = 20
+$CheckBoxBlazepool24hr.location = New-Object System.Drawing.Point(175, 37)
+$CheckBoxBlazepool24hr.Font = 'Microsoft Sans Serif,10'
+$CheckBoxBlazepool24hr.Checked =	$Config.PoolName -contains "blazepool24hr"
+$GroupboxPoolsControls += $CheckBoxBlazepool24hr
+
+	
+$CheckBoxHashRefinery = New-Object system.Windows.Forms.CheckBox
+$CheckBoxHashRefinery.Tag = @{name = "PoolName"; Value = "hashrefinery"}
+$CheckBoxHashRefinery.text = "hashrefinery"
+$CheckBoxHashRefinery.AutoSize = $false
+$CheckBoxHashRefinery.width = 100
+$CheckBoxHashRefinery.height = 20
+$CheckBoxHashRefinery.location = New-Object System.Drawing.Point(5, 59)
+$CheckBoxHashRefinery.Font = 'Microsoft Sans Serif,10'
+$CheckBoxHashRefinery.Checked =	$Config.PoolName -contains "hashrefinery"
+$GroupboxPoolsControls += $CheckBoxHashRefinery
+	
+$CheckBoxMineMoney = New-Object system.Windows.Forms.CheckBox
+$CheckBoxMineMoney.Tag = @{name = "PoolName"; Value = "minemoney"}
+$CheckBoxMineMoney.text = "minemoney"
+$CheckBoxMineMoney.AutoSize = $false
+$CheckBoxMineMoney.width = 100
+$CheckBoxMineMoney.height = 20
+$CheckBoxMineMoney.location = New-Object System.Drawing.Point(5, 81)
+$CheckBoxMineMoney.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMineMoney.Checked =	$Config.PoolName -contains "minemoney"
+$GroupboxPoolsControls += $CheckBoxMineMoney
+	
+$CheckBoxMPH = New-Object system.Windows.Forms.CheckBox
+$CheckBoxMPH.Tag = @{name = "PoolName"; Value = "miningpoolhub"}
+$CheckBoxMPH.text = "miningpoolhub"
+$CheckBoxMPH.AutoSize = $false
+$CheckBoxMPH.width = 100
+$CheckBoxMPH.height = 20
+$CheckBoxMPH.location = New-Object System.Drawing.Point(5, 103)
+$CheckBoxMPH.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMPH.Checked =	$Config.PoolName -contains "miningpoolhub"
+$GroupboxPoolsControls += $CheckBoxMPH
+	
+$CheckBoxNH = New-Object system.Windows.Forms.CheckBox
+$CheckBoxNH.Tag = @{name = "PoolName"; Value = "nicehash"}
+$CheckBoxNH.text = "nicehash"
+$CheckBoxNH.AutoSize = $false
+$CheckBoxNH.width = 100
+$CheckBoxNH.height = 20
+$CheckBoxNH.location = New-Object System.Drawing.Point(5, 125)
+$CheckBoxNH.Font = 'Microsoft Sans Serif,10'
+$CheckBoxNH.Checked =	$Config.PoolName -contains "nicehash"
+$GroupboxPoolsControls += $CheckBoxNH
+	
+$CheckBoxZergpool = New-Object system.Windows.Forms.CheckBox
+$CheckBoxZergpool.Tag = @{name = "PoolName"; Value = "zergpool"}
+$CheckBoxZergpool.text = "zergpool"
+$CheckBoxZergpool.AutoSize = $false
+$CheckBoxZergpool.width = 100
+$CheckBoxZergpool.height = 20
+$CheckBoxZergpool.location = New-Object System.Drawing.Point(5, 147)
+$CheckBoxZergpool.Font = 'Microsoft Sans Serif,10'
+$CheckBoxZergpool.Checked =	$Config.PoolName -contains "zergpool"
+$GroupboxPoolsControls += $CheckBoxZergpool
+
+$CheckBoxZergpoolplus = New-Object system.Windows.Forms.CheckBox
+$CheckBoxZergpoolplus.Tag = @{name = "PoolName"; Value = "zergpoolplus"}
+$CheckBoxZergpoolplus.text = "Plus"
+$CheckBoxZergpoolplus.AutoSize = $false
+$CheckBoxZergpoolplus.width = 60
+$CheckBoxZergpoolplus.height = 20
+$CheckBoxZergpoolplus.location = New-Object System.Drawing.Point(110, 147)
+$CheckBoxZergpoolplus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxZergpoolplus.Checked =	$Config.PoolName -contains "zergpoolplus"
+$GroupboxPoolsControls += $CheckBoxZergpoolplus
+	
+$CheckBoxZergpool24hr = New-Object system.Windows.Forms.CheckBox
+$CheckBoxZergpool24hr.Tag = @{name = "PoolName"; Value = "zergpool24hr"}
+$CheckBoxZergpool24hr.text = "24hr"
+$CheckBoxZergpool24hr.AutoSize = $false
+$CheckBoxZergpool24hr.width = 60
+$CheckBoxZergpool24hr.height = 20
+$CheckBoxZergpool24hr.location = New-Object System.Drawing.Point(175, 147)
+$CheckBoxZergpool24hr.Font = 'Microsoft Sans Serif,10'
+$CheckBoxZergpool24hr.Checked =	$Config.PoolName -contains "zergpool24hr"
+$GroupboxPoolsControls += $CheckBoxZergpool24hr
+	
+$CheckBoxZpool = New-Object system.Windows.Forms.CheckBox
+$CheckBoxZpool.Tag = @{name = "PoolName"; Value = "zpool"}
+$CheckBoxZpool.text = "zpool"
+$CheckBoxZpool.AutoSize = $false
+$CheckBoxZpool.width = 100
+$CheckBoxZpool.height = 20
+$CheckBoxZpool.location = New-Object System.Drawing.Point(5, 169)
+$CheckBoxZpool.Font = 'Microsoft Sans Serif,10'
+$CheckBoxZpool.Checked =	$Config.PoolName -contains "zpool"
+$GroupboxPoolsControls += $CheckBoxZpool
+
+$CheckBoxZpoolplus = New-Object system.Windows.Forms.CheckBox
+$CheckBoxZpoolplus.Tag = @{name = "PoolName"; Value = "zpoolplus"}
+$CheckBoxZpoolplus.text = "Plus"
+$CheckBoxZpoolplus.AutoSize = $false
+$CheckBoxZpoolplus.width = 60
+$CheckBoxZpoolplus.height = 20
+$CheckBoxZpoolplus.location = New-Object System.Drawing.Point(110, 169)
+$CheckBoxZpoolplus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxZpoolplus.Checked =	$Config.PoolName -contains "zpoolplus"
+$GroupboxPoolsControls += $CheckBoxZpoolplus
+	
+$CheckBoxZpool24hr = New-Object system.Windows.Forms.CheckBox
+$CheckBoxZpool24hr.Tag = @{name = "PoolName"; Value = "zpool24hr"}
+$CheckBoxZpool24hr.text = "24hr"
+$CheckBoxZpool24hr.AutoSize = $false
+$CheckBoxZpool24hr.width = 60
+$CheckBoxZpool24hr.height = 20
+$CheckBoxZpool24hr.location = New-Object System.Drawing.Point(175, 169)
+$CheckBoxZpool24hr.Font = 'Microsoft Sans Serif,10'
+$CheckBoxZpool24hr.Checked =	$Config.PoolName -contains "zpool24hr"
+$GroupboxPoolsControls += $CheckBoxZpool24hr
+	
+$GroupboxPools.controls.AddRange($GroupboxPoolsControls)
+$GroupboxPoolsControls | foreach {$_.Add_Click( {CheckBox_Click($This)})}
+
+$MainForm | Add-Member -Name number -Value 0 -MemberType NoteProperty
+
+$timerCycle = New-Object System.Windows.Forms.Timer
+$timerCycle.Enabled = $false
+$ButtonStart.Add_Click( {
+        If ($timerCycle.Enabled) {
+            Update-Status("Stopping cycle")
+            $timerCycle.Stop()
+            Update-Status("Stopping jobs and miner")
+            Get-Job | Stop-Job | Remove-Job
+            If ($Variables.ActiveMinerPrograms) {
+                $Variables.ActiveMinerPrograms | ForEach {
+                    [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+                    if ($filtered.Count -eq 0) {
+                        if ($_.Process -eq $null) {
+                            $_.Status = "Failed"
+                        }
+                        elseif ($_.Process.HasExited -eq $false) {
+                            $_.Active += (Get-Date) - $_.Process.StartTime
+                            $_.Process.CloseMainWindow() | Out-Null
+                            Sleep 1
+                            # simply "Kill with power"
+                            Stop-Process $_.Process -Force | Out-Null
+                            Write-Host -ForegroundColor Yellow "closing miner"
+                            Sleep 1
+                            $_.Status = "Idle"
+                        }
+                    }
+                }
+            }
+            $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+            $LabelRunning.Text = "Idle"
+            $ButtonStart.Text = "Start"
+            $timerCycle.Interval = 1000
+        }
+        else {
+            $ButtonStart.Text = "Stop"
+            InitApplication
+            $timerCycle.Start()
+        }
+    })
+
+$MainForm.controls.AddRange($MainFormControls)
+$RunPage.controls.AddRange(@($EarningsDGV, $SwitchingDGV))
+$EstimationsPage.Controls.AddRange(@($EstimationsDGV))
+$ConfigPage.controls.AddRange($ConfigPageControls)
+
+$MainForm.Add_Load( {Form_Load})
+$timerCycle.Add_Tick( {TimerCycle_Tick})
+
+[void]$MainForm.ShowDialog()
+
+
