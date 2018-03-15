@@ -6,7 +6,7 @@
 # [Parameter(Mandatory=$false)]
 # [String]$APIUri, 
 # [Parameter(Mandatory=$false)]
-# [Float]$PaymentThreshold = 0.01, 
+# [Float]$PaymentThreshold = 0.008, 
 # [Parameter(Mandatory=$false)]
 # [Int]$Interval = 10,
 # [Parameter(Mandatory=$false)]
