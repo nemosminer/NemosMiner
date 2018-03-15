@@ -1,3 +1,61 @@
+Function Update-Status ($Text) {
+    Write-host $Text
+    $Variables.StatusText = $Text 
+    $LabelStatus.Lines += $Text
+    $LabelStatus.SelectionStart = $LabelStatus.TextLength;
+    $LabelStatus.ScrollToCaret();
+
+    # $LabelStatus.Text = $Text
+    # $LabelStatus.Invoke
+    $LabelStatus.Refresh | out-null
+    # $MainForm.refresh
+}
+
+Function DetectGPUCount {
+    Update-Status("Fetching GPU Count")
+    try {
+        $DetectedGPU = @(Get-WmiObject Win32_PnPSignedDriver | Select DeviceName, DriverVersion, Manufacturer, DeviceClass | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.DeviceClass -like "*display*"}) 
+    }
+    catch { $DetectedGPU = @()}
+    $DetectedGPUCount = $DetectedGPU.Count
+    # $DetectedGPUCount = @(Get-WmiObject Win32_PnPSignedDriver | Select DeviceName,DriverVersion,Manufacturer,DeviceClass | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.DeviceClass -like "*display*"}).count } catch { $DetectedGPUCount = 0}
+    $i = 0
+    $DetectedGPU | foreach {Update-Status("$($i): $($_.DeviceName)") | Out-Null; $i++}
+    Update-Status("Found $($DetectedGPUCount) GPU(s)")
+    $DetectedGPUCount
+}
+
+Function Load-Config {
+    param(
+        [Parameter(Mandatory = $true)]
+        [String]$ConfigFile
+    )
+    If (Test-Path $ConfigFile) {
+        $Config = Get-Content $ConfigFile | ConvertFrom-json
+        $Config
+    }
+}
+
+Function Write-Config {
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$Config,
+        [Parameter(Mandatory = $true)]
+        [String]$ConfigFile
+    )
+    If ($Config -ne $null) {
+        if (Test-Path $ConfigFile) {Copy-Item $ConfigFile "$($ConfigFile).backup"}
+        $OrderedConfig = [PSCustomObject]@{}; ($config | select -Property * -ExcludeProperty PoolsConfig) | % {$_.psobject.properties | sort Name | % {$OrderedConfig | Add-Member -Force @{$_.Name = $_.Value}}}
+        $OrderedConfig | ConvertTo-json | out-file $ConfigFile
+        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
+        $OrderedPoolsConfig = [PSCustomObject]@{}; $PoolsConfig | % {$_.psobject.properties | sort Name | % {$OrderedPoolsConfig | Add-Member -Force @{$_.Name = $_.Value}}}
+        $OrderedPoolsConfig.default.Wallet = $Config.Wallet
+        $OrderedPoolsConfig.default.UserName = $Config.UserName
+        $OrderedPoolsConfig.default.WorkerName = $Config.WorkerName
+        $OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
+    }
+}
+
 function Set-Stat {
     param(
         [Parameter(Mandatory = $true)]

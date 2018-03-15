@@ -26,24 +26,26 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
         "blakecoin" {$Divisor *= 1000}
         "decred" {$Divisor *= 1000}
         "keccak" {$Divisor *= 1000}
-	"keccakc" {$Divisor *= 1000}
+        "keccakc" {$Divisor *= 1000}
     }
 
     if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
+
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
 	
-    if ($Wallet) {
+    if ($Config.PoolsConfig.default.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $Zpool_Algorithm
             Info          = $Zpool_Coin
-            Price         = $Stat.Live
+            Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
             Host          = $Zpool_Host
             Port          = $Zpool_Port
-            User          = $Wallet
-            Pass          = "$WorkerName,c=$Passwordcurrency"
+            User          = $Config.PoolsConfig.$ConfName.Wallet
+            Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$Passwordcurrency"
             Location      = $Location
             SSL           = $false
         }

@@ -1,4 +1,7 @@
 set-location ($args[0])
+# Set Process priority
+(Get-Process -Id $PID).PriorityClass = "BelowNormal"
+
 function Get-Trendline { 
     param ($data) 
     $n = $data.count 

@@ -21,16 +21,22 @@
 # To start the job one could use the following
 # $job = Start-Job -FilePath .\EarningTrackerJob.ps1 -ArgumentList $params
 
+# Set Process Priority
+(Get-Process -Id $PID).PriorityClass = "BelowNormal"
+
 $args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
 
 If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 
+sleep $StartDelay
+
 if (-not $APIUri) {
     try {
-        $poolapi = Invoke-WebRequest "http://nemosminer.x10host.com/poolapiref.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+        $poolapi = Invoke-WebRequest "http://nemosminer.x10host.com/poolapiref.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
-    catch {  }
-    if ($poolapi) {
+    catch {$poolapi = Get-content ".\Config\poolapiref.json" | Convertfrom-json}
+    if ($poolapi -ne $null) {
+        $poolapi | ConvertTo-json | Out-File ".\Config\poolapiref.json"
         If (($poolapi | ? {$_.Name -eq $pool}).EarnTrackSupport -eq "yes") {
             $APIUri = ($poolapi | ? {$_.Name -eq $pool}).WalletUri
             $PaymentThreshold = ($poolapi | ? {$_.Name -eq $pool}).PaymentThreshold
@@ -102,9 +108,20 @@ while ($true) {
 	
     $EarningsObject
 	
+	
     If ($BalanceObjectS.Count -gt 1) {$BalanceObjectS = $BalanceObjectS | ? {$_.Date -ge $CurDate.AddDays(-1).AddHours(-1)}}
 
+    # Some pools do reset "Total" after payment (zpool)
+    # Results in showing bad negative earnings
+    # Detecting if current is more than 50% less than previous and reset history if so
+    If ($BalanceObject.total_earned -lt ($BalanceObjectS[$BalanceObjectS.Count - 2].total_earned / 2)) {$BalanceObjectS = @(); $BalanceObjectS += $BalanceObject}
+
     # Sleep until next update based on $Interval. Modulo $Interval.
-    Sleep (60 * ($Interval - ((get-date).minute % $Interval)))
-	
+    # Sleep (60*($Interval-((get-date).minute%$Interval))) # Changed to avoid pool API load.
+    If (($EarningsObject.Date - $EarningsObject.StartTime).TotalMinutes -le 20) {
+        Sleep (60 * ($Interval / 2))	
+    }
+    else {
+        Sleep (60 * ($Interval))	
+    }
 }
