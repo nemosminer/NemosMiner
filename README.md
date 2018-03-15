@@ -1,17 +1,23 @@
-# NemosMiner-v2.5.2
-multi algo profit switching NVIDIA miner [![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner-v2.5.1.svg)](https://github.com/nemosminer/NemosMiner-v2.5.1/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner-v2.5.1.svg)](https://github.com/nemosminer/NemosMiner-v2.5.1/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner-v2.5.1.svg)](https://github.com/nemosminer/NemosMiner-v2.5.1/issues)
-### 
+ # NemosMiner-v3.0
+ Readme Updated 2018 Mar 15
  
  Instructions at bottom of the page.
 *****
-NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo /
+NemosMiner-v3.0 Monitors mining pools in real-time in order to find the most profitable Algo /
  Auto Benchmarks Each algo to get optimal speeds / 
  Fully automated / 
- Auto Downloads Miners
+ Auto Downloads Miners /
+ GUI
 
 *****
 Additional features list
 
+   GUI
+   
+      Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
+	  Relies on config files. No need to edit bat files. Simply run NemosMiner With ConfigFile.bat (Not the .ps1) 
+	  Set the config on the config tab, save, close, run
+ 
    prerun
    
       Ability to run a batch prior switching to a specific algo.
@@ -57,11 +63,11 @@ Additional features list
    
       Press key s in the window to switch between light and full display
       Press key e in the window to show/hide earnings 
-      Will toggle(switch) display at next refresh
-      
- Update Notifier 
-  
-     Will show update meassage when a new version of NemosMiner is Avavilible 
+      Will toggle display at next refresh
+
+   New version notification
+   
+      NemosMiner will notify new version availability
 *****
  
  This is a free project feel free to donate be much appreciated:
@@ -76,19 +82,20 @@ MrPlus = 134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy
 *****
 instructions:
 
-edit startpoolname.bat
+Run NemosMiner With ConfigFile.bat (Not the .ps1)
 
-1.change BTC address to yours
+1.Hit the Config tab
 
-2.select how many gpu's you have eg: (1gpu dstm 0 cc 0) (2gpu dstm 0 1 cc 0,1) (6gpu dstm 0 1 2 3 4 5 cc 0,1,2,3,4,5)
+2.Set your config carefully
 
-3.remove any algos you do not want to mine
+3.Select your pools and hit load defaults button. (Remove any algos you do not want to mine)
 
-4.save & run startpoolname.bat
+4.Close and run NemosMiner so it loads your changes properly
 
-note. instruction number 1 : is different for miningpoolhub, you need to change user name and worker name
+5.Hit "Start" if Autostart not selected.
 
-there is a 5minute per day fee (0.3%) that can be changed to minimum 1minute per day by changing -Donate 5 to -Doante 1
+6.there is a 5 minutes per day fee (0.3%), that can be changed in the config (Minimum is 1 - 0 is Random 0 to 5).
+
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 https://www.microsoft.com/en-us/download/details.aspx?id=50395
@@ -104,14 +111,18 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 Requires nvidia driver newer than 388
 
 Made For & Tested with 6x10603gb 6x1070 6x1070ti 6x1080ti (users have reported up to 12cards working have not tested myself)
+Some miners do not support more that 9 cards
 
--ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
+ActiveMinerGainPct (percent of advantage that active miner has over candidates in term of profit (default 3%)
 
-24hr.bats.. eg. startahashpool24hr.bat  startzpool24hr.bat.. (uses last 24hour Actual API too request profit)
+Pools variants:
+
+- 24hr - uses last 24hour Actual API too request profit
    -Low switching rate
-plus.bats.. eg. startahashpoolplus.bat  startzpoolplus.bat.. (uses advanced calculations to maximize profit)
+- plus - uses advanced calculations to maximize profit
    -Best switching rate
-normal .bats uses estimates.. eg. startahashpool.bat   startzpool.bat..   (uses current estimate API too request profit)
+- normal - uses current estimate API too request profit
+   -High switching rate
 
 this is a free project feel free to donate be much appreciated:
 
