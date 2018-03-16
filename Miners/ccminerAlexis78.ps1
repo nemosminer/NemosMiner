@@ -32,12 +32,10 @@ $Commands = [PSCustomObject]@{
     #"timetravel" = "" #Timetravel
     "c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
     #"x11evo" = "" #X11evo
-    "x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
+    #"x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
     "x17" = " -i 20 -d $SelGPUCC --api-remote" #X17
     #"yescrypt" = "" #Yescrypt
 }
-
-$Variables.MinerAPITCPPort | out-host
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
@@ -45,12 +43,12 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b 4068 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live}
         API = "Ccminer"
-        Port = $Variables.MinerAPITCPPort #4068
+        Port = 4068
         Wrap = $false
         URI = $Uri
-		User = $Pools.(Get-Algorithm($_)).User
+        User = $Pools.(Get-Algorithm($_)).User
     }
 }
