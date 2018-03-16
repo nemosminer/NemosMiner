@@ -28,6 +28,7 @@ Fee:
 *****
 
 Additional features list
+Speical Thankyou To "MrPlus" amazing work with the GUI and PLUS profit advanced calculations
 
    GUI
    
