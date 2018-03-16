@@ -37,7 +37,7 @@ Function Load-Config {
 }
 
 Function Write-Config {
-<<<<<<< HEAD
+
 	param(
 		[Parameter(Mandatory=$true)]
 		[PSCustomObject]$Config,
@@ -79,7 +79,7 @@ Function Get-FreeTcpPort {
         $OrderedPoolsConfig.default.WorkerName = $Config.WorkerName
         $OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
     }
->>>>>>> parent of 0ae7d5f... Update Include.ps1
+Update Include.ps1
 }
 
 function Set-Stat {
