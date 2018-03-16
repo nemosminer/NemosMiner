@@ -1,40 +1,43 @@
 Function Update-Status ($Text) {
-	Write-host $Text
-	$Variables.StatusText = $Text 
-	$LabelStatus.Lines += $Text
-	$LabelStatus.SelectionStart = $LabelStatus.TextLength;
+    Write-host $Text
+    $Variables.StatusText = $Text 
+    $LabelStatus.Lines += $Text
+    $LabelStatus.SelectionStart = $LabelStatus.TextLength;
     $LabelStatus.ScrollToCaret();
 
-	# $LabelStatus.Text = $Text
-	# $LabelStatus.Invoke
-	$LabelStatus.Refresh | out-null
-	# $MainForm.refresh
+    # $LabelStatus.Text = $Text
+    # $LabelStatus.Invoke
+    $LabelStatus.Refresh | out-null
+    # $MainForm.refresh
 }
 
 Function DetectGPUCount {
-	Update-Status("Fetching GPU Count")
-	try {
-		$DetectedGPU = @(Get-WmiObject Win32_PnPSignedDriver | Select DeviceName,DriverVersion,Manufacturer,DeviceClass | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.DeviceClass -like "*display*"}) } catch { $DetectedGPU = @()}
-		$DetectedGPUCount = $DetectedGPU.Count
-		# $DetectedGPUCount = @(Get-WmiObject Win32_PnPSignedDriver | Select DeviceName,DriverVersion,Manufacturer,DeviceClass | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.DeviceClass -like "*display*"}).count } catch { $DetectedGPUCount = 0}
-	$i=0
-	$DetectedGPU | foreach {Update-Status("$($i): $($_.DeviceName)") | Out-Null;$i++}
-	Update-Status("Found $($DetectedGPUCount) GPU(s)")
-	$DetectedGPUCount
+    Update-Status("Fetching GPU Count")
+    try {
+        $DetectedGPU = @(Get-WmiObject Win32_PnPSignedDriver | Select DeviceName, DriverVersion, Manufacturer, DeviceClass | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.DeviceClass -like "*display*"}) 
+    }
+    catch { $DetectedGPU = @()}
+    $DetectedGPUCount = $DetectedGPU.Count
+    # $DetectedGPUCount = @(Get-WmiObject Win32_PnPSignedDriver | Select DeviceName,DriverVersion,Manufacturer,DeviceClass | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.DeviceClass -like "*display*"}).count } catch { $DetectedGPUCount = 0}
+    $i = 0
+    $DetectedGPU | foreach {Update-Status("$($i): $($_.DeviceName)") | Out-Null; $i++}
+    Update-Status("Found $($DetectedGPUCount) GPU(s)")
+    $DetectedGPUCount
 }
 
 Function Load-Config {
-	param(
-		[Parameter(Mandatory=$true)]
-		[String]$ConfigFile
-	)
-	If (Test-Path $ConfigFile){
-		$Config = Get-Content $ConfigFile | ConvertFrom-json
-		$Config
-	}
+    param(
+        [Parameter(Mandatory = $true)]
+        [String]$ConfigFile
+    )
+    If (Test-Path $ConfigFile) {
+        $Config = Get-Content $ConfigFile | ConvertFrom-json
+        $Config
+    }
 }
 
 Function Write-Config {
+<<<<<<< HEAD
 	param(
 		[Parameter(Mandatory=$true)]
 		[PSCustomObject]$Config,
@@ -59,6 +62,25 @@ Function Get-FreeTcpPort {
 	$ProgressPreferenceBackup = $Global:ProgressPreference;$Global:ProgressPreference = "SilentlyContinue"
 	(4068..4078) | % {if (!(Test-NetConnection -ComputerName localhost -port $_ -WA SilentlyContinue -EA SilentlyContinue).TcpTestSucceeded){$_;break}}
 	$Global:ProgressPreference = $ProgressPreferenceBackup;ProgressPreferenceBackup | rv
+=======
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$Config,
+        [Parameter(Mandatory = $true)]
+        [String]$ConfigFile
+    )
+    If ($Config -ne $null) {
+        if (Test-Path $ConfigFile) {Copy-Item $ConfigFile "$($ConfigFile).backup"}
+        $OrderedConfig = [PSCustomObject]@{}; ($config | select -Property * -ExcludeProperty PoolsConfig) | % {$_.psobject.properties | sort Name | % {$OrderedConfig | Add-Member -Force @{$_.Name = $_.Value}}}
+        $OrderedConfig | ConvertTo-json | out-file $ConfigFile
+        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
+        $OrderedPoolsConfig = [PSCustomObject]@{}; $PoolsConfig | % {$_.psobject.properties | sort Name | % {$OrderedPoolsConfig | Add-Member -Force @{$_.Name = $_.Value}}}
+        $OrderedPoolsConfig.default.Wallet = $Config.Wallet
+        $OrderedPoolsConfig.default.UserName = $Config.UserName
+        $OrderedPoolsConfig.default.WorkerName = $Config.WorkerName
+        $OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
+    }
+>>>>>>> parent of 0ae7d5f... Update Include.ps1
 }
 
 function Set-Stat {
@@ -176,8 +198,8 @@ function Get-ChildItemContent {
     param(
         [Parameter(Mandatory = $true)]
         [String]$Path,
-		[Parameter(Mandatory = $false)]
-		[Array]$Include = @()
+        [Parameter(Mandatory = $false)]
+        [Array]$Include = @()
     )
 
     $ChildItems = Get-ChildItem -Recurse -Path $Path -Include $Include | ForEach-Object {
@@ -323,29 +345,29 @@ function Get-HashRate {
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
             }
-	    "XMRig" {
+            "XMRig" {
                 $Message = "summary"
 
                 do {
                   
-			$Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
+                    $Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
 					
-			$Data = $Request | ConvertFrom-Json
+                    $Data = $Request | ConvertFrom-Json
 
-			$HashRate = [Double]$Data.hashrate.total[0]
-			if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
+                    $HashRate = [Double]$Data.hashrate.total[0]
+                    if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
                    	if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[2]}
 					
-			if ($HashRate -eq $null) {$HashRates = @(); break}
+                    if ($HashRate -eq $null) {$HashRates = @(); break}
 
-                    	$HashRates += [Double]$HashRate
+                    $HashRates += [Double]$HashRate
 
                    	if (-not $Safe) {break}
 					
-			Start-Sleep $Interval
+                    Start-Sleep $Interval
                 }while ($HashRates.count -lt 6)
             }
-			"dstm" {
+            "dstm" {
                 $Message = "summary"
 
                 do {
@@ -359,18 +381,18 @@ function Get-HashRate {
 
                     $Data = $Request | ConvertFrom-Json
 
-					$HashRate = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum
-		            if (-not $HashRate) {$HashRate = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum} #ewbf fix
+                    $HashRate = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum
+                    if (-not $HashRate) {$HashRate = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum} #ewbf fix
 			
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 					
-					$HashRates += [Double]$HashRate
+                    $HashRates += [Double]$HashRate
                     
-					if (-not $Safe) {break}
+                    if (-not $Safe) {break}
 
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
-			}
+            }
             "nicehashequihash" {
                 $Message = "status"
 
@@ -492,7 +514,8 @@ function Get-HashRate {
 
                     $HashRate = Get-Content ".\PalginNeoHashrate.txt"
                 
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
+                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
+                    }
 
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 
