@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
-    "neoscrypt" = " -i 17 -b 4068 -d $SelGPUCC" #NeoScrypt
+    "neoscrypt" = " -i 17 -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
@@ -41,12 +41,12 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live}
         API = "Ccminer"
-        Port = 4068
+        Port = $Variables.MinerAPITCPPort
         Wrap = $false
         URI = $Uri
-        User = $Pools.(Get-Algorithm($_)).User
-    }
+ 		User = $Pools.(Get-Algorithm($_)).User
+   }
 }
