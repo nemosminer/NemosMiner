@@ -57,7 +57,7 @@ param(
 
 
 . .\Include.ps1
-. .\Core-v2.1.ps1
+. .\Core-v3.0.ps1
 
 Function TimerCycle_Tick() {
     $LabelStatus.Text = ""
