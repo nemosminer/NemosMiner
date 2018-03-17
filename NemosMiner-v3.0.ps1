@@ -57,7 +57,7 @@ param(
 
 
 . .\Include.ps1
-. .\Core-v3.0.ps1
+. .\Core-v2.1.ps1
 
 Function TimerCycle_Tick() {
     $LabelStatus.Text = ""
@@ -224,7 +224,7 @@ $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Valu
         [PSCustomObject]@{default = [PSCustomObject]@{
                 Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
                 UserName = "nemo"
-                WorkerName = "NemosMiner-v3.0"
+                WorkerName = "NemosMiner"
                 PricePenaltyFactor = 1
             }
         }
@@ -327,8 +327,8 @@ $LabelGitHub.Location = New-Object System.Drawing.Size(415, 62)
 $LabelGitHub.Size = New-Object System.Drawing.Size(160, 20)
 $LabelGitHub.LinkColor = "BLUE"
 $LabelGitHub.ActiveLinkColor = "RED"
-$LabelGitHub.Text = "NemosMiner-v3.0 on GitHub"
-$LabelGitHub.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner-v2.5.2-windows/releases")})
+$LabelGitHub.Text = "NemosMiner on GitHub"
+$LabelGitHub.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner-v3.0-windows/releases")})
 $MainFormControls += $LabelGitHub
 
 # Run Page Controls
