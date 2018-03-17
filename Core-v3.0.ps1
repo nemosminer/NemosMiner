@@ -20,7 +20,7 @@ Function InitApplication {
     #Start the log
     Start-Transcript -Path ".\Logs\miner.log" -Append -Force
     #Update stats with missing data and set to today's date/time
-    if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
+    if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach-Object {$Stat = Set-Stat $_.Name $_.Content.Week}}
     #Set donation parameters
     #Randomly sets donation minutes per day between 0 - 5 minutes if not set
     $Variables | Add-Member -Force @{DonateRandom = [PSCustomObject]@{}}
@@ -30,6 +30,9 @@ Function InitApplication {
     $Variables | Add-Member -Force @{UserNameBackup = $Config.UserName}
     $Variables | Add-Member -Force @{WorkerNameBackup = $Config.WorkerName}
     $Variables | Add-Member -Force @{EarningsPool = ""}
+    Update-Status("Finding available TCP Port")
+    $Variables | Add-Member -Force @{MinerAPITCPPort = Get-FreeTcpPort}
+    Update-Status("Miners API Port: $($Variables.MinerAPITCPPort)")
     # Starts Brains if necessary
     Update-Status("Starting Brains for Plus...")
     $Variables | Add-Member -Force @{BrainJobs = @()}
@@ -77,11 +80,11 @@ Function NPMCycle {
         # Devs list and wallets is publicly available at: http://nemosminer.x10host.com/devlist.json 
         try {$Donation = Invoke-WebRequest "http://nemosminer.x10host.com/devlist.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
         }
-        catch {$Donation = @([PSCustomObject]@{Name = "mrplus";Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy";UserName = "mrplus"},[PSCustomObject]@{Name = "nemo";Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE";UserName = "nemo"})
+        catch {$Donation = @([PSCustomObject]@{Name = "mrplus"; Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "mrplus"}, [PSCustomObject]@{Name = "nemo"; Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"})
         }
         if ($Donation -ne $null) {
             $Variables.DonateRandom = $Donation | Get-Random
-            $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "NemosMiner-v3.0"; PricePenaltyFactor = 1}}}
+            $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "NPlusMiner"; PricePenaltyFactor = 1}}}
         }
     }
     if ((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) {
@@ -93,7 +96,7 @@ Function NPMCycle {
                 [PSCustomObject]@{default = [PSCustomObject]@{
                         Wallet      = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
                         UserName    = "nemo"
-                        WorkerName  = "NemosMinerv-3.0"
+                        WorkerName  = "NemosMiner"
                         PoolPenalty = 1
                     }
                 }
@@ -224,7 +227,7 @@ Function NPMCycle {
     $Variables.Miners = $Variables.Miners | ? {$_.Pools.PSObject.Properties.Value.Price -ne $null}
 
     #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
-    $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}}
+    $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}}
     #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
     $BestMiners = $Variables.Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
     $BestDeviceMiners = $Variables.Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
@@ -358,7 +361,7 @@ Function NPMCycle {
             ) | Out-Host
         }
     }
-    Write-Host "      1BTC = " $Variables.Rates.$Currency "$Currency"
+    Write-Host "      1BTC = " $Variables.Rates.$Currency "$($Variables.Rates.($Config.Currency))"
     # Get and display earnings stats
     $Variables.EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
         $EarnTrack = $_ | Receive-Job
