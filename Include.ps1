@@ -37,31 +37,6 @@ Function Load-Config {
 }
 
 Function Write-Config {
-
-	param(
-		[Parameter(Mandatory=$true)]
-		[PSCustomObject]$Config,
-		[Parameter(Mandatory=$true)]
-		[String]$ConfigFile
-	)
-	If ($Config -ne $null){
-		if (Test-Path $ConfigFile){Copy-Item $ConfigFile "$($ConfigFile).backup"}
-		$OrderedConfig = [PSCustomObject]@{};($config | select -Property * -ExcludeProperty PoolsConfig) | %{$_.psobject.properties | sort Name | %{$OrderedConfig | Add-Member -Force @{$_.Name = $_.Value}}}
-		$OrderedConfig | ConvertTo-json | out-file $ConfigFile
-		$PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-		$OrderedPoolsConfig = [PSCustomObject]@{};$PoolsConfig | %{$_.psobject.properties | sort Name | %{$OrderedPoolsConfig | Add-Member -Force @{$_.Name = $_.Value}}}
-		$OrderedPoolsConfig.default.Wallet = $Config.Wallet
-		$OrderedPoolsConfig.default.UserName = $Config.UserName
-		$OrderedPoolsConfig.default.WorkerName = $Config.WorkerName
-		$OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
-	}
-}
-
-Function Get-FreeTcpPort {
-	$ProgressPreferenceBackup = $Global:ProgressPreference;$Global:ProgressPreference = "SilentlyContinue"
-	 (4068..4078) | % {$Port=$_;try{$Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port} catch {$Port;$PortFound}}
-	$Global:ProgressPreference = $ProgressPreferenceBackup;ProgressPreferenceBackup | rv
-=======
     param(
         [Parameter(Mandatory = $true)]
         [PSCustomObject]$Config,
@@ -79,7 +54,13 @@ Function Get-FreeTcpPort {
         $OrderedPoolsConfig.default.WorkerName = $Config.WorkerName
         $OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
     }
-Update Include.ps1
+}
+
+Function Get-FreeTcpPort {
+    $StartPort = 4068
+    $PortFound = $false
+    $Port = $StartPort
+    While ($Port -le ($StartPort + 10) -and !$PortFound) {try {$Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1, $Port; $Port++} catch {$Port; $PortFound = $True}}
 }
 
 function Set-Stat {
