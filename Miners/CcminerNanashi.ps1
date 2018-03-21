@@ -18,7 +18,7 @@ $Commands = [PSCustomObject]@{
     #"hmq1725" = " -d $SelGPUCC --api-remote --api-allow=0/0" #hmq1725
     #"keccak" = "" #Keccak
     #"lbry" = " -d $SelGPUCC" #Lbry
-    "lyra2v2" = " -R 5 -N 3 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
+    #"lyra2v2" = " -R 5 -N 3 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
     #"lyra2z" = " -d $SelGPUCC" #Lyra2z
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
