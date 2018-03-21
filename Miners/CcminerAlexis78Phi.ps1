@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Alexis78Phi\ccminer.exe"
 $Uri = "https://github.com/216k155/ccminer-phi-anxmod/releases/download/ccminer%2Fphi-1.0/ccminer-phi-1.0.zip"
 
 $Commands = [PSCustomObject]@{
-    "phi" = " -d $SelGPUCC --api-remote" #Phi
+    #"phi" = " -d $SelGPUCC --api-remote" #Phi
     #"bitcore" = " -d $SelGPUCC" #Bitcore
     #"jha" = " -d $SelGPUCC --api-remote" #Jha
     #"blake2s" = " -d $SelGPUCC" #Blake2s
