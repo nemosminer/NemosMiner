@@ -22,10 +22,10 @@ Function InitApplication {
     #Update stats with missing data and set to today's date/time
     if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach-Object {$Stat = Set-Stat $_.Name $_.Content.Week}}
     #Set donation parameters
-    #Randomly sets donation minutes per day between 0 - 5 minutes if not set
+    #Randomly sets donation minutes per day between (0,(3..8)) minutes if not set
     $Variables | Add-Member -Force @{DonateRandom = [PSCustomObject]@{}}
     $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
-    If ($Config.Donate -lt 1) {$Config.Donate = Get-Random -Maximum 5}
+    If ($Config.Donate -lt 3) {$Config.Donate = (0,(3..8)) | Get-Random}
     $Variables | Add-Member -Force @{WalletBackup = $Config.Wallet}
     $Variables | Add-Member -Force @{UserNameBackup = $Config.UserName}
     $Variables | Add-Member -Force @{WorkerNameBackup = $Config.WorkerName}
