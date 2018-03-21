@@ -4,9 +4,9 @@ $Path = ".\Bin\NVIDIA-TPruvotcuda9\ccminer.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccminer-x86-2.2.4-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
-    "poly" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
+    "polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     "hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    "phi" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Phi
+    "phi" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Phi
     "bitcore" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Bitcore
     "jha" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Jha
     "blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
@@ -18,9 +18,9 @@ $Commands = [PSCustomObject]@{
     #"ethash" = "" #Ethash
     #"groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
     "hmq1725" = " -d $SelGPUCC --api-remote --api-allow=0/0" #hmq1725
-    "keccakc" = "" #Keccakc
+    "keccakc" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
     "lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
-    #"lyra2v2" = "" #Lyra2RE2
+    "lyra2v2" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
     #"lyra2z" = "  -d $SelGPUCC --api-remote --api-allow=0/0 --submit-stale" #Lyra2z
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
