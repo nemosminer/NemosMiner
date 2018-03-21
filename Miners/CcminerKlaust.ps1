@@ -31,7 +31,7 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
-    #"c11" = " -d $SelGPUCC" #C11
+    "c11" = " -d $SelGPUCC" #C11
     #"yescrypt" = "" #Yescrypt
 }
 
