@@ -33,7 +33,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = "" #X11evo
     #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
-    "keccakc" = " -d $SelGPUCC --api-remote " #Keccakc
+    #"keccakc" = " -d $SelGPUCC --api-remote " #Keccakc
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName

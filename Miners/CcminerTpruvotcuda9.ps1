@@ -4,38 +4,40 @@ $Path = ".\Bin\NVIDIA-TPruvotcuda9\ccminer.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccminer-x86-2.2.4-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
-    #"phi" = " -d $SelGPUCC --api-remote" #Phi
-    #"bitcore" = " -d $SelGPUCC" #Bitcore
+    "poly" = " -d $SelGPUCC --api-remote --api-allow=0/0" #polytimos
+    "hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
+    "phi" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Phi
+    "bitcore" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Bitcore
     "jha" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Jha
-    #"blake2s" = " -d $SelGPUCC" #Blake2s
+    "blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = " -i 10 -d $SelGPUCC" #Cryptonight
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
-    "groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
+    #"groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
     "hmq1725" = " -d $SelGPUCC --api-remote --api-allow=0/0" #hmq1725
-    #"keccak" = "" #Keccak
-    #"lbry" = " -d $SelGPUCC" #Lbry
+    "keccakc" = "" #Keccakc
+    "lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
     #"lyra2v2" = "" #Lyra2RE2
-    #"lyra2z" = " -d $SelGPUCC" #Lyra2z
+    #"lyra2z" = "  -d $SelGPUCC --api-remote --api-allow=0/0 --submit-stale" #Lyra2z
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
-    #"nist5" = "" #Nist5
+    "nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    #"sib" = "" #Sib
+    "sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
     "timetravel" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Timetravel
     "tribus" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Tribus
-    #"x11" = "" #X11
+    #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     "x11evo" = " -d $SelGPUCC --api-remote --api-allow=0/0" #X11evo
-    #"x17" = " -d $SelGPUCC" #X17
+    "x17" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #X17
     #"yescrypt" = "" #Yescrypt
 }
 

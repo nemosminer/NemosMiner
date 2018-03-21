@@ -642,7 +642,7 @@ $CheckBoxAutostart.text = "Autostart"
 $CheckBoxAutostart.AutoSize = $false
 $CheckBoxAutostart.width = 100
 $CheckBoxAutostart.height = 20
-$CheckBoxAutostart.location = New-Object System.Drawing.Point(432, 202)
+$CheckBoxAutostart.location = New-Object System.Drawing.Point(432, 224)
 $CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
 $CheckBoxAutostart.Checked =	$Config.Autostart
 $ConfigPageControls += $CheckBoxAutostart
@@ -651,7 +651,7 @@ $ButtonLoadDefaultPoolsAlgos = New-Object system.Windows.Forms.Button
 $ButtonLoadDefaultPoolsAlgos.text = "Load default algos for selected pools"
 $ButtonLoadDefaultPoolsAlgos.width = 100
 $ButtonLoadDefaultPoolsAlgos.height = 50
-$ButtonLoadDefaultPoolsAlgos.location = New-Object System.Drawing.Point(577, 237)
+$ButtonLoadDefaultPoolsAlgos.location = New-Object System.Drawing.Point(577, 259)
 $ButtonLoadDefaultPoolsAlgos.Font = 'Microsoft Sans Serif,10'
 $ConfigPageControls += $ButtonLoadDefaultPoolsAlgos
 	
@@ -671,7 +671,7 @@ $ButtonWriteConfig = New-Object system.Windows.Forms.Button
 $ButtonWriteConfig.text = "Save Config"
 $ButtonWriteConfig.width = 100
 $ButtonWriteConfig.height = 30
-$ButtonWriteConfig.location = New-Object System.Drawing.Point(577, 202)
+$ButtonWriteConfig.location = New-Object System.Drawing.Point(577, 224)
 $ButtonWriteConfig.Font = 'Microsoft Sans Serif,10'
 $ConfigPageControls += $ButtonWriteConfig
 
@@ -700,7 +700,7 @@ $ButtonWriteConfig.Add_Click( {
 	
 # ***
 $GroupboxPools = New-Object system.Windows.Forms.Groupbox
-$GroupboxPools.height = 200
+$GroupboxPools.height = 220
 $GroupboxPools.width = 250
 $GroupboxPools.text = "Pools"
 $GroupboxPools.location = New-Object System.Drawing.Point(427, 2)
@@ -818,13 +818,46 @@ $CheckBoxNH.Font = 'Microsoft Sans Serif,10'
 $CheckBoxNH.Checked =	$Config.PoolName -contains "nicehash"
 $GroupboxPoolsControls += $CheckBoxNH
 	
+$CheckBoxPhiphipool = New-Object system.Windows.Forms.CheckBox
+$CheckBoxPhiphipool.Tag = @{name = "PoolName"; Value = "phiphipool"}
+$CheckBoxPhiphipool.text = "phiphipool"
+$CheckBoxPhiphipool.AutoSize = $false
+$CheckBoxPhiphipool.width = 100
+$CheckBoxPhiphipool.height = 20
+$CheckBoxPhiphipool.location = New-Object System.Drawing.Point(5, 147)
+$CheckBoxPhiphipool.Font = 'Microsoft Sans Serif,10'
+$CheckBoxPhiphipool.Checked =	$Config.PoolName -contains "phiphipool"
+$GroupboxPoolsControls += $CheckBoxPhiphipool
+
+$CheckBoxPhiphipoolplus = New-Object system.Windows.Forms.CheckBox
+$CheckBoxPhiphipoolplus.Tag = @{name = "PoolName"; Value = "phiphipoolplus"}
+$CheckBoxPhiphipoolplus.text = "Plus"
+$CheckBoxPhiphipoolplus.AutoSize = $false
+$CheckBoxPhiphipoolplus.width = 60
+$CheckBoxPhiphipoolplus.height = 20
+$CheckBoxPhiphipoolplus.location = New-Object System.Drawing.Point(110, 147)
+$CheckBoxPhiphipoolplus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxPhiphipoolplus.Checked =	$Config.PoolName -contains "phiphipoolplus"
+$GroupboxPoolsControls += $CheckBoxPhiphipoolplus
+	
+$CheckBoxPhiphipool24hr = New-Object system.Windows.Forms.CheckBox
+$CheckBoxPhiphipool24hr.Tag = @{name = "PoolName"; Value = "phiphipool24hr"}
+$CheckBoxPhiphipool24hr.text = "24hr"
+$CheckBoxPhiphipool24hr.AutoSize = $false
+$CheckBoxPhiphipool24hr.width = 60
+$CheckBoxPhiphipool24hr.height = 20
+$CheckBoxPhiphipool24hr.location = New-Object System.Drawing.Point(175, 147)
+$CheckBoxPhiphipool24hr.Font = 'Microsoft Sans Serif,10'
+$CheckBoxPhiphipool24hr.Checked =	$Config.PoolName -contains "phiphipool24hr"
+$GroupboxPoolsControls += $CheckBoxPhiphipool24hr
+
 $CheckBoxZergpool = New-Object system.Windows.Forms.CheckBox
 $CheckBoxZergpool.Tag = @{name = "PoolName"; Value = "zergpool"}
 $CheckBoxZergpool.text = "zergpool"
 $CheckBoxZergpool.AutoSize = $false
 $CheckBoxZergpool.width = 100
 $CheckBoxZergpool.height = 20
-$CheckBoxZergpool.location = New-Object System.Drawing.Point(5, 147)
+$CheckBoxZergpool.location = New-Object System.Drawing.Point(5, 169)
 $CheckBoxZergpool.Font = 'Microsoft Sans Serif,10'
 $CheckBoxZergpool.Checked =	$Config.PoolName -contains "zergpool"
 $GroupboxPoolsControls += $CheckBoxZergpool
@@ -835,7 +868,7 @@ $CheckBoxZergpoolplus.text = "Plus"
 $CheckBoxZergpoolplus.AutoSize = $false
 $CheckBoxZergpoolplus.width = 60
 $CheckBoxZergpoolplus.height = 20
-$CheckBoxZergpoolplus.location = New-Object System.Drawing.Point(110, 147)
+$CheckBoxZergpoolplus.location = New-Object System.Drawing.Point(110, 169)
 $CheckBoxZergpoolplus.Font = 'Microsoft Sans Serif,10'
 $CheckBoxZergpoolplus.Checked =	$Config.PoolName -contains "zergpoolplus"
 $GroupboxPoolsControls += $CheckBoxZergpoolplus
@@ -846,7 +879,7 @@ $CheckBoxZergpool24hr.text = "24hr"
 $CheckBoxZergpool24hr.AutoSize = $false
 $CheckBoxZergpool24hr.width = 60
 $CheckBoxZergpool24hr.height = 20
-$CheckBoxZergpool24hr.location = New-Object System.Drawing.Point(175, 147)
+$CheckBoxZergpool24hr.location = New-Object System.Drawing.Point(175, 169)
 $CheckBoxZergpool24hr.Font = 'Microsoft Sans Serif,10'
 $CheckBoxZergpool24hr.Checked =	$Config.PoolName -contains "zergpool24hr"
 $GroupboxPoolsControls += $CheckBoxZergpool24hr
@@ -857,7 +890,7 @@ $CheckBoxZpool.text = "zpool"
 $CheckBoxZpool.AutoSize = $false
 $CheckBoxZpool.width = 100
 $CheckBoxZpool.height = 20
-$CheckBoxZpool.location = New-Object System.Drawing.Point(5, 169)
+$CheckBoxZpool.location = New-Object System.Drawing.Point(5, 191)
 $CheckBoxZpool.Font = 'Microsoft Sans Serif,10'
 $CheckBoxZpool.Checked =	$Config.PoolName -contains "zpool"
 $GroupboxPoolsControls += $CheckBoxZpool
@@ -868,7 +901,7 @@ $CheckBoxZpoolplus.text = "Plus"
 $CheckBoxZpoolplus.AutoSize = $false
 $CheckBoxZpoolplus.width = 60
 $CheckBoxZpoolplus.height = 20
-$CheckBoxZpoolplus.location = New-Object System.Drawing.Point(110, 169)
+$CheckBoxZpoolplus.location = New-Object System.Drawing.Point(110, 191)
 $CheckBoxZpoolplus.Font = 'Microsoft Sans Serif,10'
 $CheckBoxZpoolplus.Checked =	$Config.PoolName -contains "zpoolplus"
 $GroupboxPoolsControls += $CheckBoxZpoolplus
@@ -879,7 +912,7 @@ $CheckBoxZpool24hr.text = "24hr"
 $CheckBoxZpool24hr.AutoSize = $false
 $CheckBoxZpool24hr.width = 60
 $CheckBoxZpool24hr.height = 20
-$CheckBoxZpool24hr.location = New-Object System.Drawing.Point(175, 169)
+$CheckBoxZpool24hr.location = New-Object System.Drawing.Point(175, 191)
 $CheckBoxZpool24hr.Font = 'Microsoft Sans Serif,10'
 $CheckBoxZpool24hr.Checked =	$Config.PoolName -contains "zpool24hr"
 $GroupboxPoolsControls += $CheckBoxZpool24hr
