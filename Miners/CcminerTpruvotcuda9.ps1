@@ -5,7 +5,7 @@ $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccmin
 
 $Commands = [PSCustomObject]@{
     "phi" = " -d $SelGPUCC --api-remote" #Phi
-    #"bitcore" = " -d $SelGPUCC" #Bitcore
+    "bitcore" = " -d $SelGPUCC" #Bitcore
     "jha" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Jha
     #"blake2s" = " -d $SelGPUCC" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
