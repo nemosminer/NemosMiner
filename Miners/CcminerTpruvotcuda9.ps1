@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-TPruvotcuda9\ccminer.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.4-tpruvot/ccminer-x86-2.2.4-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
-    #"phi" = " -d $SelGPUCC --api-remote" #Phi
+    "phi" = " -d $SelGPUCC --api-remote" #Phi
     #"bitcore" = " -d $SelGPUCC" #Bitcore
     "jha" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Jha
     #"blake2s" = " -d $SelGPUCC" #Blake2s
@@ -35,7 +35,7 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     "x11evo" = " -d $SelGPUCC --api-remote --api-allow=0/0" #X11evo
-    #"x17" = " -d $SelGPUCC" #X17
+    "x17" = " -N 1 -d $SelGPUCC" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
