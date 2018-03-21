@@ -29,7 +29,7 @@ $Commands = [PSCustomObject]@{
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    #"sib" = "" #Sib
+    "sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
     "timetravel" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Timetravel
