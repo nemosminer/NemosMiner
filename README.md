@@ -19,7 +19,7 @@ Easy configuration, easy start:
 
       1. Config tab
       2. Set your Wallet address and Username
-      3. Select your pool/s and load defaults Algos button. (Remove any algos you do not want to mine)
+      3. Select your pool/s and load default Algos button. (Remove any algos you do not want to mine)
       4. "Save Config" Close NemosMiner
       5. Run NemosMiner-v3.0.bat "Start"
 Fee:
