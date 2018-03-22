@@ -28,8 +28,8 @@ Fee:
 
 *****
 
--Additional features list, made possible by "MrPlus"
--Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations & Earnings Tracking
+Additional features list, made possible by "MrPlus"
+Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations & Earnings Tracking
 
    GUI
    
