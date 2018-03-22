@@ -78,6 +78,19 @@ param(
 . .\Include.ps1
 . .\Core-v3.0.ps1
 
+@"
+NemosMiner
+Copyright (c) 2018 MrPlus and Nemo
+
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+https://github.com/MrPlusGH/NPlusMiner/blob/master/LICENSE
+
++
+
+"@
+
 Function TimerCycle_Tick() {
     $LabelStatus.Text = ""
     $MainForm.Number += 1
