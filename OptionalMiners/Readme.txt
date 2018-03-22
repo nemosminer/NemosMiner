@@ -14,14 +14,12 @@ Optional miners details:
          It is not recommended to use ccminerenemy on any machine which hosts wallets or other information.
          It is not recommended to use ccminerenemy as it is closed source.
          Use at your own risks
-   - Download ccminer enemy
+   - Download ccminer enemy (https://mega.nz/#!JDAm3TJb!BMQPYJz5_nmkZEZB0UUwWicopIdgnHG82Ht5buWxZxo)
    - Place the ccminer enemy files in the ".\Bin\NVIDIA-ccminerenemy\" folder
    - Copy ccminerenemy.ps1 in the ".\miners\" folder
    - Enable algorithms in ccminerenemy.ps1 by uncommented respective lines (x16r, x17)
 
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NPlusMiner by default
-   - Download Excavator
-   - Place the Excavator files in the ".\Bin\Excavator\" folder
    - Copy Excavator.ps1 in the ".\miners\" folder
    - Enable algorithms in Excavator.ps1 by uncommented respective lines
