@@ -48,7 +48,7 @@ $Locations | ForEach {
                 Host          = $zergpool_Host
                 Port          = $zergpool_Port
                 User          = $Config.PoolsConfig.$ConfName.Wallet
-                Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$Passwordcurrency"
+            	Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($Config.Passwordcurrency)"
                 Location      = $Location
                 SSL           = $false
             }
