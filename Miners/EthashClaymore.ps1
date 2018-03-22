@@ -12,7 +12,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = " -esm 3 -allpools 1 -allcoins 1 -platform 3 -mport -$($Variables.MinerAPITCPPort) -epool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -ewal $($Pools.Ethash.User) -epsw $($Pools.Ethash.Pass)"
+        Arguments = " -esm 3 -allpools 1 -allcoins 1 -platform 3 -mport -$($Variables.MinerAPITCPPort) -epool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -ewal $($Pools.Ethash.User) -epsw $($Pools.Ethash.Pass)$($Commands.$_)""
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Live * .99} # substract 1% devfee
         API = "Claymore"
         Port = $Variables.MinerAPITCPPort #3333
