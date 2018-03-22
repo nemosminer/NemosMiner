@@ -37,7 +37,6 @@ Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations
       Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
 	  Relies on config files. No need to edit bat files. Simply run NemosMiner 
 	  Set the config on the config tab, save, close, run
-	  For console lovers. Run NemosMiner-ConsoleUp.
 
    Pause mining
    
@@ -69,7 +68,7 @@ Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations
 	    **Do not delete the default entry.**
             - Edit Config\PoolsConfig.json
             - Add an entry for the pool you want to customize
-              - The name must be the NPlusMiner name for the pool. ie. for ahashpool, if you use Plus. The name is ahashpoolplus.
+              - The name must be the NemosMiner name for the pool. ie. for ahashpool, if you use Plus. The name is ahashpoolplus.
               - (**careful with json formating ;)**)
               - Best way is to duplicate the default entry
         - Note that the GUI only updates the default entry. Any other changes need to be done manualy
