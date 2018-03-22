@@ -15,12 +15,13 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
 
 Easy configuration, easy start:
 
-      Run NemosMiner
+      Run NemosMiner-v3.0.bat
 
-      1. Hit the Config tab
+      1. Config tab
       2. Set your Wallet address and Username
-      3. Hit "Save Config"
-      4. Hit "Start"
+      3. Select your pool/s and hit load defaults button. (Remove any algos you do not want to mine)
+      4. "Save Config"
+      5. "Start"
 Fee:
 
       There is a 8 minutes per day fee (0.5%), that can be changed in the config (Minimum is 3)
