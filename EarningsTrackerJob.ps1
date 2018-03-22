@@ -1,6 +1,5 @@
 <#
 This file is part of NemosMiner
-Copyright (c) 2018 Nemo
 Copyright (c) 2018 MrPlus
 
 NemosMiner is free software: you can redistribute it and/or modify
