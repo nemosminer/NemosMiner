@@ -22,7 +22,7 @@ Function InitApplication {
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
     $Variables | Add-Member -Force @{ScriptStartDate = (Get-Date)}
-    # Fix issues on some SSL invokes following GitHub Supporting only TLSv1.2 on feb 22 2018
+    # GitHub Supporting only TLSv1.2 on feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     Get-ChildItem . -Recurse | Unblock-File
@@ -39,16 +39,17 @@ Function InitApplication {
     #Start the log
     Start-Transcript -Path ".\Logs\miner.log" -Append -Force
     #Update stats with missing data and set to today's date/time
-    if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach-Object {$Stat = Set-Stat $_.Name $_.Content.Week}}
+    if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
     #Set donation parameters
-    #Randomly sets donation minutes per day between (0,(3..8)) minutes if not set
+    #Randomly sets donation minutes per day between (0,(3..8)) minutes if set to less than 3
     $Variables | Add-Member -Force @{DonateRandom = [PSCustomObject]@{}}
     $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
-    If ($Config.Donate -lt 3) {$Config.Donate = (0,(3..8)) | Get-Random}
+    If ($Config.Donate -lt 3) {$Config.Donate = (0, (3..8)) | Get-Random}
     $Variables | Add-Member -Force @{WalletBackup = $Config.Wallet}
     $Variables | Add-Member -Force @{UserNameBackup = $Config.UserName}
     $Variables | Add-Member -Force @{WorkerNameBackup = $Config.WorkerName}
     $Variables | Add-Member -Force @{EarningsPool = ""}
+    # Will need rework
     Update-Status("Finding available TCP Port")
     $Variables | Add-Member -Force @{MinerAPITCPPort = Get-FreeTcpPort}
     Update-Status("Miners API Port: $($Variables.MinerAPITCPPort)")
@@ -58,7 +59,7 @@ Function InitApplication {
     $Config.PoolName | foreach {
         $BrainPath = (Split-Path $script:MyInvocation.MyCommand.Path) + "\BrainPlus\" + $_
         # $BrainPath = ".\BrainPlus\"+$_
-        $BrainName = (".\BrainPlus\" + $_ + "\Brain-2.1.ps1")
+        $BrainName = (".\BrainPlus\" + $_ + "\BrainPlus-2.2.ps1")
         if (Test-Path $BrainName) {
             $Variables.BrainJobs += Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
         }
@@ -72,7 +73,13 @@ Function InitApplication {
         $Config.PoolName | sort | foreach {
             $Params = @{
                 pool             = $_
-                Wallet           = if ($Config.PoolsConfig.$_) {$Config.PoolsConfig.$_.Wallet}else {$Config.PoolsConfig.default.Wallet}
+                Wallet           =
+                if ($_ -eq "miningpoolhub") {
+                    if ($Config.PoolsConfig.$_) {$Config.PoolsConfig.$_.APIKey}else {$Config.PoolsConfig.default.APIKey}
+                }
+                else {
+                    if ($Config.PoolsConfig.$_) {$Config.PoolsConfig.$_.Wallet}else {$Config.PoolsConfig.default.Wallet}
+                }
                 Interval         = 10
                 WorkingDirectory = (Split-Path $script:MyInvocation.MyCommand.Path)
                 StartDelay       = $StartDelay
@@ -88,13 +95,41 @@ Function InitApplication {
 Function NPMCycle {
     . .\include.ps1
     $timerCycle.Enabled = $False
+
     Update-Status("Starting Cycle")
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     $host.UI.RawUI.WindowTitle = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date) - $Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
     $DecayExponent = [int](((Get-Date) - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
+
+    # Ensure we get the hashrate for running miners prior looking for best miner
+    $Variables.ActiveMinerPrograms | ForEach {
+        if ($_.Process -eq $null -or $_.Process.HasExited) {
+            if ($_.Status -eq "Running") {$_.Status = "Failed"}
+        }
+        else {
+            # we don't want to store hashrates if we run less than $Config.StatsInterval sec
+            $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
+            if ($WasActive -ge $Config.StatsInterval) {
+                $_.HashRate = 0
+                $Miner_HashRates = $null
+                if ($_.New) {$_.Benchmarked++}         
+                $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
+                $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count           
+                if ($Miner_HashRates.Count -ge $_.Algorithms.Count) {
+                    for ($i = 0; $i -lt $_.Algorithms.Count; $i++) {
+                        $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value ($Miner_HashRates | Select -Index $i)
+                    }
+                    $_.New = $false
+                    $_.Hashrate_Gathered = $true
+                    Write-Host "Stats '"$_.Algorithms"' -> "($Miner_HashRates | ConvertTo-Hash)"after"$WasActive" sec"
+                }
+            }
+        }
+    }
+
     #Activate or deactivate donation
     if ((Get-Date).AddDays(-1).AddMinutes($Config.Donate) -ge $Variables.LastDonated -and $Variables.DonateRandom.wallet -eq $Null) {
-        # Get donation addresses randomly from agreed list
+        # Get donation addresses randomly from agreed devs list
         # This will fairly distribute donations to Devs
         # Devs list and wallets is publicly available at: http://nemosminer.x10host.com/devlist.json 
         try {$Donation = Invoke-WebRequest "http://nemosminer.x10host.com/devlist.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
@@ -115,7 +150,7 @@ Function NPMCycle {
                 [PSCustomObject]@{default = [PSCustomObject]@{
                         Wallet      = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
                         UserName    = "nemo"
-                        WorkerName  = "NemosMiner"
+                        WorkerName  = "NemosMinerNoCfg"
                         PoolPenalty = 1
                     }
                 }
@@ -142,13 +177,16 @@ Function NPMCycle {
             Where {$Config.PoolName.Count -eq 0 -or (Compare $Config.PoolName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}
     }
     # Use location as preference and not the only one
+    Update-Status("Computing pool stats..")
     $AllPools = ($AllPools | ? {$_.location -eq $Config.Location}) + ($AllPools | ? {$_.name -notin ($AllPools | ? {$_.location -eq $Config.Location}).Name})
-    #if($AllPools.Count -eq 0){Update-Status("Error contacting pool, retrying.."); sleep 15; continue}
     if ($AllPools.Count -eq 0) {Update-Status("Error contacting pool, retrying.."); $timerCycle.Interval = 15000 ; $timerCycle.Start() ; return}
     $Pools = [PSCustomObject]@{}
     $Pools_Comparison = [PSCustomObject]@{}
-    $AllPools.Algorithm | Select -Unique | ForEach {$Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)}
-    $AllPools.Algorithm | Select -Unique | ForEach {$Pools_Comparison | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort StablePrice -Descending | Select -First 1)}
+    $AllPools.Algorithm | Sort -Unique | ForEach {
+        $Pools | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort Price -Descending | Select -First 1)
+        $Pools_Comparison | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort StablePrice -Descending | Select -First 1)
+    }
+    # $AllPools.Algorithm | Select -Unique | ForEach {$Pools_Comparison | Add-Member $_ ($AllPools | Where Algorithm -EQ $_ | Sort StablePrice -Descending | Select -First 1)}
     #Load information about the Miners
     #Messy...?
     Update-Status("Loading miners..")
@@ -185,6 +223,7 @@ Function NPMCycle {
             $Miner
         }
     }
+    Update-Status("Comparing miners and pools..")
     if ($Variables.Miners.Count -eq 0) {Update-Status("No Miners!")}#; sleep $Config.Interval; continue}
     $Variables.Miners | ForEach {
         $Miner = $_
@@ -316,7 +355,7 @@ Function NPMCycle {
             if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
                 # Log switching information to .\log\swicthing.log
                 [pscustomobject]@{date = (get-date); algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Stratum = ($_.Arguments.Split(" ") | ? {$_ -like "*.*:*"})} | export-csv .\Logs\switching.log -Append -NoTypeInformation
-					
+                    
                 # Launch prerun if exists
                 $PrerunName = ".\Prerun\" + $_.Algorithms + ".bat"
                 $DefaultPrerunName = ".\Prerun\default.bat"
@@ -333,7 +372,7 @@ Function NPMCycle {
                         Sleep 2
                     }
                 }
-			
+
                 Sleep $Config.Delay #Wait to prevent BSOD
                 Update-Status("Starting miner")
                 $Variables.DecayStart = Get-Date
@@ -361,8 +400,8 @@ Function NPMCycle {
         $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"); sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
         If ($KeyPressed.KeyDown) {
             Switch ($KeyPressed.Character) {
-                "s"	{if ($Config.UIStyle -eq "Light") {$Config.UIStyle = "Full"}else {$Config.UIStyle = "Light"}}
-                "e"	{$Config.TrackEarnings = -not $Config.TrackEarnings}
+                "s" {if ($Config.UIStyle -eq "Light") {$Config.UIStyle = "Full"}else {$Config.UIStyle = "Light"}}
+                "e" {$Config.TrackEarnings = -not $Config.TrackEarnings}
             }
         }
     }
@@ -380,7 +419,7 @@ Function NPMCycle {
             ) | Out-Host
         }
     }
-    Write-Host "      1BTC = " $Variables.Rates.$Currency "$($Variables.Rates.($Config.Currency))"
+    Write-Host "      1BTC = $($Variables.Rates.($Config.Currency)) $($Config.Currency)"
     # Get and display earnings stats
     $Variables.EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
         $EarnTrack = $_ | Receive-Job
@@ -411,7 +450,7 @@ Function NPMCycle {
             @{Label = "Speed"; Expression = {$_.HashRates.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {"$($_ | ConvertTo-Hash)/s"}else {"Benchmarking"}}}; Align = 'right'}, 
             @{Label = "mBTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value * 1000 | ForEach {if ($_ -ne $null) {$_.ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
             @{Label = "BTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {$_.ToString("N5")}else {"Benchmarking"}}}; Align = 'right'}, 
-            @{Label = "$Currency/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {($_ * $Variables.Rates.$Currency).ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
+            @{Label = "$($Config.Currency)/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {($_ * $Variables.Rates.($Config.Currency)).ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
             @{Label = "BTC/GH/Day"; Expression = {$_.Pools.PSObject.Properties.Value.Price | ForEach {($_ * 1000000000).ToString("N5")}}; Align = 'right'},
             @{Label = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
         ) | Out-Host
@@ -437,7 +476,7 @@ Function NPMCycle {
             ) | Out-Host
         }
         Write-Host "--------------------------------------------------------------------------------"
-		
+        
     }
     else {
         [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
@@ -464,7 +503,7 @@ Function NPMCycle {
         $timeToSleep = $Config.Interval
     }
     # IF ($Config.UIStyle -eq "Full"){Write-Host "Sleep" ($timeToSleep) "sec"} else {Write-Host "Sleep" ($timeToSleep*2) "sec"}
-		
+        
     # Sleep $timeToSleep
     $timerCycle.Interval = $timeToSleep * 1000
     Write-Host "--------------------------------------------------------------------------------"
