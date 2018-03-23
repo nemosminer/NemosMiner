@@ -43,7 +43,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
 $args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
-
 If ($WorkingDirectory) {Set-Location $WorkingDirectory}
 
 sleep $StartDelay
@@ -62,7 +61,7 @@ if (-not $APIUri) {
             $TotalJson = ($poolapi | ? {$_.Name -eq $pool}).Total
         }
         else {return}
-    }		
+    }       
 }
 
 $BalanceObjectS = @()
@@ -78,6 +77,12 @@ while ($true) {
         if (-not $BalanceData.$BalanceJson) {$BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
         if (-not $BalanceData.$TotalJson) {$BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($BalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
     }
+    elseif ($Pool -eq "miningpoolhub") {
+        try {
+            $BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "bitcoin"}) 
+        }
+        catch {  }#.confirmed
+    }
     else {
         try {
             $TempBalanceData = Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
@@ -90,9 +95,9 @@ while ($true) {
         Date         = $CurDate
         balance      = $BalanceData.$BalanceJson
         unsold       = $BalanceData.unsold
-        total_unpaid	= $BalanceData.total_unpaid
+        total_unpaid = $BalanceData.total_unpaid
         total_paid   = $BalanceData.total_paid
-        total_earned	= $BalanceData.$TotalJson
+        total_earned = $BalanceData.$TotalJson
         currency     = $BalanceData.currency
     }
     $BalanceObject = $BalanceObjectS[$BalanceOjectS.Count - 1]
@@ -106,12 +111,12 @@ while ($true) {
         Wallet                = $Wallet
         Date                  = $CurDate
         StartTime             = $BalanceObjectS[0].Date
-        balance               = $BalanceData.balance
-        unsold                = $BalanceData.unsold
-        total_unpaid          = $BalanceData.total_unpaid
-        total_paid            = $BalanceData.total_paid
-        total_earned          = $BalanceData.total_earned
-        currency              = $BalanceData.currency
+        balance               = $BalanceObject.balance
+        unsold                = $BalanceObject.unsold
+        total_unpaid          = $BalanceObject.total_unpaid
+        total_paid            = $BalanceObject.total_paid
+        total_earned          = $BalanceObject.total_earned
+        currency              = $BalanceObject.currency
         GrowthSinceStart      = $BalanceObject.total_earned - $BalanceObjectS[0].total_earned
         Growth1               = $Growth1
         Growth6               = $Growth6
@@ -119,14 +124,14 @@ while ($true) {
         AvgHourlyGrowth       = $AvgBTCHour
         AvgDailyGrowth        = $AvgBTCHour * 24
         EstimatedEndDayGrowth = If ((($CurDate - ($BalanceObjectS[0].Date)).TotalHours) -ge 1) {($AvgBTCHour * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $CurDate).Hours)} else {$Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $CurDate).Hours}
-        EstimatedPayDate      = IF ($BalanceObject.balance -lt $PaymentThreshold) {If ($AvgBTCHour -gt 0) {$CurDate.AddHours(($PaymentThreshold - $BalanceObject.balance) / $AvgBTCHour)} Else {"Unknown"}} else {"Next Payout !"}
+        EstimatedPayDate      = if ($PaymentThreshold) {IF ($BalanceObject.balance -lt $PaymentThreshold) {If ($AvgBTCHour -gt 0) {$CurDate.AddHours(($PaymentThreshold - $BalanceObject.balance) / $AvgBTCHour)} Else {"Unknown"}} else {"Next Payout !"}}else {"Unknown"}
         TrustLevel            = if (($CurDate - ($BalanceObjectS[0].Date)).TotalMinutes -le 360) {($CurDate - ($BalanceObjectS[0].Date)).TotalMinutes / 360}else {1}
         PaymentThreshold      = $PaymentThreshold
     }
-	
+    
     $EarningsObject
-	
-	
+    
+    
     If ($BalanceObjectS.Count -gt 1) {$BalanceObjectS = $BalanceObjectS | ? {$_.Date -ge $CurDate.AddDays(-1).AddHours(-1)}}
 
     # Some pools do reset "Total" after payment (zpool)
@@ -137,9 +142,10 @@ while ($true) {
     # Sleep until next update based on $Interval. Modulo $Interval.
     # Sleep (60*($Interval-((get-date).minute%$Interval))) # Changed to avoid pool API load.
     If (($EarningsObject.Date - $EarningsObject.StartTime).TotalMinutes -le 20) {
-        Sleep (60 * ($Interval / 2))	
+        Sleep (60 * ($Interval / 2))    
     }
     else {
-        Sleep (60 * ($Interval))	
+        Sleep (60 * ($Interval))  
     }
 }
+
