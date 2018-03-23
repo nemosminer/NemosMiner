@@ -18,11 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 param(
     [Parameter(Mandatory = $false)]
-    [String]$Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy", 
+    [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
-    [String]$UserName = "MrPlus", 
+    [String]$UserName = "nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NPlusMiner2.1.2", 
+    [String]$WorkerName = "ID=NemosMiner-v3.0", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -66,7 +66,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Float]$MarginOfError = 0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
-    [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
+    [String]$UIStyle = "Full", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
     [Bool]$TrackEarnings = $True, # Display earnings information
     [Parameter(Mandatory = $false)]
@@ -75,7 +75,7 @@ param(
 
 
 . .\Include.ps1
-. .\Core-v2.1.ps1
+. .\Core-v3.0.ps1
 
 @"
 NemosMiner
