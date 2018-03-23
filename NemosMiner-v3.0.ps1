@@ -171,7 +171,7 @@ If (Test-Path ".\Logs\switching.log") {$log = Import-Csv ".\Logs\switching.log" 
 $SwitchingArray = [System.Collections.ArrayList]@($Log)
 
 $MainForm = New-Object system.Windows.Forms.Form
-$NPMIcon = New-Object system.drawing.icon (".\NM.ICO")
+$NMIcon = New-Object system.drawing.icon (".\NM.ICO")
 $MainForm.Icon = $NMIcon
 $MainForm.ClientSize = '740,450' # best to keep under 800,600
 $MainForm.text = "Form"
