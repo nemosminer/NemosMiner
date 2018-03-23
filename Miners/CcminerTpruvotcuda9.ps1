@@ -28,7 +28,7 @@ $Commands = [PSCustomObject]@{
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
-     "sha256t" = " -d $SelGPUCC --api-remote --api-allow=0/0" #sha256t
+     "sha256t" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sha256t
    #"sia" = "" #Sia
     "sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
