@@ -6,14 +6,14 @@ $Path = ".\Bin\Excavator\excavator.exe"
 $Uri = "https://github.com/nicehash/excavator/releases/download/v1.4.4a/excavator_v1.4.4a_NVIDIA_Win64.zip"
 
 $Commands = [PSCustomObject]@{
-    #"blake2s" = @() #Blake2s
+    "blake2s" = @() #Blake2s
     #"decred" = @() #Decred
-    #"daggerhashimoto" = @() #Ethash
-    #"equihash" = @() #Equihash
+    "daggerhashimoto" = @() #Ethash
+    "equihash" = @() #Equihash
     #"lbry" = @() #Lbry
-    #"lyra2rev2" = @() #Lyra2RE2
-    #"neoscrypt" = @() #NeoScrypt
-    #"nist5" = @() #nist5
+    "lyra2rev2" = @() #Lyra2RE2
+    "neoscrypt" = @() #NeoScrypt
+    "nist5" = @() #nist5
     #"pascal" = @() #Pascal
 }
 
