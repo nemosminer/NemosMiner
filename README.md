@@ -26,6 +26,7 @@ Easy configuration, easy start:
       4. "Save Config"
       5. Close
       Run NemosMiner-v3.0.bat
+      6."Start"
       
   Fee:
 
