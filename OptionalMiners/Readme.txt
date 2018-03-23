@@ -14,10 +14,8 @@ Optional miners details:
          It is not recommended to use ccminerenemy on any machine which hosts wallets or other information.
          It is not recommended to use ccminerenemy as it is closed source.
          Use at your own risks
-   - Copy ccminerenemy.ps1 into the ".\miners\" folder
-   - Enabled algorithms are (x17 & x16r) 
+   - Copy ccminerenemy.ps1 into the ".\miners\" folder 
 
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
    - To Enable Excavator Yourself Copy Excavator.ps1 into the ".\miners\" folder
-   - Enable algorithms in Excavator.ps1 by uncommenting respective lines (remove # from Algos You want to Enable)
