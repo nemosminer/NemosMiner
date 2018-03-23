@@ -36,20 +36,20 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
     if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor * (1 - ($ahashpool_Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.actual_last24h / $Divisor * (1 - ($ahashpool_Request.$_.fees / 100)))}
 
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
 	
     if ($Config.PoolsConfig.default.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $ahashpool_Algorithm
             Info          = $ahashpool_Coin
-            Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
+            Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
             Host          = $ahashpool_Host
             Port          = $ahashpool_Port
             User          = $Config.PoolsConfig.$ConfName.Wallet
-            Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$Passwordcurrency"
+		    Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$Passwordcurrency"
             Location      = $Location
             SSL           = $false
         }

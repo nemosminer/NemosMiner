@@ -29,20 +29,20 @@ $MineMoney_Request | Get-Member -MemberType NoteProperty | Select -ExpandPropert
     if ((Get-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_last24h / $Divisor * (1 - ($MineMoney_Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_current / $Divisor * (1 - ($MineMoney_Request.$_.fees / 100)))}
 
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
 	
     if ($Config.PoolsConfig.default.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $MineMoney_Algorithm
             Info          = $MineMoney
-            Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
+            Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Fluctuation
             Protocol      = "stratum+tcp"
             Host          = $MineMoney_Host
             Port          = $MineMoney_Port
             User          = $Config.PoolsConfig.$ConfName.Wallet
-            Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$Passwordcurrency"
+		    Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$Passwordcurrency"
             Location      = $Location
             SSL           = $false
         }
