@@ -3,7 +3,7 @@ Readme for Optional Miners
 The miner.ps1 files in this folder can be used with NemosMiner.
 However, they are not included by default in the miner folder for a variety of reasons.
 
-These specific miner files are for advanced users and usually require that the miner program is downloaded manually and placed in the proper folder.
+These specific miner files are for advanced users
 
 These might not have been fully tested. Use at your own risk.
 
