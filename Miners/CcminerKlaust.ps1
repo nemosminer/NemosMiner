@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     #"ethash" = "" #Ethash
     "groestl" = " -d $SelGPUCC" #Groestl
     #"hmq1725" = "" #hmq1725
-    "keccak" = " -d $SelGPUCC" #Keccak
+    #"keccak" = " -d $SelGPUCC" #Keccak
     #"lbry" = "" #Lbry
     #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
@@ -26,12 +26,12 @@ $Commands = [PSCustomObject]@{
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     #"sib" = "" #Sib
-    "skein" = " -d $SelGPUCC" #Skein
+    #"skein" = " -d $SelGPUCC" #Skein
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
-    "c11" = " -d $SelGPUCC" #C11
+    #"c11" = " -d $SelGPUCC" #C11
     #"yescrypt" = "" #Yescrypt
 }
 
