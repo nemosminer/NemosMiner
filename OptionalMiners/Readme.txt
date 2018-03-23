@@ -17,9 +17,9 @@ Optional miners details:
    - Download ccminer enemy (https://mega.nz/#!JDAm3TJb!BMQPYJz5_nmkZEZB0UUwWicopIdgnHG82Ht5buWxZxo)
    - Place the Extracted ccminer enemy files in the ".\Bin\NVIDIA-ccminerenemy\" folder
    - Copy ccminerenemy.ps1 into the ".\miners\" folder
-   - Enable algorithms are (x17 & x16r) 
+   - Enabled algorithms are (x17 & x16r) 
 
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
-   - Copy Excavator.ps1 into the ".\miners\" folder
-   - Enable algorithms in Excavator.ps1 by uncommented respective lines
+   - To Enable Excavator Yourself Copy Excavator.ps1 into the ".\miners\" folder
+   - Enable algorithms in Excavator.ps1 by uncommented respective lines (remove # from Algos you want to Enable)
