@@ -10,7 +10,7 @@ These might not have been fully tested. Use at your own risk.
 Optional miners details:
 
 - ccminerenemy
-         Note that ccminerenemy is closed source and therefore is NOT enabled in NPlusMiner by default
+         Note that ccminerenemy is closed source and therefore is NOT enabled in NemossMiner by default
          It is not recommended to use ccminerenemy on any machine which hosts wallets or other information.
          It is not recommended to use ccminerenemy as it is closed source.
          Use at your own risks
@@ -22,4 +22,4 @@ Optional miners details:
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
    - To Enable Excavator Yourself Copy Excavator.ps1 into the ".\miners\" folder
-   - Enable algorithms in Excavator.ps1 by uncommented respective lines (remove # from Algos you want to Enable)
+   - Enable algorithms in Excavator.ps1 by uncommenting respective lines (remove # from Algos you want to Enable)
