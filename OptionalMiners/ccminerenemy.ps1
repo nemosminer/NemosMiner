@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerenemy\ccminer.exe"
-$Uri = "http://yokamoto.x10host.com/ccminere1.03.zip"
+$Uri = "http://s000.tinyupload.com/download.php?file_id=83212175123565628363&t=8321217512356562836395624"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
