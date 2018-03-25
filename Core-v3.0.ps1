@@ -159,8 +159,8 @@ Function NPMCycle {
         $Variables.LastDonated = Get-Date
         $Variables.DonateRandom = [PSCustomObject]@{}
     }
-    Update-Status("Loading $($Config.Passwordcurrency) rate from 'api.coinbase.com'..")
-    $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=$($Config.Passwordcurrency)" -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
+    Update-Status("Loading BTC rate from 'api.coinbase.com'..")
+    $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
     $Config.Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
     $Variables | Add-Member -Force @{Rates = $Rates}
     #Load the Stats
@@ -419,7 +419,7 @@ Function NPMCycle {
             ) | Out-Host
         }
     }
-    Write-Host "      1$($Config.Passwordcurrency) = $($Variables.Rates.($Config.Currency)) $($Config.Currency)"
+    Write-Host "      1BTC = $($Variables.Rates.($Config.Currency)) $($Config.Currency)"
     # Get and display earnings stats
     $Variables.EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
         $EarnTrack = $_ | Receive-Job
