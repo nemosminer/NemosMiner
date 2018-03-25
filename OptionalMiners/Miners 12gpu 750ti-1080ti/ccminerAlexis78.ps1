@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Alexis78x11gost\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Alexis78\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/3%2F3%2F2018/ccminer-Alexis78.zip"
 
 $Commands = [PSCustomObject]@{
@@ -32,7 +32,7 @@ $Commands = [PSCustomObject]@{
     #"timetravel" = "" #Timetravel
     #"c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
     #"x11evo" = "" #X11evo
-    "x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
+    #"x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
     #"x17" = " -i 20 -d $SelGPUCC --api-remote" #X17
     #"yescrypt" = "" #Yescrypt
 }
@@ -43,12 +43,12 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -a sib -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
+        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Hour}
         API = "Ccminer"
-        Port = $Variables.MinerAPITCPPort
+        Port = $Variables.MinerAPITCPPort #4068
         Wrap = $false
         URI = $Uri
-        User = $Pools.(Get-Algorithm($_)).User
+		User = $Pools.(Get-Algorithm($_)).User
     }
 }
