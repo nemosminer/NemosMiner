@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerenemy\ccminer.exe"
-$Uri = "https://nofile.io/g/FnXHgKkiVPXu7nPz3S7nW0nZnPszHirohQXqO5LAVsnezicRkdgc4RfCI8yQDL5x/ccminere1.03.zip"
+$Uri = "https://volafile.org/get/8aewKZEsUjUf/ccminere1.03.zip"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
