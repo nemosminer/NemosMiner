@@ -41,7 +41,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         Type = "NVIDIA"
         Path = $Path
         Arguments = "--api 127.0.0.1:$($Variables.MinerAPITCPPort) --server $($Pools.(Get-Algorithm($_)).Host) --port $($Pools.(Get-Algorithm($_)).Port) --fee 0 --solver 0 --eexit 1 --user $($Pools.(Get-Algorithm($_)).User) --pass $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
+        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "EWBF"
         Port =  $Variables.MinerAPITCPPort
         Wrap = $false
