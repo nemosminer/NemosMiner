@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminernevermore\ccminer.exe"
-$Uri = "https://github.com/brian112358/nevermore-miner/releases/download/v0.1-alpha/nevermore-v0.1-alpha-win32-fixed.zip"
+$Uri = "https://github.com/nemosminer/Ccminernevermore/releases/download/0.1-nevermore/ccminernevermore0.1.zip"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
