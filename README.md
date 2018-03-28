@@ -28,6 +28,8 @@ Easy configuration, easy start:
       Run NemosMiner-v3.0.bat
       6."Start"
       
+      note: 1. you only need to change Username if you are using Miningpoolhub
+      
   Fee:
      
       There is a 8 minute per day fee (0.5%), that can be changed in the config (Minimum is 3)0.2%
