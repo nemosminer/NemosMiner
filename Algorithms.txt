@@ -1,6 +1,7 @@
 {
     "sha256t":  "Sha256t",
     "x16r":  "X16r",
+    "x16s":  "X16s",
     "keccakc":  "Keccakc", 
     "hsr":  "Hsr",
     "phi":  "Phi",
