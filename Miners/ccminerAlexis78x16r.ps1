@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerAlexis78x16r\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminernevermorex16r/releases/download/nevermorex16rv0.3/ccminernevermorex16rx64v0.3.zip"
+$Uri = "https://github.com/nemosminer/ccminerx16r-16s/releases/download/x16rx16sv0.4/ccminerx16rx16sv0.4.zip"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
