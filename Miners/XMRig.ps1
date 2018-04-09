@@ -6,6 +6,7 @@ $Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.6.0-beta1/xmr
 $Commands = [PSCustomObject]@{
     "cryptonight" = " --cuda-devices $SelGPUCC" #Cryptonight
     "cryptonight-lite" = " --cuda-devices $SelGPUCC" #Cryptonight-lite
+    "cryptonightV7" = " --cuda-devices $SelGPUCC" #CryptonightV7
 }
 $Port = $Variables.MinerAPITCPPort #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
