@@ -14,6 +14,7 @@
     "blakevanilla":  "BlakeVanilla",
     "c11":  "C11",
     "cryptonight":  "CryptoNight",
+    "cryptonightV7":  "CryptoNightV7",
     "daggerhashimoto":  "Ethash",
     "darkcoinmod":  "X11",
     "decred":  "Decred",
