@@ -22,7 +22,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.0", 
+    [String]$WorkerName = "ID=NemosMiner-v3.1", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -75,7 +75,7 @@ param(
 
 
 . .\Include.ps1
-. .\Core-v3.0.ps1
+. .\Core-v3.1.ps1
 
 @"
 NemosMiner
