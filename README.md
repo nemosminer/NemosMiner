@@ -3,8 +3,8 @@ Copyright (c) 2018 Nemo		(https://github.com/nemosminer/NemosMiner)
 Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
 
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
- # NemosMiner-v3.0
- Readme Updated 2018 Mar 30
+ # NemosMiner-v3.1
+ Readme Updated 2018 April 10
  
 *****
 
@@ -19,22 +19,21 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
 
 Easy configuration, easy start:
 
-      Run NemosMiner-v3.0.bat
+      Run NemosMiner-v3.1.bat
       1. Config tab
       2. Set your Wallet address and Username
       3. Select your pool/s and load default Algos button. (Remove any algos you do not want to mine)
       4. "Save Config"
       5. Close
-      Run NemosMiner-v3.0.bat
+      Run NemosMiner-v3.1.bat
       6."Start"
       
       note: 1. you only need to change Username if you are using Miningpoolhub
       
   Fee:
      
-      There is a 8 minute per day fee (0.5%), that can be changed in the config (Minimum is 3)0.2%
-      When less than 3 minutes is set lottery is 0 or any value between 3 and 8 
-      We want to stay completely transparent on the way fees are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 8 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:52 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
+      There is a 5 minute per day fee (0.3%), that can be changed in the config (Minimum is 3)0.2%
+      We want to stay completely transparent on the way fees are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 5 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:55 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
 
 *****
 
@@ -181,5 +180,5 @@ nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
 
 MrPlus = 134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy
 
-Licensed under the GNU General Public License v3.0
+Licensed under the GNU General Public License v3.1
 Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
