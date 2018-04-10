@@ -10,8 +10,8 @@ $Commands = [PSCustomObject]@{
     #"blake2s" = " -d $SelGPUCC" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
-    "cryptonight" = " -d $SelGPUCC --api-remote" #Cryptonight
-    "cryptonightV7" = " -d $SelGPUCC --api-remote" #CryptonightV7
+    "cryptonight" = " -d $SelGPUCC" #Cryptonight
+    "cryptonightV7" = " -d $SelGPUCC" #CryptonightV7
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
@@ -47,7 +47,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = " -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
