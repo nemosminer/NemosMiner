@@ -32,7 +32,7 @@ Easy configuration, easy start:
       
   Fee:
      
-      There is a 5 minute per day fee (0.3%), that can be changed in the config (Minimum is 3)0.2%
+      There is a 5 minute per day fee (0.3%), that can be changed in the config
       We want to stay completely transparent on the way fees are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 5 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:55 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
 
 *****
@@ -172,7 +172,7 @@ Some miners do not support more that 9 cards
 
 *****
 
-Any donations will be much appreciated:
+this is a free project feel free to donate be much appreciated:
 
 aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
 
