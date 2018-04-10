@@ -15,7 +15,7 @@ Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 . .\Include.ps1
 
-Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
+Remove-Item ".\Wrapper_$Id.txt" -ErrorAction Ignore
 
 $PowerShell = [PowerShell]::Create()
 if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
@@ -24,7 +24,7 @@ if ($ArgumentList -ne "") {$Command += " $ArgumentList"}
 $PowerShell.AddScript("$Command 2>&1 | Write-Verbose -Verbose") | Out-Null
 $Result = $PowerShell.BeginInvoke()
 
-Write-Host "NemosMiner-v3.1 Wrapper Started" -BackgroundColor Yellow -ForegroundColor Black
+Write-Host "NemosMinerv3.1 Wrapper Started" -BackgroundColor Yellow -ForegroundColor Black
 
 do {
     Start-Sleep 1
@@ -44,19 +44,7 @@ do {
                 "ph/s" {$HashRate *= [Math]::Pow(1000, 5)}
             }
 
-            $HashRate | Set-Content ".\PalginNeoHashrate.txt"
-        }
-        elseif ($Line -like "*overall speed is*") {
-            $Words = $Line -split " "
-            $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -Last 1)
-
-            switch ($Words -like "*H/s*" -replace "[0-9.,]", '' | Select-Object -Last 1) {
-                "KH/s" {$HashRate *= [Math]::Pow(1000, 1)}
-                "mH/s" {$HashRate *= [Math]::Pow(1000, 2)}
-                "MH/s" {$HashRate *= [Math]::Pow(1000, 2)}
-            }
-            $HashRate = [int]$HashRate
-            $HashRate | Set-Content ".\PalginNeoHashrate.txt"
+            $HashRate | Set-Content ".\Wrapper_$Id.txt"
         }
 
         $Line
@@ -66,4 +54,4 @@ do {
 }
 until($Result.IsCompleted)
 
-Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
+Remove-Item ".\Wrapper_$Id.txt" -ErrorAction Ignore
