@@ -32,7 +32,7 @@ do {
     $PowerShell.Streams.Verbose.ReadAll() | ForEach-Object {
         $Line = $_
 
-        if ($Line -like "*total speed:*" -or $Line -like "*accepted:*") {
+        if (($Line -like "*total*" -or $Line -like "*accepted*" -or $Line -like ">*") -and $Line -like "*/s*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1)) - 1]
 
@@ -48,7 +48,7 @@ do {
 
             $HashRate | Set-Content ".\cryptonightV7Hashrate.txt"
         }
-        elseif ($Line -like "*total speed:*" -or $Line -like "*accepted:*") {
+        elseif ($Line -like "*total speed:*" -or $Line -like "*accepted*" -or $Line -like ">*") -and $Line -like "*/s*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -Last 1)
 
