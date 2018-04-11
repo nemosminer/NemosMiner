@@ -44,7 +44,7 @@ do {
                 "ph/s" {$HashRate *= [Math]::Pow(1000, 5)}
             }
 
-            $HashRate | Set-Content ".\cryptonightV7.txt"
+            $HashRate | Set-Content ".\cryptonightV7Hashrate.txt"
         } elseif ($Line -like "*total speed:*" -or $Line -like "*accepted:*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -Last 1)
@@ -55,7 +55,7 @@ do {
                 "MH/s" {$HashRate *= [Math]::Pow(1000, 2)}
             }
 			$HashRate = [int]$HashRate
-            $HashRate | Set-Content ".\cryptonightV7.txt"
+            $HashRate | Set-Content ".\cryptonightV7Hashrate.txt"
         }
 
         $Line
