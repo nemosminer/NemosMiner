@@ -509,10 +509,11 @@ function Get-HashRate {
                 } while ($HashRates.Count -lt 6)
             }
             "wrapper" {
-                do {
-                    $HashRate = Get-Content ".\Wrapper_$Id.txt"
+                do { 
+
+                    $HashRate = Get-Content ".\cryptonightV7Hashrate.txt"
                 
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = Get-Content ".\Wrapper_$Id.txt"}
+                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
 
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 
