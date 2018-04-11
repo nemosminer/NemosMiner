@@ -15,6 +15,8 @@ Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 . .\Include.ps1
 
+Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
+
 $PowerShell = [PowerShell]::Create()
 if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
 $Command = ". '$FilePath'"
@@ -42,7 +44,7 @@ do {
                 "ph/s" {$HashRate *= [Math]::Pow(1000, 5)}
             }
 
-            $HashRate | Set-Content ".\Wrapper_$Id.txt"
+            $HashRate | Set-Content ".\cryptonightV7.txt"
         } elseif ($Line -like "*total speed:*" -or $Line -like "*accepted:*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -Last 1)
@@ -53,7 +55,7 @@ do {
                 "MH/s" {$HashRate *= [Math]::Pow(1000, 2)}
             }
 			$HashRate = [int]$HashRate
-            $HashRate | Set-Content ".\Wrapper_$Id.txt"
+            $HashRate | Set-Content ".\cryptonightV7.txt"
         }
 
         $Line
@@ -62,3 +64,5 @@ do {
     if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
 }
 until($Result.IsCompleted)
+
+Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
