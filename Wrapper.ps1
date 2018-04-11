@@ -43,7 +43,7 @@ do {
             }
 
             $HashRate | Set-Content ".\Wrapper_$Id.txt"
-        } elseif ($Line -like "*overall speed is*") {
+        } elseif ($Line -like "*total speed:*" -or $Line -like "*accepted:*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]($Words -like "*H/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -Last 1)
 
