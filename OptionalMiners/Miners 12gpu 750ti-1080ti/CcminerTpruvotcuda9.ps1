@@ -34,7 +34,7 @@ $Commands = [PSCustomObject]@{
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
     "timetravel" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Timetravel
-    "tribus" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Tribus
+    #"tribus" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     "x11evo" = " -d $SelGPUCC --api-remote --api-allow=0/0" #X11evo
