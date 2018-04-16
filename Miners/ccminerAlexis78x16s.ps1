@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminerAlexis78x16r\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerAlexis78x16s\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerx16r-x16s/releases/download/x16rx16sv0.4/ccminerx16rx16sv0.4.zip"
 
 $Commands = [PSCustomObject]@{
@@ -35,9 +35,9 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -d $SelGPUCC --api-remote" #X17
-    #"x16r" = " -d $SelGPUCC --api-remote --api-allow=0/0" #X16r
-    "x16s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #X16s
+    #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
+    #"x16r" = " -i 21.5 -d $SelGPUCC --api-remote --api-allow=0/0" #X16r
+	"x16s" = " -i 21.5 -d $SelGPUCC --api-remote --api-allow=0/0" #X16s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName

@@ -1,40 +1,39 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Alexis78\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/3%2F3%2F2018/ccminer-Alexis78.zip"
+$Path = ".\Bin\NVIDIA-CcminerSkunk\ccminer.exe"
+$Uri = "https://github.com/scaras/ccminer-2.2-mod-r1/releases/download/2.2-r1/2.2-mod-r1.zip"
 
 $Commands = [PSCustomObject]@{
-    "hsr" = " -d $SelGPUCC --api-remote" #Hsr
     #"bitcore" = "" #Bitcore
-    "blake2s" = " -d $SelGPUCC --api-remote" #Blake2s
-    #"blakecoin" = " -d $SelGPUCC --api-remote" #Blakecoin
+    #"blake2s" = "" #Blake2s
+    #"blakecoin" = "" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
-    "veltor" = " -i 23 -d $SelGPUCC --api-remote" #Veltor
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
-    #"groestl" = "" #Groestl
+    #"groestl" = " -d $SelGPUCC" #Groestl
     #"hmq1725" = "" #hmq1725
-    "keccak" = " -m 2 -i 29 -d $SelGPUCC" #Keccak
-    "lbry" = " -d $SelGPUCC --api-remote" #Lbry
-    "lyra2v2" = " -d $SelGPUCC --api-remote" #Lyra2RE2
+    #"keccak" = "" #Keccak
+    #"lbry" = "" #Lbry
+    #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
-    #"myr-gr" = " -d $SelGPUCC --api-remote" #MyriadGroestl
-    #"neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
-    "nist5" = " -i 25.7 -d $SelGPUCC --api-remote" #Nist5
+    #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
+    #"neoscrypt" = " -b 4068 -d $SelGPUCC" #NeoScrypt
+    #"nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
-    #"sib" = " -i 21 -d $SelGPUCC --api-remote" #Sib
-    "skein" = " -i 29 -d $SelGPUCC --api-remote" #Skein
+    #"sib" = "" #Sib
+    #"skein" = "" #Skein
     #"timetravel" = "" #Timetravel
-    "c11" = " -i 21 -d $SelGPUCC --api-remote" #C11
+    #"x11" = "" #X11
+    #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
-    "x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
-    "x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
+    #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
+    "skunk" = " -i 25 -d $SelGPUCC --api-remote --api-allow=0/0" #Skunk
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -46,7 +45,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
-        Port = $Variables.MinerAPITCPPort #4068
+        Port = $Variables.MinerAPITCPPort
         Wrap = $false
         URI = $Uri
 		User = $Pools.(Get-Algorithm($_)).User
