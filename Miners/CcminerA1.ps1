@@ -40,8 +40,8 @@ $Algorithms = [PSCustomObject]@{
     #Hsr = 'hsr'
     #Polytimos = 'polytimos'
     #Decred = 'decred'
-    X16r = 'x16r'
-    X16s = 'x16s'
+    #X16r = 'x16r'
+    #X16s = 'x16s'
 }
 
 $Optimizations = [PSCustomObject]@{
