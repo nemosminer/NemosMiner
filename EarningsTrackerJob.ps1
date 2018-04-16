@@ -49,7 +49,8 @@ sleep $StartDelay
 
 if (-not $APIUri) {
     try {
-        $poolapi = Invoke-WebRequest "http://nemosminer.x10host.com/poolapiref.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+        #$poolapi = Invoke-WebRequest "http://nemosminer.x10host.com/poolapiref.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+		$poolapi = Invoke-WebRequest "https://raw.githubusercontent.com/DJDoubleD/NemosMiner/master/Config/poolapiref.json" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
     catch {$poolapi = Get-content ".\Config\poolapiref.json" | Convertfrom-json}
     if ($poolapi -ne $null) {
@@ -79,25 +80,27 @@ while ($true) {
     }
     elseif ($Pool -eq "miningpoolhub") {
         try {
-            $BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "bitcoin"}) 
+            #$BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "bitcoin"}) 
+			$BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "litecoin"}) 
         }
         catch {  }#.confirmed
     }
     else {
         try {
+			[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
             $TempBalanceData = Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
         }
-        catch {  }
+        catch {}
     }
     If ($TempBalanceData.$BalanceJson) {$BalanceData = $TempBalanceData}
 
     $BalanceObjectS += [PSCustomObject]@{
         Date         = $CurDate
-        balance      = $BalanceData.$BalanceJson
-        unsold       = $BalanceData.unsold
-        total_unpaid = $BalanceData.total_unpaid
-        total_paid   = $BalanceData.total_paid
-        total_earned = $BalanceData.$TotalJson
+        balance      = [decimal]$BalanceData.$BalanceJson
+        unsold       = [decimal]$BalanceData.unsold
+        total_unpaid = [decimal]$BalanceData.total_unpaid
+        total_paid   = [decimal]$BalanceData.total_paid
+        total_earned = [decimal]$BalanceData.$TotalJson
         currency     = $BalanceData.currency
     }
     $BalanceObject = $BalanceObjectS[$BalanceOjectS.Count - 1]
