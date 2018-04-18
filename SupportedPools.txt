@@ -8,3 +8,4 @@ minemoney
 blazepool
 phiphipool
 blockmasters
+starpool
