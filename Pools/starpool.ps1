@@ -26,6 +26,7 @@ $starpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty
 		"decred" {$Divisor *= 1000}
 		"keccak" {$Divisor *= 1000}
 		"keccakc" {$Divisor *= 1000}
+		"lbry" {$Divisor *= 1000}
 	}
 
 	if ((Get-Stat -Name "$($Name)_$($starpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($starpool_Algorithm)_Profit" -Value ([Double]$starpool_Request.$_.estimate_last24h / $Divisor)}
