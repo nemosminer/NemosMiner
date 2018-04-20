@@ -13,7 +13,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Location = "US"
 
 $blockmasters_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | foreach {
-	$blockmasters_Host = "$_.mine.blockmasters.com"
+	$blockmasters_Host = "blockmasters.co"
 	$blockmasters_Port = $blockmasters_Request.$_.port
 	$blockmasters_Algorithm = Get-Algorithm $blockmasters_Request.$_.name
 	$blockmasters_Coin = ""
