@@ -12,7 +12,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Location = "US"
 
 $blazepool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $blazepool_Host = "blockmasters.co"
+    $blazepool_Host = "$_.mine.blazepool.com"
     $blazepool_Port = $blazepool_Request.$_.port
     $blazepool_Algorithm = Get-Algorithm $blazepool_Request.$_.name
     $blazepool_Coin = ""
