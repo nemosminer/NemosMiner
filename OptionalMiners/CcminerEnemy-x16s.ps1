@@ -1,4 +1,4 @@
-$Path = '.\Bin\NVIDIA-Enemy(X16S)\ccminer.exe'
+$Path = '.\Bin\NVIDIA-Enemyx16s\ccminer.exe'
 $Uri = 'http://kudaraidee.thaiddns.com:69/DechoKocharin/Miner/x16s.zip'
 
 $Commands = [PSCustomObject]@{
