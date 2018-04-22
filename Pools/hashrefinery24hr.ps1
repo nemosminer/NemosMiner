@@ -17,7 +17,7 @@ $hashrefinery_Request | Get-Member -MemberType NoteProperty | Select -ExpandProp
 	$hashrefinery_Algorithm = Get-Algorithm $hashrefinery_Request.$_.name
 	$hashrefinery_Coin = "Unknown"
 
-    $Divisor = 1000000
+    $Divisor = 1000000000
 	
     switch ($hashrefinery_Algorithm) {
         "equihash" {$Divisor /= 1000}
