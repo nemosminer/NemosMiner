@@ -892,7 +892,7 @@ $CheckBoxHashRefineryPlus = New-Object system.Windows.Forms.CheckBox
 $CheckBoxHashRefineryPlus.Tag = @{name = "PoolName"; Value = "hashrefineryplus"}
 $CheckBoxHashRefineryPlus.text = "Plus"
 $CheckBoxHashRefineryPlus.AutoSize = $false
-$CheckBoxHashRefineryPlus.width = 100
+$CheckBoxHashRefineryPlus.width = 60
 $CheckBoxHashRefineryPlus.height = 20
 $CheckBoxHashRefineryPlus.location = New-Object System.Drawing.Point(110, 81)
 $CheckBoxHashRefineryPlus.Font = 'Microsoft Sans Serif,10'
@@ -903,7 +903,7 @@ $CheckBoxHashRefinery24hr = New-Object system.Windows.Forms.CheckBox
 $CheckBoxHashRefinery24hr.Tag = @{name = "PoolName"; Value = "hashrefinery24hr"}
 $CheckBoxHashRefinery24hr.text = "24hr"
 $CheckBoxHashRefinery24hr.AutoSize = $false
-$CheckBoxHashRefinery24hr.width = 100
+$CheckBoxHashRefinery24hr.width = 60
 $CheckBoxHashRefinery24hr.height = 20
 $CheckBoxHashRefinery24hr.location = New-Object System.Drawing.Point(175, 81)
 $CheckBoxHashRefinery24hr.Font = 'Microsoft Sans Serif,10'
