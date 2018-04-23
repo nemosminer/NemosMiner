@@ -1,6 +1,6 @@
 ﻿. .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminerenemy1.05a\z-enemy.exe"
+$Path = ".\Bin\NVIDIA-enemyZ1.05a\z-enemy.exe"
 $Uri = "http://nemosminer.dx.am/Opt/ccminerEnemy1.05a.7z"
 
 $Commands = [PSCustomObject]@{
@@ -50,7 +50,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         Type = "NVIDIA"
         Path = $Path
         Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
+        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
         Wrap = $false
