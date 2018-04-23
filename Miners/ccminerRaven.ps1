@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerRaven\ccminer.exe"
-$Uri = "https://github.com/Ravencoin-Miner/Ravencoin/releases/download/v2.5/Ravencoin.Miner.v2.5.zip"
+$Uri = "https://github.com/Ravencoin-Miner/Ravencoin/releases/download/v2.6/Ravencoin.Miner.v2.6.zip"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
