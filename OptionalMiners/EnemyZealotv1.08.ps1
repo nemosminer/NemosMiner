@@ -1,6 +1,6 @@
 ﻿. .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-CcminerEnemyZ1.08\z-enemy.exe"
+$Path = ".\Bin\NVIDIA-EnemyZ1.08\z-enemy.exe"
 $Uri = "http://nemosminer.dx.am/Opt/ZEnemy1.08.7z"
 
 $Commands = [PSCustomObject]@{
