@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerenemy\ccminer.exe"
-$Uri = "http://newera.dx.am/cme1.03.7z"
+$Uri = "http://newera.dx.am/ccminerEnemyv1.03.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
