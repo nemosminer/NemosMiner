@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerenemy\ccminer.exe"
-$Uri = "http://nemosminer.dx.am/Opt/ccminerEnemyv1.03.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/ccminerenemy1.03.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
