@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
     #"x16r" = " -d $SelGPUCC" #X16r
-    "x16s" = ",d=Hashrate/3 -d $SelGPUCC -N 180" #X16s
+    "x16s" = " -d $SelGPUCC -N 180" #X16s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
