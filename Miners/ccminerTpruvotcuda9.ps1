@@ -28,8 +28,8 @@ $Commands = [PSCustomObject]@{
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
-     "sha256t" = " -d $SelGPUCC" #Sha256t
-   #"sia" = "" #Sia
+    "sha256t" = " -d $SelGPUCC" #Sha256t
+    #"sia" = "" #Sia
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
@@ -38,7 +38,7 @@ $Commands = [PSCustomObject]@{
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     "x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #X17
+    "x17" = " -N 1 -d $SelGPUCC" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
