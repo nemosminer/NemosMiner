@@ -1,7 +1,7 @@
 ﻿. .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-spmodphiv1\ccminer.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/ccminer-phi-sp1.7zz"
+$Uri = "http://nemos.dx.am/opt/nemos/ccminer-phi-sp1.7z"
 
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
