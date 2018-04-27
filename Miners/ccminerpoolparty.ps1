@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
-    "x16r" = " -d $SelGPUCC --donate=0" #X16r
+    "x16r" = " -d $SelGPUCC --donate=0" #X16r(fastest open source no dev fee)(zealotenemy1.08 may yeild slighty better results with 1080tirigs altho not by much)
     #"x16s" = " -d $SelGPUCC -N 180" #X16s
 }
 
