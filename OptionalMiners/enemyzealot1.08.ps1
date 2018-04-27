@@ -6,10 +6,10 @@ $Uri = "http://nemos.dx.am/opt/nemos/enemyz1.08.7z"
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    #"phi" = " -d $SelGPUCC -i 20" #Phi
-    #"bitcore" = " -d $SelGPUCC -i 20" #Bitcore
-    "x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r
-    "x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s
+    #"phi" = " -d $SelGPUCC -i 20" #Phi(spmodphi faster)
+    #"bitcore" = " -d $SelGPUCC -i 20" #Bitcore(spmodbitcore faster very close tho)
+    "x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r(may yeild slighty better results with 1080ti rigs poolparty is very close sometimes faster)
+    "x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s(fastest)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
