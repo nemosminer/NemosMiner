@@ -1,9 +1,169 @@
-{
-    "default": {
-        "PricePenaltyFactor": 1,
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "UserName": "nemo",
-        "WorkerName": "NemosMiner3.1",
-        "APIKey": "373a71335e010d6928766a5cce6365b5e7f75ef798d0f6353ceca27f782d795b"
-    }
+﻿{
+    "ahashpool":  {
+                      "UserName":  "DJDoubleD",
+                      "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                      "WorkerName":  "ID=RIG-MULTIALGO",
+                      "PricePenaltyFactor":  1
+                  },
+    "ahashpool24hr":  {
+                          "UserName":  "DJDoubleD",
+                          "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                          "WorkerName":  "ID=RIG-MULTIALGO",
+                          "PricePenaltyFactor":  1
+                      },
+    "ahashpoolplus":  {
+                          "UserName":  "DJDoubleD",
+                          "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                          "WorkerName":  "ID=RIG-MULTIALGO",
+                          "PricePenaltyFactor":  1
+                      },
+    "blazepool":  {
+                      "UserName":  "DJDoubleD",
+                      "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                      "WorkerName":  "ID=RIG-MULTIALGO",
+                      "PricePenaltyFactor":  1
+                  },
+    "blazepool24hr":  {
+                          "UserName":  "DJDoubleD",
+                          "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                          "WorkerName":  "ID=RIG-MULTIALGO",
+                          "PricePenaltyFactor":  1
+                      },
+    "blazepoolplus":  {
+                          "UserName":  "DJDoubleD",
+                          "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                          "WorkerName":  "ID=RIG-MULTIALGO",
+                          "PricePenaltyFactor":  1
+                      },
+    "blockmasters":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "DRtx6uFx9GUWWv3G6vYqaAu6pwbXjHVjsF",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "DOGE"
+                     },
+    "blockmasters24hr":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "DRtx6uFx9GUWWv3G6vYqaAu6pwbXjHVjsF",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "DOGE"
+                     },
+    "blockmastersplus":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "DRtx6uFx9GUWWv3G6vYqaAu6pwbXjHVjsF",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "DOGE"
+                     },
+    "default":  {
+                    "PricePenaltyFactor":  1,
+                    "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                    "UserName":  "DJDoubleD",
+                    "WorkerName":  "RIG-MULTIALGO",
+                    "APIKey":  "dc6bef15cf78deeccb8e5886151cfef1371276d18367543ef15e96f2da01d208"
+                },
+    "hashrefinery":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1
+                     },
+    "hashrefinery24hr":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1
+                     },
+    "hashrefineryplus":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1
+                     },
+    "minemoney":  {
+                      "UserName":  "DJDoubleD",
+                      "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                      "WorkerName":  "ID=RIG-MULTIALGO",
+                      "PricePenaltyFactor":  1
+                  },
+    "minemoney24hr":  {
+                          "UserName":  "DJDoubleD",
+                          "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                          "WorkerName":  "ID=RIG-MULTIALGO",
+                          "PricePenaltyFactor":  1
+                      },
+    "miningpoolhub":  {
+                          "UserName":  "DJDoubleD",
+                          "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                          "WorkerName":  "RIG-MULTIALGO",
+                          "PricePenaltyFactor":  1,
+                          "APIKey":  "dc6bef15cf78deeccb8e5886151cfef1371276d18367543ef15e96f2da01d208"
+                      },
+    "nicehash":  {
+                     "UserName":  "DJDoubleD",
+                     "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                     "WorkerName":  "NemosMiner3.0",
+                     "PricePenaltyFactor":  1
+                 },
+    "starpool":  {
+                     "UserName":  "DJDoubleD",
+                     "Wallet":  "LKj3bGzTePe6gAA8zzTkRKfYBFwoSKESvS",
+                     "WorkerName":  "ID=RIG-MULTIALGO",
+                     "PricePenaltyFactor":  1,
+                     "PwdCurrency":  "LTC"
+                 },
+    "starpool24hr":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "LKj3bGzTePe6gAA8zzTkRKfYBFwoSKESvS",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "LTC"
+                     },
+    "starpoolplus":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "LKj3bGzTePe6gAA8zzTkRKfYBFwoSKESvS",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "LTC"
+                     },
+    "zergpool":  {
+                     "UserName":  "DJDoubleD",
+                     "Wallet":  "LKj3bGzTePe6gAA8zzTkRKfYBFwoSKESvS",
+                     "WorkerName":  "ID=RIG-MULTIALGO",
+                     "PricePenaltyFactor":  1,
+                     "PwdCurrency":  "LTC"
+                 },
+    "zergpool24hr":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "LKj3bGzTePe6gAA8zzTkRKfYBFwoSKESvS",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "LTC"
+                     },
+    "zergpoolplus":  {
+                         "UserName":  "DJDoubleD",
+                         "Wallet":  "LKj3bGzTePe6gAA8zzTkRKfYBFwoSKESvS",
+                         "WorkerName":  "ID=RIG-MULTIALGO",
+                         "PricePenaltyFactor":  1,
+                         "PwdCurrency":  "LTC"
+                     },
+    "zpool":  {
+                  "UserName":  "DJDoubleD",
+                  "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                  "WorkerName":  "ID=RIG-MULTIALGO",
+                  "PricePenaltyFactor":  1
+              },
+    "zpool24hr":  {
+                      "UserName":  "DJDoubleD",
+                      "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                      "WorkerName":  "ID=RIG-MULTIALGO",
+                      "PricePenaltyFactor":  1
+                  },
+    "zpoolplus":  {
+                      "UserName":  "DJDoubleD",
+                      "Wallet":  "1Tuao4Ki1YpiLS6bFHG8fWrw3NPu76dJR",
+                      "WorkerName":  "ID=RIG-MULTIALGO",
+                      "PricePenaltyFactor":  1
+                  }
 }
