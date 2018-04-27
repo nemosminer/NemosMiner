@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\\Bin\\Ethash-Claymore\\EthDcrMiner64.exe"
-$Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/V11.5/Claymore.s.Dual.Ethereum.NVIDIA.GPU.Miner.v11.5.zip"
+$Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/v11.7/ClaymoreEthMiner.v11.7.7z"
 $Commands = [PSCustomObject]@{
     "ethash" = " -di $($SelGPUCC.Replace(',',''))" #Ethash
 }
