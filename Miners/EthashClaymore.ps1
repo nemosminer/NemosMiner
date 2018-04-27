@@ -3,7 +3,7 @@
 $Path = ".\\Bin\\Ethash-Claymore\\EthDcrMiner64.exe"
 $Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/v11.7/ClaymoreEthMiner.v11.7.7z"
 $Commands = [PSCustomObject]@{
-    "ethash" = " -di $($SelGPUCC.Replace(',',''))" #Ethash
+    "ethash" = " -di $($SelGPUCC.Replace(',',''))" #Ethash(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
