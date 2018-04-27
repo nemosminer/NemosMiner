@@ -33,7 +33,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = "" #X11evo
     #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
-    "skunk" = " -d $SelGPUCC" #Skunk(spmodskunk is fastesr)
+    "skunk" = " -d $SelGPUCC" #Skunk(spmodskunk is faster)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
