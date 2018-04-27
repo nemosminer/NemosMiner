@@ -33,7 +33,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = "" #X11evo
     #"x17" = "" #X17
     #"yescrypt" = "" #Yescrypt
-    "keccakc" = " -d $SelGPUCC" #Keccakc
+    "keccakc" = " -d $SelGPUCC" #Keccakc(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
