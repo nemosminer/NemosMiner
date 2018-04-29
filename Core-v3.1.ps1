@@ -41,7 +41,7 @@ Function InitApplication {
     #Update stats with missing data and set to today's date/time
     if (Test-Path "Stats") {Get-ChildItemContent "Stats" | ForEach {$Stat = Set-Stat $_.Name $_.Content.Week}}
     #Set donation parameters
-    #Randomly sets donation minutes per day between (0,(3..5)) minutes if set to less than 3
+    #Randomly sets donation minutes per day between (0,(3..8)) minutes if set to less than 3
     $Variables | Add-Member -Force @{DonateRandom = [PSCustomObject]@{}}
     $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
     If ($Config.Donate -lt 3) {$Config.Donate = (0, (3..8)) | Get-Random}
