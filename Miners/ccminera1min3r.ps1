@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-a1min3r64\ccminer.exe"
+$Path = ".\Bin\NVIDIA-a1min3r\ccminer.exe"
 $Uri = "https://github.com/a1i3nj03/a1min3r/releases/download/1.4.3/ccminer-Win64.7z"
 
 $Commands = [PSCustomObject]@{
