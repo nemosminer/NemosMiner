@@ -13,6 +13,9 @@ Optional miners details:
          It is not recommended to use ccminerenemy as it is closed source.
          Use at your own risks
    - To Enable ccminerenemy Yourself Copy ccminerenemy.ps1 into the ".\miners\" folder 
+   
+   - ccminerspmod's
+         Note that ccminerspmod's is closed source and therefore is NOT enabled in NemosMiner by default
 
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
