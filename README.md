@@ -28,7 +28,7 @@ Easy configuration, easy start:
       Run NemosMiner-v3.1.bat
       6."Start"
       
-      note: 1. you only need to change Username if you are using Miningpoolhub
+      note: 2. you only need to change Username if you are using Miningpoolhub
       
   Fee:
      
