@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-a1min3r\ccminer.exe"
-$Uri = "https://github.com/a1i3nj03/a1min3r/releases/download/1.4.3/ccminer-Win64.7z"
+$Uri = "https://github.com/a1i3nj03/a1min3r/releases/download/0.1.5-alpha/ccminer-Win64-2.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
-    #"x16r" = " -d $SelGPUCC" #X16r(fastest for my 1070's, poolparty better overall 10603gb-1080ti/very close to zealot1.08)
+    #"x16r" = " -d $SelGPUCC -i 29" #X16r(fastest for my 1070's, poolparty better overall 10603gb-1080ti/very close to zealot1.08)
     #"x16s" = " -d $SelGPUCC" #X16s
 }
 
