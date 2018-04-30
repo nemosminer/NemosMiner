@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-poolparty\poolparty-x64.exe"
-$Uri = "https://github.com/graemes/poolparty-x16r/releases/download/v1.5.0/poolparty-win64-1.5.0.zip"
+$Uri = "https://github.com/graemes/poolparty-x16r/releases/download/v1.5.1/poolparty-win64-1.5.1.zip"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
