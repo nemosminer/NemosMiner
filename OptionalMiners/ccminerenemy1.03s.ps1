@@ -35,7 +35,7 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -d $SelGPUCC -N 1" #X17(fastest)
+    #"x17" = " -d $SelGPUCC -N 1" #X17
     "x16s" = " -d $SelGPUCC" #X16s(no dev fee, slighty slower than suprminer)
 }
 
