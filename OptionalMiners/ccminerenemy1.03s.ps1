@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -d $SelGPUCC -N 1" #X17(fastest)
-    "x16s" = " -d $SelGPUCC" #X16s(fastest no dev fee, suprminer very close)
+    "x16s" = " -d $SelGPUCC" #X16s(no dev fee,same speed/slighty faster than suprminer)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
