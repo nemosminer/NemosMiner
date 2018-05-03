@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminercryptonight\ccminer-cryptonight.exe"
-$Uri = "https://github.com/KlausT/ccminer-cryptonight/releases/download/3.02/ccminer-cryptonight-302-x64.zip"
+$Path = ".\Bin\NVIDIA-ccminercryptonight\ccminer-x64.exe"
+$Uri = "http://ccminer.org/preview/ccminer-x64-2.2.5-xmr-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
@@ -10,7 +10,6 @@ $Commands = [PSCustomObject]@{
     #"blake2s" = " -d $SelGPUCC" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
-    "cryptonight" = " -d $SelGPUCC" #Cryptonight(works with 6-8gpus no api runs in wrapper)
     "cryptonightV7" = " -d $SelGPUCC" #CryptonightV7(works with 6-8gpus no api runs in wrapper)
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
@@ -47,11 +46,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = " -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = " -a monero -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
-        API = "Wrapper"
+        API = "ccminer"
         Port = 4068
-        Wrap = $true
+        Wrap = $false
         URI = $Uri
         User = $Pools.(Get-Algorithm($_)).User
     }
