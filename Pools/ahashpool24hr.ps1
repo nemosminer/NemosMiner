@@ -1,7 +1,8 @@
 . .\Include.ps1
 
 try {
-    $ahashpool_Request = Invoke-WebRequest "https://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $ahashpool_Request = Invoke-WebRequest "https://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+    $ahashpoolCoins_Request = Invoke-RestMethod "http://www.ahashpool.com/api/currencies" -UseBasicParsing -TimeoutSec 20 -ErrorAction Stop 
 }
 catch { return }
 
@@ -15,7 +16,8 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
     $ahashpool_Host = "$_.mine.ahashpool.com"
     $ahashpool_Port = $ahashpool_Request.$_.port
     $ahashpool_Algorithm = Get-Algorithm $ahashpool_Request.$_.name
-    $ahashpool_Coin = ""
+    $ahashpool_Coin = $ahashpool_Request.$_.coins
+    $ahashpool_Coinname = $ahashpoolCoins_Request.$_.name
 
     $Divisor = 1000000000
 	
@@ -41,7 +43,7 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
     if ($Config.PoolsConfig.default.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $ahashpool_Algorithm
-            Info          = $ahashpool_Coin
+            Info          = "$ahashpool_Coin $ahashpool_Coinname"
             Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
