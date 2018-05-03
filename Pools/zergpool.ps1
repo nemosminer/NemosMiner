@@ -2,6 +2,7 @@
 
 try {
     $zergpool_Request = Invoke-WebRequest "http://api.zergpool.com:8080/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $zergpoolCoins_Request = Invoke-RestMethod "http://api.zergpool.com:8080/api/currencies" -UseBasicParsing -TimeoutSec 20 -ErrorAction Stop
 }
 catch { return }
 
@@ -15,7 +16,8 @@ $zergpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty
 	$zergpool_Host = "$_.mine.zergpool.com"
 	$zergpool_Port = $zergpool_Request.$_.port
 	$zergpool_Algorithm = Get-Algorithm $zergpool_Request.$_.name
-	$zergpool_Coin = ""
+	$zergpool_Coin = $zergpool_Request.$_.coins
+        $zergpool_Coinname = $zergpoolCoins_Request.$_.name
 
 	$Divisor = 1000000
 
@@ -37,7 +39,7 @@ $zergpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty
 	if ($Config.PoolsConfig.default.Wallet) {
 		[PSCustomObject]@{
 			Algorithm     = $zergpool_Algorithm
-			Info          = $zergpool
+			Info          = "$zergpool_Coin $zergpool_Coinname"
 			Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
 			StablePrice   = $Stat.Week
 			MarginOfError = $Stat.Fluctuation
