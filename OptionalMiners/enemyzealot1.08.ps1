@@ -8,8 +8,8 @@ $Commands = [PSCustomObject]@{
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
     #"phi" = " -d $SelGPUCC -i 20" #Phi(spmodphi faster)
     #"bitcore" = " -d $SelGPUCC -i 20" #Bitcore(spmodbitcore faster very close tho)
-    "x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r(fastest poolparty very close)
-    "x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s(fastest)
+    "x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r(sp-hash faster)
+    "x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s(sp-hash faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
