@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminersupr\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerSuprx16s\ccminer.exe"
 $Uri = "https://github.com/ocminer/suprminer/releases/download/1.6/suprminer-1.6.7z"
 
 $Commands = [PSCustomObject]@{
