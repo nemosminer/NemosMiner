@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-sp-hashx16r\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Sp-hashx16r\ccminer.exe"
 $Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git1/raven_spmodgit1.7z"
 
 $Commands = [PSCustomObject]@{
