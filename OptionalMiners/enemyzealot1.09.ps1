@@ -6,10 +6,10 @@ $Uri = "http://nemos.dx.am/opt/nemos/enemyz1.09.7z"
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    "phi" = " -d $SelGPUCC -i 20" #Phi(spmodphi faster)
-    "bitcore" = " -d $SelGPUCC -i 20" #Bitcore(spmodbitcore faster very close tho)
-    "x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r
-    "x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s
+    "phi" = " -d $SelGPUCC -i 20" #Phi(testing)
+    "bitcore" = " -d $SelGPUCC -i 20" #Bitcore(testing)
+    "x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r(testing)
+    "x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s(testing)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -39,7 +39,7 @@ $Commands = [PSCustomObject]@{
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    "x17" = " -d $SelGPUCC" #X17
+    "x17" = " -d $SelGPUCC" #X17(testing)
     #"yescrypt" = "" #Yescrypt
 }
 
