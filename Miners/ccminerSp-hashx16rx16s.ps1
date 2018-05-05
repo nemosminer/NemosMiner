@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Sp-hashx16r\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminersp-hashx16rx16s/releases/download/Ravensp-hash2/Raven_spmod2x86.7z"
+$Path = ".\Bin\NVIDIA-Sp-hashx16r\ccminerx64.exe"
+$Uri = "https://github.com/nemosminer/ccminersp-hashx16rx16s/releases/download/Ravensp-hash2/Raven_spmod2x64.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
     "x16r" = " -d $SelGPUCC" #X16r(fastest thankyou sp)
-    "x16s" = " -d $SelGPUCC" #X16s(testing atm seems working now...)
+    "x16s" = " -d $SelGPUCC" #X16s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
