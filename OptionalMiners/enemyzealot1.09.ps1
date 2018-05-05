@@ -1,6 +1,6 @@
 ﻿. .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-enemyz1.08\z-enemy.exe"
+$Path = ".\Bin\NVIDIA-enemyz1.09\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/enemyz1.09.7z"
 
 $Commands = [PSCustomObject]@{
