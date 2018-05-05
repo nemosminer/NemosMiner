@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Sp-hashx16r\ccminerx64.exe"
-$Uri = "https://github.com/nemosminer/ccminersp-hashx16rx16s/releases/download/Ravensp-hash2/Raven_spmod2x64.7z"
+$Path = ".\Bin\NVIDIA-Sp-hashx16r\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminersp-hashx16rx16s/releases/download/Ravensp-hash2/Raven_spmod2x86.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
