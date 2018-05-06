@@ -8,8 +8,8 @@ $Commands = [PSCustomObject]@{
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
     #"phi" = " -d $SelGPUCC -i 20" #Phi(sp-mod faster)
     #"bitcore" = " -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
-    #"x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r(sp-hash faster + no dev fee)
-    #"x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s(enemy1.08faster sp-hash close)
+    #"x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r(sp-hash faster)
+    #"x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s(sp-hash faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -39,7 +39,7 @@ $Commands = [PSCustomObject]@{
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -d $SelGPUCC" #X17(enemy1.03faster + no dev fee)
+    #"x17" = " -d $SelGPUCC" #X17(enemy1.03faster)
     #"yescrypt" = "" #Yescrypt
 }
 
