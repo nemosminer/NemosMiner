@@ -2,7 +2,7 @@
     "ActiveMinerGainPct": 5,
     "Algorithm": [
         "bitcore",
-        "blake2s",
+        "x16s",
         "C11",
         "cryptonightV7",
         "equihash",
@@ -15,7 +15,7 @@
         "Lyra2RE2",
         "MyriadGroestl",
         "neoscrypt",
-        "Nist5",
+        "allium",
         "phi",
         "sib",
         "skein",
