@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-ccminerAllium\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerAllium\ccminer-x64.exe"
 $Uri = "http://ccminer.org/preview/ccminer-x64-2.2.6-xmr-allium-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
