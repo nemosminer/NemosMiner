@@ -1,4 +1,4 @@
-﻿. .\Include.ps1
+. .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-enemyz1.09\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.109a-release.7z"
