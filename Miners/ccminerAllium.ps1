@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerAllium\ccminer.exe"
-$Uri = "https://github.com/GarlicoinOrg/ccminer/releases/download/1.0.0-allium/x86_64-ccminer.zip"
+$Uri = "http://ccminer.org/preview/ccminer-x64-2.2.6-xmr-allium-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
