@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "bitcore" = " -d $SelGPUCC -i 20" #Bitcore(testing)
     "x16r" = " -d $SelGPUCC -i 20" #X16r(testing)
     "x16s" = " -d $SelGPUCC -i 20" #X16s(testing)
-    "xevan" = -d $SelGPUCC -i 20" #Xevan(testing)
+    "xevan" = " -d $SelGPUCC -i 20" #Xevan(testing)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
