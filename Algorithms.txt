@@ -1,6 +1,8 @@
 {
     "sha256t":  "Sha256t",
     "allium":  "Allium",
+    "vit":  "Vitalium",
+    "vitalium":  "Vitalium",
     "x16r":  "X16r",
     "x16s":  "X16s",
     "keccakc":  "Keccakc", 
