@@ -41,7 +41,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     "x17" = " -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
-    "vitalium" = " -d $SelGPUCC" #Vitalium
+    "vitalium" = " -i 20 -d $SelGPUCC" #Vitalium
     #"yescrypt" = "" #Yescrypt
 }
 
