@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Sp-hashx16s\ccminer.exe"
-$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git1/raven_spmodgit1.7z"
+$Path = ".\Bin\NVIDIA-ccminerSupr\ccminer.exe"
+$Uri = "https://github.com/ocminer/suprminer/releases/download/1.6/suprminer-1.6.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
     #"x16r" = " -d $SelGPUCC" #X16r(fastest thankyou sp)
-    "x16s" = " -d $SelGPUCC" #X16s(revert to #2 stable, #3,4=validation errors)
+    "x16s" = " -d $SelGPUCC" #X16s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
