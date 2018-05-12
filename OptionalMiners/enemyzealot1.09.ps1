@@ -6,11 +6,11 @@ $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.109a-release.7z"
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    #"phi" = " -d $SelGPUCC -i 20" #Phi(sp-mod faster)
-    #"bitcore" = " -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
-    #"x16r" = " -d $SelGPUCC -i 20" #X16r(sp-hash faster)
-    #"x16s" = " -d $SelGPUCC -i 20" #X16s(sp-hash faster)
-    #"xevan" = " -d $SelGPUCC -i 20" #Xevan(Alexis/krnlx faster)
+    "phi" = " -d $SelGPUCC -i 20" #Phi(sp-mod faster)
+    "bitcore" = " -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
+    "x16r" = " -d $SelGPUCC -i 20" #X16r(sp-hash faster/very close)
+    "x16s" = " -d $SelGPUCC -i 20" #X16s(fastest)
+    "xevan" = " -d $SelGPUCC -i 20" #Xevan(Alexis/krnlx faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -40,7 +40,7 @@ $Commands = [PSCustomObject]@{
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
+    "x17" = " -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
     "vitalium" = " -d $SelGPUCC" #Vitalium
     #"yescrypt" = "" #Yescrypt
 }
