@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-DSTM\zm.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/zm_0.6.1_win.7z"
 
 $Commands = [PSCustomObject]@{
-    "equihash" = " -d $SelGPUDSTM" #Equihash(fastest)
+    "equihash" = " -d $SelGPUDSTM" #Equihash(fastest 2% dev fee)
 }
 $Port = $Variables.MinerAPITCPPort #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
