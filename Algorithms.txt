@@ -64,5 +64,8 @@
     "x17":  "X17",
     "xmr":  "CryptoNight",
     "yescrypt":  "Yescrypt",
+    "yescryptr16":  "YescryptR16",
+    "yescryptr32":  "YescryptR32",
+    "yescryptr8":  "YescryptR8",
     "zuikkis":  "Scrypt"
 }
