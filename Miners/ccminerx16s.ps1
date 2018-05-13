@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
-    #"x16r" = " -d $SelGPUCC" #X16r(stable)
+    "x16r" = " -d $SelGPUCC" #X16r(stable)
     "x16s" = " -d $SelGPUCC" #X16s(stable)
 }
 
