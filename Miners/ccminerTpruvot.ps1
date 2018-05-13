@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     "tribus" = " -d $SelGPUCC" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
-    "x11evo" = " -d $SelGPUCC" #X11evo
+    #"x11evo" = " -d $SelGPUCC" #X11evo (Alexis78 faster)
     #"x17" = " -N 1 -d $SelGPUCC" #X17(Enemy1.03 faster)
     #"yescrypt" = "" #Yescrypt
 }
