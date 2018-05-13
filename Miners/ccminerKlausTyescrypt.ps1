@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-KlausTyescrypt\ccminer.exe"
-$Uri = "https://github.com/iwtym/iwtym-yescrypt/archive/master.zip"
+$Uri = "http://nemos.dx.am/opt/nemos/KlausTYescrypt.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
