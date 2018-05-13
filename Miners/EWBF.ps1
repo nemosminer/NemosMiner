@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-EWBF\\Zminer.exe"
-$Uri = "https://github.com/nemosminer/EWBF-Zec-Miner/releases/download/0.3.4b/0.3.4b.7z"
+$Path = ".\Bin\NVIDIA-EWBF\\miner.exe"
+$Uri = "https://github.com/nemosminer/EWBF-Zec-Miner/releases/download/tbg/ewbf-btg.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = "" #Cryptonight
     #"decred" = "" #Decred
-    #"equihash" = "" #Equihash(no dev fee, dstm faster)
+    "equihash" = "" #Equihash(no dev fee, dstm faster)
     #"ethash" = "" #Ethash
     #"groestl" = "" #Groestl
     #"hmq1725" = "" #hmq1725
