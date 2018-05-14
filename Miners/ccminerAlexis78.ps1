@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-Alexis78\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/3%2F3%2F2018/ccminer-Alexis78.zip"
+$Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/Alexis78-v1.1/ccminerAlexis78-v1.1.7z"
 
 $Commands = [PSCustomObject]@{
     "hsr" = " -d $SelGPUCC" #Hsr(fastest)
@@ -17,8 +17,9 @@ $Commands = [PSCustomObject]@{
     #"groestl" = "" #Groestl
     #"hmq1725" = "" #hmq1725
     "keccak" = " -m 2 -i 29 -d $SelGPUCC" #Keccak(fastest)
+    "keccakc" = " -d $SelGPUCC" #Keccakc(fastest)
     "lbry" = " -d $SelGPUCC" #Lbry
-    #"lyra2v2" = " -d $SelGPUCC -N 1" #Lyra2RE2(ccminerxevan faster) 
+    "lyra2v2" = " -d $SelGPUCC -N 1" #Lyra2RE2(ccminerxevan faster) 
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $SelGPUCC --api-remote" #MyriadGroestl
     #"neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
