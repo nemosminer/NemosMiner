@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-enemyz1.09\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.109a-release.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.109b.7z"
 
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
     #"timetravel" = " -d $SelGPUCC" #Timetravel
-    #"tribus" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Tribus
+    "tribus" = " -d $SelGPUCC -i 20" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
