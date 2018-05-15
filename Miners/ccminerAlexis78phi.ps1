@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-Alexis78phi\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminer-phi-anxmod/releases/download/ccminer%2Fphi-1.0/ccminer-phi-1.0.zip"
+$Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/Alexis78-v1.2/ccminerAlexis78v1.2-Phi.7z"
 
 $Commands = [PSCustomObject]@{
     "phi" = " -d $SelGPUCC -N 1" #Phi(spmodphi faster)
