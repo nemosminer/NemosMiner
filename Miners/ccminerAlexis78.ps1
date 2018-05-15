@@ -1,10 +1,11 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-Alexis78\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/Alexis78-v1.1/ccminerAlexis78-v1.1.7z"
+$Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/Alexis78-v1.2/ccminerAlexis78v1.2x32.7z"
 
 $Commands = [PSCustomObject]@{
     "hsr" = " -d $SelGPUCC" #Hsr(fastest)
+    "poly" = " -d $SelGPUCC" #polytimos(fastest)
     #"bitcore" = "" #Bitcore
     "blake2s" = " -d $SelGPUCC" #Blake2s(fastest)
     #"blakecoin" = " -d $SelGPUCC --api-remote" #Blakecoin
