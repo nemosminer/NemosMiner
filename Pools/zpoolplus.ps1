@@ -28,6 +28,8 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
         "keccak" {$Divisor *= 1000}
 	"keccakc" {$Divisor *= 1000}
 	"sha256t"{$Divisor *= 1000}
+	"yescrypt"{$Divisor /= 1000}
+        "yescryptr16"{$Divisor /= 1000}
     }
 
     if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
