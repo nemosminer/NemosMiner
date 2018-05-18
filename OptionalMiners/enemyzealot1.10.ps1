@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-enemyz1.09\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.109b.7z"
+$Path = ".\Bin\NVIDIA-enemyz1.10\z-enemy.exe"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1.10.release.7z"
 
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
