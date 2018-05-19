@@ -1,7 +1,7 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-Sp-hashx16r\ccminer.exe"
-$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git4a/raven_spmodgit4_fix.7z"
+$Path = ".\Bin\NVIDIA-ccminerx16r\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminer-x16r/releases/download/ccminer-x16r/ccminerx16r.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
-    "x16r" = " -d $SelGPUCC" #X16r(fastest thankyou sp)
+    "x16r" = " -d $SelGPUCC" #X16r(fastest thankyou kiLLeen)
     #"x16s" = " -d $SelGPUCC" #X16s
 }
 
