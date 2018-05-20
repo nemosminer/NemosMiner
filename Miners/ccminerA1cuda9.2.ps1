@@ -36,8 +36,8 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
-    #"x16r" = " -d $SelGPUCC -N 120" #X16r(stable cuda9.2)
-    #"x16s" = " -d $SelGPUCC" #X16s(stable cuda9.2)Require 397.44 or newer(fastest open source no dev fee)
+    #"x16r" = " -d $SelGPUCC -r 0 -N 120" #X16r(stable cuda9.2)
+    #"x16s" = " -r 0 -d $SelGPUCC" #X16s(stable cuda9.2)Require 397.44 or newer(fastest open source no dev fee)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
