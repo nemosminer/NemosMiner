@@ -12,7 +12,7 @@ Optional miners details:
          It is not recommended to use ccminerenemy on any machine which hosts wallets or other information.
          It is not recommended to use ccminerenemy as it is closed source.
          Use at your own risks
-         Dev Fee 1.08 & 1.09a : https://github.com/nemosminer/NemosMiner/issues/590
+         Dev Fee 1.10 : https://github.com/nemosminer/NemosMiner/issues/590
    - To Enable ccminerenemy Yourself Copy ccminerenemy.ps1 into the ".\miners\" folder 
    
    - ccminerspmod
