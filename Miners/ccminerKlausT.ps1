@@ -12,14 +12,14 @@ $Commands = [PSCustomObject]@{
     #"decred" = "" #Decred
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
-    "groestl" = " -d $SelGPUCC" #Groestl(fastest)
+    "groestl" = " -r 0 -d $SelGPUCC" #Groestl(fastest)
     #"hmq1725" = "" #hmq1725
     #"keccak" = " -d $SelGPUCC" #Keccak
     #"lbry" = "" #Lbry
     #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
-    "neoscrypt" = " -d $SelGPUCC" #NeoScrypt
+    "neoscrypt" = " -r 0 -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
@@ -31,7 +31,7 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
-    "c11" = " -d $SelGPUCC" #C11(alexis78 faster)
+    "c11" = " -r 0 -d $SelGPUCC" #C11(alexis78-v1.2 faster)
     #"yescrypt" = "" #Yescrypt
 }
 
