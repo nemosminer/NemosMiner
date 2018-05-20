@@ -6,7 +6,7 @@ $Uri = "http://nemos.dx.am/opt/nemos/ccminer-phi-sp1.7z"
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    "phi" = " -d $SelGPUCC -N 1" #Phi(fastest)
+    "phi" = " -r 0 -d $SelGPUCC -N 1" #Phi(fastest)
     #"bitcore" = " -d $SelGPUCC" #Bitcore
     #"x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r
     #"x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s
