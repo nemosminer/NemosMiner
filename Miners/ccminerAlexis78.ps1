@@ -20,7 +20,7 @@ $Commands = [PSCustomObject]@{
     "keccak" = " -m 2 -i 29 -d $SelGPUCC" #Keccak(fastest)
     "keccakc" = " -i 29 -d $SelGPUCC" #Keccakc(fastest)
     "lbry" = " -d $SelGPUCC" #Lbry
-    "lyra2v2" = " -d $SelGPUCC -N 1" #Lyra2RE2(ccminerxevan faster) 
+    "lyra2v2" = " -d $SelGPUCC -N 1" #Lyra2RE2(fastest) 
     #"lyra2z" = "" #Lyra2z
     "myr-gr" = " -d $SelGPUCC -N 1" #MyriadGroestl
     #"neoscrypt" = " -i 15 -d $SelGPUCC" #NeoScrypt
@@ -35,7 +35,7 @@ $Commands = [PSCustomObject]@{
     "c11" = " -i 21 -d $SelGPUCC" #C11(fastest)
     "x11evo" = " -N 1 -i 21 -d $SelGPUCC " #X11evo(fastest)
     #"x11gost" = " -i 21 -d $SelGPUCC --api-remote" #X11gost
-    "x17" = " -i 20 -d $SelGPUCC" #X17(enemy1.03 faster)
+    "x17" = " -i 20 -d $SelGPUCC" #X17(fastest)
     #"yescrypt" = "" #Yescrypt
 }
 
