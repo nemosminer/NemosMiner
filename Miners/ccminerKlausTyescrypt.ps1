@@ -32,10 +32,10 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
     #"x17" = "" #X17
-    "yescrypt" = "" #yescrypt
-    "yescryptR8" = ""
-    "yescryptR16" = "" #YescryptR16 #Yenten
-    "yescryptR16v2" = "" #PPNP
+    "yescrypt" = " -r 0 -d $SelGPUCC" #yescrypt
+    "yescryptR8" = " -r 0 -d $SelGPUCC"
+    "yescryptR16" = " -r 0 -d $SelGPUCC" #YescryptR16 #Yenten
+    "yescryptR16v2" = " -r 0 -d $SelGPUCC" #PPNP
     #"keccakc" = " -d $SelGPUCC" #Keccakc(fastest)
 }
 
