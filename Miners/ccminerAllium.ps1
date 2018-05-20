@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -d $SelGPUCC -N 1" #X17
-    "allium" = " -d $SelGPUCC" #Allium
+    "allium" = " -r 0 -d $SelGPUCC" #Allium
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
