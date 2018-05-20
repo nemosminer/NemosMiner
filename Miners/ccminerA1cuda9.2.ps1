@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-A1cuda9.2\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerA1/releases/download/A1Nemosv1/A1cuda9.2x64.7z"
+$Uri = "https://github.com/nemosminer/ccminerA1/releases/download/A1Nemosv1/A1cuda9.2.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $SelGPUCC" #Phi
