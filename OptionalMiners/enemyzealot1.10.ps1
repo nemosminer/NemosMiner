@@ -6,11 +6,11 @@ $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1.10.release.7z"
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    "phi" = " -d $SelGPUCC -i 20" #Phi(sp-mod faster)
-    "bitcore" = " -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
-    "x16r" = " -d $SelGPUCC -i 20" #X16r(sp-hash faster/very close)
-    "x16s" = " -d $SelGPUCC -i 20" #X16s(fastest)
-    "xevan" = " -d $SelGPUCC -i 20" #Xevan(Alexis/krnlx faster)
+    "phi" = " -r 0 -d $SelGPUCC -i 20" #Phi(sp-mod faster)
+    "bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
+    "x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(sp-hash faster/very close)
+    "x16s" = " -r 0 -d $SelGPUCC -i 20" #X16s(fastest)
+    "xevan" = " -r 0 -d $SelGPUCC -i 20" #Xevan(Alexis/krnlx faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -36,12 +36,12 @@ $Commands = [PSCustomObject]@{
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
     #"timetravel" = " -d $SelGPUCC" #Timetravel
-    "tribus" = " -d $SelGPUCC -i 20" #Tribus
+    "tribus" = " -r 0 -d $SelGPUCC -i 20" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    "x17" = " -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
-    "vitalium" = " -i 20 -d $SelGPUCC" #Vitalium
+    "x17" = " -r 0 -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
+    "vitalium" = " -r 0 -i 20 -d $SelGPUCC" #Vitalium
     #"yescrypt" = "" #Yescrypt
 }
 
