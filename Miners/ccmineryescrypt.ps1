@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-KlausTyescrypt\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccmineryescrypt\ccminer.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/ccminer-Yescrypt.7z"
 
 $Commands = [PSCustomObject]@{
