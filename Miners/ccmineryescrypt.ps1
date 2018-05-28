@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccmineryescrypt\ccminer.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/ccminer-Yescrypt.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/CCMiner-Yescrypt.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
