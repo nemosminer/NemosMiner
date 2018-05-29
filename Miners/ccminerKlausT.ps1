@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-CcminerKlaust\ccminer.exe"
-$Uri = "https://github.com/KlausT/ccminer/releases/download/8.21/ccminer-821-cuda91-x64.zip"
+$Uri = "https://github.com/nemosminer/ccminerKlausT-r11-fix/releases/download/r11-fix/ccminerKlausTr11.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -19,6 +19,10 @@ $Commands = [PSCustomObject]@{
     #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $SelGPUCC" #MyriadGroestl
+    "yescrypt" = " -r 0 -d $SelGPUCC" #yescrypt
+    "yescryptR8" = " -r 0 -d $SelGPUCC"
+    "yescryptR16" = " -r 0 -d $SelGPUCC" #YescryptR16 #Yenten
+    "yescryptR16v2" = " -r 0 -d $SelGPUCC" #PPN
     "neoscrypt" = " -r 0 -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
