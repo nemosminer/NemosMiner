@@ -16,7 +16,7 @@ Optional miners details:
    - To Enable ccminerenemy Yourself Copy ccminerenemy.ps1 into the ".\miners\" folder 
    
    - ccminerspmod
-         Note that ccminerspmod is closed source and therefore is NOT enabled in NemosMiner by default
+         Note that spmod is closed source and therefore is NOT enabled in NemosMiner by default
          It is not recommended to use ccminerspmod on any machine which hosts wallets or other information.
          It is not recommended to use ccminerspmod as it is closed source.
          Use at your own risks
