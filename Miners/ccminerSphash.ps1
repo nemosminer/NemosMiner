@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-SP\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Sphash\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminersp-mod/releases/download/v1.5.81/ccminersp-mod.7z"
 
 $Commands = [PSCustomObject]@{
