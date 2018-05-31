@@ -511,7 +511,7 @@ function Get-HashRate {
             "wrapper" {
                 do { 
 
-                    $HashRate = Get-Content ".\cryptonightV7Hashrate.txt"
+                    $HashRate = Get-Content ".\Bminer.txt"
                 
                     if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
 
