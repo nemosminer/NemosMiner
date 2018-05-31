@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-spmodTribusv2\ccminer.exe"
+$Path = ".\Bin\NVIDIA-spmodtribusv2\ccminer.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/spmodTribusv2.7z"
 
 $Commands = [PSCustomObject]@{
