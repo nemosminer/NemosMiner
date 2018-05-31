@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-Bminer\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v7.0.0-9c7291b-amd64.zip"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v8.0.0-32928c5-amd64.zip"
 
 $Commands = [PSCustomObject]@{
     "equihash" = "" #Equihash(fastest 2% dev fee)
