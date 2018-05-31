@@ -15,57 +15,56 @@ Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 . .\Include.ps1
 
-Remove-Item ".\Wrapper\$Id.txt" -Force -ErrorAction Ignore
+Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
 
-$Job = Start-Job -ArgumentList $FilePath, $ArgumentList, $WorkingDirectory {
-    param($FilePath, $ArgumentList, $WorkingDirectory)
-    if ($WorkingDirectory) {Set-Location $WorkingDirectory}
-    if ($ArgumentList) {Invoke-Expression "& '$FilePath' $ArgumentList 2>&1"}
-    else {Invoke-Expression "& '$FilePath' 2>&1"}
-}
+$PowerShell = [PowerShell]::Create()
+if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
+$Command = ". '$FilePath'"
+if ($ArgumentList -ne "") {$Command += " $ArgumentList"}
+$PowerShell.AddScript("$Command 2>&1 | Write-Verbose -Verbose") | Out-Null
+$Result = $PowerShell.BeginInvoke()
 
 Write-Host "NemosMinerv3.1 Wrapper Started" -BackgroundColor Yellow -ForegroundColor Black
 
 do {
     Start-Sleep 1
 
-    $Job | Receive-Job | ForEach-Object {
+    $PowerShell.Streams.Verbose.ReadAll() | ForEach-Object {
         $Line = $_
 
-        if (($Line -like "*total*" -or $Line -like "*accepted*" -or $Line -like ">*") -and $Line -like "*/s*") {
+        if ($Line -like "*Total*") {
             $Words = $Line -split " "
+            $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -First 1)) - 1]
 
-            $matches = $null
+            switch ($Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -First 1))]) {
+                 "s/s" {$HashRate *= [Math]::Pow(1000, 0)}
+                "ks/s" {$HashRate *= [Math]::Pow(1000, 1)}
+                "ms/s" {$HashRate *= [Math]::Pow(1000, 2)}
+                "gs/s" {$HashRate *= [Math]::Pow(1000, 3)}
+                "ts/s" {$HashRate *= [Math]::Pow(1000, 4)}
+                "ps/s" {$HashRate *= [Math]::Pow(1000, 5)}
+            }
 
-            $HashRate = @()
+            $HashRate | Set-Content ".\Bminer.txt"
+        } elseif ($Line -like "*Total*") {
+            $Words = $Line -split " "
+            $HashRate = [Decimal]($Words -like "*/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -First 1)
 
-            $Words -like "*/s*" | ForEach-Object {
-                if ($Words[$Words.IndexOf($_)] -match "^((?:\d*\.)?\d+)(.*)$") {
-                    $HashRate = [Decimal]$matches[1]
-                    $HashRate_Unit = $matches[2]
-                }
-                else {
-                    $HashRate = [Decimal]$Words[$Words.IndexOf($_) - 1]
-                    $HashRate_Unit = $Words[$Words.IndexOf($_)]
-                }
-
-                switch -wildcard ($HashRate_Unit) {
-                     "H/s*" {$HashRate *= [Math]::Pow(1000, 0)}
-                     "h/s*" {$HashRate *= [Math]::Pow(1000, 0)}
-                    "kh/s*" {$HashRate *= [Math]::Pow(1000, 1)}
-                    "mh/s*" {$HashRate *= [Math]::Pow(1000, 2)}
-                    "gh/s*" {$HashRate *= [Math]::Pow(1000, 3)}
-                    "th/s*" {$HashRate *= [Math]::Pow(1000, 4)}
-                    "ph/s*" {$HashRate *= [Math]::Pow(1000, 5)}
-                }
-
-                $HashRate | Set-Content ".\cryptonightV7Hashrate.txt" }
+            switch ($Words -like "*S/s*" -replace "[0-9.,]",'' | Select-Object -First 1) {
+                 "S/s" {$HashRate *= [Math]::Pow(1000, 0)}
+                "KS/s" {$HashRate *= [Math]::Pow(1000, 1)}
+                "mS/s" {$HashRate *= [Math]::Pow(1000, 2)}
+                "MS/s" {$HashRate *= [Math]::Pow(1000, 2)}
+            }
+			$HashRate = [int]$HashRate
+            $HashRate | Set-Content ".\Bminer.txt"
         }
-        elseif (($Line -replace "\x1B\[[0-?]*[ -/]*[@-~]", "")) {Write-Host ($Line -replace "`n|`r", "")}
+
+        $Line
     }
 
-    if (-not (Get-Process | Where-Object Id -EQ $ControllerProcessID)) {$Job | Stop-Job}
+    if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
 }
-while ($Job.State -eq "Running")
+until($Result.IsCompleted)
 
-Remove-Item ".\Wrapper\$Id.txt" -Force -ErrorAction Ignore
+Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
