@@ -4,7 +4,7 @@ Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
 
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
  # NemosMiner-v3.1
- Updated 2018 June 2
+ Updated 2018 June 3
  
 *****
 
@@ -155,7 +155,7 @@ Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations
  
 
 If you have Windows 7, 8, or 8.1, please update PowerShell:
-https://www.microsoft.com/en-us/download/details.aspx?id=50395
+https://www.microsoft.com/en-us/download/details.aspx?id=54616
 
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
 https://www.microsoft.com/en-gb/download/details.aspx?id=40784
