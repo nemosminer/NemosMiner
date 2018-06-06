@@ -1,10 +1,11 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-enemyz1.10\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1.10.release.7z"
+$Path = ".\Bin\NVIDIA-enemyz1.11\z-enemy.exe"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-11-public-final_v3.7z"
 
 $Commands = [PSCustomObject]@{
-    #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
+    "aeriumx" = " -r 0 -d $SelGPUCC -i 20" #Aolytimos
+    "polytimos" = " -d $SelGPUCC -r 0 -i 20" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
     "phi" = " -r 0 -d $SelGPUCC -i 20" #Phi(sp-mod faster)
     "bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
@@ -34,11 +35,11 @@ $Commands = [PSCustomObject]@{
     #"sia" = "" #Sia
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
-    #"skunk" = " -d $SelGPUCC" #Skunk
-    #"timetravel" = " -d $SelGPUCC" #Timetravel
+    "skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk
+    "timetravel" = " -d $SelGPUCC -r 0 -i 20" #Timetravel
     "tribus" = " -r 0 -d $SelGPUCC -i 20" #Tribus
-    #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
-    #"veltor" = "" #Veltor
+    "c11" = " -d $SelGPUCC -r 0 -i 20" #C11
+    "xevan" = " -d $SelGPUCC -r 0 -i 20" #Xevan
     #"x11evo" = " -d $SelGPUCC" #X11evo
     "x17" = " -r 0 -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
     "vitalium" = " -r 0 -i 20 -d $SelGPUCC" #Vitalium
