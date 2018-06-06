@@ -11,7 +11,6 @@ $Commands = [PSCustomObject]@{
     "bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
     "x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(sp-hash faster/very close)
     "x16s" = " -r 0 -d $SelGPUCC -i 20" #X16s(fastest)
-    "xevan" = " -r 0 -d $SelGPUCC -i 20" #Xevan(Alexis/krnlx faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
