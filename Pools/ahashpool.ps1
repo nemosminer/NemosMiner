@@ -19,21 +19,8 @@ $ahashpool_Request | Get-Member -MemberType NoteProperty | Select-Object -Expand
     $ahashpool_Coin = $ahashpool_Request.$_.coins
     $ahashpool_Coinname = $ahashpoolCoins_Request.$_.name
 
-    $Divisor = 1000000
+    $Divisor = 1000000 * [Double]$AHashPool_Request.$_.mbtc_mh_factor
 	
-    switch ($ahashpool_Algorithm) {
-        "sha256" {$Divisor *= 1000000}
-        "sha256t" {$Divisor *= 1000000}
-        "blake" {$Divisor *= 1000}
-        "blake2s" {$Divisor *= 1000}
-        "blakecoin" {$Divisor *= 1000}
-        "decred" {$Divisor *= 1000}
-        "vanilla" {$Divisor *= 1000}
-        "x11" {$Divisor *= 1000}
-        "equihash" {$Divisor /= 1000}
-        "yescrypt" {$Divisor /= 1000}
-    }
-
     if ((Get-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.estimate_last24h / $Divisor * (1 - ($ahashpool_Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($ahashpool_Algorithm)_Profit" -Value ([Double]$ahashpool_Request.$_.estimate_current / $Divisor * (1 - ($ahashpool_Request.$_.fees / 100)))}
 
