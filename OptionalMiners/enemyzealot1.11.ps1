@@ -4,13 +4,13 @@ $Path = ".\Bin\NVIDIA-enemyz1.11\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-11-public-final_v3.7z"
 
 $Commands = [PSCustomObject]@{
-    "aeriumx" = " -r 0 -d $SelGPUCC -i 20" #Aolytimos
-    "polytimos" = " -d $SelGPUCC -r 0 -i 20" #Polytimos
+    "aeriumx" = " -r 0 -d $SelGPUCC -i 20" #Aolytimos(not tested)
+    "polytimos" = " -d $SelGPUCC -r 0 -i 20" #Polytimos(not tested)
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    "phi" = " -r 0 -d $SelGPUCC -i 20" #Phi(sp-mod faster)
-    "bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod faster)
-    "x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(sp-hash faster/very close)
-    "x16s" = " -r 0 -d $SelGPUCC -i 20" #X16s(fastest)
+    #"phi" = " -r 0 -d $SelGPUCC -i 20" #Phi(sp-mod,Alexis78,tpruvot,delos faster)
+    #"bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod, delos faster)
+    #"x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(ccminerx16r faster/very close)
+    #"x16s" = " -r 0 -d $SelGPUCC -i 20" #X16s(delos faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -34,14 +34,14 @@ $Commands = [PSCustomObject]@{
     #"sia" = "" #Sia
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
-    "skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk
-    "timetravel" = " -d $SelGPUCC -r 0 -i 20" #Timetravel
-    "tribus" = " -r 0 -d $SelGPUCC -i 20" #Tribus
-    "c11" = " -d $SelGPUCC -r 0 -i 20" #C11
-    "xevan" = " -d $SelGPUCC -r 0 -i 20" #Xevan
+    #"skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk(Delos faster)
+    "timetravel" = " -d $SelGPUCC -r 0 -i 20" #Timetravel(fastest)
+    #"tribus" = " -r 0 -d $SelGPUCC -i 20" #Tribus(spmod,tpruvot,delos faster)
+    #"c11" = " -d $SelGPUCC -r 0 -i 20" #C11(Alexis78v1.2 faster)
+    "xevan" = " -d $SelGPUCC -r 0 -i 20" #Xevan(fastest Alexis78Xevan very cose)
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    "x17" = " -r 0 -i 20 -d $SelGPUCC" #X17(Alexis78 and enemy 1.03 faster)
-    "vitalium" = " -r 0 -i 20 -d $SelGPUCC" #Vitalium
+    #"x17" = " -r 0 -i 20 -d $SelGPUCC" #X17(Alexis78,Delos,enemy1.03 faster)
+    "vitalium" = " -r 0 -i 20 -d $SelGPUCC" #Vitalium(not testest)
     #"yescrypt" = "" #Yescrypt
 }
 
