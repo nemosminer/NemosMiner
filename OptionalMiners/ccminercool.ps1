@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminercool\coolMiner-x64.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/coolMiner-x64-v1-1.7z"
 
 $Commands = [PSCustomObject]@{
-    "lyra2z" = " -r 0 -d $SelGPUCC --submit-stale -i 20" #Lyra2z
+    "lyra2z" = " -r 0 -d $SelGPUCC --submit-stale -i 20" #Lyra2z(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
