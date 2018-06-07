@@ -18,16 +18,7 @@ $blockmasters_Request | Get-Member -MemberType NoteProperty | Select-Object -Exp
 	$blockmasters_Algorithm = Get-Algorithm $blockmasters_Request.$_.name
 	$blockmasters_Coin = ""
 
-	$Divisor = 1000000000
-
-	switch ($blockmasters_Algorithm) {
-		"equihash" {$Divisor /= 1000}
-		"blake2s" {$Divisor *= 1000}
-		"blakecoin" {$Divisor *= 1000}
-		"decred" {$Divisor *= 1000}
-		"keccak" {$Divisor *= 1000}
-		"keccakc" {$Divisor *= 1000}
-	}
+	$Divisor = 1000000000 * [Double]$BlockMasters_Request.$_.mbtc_mh_factor
 
 	if ((Get-Stat -Name "$($Name)_$($blockmasters_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($blockmasters_Algorithm)_Profit" -Value ([Double]$blockmasters_Request.$_.actual_last24h / $Divisor)}
 	else {$Stat = Set-Stat -Name "$($Name)_$($blockmasters_Algorithm)_Profit" -Value ([Double]$blockmasters_Request.$_.actual_last24h / $Divisor * (1 - ($blockmasters_Request.$_.fees / 100)))}
