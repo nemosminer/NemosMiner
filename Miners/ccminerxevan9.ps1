@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-xevancuda9\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerxevan9\ccminer_x86.exe"
 $Uri = "https://github.com/nemosminer/ccminer-xevan/releases/download/ccminer-xevan/ccminer_x86.7z"
 
 $Commands = [PSCustomObject]@{
