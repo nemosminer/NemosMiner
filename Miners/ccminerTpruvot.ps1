@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "bitcore" = " -r 0 -d $SelGPUCC" #Bitcore(spmodbitcore faster)
     "jha" = " -r 0 -d $SelGPUCC" #Jha
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
-    #"blakecoin" = " -d $SelGPUCC" #Blakecoin
+    "x13" = " -d $SelGPUCC -r 0 -i 20 -N 1" #X13
     #"vanilla" = "" #BlakeVanilla
     #"cryptonight" = " -i 10 -d $SelGPUCC" #Cryptonight
     #"decred" = "" #Decred
