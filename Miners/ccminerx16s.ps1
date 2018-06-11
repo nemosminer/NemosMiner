@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
     #"x16r" = " -r 0 -d $SelGPUCC" #X16r(stable, ccminerx16r faster)
-    "x16s" = " -r 0 -d $SelGPUCC" #X16s(stable, fastest open source alongside A1cuda9.2)
+    #"x16s" = " -r 0 -d $SelGPUCC" #X16s(ccminerPigeon faster)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
