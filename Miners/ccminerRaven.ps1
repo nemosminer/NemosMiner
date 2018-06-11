@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
-    "x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(testing 48hours)
+    "x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(fastest alongside ccminerx16r))
     #"x16s" = " -d $SelGPUCC" #X16s
 }
 
