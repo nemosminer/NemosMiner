@@ -35,7 +35,7 @@ do {
             $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -First 1)) - 1]
 
             switch ($Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -First 1))]) {
-                 "s/s" {$HashRate *= [Math]::Pow(1000, 0)}
+                "s/s" {$HashRate *= [Math]::Pow(1000, 0)}
                 "ks/s" {$HashRate *= [Math]::Pow(1000, 1)}
                 "ms/s" {$HashRate *= [Math]::Pow(1000, 2)}
                 "gs/s" {$HashRate *= [Math]::Pow(1000, 3)}
@@ -44,17 +44,18 @@ do {
             }
 
             $HashRate | Set-Content ".\Bminer.txt"
-        } elseif ($Line -like "*Total*") {
+        }
+        elseif ($Line -like "*Total*") {
             $Words = $Line -split " "
-            $HashRate = [Decimal]($Words -like "*/s*" -replace ',', '' -replace "[^0-9.]",'' | Select-Object -First 1)
+            $HashRate = [Decimal]($Words -like "*/s*" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -First 1)
 
-            switch ($Words -like "*S/s*" -replace "[0-9.,]",'' | Select-Object -First 1) {
-                 "S/s" {$HashRate *= [Math]::Pow(1000, 0)}
+            switch ($Words -like "*S/s*" -replace "[0-9.,]", '' | Select-Object -First 1) {
+                "S/s" {$HashRate *= [Math]::Pow(1000, 0)}
                 "KS/s" {$HashRate *= [Math]::Pow(1000, 1)}
                 "mS/s" {$HashRate *= [Math]::Pow(1000, 2)}
                 "MS/s" {$HashRate *= [Math]::Pow(1000, 2)}
             }
-			$HashRate = [int]$HashRate
+            $HashRate = [int]$HashRate
             $HashRate | Set-Content ".\Bminer.txt"
         }
 
