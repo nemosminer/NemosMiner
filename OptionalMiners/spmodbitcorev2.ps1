@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
     #"phi" = " -d $SelGPUCC -i 20" #Phi
-    "bitcore" = " -r 0 -d $SelGPUCC" #Bitcore(fastest)
+    "bitcore" = " -d $SelGPUCC" #Bitcore(fastest)
     #"x16r" = " -d $SelGPUCC -N 180 -i 20" #X16r
     #"x16s" = " -d $SelGPUCC -N 180 -i 20" #X16s
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
@@ -49,12 +49,12 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
         Wrap = $false
         URI = $Uri
-		User = $Pools.(Get-Algorithm($_)).User
+        User = $Pools.(Get-Algorithm($_)).User
     }
 }
