@@ -1,10 +1,11 @@
 . .\Include.ps1
 
-try
-{
-    $Zpool_Request = Invoke-WebRequest "http://www.zpool.ca/api/status" -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json } catch { return }
+try {
+    $Zpool_Request = Invoke-WebRequest "http://www.zpool.ca/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+}
+catch { return }
 
-if(-not $Zpool_Request){return}
+if (-not $Zpool_Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
@@ -16,34 +17,27 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty Na
     $Zpool_Algorithm = Get-Algorithm $Zpool_Request.$_.name
     $Zpool_Coin = ""
 
-    $Divisor = 1000000
-	
-    switch ($Zpool_Algorithm) {
-        "equihash" {$Divisor /= 1000}
-        "blake2s" {$Divisor *= 1000}
-	"blakecoin" {$Divisor *= 1000}
-        "decred" {$Divisor *= 1000}
-	"keccak" {$Divisor *= 1000}
-    }
+    $Divisor = 1000000 * [Double]$Zpool_Request.$_.mbtc_mh_factor
 
-    if((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null){$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.estimate_last24h/$Divisor)}
-    else{$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.estimate_current/$Divisor)}
+    if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.estimate_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.estimate_current / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
+
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
 	
-    if($Wallet)
-    {
+    if ($Config.PoolsConfig.default.Wallet) {
         [PSCustomObject]@{
-            Algorithm = $Zpool_Algorithm
-            Info = $Zpool
-            Price = $Stat.Live
-            StablePrice = $Stat.Week
+            Algorithm     = $Zpool_Algorithm
+            Info          = $Zpool
+            Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
+            StablePrice   = $Stat.Week
             MarginOfError = $Stat.Fluctuation
-            Protocol = "stratum+tcp"
-            Host = $Zpool_Host
-            Port = $Zpool_Port
-            User = $Wallet
-            Pass = "$WorkerName,c=$Passwordcurrency"
-            Location = $Location
-            SSL = $false
+            Protocol      = "stratum+tcp"
+            Host          = $Zpool_Host
+            Port          = $Zpool_Port
+            User          = $Config.PoolsConfig.$ConfName.Wallet
+            Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($Config.Passwordcurrency)"
+            Location      = $Location
+            SSL           = $false
         }
     }
 }
