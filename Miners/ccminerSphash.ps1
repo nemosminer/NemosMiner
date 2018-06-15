@@ -26,7 +26,7 @@ $Commands = [PSCustomObject]@{
     #"pascal" = "" #Pascal
     #"phi" = "" #PHI
     #"sib" = "" #Sib
-    "skein" = " -r 0 -d $SelGPUCC" #Skein(Alexis78-v1.2 faster)
+    "skein" = " -d $SelGPUCC" #Skein(Alexis78-v1.2 faster)
     #"skunk" = "" #Skunk
     #"timetravel" = "" #Timetravel
     #"tribus" = "" #Tribus
@@ -43,7 +43,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o $($Pools.(Get-Algorithm $_).Protocol)://$($Pools.(Get-Algorithm $_).Host):$($Pools.(Get-Algorithm $_).Port) -u $($Pools.(Get-Algorithm $_).User) -p $($Pools.(Get-Algorithm $_).Pass) -b 4068$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o $($Pools.(Get-Algorithm $_).Protocol)://$($Pools.(Get-Algorithm $_).Host):$($Pools.(Get-Algorithm $_).Port) -u $($Pools.(Get-Algorithm $_).User) -p $($Pools.(Get-Algorithm $_).Pass) -b 4068$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm $_) = $Stats."$($Name)_$(Get-Algorithm $_)_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort #4068

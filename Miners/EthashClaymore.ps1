@@ -18,6 +18,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port = $Variables.MinerAPITCPPort #3333
         Wrap = $false
         URI = $Uri
-		User = $Pools.(Get-Algorithm($_)).User
+        User = $Pools.(Get-Algorithm($_)).User
     }
 }

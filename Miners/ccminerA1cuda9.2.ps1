@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -i 21.5 -d $SelGPUCC --api-remote" #X17
     #"x16r" = " -d $SelGPUCC -r 0 -N 120" #X16r(stable cuda9.2)
-    #"x16s" = " -r 0 -d $SelGPUCC" #X16s(stable cuda9.2)Require 397.44 or newer(fastest open source no dev fee)
+    #"x16s" = " -d $SelGPUCC" #X16s(stable cuda9.2)Require 397.44 or newer(fastest open source no dev fee)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -46,7 +46,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = " -b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = " -b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort

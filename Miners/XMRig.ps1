@@ -21,6 +21,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port = $Port
         Wrap = $false
         URI = $Uri    
-		User = $Pools.(Get-Algorithm($_)).User
+        User = $Pools.(Get-Algorithm($_)).User
     }
 }

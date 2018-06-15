@@ -19,6 +19,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port = "1880"
         Wrap = $true
         URI = $Uri    
-		User = $Pools.(Get-Algorithm($_)).User
+        User = $Pools.(Get-Algorithm($_)).User
     }
 }

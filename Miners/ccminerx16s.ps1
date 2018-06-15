@@ -15,7 +15,7 @@ $Commands = [PSCustomObject]@{
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
     #"groestl" = " -d $SelGPUCC" #Groestl
-    "hmq1725" = " -r 0 -d $SelGPUCC" #hmq1725
+    "hmq1725" = " -d $SelGPUCC" #hmq1725
     #"keccak" = "" #Keccak
     #"lbry" = " -d $SelGPUCC" #Lbry
     #"lyra2v2" = "" #Lyra2RE2
@@ -46,7 +46,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
