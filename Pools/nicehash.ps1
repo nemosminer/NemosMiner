@@ -21,7 +21,7 @@ $Locations | ForEach-Object {
         default {$Location = "Asia"}
     }
     
-    $NiceHash_Request.result.simplemultialgo | ForEach-Object {
+    $NiceHash_Request.result.simplemultialgo | Where-Object {$_.paying -gt 0} <# algos paying 0 fail stratum #> | ForEach-Object {
         $NiceHash_Host = "$($_.name).$NiceHash_Location.nicehash.com"
         $NiceHash_Port = $_.port
         $NiceHash_Algorithm = Get-Algorithm $_.name
@@ -31,13 +31,13 @@ $Locations | ForEach-Object {
 
         $Stat = Set-Stat -Name "$($Name)_$($NiceHash_Algorithm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
-		$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+        $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
 	
         if ($Config.PoolsConfig.default.Wallet) {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
-                Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
+                Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
                 StablePrice   = $Stat.Week
                 MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+tcp"
@@ -52,7 +52,7 @@ $Locations | ForEach-Object {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
-                Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
+                Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
                 StablePrice   = $Stat.Week
                 MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+ssl"
