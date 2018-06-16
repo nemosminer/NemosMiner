@@ -10,7 +10,7 @@
         "groestl",
         "hsr",
         "keccak",
-        "x13",
+        "aeriumx",
         "keccakc",
         "x16s",
         "Lyra2RE2",
