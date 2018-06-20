@@ -26,7 +26,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                     use_tls         = $Pools.$Algorithm_Norm.SSL
                     tls_fingerprint = ""
                     pool_weight     = 1
-                    rig_id = ""
+                    rig_id          = ""
                 }
             )
             currency        = if ($Pools.$Algorithm_Norm.Info) {"$($Pools.$Algorithm_Norm.Info -replace '^monero$', 'monero7' -replace '^aeon$', 'aeon7')"} else {"$_"}
@@ -50,13 +50,13 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     ) -replace "^{" -replace "}$" | Set-Content "$(Split-Path $Path)\$($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_Nvidia.txt" -Force -ErrorAction SilentlyContinue
 
     [PSCustomObject]@{
-        Type      = "NVIDIA"
-        Path      = $Path
+        Type       = "NVIDIA"
+        Path       = $Path
         HashSHA256 = $HashSHA256
-        Arguments = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_Nvidia.txt --noAMD --noCPU -i $($Port)"
-        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Week}
-        API       = "fireice"
-        Port      = $Port
-        URI       = $Uri
+        Arguments  = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_Nvidia.txt --noAMD --noCPU -i $($Port)"
+        HashRates  = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Week}
+        API        = "fireice"
+        Port       = $Port
+        URI        = $Uri
     }
 }
