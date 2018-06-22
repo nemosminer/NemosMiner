@@ -6,10 +6,10 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.4.1/Crypt
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC -r 0" #Hsr(Alexis78v1.2 faster)
-    "phi" = " -d $SelGPUCC" #Phi(testing)
-    "phi2" = " -d $SelGPUCC" #Phi2 (testing)
+    #"phi" = " -d $SelGPUCC" #Phi(testing)
+    #"phi2" = " -d $SelGPUCC" #Phi2 (testing)
     #"bitcore" = " -d $SelGPUCC" #Bitcore(fastest)
-    "allium" = " -d $SelGPUCC" #Allium(testing)
+    #"allium" = " -d $SelGPUCC" #Allium(testing)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -21,10 +21,10 @@ $Commands = [PSCustomObject]@{
     #"hmq1725" = " -r 0 -d $SelGPUCC" #hmq1725(ccminerx16sv0.5 faster)
     #"keccakc" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
     #"lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
-    "lyra2v2" = " -d $SelGPUCC" #Lyra2RE2(testing)
+    #"lyra2v2" = " -d $SelGPUCC" #Lyra2RE2(testing)
     #"lyra2z" = "  -r 0 -d $SelGPUCC --submit-stale" #Lyra2z
     #"myr-gr" = "" #MyriadGroestl
-    "neoscrypt" = " -d $SelGPUCC" #NeoScrypt(testing)
+    #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt(testing)
     #"nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
