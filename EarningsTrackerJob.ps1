@@ -80,8 +80,8 @@ while ($true) {
     }
     elseif ($Pool -eq "miningpoolhub") {
         try {
-            #$BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "bitcoin"}) 
-            $BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "litecoin"}) 
+            $BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "bitcoin"}) 
+            #$BalanceData = ((((Invoke-WebRequest ($APIUri + $Wallet) -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"}).content | ConvertFrom-Json).getuserallbalances).data | Where {$_.coin -eq "litecoin"}) 
         }
         catch {  }#.confirmed
     }
