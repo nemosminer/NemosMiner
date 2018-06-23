@@ -131,7 +131,7 @@ Function TimerCycle_Tick() {
     $SwitchingDGV.ClearSelection()
     
     If ($Variables.Earnings.Values -ne $Null) {
-        $LabelBTCD.Text = ("{0:N8}" -f ($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum) + " BTC/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * 1000)) + " mBTC/D"
+        $LabelBTCD.Text = ("{0:N2}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * $($Variables.Rates.($Config.Currency)))) + " "+ $Config.Currency +"/D | " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * 1000)) + " mBTC/D"
     }
     else {
         $LabelBTCD.Text = "Waiting data from pools."
