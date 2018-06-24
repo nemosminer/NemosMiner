@@ -23,7 +23,12 @@ Optional miners details:
    - To Enable ccminerspmod Yourself Copy ccminerspmod.ps1 into the ".\miners\" folder
 
 -Delos
-https://github.com/nemosminer/NemosMiner/issues/649
+         Note that ccminerdelos is closed source and therefore is NOT enabled in NemosMiner by default
+         It is not recommended to use ccminerdelos on any machine which hosts wallets or other information.
+         It is not recommended to use ccminerdelos as it is closed source.
+         Use at your own risks
+         Delos Warning Please Read : https://github.com/nemosminer/NemosMiner/issues/649
+   - To Enable ccminerdelos Yourself Copy ccminerdelos.ps1 into the ".\miners\" folder
 
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
