@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminercool\coolMiner-x64.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/coolMiner-x64-v1-1.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/coolMiner-x64-v1-4.7z"
 
 $Commands = [PSCustomObject]@{
     "lyra2z" = " -d $SelGPUCC --submit-stale -i 20.5" #Lyra2z(fastest)
