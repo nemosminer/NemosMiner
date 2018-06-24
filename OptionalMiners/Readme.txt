@@ -22,6 +22,9 @@ Optional miners details:
          Use at your own risks
    - To Enable ccminerspmod Yourself Copy ccminerspmod.ps1 into the ".\miners\" folder
 
+-Delos
+https://github.com/nemosminer/NemosMiner/issues/649
+
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
    - To Enable Excavator Yourself Copy Excavator.ps1 into the ".\miners\" folder
