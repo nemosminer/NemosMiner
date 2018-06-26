@@ -23,19 +23,19 @@ $Commands = [PSCustomObject]@{
     "yescryptR8" = " -d $SelGPUCC"
     "yescryptR16" = " -d $SelGPUCC" #YescryptR16 #Yenten
     "yescryptR16v2" = " -d $SelGPUCC" #PPN
-    "neoscrypt" = " -d $SelGPUCC" #NeoScrypt
+    "neoscrypt" = " -i 17 -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     #"sib" = "" #Sib
-    #"skein" = " -d $SelGPUCC" #Skein
+    "skein" = " -d $SelGPUCC" #Skein
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
-    "c11" = " -d $SelGPUCC" #C11(alexis78-v1.2 faster)
+    #"c11" = " -d $SelGPUCC" #C11(alexis78-v1.2 faster)
     #"yescrypt" = "" #Yescrypt
 }
 
@@ -45,7 +45,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -N 1 -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -N 1 -R 1 -q -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
