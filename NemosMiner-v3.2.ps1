@@ -22,7 +22,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.1", 
+    [String]$WorkerName = "ID=NemosMiner-v3.2", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -75,7 +75,7 @@ param(
 
 
 . .\Include.ps1
-. .\Core-v3.1.ps1
+. .\Core-v3.2.ps1
 
 @"
 NemosMiner
@@ -131,7 +131,7 @@ Function TimerCycle_Tick() {
     $SwitchingDGV.ClearSelection()
     
     If ($Variables.Earnings.Values -ne $Null) {
-        $LabelBTCD.Text = ("{0:N2}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * $($Variables.Rates.($Config.Currency)))) + " "+ $Config.Currency +"/D | " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * 1000)) + " mBTC/D"
+        $LabelBTCD.Text = ("{0:N2}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * $($Variables.Rates.($Config.Currency)))) + " " + $Config.Currency + "/D | " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property AvgDailyGrowth -Sum).sum * 1000)) + " mBTC/D"
     }
     else {
         $LabelBTCD.Text = "Waiting data from pools."
@@ -270,7 +270,7 @@ $SelGPUCC = $Config.SelGPUCC
 $Variables = [PSCustomObject]@{}
 $MainForm | Add-Member -Name "Variables" -Value $Variables -MemberType NoteProperty -Force
 $Variables | Add-Member -Force @{CurrentProduct = "NemosMiner"}
-$Variables | Add-Member -Force @{CurrentVersion = [Version]"3.1"}
+$Variables | Add-Member -Force @{CurrentVersion = [Version]"3.2"}
 $Variables | Add-Member -Force @{StatusText = "Idle"}
 
 $TabControl = New-object System.Windows.Forms.TabControl
