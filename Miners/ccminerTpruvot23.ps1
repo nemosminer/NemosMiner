@@ -1,12 +1,11 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-TPruvotphi\ccminer-x64.exe"
+$Path = ".\Bin\NVIDIA-TPruvot23\ccminer-x64.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3-tpruvot/ccminer-2.3-cuda9.7z"
 
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    #"phi" = " -N 1 -d $SelGPUCC" #Phi (testing)
     "allium" = " -N 1 -i 22.125 -d $SelGPUCC" #Allium
     #"bitcore" = " -r 0 -d $SelGPUCC" #Bitcore(spmodbitcore faster)
     #"jha" = " -r 0 -d $SelGPUCC" #Jha
@@ -18,22 +17,28 @@ $Commands = [PSCustomObject]@{
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
     #"groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
+    "graft" = " -d $SelGPUCC"
     #"hmq1725" = " -r 0 -d $SelGPUCC" #hmq1725
-    #"keccakc" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
+    "keccakc" = " -i 29 -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
     #"lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
     #"lyra2v2" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
     #"lyra2z" = "  -r 0 -d $SelGPUCC --submit-stale" #Lyra2z
+    "monero" = " -d $SelGPUCC"
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
     #"pascal" = "" #Pascal
+    "phi1612" = " -N 1 -d $SelGPUCC" #Phi (testing)
+    "phi2" = " -N 1 -d $SelGPUCC" #Phi (testing)
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
-    #"sha256t" = " -r 0 -d $SelGPUCC" #Sha256t
+    "sha256t" = " -i 29 -r 0 -d $SelGPUCC" #Sha256t
     #"sia" = "" #Sia
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
+    "sonoa"	= " -d $SelGPUCC"
+    "stellite" = " -d $SelGPUCC"
     #"timetravel" = " -r 0 -d $SelGPUCC" #Timetravel
     #"tribus" = " -r 0 -d $SelGPUCC" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
@@ -49,7 +54,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_) --submit-stale"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
