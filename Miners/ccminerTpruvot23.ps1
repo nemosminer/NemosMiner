@@ -17,19 +17,19 @@ $Commands = [PSCustomObject]@{
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
     #"groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
-	"graft" = " -d $SelGPUCC"
+    "graft" = " -d $SelGPUCC"
     #"hmq1725" = " -r 0 -d $SelGPUCC" #hmq1725
     "keccakc" = " -i 29 -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
     #"lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
     #"lyra2v2" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
     #"lyra2z" = "  -r 0 -d $SelGPUCC --submit-stale" #Lyra2z
     "monero" = " -d $SelGPUCC"
-	#"myr-gr" = "" #MyriadGroestl
+    #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
     #"pascal" = "" #Pascal
     "phi1612" = " -N 1 -d $SelGPUCC" #Phi (testing)
-	"phi2" = " -N 1 -d $SelGPUCC" #Phi (testing)
+    "phi2" = " -N 1 -d $SelGPUCC" #Phi (testing)
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     "sha256t" = " -i 29 -r 0 -d $SelGPUCC" #Sha256t
@@ -37,8 +37,8 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
-	"sonoa"	= " -d $SelGPUCC"
-	"stellite" = " -d $SelGPUCC"
+    "sonoa"	= " -d $SelGPUCC"
+    "stellite" = " -d $SelGPUCC"
     #"timetravel" = " -r 0 -d $SelGPUCC" #Timetravel
     #"tribus" = " -r 0 -d $SelGPUCC" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
