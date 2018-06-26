@@ -17,13 +17,13 @@ $Commands = [PSCustomObject]@{
     #"equihash" = "" #Equihash
     #"ethash" = "" #Ethash
     #"groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
-    "graft" = " -d $SelGPUCC"
+    #"graft" = " -d $SelGPUCC"
     #"hmq1725" = " -r 0 -d $SelGPUCC" #hmq1725
     "keccakc" = " -i 29 -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
     #"lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
     #"lyra2v2" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
     #"lyra2z" = "  -r 0 -d $SelGPUCC --submit-stale" #Lyra2z
-    "monero" = " -d $SelGPUCC"
+    #"monero" = " -d $SelGPUCC"
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
@@ -37,8 +37,8 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -d $SelGPUCC" #Skunk
-    "sonoa"	= " -d $SelGPUCC"
-    "stellite" = " -d $SelGPUCC"
+    #"sonoa"	= " -d $SelGPUCC"
+    #"stellite" = " -d $SelGPUCC"
     #"timetravel" = " -r 0 -d $SelGPUCC" #Timetravel
     #"tribus" = " -r 0 -d $SelGPUCC" #Tribus
     #"c11" = " -d $SelGPUCC --api-remote --api-allow=0/0" #C11
@@ -54,7 +54,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_) --submit-stale"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -q --submit-stale -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
