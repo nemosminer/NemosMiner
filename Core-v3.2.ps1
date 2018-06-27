@@ -138,7 +138,7 @@ Function NPMCycle {
         }
         if ($Donation -ne $null) {
             $Variables.DonateRandom = $Donation | Get-Random
-            $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "NPlusMiner"; PricePenaltyFactor = 1}}}
+            $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "$($Variables.CurrentProduct)$($Variables.CurrentVersion)"; PricePenaltyFactor = 1}}}
         }
     }
     if ((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) {
