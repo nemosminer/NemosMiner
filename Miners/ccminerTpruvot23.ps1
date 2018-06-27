@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     #"groestl" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Groestl
     #"graft" = " -d $SelGPUCC"
     #"hmq1725" = " -r 0 -d $SelGPUCC" #hmq1725
-    "keccakc" = " -i 29 -d $SelGPUCC --api-remote --api-allow=0/0" #Keccakc
+    "keccakc" = " -i 29 -d $SelGPUCC --api-allow=0/0" #Keccakc
     #"lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
     #"lyra2v2" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
     #"lyra2z" = "  -r 0 -d $SelGPUCC --submit-stale" #Lyra2z
@@ -28,8 +28,8 @@ $Commands = [PSCustomObject]@{
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
     #"pascal" = "" #Pascal
-    "phi1612" = " -N 1 -d $SelGPUCC" #Phi (testing)
-    "phi2" = " -N 1 -d $SelGPUCC" #Phi (testing)
+    "phi" = " -N 1 -d $SelGPUCC" #Phi (testing)
+    #"phi2" = " -N 1 -d $SelGPUCC" #Phi (testing)
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
     "sha256t" = " -i 29 -r 0 -d $SelGPUCC" #Sha256t
