@@ -6,7 +6,7 @@ $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3-tpruvot/ccminer
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    "allium" = " -N 1 -i 22.125 -d $SelGPUCC" #Allium
+    "allium" = " -i 22.125 -d $SelGPUCC" #Allium
     #"bitcore" = " -r 0 -d $SelGPUCC" #Bitcore(spmodbitcore faster)
     #"jha" = " -r 0 -d $SelGPUCC" #Jha
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
@@ -28,7 +28,7 @@ $Commands = [PSCustomObject]@{
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
     #"nist5" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Nist5
     #"pascal" = "" #Pascal
-    "phi" = " -N 1 -d $SelGPUCC" #Phi (testing)
+    "phi" = " -d $SelGPUCC" #Phi (testing)
     #"phi2" = " -N 1 -d $SelGPUCC" #Phi (testing)
     #"qubit" = "" #Qubit
     #"scrypt" = "" #Scrypt
@@ -54,7 +54,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -q --submit-stale -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.MinerAPITCPPort) -N 1 -R 1 -q --submit-stale -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
         API = "Ccminer"
         Port = $Variables.MinerAPITCPPort
