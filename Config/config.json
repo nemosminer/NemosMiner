@@ -18,7 +18,7 @@
         "keccakc",
         "x16s",
         "Lyra2RE2",
-        "MyriadGroestl",
+        "Phi2",
         "neoscrypt",
         "allium",
         "phi",
