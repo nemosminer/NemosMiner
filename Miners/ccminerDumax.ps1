@@ -1,11 +1,11 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-ccminerDumax\ccminer.exe"
-$Uri = "https://github.com/DumaxFr/ccminer/releases/download/dumax-0.9.2/ccminer-dumax-0.9.2-win64.zip"
+$Uri = "https://github.com/DumaxFr/ccminer/releases/download/dumax-0.9.3/ccminer-dumax-0.9.3-win64.zip"
 
 $Commands = [PSCustomObject]@{
     "phi" = " -N 1 -d $SelGPUCC" #Phi(testing)
-    #"phi2" = " -d $SelGPUCC" #Phi2testing)
+    "phi2" = " -N 1 -d $SelGPUCC" #Phi2testing)
     #"bitcore" = " -d $SelGPUCC" #Bitcore
     #"jha" = " -d $SelGPUCC" #Jha
     #"blake2s" = " -d $SelGPUCC" #Blake2s
