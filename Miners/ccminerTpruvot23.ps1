@@ -22,7 +22,7 @@ $Commands = [PSCustomObject]@{
     "keccakc" = " -i 29 -d $SelGPUCC" #Keccakc
     #"lbry" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Lbry
     #"lyra2v2" = " -N 1 -d $SelGPUCC --api-remote --api-allow=0/0" #Lyra2RE2
-    "lyra2z" = "  -N 1 -d $SelGPUCC --submit-stale -i 20.50" #Lyra2z
+    "lyra2z" = "  -N 1 -d $SelGPUCC -i 20.5" #Lyra2z
     #"monero" = " -d $SelGPUCC"
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $SelGPUCC" #NeoScrypt
