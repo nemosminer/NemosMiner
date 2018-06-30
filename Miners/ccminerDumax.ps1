@@ -5,7 +5,7 @@ $Uri = "https://github.com/DumaxFr/ccminer/releases/download/dumax-0.9.3/ccminer
 
 $Commands = [PSCustomObject]@{
     "phi" = " -N 1 -d $SelGPUCC" #Phi(testing)
-    #"phi2" = " -d $SelGPUCC" #Phi2testing)
+    "phi2" = " -N 1 -d $SelGPUCC" #Phi2testing)
     #"bitcore" = " -d $SelGPUCC" #Bitcore
     #"jha" = " -d $SelGPUCC" #Jha
     #"blake2s" = " -d $SelGPUCC" #Blake2s
