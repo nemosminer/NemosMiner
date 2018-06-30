@@ -1,4 +1,6 @@
 {
+    "aeriumx":  "AeriumX",
+    "aergo":  "AeriumX",
     "allium":  "Allium",
     "anime":  "Anime",
     "animecoin":  "Anime",
@@ -12,6 +14,7 @@
     "argon2d500":  "Argon2dDYN",
     "axiom":  "Axiom",
     "bastion":  "Bastion",
+    "balloon":  "Balloon",
     "bitcore":  "Bitcore",
     "blake":  "Blakecoin",
     "blake14r":  "Decred",
@@ -43,7 +46,7 @@
     "cryptonightmarketcash":  "CryptoNightMarketCash",
     "cryptonightmonero":  "CryptoNightV7",
     "cryptonightnormalv7":  "CryptoNightV7",
-    "cryptonightmonero":  "CryptoNightV7",
+    "cryptonight-monero":  "CryptoNightV7",
     "cryptonightv7":  "CryptoNightV7",
     "daggerhashimoto":  "Ethash",
     "darkcoinmod":  "X11",
