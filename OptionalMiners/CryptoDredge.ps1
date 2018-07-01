@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-CryptoDredge\CryptoDredge.exe"
-$Uri = "https://github.com/CryptoDredge/beta/releases/download/v0.6.0-beta.2/CryptoDredge_0.6.0.zip"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.6.0/CryptoDredge_0.6.0.zip"
 
 $Commands = [PSCustomObject]@{
     #"allium" = " -d $SelGPUCC" #Allium(testing)
