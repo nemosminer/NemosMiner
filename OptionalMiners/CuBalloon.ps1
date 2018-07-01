@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-CuBalloon\cuballoon.exe"
 $Uri = "https://github.com/Belgarion/cuballoon/files/2143221/CuBalloon.1.0.2.Windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "balloon" = " --cuda-threads 64 --cuda-blocks 48 --cuda-sync 0 -t 0" #DEFT
+    #"balloon" = " --cuda-threads 64 --cuda-blocks 48 --cuda-sync 0 -t 0" #DEFT
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
