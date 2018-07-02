@@ -345,6 +345,31 @@ function Get-HashRate {
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
             }
+            "cryptodredge" {
+                $Message = "summary"
+
+                do {
+                    $Client = New-Object System.Net.Sockets.TcpClient $server, 4444
+                    $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
+                    $Reader = New-Object System.IO.StreamReader $Client.GetStream()
+                    $Writer.AutoFlush = $true
+
+                    $Writer.Write($Message)
+                    $Request = $Reader.ReadLine()
+
+                    $Data = $Request -split ";" | ConvertFrom-StringData
+
+                    $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {$Data.KHS}
+
+                    if ($HashRate -eq $null) {$HashRates = @(); break}
+
+                    $HashRates += [Double]$HashRate * $Multiplier
+
+                    if (-not $Safe) {break}
+
+                    Start-Sleep $Interval
+                } while ($HashRates.Count -lt 6)
+            }
             "XMRig" {
                 $Message = "summary"
 
