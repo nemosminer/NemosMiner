@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-enemyz1.11\z-enemy.exe"
+$Path = ".\Bin\NVIDIA-enemyz1.12\z-enemy.exe"
 $Uri = "ftp://radio.r41.ru/z-enemy.1-12public.zip"
 
 $Commands = [PSCustomObject]@{
