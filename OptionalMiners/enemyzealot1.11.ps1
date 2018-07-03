@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-enemyz1.11\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-11-public-final_v3.7z"
+$Uri = "ftp://radio.r41.ru/z-enemy.1-12public.zip"
 
 $Commands = [PSCustomObject]@{
     "aeriumx" = " -d $SelGPUCC -i 20" #Aolytimos(not tested)
