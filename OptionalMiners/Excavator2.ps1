@@ -1,4 +1,4 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Threads = 2
 
@@ -18,7 +18,7 @@ $Commands = [PSCustomObject]@{
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$Port = $Variables.MinerAPITCPPort
+$Port = $Variables.NVIDIAMinerAPITCPPort
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     try {
@@ -56,7 +56,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                 API = "NiceHash"
                 Port = $Port
                 URI = $Uri
-                User = $Pools.(Get-Algorithm($_)).User
+				User = $Pools.(Get-Algorithm($_)).User
                 PrerequisitePath = "$env:SystemRoot\System32\msvcr120.dll"
                 PrerequisiteURI = "http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe"
             }
@@ -95,7 +95,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                 API = "NiceHash"
                 Port = $Port
                 URI = $Uri
-                User = $Pools.(Get-Algorithm($_)).User
+				User = $Pools.(Get-Algorithm($_)).User
                 PrerequisitePath = "$env:SystemRoot\System32\msvcr120.dll"
                 PrerequisiteURI = "http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe"
             }
