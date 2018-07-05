@@ -1,15 +1,14 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-XMRig\xmrig-nvidia.exe"
-$Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.6.1/xmrig-nvidia-2.6.1-cuda9-win64.zip"
+$Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.6.0-beta1/xmrig-nvidia-2.6.0-beta1-cuda9-win64.zip"
 
 $Commands = [PSCustomObject]@{
-    #"cryptonight" = " --cuda-devices $SelGPUCC" #Cryptonight(max 3 gpus)
-    #"cryptonight-heavy" = " --cuda-devices $SelGPUCC" #Cryptonight-heavy(max 3 gpus)
-    #"cryptonight-lite" = " --cuda-devices $SelGPUCC" #Cryptonight-lite(max 3 gpus)
-    #"cryptonightV7" = " --cuda-devices $SelGPUCC" #CryptonightV7(max 3 gpus)
+    #"cryptonight" = " --cuda-devices $($Config.SelGPUCC)" #Cryptonight(max 3 gpus)
+    #"cryptonight-lite" = " --cuda-devices $($Config.SelGPUCC)" #Cryptonight-lite(max 3 gpus)
+    #"cryptonightV7" = " --cuda-devices $($Config.SelGPUCC)" #CryptonightV7(max 3 gpus)
 }
-$Port = $Variables.MinerAPITCPPort #2222
+$Port = $Variables.NVIDIAMinerAPITCPPort #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
