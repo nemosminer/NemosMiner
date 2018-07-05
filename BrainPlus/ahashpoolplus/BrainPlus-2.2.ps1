@@ -16,6 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
+<#
+Product:        NemosMiner
+File:           BrainPlus.ps1
+version:        2.2
+version date:   20180408
+#>
+
+
 set-location ($args[0])
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -68,6 +76,9 @@ $MathObjectFormated = @()
 $TestDisplay = @()
 $PrevTrend = 0
 
+# Remove progress info from job.childjobs.Progress to avoid memory leak
+$ProgressPreference = "SilentlyContinue"
+
 While ($true) {
     #Get-Config{
     If (Test-Path ".\BrainConfig.xml") {
@@ -86,7 +97,7 @@ While ($true) {
     else {return}
     $CurDate = Get-Date
     $RetryInterval = 0
-    try {$AlgoData = Invoke-WebRequest $PoolStatusUri -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+    try {$AlgoData = Invoke-WebRequest $PoolStatusUri -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
     catch {$RetryInterval = $Interval}
     Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
