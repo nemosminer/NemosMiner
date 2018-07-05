@@ -1,11 +1,11 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-enemyz1.12\z-enemy.exe"
 $Uri = "ftp://radio.r41.ru/z-enemy.1-12public.zip"
 
 $Commands = [PSCustomObject]@{
-    "aeriumx" = " -d $SelGPUCC -i 20" #Aolytimos(not tested)
-    "polytimos" = " -d $SelGPUCC -i 20" #Polytimos(not tested)
+    "aeriumx" = " -i 20" #Aolytimos(not tested)
+    "polytimos" = " -i 20" #Polytimos(not tested)
     #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
     #"phi" = " -r 0 -d $SelGPUCC -i 20" #Phi(sp-mod,Alexis78,tpruvot,delos faster)
     #"bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod, delos faster)
@@ -35,13 +35,13 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk(Delos faster)
-    "timetravel" = " -d $SelGPUCC -i 20" #Timetravel(fastest)
+    "timetravel" = " -i 20" #Timetravel(fastest)
     #"tribus" = " -r 0 -d $SelGPUCC -i 20" #Tribus(spmod,tpruvot,delos faster)
     #"c11" = " -d $SelGPUCC -r 0 -i 20" #C11(Alexis78v1.2 faster)
-    "xevan" = " -d $SelGPUCC -i 20" #Xevan(fastest Alexis78Xevan very cose)
+    "xevan" = " -i 20" #Xevan(fastest Alexis78Xevan very cose)
     #"x11evo" = " -d $SelGPUCC" #X11evo
     #"x17" = " -r 0 -i 20 -d $SelGPUCC" #X17(Alexis78,Delos,enemy1.03 faster)
-    "vitalium" = " -i 20 -d $SelGPUCC" #Vitalium(not testest)
+    "vitalium" = " -i 20" #Vitalium(not testest)
     #"yescrypt" = "" #Yescrypt
 }
 
@@ -51,10 +51,10 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -q -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -R 1 -q -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week * .99} # substract 1% devfee
         API = "Ccminer"
-        Port = $Variables.MinerAPITCPPort
+        Port = $Variables.NVIDIAMinerAPITCPPort
         Wrap = $false
         URI = $Uri
         User = $Pools.(Get-Algorithm($_)).User
