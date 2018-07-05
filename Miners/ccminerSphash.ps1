@@ -1,4 +1,4 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-Sphash\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminersp-mod/releases/download/v1.5.81/ccminersp-mod.7z"
@@ -26,7 +26,7 @@ $Commands = [PSCustomObject]@{
     #"pascal" = "" #Pascal
     #"phi" = "" #PHI
     #"sib" = "" #Sib
-    "skein" = " -d $SelGPUCC" #Skein(Alexis78-v1.2 faster)
+    "skein" = " -d $($Config.SelGPUCC)" #Skein(Alexis78-v1.2 faster)
     #"skunk" = "" #Skunk
     #"timetravel" = "" #Timetravel
     #"tribus" = "" #Tribus
@@ -43,10 +43,10 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.MinerAPITCPPort) -R 1 -q -a $_ -o $($Pools.(Get-Algorithm $_).Protocol)://$($Pools.(Get-Algorithm $_).Host):$($Pools.(Get-Algorithm $_).Port) -u $($Pools.(Get-Algorithm $_).User) -p $($Pools.(Get-Algorithm $_).Pass) -b 4068$($Commands.$_)"
+        Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -R 1 -a $_ -o $($Pools.(Get-Algorithm $_).Protocol)://$($Pools.(Get-Algorithm $_).Host):$($Pools.(Get-Algorithm $_).Port) -u $($Pools.(Get-Algorithm $_).User) -p $($Pools.(Get-Algorithm $_).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm $_) = $Stats."$($Name)_$(Get-Algorithm $_)_HashRate".Week}
         API = "Ccminer"
-        Port = $Variables.MinerAPITCPPort #4068
+        Port = $Variables.NVIDIAMinerAPITCPPort #4068
         URI = $Uri
     }
 }
