@@ -13,7 +13,7 @@ param(
 
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 Remove-Item ".\Wrapper_.txt" -ErrorAction Ignore
 
