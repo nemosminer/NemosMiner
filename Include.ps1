@@ -17,17 +17,49 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
+<#
+Product:        NemosMiner
+File:           include.ps1
+version:        3.3
+version date:   20180705
+#>
+
+# New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
+# Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{"File" = $MyInvocation.MyCommand.path} -EA SilentlyContinue
+ 
+Function Global:RegisterLoaded ($File) {
+    New-Item -Path function: -Name Script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value {$true} -EA SilentlyContinue | out-null
+    Get-Item function::"$((Get-FileHash (Resolve-Path $File)).Hash)" | Add-Member @{"File" = (Resolve-Path $File).Path} -EA SilentlyContinue
+    $Variables.StatusText = "File loaded - $($file) - $((Get-PSCallStack).Command[1])"
+}
+    
+Function Global:IsLoaded ($File) {
+    $Hash = (Get-FileHash (Resolve-Path $File).Path).hash
+    If (Test-Path function::$Hash) {
+        $True
+    }
+    else {
+        ls function: | ? {$_.File -eq (Resolve-Path $File).Path} | Remove-Item
+        $false
+    }
+}
+
 Function Update-Status ($Text) {
-    Write-host $Text
-    $Variables.StatusText = $Text 
+    $Text | out-host
+    # $Variables.StatusText = $Text 
     $LabelStatus.Lines += $Text
+    If ($LabelStatus.Lines.Count -gt 20) {$LabelStatus.Lines = $LabelStatus.Lines[($LabelStatus.Lines.count - 10)..$LabelStatus.Lines.Count]}
     $LabelStatus.SelectionStart = $LabelStatus.TextLength;
     $LabelStatus.ScrollToCaret();
-
-    # $LabelStatus.Text = $Text
-    # $LabelStatus.Invoke
     $LabelStatus.Refresh | out-null
-    # $MainForm.refresh
+}
+
+Function Update-Notifications ($Text) {
+    $LabelNotifications.Lines += $Text
+    If ($LabelNotifications.Lines.Count -gt 20) {$LabelNotifications.Lines = $LabelNotifications.Lines[($LabelNotifications.Lines.count - 10)..$LabelNotifications.Lines.Count]}
+    $LabelNotifications.SelectionStart = $LabelStatus.TextLength;
+    $LabelNotifications.ScrollToCaret();
+    $LabelStatus.Refresh | out-null
 }
 
 Function DetectGPUCount {
@@ -50,7 +82,8 @@ Function Load-Config {
         [String]$ConfigFile
     )
     If (Test-Path $ConfigFile) {
-        $Config = Get-Content $ConfigFile | ConvertFrom-json
+        $ConfigLoad = Get-Content $ConfigFile | ConvertFrom-json
+        $Config = [hashtable]::Synchronized(@{}); $configLoad | % {$_.psobject.properties | sort Name | % {$Config | Add-Member -Force @{$_.Name = $_.Value}}}
         $Config
     }
 }
@@ -62,6 +95,7 @@ Function Write-Config {
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
     )
+    If ($Config.ManualConfig) {Update-Status("Manual config mode - Not saving config"); return}
     If ($Config -ne $null) {
         if (Test-Path $ConfigFile) {Copy-Item $ConfigFile "$($ConfigFile).backup"}
         $OrderedConfig = [PSCustomObject]@{}; ($config | select -Property * -ExcludeProperty PoolsConfig) | % {$_.psobject.properties | sort Name | % {$OrderedConfig | Add-Member -Force @{$_.Name = $_.Value}}}
@@ -76,11 +110,12 @@ Function Write-Config {
     }
 }
 
-Function Get-FreeTcpPort {
-    $StartPort = 4068
-    $PortFound = $false
-    $Port = $StartPort
-    While ($Port -le ($StartPort + 10) -and !$PortFound) {try {$Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1, $Port; $Port++} catch {$Port; $PortFound = $True}}
+Function Get-FreeTcpPort ($StartPort) {
+    # While ($Port -le ($StartPort + 10) -and !$PortFound) {try{$Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} catch {$Port;$PortFound=$True}}
+    # $UsedPorts = (Get-NetTCPConnection | ? {$_.state -eq "listen"}).LocalPort
+    # While ($StartPort -in $UsedPorts) {
+    While (Get-NetTCPConnection -LocalPort $StartPort -EA SilentlyContinue) {$StartPort++}
+    $StartPort
 }
 
 function Set-Stat {
@@ -538,7 +573,8 @@ function Get-HashRate {
 
                     $HashRate = Get-Content ".\Bminer.txt"
                 
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}}
+                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
+                    }
 
                     if ($HashRate -eq $null) {$HashRates = @(); break}
 
@@ -649,6 +685,7 @@ function Start-SubProcess {
     $Process
 }
 
+
 function Expand-WebRequest {
     param(
         [Parameter(Mandatory = $true)]
@@ -665,7 +702,7 @@ function Expand-WebRequest {
     if (Test-Path "$(Split-Path $Path)\$FolderName_New") {Remove-Item "$(Split-Path $Path)\$FolderName_New" -Recurse}
     if (Test-Path "$(Split-Path $Path)\$FolderName_Old") {Remove-Item "$(Split-Path $Path)\$FolderName_Old" -Recurse}
 
-    Invoke-WebRequest $Uri -OutFile $FileName -UseBasicParsing
+    Invoke-WebRequest $Uri -OutFile $FileName -TimeoutSec 15 -UseBasicParsing
     Start-Process "7z" "x $FileName -o$(Split-Path $Path)\$FolderName_Old -y -spe" -Wait
     if (Get-ChildItem "$(Split-Path $Path)\$FolderName_Old" | Where-Object PSIsContainer -EQ $false) {
         Rename-Item "$(Split-Path $Path)\$FolderName_Old" "$FolderName_New"
@@ -702,4 +739,151 @@ function Get-Location {
 
     if ($Locations.$Location) {$Locations.$Location}
     else {$Location}
+}
+
+Function Autoupdate {
+    # GitHub Supporting only TLSv1.2 on feb 22 2018
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
+    Write-host (Split-Path $script:MyInvocation.MyCommand.Path)
+    Update-Status("Checking AutoUpdate")
+    Update-Notifications("Checking AutoUpdate")
+    # write-host "Checking autoupdate"
+    try {
+        $AutoUpdateVersion = Invoke-WebRequest "http://nemosminer.x10host.com/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+    }
+    catch {$AutoUpdateVersion = Get-content ".\Config\AutoUpdateVersion.json" | Convertfrom-json}
+    If ($AutoUpdateVersion -ne $null) {$AutoUpdateVersion | ConvertTo-json | Out-File ".\Config\AutoUpdateVersion.json"}
+    If ($AutoUpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoUpdateVersion.Version -gt $Variables.CurrentVersion -and $AutoUpdateVersion.AutoUpdate) {
+        Update-Status("Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))")
+        # Write-host "Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
+        $LabelNotifications.ForeColor = "Green"
+        $LabelNotifications.Lines += "Version $([Version]$AutoUpdateVersion.Version) available"
+
+        If ($AutoUpdateVersion.Autoupdate) {
+            $LabelNotifications.Lines += "Starting Auto Update"
+            # Setting autostart to true
+            $Config.autostart = $true
+            Write-Config -ConfigFile $ConfigFile -Config $Config
+            
+            # Download CRC File from a different location
+            # Abort if failed
+            Update-Status("Retrieving update CRC")
+            try {
+                $UpdateCRC = Invoke-WebRequest "https://raw.githubusercontent.com/nemosminer/NemosMiner-CRC/master/NemosMiner-CRC.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+                $UpdateCRC = $UpdateCRC | ? {$_.Product -eq $AutoUpdateVersion.Product -and $_.Version -eq $AutoUpdateVersion.Version}
+            }
+            catch {Update-Status("Cannot get update CRC from server"); return}
+            If (! $UpdateCRC) {
+                Update-Status("Cannot find CRC for version $($AutoUpdateVersion.Version)")
+                Update-Notifications("Cannot find CRC for version $($AutoUpdateVersion.Version)")
+                $LabelNotifications.ForeColor = "Red"
+                return
+            }
+            
+            # Download update file
+            $UpdateFileName = ".\$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version)"
+            Update-Status("Downloading version $($AutoUpdateVersion.Version)")
+            Update-Notifications("Downloading version $($AutoUpdateVersion.Version)")
+            try {
+                Invoke-WebRequest $AutoUpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+            }
+            catch {Update-Status("Update download failed"); Update-Notifications("Update download failed"); $LabelNotifications.ForeColor = "Red"; return}
+            If (!(test-path ".\$($UpdateFileName).zip")) {
+                Update-Status("Cannot find update file")
+                Update-Notifications("Cannot find update file")
+                $LabelNotifications.ForeColor = "Red"
+                return
+            }
+            
+            # Calculate and validate update file CRC
+            # Abort if any issue
+            Update-Status("Validating update file")
+            If ((Get-FileHash ".\$($UpdateFileName).zip").Hash -ne $UpdateCRC.CRC) {
+                Update-Status("Update file CRC not valid!"); return
+            }
+            else {
+                Update-Status("Update file validated. Updating NemosMiner")
+            }
+            
+            # Backup current version folder in zip file
+            Update-Status("Backing up current version...")
+            Update-Notifications("Backing up current version...")
+            $BackupFileName = ("AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
+            Start-Process "7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
+            If (!(test-path .\$BackupFileName)) {Update-Status("Backup failed"); return}
+            
+            # unzip in child folder excluding config
+            Update-Status("Unzipping update...")
+            Start-Process "7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
+            
+            # copy files 
+            Update-Status("Copying files...")
+            Copy-Item .\$UpdateFileName\* .\ -force -Recurse
+
+            # update specific actions if any
+            # Use UpdateActions.ps1 in new release to place code
+            If (Test-Path ".\$UpdateFileName\UpdateActions.ps1") {
+                Invoke-Expression (get-content ".\$UpdateFileName\UpdateActions.ps1" -Raw)
+            }
+            
+            #Remove temp files
+            Update-Status("Removing temporary files...")
+            Remove-Item .\$UpdateFileName -Force -Recurse
+            Remove-Item ".\$($UpdateFileName).zip" -Force
+            If (Test-Path ".\UpdateActions.ps1") {Remove-Item ".\UpdateActions.ps1" -Force}
+            
+            # Start new instance (Wait and confirm start)
+            # Kill old instance
+            If ($AutoUpdateVersion.RequireRestart) {
+                Update-Status("Starting my brother")
+                $StartCommand = ((gwmi win32_process -filter "ProcessID=$PID" | select commandline).CommandLine)
+                $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
+                # Giving 10 seconds for process to start
+                $Waited = 0
+                sleep 10
+                While (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue) -and ($waited -le 10)) {sleep 1; $waited++}
+                If (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue)) {
+                    Update-Status("Failed to start new instance of NemosMiner")
+                    Update-Notifications("NPlusMiner auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
+                    $LabelNotifications.ForeColor = "Red"
+                    return
+                }
+                
+                $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
+                $TempVerObject | Add-Member -Force @{AutoUpdated = (Get-Date)}
+                $TempVerObject | ConvertTo-Json | Out-File .\Version.json
+                
+                Update-Status("NemosMiner successfully updated to version $($AutoUpdateVersion.Version)")
+                Update-Notifications("NemosMiner successfully updated to version $($AutoUpdateVersion.Version)")
+
+                Update-Status("Killing myself")
+                If (Get-Process -id $NewKid.ProcessId) {Stop-process -id $PID}
+            }
+            else {
+                $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
+                $TempVerObject | Add-Member -Force @{AutoUpdated = (Get-Date)}
+                $TempVerObject | ConvertTo-Json | Out-File .\Version.json
+                
+                Update-Status("NemosMiner successfully updated to version $($AutoUpdateVersion.Version)")
+                Update-Notifications("NemosMiner successfully updated to version $($AutoUpdateVersion.Version)")
+                $LabelNotifications.ForeColor = "Green"
+            }
+        }
+        elseif (!($Config.Autostart)) {
+            UpdateStatus("Cannot autoupdate as autostart not selected")
+            Update-Notifications("Cannot autoupdate as autostart not selected")
+            $LabelNotifications.ForeColor = "Red"
+        }
+        else {
+            UpdateStatus("New version available $($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). No candidate for Autoupdate")
+            Update-Notifications("New version available $($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). No candidate for Autoupdate")
+            $LabelNotifications.ForeColor = "Red"
+        }
+    }
+    else {
+        Update-Status("Not candidate for Autoupdate")
+        Update-Notifications("Not candidate for Autoupdate")
+        $LabelNotifications.ForeColor = "Green"
+    }
 }
