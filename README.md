@@ -23,10 +23,8 @@ Easy configuration, easy start:
       1. Config tab
       2. Set your Wallet address and Username
       3. Select your pool 
-      4. "Save Config"
-      5. Close
-      Run NemosMiner-v3.3.bat
-      6."Start"
+      4. Save Config
+      6. Start
       
       note: 2. you only need to change Username if you are using Miningpoolhub
       
