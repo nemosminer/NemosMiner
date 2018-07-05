@@ -16,6 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
+<#
+Product:        NemosMiner
+File:           BrainPlus.ps1
+version:        2.2
+version date:   20180408
+#>
+
+
 set-location ($args[0])
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -68,6 +76,9 @@ $MathObjectFormated = @()
 $TestDisplay = @()
 $PrevTrend = 0
 
+# Remove progress info from job.childjobs.Progress to avoid memory leak
+$ProgressPreference = "SilentlyContinue"
+
 While ($true) {
     #Get-Config{
     If (Test-Path ".\BrainConfig.xml") {
@@ -86,7 +97,7 @@ While ($true) {
     else {return}
     $CurDate = Get-Date
     $RetryInterval = 0
-    try {$AlgoData = Invoke-WebRequest $PoolStatusUri -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+    try {$AlgoData = Invoke-WebRequest $PoolStatusUri -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
     catch {$RetryInterval = $Interval}
     Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
@@ -110,7 +121,7 @@ While ($true) {
         }
     }
 
-    # Created here for performance optimisation, minimize # of lookups
+    # Created here for performance optimization, minimize # of lookups
     $FirstAlgoObject = $AlgoObject[0] # | ? {$_.date -eq ($AlgoObject.Date | measure -Minimum).Minimum}
     $CurAlgoObject = $AlgoObject | ? {$_.date -eq $CurDate}
     $TrendSpanSizets = New-TimeSpan -Minutes $TrendSpanSizeMinutes
@@ -148,8 +159,7 @@ While ($true) {
     if ($EnableLog) {$MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath}
     ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Set-Content $TransferFile
 
-    # Limit to only 120 min history
-    # $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddDays(-1).AddHours(-1)}
+    # Limit to only sample size + 10 minutes min history
     $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddMinutes( - ($SampleSizeMinutes + 10))}
     (($GroupMedSampleSize | ? {$_.Name -eq $Name}).Count)
 
