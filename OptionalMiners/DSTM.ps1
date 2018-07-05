@@ -1,7 +1,7 @@
 . .\Include.ps1
 
 $Path = ".\Bin\NVIDIA-DSTM\zm.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/zm_0.6.1_win.7z"
+$Uri = "https://github.com/nemosminer/DSTM-equihash-miner/releases/download/DSTM-v0.6.1/zm_0.6.1_win.zip"
 
 $Commands = [PSCustomObject]@{
     "equihash" = " -d $SelGPUDSTM" #Equihash(Bminer faster)
