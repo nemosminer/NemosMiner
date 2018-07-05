@@ -1,4 +1,4 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
     $Zpool_Request = Invoke-WebRequest "http://www.zpool.ca/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
@@ -22,20 +22,20 @@ $Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProp
     if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
 
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
 	
     if ($Config.PoolsConfig.default.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $Zpool_Algorithm
             Info          = $Zpool_Coin
-            Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
+            Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
             Host          = $Zpool_Host
             Port          = $Zpool_Port
             User          = $Config.PoolsConfig.$ConfName.Wallet
-            Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($Config.Passwordcurrency)"
+		    Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($Config.Passwordcurrency)"
             Location      = $Location
             SSL           = $false
         }
