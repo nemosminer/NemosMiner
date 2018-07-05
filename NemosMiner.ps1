@@ -77,7 +77,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Bool]$TrackEarnings = $True, # Display earnings information
     [Parameter(Mandatory = $false)]
-    [Bool]$Autoupdate = $True, # Autoupdate
+    [Bool]$Autoupdate = $False, # Autoupdate
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\config.json"
 )
@@ -591,7 +591,7 @@ $LabelGitHub.Location = New-Object System.Drawing.Size(220, 49)
 $LabelGitHub.Size = New-Object System.Drawing.Size(160, 18)
 $LabelGitHub.LinkColor = "BLUE"
 $LabelGitHub.ActiveLinkColor = "RED"
-$LabelGitHub.Text = "NPlusMiner on GitHub"
+$LabelGitHub.Text = "NemosMiner on GitHub"
 $LabelGitHub.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner/releases")})
 $MainFormControls += $LabelGitHub
 
