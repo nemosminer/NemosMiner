@@ -64,7 +64,6 @@
     "SyncRoot": {},
     "TrackEarnings": true,
     "Type": [
-        "CPU",
         "NVIDIA"
     ],
     "TypeCPU": false,
