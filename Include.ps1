@@ -845,7 +845,7 @@ Function Autoupdate {
                 While (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue) -and ($waited -le 10)) {sleep 1; $waited++}
                 If (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue)) {
                     Update-Status("Failed to start new instance of NemosMiner")
-                    Update-Notifications("NPlusMiner auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
+                    Update-Notifications("NemosMiner auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
                     $LabelNotifications.ForeColor = "Red"
                     return
                 }
