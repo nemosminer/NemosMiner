@@ -334,199 +334,198 @@ Function NPMCycle {
         $Miner | Add-Member Device $Miner_Devices -Force
     }
     # Remove miners when no estimation info from pools. Avoids mining when algo down at pool or benchmarking for ever
-    If (($Variables.Miners | ? {($_.Pools.PSObject.Properties.Value.Price -ne $null) -or ($_.Pools.PSObject.Properties.Value.Price -gt 0)}).Count -gt 0) {
-        $Variables.Miners = $Variables.Miners | ? {($_.Pools.PSObject.Properties.Value.Price -ne $null) -or ($_.Pools.PSObject.Properties.Value.Price -gt 0)}
+    If (($Variables.Miners | ? {($_.Pools.PSObject.Properties.Value.Price -ne $null) -or ($_.Pools.PSObject.Properties.Value.Price -gt 0)}).Count -gt 0) {$Variables.Miners = $Variables.Miners | ? {($_.Pools.PSObject.Properties.Value.Price -ne $null) -or ($_.Pools.PSObject.Properties.Value.Price -gt 0)}}
+    $Variables.Miners = $Variables.Miners | ? {($_.Pools.PSObject.Properties.Value.Price -ne $null) -or ($_.Pools.PSObject.Properties.Value.Price -gt 0)}
 
-        #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
-        $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}}
-        #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
-        $BestMiners = $Variables.Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-        $BestDeviceMiners = $Variables.Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-        $BestMiners_Comparison = $Variables.Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Comparison -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-        $BestDeviceMiners_Comparison = $Variables.Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Comparison -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
-        $Miners_Type_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Variables.Miners | Select Type -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Type -Unique) ($_.Combination | Select -ExpandProperty Type) | Measure).Count -eq 0})
-        $Miners_Index_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Variables.Miners | Select Index -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Index -Unique) ($_.Combination | Select -ExpandProperty Index) | Measure).Count -eq 0})
-        $Miners_Device_Combos = (Get-Combination ($Variables.Miners | Select Device -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Device -Unique) ($_.Combination | Select -ExpandProperty Device) | Measure).Count -eq 0})
-        $BestMiners_Combos = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
-        $BestMiners_Combos += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
-        $BestMiners_Combos_Comparison = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners_Comparison | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
-        $BestMiners_Combos_Comparison += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners_Comparison | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
-        $BestMiners_Combo = $BestMiners_Combos | Sort -Descending {($_.Combination | Where Profit -EQ $null | Measure).Count}, {($_.Combination | Measure Profit_Bias -Sum).Sum}, {($_.Combination | Where Profit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
-        $BestMiners_Combo_Comparison = $BestMiners_Combos_Comparison | Sort -Descending {($_.Combination | Where Profit -EQ $null | Measure).Count}, {($_.Combination | Measure Profit_Comparison -Sum).Sum}, {($_.Combination | Where Profit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
-        #Add the most profitable miners to the active list
-        $BestMiners_Combo | ForEach {
-            if (($Variables.ActiveMinerPrograms | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments).Count -eq 0) {
-                $Variables.ActiveMinerPrograms += [PSCustomObject]@{
-                    Type = $_.Type
-                    Name = $_.Name
-                    Path = $_.Path
-                    Arguments = $_.Arguments
-                    Wrap = $_.Wrap
-                    Process = $null
-                    API = $_.API
-                    Port = $_.Port
-                    Algorithms = $_.HashRates.PSObject.Properties.Name
-                    New = $false
-                    Active = [TimeSpan]0
-                    Activated = 0
-                    Status = "Idle"
-                    HashRate = 0
-                    Benchmarked = 0
-                    Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
-                    User = $_.User
-                }
+    #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
+    $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" } | ForEach {$Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}}
+    #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
+    $BestMiners = $Variables.Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
+    $BestDeviceMiners = $Variables.Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Bias -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
+    $BestMiners_Comparison = $Variables.Miners | Select Type, Index -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Comparison -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
+    $BestDeviceMiners_Comparison = $Variables.Miners | Select Device -Unique | ForEach {$Miner_GPU = $_; ($Variables.Miners | Where {(Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0} | Sort -Descending {($_ | Where Profit -EQ $null | Measure).Count}, {($_ | Measure Profit_Comparison -Sum).Sum}, {($_ | Where Profit -NE 0 | Measure).Count} | Select -First 1)}
+    $Miners_Type_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Variables.Miners | Select Type -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Type -Unique) ($_.Combination | Select -ExpandProperty Type) | Measure).Count -eq 0})
+    $Miners_Index_Combos = @([PSCustomObject]@{Combination = @()}) + (Get-Combination ($Variables.Miners | Select Index -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Index -Unique) ($_.Combination | Select -ExpandProperty Index) | Measure).Count -eq 0})
+    $Miners_Device_Combos = (Get-Combination ($Variables.Miners | Select Device -Unique) | Where {(Compare ($_.Combination | Select -ExpandProperty Device -Unique) ($_.Combination | Select -ExpandProperty Device) | Measure).Count -eq 0})
+    $BestMiners_Combos = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
+    $BestMiners_Combos += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
+    $BestMiners_Combos_Comparison = $Miners_Type_Combos | ForEach {$Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach {$Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach {$Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $Miner_Index_Combo | ForEach {$Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestMiners_Comparison | Where {([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count}}}}}}
+    $BestMiners_Combos_Comparison += $Miners_Device_Combos | ForEach {$Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach {$Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach {[Regex]::Escape($_)}) -join '|') + ')$'; $BestDeviceMiners_Comparison | Where {([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count}}}}
+    $BestMiners_Combo = $BestMiners_Combos | Sort -Descending {($_.Combination | Where Profit -EQ $null | Measure).Count}, {($_.Combination | Measure Profit_Bias -Sum).Sum}, {($_.Combination | Where Profit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
+    $BestMiners_Combo_Comparison = $BestMiners_Combos_Comparison | Sort -Descending {($_.Combination | Where Profit -EQ $null | Measure).Count}, {($_.Combination | Measure Profit_Comparison -Sum).Sum}, {($_.Combination | Where Profit -NE 0 | Measure).Count} | Select -First 1 | Select -ExpandProperty Combination
+    #Add the most profitable miners to the active list
+    $BestMiners_Combo | ForEach {
+        if (($Variables.ActiveMinerPrograms | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments).Count -eq 0) {
+            $Variables.ActiveMinerPrograms += [PSCustomObject]@{
+                Type = $_.Type
+                Name = $_.Name
+                Path = $_.Path
+                Arguments = $_.Arguments
+                Wrap = $_.Wrap
+                Process = $null
+                API = $_.API
+                Port = $_.Port
+                Algorithms = $_.HashRates.PSObject.Properties.Name
+                New = $false
+                Active = [TimeSpan]0
+                Activated = 0
+                Status = "Idle"
+                HashRate = 0
+                Benchmarked = 0
+                Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
+                User = $_.User
             }
         }
-        #Stop or start miners in the active list depending on if they are the most profitable
-        # We have to stop processes first or the port would be busy
-        $Variables.ActiveMinerPrograms | ForEach {
-            [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
-            if ($filtered.Count -eq 0) {
-                if ($_.Process -eq $null) {
-                    $_.Status = "Failed"
-                }
-                elseif ($_.Process.HasExited -eq $false) {
-                    $_.Active += (Get-Date) - $_.Process.StartTime
-                    $_.Process.CloseMainWindow() | Out-Null
-                    Sleep 1
-                    # simply "Kill with power"
-                    Stop-Process $_.Process -Force | Out-Null
-                    $Variables.StatusText = "closing current miner and switching"
-                    Sleep 1
-                    $_.Status = "Idle"
-                }
-                #Restore Bias for non-active miners
-                $Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit_Bias_Orig}
+    }
+    #Stop or start miners in the active list depending on if they are the most profitable
+    # We have to stop processes first or the port would be busy
+    $Variables.ActiveMinerPrograms | ForEach {
+        [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+        if ($filtered.Count -eq 0) {
+            if ($_.Process -eq $null) {
+                $_.Status = "Failed"
             }
+            elseif ($_.Process.HasExited -eq $false) {
+                $_.Active += (Get-Date) - $_.Process.StartTime
+                $_.Process.CloseMainWindow() | Out-Null
+                Sleep 1
+                # simply "Kill with power"
+                Stop-Process $_.Process -Force | Out-Null
+                $Variables.StatusText = "closing current miner and switching"
+                Sleep 1
+                $_.Status = "Idle"
+            }
+            #Restore Bias for non-active miners
+            $Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit_Bias_Orig}
         }
-        $newMiner = $false
-        $CurrentMinerHashrate_Gathered = $false 
-        $newMiner = $false
-        $CurrentMinerHashrate_Gathered = $false 
-        $Variables.ActiveMinerPrograms | ForEach {
-            [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
-            if ($filtered.Count -gt 0) {
-                if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
-                    # Log switching information to .\log\swicthing.log
-                    [pscustomobject]@{date = (get-date); Type = $_.Type; algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Stratum = ($_.Arguments.Split(" ") | ? {$_ -like "*.*:*"})} | export-csv .\Logs\switching.log -Append -NoTypeInformation
+    }
+    $newMiner = $false
+    $CurrentMinerHashrate_Gathered = $false 
+    $newMiner = $false
+    $CurrentMinerHashrate_Gathered = $false 
+    $Variables.ActiveMinerPrograms | ForEach {
+        [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+        if ($filtered.Count -gt 0) {
+            if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
+                # Log switching information to .\log\swicthing.log
+                [pscustomobject]@{date = (get-date); Type = $_.Type; algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Stratum = ($_.Arguments.Split(" ") | ? {$_ -like "*.*:*"})} | export-csv .\Logs\switching.log -Append -NoTypeInformation
 
-                    # Launch prerun if exists
-                    If ($_.Type -ne "CPU") {
-                        $PrerunName = ".\Prerun\" + $_.Algorithms + ".bat"
-                        $DefaultPrerunName = ".\Prerun\default.bat"
-                        If (Test-Path $PrerunName) {
-                            Update-Status("Launching Prerun: $PrerunName")
-                            Start-Process $PrerunName -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                # Launch prerun if exists
+                If ($_.Type -ne "CPU") {
+                    $PrerunName = ".\Prerun\" + $_.Algorithms + ".bat"
+                    $DefaultPrerunName = ".\Prerun\default.bat"
+                    If (Test-Path $PrerunName) {
+                        Update-Status("Launching Prerun: $PrerunName")
+                        Start-Process $PrerunName -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                        Sleep 2
+                    }
+                    else {
+                        If (Test-Path $DefaultPrerunName) {
+                            $Variables.StatusText = "Launching Prerun: $DefaultPrerunName"
+                            Start-Process $DefaultPrerunName -WorkingDirectory ".\Prerun" -WindowStyle hidden
                             Sleep 2
                         }
-                        else {
-                            If (Test-Path $DefaultPrerunName) {
-                                $Variables.StatusText = "Launching Prerun: $DefaultPrerunName"
-                                Start-Process $DefaultPrerunName -WorkingDirectory ".\Prerun" -WindowStyle hidden
-                                Sleep 2
-                            }
-                        }
-                    }
-
-                    Sleep $Config.Delay #Wait to prevent BSOD
-                    $Variables.StatusText = "Starting miner"
-                    $Variables.DecayStart = Get-Date
-                    $_.New = $true
-                    $_.Activated++
-                    if ($_.Process -ne $null) {$_.Active += $_.Process.ExitTime - $_.Process.StartTime}
-                    if ($_.Wrap) {$_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$($_.Arguments)' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru}
-                    else {$_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $_.Arguments -WorkingDirectory (Split-Path $_.Path)}
-                    if ($_.Process -eq $null) {$_.Status = "Failed"}
-                    else {
-                        $_.Status = "Running"
-                        $newMiner = $true
-                        #Newely started miner should looks better than other in the first run too
-                        $Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}
                     }
                 }
-                $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
-            }
-        }
-        #Do nothing for a few seconds as to not overload the APIs
-        if ($newMiner -eq $true) {
-            if ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
-            else {
-                if ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
-                else { $Variables.TimeToSleep = $Config.StatsInterval }
-            }
-        }
-        else {
-            $Variables.TimeToSleep = $Config.Interval
-        }
-        "--------------------------------------------------------------------------------" | out-host
-        #Do nothing for a few seconds as to not overload the APIs
-        if ($newMiner -eq $true) {
-            if ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
-            else {
-                if ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
-                else { $Variables.TimeToSleep = $Config.StatsInterval }
-            }
-        }
-        else {
-            $Variables.TimeToSleep = $Config.Interval
-        }
-        #Save current hash rates
-        $Variables.ActiveMinerPrograms | ForEach {
-            if ($_.Process -eq $null -or $_.Process.HasExited) {
-                if ($_.Status -eq "Running") {$_.Status = "Failed"}
-            }
-            else {
-                # we don't want to store hashrates if we run less than $Config.StatsInterval sec
-                $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
-                if ($WasActive -ge $Config.StatsInterval) {
-                    $_.HashRate = 0
-                    $Miner_HashRates = $null
-                    if ($_.New) {$_.Benchmarked++}         
-                    $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
-                    $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count           
-                    if ($Miner_HashRates.Count -ge $_.Algorithms.Count) {
-                        for ($i = 0; $i -lt $_.Algorithms.Count; $i++) {
-                            $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value ($Miner_HashRates | Select -Index $i)
-                        }
-                        $_.New = $false
-                        $_.Hashrate_Gathered = $true
-                        "Stats $($_.Algorithms) -> $($Miner_HashRates | ConvertTo-Hash) after $($WasActive) sec" | out-host
-                    }
+
+                Sleep $Config.Delay #Wait to prevent BSOD
+                $Variables.StatusText = "Starting miner"
+                $Variables.DecayStart = Get-Date
+                $_.New = $true
+                $_.Activated++
+                if ($_.Process -ne $null) {$_.Active += $_.Process.ExitTime - $_.Process.StartTime}
+                if ($_.Wrap) {$_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$($_.Arguments)' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru}
+                else {$_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $_.Arguments -WorkingDirectory (Split-Path $_.Path)}
+                if ($_.Process -eq $null) {$_.Status = "Failed"}
+                else {
+                    $_.Status = "Running"
+                    $newMiner = $true
+                    #Newely started miner should looks better than other in the first run too
+                    $Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}
                 }
             }
-            #Benchmark timeout
-            #        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
-            #        {
-            #            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
-            #            {
-            #                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate") -eq $null)
-            #                {
-            #                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value 0
-            #                }
-            #            }
-            #        }
+            $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
         }
-        # }
+    }
+    #Do nothing for a few seconds as to not overload the APIs
+    if ($newMiner -eq $true) {
+        if ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
+        else {
+            if ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
+            else { $Variables.TimeToSleep = $Config.StatsInterval }
+        }
+    }
+    else {
+        $Variables.TimeToSleep = $Config.Interval
+    }
+    "--------------------------------------------------------------------------------" | out-host
+    #Do nothing for a few seconds as to not overload the APIs
+    if ($newMiner -eq $true) {
+        if ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
+        else {
+            if ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
+            else { $Variables.TimeToSleep = $Config.StatsInterval }
+        }
+    }
+    else {
+        $Variables.TimeToSleep = $Config.Interval
+    }
+    #Save current hash rates
+    $Variables.ActiveMinerPrograms | ForEach {
+        if ($_.Process -eq $null -or $_.Process.HasExited) {
+            if ($_.Status -eq "Running") {$_.Status = "Failed"}
+        }
+        else {
+            # we don't want to store hashrates if we run less than $Config.StatsInterval sec
+            $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
+            if ($WasActive -ge $Config.StatsInterval) {
+                $_.HashRate = 0
+                $Miner_HashRates = $null
+                if ($_.New) {$_.Benchmarked++}         
+                $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
+                $_.HashRate = $Miner_HashRates | Select -First $_.Algorithms.Count           
+                if ($Miner_HashRates.Count -ge $_.Algorithms.Count) {
+                    for ($i = 0; $i -lt $_.Algorithms.Count; $i++) {
+                        $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value ($Miner_HashRates | Select -Index $i)
+                    }
+                    $_.New = $false
+                    $_.Hashrate_Gathered = $true
+                    "Stats $($_.Algorithms) -> $($Miner_HashRates | ConvertTo-Hash) after $($WasActive) sec" | out-host
+                }
+            }
+        }
+        #Benchmark timeout
+        #        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
+        #        {
+        #            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
+        #            {
+        #                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate") -eq $null)
+        #                {
+        #                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select -Index $i)_HashRate" -Value 0
+        #                }
+        #            }
+        #        }
+    }
+    # }
 
-        <#
+    <#
      For some reason (need to investigate) $Variables.ActiveMinerPrograms.psobject.TypeNames
      Inflates adding several lines at each loop and causing a memory leak after log runtime
      Code below copies the object which results in a new version which avoid the problem.
      Will need rework. 
     #>
-        $Error.Clear()
+    $Error.Clear()
 
-        $ActiveMinerProgramsCOPY = @()
-        $Variables.ActiveMinerPrograms | % {$ActiveMinerCOPY = [PSCustomObject]@{}; $_.psobject.properties | sort Name | % {$ActiveMinerCOPY | Add-Member -Force @{$_.Name = $_.Value}}; $ActiveMinerProgramsCOPY += $ActiveMinerCOPY}
-        $Variables.ActiveMinerPrograms = $ActiveMinerProgramsCOPY
-        rv ActiveMinerProgramsCOPY
-        rv ActiveMinerCOPY
+    $ActiveMinerProgramsCOPY = @()
+    $Variables.ActiveMinerPrograms | % {$ActiveMinerCOPY = [PSCustomObject]@{}; $_.psobject.properties | sort Name | % {$ActiveMinerCOPY | Add-Member -Force @{$_.Name = $_.Value}}; $ActiveMinerProgramsCOPY += $ActiveMinerCOPY}
+    $Variables.ActiveMinerPrograms = $ActiveMinerProgramsCOPY
+    rv ActiveMinerProgramsCOPY
+    rv ActiveMinerCOPY
 
-        # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
-        if (Test-Path ".\EndLoopCode.ps1") {Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}
-        $Variables | Add-Member -Force @{EndLoop = $True}
-        $Variables.StatusText = "Sleeping $($Variables.TimeToSleep)"
-    }
+    # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
+    if (Test-Path ".\EndLoopCode.ps1") {Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}
+    $Variables | Add-Member -Force @{EndLoop = $True}
+    $Variables.StatusText = "Sleeping $($Variables.TimeToSleep)"
     # Sleep $Variables.TimeToSleep
     # }
 }
