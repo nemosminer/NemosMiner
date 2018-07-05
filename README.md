@@ -24,7 +24,7 @@ Easy configuration, easy start:
       2. Set your Wallet address and Username
       3. Select your pool 
       4. Save Config
-      6. Start
+      5. Start
       
       note: 2. you only need to change Username if you are using Miningpoolhub
       
