@@ -408,7 +408,7 @@ Function NPMCycle {
         if ($filtered.Count -gt 0) {
             if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
                 # Log switching information to .\log\swicthing.log
-                [pscustomobject]@{date = (get-date); Type = $_.Type; algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Stratum = ($_.Arguments.Split(" ") | ? {$_ -like "*.*:*"})} | export-csv .\Logs\switching.log -Append -NoTypeInformation
+                [pscustomobject]@{date=(get-date);Type=$_.Type;algo=$_.Algorithms;wallet=$_.User;username=$Config.UserName;Stratum="$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"} | export-csv .\Logs\switching.log -Append -NoTypeInformation
 
                 # Launch prerun if exists
                 If ($_.Type -ne "CPU") {
@@ -514,13 +514,23 @@ Function NPMCycle {
      Code below copies the object which results in a new version which avoid the problem.
      Will need rework. 
     #>
-    $Error.Clear()
-
+    $Variables.ActiveMinerPrograms | Where {$_.Status -ne "Running"} | foreach {$_.process = $_.process | select HasExited,StartTime,ExitTime}
     $ActiveMinerProgramsCOPY = @()
     $Variables.ActiveMinerPrograms | % {$ActiveMinerCOPY = [PSCustomObject]@{}; $_.psobject.properties | sort Name | % {$ActiveMinerCOPY | Add-Member -Force @{$_.Name = $_.Value}}; $ActiveMinerProgramsCOPY += $ActiveMinerCOPY}
     $Variables.ActiveMinerPrograms = $ActiveMinerProgramsCOPY
     rv ActiveMinerProgramsCOPY
     rv ActiveMinerCOPY
+    
+    $Error.Clear()
+    $Global:Error.clear()
+    
+    Get-Job | ? {$_.State -eq "Completed"} | Remove-Job
+    $Variables.BrainJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}
+    $Variables.BrainJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}
+    $Variables.BrainJobs.ChildJobs | % {$_.Output.Clear()}
+    $Variables.EarningsTrackerJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}
+    $Variables.EarningsTrackerJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}
+    $Variables.EarningsTrackerJobs.ChildJobs | % {$_.Output.Clear()}
 
     # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
     if (Test-Path ".\EndLoopCode.ps1") {Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}

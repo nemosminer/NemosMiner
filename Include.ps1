@@ -710,6 +710,7 @@ function Expand-WebRequest {
         Get-ChildItem "$(Split-Path $Path)\$FolderName_Old" | Where-Object PSIsContainer -EQ $true | ForEach-Object {Move-Item "$(Split-Path $Path)\$FolderName_Old\$_" "$(Split-Path $Path)\$FolderName_New"}
         Remove-Item "$(Split-Path $Path)\$FolderName_Old"
     }
+    Remove-item $FileName
 }
 
 function Get-Algorithm {
