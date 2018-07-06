@@ -434,8 +434,8 @@ $MainForm.Add_FormClosing( {
         $TimerUI.Stop()
         Update-Status("Stopping jobs and miner")
 
-        $Variables.EarningsTrackerJobs | % {$_ | Stop-Job | Remove-Job}
-        $Variables.BrainJobs | % {$_ | Stop-Job | Remove-Job}
+        if ($Variables.EarningsTrackerJobs) {$Variables.EarningsTrackerJobs | % {$_ | Stop-Job | Remove-Job}}
+        if ($Variables.BrainJobs) {$Variables.BrainJobs | % {$_ | Stop-Job | Remove-Job}}
 
         If ($Variables.ActiveMinerPrograms) {
             $Variables.ActiveMinerPrograms | ForEach {
@@ -459,8 +459,8 @@ $MainForm.Add_FormClosing( {
         }
 
         # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
-        $CycleRunspace.Close()
-        $powershell.Dispose()
+        if ($CycleRunspace) {$CycleRunspace.Close()}
+        if ($powershell) {$powershell.Dispose()}
     })
 
 $Config = Load-Config -ConfigFile $ConfigFile
@@ -566,20 +566,20 @@ $ButtonStart.location = New-Object System.Drawing.Point(670, 62)
 $ButtonStart.Font = 'Microsoft Sans Serif,10'
 $MainFormControls += $ButtonStart
 
-$LabelNotifications                          = New-Object system.Windows.Forms.TextBox
-$LabelNotifications.Tag                      = ""
-$LabelNotifications.MultiLine                = $true
-# $TBNotifications.Scrollbars             = "Vertical" 
-$LabelNotifications.text                     = ""
-$LabelNotifications.AutoSize                 = $false
-$LabelNotifications.width                    = 280
-$LabelNotifications.height                   = 18
-$LabelNotifications.location                 = New-Object System.Drawing.Point(345,49)
-$LabelNotifications.Font                     = 'Microsoft Sans Serif,10'
-$LabelNotifications.BorderStyle              = 'None'
-$LabelNotifications.BackColor                = [System.Drawing.SystemColors]::Control
-$LabelNotifications.Visible                  = $True
-# $TBNotifications.TextAlign                = "Right"
+$LabelNotifications = New-Object system.Windows.Forms.TextBox
+$LabelNotifications.Tag = ""
+$LabelNotifications.MultiLine = $true
+# $TBNotifications.Scrollbars                = "Vertical" 
+$LabelNotifications.text = ""
+$LabelNotifications.AutoSize = $false
+$LabelNotifications.width = 280
+$LabelNotifications.height = 18
+$LabelNotifications.location = New-Object System.Drawing.Point(345, 49)
+$LabelNotifications.Font = 'Microsoft Sans Serif,10'
+$LabelNotifications.BorderStyle = 'None'
+$LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
+$LabelNotifications.Visible = $True
+# $TBNotifications.TextAlign                 = "Right"
 $MainFormControls += $LabelNotifications
 
 $LabelGitHub = New-Object System.Windows.Forms.LinkLabel
