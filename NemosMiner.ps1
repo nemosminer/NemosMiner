@@ -95,8 +95,6 @@ This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
 
-+
-
 "@
 
 $Global:Config = [hashtable]::Synchronized(@{})
@@ -377,7 +375,7 @@ Add-Type -AssemblyName System.Windows.Forms
 If (Test-Path ".\Logs\switching.log") {$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | Select -Last 14)}
 
 $MainForm = New-Object system.Windows.Forms.Form
-$NPMIcon = New-Object system.drawing.icon (".\NM.ICO")
+$NMIcon = New-Object system.drawing.icon (".\NM.ICO")
 $MainForm.Icon = $NMIcon
 $MainForm.ClientSize = '740,450' # best to keep under 800,600
 $MainForm.text = "Form"
@@ -1253,7 +1251,7 @@ $ButtonPause.Add_Click( {
                     $ProgressPreference = "SilentlyContinue"
                     . .\Include.ps1; RegisterLoaded(".\Include.ps1")
                     While ($True) {
-                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
+                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
                         if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
                         NPMCycle
                         Sleep $Variables.TimeToSleep
@@ -1330,8 +1328,8 @@ $ButtonStart.Add_Click( {
                     $ProgressPreference = "SilentlyContinue"
                     . .\Include.ps1; RegisterLoaded(".\Include.ps1")
                     While ($True) {
-                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
-+                       if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1;RegisterLoaded(".\Core.ps1")}
+                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+                        if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
                         NPMCycle
                         Sleep $Variables.TimeToSleep
                     }
