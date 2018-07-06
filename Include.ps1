@@ -28,8 +28,7 @@ version date:   20180705
 # Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{"File" = $MyInvocation.MyCommand.path} -EA SilentlyContinue
  
 Function Global:RegisterLoaded ($File) {
-    New-Item -Path function: -Name Script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value {$true} -EA SilentlyContinue | out-null
-    Get-Item function::"$((Get-FileHash (Resolve-Path $File)).Hash)" | Add-Member @{"File" = (Resolve-Path $File).Path} -EA SilentlyContinue
+    New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value {$true} -EA SilentlyContinue | Add-Member @{"File" = (Resolve-Path $File).Path} -EA SilentlyContinue
     $Variables.StatusText = "File loaded - $($file) - $((Get-PSCallStack).Command[1])"
 }
     
@@ -384,7 +383,7 @@ function Get-HashRate {
                 $Message = "summary"
 
                 do {
-                    $Client = New-Object System.Net.Sockets.TcpClient $server, 4444
+                    $Client = New-Object System.Net.Sockets.TcpClient $server, $Port
                     $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
                     $Reader = New-Object System.IO.StreamReader $Client.GetStream()
                     $Writer.AutoFlush = $true
