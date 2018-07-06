@@ -1,4 +1,4 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
     $blockmasters_Request = Invoke-WebRequest "http://blockmasters.co/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
@@ -12,7 +12,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Location = "US"
 
 $blockmasters_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | foreach {
-	$blockmasters_Host = "blockmasters.co"
+	$blockmasters_Host = "$blockmasters.co"
 	$blockmasters_Port = $blockmasters_Request.$_.port
 	$blockmasters_Algorithm = Get-Algorithm $blockmasters_Request.$_.name
 	$blockmasters_Coin = ""

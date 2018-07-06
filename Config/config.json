@@ -4,7 +4,7 @@
         "bitcore",
         "lyra2z",
         "timetravel",
-        "x16s", 
+        "x16s",
         "C11",
         "cryptonightV7",
         "cryptonightheavy",
@@ -35,14 +35,22 @@
     "API_Key": "",
     "APIKEY": "",
     "Autostart": false,
+    "AutoUpdate": false,
+    "Count": 0,
     "Currency": "USD",
     "Delay": 1,
     "DisableGPU0": false,
     "Donate": 8,
+    "EnableEarningsTrackerLogs": false,
     "FirstInterval": 30,
     "Interval": 120,
+    "IsFixedSize": false,
+    "IsReadOnly": false,
+    "IsSynchronized": true,
+    "Keys": [],
     "Location": "US",
-    "MarginOfError": 0.4,
+    "ManualConfig": false,
+    "MarginOfError": 0,
     "MinerName": null,
     "Passwordcurrency": "BTC",
     "PoolName": [
@@ -50,16 +58,19 @@
         "zergpoolplus"
     ],
     "Proxy": "",
-    "SelGPUCC": "0,1",
-    "SelGPUDSTM": "0 1",
     "SSL": false,
+    "StartGUIMinimized": false,
     "StatsInterval": 300,
+    "SyncRoot": {},
     "TrackEarnings": true,
     "Type": [
-        "nvidia"
+        "NVIDIA"
     ],
+    "TypeCPU": false,
+    "TypeNVIDIA": true,
     "UIStyle": "Full",
     "UserName": "nemo",
+    "Values": [],
     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-    "WorkerName": "ID=NemosMiner3.2"
+    "WorkerName": "ID=NemosMiner"
 }

@@ -3,8 +3,8 @@ Copyright (c) 2018 Nemo		(https://github.com/nemosminer/NemosMiner)
 Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
 
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
- # NemosMiner-v3.2
- Updated 2018 July 4
+ # NemosMiner-v3.3
+ Updated 2018 July 5
  
 *****
 
@@ -19,14 +19,12 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
 
 Easy configuration, easy start:
 
-      Run NemosMiner-v3.2.bat
+      Run NemosMiner-v3.3.bat
       1. Config tab
       2. Set your Wallet address and Username
-      3. Select your pool/s and load default Algos button. (Remove any algos you do not want to mine)
-      4. "Save Config"
-      5. Close
-      Run NemosMiner-v3.2.bat
-      6."Start"
+      3. Select your pool 
+      4. Save Config
+      5. Start
       
       note: 2. you only need to change Username if you are using Miningpoolhub
       

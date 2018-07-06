@@ -1,7 +1,7 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
-    $NiceHash_Request = Invoke-WebRequest "https://api.nicehash.com/api?method=simplemultialgo.info" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $NiceHash_Request = Invoke-WebRequest "https://api.nicehash.com/api?method=simplemultialgo.info" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
 }
 catch { return }
 
@@ -9,20 +9,23 @@ if (-not $NiceHash_Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-$Locations = "eu", "usa", "hk", "jp", "in", "br"
+# Placed here for Perf (Disk reads)
+	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
 
+$Locations = "eu", "usa", "hk", "jp", "in", "br"
 $Locations | ForEach-Object {
-    $NiceHash_Location = $_
-    
-    switch ($NiceHash_Location) {
-        "eu" {$Location = "Europe"}
-        "usa" {$Location = "US"}
-        "jp" {$Location = "JP"}
-        default {$Location = "Asia"}
-    }
-    
-    $NiceHash_Request.result.simplemultialgo | Where-Object {$_.paying -gt 0} <# algos paying 0 fail stratum #> | ForEach-Object {
-        $NiceHash_Host = "$($_.name).$NiceHash_Location.nicehash.com"
+        $NiceHash_Location = $_
+        
+        switch ($NiceHash_Location) {
+            "eu" {$Location = "Europe"}
+            "usa" {$Location = "US"}
+            "jp" {$Location = "JP"}
+            default {$Location = "Asia"}
+        }
+
+    $NiceHash_Request.result.simplemultialgo | ForEach-Object {
+        $NiceHash_Host = "$($_.Name).$NiceHash_Location.nicehash.com"
         $NiceHash_Port = $_.port
         $NiceHash_Algorithm = Get-Algorithm $_.name
         $NiceHash_Coin = ""
@@ -31,19 +34,17 @@ $Locations | ForEach-Object {
 
         $Stat = Set-Stat -Name "$($Name)_$($NiceHash_Algorithm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
-        $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
-	
         if ($Config.PoolsConfig.default.Wallet) {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
-                Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
+                Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
                 StablePrice   = $Stat.Week
                 MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+tcp"
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
-                User          = "$($Config.PoolsConfig.$ConfName.Wallet).$($Config.PoolsConfig.$ConfName.WorkerName.Replace('ID=',''))"
+                User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=',''))"
                 Pass          = "x"
                 Location      = $Location
                 SSL           = $false
@@ -52,13 +53,13 @@ $Locations | ForEach-Object {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
-                Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
+                Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
                 StablePrice   = $Stat.Week
                 MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+ssl"
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
-                User          = "$($Config.PoolsConfig.$ConfName.Wallet).$($Config.PoolsConfig.$ConfName.WorkerName.Replace('ID=',''))"
+                User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=',''))"
                 Pass          = "x"
                 Location      = $Location
                 SSL           = $true
