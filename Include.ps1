@@ -865,8 +865,8 @@ Function Autoupdate {
                 $TempVerObject | Add-Member -Force @{AutoUpdated = (Get-Date)}
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
                 
-                Update-Status("NemosMiner successfully updated to version $($AutoUpdateVersion.Version)")
-                Update-Notifications("NemosMiner successfully updated to version $($AutoUpdateVersion.Version)")
+                Update-Status("Successfully updated to version $($AutoUpdateVersion.Version)")
+                Update-Notifications("Successfully updated to version $($AutoUpdateVersion.Version)")
                 $LabelNotifications.ForeColor = "Green"
             }
         }
