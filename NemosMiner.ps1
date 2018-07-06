@@ -1253,7 +1253,7 @@ $ButtonPause.Add_Click( {
                     $ProgressPreference = "SilentlyContinue"
                     . .\Include.ps1; RegisterLoaded(".\Include.ps1")
                     While ($True) {
-                        if (!(IsLoaded(".\Include.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Include.ps1")}
+                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
                         if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
                         NPMCycle
                         Sleep $Variables.TimeToSleep
@@ -1330,8 +1330,8 @@ $ButtonStart.Add_Click( {
                     $ProgressPreference = "SilentlyContinue"
                     . .\Include.ps1; RegisterLoaded(".\Include.ps1")
                     While ($True) {
-                        if (!(IsLoaded(".\Include.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Include.ps1"); $Variables.StatusText = "IncludeLoaded"}
-                        if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1"); $Variables.StatusText = "CoreLoaded"}
+                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
++                       if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1;RegisterLoaded(".\Core.ps1")}
                         NPMCycle
                         Sleep $Variables.TimeToSleep
                     }
