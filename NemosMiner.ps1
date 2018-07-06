@@ -510,22 +510,6 @@ $TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $Estimati
 # Form Controls
 $MainFormControls = @()
 
-$LabelNotifications = New-Object system.Windows.Forms.TextBox
-$LabelNotifications.Tag = ""
-$LabelNotifications.MultiLine = $true
-# $TBNotifications.Scrollbars             = "Vertical" 
-$LabelNotifications.text = ""
-$LabelNotifications.AutoSize = $false
-$LabelNotifications.width = 382
-$LabelNotifications.height = 62
-$LabelNotifications.location = New-Object System.Drawing.Point(10, 2)
-$LabelNotifications.Font = 'Microsoft Sans Serif,10'
-$LabelNotifications.BorderStyle = 'FixedSingle'
-$LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
-$LabelNotifications.Visible = $False
-# $TBNotifications.TextAlign                = "Right"
-$MainFormControls += $LabelNotifications
-
 $LabelEarningsDetails = New-Object system.Windows.Forms.TextBox
 $LabelEarningsDetails.Tag = ""
 $LabelEarningsDetails.MultiLine = $true
@@ -581,6 +565,22 @@ $ButtonStart.height = 30
 $ButtonStart.location = New-Object System.Drawing.Point(670, 62)
 $ButtonStart.Font = 'Microsoft Sans Serif,10'
 $MainFormControls += $ButtonStart
+
+$LabelNotifications                          = New-Object system.Windows.Forms.TextBox
+$LabelNotifications.Tag                      = ""
+$LabelNotifications.MultiLine                = $true
+# $TBNotifications.Scrollbars             = "Vertical" 
+$LabelNotifications.text                     = ""
+$LabelNotifications.AutoSize                 = $false
+$LabelNotifications.width                    = 280
+$LabelNotifications.height                   = 18
+$LabelNotifications.location                 = New-Object System.Drawing.Point(345,49)
+$LabelNotifications.Font                     = 'Microsoft Sans Serif,10'
+$LabelNotifications.BorderStyle              = 'None'
+$LabelNotifications.BackColor                = [System.Drawing.SystemColors]::Control
+$LabelNotifications.Visible                  = $True
+# $TBNotifications.TextAlign                = "Right"
+$MainFormControls += $LabelNotifications
 
 $LabelGitHub = New-Object System.Windows.Forms.LinkLabel
 # $LabelGitHub.Location           = New-Object System.Drawing.Size(415,39)
