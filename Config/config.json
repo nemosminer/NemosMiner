@@ -22,6 +22,7 @@
         "neoscrypt",
         "allium",
         "phi",
+        "equihash192",
         "yescrypt",
         "yescryptR16",
         "skein",
