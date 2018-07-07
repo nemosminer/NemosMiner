@@ -1,6 +1,6 @@
 . .\Include.ps1
 
-$Path = ".\Bin\NVIDIA-EWBF\\miner.exe"
+$Path = ".\Bin\NVIDIA-EWBFv2\\miner.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashv0.3.7z"
 
 $Commands = [PSCustomObject]@{
