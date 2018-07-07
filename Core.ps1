@@ -525,13 +525,12 @@ Function NPMCycle {
     $Global:Error.clear()
     
     Get-Job | ? {$_.State -eq "Completed"} | Remove-Job
-    $Variables.BrainJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}
-    $Variables.BrainJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}
-    $Variables.BrainJobs.ChildJobs | % {$_.Output.Clear()}
-    $Variables.EarningsTrackerJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}
-    $Variables.EarningsTrackerJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}
-    $Variables.EarningsTrackerJobs.ChildJobs | % {$_.Output.Clear()}
-
+    if ($Variables.BrainJobs) {$Variables.BrainJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}}
+    if ($Variables.BrainJobs) {$Variables.BrainJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}}
+    if ($Variables.BrainJobs.ChildJobs) {$Variables.BrainJobs.ChildJobs | % {$_.Output.Clear()}}
+    if ($Variables.EarningsTrackerJobs) {$Variables.EarningsTrackerJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}}
+    if ($Variables.EarningsTrackerJobs) {$Variables.EarningsTrackerJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}}
+    if ($Variables.EarningsTrackerJobs.ChildJobs) {$Variables.EarningsTrackerJobs.ChildJobs | % {$_.Output.Clear()}}
     # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
     if (Test-Path ".\EndLoopCode.ps1") {Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}
     $Variables | Add-Member -Force @{EndLoop = $True}
