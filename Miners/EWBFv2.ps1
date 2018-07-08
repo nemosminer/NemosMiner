@@ -1,4 +1,4 @@
-. .\Include.ps1
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-EWBFv2\\miner.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashv0.3.7z"
