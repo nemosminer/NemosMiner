@@ -231,7 +231,7 @@ Function NPMCycle {
         Compare-Object $Variables.MinersHash (Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash) -Property "Hash", "Path" | Sort "Path" -Unique | % {
             $Variables.StatusText = "Miner Updated: $($_.Path)"
             $NewMiner = &$_.path
-            If (Test-Path (Split-Path $NewMiner.Path)) {Remove-Item -force -Recurse (Split-Path $NewMiner.Path)}
+            If (Test-Path (Split-Path $NewMiner.Path)) {Remove-Item -Force -Recurse (Split-Path $NewMiner.Path)}
             $Variables.MinersHash = Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash
             $Variables.MinersHash | ConvertTo-Json | out-file ".\Config\MinersHash.json"
         }
