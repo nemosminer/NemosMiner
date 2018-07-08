@@ -814,6 +814,8 @@ Function Autoupdate {
             Start-Process "7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
             If (!(test-path .\$BackupFileName)) {Update-Status("Backup failed"); return}
             
+            If (Test-Path ".\PreUpdateActions.ps1") {Remove-Item ".\PreUpdateActions.ps1" -Force}
+            
             # unzip in child folder excluding config
             Update-Status("Unzipping update...")
             Start-Process "7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
@@ -832,7 +834,8 @@ Function Autoupdate {
             Update-Status("Removing temporary files...")
             Remove-Item .\$UpdateFileName -Force -Recurse
             Remove-Item ".\$($UpdateFileName).zip" -Force
-            If (Test-Path ".\UpdateActions.ps1") {Remove-Item ".\UpdateActions.ps1" -Force}
+            If (Test-Path ".\PreUpdateActions.ps1") {Remove-Item ".\PreUpdateActions.ps1" -Force}
+            If (Test-Path ".\PostUpdateActions.ps1") {Remove-Item ".\PostUpdateActions.ps1" -Force}
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
