@@ -346,15 +346,6 @@ Function Form_Load {
         })
 }
 
-Function Form_Load {
-    $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
-    $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
-    $MainForm.Number = 0
-    $TimerUI.Add_Tick( {TimerUITick})
-    $TimerUI.Interval = 50
-    $TimerUI.Stop()
-}
-
 Function CheckedListBoxPools_Click ($Control) {
     $Config | Add-Member -Force @{$Control.Tag = $Control.CheckedItems}
 }
