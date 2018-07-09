@@ -12,7 +12,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-rmode 0 -proto 4 -coin auto -nvidia -cdmport -$($Variables.NVIDIAMinerAPITCPPort) -pool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -wal $($Pools.Ethash.User) -pass $($Pools.Ethash.Pass)$($Commands.$_)"
+        Arguments = "-rmode 1 -proto 4 -coin auto -nvidia -cdmport -$($Variables.NVIDIAMinerAPITCPPort) -pool $($Pools.Ethash.Host):$($Pools.Ethash.Port) -wal $($Pools.Ethash.User) -pass $($Pools.Ethash.Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week * .9935} # substract 0.65% devfee
         API = "Wrapper"
         Port = $Variables.NVIDIAMinerAPITCPPort #3333
