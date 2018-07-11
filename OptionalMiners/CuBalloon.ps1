@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = " -b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_) --cuda_devices 0,1,2,3,4,5,6,7,8,9,10,11 --cuda_threads 128,128,128,128,128,128,128,128,128,128,128,128 --cuda_blocks 48,48,48,48,48,48,48,48,48,48,48,48 --cuda_sync 0 -t 0"
+        Arguments = " -b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_) --cuda_devices 0,1,2,3,4,5,6,7,8,9,10,11 --cuda_threads 448,448,448,448,448,448,448,448,448,448,448,448 --cuda_blocks 48,48,48,48,48,48,48,48,48,48,48,48 --cuda_sync 0 -t 0"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week * .9675} # substract 3.25% devfee
         API = "Ccminer"
         Port = $Variables.NVIDIAMinerAPITCPPort
