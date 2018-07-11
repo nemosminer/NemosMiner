@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-ccminerBalloon\ccminer.exe"
-$Uri = "https://github.com/monkins1010/ccminer--v2balloon/releases/download/v2.3/ccminer.balloon.v2.3.monkins1010.zip"
+$Uri = "https://github.com/monkins1010/ccminer--v2balloon/releases/download/v2.1/ccminer-dertv2.2.zip"
 
 $Commands = [PSCustomObject]@{
     "balloon" = " -d $($Config.SelGPUCC) --cuda_threads 448 --cuda_blocks 48" #Balloon
