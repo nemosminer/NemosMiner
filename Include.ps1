@@ -814,7 +814,11 @@ Function Autoupdate {
             Start-Process "7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
             If (!(test-path .\$BackupFileName)) {Update-Status("Backup failed"); return}
             
-            If (Test-Path ".\PreUpdateActions.ps1") {Remove-Item ".\PreUpdateActions.ps1" -Force}
+              # Pre update specific actions if any
+              # Use PreUpdateActions.ps1 in new release to place code
+              If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1") {
+              Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
+            }
             
             # unzip in child folder excluding config
             Update-Status("Unzipping update...")
@@ -824,10 +828,10 @@ Function Autoupdate {
             Update-Status("Copying files...")
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
 
-            # update specific actions if any
-            # Use UpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\UpdateActions.ps1") {
-                Invoke-Expression (get-content ".\$UpdateFileName\UpdateActions.ps1" -Raw)
+            # Post update specific actions if any
+            # Use PostUpdateActions.ps1 in new release to place code
+            If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1") {
+            Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
             }
             
             #Remove temp files

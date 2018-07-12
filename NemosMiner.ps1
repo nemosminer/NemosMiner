@@ -170,7 +170,7 @@ Function Global:TimerUITick
         $SwitchingDGV.ClearSelection()
         
         If ($Variables.ActiveMinerPrograms) {
-            $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},@{Name="Stratum";Expression={"$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"}} | sort Type)
+            $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},@{Name="Stratum";Expression={"$($_.Arguments.Split(' ') | ?{($_ -like '*.*:*') -and (-not ($_.Contains($Variables.NVIDIAMinerAPITCPPort) -or ($_.contains($Variables.CPUMinerAPITCPPort))))})"}} | sort Type)
             $RunningMinersDGV.ClearSelection()
         
             [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
@@ -360,6 +360,7 @@ Function PrepareWriteConfig{
     }
     $Config | Add-Member -Force @{$CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems}
     Write-Config -ConfigFile $ConfigFile -Config $Config
+    $Config = Load-Config -ConfigFile $ConfigFile
     $MainForm.Refresh
     # [windows.forms.messagebox]::show("Please restart NPlusMiner",'Config saved','ok','Information') | out-null
 }
@@ -1187,6 +1188,7 @@ $TimerUI.Enabled = $false
 $ButtonPause.Add_Click( {
         If ($TimerUI.Enabled) {
             Update-Status("Stopping miners")
+            $ButtonStart.Visible = $False
             $TimerUI.Stop()
             # Do not stop other jobs (EarnigsTracker and BrainPlus)
             # Get-Job | Stop-Job | Remove-Job
@@ -1221,6 +1223,9 @@ $ButtonPause.Add_Click( {
                 $RunningMinersDGV.ClearSelection()
             }
 
+            ls function: | ? {$_.File -eq (Resolve-Path ".\include.ps1")} | Remove-Item
+            ls function: | ? {$_.File -eq (Resolve-Path ".\core.ps1")} | Remove-Item
+
             $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             $ButtonPause.Text = "Mine"
             # $TimerUI.Interval = 1000
@@ -1231,6 +1236,7 @@ $ButtonPause.Add_Click( {
             if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
             PrepareWriteConfig
+            $ButtonStart.Visible = $True
             $ButtonPause.Text = "Pause"
             # No need to init if paused
             # InitApplication
@@ -1297,6 +1303,9 @@ $ButtonStart.Add_Click( {
             # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
             $CycleRunspace.Close()
             $powershell.Dispose()
+
+            ls function: | ? {$_.File -eq (Resolve-Path ".\include.ps1")} | Remove-Item
+            ls function: | ? {$_.File -eq (Resolve-Path ".\core.ps1")} | Remove-Item
 
             $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             Update-Status("Idle")
