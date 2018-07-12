@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
 <#
-Product:        NemosMiner
+Product:        NemoMiner
 File:           BrainPlus.ps1
 version:        2.2
 version date:   20180408
