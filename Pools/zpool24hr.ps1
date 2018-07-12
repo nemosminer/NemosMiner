@@ -1,41 +1,49 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
-    $Zpool_Request = Invoke-WebRequest "http://www.zpool.ca/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $Request = Invoke-WebRequest "http://www.zpool.ca/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
 }
 catch { return }
 
-if (-not $Zpool_Request) {return}
+if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-
+$HostSuffix = ".mine.zpool.ca"
+$PriceField = "actual_last24h"
+# $PriceField = "estimate_current"
+$DivisorMultiplier = 1000000000
+ 
 $Location = "US"
 
-$Zpool_Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $Zpool_Host = "$_.mine.zpool.ca"
-    $Zpool_Port = $Zpool_Request.$_.port
-    $Zpool_Algorithm = Get-Algorithm $Zpool_Request.$_.name
-    $Zpool_Coin = ""
-
-    $Divisor = 1000000000 * [Double]$Zpool_Request.$_.mbtc_mh_factor
-
-    if ((Get-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
-    else {$Stat = Set-Stat -Name "$($Name)_$($Zpool_Algorithm)_Profit" -Value ([Double]$Zpool_Request.$_.actual_last24h / $Divisor * (1 - ($Zpool_Request.$_.fees / 100)))}
-
+# Placed here for Perf (Disk reads)
 	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
+
+$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $PoolHost = "$($_)$($HostSuffix)"
+    $PoolPort = $Request.$_.port
+    $PoolAlgorithm = Get-Algorithm $Request.$_.name
+
+    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+
+    if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
+
+	$PwdCurr = if ($PoolConf.PwdCurrency) {$PoolConf.PwdCurrency}else {$Config.Passwordcurrency}
+    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") {$PoolConf.WorkerName} else {"ID=$($PoolConf.WorkerName)"}
 	
-    if ($Config.PoolsConfig.default.Wallet) {
+    if ($PoolConf.Wallet) {
         [PSCustomObject]@{
-            Algorithm     = $Zpool_Algorithm
-            Info          = $Zpool_Coin
-            Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
+            Algorithm     = $PoolAlgorithm
+            Info          = "$ahashpool_Coin $ahashpool_Coinname"
+            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
-            Host          = $Zpool_Host
-            Port          = $Zpool_Port
-            User          = $Config.PoolsConfig.$ConfName.Wallet
-		    Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($Config.Passwordcurrency)"
+            Host          = $PoolHost
+            Port          = $PoolPort
+            User          = $PoolConf.Wallet
+		    Pass          = "$($WorkerName),c=$($PwdCurr)"
             Location      = $Location
             SSL           = $false
         }

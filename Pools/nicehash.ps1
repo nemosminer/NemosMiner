@@ -1,11 +1,11 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
-    $NiceHash_Request = Invoke-WebRequest "https://api.nicehash.com/api?method=simplemultialgo.info" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $Request = Invoke-WebRequest "https://api.nicehash.com/api?method=simplemultialgo.info" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
 }
 catch { return }
 
-if (-not $NiceHash_Request) {return}
+if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
@@ -24,7 +24,7 @@ $Locations | ForEach-Object {
             default {$Location = "Asia"}
         }
 
-    $NiceHash_Request.result.simplemultialgo | ForEach-Object {
+    $Request.result.simplemultialgo | ForEach-Object {
         $NiceHash_Host = "$($_.Name).$NiceHash_Location.nicehash.com"
         $NiceHash_Port = $_.port
         $NiceHash_Algorithm = Get-Algorithm $_.name
@@ -34,7 +34,7 @@ $Locations | ForEach-Object {
 
         $Stat = Set-Stat -Name "$($Name)_$($NiceHash_Algorithm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
-        if ($Config.PoolsConfig.default.Wallet) {
+        if ($PoolConf.Wallet) {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin

@@ -1,44 +1,51 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
-    $hashrefinery_Request = Invoke-WebRequest "http://pool.hashrefinery.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $Request = Invoke-WebRequest "http://pool.hashrefinery.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
 }
 catch { return }
 
-if (-not $hashrefinery_Request) {return}
+if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-
+$HostSuffix = ".us.hashrefinery.com"
+$PriceField = "actual_last24h"
+# $PriceField = "estimate_current"
+$DivisorMultiplier = 1000000000
+ 
 $Location = "US"
 
-$hashrefinery_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
-	$hashrefinery_Host = "$_.us.hashrefinery.com"
-	$hashrefinery_Port = $hashrefinery_Request.$_.port
-	$hashrefinery_Algorithm = Get-Algorithm $hashrefinery_Request.$_.name
-	$hashrefinery_Coin = "Unknown"
+# Placed here for Perf (Disk reads)
+	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
 
-    $Divisor = 1000000000 * [Double]$HashRefinery_Request.$HashRefinery_Algorithm.mbtc_mh_factor
+$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $PoolHost = "$($_)$($HostSuffix)"
+    $PoolPort = $Request.$_.port
+    $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
-	if ((Get-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit" -Value ([Double]$hashrefinery_Request.$_.actual_last24h / $Divisor)}
-	else {$Stat = Set-Stat -Name "$($Name)_$($hashrefinery_Algorithm)_Profit" -Value ([Double]$hashrefinery_Request.$_.actual_last24h / $Divisor * (1 - ($hashrefinery_Request.$_.fees / 100)))}
+    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
-	$PwdCurr = if ($Config.PoolsConfig.$ConfName.PwdCurrency) {$Config.PoolsConfig.$ConfName.PwdCurrency}else {$Config.Passwordcurrency}
+    if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
 
-	if ($Config.PoolsConfig.default.Wallet) {
-		[PSCustomObject]@{
-			Algorithm     = $hashrefinery_Algorithm
-			Info          = $hashrefinery
-			Price         = $Stat.Live * $Config.PoolsConfig.$ConfName.PricePenaltyFactor
-			StablePrice   = $Stat.Week
-			MarginOfError = $Stat.Fluctuation
-			Protocol      = "stratum+tcp"
-			Host          = $hashrefinery_Host
-			Port          = $hashrefinery_Port
-			User          = $Config.PoolsConfig.$ConfName.Wallet
-			Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($PwdCurr)"
-			Location      = $Location
-			SSL           = $false
-		}
-	}
+	$PwdCurr = if ($PoolConf.PwdCurrency) {$PoolConf.PwdCurrency}else {$Config.Passwordcurrency}
+    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") {$PoolConf.WorkerName} else {"ID=$($PoolConf.WorkerName)"}
+	
+    if ($PoolConf.Wallet) {
+        [PSCustomObject]@{
+            Algorithm     = $PoolAlgorithm
+            Info          = "$ahashpool_Coin $ahashpool_Coinname"
+            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
+            StablePrice   = $Stat.Week
+            MarginOfError = $Stat.Week_Fluctuation
+            Protocol      = "stratum+tcp"
+            Host          = $PoolHost
+            Port          = $PoolPort
+            User          = $PoolConf.Wallet
+		    Pass          = "$($WorkerName),c=$($PwdCurr)"
+            Location      = $Location
+            SSL           = $false
+        }
+    }
 }
