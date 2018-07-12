@@ -152,7 +152,7 @@ Foreach ($Name in ($AlgoObject.Name | Select -Unique)) {
             Date                = $CurDate
             LiveTrend           = $LiveTrend
         }
-        $AlgoData.($Name).actual_last24h = $Price * 1000
+        $AlgoData.($Name).actual_last24h = $Price
 }
 if ($EnableLog) {$MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath}
 ($AlgoData | ConvertTo-Json).replace("NaN",0) | Set-Content $TransferFile
