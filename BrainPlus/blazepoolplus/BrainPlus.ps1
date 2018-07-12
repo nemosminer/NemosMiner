@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
 <#
-Product:        NemoMiner
+Product:        NemosMiner
 File:           BrainPlus.ps1
 version:        2.2
 version date:   20180408
@@ -152,7 +152,7 @@ Foreach ($Name in ($AlgoObject.Name | Select -Unique)) {
             Date                = $CurDate
             LiveTrend           = $LiveTrend
         }
-        $AlgoData.($Name).actual_last24h = $Price * 1000
+        $AlgoData.($Name).actual_last24h = $Price
 }
 if ($EnableLog) {$MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath}
 ($AlgoData | ConvertTo-Json).replace("NaN",0) | Set-Content $TransferFile
