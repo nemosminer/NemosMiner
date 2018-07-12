@@ -1,48 +1,58 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
-    $MineMoney_Request = Invoke-WebRequest "https://www.minemoney.co/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
+    $Request = Invoke-WebRequest "https://www.minemoney.co/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
 }
 catch { return }
 
-if (-not $MineMoney_Request) {return}
+if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-
+$HostSuffix = ".MineMoney.ca"
+# $PriceField = "actual_last24h"
+$PriceField = "estimate_current"
+$DivisorMultiplier = 1000000
+ 
 $Location = "US"
 
-$MineMoney_Request | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | foreach {
-    $MineMoney_Host = "$_.minemoney.co"
-    $MineMoney_Port = $MineMoney_Request.$_.port
-    $MineMoney_Algorithm = Get-Algorithm $MineMoney_Request.$_.name
-    $MineMoney_Coin = ""
+# Placed here for Perf (Disk reads)
+	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
+
+$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+    $PoolHost = "$($_)$($HostSuffix)"
+    $PoolPort = $Request.$_.port
+    $PoolAlgorithm = Get-Algorithm $Request.$_.name
+
+    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
     $Divisor = 1000000
 	
-    switch ($MineMoney_Algorithm) {
+    switch ($PoolAlgorithm) {
         "blake2s" {$Divisor *= 1000}
         "blakecoin" {$Divisor *= 1000}
         "decred" {$Divisor *= 1000}
         "keccak" {$Divisor *= 1000}
     }
 
-    if ((Get-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_last24h / $Divisor * (1 - ($MineMoney_Request.$_.fees / 100)))}
-    else {$Stat = Set-Stat -Name "$($Name)_$($MineMoney_Algorithm)_Profit" -Value ([Double]$MineMoney_Request.$_.estimate_current / $Divisor * (1 - ($MineMoney_Request.$_.fees / 100)))}
+    if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
+    else {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
 
-	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+	$PwdCurr = if ($PoolConf.PwdCurrency) {$PoolConf.PwdCurrency}else {$Config.Passwordcurrency}
+    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") {$PoolConf.WorkerName} else {"ID=$($PoolConf.WorkerName)"}
 	
-    if ($Config.PoolsConfig.default.Wallet) {
+    if ($PoolConf.Wallet) {
         [PSCustomObject]@{
-            Algorithm     = $MineMoney_Algorithm
-            Info          = $MineMoney
-            Price         = $Stat.Live*$Config.PoolsConfig.$ConfName.PricePenaltyFactor
+            Algorithm     = $PoolAlgorithm
+            Info          = "$ahashpool_Coin $ahashpool_Coinname"
+            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
-            MarginOfError = $Stat.Fluctuation
+            MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
-            Host          = $MineMoney_Host
-            Port          = $MineMoney_Port
-            User          = $Config.PoolsConfig.$ConfName.Wallet
-		    Pass          = "$($Config.PoolsConfig.$ConfName.WorkerName),c=$($Config.Passwordcurrency)"
+            Host          = $PoolHost
+            Port          = $PoolPort
+            User          = $PoolConf.Wallet
+		    Pass          = "$($WorkerName),c=$($PwdCurr)"
             Location      = $Location
             SSL           = $false
         }
