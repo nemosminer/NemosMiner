@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerBalloon\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer--v2balloon/releases/download/v2.3-9.2/ccminer.balloon.v2.3.monkins9.2.zip"
 
 $Commands = [PSCustomObject]@{
-    "balloon" = " -d $($Config.SelGPUCC) --cuda_threads 64 --cuda_blocks 100" #Balloon
+    "balloon" = " -d $($Config.SelGPUCC) --cuda_threads 256 --cuda_blocks 100" #Balloon
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
