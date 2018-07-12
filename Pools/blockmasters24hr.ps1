@@ -8,7 +8,7 @@ catch { return }
 if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "blockmaster.co"
+$HostSuffix = "blockmasters.co"
 $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000000
