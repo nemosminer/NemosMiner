@@ -4,13 +4,6 @@ $Path = ".\Bin\NVIDIA-EWBFv2\\miner.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashv0.3.7z"
 
 $Commands = [PSCustomObject]@{
-    #"bitcore" = "" #Bitcore
-    #"blake2s" = "" #Blake2s
-    #"blakecoin" = "" #Blakecoin
-    #"vanilla" = "" #BlakeVanilla
-    #"cryptonight" = "" #Cryptonight
-    #"decred" = "" #Decred
-    "equihash192" = " " #Equihash192
     "equihash144" = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers sngemPoW" #Equihash144
     "equihash192" = " --cuda_devices $($Config.SelGPUDSTM) --algo 192_7 --pers ZERO_PoW" #Equihash192
 }
