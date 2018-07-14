@@ -63,6 +63,7 @@
     "dynamic":  "Argon2dDYN",
     "equihash":  "Equihash",
     "equihash192":  "Equihash192",
+    "equihash144":  "Equihash144",
     "Espers":  "HMQ1725",
     "eth":  "Ethash",
     "ethash":  "Ethash",
