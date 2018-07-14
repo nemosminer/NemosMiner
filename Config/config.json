@@ -23,6 +23,7 @@
         "allium",
         "phi",
         "equihash192",
+        "equihash144",
         "yescrypt",
         "yescryptR16",
         "skein",
