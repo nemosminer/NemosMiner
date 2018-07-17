@@ -341,6 +341,7 @@ Function CheckedListBoxPools_Click ($Control) {
 }
 
 Function PrepareWriteConfig{
+    If ($Config.ManualConfig) {Update-Status("Manual config mode - Not saving config"); return}
     If ($Config -eq $null){$Config = [hashtable]::Synchronized(@{})}
     $Config | Add-Member -Force @{$TBAddress.Tag = $TBAddress.Text}
     $Config | Add-Member -Force @{$TBWorkerName.Tag = $TBWorkerName.Text}
