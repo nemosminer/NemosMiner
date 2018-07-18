@@ -26,8 +26,8 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $PoolHost = "$($_)$($HostSuffix)"
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
-	# Find best coin for algo
-	$TopCoin = $AllMiningCoins | where {($_.noautotrade -eq 0) -and ($_.hashrate -gt 0) -and ((Get-Algorithm $_.algo) -eq $PoolAlgorithm)} | sort -Property @{Expression = {$_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor)}} -Descending | select -first 1
+    # Find best coin for algo
+    $TopCoin = $AllMiningCoins | group algo | where {(Get-Algorithm $_.name) -eq $PoolAlgorithm} | foreach {$_.group | sort -Property @{Expression = {$_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor)}} -Descending | select -first 1}
 
     $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
