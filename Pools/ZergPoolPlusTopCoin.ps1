@@ -20,6 +20,7 @@ $PoolConf = $Config.PoolsConfig.$ConfName
 
 $AllMiningCoins = @()
 ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | %{$CoinsRequest.$_ | Add-Member -Force @{Symbol = if ($CoinsRequest.$_.Symbol) {$CoinsRequest.$_.Symbol} else {$_}} ; $AllMiningCoins += $CoinsRequest.$_}
+$AllMiningCoins = $AllMiningCoins | where {($_.noautotrade -eq 0) -and ($_.hashrate -gt 0)}
 
 #Uses BrainPlus calculated price
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
