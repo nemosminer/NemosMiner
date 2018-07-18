@@ -51,7 +51,7 @@
     "IsSynchronized": true,
     "Keys": [],
     "Location": "US",
-    "ManualConfig": true,
+    "ManualConfig": false,
     "MarginOfError": 0,
     "MinerName": null,
     "Passwordcurrency": "BTC",
