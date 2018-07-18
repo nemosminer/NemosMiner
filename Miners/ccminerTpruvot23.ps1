@@ -22,7 +22,7 @@ $Commands = [PSCustomObject]@{
     #"hmq1725" = " -r 0 -d $($Config.SelGPUCC)" #hmq1725
     "keccakc" = " -d $($Config.SelGPUCC) -i 29" #Keccakc
     "keccak" = " -d $($Config.SelGPUCC) -i 29" #Keccak
-    #"lyra2v2" = " -N 1 -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Lyra2RE2
+    "lyra2v2" = " -N 1 -d $($Config.SelGPUCC)" #Lyra2RE2
     #"lyra2z" = "  -r 0 -d $($Config.SelGPUCC) --submit-stale" #Lyra2z
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = " -d $($Config.SelGPUCC)" #NeoScrypt
