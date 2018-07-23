@@ -57,8 +57,8 @@ do {
             }
             $HashRate = [int]$HashRate
             $HashRate | Set-Content ".\Bminer.txt"
-            }
-            elseif ($Line -like "*Average speed*") {
+        }
+        elseif ($Line -like "*Average speed*") {
             $Words = $Line -split " "
             $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1)) - 1]
 
