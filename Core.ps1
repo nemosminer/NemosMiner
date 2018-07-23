@@ -168,7 +168,7 @@ Function NPMCycle {
             $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString().replace('.',''))"; PricePenaltyFactor = 1}}}
         }
     }
-    if ((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) {
+    if(((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) -or (! $Config.PoolsConfig))
         $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value {
             If (Test-Path ".\Config\PoolsConfig.json") {
                 get-content ".\Config\PoolsConfig.json" | ConvertFrom-json
