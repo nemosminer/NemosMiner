@@ -170,9 +170,9 @@ Function Global:TimerUITick
         $SwitchingDGV.ClearSelection()
         
         If ($Variables.ActiveMinerPrograms) {
-            $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},@{Name="Stratum";Expression={"$($_.Arguments.Split(' ') | ?{($_ -like '*.*:*') -and (-not ($_.Contains($Variables.NVIDIAMinerAPITCPPort) -or ($_.contains($Variables.CPUMinerAPITCPPort))))})"}} | sort Type)
-            $RunningMinersDGV.ClearSelection()
-        
+				$RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},Host,Coin | sort Type)
+				$RunningMinersDGV.ClearSelection()
+                
             [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
             If ($ProcessRunning -eq $null){
                 # Update-Status("No miner running")
