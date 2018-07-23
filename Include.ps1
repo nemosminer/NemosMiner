@@ -840,6 +840,7 @@ Function Autoupdate {
             Remove-Item ".\$($UpdateFileName).zip" -Force
             If (Test-Path ".\PreUpdateActions.ps1") {Remove-Item ".\PreUpdateActions.ps1" -Force}
             If (Test-Path ".\PostUpdateActions.ps1") {Remove-Item ".\PostUpdateActions.ps1" -Force}
+            ls "AutoupdateBackup-*.zip" | Where {$_.name -notin (ls "AutoupdateBackup-*.zip" | sort LastWriteTime -Descending | select -First 2).name} | Remove-Item -Force
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
