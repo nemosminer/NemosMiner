@@ -25,6 +25,7 @@
         "equihash192",
         "equihash144",
         "equihash144btcz",
+        "equihash144zel",
         "yescrypt",
         "yescryptR16",
         "skein",
