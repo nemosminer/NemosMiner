@@ -101,276 +101,282 @@ $Global:Config = [hashtable]::Synchronized(@{})
 $Global:Variables = [hashtable]::Synchronized(@{})
 $Global:Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() }  -SecondValue { If (!$this._StatusText) {$this._StatusText = @()}; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{RefreshNeeded = $True} }
 
-        
-Function Global:TimerUITick
-{
-    $TimerUI.Enabled = $False
-    If ($Variables.RefreshNeeded) {
-        If (!$Variables.EndLoop) {Update-Status($Variables.StatusText)}
-        # $TimerUI.Interval = 1
+Function Form_Load {
 
-        Start-ChildJobs
-
-        $Variables.EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
-            $EarnTrack = $_ | Receive-Job
-                If ($EarnTrack) {
-                    $Variables.EarningsPool = (($EarnTrack[($EarnTrack.Count - 1)]).Pool)
-                    # $Variables.Earnings.$Variables.EarningsPool = $EarnTrack[($EarnTrack.Count - 1)]
-                    $Variables.Earnings.(($EarnTrack[($EarnTrack.Count - 1)]).Pool) = $EarnTrack[($EarnTrack.Count - 1)]
-                    rv EarnTrack
-               }
-        }
-
-        If ((compare -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | sort -Unique) | ? {$_.SideIndicator -eq "=>"}).InputObject -gt 0) {
-        (compare -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | sort -Unique) | ? {$_.SideIndicator -eq "=>"}).InputObject | % { if ($_ -ne $null){}$CheckedListBoxPools.Items.AddRange($_)}
-        $Config.PoolName | foreach {$CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_),$True)}
-        }
-        $Variables | Add-Member -Force @{InCycle = $True}
-        # $MainForm.Number+=1
-        $MainForm.Text = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date)-$Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
-        $host.UI.RawUI.WindowTitle = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date)-$Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
-
-        If ($Variables.EndLoop) {
-		
-			$SwitchingDisplayTypes = @()
-			$SwitchingPageControls | foreach {if ($_.Checked){$SwitchingDisplayTypes += $_.Tag}}
-			# If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
-			# If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
-			If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(@((get-content ".\Logs\switching.log" -First 1) , (get-content ".\logs\switching.log" -last 50)) | ConvertFrom-Csv | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
-			$SwitchingDGV.DataSource = $SwitchingArray
-			
-			If ($Variables.Earnings -and $Config.TrackEarnings) {
-				$DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | select @(
-					@{Name="Pool";Expression={$_.Pool}},
-					@{Name="Trust";Expression={"{0:P0}" -f $_.TrustLevel}},
-					@{Name="Balance";Expression={$_.Balance}},
-					# @{Name="Unpaid";Expression={$_.total_unpaid}},
-					@{Name="BTC/D";Expression={"{0:N8}" -f ($_.BTCD)}},
-					@{Name="mBTC/D";Expression={"{0:N3}" -f ($_.BTCD*1000)}},
-					@{Name="Est. Pay Date";Expression={$_.EstimatedPayDate}},
-					@{Name="PaymentThreshold";Expression={"$($_.PaymentThreshold) ($('{0:P0}' -f $($_.Balance / $_.PaymentThreshold)))"}},
-					@{Name="Wallet";Expression={$_.Wallet}}
-				) | Sort "BTC/D" -Descending)
-				$EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
-				$EarningsDGV.ClearSelection()
-			}
-			
-			If ($Variables.Miners) {
-				$DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Select @(
-					@{Name = "Miner";Expression={$_.Name}},
-					@{Name = "Algorithm";Expression={$_.HashRates.PSObject.Properties.Name}},
-					@{Name = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}},
-					@{Name = "mBTC/Day"; Expression={$_.Profits.PSObject.Properties.Value*1000 | ForEach {if($_ -ne $null){$_.ToString("N3")}else{"Benchmarking"}}}},
-					@{Name = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){$_.ToString("N5")}else{"Benchmarking"}}}},
-					@{Name = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}},
-					@{Name = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
-				) | sort "mBTC/Day" -Descending)
-				$EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
-			}
-			$EstimationsDGV.ClearSelection()
-
-			$SwitchingDGV.ClearSelection()
-			
-			If ($Variables.ActiveMinerPrograms) {
-				$RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},Host,Coin | sort Type)
-				$RunningMinersDGV.ClearSelection()
-			
-				[Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-				If ($ProcessRunning -eq $null){
-					# Update-Status("No miner running")
-				}
-			}
-        $LabelBTCPrice.text = If($Variables.Rates.$Currency -gt 0){"BTC/$($Config.Currency) $($Variables.Rates.($Config.Currency))"}
-        $Variables | Add-Member -Force @{InCycle = $False}
-
-        If ($Variables.EndLoop) {
-            If ($Variables.Earnings.Values -ne $Null){
-                $LabelBTCD.Text = "Avg: " +("{0:N6}" -f ($Variables.Earnings.Values | measure -Property BTCD -Sum).sum) + " BTC/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property BTCD -Sum).sum*1000)) + " mBTC/D"
-                
-                $LabelEarningsDetails.Lines = @()
-                # If ((($Variables.Earnings.Values | measure -Property Growth1 -Sum).sum*1000*24) -lt ((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum*1000)*0.999)) {
-                    # $LabelEarningsDetails.ForeColor = "Red" } else { $LabelEarningsDetails.ForeColor = "Green" }
-                $TrendSign = switch ([Math]::Round((($Variables.Earnings.Values | measure -Property Growth1 -Sum).sum*1000*24),3) - [Math]::Round((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum*1000),3)) {
-                        {$_ -eq 0}
-                            {"="}
-                        {$_ -gt 0}
-                            {">"}
-                        {$_ -lt 0}
-                            {"<"}
-                    }
-                $LabelEarningsDetails.Lines += "Last  1h: " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property Growth1 -Sum).sum*1000*24)) + " mBTC/D " + $TrendSign
-                $TrendSign = switch ([Math]::Round((($Variables.Earnings.Values | measure -Property Growth6 -Sum).sum*1000*4),3) - [Math]::Round((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum*1000),3)) {
-                        {$_ -eq 0}
-                            {"="}
-                        {$_ -gt 0}
-                            {">"}
-                        {$_ -lt 0}
-                            {"<"}
-                    }
-                $LabelEarningsDetails.Lines += "Last  6h: " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property Growth6 -Sum).sum*1000*4)) + " mBTC/D " + $TrendSign
-                $TrendSign = switch ([Math]::Round((($Variables.Earnings.Values | measure -Property Growth24 -Sum).sum*1000),3) - [Math]::Round((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum*1000),3)) {
-                        {$_ -eq 0}
-                            {"="}
-                        {$_ -gt 0}
-                            {">"}
-                        {$_ -lt 0}
-                            {"<"}
-                    }
-                $LabelEarningsDetails.Lines += "Last 24h: " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property Growth24 -Sum).sum*1000)) + " mBTC/D " + $TrendSign
-                rv TrendSign
-            } else {
-                $LabelBTCD.Text = "Waiting data from pools."
-                $LabelEarningsDetails.Lines = @()
-            }
-        
-            if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
-            if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1;RegisterLoaded(".\Core.ps1")}
-        
-            $Variables | Add-Member -Force @{CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product}
-            $Variables | Add-Member -Force @{CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version}
-            $Variables | Add-Member -Force @{CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value}
-            if ((Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count-1] -ne "Auto Updated on $($Variables.CurrentVersionAutoUpdated)"){
-                $LabelNotifications.ForeColor = "Green"
-                Update-Notifications("Running $($Variables.CurrentProduct) Version $([Version]$Variables.CurrentVersion)")
-                Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoUpdated)")
-            }
-        
-            #Display mining information
-            if($host.UI.RawUI.KeyAvailable){$KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp");sleep -Milliseconds 300;$host.UI.RawUI.FlushInputBuffer()
-            If ($KeyPressed.KeyDown){
-            Switch ($KeyPressed.Character) {
-                    "s" {if ($Config.UIStyle -eq "Light"){$Config.UIStyle="Full"}else{$Config.UIStyle="Light"}}
-                    "e" {$Config.TrackEarnings=-not $Config.TrackEarnings}
-            }}}
-            Clear-Host
-            [Array] $processesIdle = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
-            IF ($Config.UIStyle -eq "Full"){
-                if ($processesIdle.Count -gt 0) {
-                    Write-Host "Idle: " $processesIdle.Count
-                    $processesIdle | Sort {if($_.Process -eq $null){(Get-Date)}else{$_.Process.ExitTime}} | Format-Table -Wrap (
-                        @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-                        @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
-                        @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-                        @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-                        @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-                    ) | Out-Host
-                }
-            }
-            Write-Host "      1BTC = $($Variables.Rates.($Config.Currency)) $($Config.Currency)"
-            # Get and display earnings stats
-            If ($Variables.Earnings -and $Config.TrackEarnings) {
-                # $Variables.Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
-                $Variables.Earnings.Values | foreach {
-                    Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance ("{0:P0}" -f ($_.balance/$_.PaymentThreshold))
-                    Write-Host "Trust Level                     " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " Avg based on [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))"]"
-                    Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth*1000))
-                    Write-Host "Average BTC/D" -NoNewline; Write-Host "                    BTC =" ("{0:N8}" -f ($_.BTCD)) "| mBTC =" ("{0:N3}" -f ($_.BTCD*1000)) -F Yellow
-                    Write-Host "Estimated Pay Date              " $_.EstimatedPayDate ">" $_.PaymentThreshold "BTC"
-                    # Write-Host "+++++" -F Blue
-                }
-            }
-            Write-Host "+++++" -F Blue
-            if ($Variables.Miners | ? {$_.HashRates.PSObject.Properties.Value -eq $null}) {$Config.UIStyle = "Full"}
-            IF ($Config.UIStyle -eq "Full"){
-
-                $Variables.Miners | Sort -Descending Type,Profit | Format-Table -GroupBy Type (
-                @{Label = "Miner"; Expression={$_.Name}}, 
-                @{Label = "Algorithm"; Expression={$_.HashRates.PSObject.Properties.Name}}, 
-                @{Label = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}; Align='right'}, 
-                @{Label = "mBTC/Day"; Expression={$_.Profits.PSObject.Properties.Value*1000 | ForEach {if($_ -ne $null){$_.ToString("N3")}else{"Benchmarking"}}}; Align='right'}, 
-                @{Label = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){$_.ToString("N5")}else{"Benchmarking"}}}; Align='right'}, 
-                @{Label = "$($Config.Currency)/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){($_ * $Variables.Rates.($Config.Currency)).ToString("N3")}else{"Benchmarking"}}}; Align='right'}, 
-                @{Label = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}; Align='right'},
-                @{Label = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
-                ) | Out-Host
-                    #Display active miners list
-                [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-                Write-Host "Running:"
-                $processRunning | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Format-Table -Wrap (
-                    @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-                    @{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
-                    @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-                    @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-                    @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-                ) | Out-Host
-                [Array] $processesFailed = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
-                if ($processesFailed.Count -gt 0) {
-                    Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
-                    $processesFailed | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Format-Table -Wrap (
-                        @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-                        @{Label = "Exited"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.ExitTime}) }},
-                        @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-                        @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-                        @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-                    ) | Out-Host
-                }
-                Write-Host "--------------------------------------------------------------------------------"
-            
-            } else {
-                [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-                Write-Host "Running:"
-                $processRunning | Sort {if($_.Process -eq $null){[DateTime]0}else{$_.Process.StartTime}} | Format-Table -Wrap (
-                    @{Label = "Speed"; Expression={$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align='right'}, 
-                    @{Label = "Started"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){(0)}else{(Get-Date) - $_.Process.StartTime}) }},
-                    @{Label = "Active"; Expression={"{0:dd}:{0:hh}:{0:mm}" -f $(if($_.Process -eq $null){$_.Active}else{if($_.Process.ExitTime -gt $_.Process.StartTime){($_.Active+($_.Process.ExitTime-$_.Process.StartTime))}else{($_.Active+((Get-Date)-$_.Process.StartTime))}})}}, 
-                    @{Label = "Cnt"; Expression={Switch($_.Activated){0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
-                    @{Label = "Command"; Expression={"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
-                ) | Out-Host
-                Write-Host "--------------------------------------------------------------------------------"
-            }
-            Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
-            Update-Status($Variables.StatusText)
-        }
-        if (Test-Path ".\EndUIRefresh.ps1"){Invoke-Expression (Get-Content ".\EndUIRefresh.ps1" -Raw)}
-
-        $Variables.RefreshNeeded = $False
-    }
-    $TimerUI.Start()
-}
-
-Function Form_Load
-{
+    
+	
     $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
     $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
-    $TimerUI.Add_Tick({TimerUITick})
     $TimerUI.Interval = 50
     $TimerUI.Stop()
+    $TimerUI.Add_Tick( {
+            trap {
+                $PSItem.ToString() | out-file .\logs\excepUI.txt -Append
+            }
+            $TimerUI.Enabled = $False
+            If ($Variables.RefreshNeeded) {
+                If (!$Variables.EndLoop) {Update-Status($Variables.StatusText)}
+                # $TimerUI.Interval = 1
+
+                Start-ChildJobs
+
+                $Variables.EarningsTrackerJobs | ? {$_.state -eq "Running"} | foreach {
+                    $EarnTrack = $_ | Receive-Job
+                    If ($EarnTrack) {
+                        $Variables.EarningsPool = (($EarnTrack[($EarnTrack.Count - 1)]).Pool)
+                        # $Variables.Earnings.$Variables.EarningsPool = $EarnTrack[($EarnTrack.Count - 1)]
+                        $Variables.Earnings.(($EarnTrack[($EarnTrack.Count - 1)]).Pool) = $EarnTrack[($EarnTrack.Count - 1)]
+                        rv EarnTrack
+                    }
+                }
+
+                If ((compare -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | sort -Unique) | ? {$_.SideIndicator -eq "=>"}).InputObject -gt 0) {
+                    (compare -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | sort -Unique) | ? {$_.SideIndicator -eq "=>"}).InputObject | % { if ($_ -ne $null) {}$CheckedListBoxPools.Items.AddRange($_)}
+                    $Config.PoolName | foreach {$CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $True)}
+                }
+                $Variables | Add-Member -Force @{InCycle = $True}
+                # $MainForm.Number+=1
+                $MainForm.Text = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date) - $Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
+                $host.UI.RawUI.WindowTitle = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date) - $Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
+
+                $SwitchingDisplayTypes = @()
+                $SwitchingPageControls | foreach {if ($_.Checked) {$SwitchingDisplayTypes += $_.Tag}}
+                # If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
+                # If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
+                If (Test-Path ".\Logs\switching.log") {$SwitchingArray = [System.Collections.ArrayList]@(@((get-content ".\Logs\switching.log" -First 1) , (get-content ".\logs\switching.log" -last 50)) | ConvertFrom-Csv | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
+                $SwitchingDGV.DataSource = $SwitchingArray
+        
+                If ($Variables.Earnings -and $Config.TrackEarnings) {
+                    $DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | select @(
+                            @{Name = "Pool"; Expression = {$_.Pool}},
+                            @{Name = "Trust"; Expression = {"{0:P0}" -f $_.TrustLevel}},
+                            @{Name = "Balance"; Expression = {$_.Balance}},
+                            # @{Name="Unpaid";Expression={$_.total_unpaid}},
+                            @{Name = "BTC/D"; Expression = {"{0:N8}" -f ($_.BTCD)}},
+                            @{Name = "mBTC/D"; Expression = {"{0:N3}" -f ($_.BTCD * 1000)}},
+                            @{Name = "Est. Pay Date"; Expression = {$_.EstimatedPayDate}},
+                            @{Name = "PaymentThreshold"; Expression = {"$($_.PaymentThreshold) ($('{0:P0}' -f $($_.Balance / $_.PaymentThreshold)))"}},
+                            @{Name = "Wallet"; Expression = {$_.Wallet}}
+                        ) | Sort "BTC/D" -Descending)
+                    $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
+                    $EarningsDGV.ClearSelection()
+                }
+        
+                If ($Variables.Miners) {
+                    $DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Select @(
+                            @{Name = "Miner"; Expression = {$_.Name}},
+                            @{Name = "Algorithm"; Expression = {$_.HashRates.PSObject.Properties.Name}},
+                            @{Name = "Speed"; Expression = {$_.HashRates.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {"$($_ | ConvertTo-Hash)/s"}else {"Benchmarking"}}}},
+                            @{Name = "mBTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value * 1000 | ForEach {if ($_ -ne $null) {$_.ToString("N3")}else {"Benchmarking"}}}},
+                            @{Name = "BTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {$_.ToString("N5")}else {"Benchmarking"}}}},
+                            @{Name = "BTC/GH/Day"; Expression = {$_.Pools.PSObject.Properties.Value.Price | ForEach {($_ * 1000000000).ToString("N5")}}},
+                            @{Name = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
+                        ) | sort "mBTC/Day" -Descending)
+                    $EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
+                }
+                $EstimationsDGV.ClearSelection()
+
+                $SwitchingDGV.ClearSelection()
+        
+                If ($Variables.ActiveMinerPrograms) {
+                    $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type, Algorithms, Name, @{Name = "HashRate"; Expression = {"$($_.HashRate | ConvertTo-Hash)/s"}}, @{Name = "Stratum"; Expression = {"$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"}} | sort Type)
+                    $RunningMinersDGV.ClearSelection()
+        
+                    [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+                    If ($ProcessRunning -eq $null) {
+                        # Update-Status("No miner running")
+                    }
+                }
+                $LabelBTCPrice.text = If ($Variables.Rates.$Currency -gt 0) {"BTC/$($Config.Currency) $($Variables.Rates.($Config.Currency))"}
+                $Variables | Add-Member -Force @{InCycle = $False}
+
+                If ($Variables.EndLoop) {
+                    If ($Variables.Earnings.Values -ne $Null) {
+                        $LabelBTCD.Text = "Avg: " + ("{0:N6}" -f ($Variables.Earnings.Values | measure -Property BTCD -Sum).sum) + " BTC/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property BTCD -Sum).sum * 1000)) + " mBTC/D"
+                
+                        $LabelEarningsDetails.Lines = @()
+                        # If ((($Variables.Earnings.Values | measure -Property Growth1 -Sum).sum*1000*24) -lt ((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum*1000)*0.999)) {
+                        # $LabelEarningsDetails.ForeColor = "Red" } else { $LabelEarningsDetails.ForeColor = "Green" }
+                        $TrendSign = switch ([Math]::Round((($Variables.Earnings.Values | measure -Property Growth1 -Sum).sum * 1000 * 24), 3) - [Math]::Round((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum * 1000), 3)) {
+                            {$_ -eq 0}
+                            {"="}
+                            {$_ -gt 0}
+                            {">"}
+                            {$_ -lt 0}
+                            {"<"}
+                        }
+                        $LabelEarningsDetails.Lines += "Last  1h: " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property Growth1 -Sum).sum * 1000 * 24)) + " mBTC/D " + $TrendSign
+                        $TrendSign = switch ([Math]::Round((($Variables.Earnings.Values | measure -Property Growth6 -Sum).sum * 1000 * 4), 3) - [Math]::Round((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum * 1000), 3)) {
+                            {$_ -eq 0}
+                            {"="}
+                            {$_ -gt 0}
+                            {">"}
+                            {$_ -lt 0}
+                            {"<"}
+                        }
+                        $LabelEarningsDetails.Lines += "Last  6h: " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property Growth6 -Sum).sum * 1000 * 4)) + " mBTC/D " + $TrendSign
+                        $TrendSign = switch ([Math]::Round((($Variables.Earnings.Values | measure -Property Growth24 -Sum).sum * 1000), 3) - [Math]::Round((($Variables.Earnings.Values | measure -Property BTCD -Sum).sum * 1000), 3)) {
+                            {$_ -eq 0}
+                            {"="}
+                            {$_ -gt 0}
+                            {">"}
+                            {$_ -lt 0}
+                            {"<"}
+                        }
+                        $LabelEarningsDetails.Lines += "Last 24h: " + ("{0:N3}" -f (($Variables.Earnings.Values | measure -Property Growth24 -Sum).sum * 1000)) + " mBTC/D " + $TrendSign
+                        rv TrendSign
+                    }
+                    else {
+                        $LabelBTCD.Text = "Waiting data from pools."
+                        $LabelEarningsDetails.Lines = @()
+                    }
+        
+                    if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+                    if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
+        
+                    $Variables | Add-Member -Force @{CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product}
+                    $Variables | Add-Member -Force @{CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version}
+                    $Variables | Add-Member -Force @{CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value}
+                    if ((Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoUpdated)") {
+                        $LabelNotifications.ForeColor = "Green"
+                        Update-Notifications("Running $($Variables.CurrentProduct) Version $([Version]$Variables.CurrentVersion)")
+                        Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoUpdated)")
+                    }
+        
+                    #Display mining information
+                    if ($host.UI.RawUI.KeyAvailable) {
+                        $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"); sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
+                        If ($KeyPressed.KeyDown) {
+                            Switch ($KeyPressed.Character) {
+                                "s" {if ($Config.UIStyle -eq "Light") {$Config.UIStyle = "Full"}else {$Config.UIStyle = "Light"}}
+                                "e" {$Config.TrackEarnings = -not $Config.TrackEarnings}
+                            }
+                        }
+                    }
+                    Clear-Host
+                    [Array] $processesIdle = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Idle" }
+                    IF ($Config.UIStyle -eq "Full") {
+                        if ($processesIdle.Count -gt 0) {
+                            Write-Host "Idle: " $processesIdle.Count
+                            $processesIdle | Sort {if ($_.Process -eq $null) {(Get-Date)}else {$_.Process.ExitTime}} | Format-Table -Wrap (
+                                @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
+                                @{Label = "Exited"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.ExitTime}) }},
+                                @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
+                                @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+                                @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+                            ) | Out-Host
+                        }
+                    }
+                    Write-Host "      1BTC = $($Variables.Rates.($Config.Currency)) $($Config.Currency)"
+                    # Get and display earnings stats
+                    If ($Variables.Earnings -and $Config.TrackEarnings) {
+                        # $Variables.Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
+                        $Variables.Earnings.Values | foreach {
+                            Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " " $_.pool "Balance="$_.balance ("{0:P0}" -f ($_.balance / $_.PaymentThreshold))
+                            Write-Host "Trust Level                     " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " Avg based on [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))"]"
+                            Write-Host "Average BTC/H                    BTC =" ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth * 1000))
+                            Write-Host "Average BTC/D" -NoNewline; Write-Host "                    BTC =" ("{0:N8}" -f ($_.BTCD)) "| mBTC =" ("{0:N3}" -f ($_.BTCD * 1000)) -F Yellow
+                            Write-Host "Estimated Pay Date              " $_.EstimatedPayDate ">" $_.PaymentThreshold "BTC"
+                            # Write-Host "+++++" -F Blue
+                        }
+                    }
+                    Write-Host "+++++" -F Blue
+                    if ($Variables.Miners | ? {$_.HashRates.PSObject.Properties.Value -eq $null}) {$Config.UIStyle = "Full"}
+                    IF ($Config.UIStyle -eq "Full") {
+
+                        $Variables.Miners | Sort -Descending Type, Profit | Format-Table -GroupBy Type (
+                            @{Label = "Miner"; Expression = {$_.Name}}, 
+                            @{Label = "Algorithm"; Expression = {$_.HashRates.PSObject.Properties.Name}}, 
+                            @{Label = "Speed"; Expression = {$_.HashRates.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {"$($_ | ConvertTo-Hash)/s"}else {"Benchmarking"}}}; Align = 'right'}, 
+                            @{Label = "mBTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value * 1000 | ForEach {if ($_ -ne $null) {$_.ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
+                            @{Label = "BTC/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {$_.ToString("N5")}else {"Benchmarking"}}}; Align = 'right'}, 
+                            @{Label = "$($Config.Currency)/Day"; Expression = {$_.Profits.PSObject.Properties.Value | ForEach {if ($_ -ne $null) {($_ * $Variables.Rates.($Config.Currency)).ToString("N3")}else {"Benchmarking"}}}; Align = 'right'}, 
+                            @{Label = "BTC/GH/Day"; Expression = {$_.Pools.PSObject.Properties.Value.Price | ForEach {($_ * 1000000000).ToString("N5")}}; Align = 'right'},
+                            @{Label = "Pool"; Expression = {$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
+                        ) | Out-Host
+                        #Display active miners list
+                        [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+                        Write-Host "Running:"
+                        $processRunning | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Format-Table -Wrap (
+                            @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
+                            @{Label = "Started"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.StartTime}) }},
+                            @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
+                            @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+                            @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+                        ) | Out-Host
+                        [Array] $processesFailed = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" }
+                        if ($processesFailed.Count -gt 0) {
+                            Write-Host -ForegroundColor Red "Failed: " $processesFailed.Count
+                            $processesFailed | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Format-Table -Wrap (
+                                @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
+                                @{Label = "Exited"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.ExitTime}) }},
+                                @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
+                                @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+                                @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+                            ) | Out-Host
+                        }
+                        Write-Host "--------------------------------------------------------------------------------"
+            
+                    }
+                    else {
+                        [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+                        Write-Host "Running:"
+                        $processRunning | Sort {if ($_.Process -eq $null) {[DateTime]0}else {$_.Process.StartTime}} | Format-Table -Wrap (
+                            @{Label = "Speed"; Expression = {$_.HashRate | ForEach {"$($_ | ConvertTo-Hash)/s"}}; Align = 'right'}, 
+                            @{Label = "Started"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {(0)}else {(Get-Date) - $_.Process.StartTime}) }},
+                            @{Label = "Active"; Expression = {"{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) {$_.Active}else {if ($_.Process.ExitTime -gt $_.Process.StartTime) {($_.Active + ($_.Process.ExitTime - $_.Process.StartTime))}else {($_.Active + ((Get-Date) - $_.Process.StartTime))}})}}, 
+                            @{Label = "Cnt"; Expression = {Switch ($_.Activated) {0 {"Never"} 1 {"Once"} Default {"$_"}}}}, 
+                            @{Label = "Command"; Expression = {"$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)"}}
+                        ) | Out-Host
+                        Write-Host "--------------------------------------------------------------------------------"
+                    }
+                    Write-Host -ForegroundColor Yellow "Last Refresh: $(Get-Date)"
+                    Update-Status($Variables.StatusText)
+                }
+                if (Test-Path ".\EndUIRefresh.ps1") {Invoke-Expression (Get-Content ".\EndUIRefresh.ps1" -Raw)}
+
+                $Variables.RefreshNeeded = $False
+            }
+            else {
+                Sleep -Milliseconds 1
+            }
+            $TimerUI.Start()
+	
+        })
 }
 
 Function CheckedListBoxPools_Click ($Control) {
     $Config | Add-Member -Force @{$Control.Tag = $Control.CheckedItems}
 }
 
-Function PrepareWriteConfig{
-    If ($Config.ManualConfig) {Update-Status("Manual config mode - Not saving config"); return}
-    If ($Config -eq $null){$Config = [hashtable]::Synchronized(@{})}
+Function PrepareWriteConfig {
+    If ($Config -eq $null) {$Config = [hashtable]::Synchronized(@{})
+    }
     $Config | Add-Member -Force @{$TBAddress.Tag = $TBAddress.Text}
     $Config | Add-Member -Force @{$TBWorkerName.Tag = $TBWorkerName.Text}
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "CheckBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Checked}}
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Text}}
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "GPUCount")} | foreach {
         $Config | Add-Member -Force @{$_.Tag = [Int]$_.Text}
-        If ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1){$FirstGPU = 1}else{$FirstGPU = 0}
-        $Config | Add-Member -Force @{SelGPUCC = (($FirstGPU..($_.Text-1)) -join ",")}
-        $Config | Add-Member -Force @{SelGPUDSTM = (($FirstGPU..($_.Text-1)) -join " ")}
+        If ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1) {$FirstGPU = 1}else {$FirstGPU = 0}
+        $Config | Add-Member -Force @{SelGPUCC = (($FirstGPU..($_.Text - 1)) -join ",")}
+        $Config | Add-Member -Force @{SelGPUDSTM = (($FirstGPU..($_.Text - 1)) -join " ")}
     }
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "Algorithm")} | foreach {
         $Config | Add-Member -Force @{$_.Tag = @($_.Text -split ",")}
     }
-    $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -in @("Donate","Interval","ActiveMinerGainPct"))} | foreach {
+    $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct"))} | foreach {
         $Config | Add-Member -Force @{$_.Tag = [Int]$_.Text}
     }
     $Config | Add-Member -Force @{$CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems}
     Write-Config -ConfigFile $ConfigFile -Config $Config
-    $Config = Load-Config -ConfigFile $ConfigFile
     $MainForm.Refresh
     # [windows.forms.messagebox]::show("Please restart NPlusMiner",'Config saved','ok','Information') | out-null
 }
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
-
 
 # If (Test-Path ".\Logs\switching.log"){$log=Import-Csv ".\Logs\switching.log" | Select -Last 14}
 # $SwitchingArray = [System.Collections.ArrayList]@($Log)
@@ -473,9 +479,9 @@ $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Valu
     }
     else {
         [PSCustomObject]@{default = [PSCustomObject]@{
-                Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-                UserName = "nemo"
-                WorkerName = "NemosMinerNoCfg"
+                Wallet             = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+                UserName           = "nemo"
+                WorkerName         = "NemosMinerNoCfg"
                 PricePenaltyFactor = 1
             }
         }
@@ -1191,7 +1197,6 @@ $TimerUI.Enabled = $false
 $ButtonPause.Add_Click( {
         If ($TimerUI.Enabled) {
             Update-Status("Stopping miners")
-            $ButtonStart.Visible = $False
             $TimerUI.Stop()
             # Do not stop other jobs (EarnigsTracker and BrainPlus)
             # Get-Job | Stop-Job | Remove-Job
@@ -1226,9 +1231,6 @@ $ButtonPause.Add_Click( {
                 $RunningMinersDGV.ClearSelection()
             }
 
-            ls function: | ? {$_.File -eq (Resolve-Path ".\include.ps1")} | Remove-Item
-            ls function: | ? {$_.File -eq (Resolve-Path ".\core.ps1")} | Remove-Item
-
             $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             $ButtonPause.Text = "Mine"
             # $TimerUI.Interval = 1000
@@ -1239,7 +1241,6 @@ $ButtonPause.Add_Click( {
             if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
             PrepareWriteConfig
-            $ButtonStart.Visible = $True
             $ButtonPause.Text = "Pause"
             # No need to init if paused
             # InitApplication
@@ -1306,9 +1307,6 @@ $ButtonStart.Add_Click( {
             # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
             $CycleRunspace.Close()
             $powershell.Dispose()
-
-            ls function: | ? {$_.File -eq (Resolve-Path ".\include.ps1")} | Remove-Item
-            ls function: | ? {$_.File -eq (Resolve-Path ".\core.ps1")} | Remove-Item
 
             $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             Update-Status("Idle")
