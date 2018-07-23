@@ -65,6 +65,7 @@
     "equihash192":  "Equihash192",
     "equihash144":  "Equihash144",
     "equihash144btcz":  "Equihash144btcz",
+    "equihash144zel":  "Equihash144zel",
     "Espers":  "HMQ1725",
     "eth":  "Ethash",
     "ethash":  "Ethash",
