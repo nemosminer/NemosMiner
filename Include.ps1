@@ -132,39 +132,39 @@ function Set-Stat {
     $SmallestValue = 1E-20
 
     $Stat = [PSCustomObject]@{
-        Live = $Value
-        Minute = $Value
-        Minute_Fluctuation = 1 / 2
-        Minute_5 = $Value
-        Minute_5_Fluctuation = 1 / 2
-        Minute_10 = $Value
+        Live                  = $Value
+        Minute                = $Value
+        Minute_Fluctuation    = 1 / 2
+        Minute_5              = $Value
+        Minute_5_Fluctuation  = 1 / 2
+        Minute_10             = $Value
         Minute_10_Fluctuation = 1 / 2
-        Hour = $Value
-        Hour_Fluctuation = 1 / 2
-        Day = $Value
-        Day_Fluctuation = 1 / 2
-        Week = $Value
-        Week_Fluctuation = 1 / 2
-        Updated = $Date
+        Hour                  = $Value
+        Hour_Fluctuation      = 1 / 2
+        Day                   = $Value
+        Day_Fluctuation       = 1 / 2
+        Week                  = $Value
+        Week_Fluctuation      = 1 / 2
+        Updated               = $Date
     }
 
     if (Test-Path $Path) {$Stat = Get-Content $Path | ConvertFrom-Json}
 
     $Stat = [PSCustomObject]@{
-        Live = [Double]$Stat.Live
-        Minute = [Double]$Stat.Minute
-        Minute_Fluctuation = [Double]$Stat.Minute_Fluctuation
-        Minute_5 = [Double]$Stat.Minute_5
-        Minute_5_Fluctuation = [Double]$Stat.Minute_5_Fluctuation
-        Minute_10 = [Double]$Stat.Minute_10
+        Live                  = [Double]$Stat.Live
+        Minute                = [Double]$Stat.Minute
+        Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
+        Minute_5              = [Double]$Stat.Minute_5
+        Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
+        Minute_10             = [Double]$Stat.Minute_10
         Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-        Hour = [Double]$Stat.Hour
-        Hour_Fluctuation = [Double]$Stat.Hour_Fluctuation
-        Day = [Double]$Stat.Day
-        Day_Fluctuation = [Double]$Stat.Day_Fluctuation
-        Week = [Double]$Stat.Week
-        Week_Fluctuation = [Double]$Stat.Week_Fluctuation
-        Updated = [DateTime]$Stat.Updated
+        Hour                  = [Double]$Stat.Hour
+        Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
+        Day                   = [Double]$Stat.Day
+        Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
+        Week                  = [Double]$Stat.Week
+        Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+        Updated               = [DateTime]$Stat.Updated
     }
     
     $Span_Minute = [Math]::Min(($Date - $Stat.Updated).TotalMinutes, 1)
@@ -175,44 +175,44 @@ function Set-Stat {
     $Span_Week = [Math]::Min((($Date - $Stat.Updated).TotalDays / 7), 1)
 
     $Stat = [PSCustomObject]@{
-        Live = $Value
-        Minute = ((1 - $Span_Minute) * $Stat.Minute) + ($Span_Minute * $Value)
-        Minute_Fluctuation = ((1 - $Span_Minute) * $Stat.Minute_Fluctuation) + 
+        Live                  = $Value
+        Minute                = ((1 - $Span_Minute) * $Stat.Minute) + ($Span_Minute * $Value)
+        Minute_Fluctuation    = ((1 - $Span_Minute) * $Stat.Minute_Fluctuation) + 
         ($Span_Minute * ([Math]::Abs($Value - $Stat.Minute) / [Math]::Max([Math]::Abs($Stat.Minute), $SmallestValue)))
-        Minute_5 = ((1 - $Span_Minute_5) * $Stat.Minute_5) + ($Span_Minute_5 * $Value)
-        Minute_5_Fluctuation = ((1 - $Span_Minute_5) * $Stat.Minute_5_Fluctuation) + 
+        Minute_5              = ((1 - $Span_Minute_5) * $Stat.Minute_5) + ($Span_Minute_5 * $Value)
+        Minute_5_Fluctuation  = ((1 - $Span_Minute_5) * $Stat.Minute_5_Fluctuation) + 
         ($Span_Minute_5 * ([Math]::Abs($Value - $Stat.Minute_5) / [Math]::Max([Math]::Abs($Stat.Minute_5), $SmallestValue)))
-        Minute_10 = ((1 - $Span_Minute_10) * $Stat.Minute_10) + ($Span_Minute_10 * $Value)
+        Minute_10             = ((1 - $Span_Minute_10) * $Stat.Minute_10) + ($Span_Minute_10 * $Value)
         Minute_10_Fluctuation = ((1 - $Span_Minute_10) * $Stat.Minute_10_Fluctuation) + 
         ($Span_Minute_10 * ([Math]::Abs($Value - $Stat.Minute_10) / [Math]::Max([Math]::Abs($Stat.Minute_10), $SmallestValue)))
-        Hour = ((1 - $Span_Hour) * $Stat.Hour) + ($Span_Hour * $Value)
-        Hour_Fluctuation = ((1 - $Span_Hour) * $Stat.Hour_Fluctuation) + 
+        Hour                  = ((1 - $Span_Hour) * $Stat.Hour) + ($Span_Hour * $Value)
+        Hour_Fluctuation      = ((1 - $Span_Hour) * $Stat.Hour_Fluctuation) + 
         ($Span_Hour * ([Math]::Abs($Value - $Stat.Hour) / [Math]::Max([Math]::Abs($Stat.Hour), $SmallestValue)))
-        Day = ((1 - $Span_Day) * $Stat.Day) + ($Span_Day * $Value)
-        Day_Fluctuation = ((1 - $Span_Day) * $Stat.Day_Fluctuation) + 
+        Day                   = ((1 - $Span_Day) * $Stat.Day) + ($Span_Day * $Value)
+        Day_Fluctuation       = ((1 - $Span_Day) * $Stat.Day_Fluctuation) + 
         ($Span_Day * ([Math]::Abs($Value - $Stat.Day) / [Math]::Max([Math]::Abs($Stat.Day), $SmallestValue)))
-        Week = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
-        Week_Fluctuation = ((1 - $Span_Week) * $Stat.Week_Fluctuation) + 
+        Week                  = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
+        Week_Fluctuation      = ((1 - $Span_Week) * $Stat.Week_Fluctuation) + 
         ($Span_Week * ([Math]::Abs($Value - $Stat.Week) / [Math]::Max([Math]::Abs($Stat.Week), $SmallestValue)))
-        Updated = $Date
+        Updated               = $Date
     }
 
     if (-not (Test-Path "Stats")) {New-Item "Stats" -ItemType "directory"}
     [PSCustomObject]@{
-        Live = [Decimal]$Stat.Live
-        Minute = [Decimal]$Stat.Minute
-        Minute_Fluctuation = [Double]$Stat.Minute_Fluctuation
-        Minute_5 = [Decimal]$Stat.Minute_5
-        Minute_5_Fluctuation = [Double]$Stat.Minute_5_Fluctuation
-        Minute_10 = [Decimal]$Stat.Minute_10
+        Live                  = [Decimal]$Stat.Live
+        Minute                = [Decimal]$Stat.Minute
+        Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
+        Minute_5              = [Decimal]$Stat.Minute_5
+        Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
+        Minute_10             = [Decimal]$Stat.Minute_10
         Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-        Hour = [Decimal]$Stat.Hour
-        Hour_Fluctuation = [Double]$Stat.Hour_Fluctuation
-        Day = [Decimal]$Stat.Day
-        Day_Fluctuation = [Double]$Stat.Day_Fluctuation
-        Week = [Decimal]$Stat.Week
-        Week_Fluctuation = [Double]$Stat.Week_Fluctuation
-        Updated = [DateTime]$Stat.Updated
+        Hour                  = [Decimal]$Stat.Hour
+        Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
+        Day                   = [Decimal]$Stat.Day
+        Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
+        Week                  = [Decimal]$Stat.Week
+        Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+        Updated               = [DateTime]$Stat.Updated
     } | ConvertTo-Json | Set-Content $Path
 
     $Stat
@@ -314,43 +314,22 @@ function Get-HashRate {
 
     try {
         switch ($API) {
-            "xgminer" {
+            "Bminer" {
                 $Message = @{command = "summary"; parameter = ""} | ConvertTo-Json -Compress
             
                 do {
-                    $Client = New-Object System.Net.Sockets.TcpClient $server, $port
-                    $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                    $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                    $Writer.AutoFlush = $true
+                    Get-HttpAsJson "http://$($Server):$Port/api/status"
+                    Param([PSCustomObject] $resjson)
 
-                    $Writer.WriteLine($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request.Substring($Request.IndexOf("{"), $Request.LastIndexOf("}") - $Request.IndexOf("{") + 1) -replace " ", "_" | ConvertFrom-Json
-
-                    $HashRate = if ($Data.SUMMARY.HS_5s -ne $null) {[Double]$Data.SUMMARY.HS_5s * [Math]::Pow($Multiplier, 0)}
-                    elseif ($Data.SUMMARY.KHS_5s -ne $null) {[Double]$Data.SUMMARY.KHS_5s * [Math]::Pow($Multiplier, 1)}
-                    elseif ($Data.SUMMARY.MHS_5s -ne $null) {[Double]$Data.SUMMARY.MHS_5s * [Math]::Pow($Multiplier, 2)}
-                    elseif ($Data.SUMMARY.GHS_5s -ne $null) {[Double]$Data.SUMMARY.GHS_5s * [Math]::Pow($Multiplier, 3)}
-                    elseif ($Data.SUMMARY.THS_5s -ne $null) {[Double]$Data.SUMMARY.THS_5s * [Math]::Pow($Multiplier, 4)}
-                    elseif ($Data.SUMMARY.PHS_5s -ne $null) {[Double]$Data.SUMMARY.PHS_5s * [Math]::Pow($Multiplier, 5)}
-
-                    if ($HashRate -ne $null) {
-                        $HashRates += $HashRate
-                        if (-not $Safe) {break}
-                    }
-
-                    $HashRate = if ($Data.SUMMARY.HS_av -ne $null) {[Double]$Data.SUMMARY.HS_av * [Math]::Pow($Multiplier, 0)}
-                    elseif ($Data.SUMMARY.KHS_av -ne $null) {[Double]$Data.SUMMARY.KHS_av * [Math]::Pow($Multiplier, 1)}
-                    elseif ($Data.SUMMARY.MHS_av -ne $null) {[Double]$Data.SUMMARY.MHS_av * [Math]::Pow($Multiplier, 2)}
-                    elseif ($Data.SUMMARY.GHS_av -ne $null) {[Double]$Data.SUMMARY.GHS_av * [Math]::Pow($Multiplier, 3)}
-                    elseif ($Data.SUMMARY.THS_av -ne $null) {[Double]$Data.SUMMARY.THS_av * [Math]::Pow($Multiplier, 4)}
-                    elseif ($Data.SUMMARY.PHS_av -ne $null) {[Double]$Data.SUMMARY.PHS_av * [Math]::Pow($Multiplier, 5)}
-
+                    [decimal] $Hashrate = 0 # if var not initialized - this outputed to console
+                    $resjson.miners | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object 
+                    $Hashrate = [MultipleUnit]::ToValueInvariant($resjson.miners."$_".solver.solution_rate, [string]::Empty)
                     if ($HashRate -eq $null) {$HashRates = @(); break}
-                    $HashRates += $HashRate
-                    if (-not $Safe) {break}
 
+                    $HashRates += [Double]$HashRate * $Multiplier
+    
+                    if (-not $Safe) {break}
+    
                     Start-Sleep $Interval
                 } while ($HashRates.Count -lt 6)
             }
@@ -698,8 +677,8 @@ function Expand-WebRequest {
     $FileName = "$FolderName_New$(([IO.FileInfo](Split-Path $Uri -Leaf)).Extension)"
 
     if (Test-Path $FileName) {Remove-Item $FileName}
-    if (Test-Path "$(Split-Path $Path)\$FolderName_New") {Remove-Item "$(Split-Path $Path)\$FolderName_New" -Force -Recurse}
-    if (Test-Path "$(Split-Path $Path)\$FolderName_Old") {Remove-Item "$(Split-Path $Path)\$FolderName_Old" -Force -Recurse}
+    if (Test-Path "$(Split-Path $Path)\$FolderName_New") {Remove-Item "$(Split-Path $Path)\$FolderName_New" -Recurse}
+    if (Test-Path "$(Split-Path $Path)\$FolderName_Old") {Remove-Item "$(Split-Path $Path)\$FolderName_Old" -Recurse}
 
     Invoke-WebRequest $Uri -OutFile $FileName -TimeoutSec 15 -UseBasicParsing
     Start-Process "7z" "x $FileName -o$(Split-Path $Path)\$FolderName_Old -y -spe" -Wait
@@ -814,12 +793,6 @@ Function Autoupdate {
             Start-Process "7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
             If (!(test-path .\$BackupFileName)) {Update-Status("Backup failed"); return}
             
-              # Pre update specific actions if any
-              # Use PreUpdateActions.ps1 in new release to place code
-              If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1") {
-              Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
-            }
-            
             # unzip in child folder excluding config
             Update-Status("Unzipping update...")
             Start-Process "7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
@@ -828,19 +801,17 @@ Function Autoupdate {
             Update-Status("Copying files...")
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
 
-            # Post update specific actions if any
-            # Use PostUpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1") {
-            Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
+            # update specific actions if any
+            # Use UpdateActions.ps1 in new release to place code
+            If (Test-Path ".\$UpdateFileName\UpdateActions.ps1") {
+                Invoke-Expression (get-content ".\$UpdateFileName\UpdateActions.ps1" -Raw)
             }
             
             #Remove temp files
             Update-Status("Removing temporary files...")
             Remove-Item .\$UpdateFileName -Force -Recurse
             Remove-Item ".\$($UpdateFileName).zip" -Force
-            If (Test-Path ".\PreUpdateActions.ps1") {Remove-Item ".\PreUpdateActions.ps1" -Force}
-            If (Test-Path ".\PostUpdateActions.ps1") {Remove-Item ".\PostUpdateActions.ps1" -Force}
-            ls "AutoupdateBackup-*.zip" | Where {$_.name -notin (ls "AutoupdateBackup-*.zip" | sort LastWriteTime -Descending | select -First 2).name} | Remove-Item -Force
+            If (Test-Path ".\UpdateActions.ps1") {Remove-Item ".\UpdateActions.ps1" -Force}
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
