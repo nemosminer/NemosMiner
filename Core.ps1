@@ -92,18 +92,18 @@ Function Start-ChildJobs {
     if ($Config.TrackEarnings) {
         $Config.PoolName | sort | foreach { if ($_ -notin $Variables.EarningsTrackerJobs.PoolName) {
                 $Params = @{
-                    pool = $_
-                    Wallet =
+                    pool             = $_
+                    Wallet           =
                     if ($_ -eq "miningpoolhub") {
                         if ($Config.PoolsConfig.$_) {$Config.PoolsConfig.$_.APIKey}else {$Config.PoolsConfig.default.APIKey}
                     }
                     else {
                         if ($Config.PoolsConfig.$_) {$Config.PoolsConfig.$_.Wallet}else {$Config.PoolsConfig.default.Wallet}
                     }
-                    Interval = 3
+                    Interval         = 3
                     WorkingDirectory = ($Variables.MainPath)
-                    StartDelay = $StartDelay
-                    EnableLog = $Config.EnableEarningsTrackerLogs
+                    StartDelay       = $StartDelay
+                    EnableLog        = $Config.EnableEarningsTrackerLogs
                 }
                 $EarningsJob = Start-Job -FilePath .\EarningsTrackerJob.ps1 -ArgumentList $Params
                 If ($EarningsJob) {
@@ -168,16 +168,16 @@ Function NPMCycle {
             $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString().replace('.',''))"; PricePenaltyFactor = 1}}}
         }
     }
-    if(((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) -or (! $Config.PoolsConfig))
+    if (((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) -or (! $Config.PoolsConfig)) {
         $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value {
             If (Test-Path ".\Config\PoolsConfig.json") {
                 get-content ".\Config\PoolsConfig.json" | ConvertFrom-json
             }
             else {
                 [PSCustomObject]@{default = [PSCustomObject]@{
-                        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-                        UserName = "nemo"
-                        WorkerName = "NemosMinerNoCfg"
+                        Wallet      = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+                        UserName    = "nemo"
+                        WorkerName  = "NemosMinerNoCfg"
                         PoolPenalty = 1
                     }
                 }
@@ -197,8 +197,9 @@ Function NPMCycle {
     $Variables.StatusText = "Loading pool stats.."
     $PoolFilter = @()
     $Config.PoolName | foreach {$PoolFilter += ($_ += ".*")}
-    $AllPools = if(Test-Path "Pools"){Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
-        Where {$_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and ($_.Algorithm -in $Config.Algorithm)}}
+    $AllPools = if (Test-Path "Pools") {Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
+            Where {$_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and ($_.Algorithm -in $Config.Algorithm)}
+    }
     $Variables.StatusText = "Computing pool stats.."
     # Use location as preference and not the only one
     $AllPools = ($AllPools | ? {$_.location -eq $Config.Location}) + ($AllPools | ? {$_.name -notin ($AllPools | ? {$_.location -eq $Config.Location}).Name})
@@ -353,23 +354,23 @@ Function NPMCycle {
     $BestMiners_Combo | ForEach {
         if (($Variables.ActiveMinerPrograms | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments).Count -eq 0) {
             $Variables.ActiveMinerPrograms += [PSCustomObject]@{
-                Type = $_.Type
-                Name = $_.Name
-                Path = $_.Path
-                Arguments = $_.Arguments
-                Wrap = $_.Wrap
-                Process = $null
-                API = $_.API
-                Port = $_.Port
-                Algorithms = $_.HashRates.PSObject.Properties.Name
-                New = $false
-                Active = [TimeSpan]0
-                Activated = 0
-                Status = "Idle"
-                HashRate = 0
-                Benchmarked = 0
+                Type              = $_.Type
+                Name              = $_.Name
+                Path              = $_.Path
+                Arguments         = $_.Arguments
+                Wrap              = $_.Wrap
+                Process           = $null
+                API               = $_.API
+                Port              = $_.Port
+                Algorithms        = $_.HashRates.PSObject.Properties.Name
+                New               = $false
+                Active            = [TimeSpan]0
+                Activated         = 0
+                Status            = "Idle"
+                HashRate          = 0
+                Benchmarked       = 0
                 Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
-                User = $_.User
+                User              = $_.User
             }
         }
     }
@@ -404,7 +405,7 @@ Function NPMCycle {
         if ($filtered.Count -gt 0) {
             if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
                 # Log switching information to .\log\swicthing.log
-                [pscustomobject]@{date=(get-date);Type=$_.Type;algo=$_.Algorithms;wallet=$_.User;username=$Config.UserName;Host=$_.host;Coin=$_.Coin} | export-csv .\Logs\switching.log -Append -NoTypeInformation
+                [pscustomobject]@{date = (get-date); Type = $_.Type; algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Host = $_.host; Coin = $_.Coin} | export-csv .\Logs\switching.log -Append -NoTypeInformation
 
                 # Launch prerun if exists
                 If ($_.Type -ne "CPU") {
@@ -510,9 +511,9 @@ Function NPMCycle {
      Code below copies the object which results in a new version which avoid the problem.
      Will need rework. 
     #>
-    $Variables.ActiveMinerPrograms | Where {$_.Status -ne "Running"} | foreach {$_.process = $_.process | select HasExited,StartTime,ExitTime}
+    $Variables.ActiveMinerPrograms | Where {$_.Status -ne "Running"} | foreach {$_.process = $_.process | select HasExited, StartTime, ExitTime}
     $ActiveMinerProgramsCOPY = @()
-    $Variables.ActiveMinerPrograms | %{$ActiveMinerCOPY = [PSCustomObject]@{}; $_.psobject.properties | sort Name | %{$ActiveMinerCOPY | Add-Member -Force @{$_.Name = $_.Value}};$ActiveMinerProgramsCOPY += $ActiveMinerCOPY}
+    $Variables.ActiveMinerPrograms | % {$ActiveMinerCOPY = [PSCustomObject]@{}; $_.psobject.properties | sort Name | % {$ActiveMinerCOPY | Add-Member -Force @{$_.Name = $_.Value}}; $ActiveMinerProgramsCOPY += $ActiveMinerCOPY}
     $Variables.ActiveMinerPrograms = $ActiveMinerProgramsCOPY
     rv ActiveMinerProgramsCOPY
     rv ActiveMinerCOPY
@@ -521,7 +522,7 @@ Function NPMCycle {
     $Global:Error.clear()
     
     Get-Job | ? {$_.State -eq "Completed"} | Remove-Job
-    if ($Variables.BrainJobs.count -gt 0){
+    if ($Variables.BrainJobs.count -gt 0) {
         $Variables.BrainJobs | % {$_.ChildJobs | % {$_.Error.Clear()}}
         $Variables.BrainJobs | % {$_.ChildJobs | % {$_.Progress.Clear()}}
         $Variables.BrainJobs.ChildJobs | % {$_.Output.Clear()}
@@ -533,7 +534,7 @@ Function NPMCycle {
     }
 
     # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
-    if (Test-Path ".\EndLoopCode.ps1"){Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}
+    if (Test-Path ".\EndLoopCode.ps1") {Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}
     $Variables | Add-Member -Force @{EndLoop = $True}
     $Variables.StatusText = "Sleeping $($Variables.TimeToSleep)"
     # Sleep $Variables.TimeToSleep
