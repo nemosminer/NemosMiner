@@ -6,6 +6,7 @@ $Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashminerv0.4.7z"
 $Commands = [PSCustomObject]@{
     "equihash144" = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers sngemPoW" #Equihash144
     "equihash192" = " --cuda_devices $($Config.SelGPUDSTM) --algo 192_7 --pers ZERO_PoW" #Equihash192
+    "equihash144btcz" = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers BitcoinZ" #Equihash144btcz
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
