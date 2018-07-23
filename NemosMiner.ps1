@@ -172,7 +172,7 @@ Function Global:TimerUITick
 			$SwitchingDGV.ClearSelection()
 			
 			If ($Variables.ActiveMinerPrograms) {
-				$RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},Host,Coin | sort Type)
+				$RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},Host | sort Type)
 				$RunningMinersDGV.ClearSelection()
 			
 				[Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
