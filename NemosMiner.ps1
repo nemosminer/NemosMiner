@@ -130,54 +130,56 @@ Function Global:TimerUITick
         $MainForm.Text = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date)-$Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
         $host.UI.RawUI.WindowTitle = $Variables.CurrentProduct + " " + $Variables.CurrentVersion + " Runtime " + ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ((get-date)-$Variables.ScriptStartDate)) + " Path: " + (Split-Path $script:MyInvocation.MyCommand.Path)
 
-        $SwitchingDisplayTypes = @()
-        $SwitchingPageControls | foreach {if ($_.Checked){$SwitchingDisplayTypes += $_.Tag}}
-        # If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
-        # If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
-        If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(@((get-content ".\Logs\switching.log" -First 1) , (get-content ".\logs\switching.log" -last 50)) | ConvertFrom-Csv | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
-        $SwitchingDGV.DataSource = $SwitchingArray
-        
-        If ($Variables.Earnings -and $Config.TrackEarnings) {
-            $DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | select @(
-                @{Name="Pool";Expression={$_.Pool}},
-                @{Name="Trust";Expression={"{0:P0}" -f $_.TrustLevel}},
-                @{Name="Balance";Expression={$_.Balance}},
-                # @{Name="Unpaid";Expression={$_.total_unpaid}},
-                @{Name="BTC/D";Expression={"{0:N8}" -f ($_.BTCD)}},
-                @{Name="mBTC/D";Expression={"{0:N3}" -f ($_.BTCD*1000)}},
-                @{Name="Est. Pay Date";Expression={$_.EstimatedPayDate}},
-                @{Name="PaymentThreshold";Expression={"$($_.PaymentThreshold) ($('{0:P0}' -f $($_.Balance / $_.PaymentThreshold)))"}},
-                @{Name="Wallet";Expression={$_.Wallet}}
-            ) | Sort "BTC/D" -Descending)
-            $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
-            $EarningsDGV.ClearSelection()
-        }
-        
-        If ($Variables.Miners) {
-            $DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Select @(
-                @{Name = "Miner";Expression={$_.Name}},
-                @{Name = "Algorithm";Expression={$_.HashRates.PSObject.Properties.Name}},
-                @{Name = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}},
-                @{Name = "mBTC/Day"; Expression={$_.Profits.PSObject.Properties.Value*1000 | ForEach {if($_ -ne $null){$_.ToString("N3")}else{"Benchmarking"}}}},
-                @{Name = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){$_.ToString("N5")}else{"Benchmarking"}}}},
-                @{Name = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}},
-                @{Name = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
-            ) | sort "mBTC/Day" -Descending)
-            $EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
-        }
-        $EstimationsDGV.ClearSelection()
+        If ($Variables.EndLoop) {
+		
+			$SwitchingDisplayTypes = @()
+			$SwitchingPageControls | foreach {if ($_.Checked){$SwitchingDisplayTypes += $_.Tag}}
+			# If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
+			# If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
+			If (Test-Path ".\Logs\switching.log"){$SwitchingArray = [System.Collections.ArrayList]@(@((get-content ".\Logs\switching.log" -First 1) , (get-content ".\logs\switching.log" -last 50)) | ConvertFrom-Csv | ? {$_.Type -in $SwitchingDisplayTypes} | Select -Last 13)}
+			$SwitchingDGV.DataSource = $SwitchingArray
+			
+			If ($Variables.Earnings -and $Config.TrackEarnings) {
+				$DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | select @(
+					@{Name="Pool";Expression={$_.Pool}},
+					@{Name="Trust";Expression={"{0:P0}" -f $_.TrustLevel}},
+					@{Name="Balance";Expression={$_.Balance}},
+					# @{Name="Unpaid";Expression={$_.total_unpaid}},
+					@{Name="BTC/D";Expression={"{0:N8}" -f ($_.BTCD)}},
+					@{Name="mBTC/D";Expression={"{0:N3}" -f ($_.BTCD*1000)}},
+					@{Name="Est. Pay Date";Expression={$_.EstimatedPayDate}},
+					@{Name="PaymentThreshold";Expression={"$($_.PaymentThreshold) ($('{0:P0}' -f $($_.Balance / $_.PaymentThreshold)))"}},
+					@{Name="Wallet";Expression={$_.Wallet}}
+				) | Sort "BTC/D" -Descending)
+				$EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
+				$EarningsDGV.ClearSelection()
+			}
+			
+			If ($Variables.Miners) {
+				$DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Select @(
+					@{Name = "Miner";Expression={$_.Name}},
+					@{Name = "Algorithm";Expression={$_.HashRates.PSObject.Properties.Name}},
+					@{Name = "Speed"; Expression={$_.HashRates.PSObject.Properties.Value | ForEach {if($_ -ne $null){"$($_ | ConvertTo-Hash)/s"}else{"Benchmarking"}}}},
+					@{Name = "mBTC/Day"; Expression={$_.Profits.PSObject.Properties.Value*1000 | ForEach {if($_ -ne $null){$_.ToString("N3")}else{"Benchmarking"}}}},
+					@{Name = "BTC/Day"; Expression={$_.Profits.PSObject.Properties.Value | ForEach {if($_ -ne $null){$_.ToString("N5")}else{"Benchmarking"}}}},
+					@{Name = "BTC/GH/Day"; Expression={$_.Pools.PSObject.Properties.Value.Price | ForEach {($_*1000000000).ToString("N5")}}},
+					@{Name = "Pool"; Expression={$_.Pools.PSObject.Properties.Value | ForEach {"$($_.Name)-$($_.Info)"}}}
+				) | sort "mBTC/Day" -Descending)
+				$EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
+			}
+			$EstimationsDGV.ClearSelection()
 
-        $SwitchingDGV.ClearSelection()
-        
-        If ($Variables.ActiveMinerPrograms) {
+			$SwitchingDGV.ClearSelection()
+			
+			If ($Variables.ActiveMinerPrograms) {
 				$RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type,Algorithms,Name,@{Name="HashRate";Expression={"$($_.HashRate | ConvertTo-Hash)/s"}},Host,Coin | sort Type)
 				$RunningMinersDGV.ClearSelection()
-                
-            [Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
-            If ($ProcessRunning -eq $null){
-                # Update-Status("No miner running")
-            }
-        }
+			
+				[Array] $processRunning = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" }
+				If ($ProcessRunning -eq $null){
+					# Update-Status("No miner running")
+				}
+			}
         $LabelBTCPrice.text = If($Variables.Rates.$Currency -gt 0){"BTC/$($Config.Currency) $($Variables.Rates.($Config.Currency))"}
         $Variables | Add-Member -Force @{InCycle = $False}
 
