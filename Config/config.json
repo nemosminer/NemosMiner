@@ -48,7 +48,7 @@
     "Donate": 8,
     "EnableEarningsTrackerLogs": false,
     "FirstInterval": 30,
-    "Interval": 180,
+    "Interval": 120,
     "IsFixedSize": false,
     "IsReadOnly": false,
     "IsSynchronized": true,
