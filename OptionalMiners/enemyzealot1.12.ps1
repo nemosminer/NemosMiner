@@ -1,13 +1,13 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-enemyz1.12\z-enemy.exe"
-$Uri = "ftp://radio.r41.ru/z-enemy.1-12public.zip"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-12-cuda9.2.7z"
 
 $Commands = [PSCustomObject]@{
     "aeriumx" = " -i 20" #Aolytimos(not tested)
     "polytimos" = " -i 20" #Polytimos(not tested)
-    #"hsr" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Hsr
-    #"phi" = " -r 0 -d $SelGPUCC -i 20" #Phi(sp-mod,Alexis78,tpruvot,delos faster)
+    #"hsr" = " --api-remote --api-allow=0/0" #Hsr
+    "phi2" = " -i 20" #Phi2
     #"bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod, delos faster)
     #"x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(ccminerx16r faster/very close)
     #"x16s" = " -r 0 -d $SelGPUCC -i 20" #X16s(delos faster)
