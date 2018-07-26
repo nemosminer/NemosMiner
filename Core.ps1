@@ -159,8 +159,8 @@ Function NPMCycle {
         if((Get-Date).AddDays(-1).AddMinutes($Config.Donate) -ge $Variables.LastDonated -and $Variables.DonateRandom.wallet -eq $Null){
             # Get donation addresses randomly from agreed developers list
             # This will fairly distribute donations to Developers
-            # Developers list and wallets is publicly available at: http://tiny.cc/r355qy 
-            try {$Donation = Invoke-WebRequest "http://tiny.cc/r355qy" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json} catch {$Donation = @([PSCustomObject]@{Name = "mrplus";Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy";UserName = "mrplus"},[PSCustomObject]@{Name = "nemo";Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE";UserName = "nemo"})}
+            # Developers list and wallets is publicly available at: http://nemosminer.x10host.com/devlist.json 
+            try {$Donation = Invoke-WebRequest "http://nemosminer.x10host.com/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json} catch {$Donation = @([PSCustomObject]@{Name = "mrplus";Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy";UserName = "mrplus"},[PSCustomObject]@{Name = "nemo";Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE";UserName = "nemo"})}
             if ($Donation -ne $null) {
                 If ($Config.Donate -lt 3) {$Config.Donate = (0,(3..8)) | Get-Random}
                 $Variables.DonateRandom = $Donation | Get-Random
@@ -174,9 +174,9 @@ Function NPMCycle {
                     get-content ".\Config\PoolsConfig.json" | ConvertFrom-json
                 }else{
                     [PSCustomObject]@{default=[PSCustomObject]@{
-                        Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"
-                        UserName = "mrplus"
-                        WorkerName = "NPlusMinerNoCfg"
+                        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+                        UserName = "nemo"
+                        WorkerName = "NemosMinerNoCfg"
                         PoolPenalty = 1
                     }}
                 }
