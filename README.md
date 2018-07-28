@@ -19,7 +19,7 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
 
 Easy configuration, easy start:
 
-      Run NemosMiner-v3.3.bat
+      Run NemosMiner-v3.4.bat
       1. Config tab
       2. Set your Wallet address and Username
       3. Select your pool 
