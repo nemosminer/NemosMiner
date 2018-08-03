@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-EWBFv2\\miner.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/EWBF Equihash miner v0.5.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashminerv0.5.7z"
 
 # Automatically add Equihash coins if Equihash in algo list
 If ("equihash" -in $Config.Algorithm) {
