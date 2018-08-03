@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-trex\t-rex.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.5.6-win-cuda9.1.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.5.7-win-cuda9.1.7z"
 
 $Commands = [PSCustomObject]@{
 "hsr" = "" #Hsr(Testing)
