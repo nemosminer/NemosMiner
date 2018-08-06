@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "neoscrypt" = "" #NeoScrypt
     "phi"       = "" #Phi
     "phi2"      = "" #Phi2
-    "skein"     = "" #Skein
+    #"skein"     = "" #Skein
     "skunk"     = "" #Skunk
     "tribus"     = "" #Tribus
 }
