@@ -1,16 +1,16 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-enemyz1.12\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-12-cuda9.2.7z"
+$Path = ".\Bin\NVIDIA-enemyz1.15\z-enemy.exe"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-15-cuda9.2_x64.7z"
 
 $Commands = [PSCustomObject]@{
     "aeriumx" = " -i 20" #Aolytimos(not tested)
     "polytimos" = " -i 20" #Polytimos(not tested)
-    #"hsr" = " --api-remote --api-allow=0/0" #Hsr
+    "hsr" = " -i 20 " #Hsr
     "phi2" = " -i 20" #Phi2
     #"bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod, delos faster)
-    #"x16r" = " -r 0 -d $SelGPUCC -i 20" #X16r(ccminerx16r faster/very close)
-    #"x16s" = " -r 0 -d $SelGPUCC -i 20" #X16s(delos faster)
+    "x16r" = " -i 20" #X16r(ccminerx16r faster/very close)
+    "x16s" = " -i 20" #X16s(delos faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -36,11 +36,11 @@ $Commands = [PSCustomObject]@{
     #"skein" = "" #Skein
     #"skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk(Delos faster)
     "timetravel" = " -i 20" #Timetravel(fastest)
-    #"tribus" = " -r 0 -d $SelGPUCC -i 20" #Tribus(spmod,tpruvot,delos faster)
-    #"c11" = " -d $SelGPUCC -r 0 -i 20" #C11(Alexis78v1.2 faster)
+    "tribus" = " -i 20" #Tribus(spmod,tpruvot,delos faster)
+    "c11" = " -i 20" #C11(Alexis78v1.2 faster)
     "xevan" = " -i 20" #Xevan(fastest Alexis78Xevan very cose)
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -r 0 -i 20 -d $SelGPUCC" #X17(Alexis78,Delos,enemy1.03 faster)
+    "x17" = " -i 20" #X17(Alexis78,Delos,enemy1.03 faster)
     "vitalium" = " -i 20" #Vitalium(not testest)
     #"yescrypt" = "" #Yescrypt
 }
