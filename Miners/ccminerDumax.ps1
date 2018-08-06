@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $($Config.SelGPUCC)" #X11evo
-    "x17" = " -d $($Config.SelGPUCC)" #X17(testing)
+    #"x17" = " -d $($Config.SelGPUCC)" #X17(testing)
     "x16r" = " -d $($Config.SelGPUCC)" #X16r(testing)
     "x16s" = " -d $($Config.SelGPUCC)" #X16s(testing)
 }
