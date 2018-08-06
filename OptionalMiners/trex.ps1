@@ -5,7 +5,7 @@ $Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.5.7-win-cuda9.1.7z"
 
 $Commands = [PSCustomObject]@{
 "hsr" = "" #Hsr(Testing)
-"phi2" = "" #Phi2(Testing)
+#"phi2" = "" #Phi2(Testing)
 "lyra2z" = "" #Lyra2z(Testing)
 "tribus" = "" #Tribus(Testing)
 "c11" = "" #C11(Testing)
