@@ -6,7 +6,7 @@ $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.2.5-tpruvot/ccmin
 $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Hsr
-    "phi" = " -N 1 -d $($Config.SelGPUCC)" #Phi
+    #"phi" = " -N 1 -d $($Config.SelGPUCC)" #Phi
     "bitcore" = " -d $($Config.SelGPUCC)" #Bitcore(spmodbitcore faster)
     "jha" = " -d $($Config.SelGPUCC)" #Jha
     #"blake2s" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Blake2s
