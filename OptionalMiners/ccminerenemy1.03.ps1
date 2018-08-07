@@ -35,7 +35,7 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $($Config.SelGPUCC)" #X11evo
-    "x17" = " -d $($Config.SelGPUCC) -N 1" #X17(fastest)
+    #"x17" = " -d $($Config.SelGPUCC) -N 1" #X17(fastest)
     #"x16r" = " -d $($Config.SelGPUCC) -N 3" #X16r(poolparty faster)
 }
 
