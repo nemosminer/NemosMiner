@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-RavenSpMod\ccminer.exe"
-$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git5/raven_spmodgit5.7z"
+$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git6/raven_spmodgit6.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $($Config.SelGPUCC)" #Phi
