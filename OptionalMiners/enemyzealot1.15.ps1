@@ -43,6 +43,7 @@ $Commands = [PSCustomObject]@{
     #"x17" = " -i 20" #X17(Alexis78,Delos,enemy1.03 faster)
     "vitalium" = " -i 20" #Vitalium(not testest)
     #"yescrypt" = "" #Yescrypt
+    "hex" = " -i 20" #Hex(not testest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
