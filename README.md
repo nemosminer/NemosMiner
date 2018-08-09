@@ -4,7 +4,7 @@ Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
 
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
  # NemosMiner-v3.4
- Updated 09 / 08 / 2018
+ Updated 08 / 10 / 2018
  
 *****
 
