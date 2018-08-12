@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-RavenSpMod\ccminer.exe"
-$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git6/raven_spmodgit6.7z"
+$Path = ".\Bin\NVIDIA-RavenSpMod7\ccminer.exe"
+$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git7/raven_spmodgit7.7z"
 
 $Commands = [PSCustomObject]@{
     #"phi" = " -d $($Config.SelGPUCC)" #Phi
@@ -37,7 +37,7 @@ $Commands = [PSCustomObject]@{
     #"x11evo" = " -d $($Config.SelGPUCC)" #X11evo
     #"x17" = " -i 21.5 -d $($Config.SelGPUCC) --api-remote" #X17
     "x16r" = " -d $($Config.SelGPUCC)" #X16r(testing)
-    #"x16s" = " -d $($Config.SelGPUCC)" #X16s
+    #"x16s" = " -d $($Config.SelGPUCC)" #X16s (test)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
