@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-enemyz1.15a32\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-15a-cuda9.2_x32.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-16-cuda9.2_x32.7z"
 
 $Commands = [PSCustomObject]@{
     "aeriumx" = " -i 21" #AeriumX(tested)
