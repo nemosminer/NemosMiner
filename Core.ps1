@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 version:        3.4
-version date:   29 / 07 2018
+version date:   16 / 08 / 2018
 #>
 
 Function InitApplication {
@@ -229,7 +229,34 @@ Function NPMCycle {
             Compare-Object $Variables.MinersHash (Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash) -Property "Hash","Path" | Sort "Path" -Unique | % {
                 $Variables.StatusText = "Miner Updated: $($_.Path)"
                 $NewMiner =  &$_.path
-                If (Test-Path (Split-Path $NewMiner.Path)) {Remove-Item -Force -Recurse (Split-Path $NewMiner.Path)}
+                $NewMiner | Add-Member -Force @{Name = (Get-Item $_.Path).BaseName}
+                If (Test-Path (Split-Path $NewMiner.Path)) {
+                    $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $NewMiner.Path)} | ForEach {
+                        [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+                        if($filtered.Count -eq 0)
+                        {
+                            if($_.Process -eq $null)
+                            {
+                                $_.Status = "Failed"
+                            }
+                            elseif($_.Process.HasExited -eq $false)
+                            {
+                            $_.Active += (Get-Date)-$_.Process.StartTime
+                               $_.Process.CloseMainWindow() | Out-Null
+                               Sleep 1
+                               # simply "Kill with power"
+                               Stop-Process $_.Process -Force | Out-Null
+                               $Variables.StatusText = "closing current miner for Update"
+                               Sleep 1
+                               $_.Status = "Idle"
+                            }
+                            #Restore Bias for non-active miners
+                            $Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit_Bias_Orig}
+                        }
+                    }
+                    Get-ChildItem -path ".\stats\" -filter "$($NewMiner.Name)_*.txt" | Remove-Item -Force -Recurse
+                    Remove-Item -Force -Recurse (Split-Path $NewMiner.Path)
+                }
                 $Variables.MinersHash = Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash
                 $Variables.MinersHash | ConvertTo-Json | out-file ".\Config\MinersHash.json"
             }
