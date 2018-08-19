@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex61\t-rex.exe"
+$Path = ".\Bin\NVIDIA-trex\t-rex.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/t-rex-061.7z"
 
 $Commands = [PSCustomObject]@{
