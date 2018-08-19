@@ -9,8 +9,8 @@ $Commands = [PSCustomObject]@{
     #"hsr" = " -i 20 " #Hsr
     #"phi2" = " -i 20" #Phi2
     #"bitcore" = " -r 0 -d $SelGPUCC -i 20" #Bitcore(sp-mod, delos faster)
-    #"x16r" = " -i 20" #X16r(ccminerx16r faster/very close)
-    #"x16s" = " -i 20" #X16s(delos faster)
+    #"x16r" = " -i 20" #X16r(t-rex faster)
+    #"x16s" = " -i 20" #X16s(t-rex faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
