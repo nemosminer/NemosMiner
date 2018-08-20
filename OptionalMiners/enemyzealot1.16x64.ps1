@@ -34,6 +34,7 @@ $Commands = [PSCustomObject]@{
     #"sia" = "" #Sia
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
+    "sonoa" = " -i 20" #SonoA (testing)
     #"skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk(Delos faster)
     "timetravel" = " -i 24" #Timetravel(fastest)
     #"tribus" = " -i 20" #Tribus(trex,cryptodredge faster)
