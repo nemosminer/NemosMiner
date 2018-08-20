@@ -35,13 +35,13 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk(Delos faster)
-    "sonoa" = " -i 20" #SonoA (testing)
+    "sonoa" = " -i 21" #SonoA (tested)
     #"timetravel" = " -i 20" #Timetravel(tested)
     #"tribus" = " -i 20" #Tribus(trex,cryptodredge faster)
     #"c11" = " -i 20" #C11(t-rex faster)
     #"xevan" = " -i 20" #Xevan(fastest Alexis78Xevan very cose)
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    #"x17" = " -i 20" #X17(Alexis78,Delos,enemy1.03 faster)
+    #"x17" = " -i 20" #X17(t-rex faster)
     "vitalium" = " -i 20" #Vitalium(not testest)
     #"yescrypt" = "" #Yescrypt
     "hex" = " -i 23" #Hex(testest)
