@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     #"polytimos" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Polytimos
     #"hsr" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Hsr
     #"phi" = " -d $($Config.SelGPUCC) -i 20" #Phi
-    "bitcore" = " -d $($Config.SelGPUCC)" #Bitcore(fastest)
+    #"bitcore" = " -d $($Config.SelGPUCC)" #Bitcore(trex faster)
     #"x16r" = " -d $($Config.SelGPUCC) -N 180 -i 20" #X16r
     #"x16s" = " -d $($Config.SelGPUCC) -N 180 -i 20" #X16s
     #"blake2s" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Blake2s
