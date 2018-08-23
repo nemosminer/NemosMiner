@@ -7,9 +7,9 @@ These might not have been fully tested. Use at your own risk.
 
 Optional miners details:
 
-- ccminerenemy / zealot
-         Note that ccminerenemy is closed source and therefore is NOT enabled in NemosMiner by default
-   - To Enable ccminerenemy Yourself Copy ccminerenemy.ps1 into the ".\miners\" folder 
+- ccminerenemy / zealot / trex / cryptodredge 
+         Note that ccminerenemy / zealot / trex / cryptodredge  is closed source and therefore is NOT enabled in NemosMiner by default
+   - To Enable ccminerenemy / zealot / trex / cryptodredge  Yourself Copy miner.ps1 into the ".\miners\" folder 
    
 - Excavator
          Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
