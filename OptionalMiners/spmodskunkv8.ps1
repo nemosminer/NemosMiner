@@ -33,7 +33,7 @@ $Commands = [PSCustomObject]@{
     #"sia" = "" #Sia
     #"sib" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
-    "skunk" = " -d $($Config.SelGPUCC) -i 24" #Skunk(fastest)
+    #"skunk" = " -d $($Config.SelGPUCC) -i 24" #Skunk(cryptodrege faster)
     #"timetravel" = " -d $($Config.SelGPUCC)" #Timetravel
     #"tribus" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Tribus
     #"c11" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #C11
