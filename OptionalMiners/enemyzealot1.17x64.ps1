@@ -4,13 +4,13 @@ $Path = ".\Bin\NVIDIA-enemyz1.17x64\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-17-cuda9.2_x64.7z"
 
 $Commands = [PSCustomObject]@{
-    "aeriumx" = " -i 21" #AeriumX(testing)
+    #"aeriumx" = " -i 21" #AeriumX(x32 faster)
     "polytimos" = " -i 20" #Polytimos(not tested)
     #"hsr" = " -i 20 " #Hsr
-    "phi2" = " -i 20" #Phi2 (testing)
-    "bitcore" = " -i 20" #Bitcore (testing)
-    "x16r" = " -i 20" #X16r(tesyting)
-    "x16s" = " -i 20" #X16s(testing)
+    #phi2" = " -i 20" #Phi2 (cryptodredge faster)
+    #bitcore" = " -i 20" #Bitcore (trex faster
+    #x16r" = " -i 20" #X16r(trex faster)
+    #16s" = " -i 20" #X16s(trex faster)
     #"blake2s" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Blake2s
     #"blakecoin" = " -d $SelGPUCC" #Blakecoin
     #"vanilla" = "" #BlakeVanilla
@@ -35,16 +35,16 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -d $SelGPUCC --api-remote --api-allow=0/0" #Sib
     #"skein" = "" #Skein
     #"skunk" = " -r 0 -d $SelGPUCC -i 20" #Skunk(Delos faster)
-    "sonoa" = " -i 21" #SonoA (tested)
-    "timetravel" = " -i 24" #Timetravel(testing)
-    "tribus" = " -i 20" #Tribus(testing)
-    "c11" = " -i 20" #C11(testing)
-    "xevan" = " -i 20" #Xevan(testing)
+    #sonoa" = " -i 21" #SonoA (x32 faster)
+    "timetravel" = " -i 24" #Timetravel(fastest)
+    #tribus" = " -i 20" #Tribus(cryptodrege faster)
+    #c11" = " -i 20" #C11(trex faster)
+    #xevan" = " -i 20" #Xevan(xevan75/9 faster)
     #"x11evo" = " -d $SelGPUCC" #X11evo
-    "x17" = " -i 20" #X17(testing)
+    #x17" = " -i 20" #X17(trex faster)
     "vitalium" = " -i 20" #Vitalium(not testest)
     #"yescrypt" = "" #Yescrypt
-    "hex" = " -i 23" #Hex(testing)
+    #hex" = " -i 23" #Hex(x32 faster)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
