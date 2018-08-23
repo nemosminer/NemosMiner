@@ -9,10 +9,10 @@ $Commands = [PSCustomObject]@{
     "lyra2z"    = " --submit-stale" #Lyra2z
     "neoscrypt" = "" #NeoScrypt
     "phi"       = "" #Phi
-    "phi2"      = "" #Phi2
+    "phi2"      = "" #Phi2 (fastest)
     #"skein"     = "" #Skein
     "skunk"     = "" #Skunk
-    "tribus"     = "" #Tribus
+    "tribus"     = "" #Tribus (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
