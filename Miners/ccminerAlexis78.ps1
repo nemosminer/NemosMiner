@@ -32,10 +32,10 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -i 21 -d $($Config.SelGPUCC)" #Sib(fastest)
     "skein" = " -N 1 -d $($Config.SelGPUCC)" #Skein(fastest)
     #"timetravel" = "" #Timetravel
-    "c11" = " -N 1 -i 21 -d $($Config.SelGPUCC)" #C11(fastest)
+    #"c11" = " -N 1 -i 21 -d $($Config.SelGPUCC)" #C11(spmodgit9 & trex faster)
     "x11evo" = " -N 1 -i 21 -d $($Config.SelGPUCC) " #X11evo(fastest)
     #"x11gost" = " -i 21 -d $($Config.SelGPUCC) --api-remote" #X11gost
-    "x17" = " -N 1 -i 20 -d $($Config.SelGPUCC)" #X17(fastest)
+    "x17" = " -N 1 -i 20 -d $($Config.SelGPUCC)" #X17(trex faster)
     #"yescrypt" = "" #Yescrypt
 }
 
