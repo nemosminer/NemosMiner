@@ -5,13 +5,13 @@ $Uri = "http://nemos.dx.am/opt/nemos/t-rex-061.7z"
 
 $Commands = [PSCustomObject]@{
 "hsr" = "" #Hsr(Testing)
-"bitcore" = "" #Bitcore(Testing)
+"bitcore" = "" #Bitcore(Fastest)
 #"lyra2z" = "" #Lyra2z(Testing) (cryptodrege faster)
-"tribus" = "" #Tribus(Testing)
-"c11" = "" #C11(Testing)
-"x17" = "" #X17(Testing)
-"x16s" = "" #X16s(Testing)
-"x16r" = "" #X16r(Testing)
+"tribus" = "" #Tribus(CryptoDredge faster)
+"c11" = "" #C11(fastest)
+"x17" = "" #X17(fastest)
+"x16s" = "" #X16s(fastest)
+"x16r" = "" #X16r(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
