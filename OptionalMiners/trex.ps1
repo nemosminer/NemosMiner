@@ -12,6 +12,7 @@ $Commands = [PSCustomObject]@{
 "x17" = "" #X17(fastest)
 "x16s" = "" #X16s(fastest)
 "x16r" = "" #X16r(fastest)
+"sonoa" = "" #SonoA(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
