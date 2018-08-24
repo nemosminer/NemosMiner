@@ -4,7 +4,6 @@ $Path = ".\Bin\NVIDIA-enemyz1.17x32\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-17-cuda9.2_x32.7z"
 
 $Commands = [PSCustomObject]@{
-"aergo" = " -i 21" #Aergo
 "aeriumx" = " -i 21" #AeriumX(fastest)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
