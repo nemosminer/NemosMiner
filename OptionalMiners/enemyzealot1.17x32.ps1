@@ -13,12 +13,12 @@ $Commands = [PSCustomObject]@{
 #"x16r" = "" #X16r (t-rex faster)
 #"x16s" = "" #X16s(t-rex faster)
 "sonoa" = " -i 21" #SonoA t-rex faster)
-#"skunk" = "" #Skunk(Delos faster)
+#"skunk" = "" #Skunk(cryptodredge faster)
 #"timetravel" = "" #Timetravel(fastest)
 #"tribus" = "" #Tribus(trex,cryptodredge faster)
-#"c11" = "" #C11(Alexis78v1.2 faster)
-#"xevan" = "" #Xevan(fastest Alexis78Xevan very cose)
-#"x17" = "" #X17(Alexis78,Delos,enemy1.03 faster)
+#"c11" = "" #C11(Alexis78 faster)
+#"xevan" = "" #Xevan(xevan75/9 faster)
+#"x17" = "" #X17(Trex faster)
 "hex" = " -i 23" #Hex(fastest)
 }
 
