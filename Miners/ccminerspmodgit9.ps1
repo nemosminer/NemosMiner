@@ -32,12 +32,12 @@ $Commands = [PSCustomObject]@{
     #"skunk" = " -d $($Config.SelGPUCC)" #Skunk
     #"timetravel" = " -d $($Config.SelGPUCC)" #Timetravel
     #"tribus" = " -d $($Config.SelGPUCC)" #Tribus
-    "c11" = " -d $($Config.SelGPUCC)" #C11 (testing)
+    "c11" = " -d $($Config.SelGPUCC)" #C11 (fastest)
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $($Config.SelGPUCC)" #X11evo
     #"x17" = " -i 21.5 -d $($Config.SelGPUCC) --api-remote" #X17
-    "x16r" = " -d $($Config.SelGPUCC)" #X16r(testing)
-    "x16s" = " -d $($Config.SelGPUCC)" #X16s (testing)
+    "x16r" = " -d $($Config.SelGPUCC)" #X16r(trex faster/ fastest open source)
+    "x16s" = " -d $($Config.SelGPUCC)" #X16s (trex faster/ fastest open source)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
