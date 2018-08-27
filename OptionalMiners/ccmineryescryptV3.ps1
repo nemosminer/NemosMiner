@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcmineryescryptV2\ccminer.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/ccminer-yescryptV2.7z"
+$Path = ".\Bin\NVIDIA-CcmineryescryptV3\ccminer.exe"
+$Uri = "http://nemos.dx.am/opt/nemos/ccminer-yescryptV3.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
