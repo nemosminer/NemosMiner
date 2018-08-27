@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-trexballoon\t-rex.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/t-rex-062.7z"
 
 $Commands = [PSCustomObject]@{
-"balloon" = "" #Balloon(Testing)
+"balloon" = "" #Balloon(Fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
