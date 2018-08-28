@@ -784,7 +784,7 @@ Function Autoupdate {
             }
             else {
                 Update-Status("Update file validated. Updating NemosMiner")
-            }
+           }
             
             # Backup current version folder in zip file
             Update-Status("Backing up current version...")
@@ -792,6 +792,12 @@ Function Autoupdate {
             $BackupFileName = ("AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
             Start-Process "7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
             If (!(test-path .\$BackupFileName)) {Update-Status("Backup failed"); return}
+            
+            # Pre update specific actions if any
+            # Use PreUpdateActions.ps1 in new release to place code
+            If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1") {
+                Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
+            }
             
             # unzip in child folder excluding config
             Update-Status("Unzipping update...")
@@ -801,17 +807,25 @@ Function Autoupdate {
             Update-Status("Copying files...")
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
 
-            # update specific actions if any
-            # Use UpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\UpdateActions.ps1") {
-                Invoke-Expression (get-content ".\$UpdateFileName\UpdateActions.ps1" -Raw)
+            # Update Optional Miners to Miners if in use
+            ls .\OptionalMiners\ | ? {$_.name -in (ls .\Miners\).name} | % {Copy-Item -Force $_.FullName .\Miners\}
+
+            # Remove any obsolete miner file (ie. Not in new version Miners or OptionalMiners)
+            ls .\Miners\ | ? {$_.name -notin (ls .\$UpdateFileName\Miners\).name -and $_.name -notin (ls .\$UpdateFileName\OptionalMiners\).name} | % {Remove-Item -Force $_.FullName}
+
+            # Post update specific actions if any
+            # Use PostUpdateActions.ps1 in new release to place code
+            If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1") {
+                Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
             }
             
             #Remove temp files
             Update-Status("Removing temporary files...")
             Remove-Item .\$UpdateFileName -Force -Recurse
             Remove-Item ".\$($UpdateFileName).zip" -Force
-            If (Test-Path ".\UpdateActions.ps1") {Remove-Item ".\UpdateActions.ps1" -Force}
+            If (Test-Path ".\PreUpdateActions.ps1") {Remove-Item ".\PreUpdateActions.ps1" -Force}
+            If (Test-Path ".\PostUpdateActions.ps1") {Remove-Item ".\PostUpdateActions.ps1" -Force}
+            ls "AutoupdateBackup-*.zip" | Where {$_.name -notin (ls "AutoupdateBackup-*.zip" | sort LastWriteTime -Descending | select -First 2).name} | Remove-Item -Force
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
