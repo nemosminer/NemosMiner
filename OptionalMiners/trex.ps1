@@ -5,7 +5,7 @@ $Uri = "http://nemos.dx.am/opt/nemos/t-rex063.7z"
 
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
-"polytimos" = "" #Poly(Testing)
+"polytimos" = "" #Poly(fastest)
 "skunk" = "" #Skunk(fastest)
 "hsr" = "" #Hsr(Testing)
 "bitcore" = "" #Bitcore(Fastest)
