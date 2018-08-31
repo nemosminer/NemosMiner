@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-trex\t-rex.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/t-rex063.7z"
 
 $Commands = [PSCustomObject]@{
-"balloon" = "" #Balloon(Testing)
+"balloon" = "" #Balloon(fastest)
 "polytimos" = "" #Poly(Testing)
 "skunk" = "" #Skunk(Testing)
 "hsr" = "" #Hsr(Testing)
