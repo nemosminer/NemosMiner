@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     "phi"       = "" #Phi
     "phi2"      = "" #Phi2 (testing)
     #"skein"     = "" #Skein
-    "skunk"     = "" #Skunk
+    #"skunk"     = "" #Skunk (trex faster)
     "tribus"     = "" #Tribus (testing)
 }
 
