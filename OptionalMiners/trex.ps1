@@ -1,9 +1,12 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-trex\t-rex.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/t-rex-061.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/t-rex063.7z"
 
 $Commands = [PSCustomObject]@{
+"balloon" = "" #Balloon(Testing)
+"polytimos" = "" #Poly(Testing)
+"skunk" = "" #Skunk(Testing)
 "hsr" = "" #Hsr(Testing)
 "bitcore" = "" #Bitcore(Fastest)
 #"lyra2z" = "" #Lyra2z (cryptodrege faster)
