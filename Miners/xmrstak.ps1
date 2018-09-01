@@ -7,9 +7,9 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Port = 3335
 
 $Commands = [PSCustomObject]@{
-    "cryptonight_heavy" = "" # CryptoNight-Heavy
+    #"cryptonight_heavy" = "" # CryptoNight-Heavy(cryptodredge faster)
     "cryptonight_lite"  = "" # CryptoNight-Lite
-    "cryptonight_v7"    = "" # CryptoNightV7
+    #"cryptonight_v7"    = "" # CryptoNightV7(cryptodredge faster)
     # "cryptonight"     = "" # CryptoNight is ASIC territory
 }
 
