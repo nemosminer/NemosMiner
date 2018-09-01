@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CryptoDredge\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.8.3/CryptoDredge_0.8.3_cuda_9.2_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge9\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.0/CryptoDredge_0.9.0_cuda_9.2_windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"    = "" #Allium
@@ -9,10 +9,12 @@ $Commands = [PSCustomObject]@{
     "lyra2z"    = " --submit-stale" #Lyra2z
     "neoscrypt" = "" #NeoScrypt
     "phi"       = "" #Phi
-    "phi2"      = "" #Phi2 (fastest)
+    "phi2"      = "" #Phi2 (testing)
     #"skein"     = "" #Skein
-    #"skunk"     = "" #Skunk (trex faster)
-    "tribus"     = "" #Tribus (fastest)
+    "skunk"     = "" #Skunk
+    "cryptonightheavy" = "" # CryptoNightHeavy
+    "cryptonightv7"    = "" # CryptoNightV7
+    "tribus"     = "" #Tribus (testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
