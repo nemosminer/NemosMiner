@@ -1,25 +1,25 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-enemyz1.17x32\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-17-cuda9.2_x32.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-18-cuda9.2_x32.7z"
 
 $Commands = [PSCustomObject]@{
-"aeriumx" = " -i 21" #AeriumX(fastest)
+"aeriumx" = " -i 21" #AeriumX(testing)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
-#"phi2" = "" #Phi2 (cryptodredge faster)
-#"poly" = "" #Polytimos(trex faster) 
-#"bitcore" = "" #Bitcore (t-rex faster)
-#"x16r" = "" #X16r (t-rex faster)
-#"x16s" = "" #X16s(t-rex faster)
-"sonoa" = " -i 21" #SonoA (t-rex faster)
-#"skunk" = "" #Skunk(trex faster)
-#"timetravel" = "" #Timetravel(fastest)
-#"tribus" = "" #Tribus(trex,cryptodredge faster)
-#"c11" = "" #C11(Alexis78 faster)
-#"xevan" = "" #Xevan(xevan75/9 faster)
-#"x17" = "" #X17(Trex faster)
-"hex" = " -i 23" #Hex(fastest)
+"phi2" = "" #Phi2 (testing)
+"poly" = "" #Polytimos(testing) 
+"bitcore" = "" #Bitcore (testing)
+"x16r" = "" #X16r (testing)
+"x16s" = "" #X16s(testing)
+"sonoa" = " -i 21" #SonoA (testing)
+"skunk" = "" #Skunk(testing)
+"timetravel" = "" #Timetravel(testing)
+"tribus" = "" #Tribus(testing)
+"c11" = "" #C11(testing)
+"xevan" = "" #Xevan(testing
+"x17" = "" #X17(testing)
+"hex" = " -i 23" #Hex(testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
