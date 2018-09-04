@@ -1,10 +1,25 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-enemyz1.17x64\z-enemy.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-17-cuda9.2_x64.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-18-cuda9.2_x64.7z"
 
 $Commands = [PSCustomObject]@{
-  "timetravel" = " -i 24" #Timetravel(fastest)
+ "aeriumx" = " -i 21" #AeriumX(testing)
+#"hsr" = "" #Hsr
+#"phi" = "" #Phi
+"phi2" = "" #Phi2 (testing)
+"poly" = "" #Polytimos(testing) 
+"bitcore" = "" #Bitcore (testing)
+"x16r" = "" #X16r (testing)
+"x16s" = "" #X16s(testing)
+"sonoa" = " -i 21" #SonoA (testing)
+"skunk" = "" #Skunk(testing)
+"timetravel" = "" #Timetravel(testing)
+"tribus" = "" #Tribus(testing)
+"c11" = "" #C11(testing)
+"xevan" = "" #Xevan(testing
+"x17" = "" #X17(testing)
+"hex" = " -i 23" #Hex(testing)
 
 }
 
