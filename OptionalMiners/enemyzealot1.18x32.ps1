@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-enemyz1.17x32\z-enemy.exe"
+$Path = ".\Bin\NVIDIA-enemyz1.18x32\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-18-cuda9.2_x32.7z"
 
 $Commands = [PSCustomObject]@{
