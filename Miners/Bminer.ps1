@@ -4,7 +4,6 @@ $Path = ".\Bin\NVIDIA-Bminer\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v10.1.0-1323b4f-amd64.zip"
 $Commands = [PSCustomObject]@{
     "equihash" = " -max-temperature 94 -devices $($Config.SelGPUCC)" #Equihash(fastest no dev fee)
-    "equihash1445" = " -max-temperature 94 -devices $($Config.SelGPUCC)" #Equihash1445(fastest no dev fee)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
