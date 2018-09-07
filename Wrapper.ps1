@@ -32,9 +32,9 @@ do {
 
         if ($Line -like "*Total*") {
             $Words = $Line -split " "
-            $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -First 1)) - 1]
+            $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "Sol/s" | Select-Object -First 1)) - 1]
 
-            switch ($Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -First 1))]) {
+            switch ($Words[$Words.IndexOf(($Words -like "Sol/s" | Select-Object -First 1))]) {
                 "s/s" {$HashRate *= [Math]::Pow(1000, 0)}
                 "ks/s" {$HashRate *= [Math]::Pow(1000, 1)}
                 "ms/s" {$HashRate *= [Math]::Pow(1000, 2)}
@@ -47,9 +47,9 @@ do {
         }
         elseif ($Line -like "*Total*") {
             $Words = $Line -split " "
-            $HashRate = [Decimal]($Words -like "*/s*" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -First 1)
+            $HashRate = [Decimal]($Words -like "Sol/s" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -First 1)
 
-            switch ($Words -like "*S/s*" -replace "[0-9.,]", '' | Select-Object -First 1) {
+            switch ($Words -like "Sol/s" -replace "[0-9.,]", '' | Select-Object -First 1) {
                 "S/s" {$HashRate *= [Math]::Pow(1000, 0)}
                 "KS/s" {$HashRate *= [Math]::Pow(1000, 1)}
                 "mS/s" {$HashRate *= [Math]::Pow(1000, 2)}
@@ -60,9 +60,9 @@ do {
         }
         elseif ($Line -like "*Average speed*") {
             $Words = $Line -split " "
-            $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1)) - 1]
+            $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "MH/s" | Select-Object -Last 1)) - 1]
 
-            switch ($Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1))]) {
+            switch ($Words[$Words.IndexOf(($Words -like "MH/s" | Select-Object -Last 1))]) {
                 
                 "mh/s" {$HashRate *= [Math]::Pow(1000, 1)}
                 "MH/s" {$HashRate *= [Math]::Pow(1000, 1)}
@@ -73,9 +73,9 @@ do {
         }
         elseif ($Line -like "*Average speed*") {
             $Words = $Line -split " "
-            $HashRate = [Decimal]($Words -like "*/s*" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -Last 1)
+            $HashRate = [Decimal]($Words -like "MH/s" -replace ',', '' -replace "[^0-9.]", '' | Select-Object -Last 1)
 
-            switch ($Words -like "*/s*" -replace "[0-9.,]", '' | Select-Object -Last 1) {
+            switch ($Words -like "MH/s" -replace "[0-9.,]", '' | Select-Object -Last 1) {
               
                 "mH/s" {$HashRate *= [Math]::Pow(1000, 1)}
                 "MH/s" {$HashRate *= [Math]::Pow(1000, 1)}
