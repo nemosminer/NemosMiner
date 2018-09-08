@@ -440,7 +440,7 @@ function Get-HashRate {
                 }
 
             }
-            "phoenix" {
+            "ethminer" {
 
                 $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json  -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
