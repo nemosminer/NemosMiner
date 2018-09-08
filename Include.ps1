@@ -271,27 +271,80 @@ function Get-ChildItemContent {
     
     $ChildItems
 }
-<#
-function Set-Algorithm {
+function Invoke_TcpRequest {
+     
     param(
-        [Parameter(Mandatory=$true)]
-        [String]$API, 
-        [Parameter(Mandatory=$true)]
-        [Int]$Port, 
-        [Parameter(Mandatory=$false)]
-        [Array]$Parameters = @()
+        [Parameter(Mandatory = $true)]
+        [String]$Server = "localhost", 
+        [Parameter(Mandatory = $true)]
+        [String]$Port, 
+        [Parameter(Mandatory = $true)]
+        [String]$Request, 
+        [Parameter(Mandatory = $true)]
+        [Int]$Timeout = 10 #seconds
     )
-    
-    $Server = "localhost"
-    
-    switch($API)
-    {
-        "nicehash"
-        {
-        }
+
+    try {
+        $Client = New-Object System.Net.Sockets.TcpClient $Server, $Port
+        $Stream = $Client.GetStream()
+        $Writer = New-Object System.IO.StreamWriter $Stream
+        $Reader = New-Object System.IO.StreamReader $Stream
+        $client.SendTimeout = $Timeout * 1000
+        $client.ReceiveTimeout = $Timeout * 1000
+        $Writer.AutoFlush = $true
+
+        $Writer.WriteLine($Request)
+        $Response = $Reader.ReadLine()
     }
+    catch { $Error.Remove($error[$Error.Count - 1])}
+    finally {
+        if ($Reader) {$Reader.Close()}
+        if ($Writer) {$Writer.Close()}
+        if ($Stream) {$Stream.Close()}
+        if ($Client) {$Client.Close()}
+    }
+
+    $response
+    
 }
-#>
+
+
+
+#************************************************************************************************************************************************************************************
+#************************************************************************************************************************************************************************************
+#************************************************************************************************************************************************************************************
+
+
+
+function Invoke_httpRequest {
+     
+    param(
+        [Parameter(Mandatory = $true)]
+        [String]$Server = "localhost", 
+        [Parameter(Mandatory = $true)]
+        [String]$Port, 
+        [Parameter(Mandatory = $false)]
+        [String]$Request, 
+        [Parameter(Mandatory = $true)]
+        [Int]$Timeout = 10 #seconds
+    )
+
+    try {
+
+        $response = Invoke-WebRequest "http://$($Server):$Port$Request" -UseBasicParsing -TimeoutSec $timeout
+    }
+    catch {$Error.Remove($error[$Error.Count - 1])}
+  
+
+    $response
+    
+}
+
+
+#************************************************************************************************************************************************************************************
+#************************************************************************************************************************************************************************************
+#************************************************************************************************************************************************************************************
+
 function Get-HashRate {
     param(
         [Parameter(Mandatory = $true)]
@@ -299,280 +352,178 @@ function Get-HashRate {
         [Parameter(Mandatory = $true)]
         [Int]$Port, 
         [Parameter(Mandatory = $false)]
-        [Object]$Parameters = @{}, 
-        [Parameter(Mandatory = $false)]
-        [Bool]$Safe = $false
+        [Object]$Parameters = @{} 
+
     )
     
     $Server = "localhost"
     
     $Multiplier = 1000
-    $Delta = 0.05
-    $Interval = 5
-    $HashRates = @()
-    $HashRates_Dual = @()
+    #$Delta = 0.05
+    #$Interval = 5
+    #$HashRates = @()
+    #$HashRates_Dual = @()
 
     try {
         switch ($API) {
-            "Bminer" {
+
+            "Dtsm" {
+                 
+                $Request = Invoke_TcpRequest $server $port "empty" 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
+                    $HashRate = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
+                }
+
+            }
+            "xgminer" {
                 $Message = @{command = "summary"; parameter = ""} | ConvertTo-Json -Compress
-            
-                do {
-                    Get-HttpAsJson "http://$($Server):$Port/api/status"
-                    Param([PSCustomObject] $resjson)
+                $Request = Invoke_TcpRequest $server $port $Message 5
 
-                    [decimal] $Hashrate = 0 # if var not initialized - this outputed to console
-                    $resjson.miners | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object 
-                    $Hashrate = [MultipleUnit]::ToValueInvariant($resjson.miners."$_".solver.solution_rate, [string]::Empty)
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request.Substring($Request.IndexOf("{"), $Request.LastIndexOf("}") - $Request.IndexOf("{") + 1) -replace " ", "_" | ConvertFrom-Json
 
-                    $HashRates += [Double]$HashRate * $Multiplier
-    
-                    if (-not $Safe) {break}
-    
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
+                    $HashRate = if ($Data.SUMMARY.HS_5s -ne $null) {[Double]$Data.SUMMARY.HS_5s * [math]::Pow($Multiplier, 0)}
+                    elseif ($Data.SUMMARY.KHS_5s -ne $null) {[Double]$Data.SUMMARY.KHS_5s * [math]::Pow($Multiplier, 1)}
+                    elseif ($Data.SUMMARY.MHS_5s -ne $null) {[Double]$Data.SUMMARY.MHS_5s * [math]::Pow($Multiplier, 2)}
+                    elseif ($Data.SUMMARY.GHS_5s -ne $null) {[Double]$Data.SUMMARY.GHS_5s * [math]::Pow($Multiplier, 3)}
+                    elseif ($Data.SUMMARY.THS_5s -ne $null) {[Double]$Data.SUMMARY.THS_5s * [math]::Pow($Multiplier, 4)}
+                    elseif ($Data.SUMMARY.PHS_5s -ne $null) {[Double]$Data.SUMMARY.PHS_5s * [math]::Pow($Multiplier, 5)}
+
+                    if ($HashRate -eq $null) {
+                        $HashRate = if ($Data.SUMMARY.HS_av -ne $null) {[Double]$Data.SUMMARY.HS_av * [math]::Pow($Multiplier, 0)}
+                        elseif ($Data.SUMMARY.KHS_av -ne $null) {[Double]$Data.SUMMARY.KHS_av * [math]::Pow($Multiplier, 1)}
+                        elseif ($Data.SUMMARY.MHS_av -ne $null) {[Double]$Data.SUMMARY.MHS_av * [math]::Pow($Multiplier, 2)}
+                        elseif ($Data.SUMMARY.GHS_av -ne $null) {[Double]$Data.SUMMARY.GHS_av * [math]::Pow($Multiplier, 3)}
+                        elseif ($Data.SUMMARY.THS_av -ne $null) {[Double]$Data.SUMMARY.THS_av * [math]::Pow($Multiplier, 4)}
+                        elseif ($Data.SUMMARY.PHS_av -ne $null) {[Double]$Data.SUMMARY.PHS_av * [math]::Pow($Multiplier, 5)}
+                    }
+                }
+
             }
+
+
+            "palgin" {
+                $Request = Invoke_TcpRequest $server $port  "summary" 5
+                $Data = $Request -split ";"
+                $HashRate = [double]($Data[5] -split '=')[1] * 1000
+            }
+                
             "ccminer" {
-                $Message = "summary"
-
-                do {
-                    $Client = New-Object System.Net.Sockets.TcpClient $server, $port
-                    $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                    $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                    $Writer.AutoFlush = $true
-
-                    $Writer.WriteLine($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request -split ";" | ConvertFrom-StringData
-
-                    $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {$Data.KHS}
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]$HashRate * $Multiplier
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
-            }
-            "cryptodredge" {
-                $Message = "summary"
-
-                do {
-                    $Client = New-Object System.Net.Sockets.TcpClient $server, $Port
-                    $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                    $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                    $Writer.AutoFlush = $true
-
-                    $Writer.Write($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request -split ";" | ConvertFrom-StringData
-
-                    $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {$Data.KHS}
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]$HashRate * $Multiplier
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
-            }
-            "XMRig" {
-                $Message = "summary"
-
-                do {
-                  
-                    $Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
-                    
-                    $Data = $Request | ConvertFrom-Json
-
-                    $HashRate = [Double]$Data.hashrate.total[0]
-                    if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[1]}
-                    if ($HashRate -eq "") {$HashRate = [Double]$Data.hashrate.total[2]}
-                    
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]$HashRate
-
-                    if (-not $Safe) {break}
-                    
-                    Start-Sleep $Interval
-                }while ($HashRates.count -lt 6)
-            }
-            "dstm" {
-                $Message = "summary"
-
-                do {
-                    $Client = New-Object System.Net.Sockets.TcpClient $server, $port
-                    $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                    $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                    $Writer.AutoFlush = $true
-
-                    $Writer.WriteLine($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request | ConvertFrom-Json
-
-                    $HashRate = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum
-                    if (-not $HashRate) {$HashRate = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum} #ewbf fix
-            
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-                    
-                    $HashRates += [Double]$HashRate
-                    
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
-            }
-            "nicehashequihash" {
-                $Message = "status"
-
-                $Client = New-Object System.Net.Sockets.TcpClient $server, $port
-                $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                $Writer.AutoFlush = $true
-
-                do {
-                    $Writer.WriteLine($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request | ConvertFrom-Json
                 
-                    $HashRate = $Data.result.speed_hps
-                    
-                    if ($HashRate -eq $null) {$HashRate = $Data.result.speed_sps}
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]$HashRate
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
+                $Request = Invoke_TcpRequest $server $port  "summary" 5
+                $Data = $Request -split ";" | ConvertFrom-StringData
+                $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {[Double]$Data.KHS * $Multiplier}
             }
-            "nicehash" {
+            "excavator" {
                 $Message = @{id = 1; method = "algorithm.list"; params = @()} | ConvertTo-Json -Compress
+                $Request = Invoke_TcpRequest $server $port $message 5
 
-                $Client = New-Object System.Net.Sockets.TcpClient $server, $port
-                $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                $Writer.AutoFlush = $true
-
-                do {
-                    $Writer.WriteLine($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request | ConvertFrom-Json
-                
-                    $HashRate = $Data.algorithms.workers.speed
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]($HashRate | Measure-Object -Sum).Sum
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = ($Request | ConvertFrom-Json).Algorithms
+                    $HashRate = [Double](($Data.workers.speed) | Measure-Object -Sum).Sum
+                }
             }
             "ewbf" {
                 $Message = @{id = 1; method = "getstat"} | ConvertTo-Json -Compress
-
-                $Client = New-Object System.Net.Sockets.TcpClient $server, $port
-                $Writer = New-Object System.IO.StreamWriter $Client.GetStream()
-                $Reader = New-Object System.IO.StreamReader $Client.GetStream()
-                $Writer.AutoFlush = $true
-
-                do {
-                    $Writer.WriteLine($Message)
-                    $Request = $Reader.ReadLine()
-
-                    $Data = $Request | ConvertFrom-Json
-                
-                    $HashRate = $Data.result.speed_sps
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]($HashRate | Measure-Object -Sum).Sum
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
+                $Request = Invoke_TcpRequest $server $port $message 5
+                $Data = $Request | ConvertFrom-Json
+                $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
             }
             "claymore" {
-                do {
-                    $Request = Invoke-WebRequest "http://$($Server):$Port" -UseBasicParsing
-                    
+
+                $Request = Invoke_httpRequest $Server $Port "" 5
+                if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{"), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{") + 1) | ConvertFrom-Json
-                    
-                    $HashRate = $Data.result[2].Split(";")[0]
-                    $HashRate_Dual = $Data.result[4].Split(";")[0]
+                    $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
+                    $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
+                }
 
-                    if ($HashRate -eq $null -or $HashRate_Dual -eq $null) {$HashRates = @(); $HashRate_Dual = @(); break}
-
-                    if ($Request.Content.Contains("ETH:")) {$HashRates += [Double]$HashRate * $Multiplier; $HashRates_Dual += [Double]$HashRate_Dual * $Multiplier}
-                    else {$HashRates += [Double]$HashRate; $HashRates_Dual += [Double]$HashRate_Dual}
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
             }
+            "phoenix" {
+
+                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json  -Compress
+                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [int](($Data.result[2] -split ';')[0]) * 1000
+                }
+            }
+
+            "ClaymoreV2" {
+
+                $Request = Invoke_httpRequest $Server $Port "" 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{"), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{") + 1) | ConvertFrom-Json
+                    $HashRate = [double]$Data.result[2].Split(";")[0] 
+                }
+            }
+
+            "prospector" {
+                $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]($Data.rate | Measure-Object -Sum).sum
+                }
+            }
+
             "fireice" {
-                do {
-                    $Request = Invoke-WebRequest "http://$($Server):$Port/h" -UseBasicParsing
-                    
+                $Request = Invoke_httpRequest $Server $Port "/h" 5
+                if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
-                    
                     $HashRate = $Data[1]
                     if ($HashRate -eq "") {$HashRate = $Data[2]}
                     if ($HashRate -eq "") {$HashRate = $Data[3]}
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]$HashRate
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
+                }
             }
             "wrapper" {
-                do { 
+                $HashRate = ""
+                $wrpath = ".\Wrapper_$Port.txt"
+                $HashRate = if (test-path -path $wrpath ) {
+                    Get-Content  $wrpath
+                    $HashRate = ($HashRate -split ',')[0]
+                    $HashRate = ($HashRate -split '.')[0]
 
-                    $HashRate = Get-Content ".\Bminer.txt"
-                
-                    if ($HashRate -eq $null) {Start-Sleep $Interval; $HashRate = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
-                    }
-
-                    if ($HashRate -eq $null) {$HashRates = @(); break}
-
-                    $HashRates += [Double]$HashRate
-
-                    if (-not $Safe) {break}
-
-                    Start-Sleep $Interval
-                } while ($HashRates.Count -lt 6)
+                }
+                else {$hashrate = 0}
             }
-        }
 
-        $HashRates_Info = $HashRates | Measure-Object -Maximum -Minimum -Average
-        if ($HashRates_Info.Maximum - $HashRates_Info.Minimum -le $HashRates_Info.Average * $Delta) {$HashRates_Info.Maximum}
+            "castXMR" {
+                $Request = Invoke_httpRequest $Server $Port "" 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request | ConvertFrom-Json 
+                    $HashRate = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
+                }
+            }
 
-        $HashRates_Info_Dual = $HashRates_Dual | Measure-Object -Maximum -Minimum -Average
-        if ($HashRates_Info_Dual.Maximum - $HashRates_Info_Dual.Minimum -le $HashRates_Info_Dual.Average * $Delta) {$HashRates_Info_Dual.Maximum}
+            "XMrig" {
+                $Request = Invoke_httpRequest $Server $Port "/api.json" 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request | ConvertFrom-Json 
+                    $HashRate = [Double]$Data.hashrate.total[0]
+                }
+            }
+
+
+            "Bminer" { 
+                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request.content | ConvertFrom-Json 
+                    $HashRate = 0
+                    $Data.miners | Get-Member -MemberType NoteProperty | ForEach-Object {
+                        $HashRate += $Data.miners.($_.name).solver.solution_rate
+                    }
+                }
+            }
+        } #end switch
+        
+        $HashRates = @()
+        $HashRates += [double]$HashRate
+        $HashRates += [double]$HashRate_Dual
+
+        $HashRates
     }
-    catch {
-    }
+    catch {}
 }
 
 filter ConvertTo-Hash { 
@@ -784,7 +735,7 @@ Function Autoupdate {
             }
             else {
                 Update-Status("Update file validated. Updating NemosMiner")
-           }
+            }
             
             # Backup current version folder in zip file
             Update-Status("Backing up current version...")
