@@ -478,7 +478,7 @@ function Get-HashRate {
             }
             "wrapper" {
                 $HashRate = ""
-                $wrpath = ".\Wrapper_$Port.txt"
+                $wrpath = ".\Wrapper_$Id.txt"
                 $HashRate = if (test-path -path $wrpath ) {
                     Get-Content  $wrpath
                     $HashRate = ($HashRate -split ',')[0]
