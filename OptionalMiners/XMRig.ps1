@@ -4,9 +4,9 @@ $Path = ".\Bin\NVIDIA-XMRig\xmrig-nvidia.exe"
 $Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.7.0-beta/xmrig-nvidia-2.7.0-beta-cuda9-win64.zip"
 
 $Commands = [PSCustomObject]@{
-    #"cryptonight" = " --cuda-devices $($Config.SelGPUCC)" #Cryptonight(max 3 gpus)
-    #"cryptonight-lite" = " --cuda-devices $($Config.SelGPUCC)" #Cryptonight-lite(max 3 gpus)
-    #"cryptonightV7" = " --cuda-devices $($Config.SelGPUCC)" #CryptonightV7(max 3 gpus)
+    #"cryptonight" = " --cuda-devices $($Config.SelGPUCC)" #Cryptonight
+    #"cryptonight-lite" = " --cuda-devices $($Config.SelGPUCC)" #Cryptonight-lite
+    #"cryptonightV7" = " --cuda-devices $($Config.SelGPUCC)" #CryptonightV7(cryptodredge faster)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
