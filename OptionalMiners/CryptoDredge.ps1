@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     #"skunk"     = "" #Skunk(trex faster)
     "cryptonightheavy" = "" # CryptoNightHeavy(fastest)
     "cryptonightv7"    = "" # CryptoNightV7(fastest)
-    "tribus"     = "" #Tribus (testing)
+    "tribus"     = "" #Tribus (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
