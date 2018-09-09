@@ -12,7 +12,7 @@ $Commands = [PSCustomObject]@{
     #"equihash" = @() #Equihash(dstm faster)
     #"lbry" = @() #Lbry
     #"lyra2rev2" = @() #Lyra2RE2(excavator2 is faster)
-    "neoscrypt" = @() #NeoScrypt(fastest)
+    "neoscrypt" = @() #NeoScrypt(Cryptodredge faster)
     #"nist5" = @() #nist5(alexis78 faster)
     #"pascal" = @() #Pascal
 }
