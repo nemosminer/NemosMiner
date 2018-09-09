@@ -10,7 +10,7 @@ if (-not $Request) {return}
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 # Placed here for Perf (Disk reads)
-	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
     $PoolConf = $Config.PoolsConfig.$ConfName
 
 $Locations = "eu", "usa", "hk", "jp", "in", "br"

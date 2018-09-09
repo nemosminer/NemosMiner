@@ -32,7 +32,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
     $PwdCurr = if ($PoolConf.PwdCurrency) {$PoolConf.PwdCurrency}else {$Config.Passwordcurrency}
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") {$PoolConf.WorkerName} else {"ID=$($PoolConf.WorkerName)"}
-	
+
     if ($PoolConf.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm

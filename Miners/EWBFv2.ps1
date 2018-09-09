@@ -5,11 +5,11 @@ $Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashminerv0.5.7z"
 
 # Automatically add Equihash coins if Equihash in algo list
 If ("equihash" -in $Config.Algorithm) {
-	(Get-Content .\Algorithms.txt | ConvertFrom-Json) | Get-Member -MemberType noteproperty | Where {$_.Name -like "equihash*"} | Foreach {
-		If ($_.Name -notin $Config.Algorithm) {
-			$Config.Algorithm += $_.Name
-		}
-	}
+    (Get-Content .\Algorithms.txt | ConvertFrom-Json) | Get-Member -MemberType noteproperty | Where {$_.Name -like "equihash*"} | Foreach {
+        If ($_.Name -notin $Config.Algorithm) {
+            $Config.Algorithm += $_.Name
+        }
+    }
 }
 
 $Commands = [PSCustomObject]@{

@@ -12,7 +12,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Locations = 'Europe', 'US', 'Asia'
 # Placed here for Perf (Disk reads)
-	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
     $PoolConf = $Config.PoolsConfig.$ConfName
 
 $Locations | ForEach-Object {
@@ -25,8 +25,8 @@ $Locations | ForEach-Object {
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([decimal]$_.profit / 1000000000)
         $Price = (($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
 
-		$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
-	
+        $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+
         [PSCustomObject]@{
             Algorithm   = $Algorithm
             Info        = $Coin
