@@ -1081,6 +1081,39 @@ $CheckBoxMinerTypeNVIDIA.Add_Click( {
         else {$Config.Type = @($Config.Type | ? {$_ -ne $This.Text})}
     })
 
+$CheckBoxAutostart = New-Object system.Windows.Forms.CheckBox
+$CheckBoxAutostart.Tag = "Autostart"
+$CheckBoxAutostart.text = "Auto Start"
+$CheckBoxAutostart.AutoSize = $false
+$CheckBoxAutostart.width = 100
+$CheckBoxAutostart.height = 20
+$CheckBoxAutostart.location = New-Object System.Drawing.Point(560, 2)
+$CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAutostart.Checked = $Config.Autostart
+$ConfigPageControls += $CheckBoxAutostart
+
+$CheckBoxEarningTrackerLogs = New-Object system.Windows.Forms.CheckBox
+$CheckBoxEarningTrackerLogs.Tag = "EnableEarningsTrackerLogs"
+$CheckBoxEarningTrackerLogs.text = "Earnings Tracker Logs"
+$CheckBoxEarningTrackerLogs.AutoSize = $false
+$CheckBoxEarningTrackerLogs.width = 160
+$CheckBoxEarningTrackerLogs.height = 20
+$CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 24)
+$CheckBoxEarningTrackerLogs.Font = 'Microsoft Sans Serif,10'
+$CheckBoxEarningTrackerLogs.Checked = $Config.EnableEarningsTrackerLogs
+$ConfigPageControls += $CheckBoxEarningTrackerLogs
+
+$CheckBoxGUIMinimized = New-Object system.Windows.Forms.CheckBox
+$CheckBoxGUIMinimized.Tag = "StartGUIMinimized"
+$CheckBoxGUIMinimized.text = "Start UI minimized"
+$CheckBoxGUIMinimized.AutoSize = $false
+$CheckBoxGUIMinimized.width = 160
+$CheckBoxGUIMinimized.height = 20
+$CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 46)
+$CheckBoxGUIMinimized.Font = 'Microsoft Sans Serif,10'
+$CheckBoxGUIMinimized.Checked = $Config.StartGUIMinimized
+$ConfigPageControls += $CheckBoxGUIMinimized
+
 $CheckBoxAutoUpdate = New-Object system.Windows.Forms.CheckBox
 $CheckBoxAutoUpdate.Tag = "AutoUpdate"
 $CheckBoxAutoUpdate.text = "Auto Update"
@@ -1093,39 +1126,17 @@ $CheckBoxAutoUpdate.Checked = $Config.AutoUpdate
 # $CheckBoxAutoUpdate.Enabled               =   $False
 $ConfigPageControls += $CheckBoxAutoUpdate
 
-$CheckBoxAutostart = New-Object system.Windows.Forms.CheckBox
-$CheckBoxAutostart.Tag = "Autostart"
-$CheckBoxAutostart.text = "Auto Start"
-$CheckBoxAutostart.AutoSize = $false
-$CheckBoxAutostart.width = 100
-$CheckBoxAutostart.height = 20
-$CheckBoxAutostart.location = New-Object System.Drawing.Point(560, 2)
-$CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
-$CheckBoxAutostart.Checked = $Config.Autostart
-$ConfigPageControls += $CheckBoxAutostart
-    
-$CheckBoxEarningTrackerLogs = New-Object system.Windows.Forms.CheckBox
-$CheckBoxEarningTrackerLogs.Tag = "EnableEarningsTrackerLogs"
-$CheckBoxEarningTrackerLogs.text = "Earnings Tracker Logs"
-$CheckBoxEarningTrackerLogs.AutoSize = $false
-$CheckBoxEarningTrackerLogs.width = 160
-$CheckBoxEarningTrackerLogs.height = 20
-$CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 24)
-$CheckBoxEarningTrackerLogs.Font = 'Microsoft Sans Serif,10'
-$CheckBoxEarningTrackerLogs.Checked = $Config.EnableEarningsTrackerLogs
-$ConfigPageControls += $CheckBoxEarningTrackerLogs
-    
-$CheckBoxGUIMinimized = New-Object system.Windows.Forms.CheckBox
-$CheckBoxGUIMinimized.Tag = "StartGUIMinimized"
-$CheckBoxGUIMinimized.text = "Start UI minimized"
-$CheckBoxGUIMinimized.AutoSize = $false
-$CheckBoxGUIMinimized.width = 160
-$CheckBoxGUIMinimized.height = 20
-$CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 46)
-$CheckBoxGUIMinimized.Font = 'Microsoft Sans Serif,10'
-$CheckBoxGUIMinimized.Checked = $Config.StartGUIMinimized
-$ConfigPageControls += $CheckBoxGUIMinimized
-    
+$CheckBoxIncludeOptionalMiners = New-Object system.Windows.Forms.CheckBox
+$CheckBoxIncludeOptionalMiners.Tag = "IncludeOptionalMiners"
+$CheckBoxIncludeOptionalMiners.text = "Optional Miners"
+$CheckBoxIncludeOptionalMiners.AutoSize = $false
+$CheckBoxIncludeOptionalMiners.width = 160
+$CheckBoxIncludeOptionalMiners.height = 20
+$CheckBoxIncludeOptionalMiners.location = New-Object System.Drawing.Point(560, 90)
+$CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif,10'
+$CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
+$ConfigPageControls += $CheckBoxIncludeOptionalMiners
+
 $ButtonLoadDefaultPoolsAlgos = New-Object system.Windows.Forms.Button
 $ButtonLoadDefaultPoolsAlgos.text = "Load default algos for selected pools"
 $ButtonLoadDefaultPoolsAlgos.width = 250
