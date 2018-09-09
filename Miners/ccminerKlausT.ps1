@@ -35,8 +35,8 @@ $Commands = [PSCustomObject]@{
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
-    #"c11" = " -d $($Config.SelGPUCC)" #C11(alexis78-v1.2 faster)
-    #"yescrypt" = "" #Yescrypt
+    #"c11" = " -d $($Config.SelGPUCC)" #C11
+    "neoscrypt" = " -d $($Config.SelGPUCC)" #Neoscrypt
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
