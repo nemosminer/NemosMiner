@@ -6,7 +6,7 @@ Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
  # NemosMiner-v3.4
  Updated 9 September 2018
 
-[![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
+![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
  
 *****
 
