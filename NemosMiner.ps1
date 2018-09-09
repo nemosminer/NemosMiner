@@ -102,9 +102,6 @@ $Global:Variables = [hashtable]::Synchronized(@{})
 $Global:Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() }  -SecondValue { If (!$this._StatusText) {$this._StatusText = @()}; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{RefreshNeeded = $True} }
 
 Function Form_Load {
-
-    
-	
     $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
     $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
@@ -342,7 +339,6 @@ Function Form_Load {
                 Sleep -Milliseconds 1
             }
             $TimerUI.Start()
-	
         })
 }
 
