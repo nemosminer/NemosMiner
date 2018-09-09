@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           EarningsTrackerJob.ps1
 version:        3.4
-version date:   29 / 07 /2018
+version date:   9 September 2018
 #>
 
 # param(
