@@ -505,7 +505,7 @@ function Get-HashRate {
             }
 
 
-            "Bminer" { 
+            "bminer" { 
                 $Request = Invoke_httpRequest $Server $Port "/api/status" 5
                 if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request.content | ConvertFrom-Json 
