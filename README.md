@@ -128,8 +128,8 @@ Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations
 
       24hr - uses last 24hour Actual API too request profit
          -Low switching rate
-      plus - uses advanced calculations to maximize profit
-         -Best switching rate
+      plus - uses advanced calculations to reduce switching
+         -Medium switching rate
       normal - uses current estimate API too request profit
          -High switching rate
 
