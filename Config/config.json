@@ -28,8 +28,8 @@
     "PoolName": [
         "nicehash",
         "miningpoolhub",
-        "zergpool"
-        "zpool"
+        "zergpoolplus",
+        "zpoolplus"
     ],
     "Proxy": "",
     "SSL": false,
