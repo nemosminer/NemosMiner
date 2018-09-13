@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-trex\t-rex.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/t-rex063.7z"
+$Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.6.4-win-cuda9.1.zip"
 
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
@@ -16,6 +16,7 @@ $Commands = [PSCustomObject]@{
 "x16s" = "" #X16s(fastest)
 "x16r" = "" #X16r(fastest)
 "sonoa" = "" #SonoA(fastest)
+"hmq1725" = "" #hmq1725
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
