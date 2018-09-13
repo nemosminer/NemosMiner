@@ -2,16 +2,6 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1
 
 $Path = ".\Bin\NVIDIA-EWBFv2\\miner.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashminerv0.5.7z"
-
-# Automatically add Equihash coins if Equihash in algo list
-If ("equihash" -in $Config.Algorithm) {
-    (Get-Content .\Algorithms.txt | ConvertFrom-Json) | Get-Member -MemberType noteproperty | Where {$_.Name -like "equihash*"} | Foreach {
-        If ($_.Name -notin $Config.Algorithm) {
-            $Config.Algorithm += $_.Name
-        }
-    }
-}
-
 $Commands = [PSCustomObject]@{
     "equihash144" = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144(fastest)
     "equihash192" = " --cuda_devices $($Config.SelGPUDSTM) --algo 192_7 --pers ZERO_PoW" #Equihash192(fastest)
