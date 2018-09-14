@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-version:        3.4
-version date:   9 September 2018
+version:        3.4.1
+version date:   14 September 2018
 #>
 
 param(
@@ -26,7 +26,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.4", 
+    [String]$WorkerName = "ID=NemosMiner-v3.4.1", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -362,7 +362,7 @@ Function PrepareWriteConfig {
     $Config | Add-Member -Force @{$CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems}
     Write-Config -ConfigFile $ConfigFile -Config $Config
     $MainForm.Refresh
-    # [windows.forms.messagebox]::show("Please restart NPlusMiner",'Config saved','ok','Information') | out-null
+    # [windows.forms.messagebox]::show("Please restart NemosMiner",'Config saved','ok','Information') | out-null
 }
 
 Add-Type -AssemblyName System.Windows.Forms
