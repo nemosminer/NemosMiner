@@ -1,6 +1,6 @@
 {
     "Product": "NemosMiner",
     "Version": "3.4",
-    "Update": false,
+    "Update": true,
     "Message": "https://github.com/nemosminer/NemosMiner/releases"
 }
