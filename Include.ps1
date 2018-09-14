@@ -1,8 +1,4 @@
 <#
-This file is part of NemosMiner
-Copyright (c) 2018 Nemo
-Copyright (c) 2018 MrPlus
-
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -21,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.4
-version date:   9 September 2018
+version date:   14 September 2018
 #>
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
