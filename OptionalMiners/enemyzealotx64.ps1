@@ -7,20 +7,19 @@ $Commands = [PSCustomObject]@{
 "aeriumx" = " -i 21" #AeriumX(testing)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
-"phi2" = "" #Phi2 (testing)
-"poly" = "" #Polytimos(testing) 
-"bitcore" = "" #Bitcore (testing)
-"x16r" = "" #X16r (testing)
-"x16s" = "" #X16s (testing)
-"sonoa" = " -i 21" #SonoA (testing)
-"skunk" = "" #Skunk (testing)
-"timetravel" = "" #Timetravel (testing)
-"tribus" = "" #Tribus (testing)
-"c11" = "" #C11 (testing)
-"xevan" = "" #Xevan (testing)
-"x17" = "" #X17 (testing)
-"hex" = " -i 23" #Hex (testing)
-
+#"phi2" = "" #Phi2 (cryptodredge faster)
+#"poly" = "" #Polytimos(trex faster) 
+#"bitcore" = "" #Bitcore (trex faster)
+#"x16r" = "" #X16r (trex faster)
+#"x16s" = "" #X16s (trex faster)
+#"sonoa" = " -i 21" #SonoA (trex faster)
+#"skunk" = "" #Skunk (trex faster)
+"timetravel" = "" #Timetravel (fastest)
+"tribus" = "" #Tribus (cryptodredge faster)
+#"c11" = "" #C11 (trex faster)
+"xevan" = "" #Xevan (ccminerxevan7.5/9 faster)
+#"x17" = "" #X17 (trex faster)
+"hex" = " -i 23" #Hex (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
