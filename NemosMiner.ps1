@@ -1,4 +1,7 @@
 <#
+This file is part of NemosMiner
+Copyright (c) 2018 MrPlus
+
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.4
-version date:   14 September 2018
+version date:   9 September 2018
 #>
 
 param(
@@ -586,24 +589,13 @@ $MainFormControls += $LabelNotifications
 $LabelGitHub = New-Object System.Windows.Forms.LinkLabel
 # $LabelGitHub.Location           = New-Object System.Drawing.Size(415,39)
 # $LabelGitHub.Size               = New-Object System.Drawing.Size(160,18)
-$LabelGitHub.Location = New-Object System.Drawing.Size(220, 49)
-$LabelGitHub.Size = New-Object System.Drawing.Size(160, 18)
+$LabelGitHub.Location = New-Object System.Drawing.Size(10, 49)
+$LabelGitHub.Size = New-Object System.Drawing.Size(200, 18)
 $LabelGitHub.LinkColor = "BLUE"
 $LabelGitHub.ActiveLinkColor = "RED"
 $LabelGitHub.Text = "NemosMiner on GitHub"
 $LabelGitHub.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner/releases")})
 $MainFormControls += $LabelGitHub
-
-$LabelCopyright = New-Object System.Windows.Forms.LinkLabel
-# $LabelCopyright.Location        = New-Object System.Drawing.Size(415,61)
-# $LabelCopyright.Size            = New-Object System.Drawing.Size(200,20)
-$LabelCopyright.Location = New-Object System.Drawing.Size(10, 49)
-$LabelCopyright.Size = New-Object System.Drawing.Size(200, 18)
-$LabelCopyright.LinkColor = "BLUE"
-$LabelCopyright.ActiveLinkColor = "RED"
-$LabelCopyright.Text = "Copyright (c) 2018 MrPlus and Nemo"
-$LabelCopyright.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner/blob/master/LICENSE")})
-$MainFormControls += $LabelCopyright
 
 $LabelAddress = New-Object system.Windows.Forms.Label
 $LabelAddress.text = "Wallet Address"
