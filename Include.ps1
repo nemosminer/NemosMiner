@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.4
-version date:   14 September 2018
+version date:   9 September 2018
 #>
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
@@ -821,21 +821,6 @@ Function Autoupdate {
             $Config.autostart = $true
             Write-Config -ConfigFile $ConfigFile -Config $Config
             
-            # Download CRC File from a different location
-            # Abort if failed
-            Update-Status("Retrieving update CRC")
-            try {
-                $UpdateCRC = Invoke-WebRequest "https://raw.githubusercontent.com/nemosminer/NemosMiner-CRC/master/NemosMiner-CRC.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
-                $UpdateCRC = $UpdateCRC | ? {$_.Product -eq $AutoUpdateVersion.Product -and $_.Version -eq $AutoUpdateVersion.Version}
-            }
-            catch {Update-Status("Cannot get update CRC from server"); return}
-            If (! $UpdateCRC) {
-                Update-Status("Cannot find CRC for version $($AutoUpdateVersion.Version)")
-                Update-Notifications("Cannot find CRC for version $($AutoUpdateVersion.Version)")
-                $LabelNotifications.ForeColor = "Red"
-                return
-            }
-            
             # Download update file
             $UpdateFileName = ".\$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version)"
             Update-Status("Downloading version $($AutoUpdateVersion.Version)")
@@ -849,16 +834,6 @@ Function Autoupdate {
                 Update-Notifications("Cannot find update file")
                 $LabelNotifications.ForeColor = "Red"
                 return
-            }
-            
-            # Calculate and validate update file CRC
-            # Abort if any issue
-            Update-Status("Validating update file")
-            If ((Get-FileHash ".\$($UpdateFileName).zip").Hash -ne $UpdateCRC.CRC) {
-                Update-Status("Update file CRC not valid!"); return
-            }
-            else {
-                Update-Status("Update file validated. Updating NemosMiner")
             }
             
             # Backup current version folder in zip file
@@ -905,7 +880,7 @@ Function Autoupdate {
             # Start new instance (Wait and confirm start)
             # Kill old instance
             If ($AutoUpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) {
-                Update-Status("Starting my brother")
+                Update-Status("Starting Updated Version")
                 $StartCommand = ((gwmi win32_process -filter "ProcessID=$PID" | select commandline).CommandLine)
                 $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
                 # Giving 10 seconds for process to start
