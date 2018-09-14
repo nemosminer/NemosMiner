@@ -165,7 +165,7 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 Requires Nvidia driver 398.22 or newer / 399.24  recommended 
 http://us.download.nvidia.com/Windows/399.24/399.24-desktop-win10-64bit-international-whql.exe
 
-Made For & Tested with 8x10603gb 6x1070 6x1070ti 6x1080ti (users have reported up to 12cards working have not tested myself)
+Made For & Tested with 6x1070 6x1070ti 6x1080ti (users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
 
 *****
