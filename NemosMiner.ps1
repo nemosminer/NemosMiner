@@ -1,7 +1,4 @@
 <#
-This file is part of NemosMiner
-Copyright (c) 2018 MrPlus
-
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -77,7 +74,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Bool]$TrackEarnings = $True, # Display earnings information
     [Parameter(Mandatory = $false)]
-    [Bool]$Autoupdate = $False, # Autoupdate
+    [Bool]$Autoupdate = $true, # Autoupdate
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\config.json"
 )
@@ -87,9 +84,6 @@ param(
 . .\Core.ps1
 
 @"
-NemosMiner
-Copyright (c) 2018 MrPlus and Nemo
-
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
@@ -1106,7 +1100,7 @@ $ConfigPageControls += $CheckBoxGUIMinimized
 $CheckBoxAutoUpdate = New-Object system.Windows.Forms.CheckBox
 $CheckBoxAutoUpdate.Tag = "AutoUpdate"
 $CheckBoxAutoUpdate.text = "Auto Update"
-$CheckBoxAutoUpdate.AutoSize = $false
+$CheckBoxAutoUpdate.AutoSize = $true
 $CheckBoxAutoUpdate.width = 100
 $CheckBoxAutoUpdate.height = 20
 $CheckBoxAutoUpdate.location = New-Object System.Drawing.Point(560, 68)
