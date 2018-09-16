@@ -56,8 +56,31 @@ Function Start-Mining {
         While ($True) {
             if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
             if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
-            NPMCycle
-            Sleep $Variables.TimeToSleep
+            If($Variables.Paused) {
+                # Run a dummy cycle to keep the UI updating.
+
+                # Keep updating exchange rate
+                $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
+                $Config.Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
+                $Variables | Add-Member -Force @{Rates = $Rates}
+
+                # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
+                for ($i = 0; $i -lt 4; $i++) {
+                    if ($i -eq 3) {
+                        $Variables | Add-Member -Force @{EndLoop = $True}
+                    }
+                    else {
+                        $Variables | Add-Member -Force @{EndLoop = $False}
+                    }
+
+                    $Variables.StatusText = "Mining paused"
+                    Start-Sleep 30
+                }
+            }
+            else {
+                NPMCycle
+                Sleep $Variables.TimeToSleep
+            }
         }
     }) | Out-Null
     $Variables | add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke()}

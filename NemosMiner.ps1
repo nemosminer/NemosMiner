@@ -108,7 +108,6 @@ Function Form_Load {
             }
             $TimerUI.Stop()
             If ($Variables.RefreshNeeded -and $Variables.Started) {
-                Write-Host "Refreshing UI"
                 If (!$Variables.EndLoop) {Update-Status($Variables.StatusText)}
                 # $TimerUI.Interval = 1
 
@@ -1194,33 +1193,22 @@ $ButtonPause.Add_Click( {
         If(!$Variables.Paused) {
             Update-Status("Stopping miners")
             $Variables.Paused = $True
-            # Do not stop other jobs (EarnigsTracker and BrainPlus)
-            # Get-Job | Stop-Job | Remove-Job
 
+            # Stop and start mining to immediately switch to paused state without waiting for current NPMCycle to finish
             Stop-Mining
+            Start-Mining
 
-            If ($Variables.ActiveMinerPrograms) {
-                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type, Algorithms, Name, @{Name = "HashRate"; Expression = {"$($_.HashRate | ConvertTo-Hash)/s"}}, @{Name = "Stratum"; Expression = {"$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"}} | sort Type)
-                $RunningMinersDGV.ClearSelection()
-            }
-
-            $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             $ButtonPause.Text = "Mine"
-            # $TimerUI.Interval = 1000
-            Update-Status("Miners paused. BrainPlus and Earning tracker running in background. UI won't refresh")
+            Update-Status("Mining paused. BrainPlus and Earning tracker running.")
         }
         else {
-            if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
-            if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
-
-            PrepareWriteConfig
-            $ButtonPause.Text = "Pause"
-            # No need to init if paused
-            # InitApplication
             $Variables.Paused = $False
-            Start-Mining
+            $ButtonPause.Text = "Pause"
             $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
- 
+
+            # Stop and start mining to immediately switch to unpaused state without waiting for current sleep to finish
+            Stop-Mining
+            Start-Mining
         }
     })
 
