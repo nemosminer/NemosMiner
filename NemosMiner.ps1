@@ -426,7 +426,13 @@ $MainForm.add_Shown( {
             PrepareWriteConfig
         }
         # Start on load if Autostart
-        If ($Config.Autostart) {$ButtonStart.PerformClick()}
+        If ($Config.Autostart) {
+            If ($Config.StartPaused) {
+                $Variables.Paused = $True
+                $ButtonPause.Text = "Mine"
+            }
+            $ButtonStart.PerformClick()
+        }
         If ($Config.StartGUIMinimized) {$MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized}
     })
 
@@ -1080,13 +1086,36 @@ $CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
 $CheckBoxAutostart.Checked = $Config.Autostart
 $ConfigPageControls += $CheckBoxAutostart
 
+$CheckBoxAutoStart.Add_Click({
+    # Disable CheckBoxStartPaused when Auto Start is unchecked
+    if($CheckBoxAutoStart.Checked) {
+        $CheckBoxStartPaused.Enabled = $True
+    } else {
+        $CheckBoxStartPaused.Checked = $False
+        $CheckBoxStartPaused.Enabled = $False
+    }
+})
+
+$CheckBoxStartPaused = New-Object system.Windows.Forms.CheckBox
+$CheckBoxStartPaused.Tag = "StartPaused"
+$CheckBoxStartPaused.text = "Pause on Auto Start"
+$CheckBoxStartPaused.AutoSize = $false
+$CheckBoxStartPaused.width = 160
+$CheckBoxStartPaused.height = 20
+$CheckBoxStartPaused.location = New-Object System.Drawing.Point(560, 24)
+$CheckBoxStartPaused.Font = 'Microsoft Sans Serif,10'
+$CheckBoxStartPaused.Checked = $Config.StartPaused
+$CheckBoxStartPaused.Enabled = $CheckBoxAutoStart.Checked
+$ConfigPageControls += $CheckBoxStartPaused
+
+
 $CheckBoxEarningTrackerLogs = New-Object system.Windows.Forms.CheckBox
 $CheckBoxEarningTrackerLogs.Tag = "EnableEarningsTrackerLogs"
 $CheckBoxEarningTrackerLogs.text = "Earnings Tracker Logs"
 $CheckBoxEarningTrackerLogs.AutoSize = $false
 $CheckBoxEarningTrackerLogs.width = 160
 $CheckBoxEarningTrackerLogs.height = 20
-$CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 24)
+$CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 46)
 $CheckBoxEarningTrackerLogs.Font = 'Microsoft Sans Serif,10'
 $CheckBoxEarningTrackerLogs.Checked = $Config.EnableEarningsTrackerLogs
 $ConfigPageControls += $CheckBoxEarningTrackerLogs
@@ -1097,7 +1126,7 @@ $CheckBoxGUIMinimized.text = "Start UI minimized"
 $CheckBoxGUIMinimized.AutoSize = $false
 $CheckBoxGUIMinimized.width = 160
 $CheckBoxGUIMinimized.height = 20
-$CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 46)
+$CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 68)
 $CheckBoxGUIMinimized.Font = 'Microsoft Sans Serif,10'
 $CheckBoxGUIMinimized.Checked = $Config.StartGUIMinimized
 $ConfigPageControls += $CheckBoxGUIMinimized
@@ -1108,7 +1137,7 @@ $CheckBoxAutoUpdate.text = "Auto Update"
 $CheckBoxAutoUpdate.AutoSize = $true
 $CheckBoxAutoUpdate.width = 100
 $CheckBoxAutoUpdate.height = 20
-$CheckBoxAutoUpdate.location = New-Object System.Drawing.Point(560, 68)
+$CheckBoxAutoUpdate.location = New-Object System.Drawing.Point(560, 90)
 $CheckBoxAutoUpdate.Font = 'Microsoft Sans Serif,10'
 $CheckBoxAutoUpdate.Checked = $Config.AutoUpdate
 # $CheckBoxAutoUpdate.Enabled               =   $False
@@ -1120,7 +1149,7 @@ $CheckBoxIncludeOptionalMiners.text = "Optional Miners"
 $CheckBoxIncludeOptionalMiners.AutoSize = $false
 $CheckBoxIncludeOptionalMiners.width = 160
 $CheckBoxIncludeOptionalMiners.height = 20
-$CheckBoxIncludeOptionalMiners.location = New-Object System.Drawing.Point(560, 90)
+$CheckBoxIncludeOptionalMiners.location = New-Object System.Drawing.Point(560, 112)
 $CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif,10'
 $CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
 $ConfigPageControls += $CheckBoxIncludeOptionalMiners
