@@ -94,6 +94,8 @@ https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
 $Global:Config = [hashtable]::Synchronized(@{})
 $Global:Variables = [hashtable]::Synchronized(@{})
 $Global:Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() }  -SecondValue { If (!$this._StatusText) {$this._StatusText = @()}; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{RefreshNeeded = $True} }
+$Global:Variables | Add-Member -Force @{Started = $False}
+$Global:Variables | Add-Member -Force @{Paused = $False}
 
 Function Form_Load {
     $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
@@ -1188,9 +1190,9 @@ $TimerUI = New-Object System.Windows.Forms.Timer
 
 $TimerUI.Enabled = $false
 $ButtonPause.Add_Click( {
-        If ($TimerUI.Enabled) {
+        If(!$Variables.Paused) {
             Update-Status("Stopping miners")
-            $TimerUI.Stop()
+            $Variables.Paused = $True
             # Do not stop other jobs (EarnigsTracker and BrainPlus)
             # Get-Job | Stop-Job | Remove-Job
 
@@ -1214,7 +1216,7 @@ $ButtonPause.Add_Click( {
             $ButtonPause.Text = "Pause"
             # No need to init if paused
             # InitApplication
-            $TimerUI.Start()
+            $Variables.Paused = $False
             Start-Mining
             $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
  
@@ -1222,10 +1224,10 @@ $ButtonPause.Add_Click( {
     })
 
 $ButtonStart.Add_Click( {
-        If ($TimerUI.Enabled) {
+        If ($Variables.Started) {
             $ButtonPause.Visible = $False
             Update-Status("Stopping cycle")
-            $TimerUI.Stop()
+            $Variables.Started = $False
             Update-Status("Stopping jobs and miner")
 
             $Variables.EarningsTrackerJobs | % {$_ | Stop-Job -PassThru | Remove-Job}
@@ -1250,7 +1252,7 @@ $ButtonStart.Add_Click( {
 
             Start-Mining
         
-            $TimerUI.Start()
+            $Variables.Started = $True
         
             $ButtonPause.Visible = $True
         }
