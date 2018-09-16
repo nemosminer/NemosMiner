@@ -1194,33 +1194,7 @@ $ButtonPause.Add_Click( {
             # Do not stop other jobs (EarnigsTracker and BrainPlus)
             # Get-Job | Stop-Job | Remove-Job
 
-            If ($Variables.ActiveMinerPrograms) {
-                $Variables.ActiveMinerPrograms | ForEach {
-                    [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
-                    if ($filtered.Count -eq 0) {
-                        if ($_.Process -eq $null) {
-                            $_.Status = "Failed"
-                        }
-                        elseif ($_.Process.HasExited -eq $false) {
-                            $_.Active += (Get-Date) - $_.Process.StartTime
-                            $_.Process.CloseMainWindow() | Out-Null
-                            Sleep 1
-                            # simply "Kill with power"
-                            Stop-Process $_.Process -Force | Out-Null
-                             # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
-                            $KillPath = $_.Path
-                            Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
-                            Write-Host -ForegroundColor Yellow "closing miner"
-                            Sleep 1
-                            $_.Status = "Idle"
-                        }
-                    }
-                }
-            }
-
-            # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
-            $CycleRunspace.Close()
-            $powershell.Dispose()
+            Stop-Mining
 
             If ($Variables.ActiveMinerPrograms) {
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type, Algorithms, Name, @{Name = "HashRate"; Expression = {"$($_.HashRate | ConvertTo-Hash)/s"}}, @{Name = "Stratum"; Expression = {"$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"}} | sort Type)
@@ -1241,28 +1215,9 @@ $ButtonPause.Add_Click( {
             # No need to init if paused
             # InitApplication
             $TimerUI.Start()
-        
-            $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
-            $CycleRunspace.Open()
-            $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-            $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-            $CycleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
-            $Global:powershell = [powershell]::Create()
-            $powershell.Runspace = $CycleRunspace
-            $powershell.AddScript( {
-                    Start-Transcript ".\logs\CoreCyle.log" -Append -Force
-                    $ProgressPreference = "SilentlyContinue"
-                    . .\Include.ps1; RegisterLoaded(".\Include.ps1")
-                    While ($True) {
-                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
-                        if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
-                        NPMCycle
-                        Sleep $Variables.TimeToSleep
-                    }
-                }) | Out-Null
-            $Variables | add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke()}
+            Start-Mining
             $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
+ 
         }
     })
 
@@ -1278,34 +1233,7 @@ $ButtonStart.Add_Click( {
             $Variables.BrainJobs | % {$_ | Stop-Job -PassThru | Remove-Job}
             $Variables.BrainJobs = @()
 
-            If ($Variables.ActiveMinerPrograms) {
-                $Variables.ActiveMinerPrograms | ForEach {
-                    [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
-                    if ($filtered.Count -eq 0) {
-                        if ($_.Process -eq $null) {
-                            $_.Status = "Failed"
-                        }
-                        elseif ($_.Process.HasExited -eq $false) {
-                            $_.Active += (Get-Date) - $_.Process.StartTime
-                            $_.Process.CloseMainWindow() | Out-Null
-                            Sleep 1
-                            # simply "Kill with power"
-                            Stop-Process $_.Process -Force | Out-Null
-                            # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
-                            $KillPath = $_.Path
-                            Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
-                            Write-Host -ForegroundColor Yellow "closing miner"
-                            Sleep 1
-                            $_.Status = "Idle"
-                        }
-                    }
-                }
-            }
-
-       
-            # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
-            $CycleRunspace.Close()
-            $powershell.Dispose()
+            Stop-Mining
 
             $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             Update-Status("Idle")
@@ -1313,35 +1241,14 @@ $ButtonStart.Add_Click( {
             # $TimerUI.Interval = 1000
         }
         else {
-            # . .\core.ps1
-            # . .\Include.ps1
             if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
             if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
             PrepareWriteConfig
             $ButtonStart.Text = "Stop"
             InitApplication
-
             $Variables | add-Member -Force @{MainPath = (Split-Path $script:MyInvocation.MyCommand.Path)}
-            $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
-            $CycleRunspace.Open()
-            $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-            $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-            $CycleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
-            $Global:powershell = [powershell]::Create()
-            $powershell.Runspace = $CycleRunspace
-            $powershell.AddScript( {
-                    Start-Transcript ".\logs\CoreCyle.log" -Append -Force
-                    $ProgressPreference = "SilentlyContinue"
-                    . .\Include.ps1; RegisterLoaded(".\Include.ps1")
-                    While ($True) {
-                        if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
-                        if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
-                        NPMCycle
-                        Sleep $Variables.TimeToSleep
-                    }
-                }) | Out-Null
-            $Variables | add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke()}
+
+            Start-Mining
         
             $TimerUI.Start()
         

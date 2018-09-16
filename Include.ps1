@@ -39,6 +39,60 @@ Function Global:IsLoaded ($File) {
     }
 }
 
+Function Start-Mining {
+    # Starts the runspace that runs NPMCycle
+    $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
+    $CycleRunspace.Open()
+    $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
+    $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+    $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
+    $CycleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
+    $Global:powershell = [powershell]::Create()
+    $powershell.Runspace = $CycleRunspace
+    $powershell.AddScript( {
+        Start-Transcript ".\logs\CoreCyle.log" -Append -Force
+        $ProgressPreference = "SilentlyContinue"
+        . .\Include.ps1; RegisterLoaded(".\Include.ps1")
+        While ($True) {
+            if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+            if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
+            NPMCycle
+            Sleep $Variables.TimeToSleep
+        }
+    }) | Out-Null
+    $Variables | add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke()}
+}
+
+Function Stop-Mining {
+    # Kills any active miners and stops the runspace that hosts NPMCycle
+    If ($Variables.ActiveMinerPrograms) {
+        $Variables.ActiveMinerPrograms | ForEach {
+            [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+            if ($filtered.Count -eq 0) {
+                if ($_.Process -eq $null) {
+                    $_.Status = "Failed"
+                }
+                elseif ($_.Process.HasExited -eq $false) {
+                    $_.Active += (Get-Date) - $_.Process.StartTime
+                    $_.Process.CloseMainWindow() | Out-Null
+                    Sleep 1
+                    # simply "Kill with power"
+                    Stop-Process $_.Process -Force | Out-Null
+                    # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
+                    $KillPath = $_.Path
+                    Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
+                    Write-Host -ForegroundColor Yellow "closing miner"
+                    Sleep 1
+                    $_.Status = "Idle"
+                }
+            }
+        }
+    }
+
+    $CycleRunspace.Close()
+    $powershell.Dispose()
+}
+
 Function Update-Status ($Text) {
     $Text | out-host
     # $Variables.StatusText = $Text 
