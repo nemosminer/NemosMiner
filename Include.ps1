@@ -197,8 +197,8 @@ Function Stop-Mining {
         }
     }
 
-    $CycleRunspace.Close()
-    $powershell.Dispose()
+    $Global:CycleRunspace.Close()
+    $Global:powershell.Dispose()
 }
 
 Function Update-Status ($Text) {
