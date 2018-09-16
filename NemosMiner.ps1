@@ -358,7 +358,7 @@ Function PrepareWriteConfig {
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "Algorithm")} | foreach {
         $Config | Add-Member -Force @{$_.Tag = @($_.Text -split ",")}
     }
-    $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct"))} | foreach {
+    $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct", "IdleSec"))} | foreach {
         $Config | Add-Member -Force @{$_.Tag = [Int]$_.Text}
     }
     $Config | Add-Member -Force @{$CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems}
@@ -426,7 +426,13 @@ $MainForm.add_Shown( {
             PrepareWriteConfig
         }
         # Start on load if Autostart
-        If ($Config.Autostart) {$ButtonStart.PerformClick()}
+        If ($Config.Autostart) {
+            If ($Config.StartPaused) {
+                $Variables.Paused = $True
+                $ButtonPause.Text = "Mine"
+            }
+            $ButtonStart.PerformClick()
+        }
         If ($Config.StartGUIMinimized) {$MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized}
     })
 
@@ -464,6 +470,8 @@ $MainForm.Add_FormClosing( {
         # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
         if ($CycleRunspace) {$CycleRunspace.Close()}
         if ($powershell) {$powershell.Dispose()}
+        if ($IdleRunspace) {$IdleRunspace.Close()}
+        if ($idlePowershell) {$idlePowershell.Dispose()}
     })
 
 $Config = Load-Config -ConfigFile $ConfigFile
@@ -1080,13 +1088,73 @@ $CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
 $CheckBoxAutostart.Checked = $Config.Autostart
 $ConfigPageControls += $CheckBoxAutostart
 
+$CheckBoxAutoStart.Add_Click({
+    # Disable CheckBoxStartPaused and mine when idle when Auto Start is unchecked
+    if($CheckBoxAutoStart.Checked) {
+        $CheckBoxStartPaused.Enabled = $True
+        $CheckBoxMineWhenIdle.Enabled = $True
+        $TBIdleSec.Enabled = $True
+    } else {
+        $CheckBoxStartPaused.Checked = $False
+        $CheckBoxStartPaused.Enabled = $False
+        $CheckBoxMineWhenIdle.Checked = $False
+        $CheckBoxMineWhenIdle.Enabled = $False
+        $TBIdleSec.Enabled = $False
+    }
+})
+
+$CheckBoxStartPaused = New-Object system.Windows.Forms.CheckBox
+$CheckBoxStartPaused.Tag = "StartPaused"
+$CheckBoxStartPaused.text = "Pause on Auto Start"
+$CheckBoxStartPaused.AutoSize = $false
+$CheckBoxStartPaused.width = 160
+$CheckBoxStartPaused.height = 20
+$CheckBoxStartPaused.location = New-Object System.Drawing.Point(560, 24)
+$CheckBoxStartPaused.Font = 'Microsoft Sans Serif,10'
+$CheckBoxStartPaused.Checked = $Config.StartPaused
+$CheckBoxStartPaused.Enabled = $CheckBoxAutoStart.Checked
+$ConfigPageControls += $CheckBoxStartPaused
+
+$CheckBoxMineWhenIdle = New-Object system.Windows.Forms.CheckBox
+$CheckBoxMineWhenIdle.Tag = "MineWhenIdle"
+$CheckBoxMineWhenIdle.text = "Mine only when idle"
+$CheckBoxMineWhenIdle.AutoSize = $false
+$CheckBoxMineWhenIdle.width = 160
+$CheckBoxMineWhenIdle.height = 20
+$CheckBoxMineWhenIdle.location = New-Object System.Drawing.Point(560, 46)
+$CheckBoxMineWhenIdle.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMineWhenIdle.Checked = $Config.MineWhenIdle
+$CheckBoxMineWhenIdle.Enabled = $CheckBoxAutoStart.Checked
+$ConfigPageControls += $CheckBoxMineWhenIdle
+
+$TBIdleSec = New-Object system.Windows.Forms.TextBox
+$TBIdleSec.Tag = "IdleSec"
+$TBIdleSec.MultiLine = $False
+$TBIdleSec.text = if ($Config.IdleSec -gt 1) {$Config.IdleSec} else {120}
+$TBIdleSec.AutoSize = $false
+$TBIdleSec.width = 50
+$TBIdleSec.height = 20
+$TBIdleSec.location = New-Object System.Drawing.Point(580, 68)
+$TBIdleSec.Font = 'Microsoft Sans Serif,10'
+$TBIdleSec.Enabled = $CheckBoxAutoStart.Checked
+$ConfigPageControls += $TBIdleSec
+
+$LabelIdleSec = New-Object system.Windows.Forms.Label
+$LabelIdleSec.text = "seconds"
+$LabelIdleSec.AutoSize = $false
+$LabelIdleSec.width = 60
+$LabelIdleSec.height = 20
+$LabelIdleSec.location = New-Object System.Drawing.Point(630, 68)
+$LabelIdleSec.Font = 'Microsoft Sans Serif,10'
+$ConfigPageControls += $LabelIdleSec
+
 $CheckBoxEarningTrackerLogs = New-Object system.Windows.Forms.CheckBox
 $CheckBoxEarningTrackerLogs.Tag = "EnableEarningsTrackerLogs"
 $CheckBoxEarningTrackerLogs.text = "Earnings Tracker Logs"
 $CheckBoxEarningTrackerLogs.AutoSize = $false
 $CheckBoxEarningTrackerLogs.width = 160
 $CheckBoxEarningTrackerLogs.height = 20
-$CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 24)
+$CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 90)
 $CheckBoxEarningTrackerLogs.Font = 'Microsoft Sans Serif,10'
 $CheckBoxEarningTrackerLogs.Checked = $Config.EnableEarningsTrackerLogs
 $ConfigPageControls += $CheckBoxEarningTrackerLogs
@@ -1097,7 +1165,7 @@ $CheckBoxGUIMinimized.text = "Start UI minimized"
 $CheckBoxGUIMinimized.AutoSize = $false
 $CheckBoxGUIMinimized.width = 160
 $CheckBoxGUIMinimized.height = 20
-$CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 46)
+$CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 112)
 $CheckBoxGUIMinimized.Font = 'Microsoft Sans Serif,10'
 $CheckBoxGUIMinimized.Checked = $Config.StartGUIMinimized
 $ConfigPageControls += $CheckBoxGUIMinimized
@@ -1108,7 +1176,7 @@ $CheckBoxAutoUpdate.text = "Auto Update"
 $CheckBoxAutoUpdate.AutoSize = $true
 $CheckBoxAutoUpdate.width = 100
 $CheckBoxAutoUpdate.height = 20
-$CheckBoxAutoUpdate.location = New-Object System.Drawing.Point(560, 68)
+$CheckBoxAutoUpdate.location = New-Object System.Drawing.Point(560, 134)
 $CheckBoxAutoUpdate.Font = 'Microsoft Sans Serif,10'
 $CheckBoxAutoUpdate.Checked = $Config.AutoUpdate
 # $CheckBoxAutoUpdate.Enabled               =   $False
@@ -1120,7 +1188,7 @@ $CheckBoxIncludeOptionalMiners.text = "Optional Miners"
 $CheckBoxIncludeOptionalMiners.AutoSize = $false
 $CheckBoxIncludeOptionalMiners.width = 160
 $CheckBoxIncludeOptionalMiners.height = 20
-$CheckBoxIncludeOptionalMiners.location = New-Object System.Drawing.Point(560, 90)
+$CheckBoxIncludeOptionalMiners.location = New-Object System.Drawing.Point(560, 156)
 $CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif,10'
 $CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
 $ConfigPageControls += $CheckBoxIncludeOptionalMiners
@@ -1226,6 +1294,10 @@ $ButtonStart.Add_Click( {
 
             Stop-Mining
 
+            # Stop idle tracking
+            if ($IdleRunspace) {$IdleRunspace.Close()}
+            if ($idlePowershell) {$idlePowershell.Dispose()}
+
             $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
             Update-Status("Idle")
             $ButtonStart.Text = "Start"
@@ -1239,11 +1311,19 @@ $ButtonStart.Add_Click( {
             InitApplication
             $Variables | add-Member -Force @{MainPath = (Split-Path $script:MyInvocation.MyCommand.Path)}
 
+            Start-IdleTracking
+
+            If ($Config.MineWhenIdle) {
+                # Disable the pause button - pausing controlled by idle timer
+                $Variables.Paused = $True
+                $ButtonPause.Visible = $False
+            } else {
+                $ButtonPause.Visible = $True
+            }
+
             Start-Mining
         
             $Variables.Started = $True
-        
-            $ButtonPause.Visible = $True
         }
     })
 
