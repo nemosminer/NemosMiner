@@ -102,13 +102,13 @@ Function Form_Load {
     $LabelBTCD.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
     $TimerUI.Interval = 50
-    $TimerUI.Stop()
     $TimerUI.Add_Tick( {
             trap {
                 $PSItem.ToString() | out-file .\logs\excepUI.txt -Append
             }
-            $TimerUI.Enabled = $False
-            If ($Variables.RefreshNeeded) {
+            $TimerUI.Stop()
+            If ($Variables.RefreshNeeded -and $Variables.Started) {
+                Write-Host "Refreshing UI"
                 If (!$Variables.EndLoop) {Update-Status($Variables.StatusText)}
                 # $TimerUI.Interval = 1
 
@@ -335,7 +335,8 @@ Function Form_Load {
                 Sleep -Milliseconds 1
             }
             $TimerUI.Start()
-        })
+    })
+    $TimerUI.Start()
 }
 
 Function CheckedListBoxPools_Click ($Control) {
@@ -1188,7 +1189,7 @@ $MainForm | Add-Member -Name number -Value 0 -MemberType NoteProperty
 $TimerUI = New-Object System.Windows.Forms.Timer
 # $TimerUI.Add_Tick({TimerUI_Tick})
 
-$TimerUI.Enabled = $false
+$TimerUI.Stop()
 $ButtonPause.Add_Click( {
         If(!$Variables.Paused) {
             Update-Status("Stopping miners")
