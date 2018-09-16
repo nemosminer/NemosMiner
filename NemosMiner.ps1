@@ -448,6 +448,9 @@ $MainForm.Add_FormClosing( {
                         Sleep 1
                         # simply "Kill with power"
                         Stop-Process $_.Process -Force | Out-Null
+                        # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
+                        $KillPath = $_.Path
+                        Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
                         Write-Host -ForegroundColor Yellow "closing miner"
                         Sleep 1
                         $_.Status = "Idle"
@@ -1204,6 +1207,9 @@ $ButtonPause.Add_Click( {
                             Sleep 1
                             # simply "Kill with power"
                             Stop-Process $_.Process -Force | Out-Null
+                             # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
+                            $KillPath = $_.Path
+                            Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
                             Write-Host -ForegroundColor Yellow "closing miner"
                             Sleep 1
                             $_.Status = "Idle"
@@ -1285,6 +1291,9 @@ $ButtonStart.Add_Click( {
                             Sleep 1
                             # simply "Kill with power"
                             Stop-Process $_.Process -Force | Out-Null
+                            # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
+                            $KillPath = $_.Path
+                            Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
                             Write-Host -ForegroundColor Yellow "closing miner"
                             Sleep 1
                             $_.Status = "Idle"
