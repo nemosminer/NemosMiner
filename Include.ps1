@@ -39,6 +39,91 @@ Function Global:IsLoaded ($File) {
     }
 }
 
+Function Start-IdleTracking {
+    # Function tracks how long the system has been idle and controls the paused state
+    $Global:IdleRunspace = [runspacefactory]::CreateRunspace()
+    $IdleRunspace.Open()
+    $IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
+    $IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+    $IdleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
+    $IdleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
+    $Global:idlepowershell = [powershell]::Create()
+    $idlePowershell.Runspace = $IdleRunspace
+    $idlePowershell.AddScript( {
+            # No native way to check how long the system has been idle in powershell. Have to use .NET code.
+            Add-Type -TypeDefinition @'
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+namespace PInvoke.Win32 {
+    public static class UserInput {
+        [DllImport("user32.dll", SetLastError=false)]
+        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct LASTINPUTINFO {
+            public uint cbSize;
+            public int dwTime;
+        }
+
+        public static DateTime LastInput {
+            get {
+                DateTime bootTime = DateTime.UtcNow.AddMilliseconds(-Environment.TickCount);
+                DateTime lastInput = bootTime.AddMilliseconds(LastInputTicks);
+                return lastInput;
+            }
+        }
+        public static TimeSpan IdleTime {
+            get {
+                return DateTime.UtcNow.Subtract(LastInput);
+            }
+        }
+        public static int LastInputTicks {
+            get {
+                LASTINPUTINFO lii = new LASTINPUTINFO();
+                lii.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
+                GetLastInputInfo(ref lii);
+                return lii.dwTime;
+            }
+        }
+    }
+}
+'@
+            Start-Transcript ".\logs\IdleTracking.log" -Append -Force
+            $ProgressPreference = "SilentlyContinue"
+            . .\Include.ps1; RegisterLoaded(".\Include.ps1")
+            While ($True) {
+                if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+                if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
+                $IdleSeconds = [math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
+
+                # Only do anything if Mine only when idle is turned on
+                If ($Config.MineWhenIdle) {
+                    If ($Variables.Paused) {
+                        # Check if system has been idle long enough to unpause
+                        If ($IdleSeconds -gt $Config.IdleSec) {
+                            $Variables.StatusText = "System idle for $IdleSeconds seconds, starting mining..."
+                            $Variables.Paused = $False
+                            Stop-Mining
+                            Start-Mining
+                        }
+                    } 
+                    else {
+                        # Pause if system has become active
+                        If ($IdleSeconds -lt $Config.IdleSec) {
+                            $Variables.StatusText = "System active, pausing mining..."
+                            $Variables.Paused = $True
+                            Stop-Mining
+                            Start-Mining
+                        }
+                    }
+                }
+                Start-Sleep 1
+            }
+    } ) | Out-Null
+    $Variables | Add-Member -Force @{IdleRunspaceHandle = $idlePowershell.BeginInvoke()}
+}
+
 Function Start-Mining {
     # Starts the runspace that runs NPMCycle
     $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
