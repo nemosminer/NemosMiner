@@ -96,6 +96,7 @@ $Global:Variables = [hashtable]::Synchronized(@{})
 $Global:Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() }  -SecondValue { If (!$this._StatusText) {$this._StatusText = @()}; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{RefreshNeeded = $True} }
 $Global:Variables | Add-Member -Force @{Started = $False}
 $Global:Variables | Add-Member -Force @{Paused = $False}
+$Global:Variables | Add-Member -Force @{RestartCycle = $False}
 
 Function Form_Load {
     $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
@@ -107,6 +108,12 @@ Function Form_Load {
                 $PSItem.ToString() | out-file .\logs\excepUI.txt -Append
             }
             $TimerUI.Stop()
+            # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
+            If ($Variables.RestartCycle) {
+                $Variables.RestartCycle = $False
+                Stop-Mining
+                Start-Mining
+            }
             If ($Variables.RefreshNeeded -and $Variables.Started) {
                 If (!$Variables.EndLoop) {Update-Status($Variables.StatusText)}
                 # $TimerUI.Interval = 1
@@ -1263,8 +1270,7 @@ $ButtonPause.Add_Click( {
             $Variables.Paused = $True
 
             # Stop and start mining to immediately switch to paused state without waiting for current NPMCycle to finish
-            Stop-Mining
-            Start-Mining
+            $Variables.RestartCycle = $True
 
             $ButtonPause.Text = "Mine"
             Update-Status("Mining paused. BrainPlus and Earning tracker running.")
@@ -1275,8 +1281,7 @@ $ButtonPause.Add_Click( {
             $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1)}
 
             # Stop and start mining to immediately switch to unpaused state without waiting for current sleep to finish
-            Stop-Mining
-            Start-Mining
+            $Variables.RestartCycle = $True
         }
     })
 

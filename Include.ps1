@@ -102,19 +102,17 @@ namespace PInvoke.Win32 {
                     If ($Variables.Paused) {
                         # Check if system has been idle long enough to unpause
                         If ($IdleSeconds -gt $Config.IdleSec) {
-                            $Variables.StatusText = "System idle for $IdleSeconds seconds, starting mining..."
                             $Variables.Paused = $False
-                            Stop-Mining
-                            Start-Mining
+                            $Variables.RestartCycle = $True
+                            $Variables.StatusText = "System idle for $IdleSeconds seconds, starting mining..."
                         }
                     } 
                     else {
                         # Pause if system has become active
                         If ($IdleSeconds -lt $Config.IdleSec) {
-                            $Variables.StatusText = "System active, pausing mining..."
                             $Variables.Paused = $True
-                            Stop-Mining
-                            Start-Mining
+                            $Variables.RestartCycle = $True
+                            $Variables.StatusText = "System active, pausing mining..."
                         }
                     }
                 }
