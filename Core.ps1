@@ -407,6 +407,9 @@ Function NPMCycle {
         if ($filtered.Count -eq 0) {
             if ($_.Process -eq $null) {
                 $_.Status = "Failed"
+                  # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
+                $KillPath = $_.Path
+                Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
             }
             elseif ($_.Process.HasExited -eq $false) {
                 $_.Active += (Get-Date) - $_.Process.StartTime
@@ -414,6 +417,10 @@ Function NPMCycle {
                 Sleep 1
                 # simply "Kill with power"
                 Stop-Process $_.Process -Force | Out-Null
+                Sleep 1
+                # Kill any process with the same path, in case $_.Process is incorrect
+                $KillPath = $_.Path
+                Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
                 $Variables.StatusText = "closing current miner and switching"
                 Sleep 1
                 $_.Status = "Idle"
