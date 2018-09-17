@@ -4,7 +4,7 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\\Bin\\Ethash-Phoenix3.5c\\PhoenixMiner.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/PhoenixMiner_3.5c_Windows.zip"
 $Commands = [PSCustomObject]@{
-    #"ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash(testing)
+    "ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
