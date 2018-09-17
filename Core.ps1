@@ -263,7 +263,11 @@ Function NPMCycle {
     $Variables.StatusText = "Loading miners.."
     $Variables | Add-Member -Force @{Miners = @()}
     $StartPort = 4068
-    $Variables.Miners = if (Test-Path "Miners") {@(Get-ChildItemContent "Miners"; if ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners")) {Get-ChildItemContent "OptionalMiners"}) | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
+    $Variables.Miners = if (Test-Path "Miners") {@(
+                Get-ChildItemContent "Miners"
+                if ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners")) {Get-ChildItemContent "OptionalMiners"}
+                if (Test-Path "CustomMiners") { Get-ChildItemContent "CustomMiners"}
+            ) | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} |
             Where {$Config.Type.Count -eq 0 -or (Compare $Config.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
             Where {!$Config.Algorithm -or (Compare $Config.Algorithm $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
             Where {$Config.MinerName.Count -eq 0 -or (Compare $Config.MinerName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}
