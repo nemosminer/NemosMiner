@@ -1,6 +1,6 @@
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
 # NemosMiner  
-Updated 16 September 2018
+Updated 17 September 2018
 [![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/Nemosminer/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/issues)
 ![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
 ### *by Nemo/Minerx117*
