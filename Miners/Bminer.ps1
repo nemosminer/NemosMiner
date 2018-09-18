@@ -5,7 +5,7 @@ $Uri = "https://www.bminercontent.com/releases/bminer-lite-v10.2.0-c698b5f-amd64
 $Commands = [PSCustomObject]@{
     "equihashBTG" = " -uri zhash://" #EquihashBTG(EWBFv2 faster)
     "equihash" = " -uri stratum://" #Equihash(fastest)
-    "ethash" = " -uri ethstratum://" #Ethash(Ethminer faster)
+    #"ethash" = " -uri ethstratum://" #Ethash(Ethminer faster)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
