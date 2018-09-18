@@ -16,6 +16,7 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
 	 Auto Benchmarks Each algo to get optimal speeds 
 	 Fully automated 
 	 Auto Downloads Miners
+	 Auto Updates
 
 *****
 
