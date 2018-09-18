@@ -5,6 +5,7 @@ Updated 18 September 2018
 ![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
 
 by Nemo/Minerx117
+
 with Help From MrPlusGH and grantemsley 
  
 *****
