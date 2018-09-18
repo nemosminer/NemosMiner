@@ -441,6 +441,7 @@ $MainForm.add_Shown( {
             $ButtonStart.PerformClick()
         }
         If ($Config.StartGUIMinimized) {$MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized}
+        If ($Config.HideConsole) {$null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)}
     })
 
 $MainForm.Add_FormClosing( {
@@ -575,14 +576,6 @@ $ButtonPause.location = New-Object System.Drawing.Point(610, 62)
 $ButtonPause.Font = 'Microsoft Sans Serif,10'
 $ButtonPause.Visible = $False
 $MainFormControls += $ButtonPause
-
-$ButtonConsole = New-Object system.Windows.Forms.Button
-$ButtonConsole.text = "Hide Console"
-$ButtonConsole.width = 110
-$ButtonConsole.height = 30
-$ButtonConsole.location = New-Object System.Drawing.Point(500, 62)
-$ButtonConsole.Font = 'Microsoft Sans Serif,10'
-$MainFormControls += $ButtonConsole
 
 $ButtonStart = New-Object system.Windows.Forms.Button
 $ButtonStart.text = "Start"
@@ -1208,6 +1201,17 @@ $CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif,10'
 $CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
 $ConfigPageControls += $CheckBoxIncludeOptionalMiners
 
+$CheckBoxConsole = New-Object system.Windows.Forms.CheckBox
+$CheckBoxConsole.Tag = "HideConsole"
+$CheckBoxConsole.text = "Hide Console"
+$CheckBoxConsole.AutoSize = $false
+$CheckBoxConsole.width = 160
+$CheckBoxConsole.height = 20
+$CheckBoxConsole.location = New-Object System.Drawing.Point(560, 178)
+$CheckBoxConsole.Font = 'Microsoft Sans Serif,10'
+$CheckBoxConsole.Checked = $Config.HideConsole
+$ConfigPageControls += $CheckBoxConsole
+
 $ButtonLoadDefaultPoolsAlgos = New-Object system.Windows.Forms.Button
 $ButtonLoadDefaultPoolsAlgos.text = "Load default algos for selected pools"
 $ButtonLoadDefaultPoolsAlgos.width = 250
@@ -1340,15 +1344,13 @@ $ButtonStart.Add_Click( {
         }
     })
 
-$ButtonConsole.Add_Click( {
-        If($ButtonConsole.Text -eq "Hide Console") {
-            $ButtonConsole.Text = "Show Console"
+$CheckBoxConsole.Add_Click( {
+        If($CheckBoxConsole.Checked) {
             $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)
-            Update-Status("Hide $parent")
+            Update-Status("Console window hidden")
         } else {
-            $ButtonConsole.Text = "Hide Console"
             $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 8)
-            Update-Status("Show $parent")
+            Update-Status("Console window shown")
         }
 })
 
