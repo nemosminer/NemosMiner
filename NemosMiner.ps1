@@ -441,6 +441,7 @@ $MainForm.add_Shown( {
             $ButtonStart.PerformClick()
         }
         If ($Config.StartGUIMinimized) {$MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized}
+        If ($Config.HideConsole) {$null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)}
     })
 
 $MainForm.Add_FormClosing( {
@@ -1200,6 +1201,17 @@ $CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif,10'
 $CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
 $ConfigPageControls += $CheckBoxIncludeOptionalMiners
 
+$CheckBoxConsole = New-Object system.Windows.Forms.CheckBox
+$CheckBoxConsole.Tag = "HideConsole"
+$CheckBoxConsole.text = "Hide Console"
+$CheckBoxConsole.AutoSize = $false
+$CheckBoxConsole.width = 160
+$CheckBoxConsole.height = 20
+$CheckBoxConsole.location = New-Object System.Drawing.Point(560, 178)
+$CheckBoxConsole.Font = 'Microsoft Sans Serif,10'
+$CheckBoxConsole.Checked = $Config.HideConsole
+$ConfigPageControls += $CheckBoxConsole
+
 $ButtonLoadDefaultPoolsAlgos = New-Object system.Windows.Forms.Button
 $ButtonLoadDefaultPoolsAlgos.text = "Load default algos for selected pools"
 $ButtonLoadDefaultPoolsAlgos.width = 250
@@ -1332,7 +1344,19 @@ $ButtonStart.Add_Click( {
         }
     })
 
+$CheckBoxConsole.Add_Click( {
+        If($CheckBoxConsole.Checked) {
+            $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)
+            Update-Status("Console window hidden")
+        } else {
+            $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 8)
+            Update-Status("Console window shown")
+        }
+})
 
+$ShowWindow = Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);' -Name Win32ShowWindowAsync -Namespace Win32Functions -PassThru
+$ParentPID = (Get-CimInstance -Class Win32_Process -Filter "ProcessID = $pid").ParentProcessId
+$ConsoleHandle = (Get-Process -Id $ParentPID).MainWindowHandle
 
 $MainForm.controls.AddRange($MainFormControls)
 $RunPage.controls.AddRange(@($RunPageControls))
