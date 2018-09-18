@@ -576,6 +576,14 @@ $ButtonPause.Font = 'Microsoft Sans Serif,10'
 $ButtonPause.Visible = $False
 $MainFormControls += $ButtonPause
 
+$ButtonConsole = New-Object system.Windows.Forms.Button
+$ButtonConsole.text = "Hide Console"
+$ButtonConsole.width = 110
+$ButtonConsole.height = 30
+$ButtonConsole.location = New-Object System.Drawing.Point(500, 62)
+$ButtonConsole.Font = 'Microsoft Sans Serif,10'
+$MainFormControls += $ButtonConsole
+
 $ButtonStart = New-Object system.Windows.Forms.Button
 $ButtonStart.text = "Start"
 $ButtonStart.width = 60
@@ -1332,7 +1340,21 @@ $ButtonStart.Add_Click( {
         }
     })
 
+$ButtonConsole.Add_Click( {
+        If($ButtonConsole.Text -eq "Hide Console") {
+            $ButtonConsole.Text = "Show Console"
+            $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)
+            Update-Status("Hide $parent")
+        } else {
+            $ButtonConsole.Text = "Hide Console"
+            $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 8)
+            Update-Status("Show $parent")
+        }
+})
 
+$ShowWindow = Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);' -Name Win32ShowWindowAsync -Namespace Win32Functions -PassThru
+$ParentPID = (Get-CimInstance -Class Win32_Process -Filter "ProcessID = $pid").ParentProcessId
+$ConsoleHandle = (Get-Process -Id $ParentPID).MainWindowHandle
 
 $MainForm.controls.AddRange($MainFormControls)
 $RunPage.controls.AddRange(@($RunPageControls))
