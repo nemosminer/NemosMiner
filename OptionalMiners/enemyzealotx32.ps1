@@ -17,7 +17,7 @@ $Commands = [PSCustomObject]@{
 #"timetravel" = "" #Timetravel (x64120 faster)
 #"tribus" = "" #Tribus (cryptodredge faster)
 #"c11" = "" #C11 (trex faster)
-#"xevan" = "" #Xevan (x64120 faste)
+#"xevan" = "" #Xevan (x64120 faster)
 #"x17" = "" #X17 (trex faster)
 "hex" = " -i 23" #Hex (fastest)
 }
