@@ -81,8 +81,8 @@ while ($true) {
             $TempBalanceData = Invoke-WebRequest ($APIUri + $Wallet) -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
         }
         catch {  }
-        if (-not $TempBalanceData.$BalanceJson) {$TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
-        if (-not $TempBalanceData.$TotalJson) {$TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force}
+        if (-not $TempBalanceData.$BalanceJson) {$TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ([decimal]($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum) -Force}
+        if (-not $TempBalanceData.$TotalJson) {$TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ([decimal]($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum) -Force}
     }
     elseif ($Pool -eq "miningpoolhub") {
         try {
