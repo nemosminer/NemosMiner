@@ -356,6 +356,8 @@ Function PrepareWriteConfig {
     $Config | Add-Member -Force @{$TBWorkerName.Tag = $TBWorkerName.Text}
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "CheckBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Checked}}
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Text}}
+    $MonitoringSettingsControls | ? {(($_.gettype()).Name -eq "CheckBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Checked}}
+    $MonitoringSettingsControls | ? {(($_.gettype()).Name -eq "TextBox")} | foreach {$Config | Add-Member -Force @{$_.Tag = $_.Text}}
     $ConfigPageControls | ? {(($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "GPUCount")} | foreach {
         $Config | Add-Member -Force @{$_.Tag = [Int]$_.Text}
         If ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1) {$FirstGPU = 1}else {$FirstGPU = 0}
@@ -516,6 +518,8 @@ $SwitchingPage = New-Object System.Windows.Forms.TabPage
 $SwitchingPage.Text = "Switching"
 $ConfigPage = New-Object System.Windows.Forms.TabPage
 $ConfigPage.Text = "Config"
+$MonitoringPage = New-Object System.Windows.Forms.TabPage
+$MonitoringPage.Text = "Monitoring"
 $EstimationsPage = New-Object System.Windows.Forms.TabPage
 $EstimationsPage.Text = "Benchmarks"
 
@@ -525,7 +529,7 @@ $tabControl.Name = "tabControl"
 $tabControl.width = 720
 $tabControl.height = 359
 $MainForm.Controls.Add($tabControl)
-$TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $EstimationsPage))
+$TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
 # Form Controls
 $MainFormControls = @()
 
@@ -1267,7 +1271,105 @@ $CheckedListBoxPools.add_SelectedIndexChanged( {CheckedListBoxPools_Click($This)
 $Config.PoolName | foreach {$CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $True)}
     
 $ConfigPageControls += $CheckedListBoxPools
-    
+
+# Monitoring Page Controls
+$MonitoringPageControls = @()
+$MonitoringSettingsControls = @()
+
+$GroupMonitoringSettings = New-Object system.Windows.Forms.GroupBox
+$GroupMonitoringSettings.Height = 60
+$GroupMonitoringSettings.Width = 710
+$GroupMonitoringSettings.Text = "Monitoring Settings"
+$GroupMonitoringSettings.Location = New-Object System.Drawing.Point(1,272)
+$MonitoringPageControls += $GroupMonitoringSettings
+
+$LabelMonitoringServer = New-Object system.Windows.Forms.Label
+$LabelMonitoringServer.text = "Server"
+$LabelMonitoringServer.AutoSize = $false
+$LabelMonitoringServer.width = 60
+$LabelMonitoringServer.height = 20
+$LabelMonitoringServer.location = New-Object System.Drawing.Point(2, 15)
+$LabelMonitoringServer.Font = 'Microsoft Sans Serif,10'
+$MonitoringSettingsControls += $LabelMonitoringServer
+
+$TBMonitoringServer = New-Object system.Windows.Forms.TextBox
+$TBMonitoringServer.Tag = "MonitoringServer"
+$TBMonitoringServer.MultiLine = $False
+$TBMonitoringServer.text = $Config.MonitoringServer
+$TBMonitoringServer.AutoSize = $false
+$TBMonitoringServer.width = 260
+$TBMonitoringServer.height = 20
+$TBMonitoringServer.location = New-Object System.Drawing.Point(62, 15)
+$TBMonitoringServer.Font = 'Microsoft Sans Serif,10'
+$MonitoringSettingsControls += $TBMonitoringServer
+
+$CheckBoxReportToServer = New-Object system.Windows.Forms.CheckBox
+$CheckBoxReportToServer.Tag = "ReportToServer"
+$CheckBoxReportToServer.text = "Report to server"
+$CheckBoxReportToServer.AutoSize = $false
+$CheckBoxReportToServer.width = 130
+$CheckBoxReportToServer.height = 20
+$CheckBoxReportToServer.location = New-Object System.Drawing.Point(324, 15)
+$CheckBoxReportToServer.Font = 'Microsoft Sans Serif,10'
+$CheckBoxReportToServer.Checked = $Config.ReportToServer
+$MonitoringSettingsControls += $CheckBoxReportToServer
+
+$CheckBoxShowWorkerStatus = New-Object system.Windows.Forms.CheckBox
+$CheckBoxShowWorkerStatus.Tag = "ShowWorkerStatus"
+$CheckBoxShowWorkerStatus.text = "Show other workers"
+$CheckBoxShowWorkerStatus.AutoSize = $false
+$CheckBoxShowWorkerStatus.width = 145
+$CheckBoxShowWorkerStatus.height = 20
+$CheckBoxShowWorkerStatus.location = New-Object System.Drawing.Point(456, 15)
+$CheckBoxShowWorkerStatus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxShowWorkerStatus.Checked = $Config.ShowWorkerStatus
+$MonitoringSettingsControls += $CheckBoxShowWorkerStatus
+
+$LabelMonitoringUser = New-Object system.Windows.Forms.Label
+$LabelMonitoringUser.text = "User ID"
+$LabelMonitoringUser.AutoSize = $false
+$LabelMonitoringUser.width = 60
+$LabelMonitoringUser.height = 20
+$LabelMonitoringUser.location = New-Object System.Drawing.Point(2,37)
+$LabelMonitoringUser.Font = 'Microsoft Sans Serif,10'
+$MonitoringSettingsControls += $LabelMonitoringUser
+
+$TBMonitoringUser = New-Object system.Windows.Forms.TextBox
+$TBMonitoringUser.Tag = "MonitoringUser"
+$TBMonitoringUser.MultiLine = $False
+$TBMonitoringUser.text = $Config.MonitoringUser
+$TBMonitoringUser.AutoSize = $false
+$TBMonitoringUser.width = 260
+$TBMonitoringUser.height = 20
+$TBMonitoringUser.location = New-Object System.Drawing.Point(62, 37)
+$TBMonitoringUser.Font = 'Microsoft Sans Serif,10'
+$MonitoringSettingsControls += $TBMonitoringUser
+
+$ButtonGenerateMonitoringUser = New-Object system.Windows.Forms.Button
+$ButtonGenerateMonitoringUser.text = "Generate New User ID"
+$ButtonGenerateMonitoringUser.width = 160
+$ButtonGenerateMonitoringUser.height = 20
+$ButtonGenerateMonitoringUser.location = New-Object System.Drawing.Point(324,37)
+$ButtonGenerateMonitoringUser.Font = 'Microsoft Sans Serif,10'
+$ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.text -eq "")
+$MonitoringSettingsControls += $ButtonGenerateMonitoringUser
+
+$ButtonGenerateMonitoringUser.Add_Click({$TBMonitoringUser.text = [GUID]::NewGuid()})
+# Only enable the generate button when user is blank.
+$TBMonitoringUser.Add_TextChanged({ $ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.text -eq "") })
+
+
+$ButtonMonitoringWriteConfig = New-Object system.Windows.Forms.Button
+$ButtonMonitoringWriteConfig.text = "Save Config"
+$ButtonMonitoringWriteConfig.width = 100
+$ButtonMonitoringWriteConfig.height = 30
+$ButtonMonitoringWriteConfig.location = New-Object System.Drawing.Point(600, 15)
+$ButtonMonitoringWriteConfig.Font = 'Microsoft Sans Serif,10'
+$MonitoringSettingsControls += $ButtonMonitoringWriteConfig
+$ButtonMonitoringWriteConfig.Add_Click( {PrepareWriteConfig})
+
+
+
 # ***
 
 $MainForm | Add-Member -Name number -Value 0 -MemberType NoteProperty
@@ -1363,6 +1465,8 @@ $RunPage.controls.AddRange(@($RunPageControls))
 $SwitchingPage.controls.AddRange(@($SwitchingPageControls))
 $EstimationsPage.Controls.AddRange(@($EstimationsDGV))
 $ConfigPage.controls.AddRange($ConfigPageControls)
+$GroupMonitoringSettings.Controls.AddRange($MonitoringSettingsControls)
+$MonitoringPage.controls.AddRange($MonitoringPageControls)
 
 $MainForm.Add_Load( {Form_Load})
 # $TimerUI.Add_Tick({TimerUI_Tick})
