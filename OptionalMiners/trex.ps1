@@ -6,6 +6,7 @@ $Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.6.7-win-cuda9.1.zip"
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
 "polytimos" = "" #Poly(fastest)
+"bcd" = "" #Bcd(testing)
 "skunk" = "" #Skunk(fastest)
 "hsr" = "" #Hsr(Testing)
 "bitcore" = "" #Bitcore(fastest)
