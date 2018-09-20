@@ -5,7 +5,7 @@ $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-20-cuda9.2_x32_v2.zip"
 
 $Commands = [PSCustomObject]@{
 "aeriumx" = " -i 21" #AeriumX(fastest)
-"bcd" = " -i 21" #Bcd(testing)
+"bcd" = "" #Bcd(testing)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
 #"phi2" = "" #Phi2 (cryptodredge faster)
