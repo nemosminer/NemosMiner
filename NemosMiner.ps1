@@ -189,6 +189,7 @@ Function Form_Load {
                             @{Name = "Pool"; Expression = {$_.data.pool -join ','}},
                             @{Name = "Algo"; Expression = {$_.data.algorithm -join ','}},
                             @{Name = "Speed"; Expression = {($_.data.currentspeed | ConvertTo-Hash) -join ','}}
+                            @{Name = "Benchmark Speed"; Expression = {($_.data.estimatedspeed | ConvertTo-Hash) -join ','}}
                         ) | Sort "Worker Name")
                     $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
                     $WorkersDGV.ClearSelection()
