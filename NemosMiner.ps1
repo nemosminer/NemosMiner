@@ -188,8 +188,8 @@ Function Form_Load {
                             @{Name = "Miner"; Expression = {$_.data.name -join ','}},
                             @{Name = "Pool"; Expression = {$_.data.pool -join ','}},
                             @{Name = "Algo"; Expression = {$_.data.algorithm -join ','}},
-                            @{Name = "Speed"; Expression = {($_.data.currentspeed | ConvertTo-Hash) -join ','}}
-                            @{Name = "Benchmark Speed"; Expression = {($_.data.estimatedspeed | ConvertTo-Hash) -join ','}}
+                            @{Name = "Speed"; Expression = {if ($_.data.currentspeed) {($_.data.currentspeed | ConvertTo-Hash) -join ','} else {""}}},
+                            @{Name = "Benchmark Speed"; Expression = {if ($_.data.estimatedspeed) {($_.data.estimatedspeed | ConvertTo-Hash) -join ','} else {""}}}
                         ) | Sort "Worker Name")
                     $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
                     $WorkersDGV.ClearSelection()
