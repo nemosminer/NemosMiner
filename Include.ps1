@@ -182,8 +182,20 @@ Function Update-Monitoring {
 
                 # If a machine hasn't reported in for > 10 minutes, mark it as offline
                 $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
-                $_ | Add-Member -Force @{timesincelastreport = $TimeSinceLastReport}
                 If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
+                # Show friendly time since last report in seconds, minutes, hours or days
+                If ($TimeSinceLastReport.Days -gt 1) {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays}
+                }
+                elseif ($TimeSinceLastReport.Hours -gt 1) {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours}
+                }
+                elseif ($TimeSinceLastReport.Minutes -gt 1) {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes}
+                }
+                else {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds}
+                }
             }
 
             $Variables | Add-Member -Force @{Workers = $Workers}
