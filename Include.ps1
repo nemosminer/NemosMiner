@@ -162,8 +162,13 @@ Function Update-Monitoring {
 
         # Send the request
         $Body = @{user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON}
-        $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-        $Variables.StatusText = "Reporting status to server... $Response"
+        Try {
+            $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            $Variables.StatusText = "Reporting status to server... $Response"
+        }
+        Catch {
+            $Variables.StatusText = "Unable to send status to $($Config.MonitoringServer)"
+        }
     }
 }
 
