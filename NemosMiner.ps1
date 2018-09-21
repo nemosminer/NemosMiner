@@ -192,6 +192,22 @@ Function Form_Load {
                             @{Name = "Benchmark Speed"; Expression = {if ($_.data.estimatedspeed) {($_.data.estimatedspeed | ConvertTo-Hash) -join ','} else {""}}}
                         ) | Sort "Worker Name")
                     $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
+
+                    # Set row color
+                    $WorkersDGV.Rows | ForEach-Object {
+                        if($_.DataBoundItem.Status -eq "Offline") {
+                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,213,142,176)
+                        }
+                        elseif ($_.DataBoundItem.Status -eq "Paused") {
+                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,247,252,168)
+                        }
+                        elseif ($_.DataBoundItem.Status -eq "Running") {
+                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,127,191,144)
+                        } else {
+                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,255,255,255)
+                        }
+                    }
+
                     $WorkersDGV.ClearSelection()
                     $LabelMonitoringWorkers.text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
                 }
