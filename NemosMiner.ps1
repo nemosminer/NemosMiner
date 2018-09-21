@@ -180,10 +180,16 @@ Function Form_Load {
 
                 If ($Variables.Workers -and $Config.ShowWorkerStatus) {
                     $DisplayWorkers = [System.Collections.ArrayList]@($Variables.Workers | select @(
-                            @{Name = "Worker Name"; Expression = {$_.worker}},
+                            @{Name = "Worker"; Expression = {$_.worker}},
                             @{Name = "Status"; Expression = {$_.status}},
-                            @{Name = "Last Seen"; Expression = {$_.lastseen}}
-                        ) | Sort "Worker Name" -Descending)
+                            @{Name = "Last Seen"; Expression = {$_.timesincelastreport}},
+                            @{Name = "Version"; Expression = {$_.version}},
+                            @{Name = "Est. BTC/Day"; Expression = {$_.profit}},
+                            @{Name = "Miner"; Expression = {$_.data.name -join ','}},
+                            @{Name = "Pool"; Expression = {$_.data.pool -join ','}},
+                            @{Name = "Algo"; Expression = {$_.data.algorithm -join ','}},
+                            @{Name = "Speed"; Expression = {($_.data.currentspeed | ConvertTo-Hash) -join ','}}
+                        ) | Sort "Worker Name")
                     $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
                     $WorkersDGV.ClearSelection()
                 }
@@ -1300,7 +1306,7 @@ $WorkersDGV.width = 710
 $WorkersDGV.height = 244
 $WorkersDGV.location = New-Object System.Drawing.Point(2, 24)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$WorkersDGV.AutoSizeColumnsMode = "Fill"
+$WorkersDGV.AutoSizeColumnsMode = "AllCells"
 $WorkersDGV.RowHeadersVisible = $False
 $MonitoringPageControls += $WorkersDGV
 
