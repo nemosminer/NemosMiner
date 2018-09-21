@@ -170,6 +170,18 @@ Function Update-Monitoring {
             $Variables.StatusText = "Unable to send status to $($Config.MonitoringServer)"
         }
     }
+
+    If ($Config.ShowWorkerStatus) {
+        $Variables | Export-CliXml variables.xml
+        $Variables.StatusText = "Updating status of workers for $($Config.MonitoringUser)"
+        Try {
+            $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{user = $Config.MonitoringUser} -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            $Variables.Workers = $Workers
+        }
+        Catch {
+            $Variables.StatusText = "Unable to retrieve worker data from $($Config.MonitoringServer)"
+        }
+    }
 }
 
 Function Start-Mining {
