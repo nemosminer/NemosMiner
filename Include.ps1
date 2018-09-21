@@ -122,6 +122,51 @@ namespace PInvoke.Win32 {
     $Variables | Add-Member -Force @{IdleRunspaceHandle = $idlePowershell.BeginInvoke()}
 }
 
+Function Update-Monitoring {
+    # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
+
+    # Skip if server and user aren't filled out
+    if (!$Config.MonitoringServer) { return }
+    if (!$Config.MonitoringUser) { return }
+
+    If ($Config.ReportToServer) {
+        $Version = "NemosMiner $($Variables.CurrentVersion.ToString())"
+        $Status = If ($Variables.Paused) { "Paused" } else { "Running" }
+        $RunningMiners = $Variables.ActiveMinerPrograms | Where-Object {$_.Status -eq "Running"}
+        # Add the associated object from $Variables.Miners since we need data from that too
+        $RunningMiners | Foreach-Object {
+            $RunningMiner = $_
+            $Miner = $Variables.Miners | Where-Object {$_.Name -eq $RunningMiner.Name -and $_.Path -eq $RunningMiner.Path -and $_.Arguments -eq $RunningMiner.Arguments}
+            $_ | Add-Member -Force @{'Miner' = $Miner}
+        }
+
+        # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
+        # reveal someone's windows username or other system information they might not want sent
+        # For the ones that can be an array, comma separate them
+        $Data = $RunningMiners | Foreach-Object {
+            $RunningMiner = $_
+            [pscustomobject]@{
+                Name = $RunningMiner.Name
+                Path = Resolve-Path -Relative $RunningMiner.Path
+                Type = $RunningMiner.Type -join ','
+                Algorithm = $RunningMiner.Algorithms -join ','
+                Pool = $RunningMiner.Miner.Pools.PSObject.Properties.Value.Name -join ','
+                CurrentSpeed = $RunningMiner.HashRate -join ','
+                EstimatedSpeed = $RunningMiner.Miner.HashRates.PSObject.Properties.Value -join ','
+                Profit = $RunningMiner.Miner.Profit
+            }
+        }
+        $DataJSON = ConvertTo-Json @($Data)
+        # Calculate total estimated profit
+        $Profit = ([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8)).ToString()
+
+        # Send the request
+        $Body = @{user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON}
+        $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+        $Variables.StatusText = "Reporting status to server... $Response"
+    }
+}
+
 Function Start-Mining {
     # Starts the runspace that runs NPMCycle
     $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
