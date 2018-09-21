@@ -172,15 +172,26 @@ Function Update-Monitoring {
     }
 
     If ($Config.ShowWorkerStatus) {
-        $Variables | Export-CliXml variables.xml
         $Variables.StatusText = "Updating status of workers for $($Config.MonitoringUser)"
         Try {
             $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{user = $Config.MonitoringUser} -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            $Variables.Workers = $Workers
+            # Calculate some additional properties and format others
+            $Workers | Foreach-Object {
+                # Convert the unix timestamp to a datetime object, taking into account the local time zone
+                $_ | Add-Member -Force @{date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen))}
+
+                # If a machine hasn't reported in for > 10 minutes, mark it as offline
+                $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
+                $_ | Add-Member -Force @{timesincelastreport = $TimeSinceLastReport}
+                If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
+            }
+
+            $Variables | Add-Member -Force @{Workers = $Workers}
         }
         Catch {
             $Variables.StatusText = "Unable to retrieve worker data from $($Config.MonitoringServer)"
         }
+        $Variables | Export-CliXml variables.xml
     }
 }
 
