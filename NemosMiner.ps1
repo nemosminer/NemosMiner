@@ -184,7 +184,7 @@ Function Form_Load {
                             @{Name = "Status"; Expression = {$_.status}},
                             @{Name = "Last Seen"; Expression = {$_.timesincelastreport}},
                             @{Name = "Version"; Expression = {$_.version}},
-                            @{Name = "Est. BTC/Day"; Expression = {$_.profit}},
+                            @{Name = "Est. BTC/Day"; Expression = {[decimal]$_.profit}},
                             @{Name = "Miner"; Expression = {$_.data.name -join ','}},
                             @{Name = "Pool"; Expression = {$_.data.pool -join ','}},
                             @{Name = "Algo"; Expression = {$_.data.algorithm -join ','}},
