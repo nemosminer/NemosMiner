@@ -178,6 +178,16 @@ Function Form_Load {
 
                 $SwitchingDGV.ClearSelection()
 
+                If ($Variables.Workers -and $Config.ShowWorkerStatus) {
+                    $DisplayWorkers = [System.Collections.ArrayList]@($Variables.Workers | select @(
+                            @{Name = "Worker Name"; Expression = {$_.worker}},
+                            @{Name = "Status"; Expression = {$_.status}},
+                            @{Name = "Last Seen"; Expression = {$_.lastseen}}
+                        ) | Sort "Worker Name" -Descending)
+                    $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
+                    $WorkersDGV.ClearSelection()
+                }
+
                 If ($Variables.ActiveMinerPrograms) {
                     $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type, Algorithms, Name, @{Name = "HashRate"; Expression = {"$($_.HashRate | ConvertTo-Hash)/s"}}, @{Name = "Stratum"; Expression = {"$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"}} | sort Type)
                     $RunningMinersDGV.ClearSelection()
