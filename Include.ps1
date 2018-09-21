@@ -184,13 +184,13 @@ Function Update-Monitoring {
                 $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
                 If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
                 # Show friendly time since last report in seconds, minutes, hours or days
-                If ($TimeSinceLastReport.Days -gt 1) {
+                If ($TimeSinceLastReport.Days -ge 1) {
                     $_ | Add-Member -Force @{timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays}
                 }
-                elseif ($TimeSinceLastReport.Hours -gt 1) {
+                elseif ($TimeSinceLastReport.Hours -ge 1) {
                     $_ | Add-Member -Force @{timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours}
                 }
-                elseif ($TimeSinceLastReport.Minutes -gt 1) {
+                elseif ($TimeSinceLastReport.Minutes -ge 1) {
                     $_ | Add-Member -Force @{timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes}
                 }
                 else {
@@ -199,6 +199,7 @@ Function Update-Monitoring {
             }
 
             $Variables | Add-Member -Force @{Workers = $Workers}
+            $Variables | Add-Member -Force @{WorkersLastUpdated = (Get-Date)}
         }
         Catch {
             $Variables.StatusText = "Unable to retrieve worker data from $($Config.MonitoringServer)"

@@ -192,6 +192,7 @@ Function Form_Load {
                         ) | Sort "Worker Name")
                     $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
                     $WorkersDGV.ClearSelection()
+                    $LabelMonitoringWorkers.text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
                 }
 
                 If ($Variables.ActiveMinerPrograms) {
@@ -1295,7 +1296,7 @@ $MonitoringSettingsControls = @()
 $LabelMonitoringWorkers = New-Object system.Windows.Forms.Label
 $LabelMonitoringWorkers.text = "Worker Status"
 $LabelMonitoringWorkers.AutoSize = $false
-$LabelMonitoringWorkers.width = 300
+$LabelMonitoringWorkers.width = 710
 $LabelMonitoringWorkers.height = 20
 $LabelMonitoringWorkers.location = New-Object System.Drawing.Point(2, 4)
 $LabelMonitoringWorkers.Font = 'Microsoft Sans Serif,10'
