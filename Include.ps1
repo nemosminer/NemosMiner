@@ -198,6 +198,7 @@ Function Start-Mining {
         Start-Transcript ".\logs\CoreCyle.log" -Append -Force
         $ProgressPreference = "SilentlyContinue"
         . .\Include.ps1; RegisterLoaded(".\Include.ps1")
+        Update-Monitoring
         While ($True) {
             if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
             if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
