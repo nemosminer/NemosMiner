@@ -196,6 +196,7 @@ Function Start-Mining {
                 for ($i = 0; $i -lt 4; $i++) {
                     if ($i -eq 3) {
                         $Variables | Add-Member -Force @{EndLoop = $True}
+                        Update-Monitoring
                     }
                     else {
                         $Variables | Add-Member -Force @{EndLoop = $False}
@@ -207,6 +208,7 @@ Function Start-Mining {
             }
             else {
                 NPMCycle
+                Update-Monitoring
                 Sleep $Variables.TimeToSleep
             }
         }
