@@ -177,7 +177,7 @@ Function Form_Load {
                 $EstimationsDGV.ClearSelection()
 
                 $SwitchingDGV.ClearSelection()
-        
+
                 If ($Variables.ActiveMinerPrograms) {
                     $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | ? {$_.Status -eq "Running"} | select Type, Algorithms, Name, @{Name = "HashRate"; Expression = {"$($_.HashRate | ConvertTo-Hash)/s"}}, @{Name = "Stratum"; Expression = {"$($_.Arguments.Split(' ') | ?{$_ -match 'stratum'})"}} | sort Type)
                     $RunningMinersDGV.ClearSelection()
@@ -1275,6 +1275,24 @@ $ConfigPageControls += $CheckedListBoxPools
 # Monitoring Page Controls
 $MonitoringPageControls = @()
 $MonitoringSettingsControls = @()
+
+$LabelMonitoringWorkers = New-Object system.Windows.Forms.Label
+$LabelMonitoringWorkers.text = "Worker Status"
+$LabelMonitoringWorkers.AutoSize = $false
+$LabelMonitoringWorkers.width = 300
+$LabelMonitoringWorkers.height = 20
+$LabelMonitoringWorkers.location = New-Object System.Drawing.Point(2, 4)
+$LabelMonitoringWorkers.Font = 'Microsoft Sans Serif,10'
+$MonitoringPageControls += $LabelMonitoringWorkers
+
+$WorkersDGV = New-Object system.Windows.Forms.DataGridView
+$WorkersDGV.width = 710
+$WorkersDGV.height = 244
+$WorkersDGV.location = New-Object System.Drawing.Point(2, 24)
+$WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$WorkersDGV.AutoSizeColumnsMode = "Fill"
+$WorkersDGV.RowHeadersVisible = $False
+$MonitoringPageControls += $WorkersDGV
 
 $GroupMonitoringSettings = New-Object system.Windows.Forms.GroupBox
 $GroupMonitoringSettings.Height = 60
