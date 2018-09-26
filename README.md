@@ -38,8 +38,9 @@ Easy configuration, easy start:
 
 *****
 
-   NemosMiner Monitoring Server (written by grantemsley)
-   Keep tabs on all your mining rigs from one place!:http://nemosminer.orgfree.com
+   NemosMiner Monitoring Server(written by grantemsley)
+   
+   Keep tabs on all your mining rigs from one place! : http://nemosminer.orgfree.com
    
    Setup Guide : http://nemosminer.orgfree.com/setup.php
    
