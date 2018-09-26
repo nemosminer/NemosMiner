@@ -39,7 +39,7 @@ Easy configuration, easy start:
 *****
 
 NemosMiner Monitoring Server 
-(written by grantemsley)
+
 Keep tabs on all your mining rigs from one place
 
  You can now optionally monitor all your workers remotely, both in the GUI and via [our website](http://nemosminer.orgfree.com/).  See http://nemosminer.orgfree.com/setup.php for setup instructions.
