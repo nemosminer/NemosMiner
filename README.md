@@ -38,6 +38,14 @@ Easy configuration, easy start:
 
 *****
 
+Monitoring Workers
+
+You can now optionally monitor all your workers remotely, both in the GUI and via [our website](http://nemosminer.orgfree.com/).  See http://nemosminer.orgfree.com/setup.php for setup instructions.
+
+
+*****
+
+
 Additional features list, made possible by "MrPlus"
 Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations & Earnings Tracking
 
