@@ -122,6 +122,92 @@ namespace PInvoke.Win32 {
     $Variables | Add-Member -Force @{IdleRunspaceHandle = $idlePowershell.BeginInvoke()}
 }
 
+Function Update-Monitoring {
+    # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
+
+    # Skip if server and user aren't filled out
+    if (!$Config.MonitoringServer) { return }
+    if (!$Config.MonitoringUser) { return }
+
+    If ($Config.ReportToServer) {
+        $Version = "NemosMiner $($Variables.CurrentVersion.ToString())"
+        $Status = If ($Variables.Paused) { "Paused" } else { "Running" }
+        $RunningMiners = $Variables.ActiveMinerPrograms | Where-Object {$_.Status -eq "Running"}
+        # Add the associated object from $Variables.Miners since we need data from that too
+        $RunningMiners | Foreach-Object {
+            $RunningMiner = $_
+            $Miner = $Variables.Miners | Where-Object {$_.Name -eq $RunningMiner.Name -and $_.Path -eq $RunningMiner.Path -and $_.Arguments -eq $RunningMiner.Arguments}
+            $_ | Add-Member -Force @{'Miner' = $Miner}
+        }
+
+        # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
+        # reveal someone's windows username or other system information they might not want sent
+        # For the ones that can be an array, comma separate them
+        $Data = $RunningMiners | Foreach-Object {
+            $RunningMiner = $_
+            [pscustomobject]@{
+                Name = $RunningMiner.Name
+                Path = Resolve-Path -Relative $RunningMiner.Path
+                Type = $RunningMiner.Type -join ','
+                Algorithm = $RunningMiner.Algorithms -join ','
+                Pool = $RunningMiner.Miner.Pools.PSObject.Properties.Value.Name -join ','
+                CurrentSpeed = $RunningMiner.HashRate -join ','
+                EstimatedSpeed = $RunningMiner.Miner.HashRates.PSObject.Properties.Value -join ','
+                Profit = $RunningMiner.Miner.Profit
+            }
+        }
+        $DataJSON = ConvertTo-Json @($Data)
+        # Calculate total estimated profit
+        $Profit = ([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8)).ToString()
+
+        # Send the request
+        $Body = @{user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON}
+        Try {
+            $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            $Variables.StatusText = "Reporting status to server... $Response"
+        }
+        Catch {
+            $Variables.StatusText = "Unable to send status to $($Config.MonitoringServer)"
+        }
+    }
+
+    If ($Config.ShowWorkerStatus) {
+        $Variables.StatusText = "Updating status of workers for $($Config.MonitoringUser)"
+        Try {
+            $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{user = $Config.MonitoringUser} -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+            # Calculate some additional properties and format others
+            $Workers | Foreach-Object {
+                # Convert the unix timestamp to a datetime object, taking into account the local time zone
+                $_ | Add-Member -Force @{date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen))}
+
+                # If a machine hasn't reported in for > 10 minutes, mark it as offline
+                $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
+                If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
+                # Show friendly time since last report in seconds, minutes, hours or days
+                If ($TimeSinceLastReport.Days -ge 1) {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays}
+                }
+                elseif ($TimeSinceLastReport.Hours -ge 1) {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours}
+                }
+                elseif ($TimeSinceLastReport.Minutes -ge 1) {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes}
+                }
+                else {
+                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds}
+                }
+            }
+
+            $Variables | Add-Member -Force @{Workers = $Workers}
+            $Variables | Add-Member -Force @{WorkersLastUpdated = (Get-Date)}
+        }
+        Catch {
+            $Variables.StatusText = "Unable to retrieve worker data from $($Config.MonitoringServer)"
+        }
+        $Variables | Export-CliXml variables.xml
+    }
+}
+
 Function Start-Mining {
     # Starts the runspace that runs NPMCycle
     $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
@@ -136,6 +222,7 @@ Function Start-Mining {
         Start-Transcript ".\logs\CoreCyle.log" -Append -Force
         $ProgressPreference = "SilentlyContinue"
         . .\Include.ps1; RegisterLoaded(".\Include.ps1")
+        Update-Monitoring
         While ($True) {
             if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
             if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
@@ -151,6 +238,7 @@ Function Start-Mining {
                 for ($i = 0; $i -lt 4; $i++) {
                     if ($i -eq 3) {
                         $Variables | Add-Member -Force @{EndLoop = $True}
+                        Update-Monitoring
                     }
                     else {
                         $Variables | Add-Member -Force @{EndLoop = $False}
@@ -162,6 +250,7 @@ Function Start-Mining {
             }
             else {
                 NPMCycle
+                Update-Monitoring
                 Sleep $Variables.TimeToSleep
             }
         }
