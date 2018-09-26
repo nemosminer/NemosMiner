@@ -47,10 +47,6 @@ Keep tabs on all your mining rigs from one place
    
 *****
 
-
-Additional features list, made possible by "MrPlus"
-Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations & Earnings Tracking
-
    GUI
    
       Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
