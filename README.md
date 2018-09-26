@@ -1,6 +1,6 @@
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
 # NemosMiner  
-Updated 26 September 2018
+Updated 27 September 2018
 [![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/Nemosminer/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/issues)
 ![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
 
@@ -37,6 +37,11 @@ Easy configuration, easy start:
       We want to stay completely transparent on the way fees are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 8 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:52 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
 
 *****
+
+   NemosMiner Monitoring Server (written by grantemsley)
+   Keep tabs on all your mining rigs from one place! :  http://nemosminer.orgfree.com
+   Setup Guide : http://nemosminer.orgfree.com/setup.php
+
 
 Additional features list, made possible by "MrPlus"
 Speical Thankyou To "MrPlus" amazing work with the GUI, PLUS profit calculations & Earnings Tracking
