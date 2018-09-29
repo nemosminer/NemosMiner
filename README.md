@@ -1,6 +1,6 @@
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
 # NemosMiner  
-Updated 27 September 2018
+Updated 29 September 2018
 [![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/Nemosminer/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/issues)
 ![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
 
@@ -43,7 +43,8 @@ NemosMiner Monitoring Server
 
 Keep tabs on all your mining rigs from one place
 
- You can now optionally monitor all your workers remotely, both in the GUI and via [our website](https://mining.emsley.ca/).  See https://mining.emsley.ca/setup.php for setup instructions.
+ You can now optionally monitor all your workers remotely, both in the GUI and via [our website](https://nemosminer.com).  
+ [Monitoring setup instructions](https://nemosminer.com/setup.php).
 
    
 *****
