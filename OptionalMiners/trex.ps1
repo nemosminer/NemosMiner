@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-trex610\t-rex.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.6.10-win-cuda9.1.zip"
+$Uri = "http://nemos.dx.am/opt/nemos/t-rex-0.6.10wincuda9.1.zip"
 
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
@@ -10,8 +10,8 @@ $Commands = [PSCustomObject]@{
 "skunk" = "" #Skunk(fastest)
 "hsr" = "" #Hsr(Testing)
 "bitcore" = "" #Bitcore(fastest)
-#"lyra2z" = "" #Lyra2z (cryptodredge faster)
-#"tribus" = "" #Tribus(CryptoDredge faster)
+"lyra2z" = "" #Lyra2z (cryptodredge faster)
+"tribus" = "" #Tribus(CryptoDredge faster)
 "c11" = "" #C11(fastest)
 "x17" = "" #X17(fastest)
 "x16s" = "" #X16s(fastest)
