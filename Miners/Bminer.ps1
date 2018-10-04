@@ -6,7 +6,7 @@ $Commands = [PSCustomObject]@{
     "equihashBTG" = " -uri zhash://" #EquihashBTG(EWBFv2 faster)
     "equihash" = " -uri stratum://" #Equihash(fastest)
     "equihash144" = " -pers auto -uri equihash1445://" #Equihash144(testing)
-    #"ethash" = " -uri ethstratum://" #Ethash(Ethminer faster)
+    "ethash" = " -uri ethstratum://" #Ethash(testing 2080)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
