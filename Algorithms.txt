@@ -121,6 +121,7 @@
     "keccak":  "Keccak",
     "keccakc":  "KeccakC",
     "lbry":  "Lbry",
+    "lbk3":  "Lbk3",
     "luffa":  "Luffa",
     "lyra2":  "Lyra2RE",
     "lyra2h":  "Lyra2h",
