@@ -30,8 +30,13 @@ Function InitApplication {
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     Get-ChildItem . -Recurse | Unblock-File
-    Update-Status("INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)")
-    try {if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {Start-Process powershell -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath '$(Convert-Path .)'"}}catch {}
+	if (Get-MpComputerStatus -ErrorAction SilentlyContinue) {
+		Update-Status("INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)")
+		try {if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {Start-Process powershell -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath '$(Convert-Path .)'"}}catch {}
+	} 
+	else {
+		Update-Status("INFO: Windows Defender is disabled, make sure to exclude NemosMiner directory from your antivirus program")
+	}
     if ($Proxy -eq "") {$PSDefaultParameterValues.Remove("*:Proxy")}
     else {$PSDefaultParameterValues["*:Proxy"] = $Proxy}
     Update-Status("Initializing Variables...")
