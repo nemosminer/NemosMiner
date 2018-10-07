@@ -4,23 +4,23 @@ $Path = ".\Bin\NVIDIA-enemyzealot64121a\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-21a-cuda9.2_x64.zip"
 
 $Commands = [PSCustomObject]@{
-"aeriumx" = " -i 20" #AeriumX(2080)
+#"aeriumx" = " -i 20" #AeriumX(2080dnf/x32 works fine)
 "bcd" = " -i 20" #Bcd(2080)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
 #"phi2" = "" #Phi2 (cryptodredge faster)
-"poly" = " -i 20" #Polytimos(2080) 
+#"poly" = " -i 20" #Polytimos(dnf) 
 "bitcore" = " -i 20" #Bitcore (2080)
 "x16r" = " -i 20" #X16r (2080)
 "x16s" = " -i 20" #X16s (2080)
 "sonoa" = " -i 20" #SonoA (2080)
 "skunk" = " -i 20" #Skunk (2080)
-"timetravel" = " -i 20" #Timetravel (x64120 faster)
+"timetravel" = " -i 20" #Timetravel (fastest)
 #"tribus" = "" #Tribus (cryptodredge faster)
 "c11" = " -i 20" #C11 (2080)
 "xevan" = " -i 20" #Xevan (x64120 faster)
 "x17" = " -i 20" #X17 (2080)
-"hex" = " -i 20" #Hex (2080)
+#"hex" = " -i 20" #Hex (2080)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
