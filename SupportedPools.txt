@@ -9,3 +9,4 @@ blazepool
 phiphipool
 blockmasters
 starpool
+nlpool
