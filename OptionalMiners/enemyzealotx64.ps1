@@ -4,13 +4,13 @@ $Path = ".\Bin\NVIDIA-enemyzealot64122\z-enemy.exe"
 $Uri = "http://nemos.dx.am/opt/nemos/z-enemy.1-22-cuda10.0_x64.zip"
 
 $Commands = [PSCustomObject]@{
-#"aeriumx" = " -i 20" #AeriumX(2080dnf/x32 works fine)
+#"aeriumx" = " -i 20" #AeriumX(x32)
 #"bcd" = " -i 20" #Bcd(x32)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
 #"phi2" = "" #Phi2 (cryptodredge faster)
-#"poly" = " -i 20" #Polytimos(dnf) 
-"bitcore" = " -i 20" #Bitcore (2080)
+#"poly" = " -i 20" #Polytimos(x32) 
+#"bitcore" = " -i 20" #Bitcore (x32)
 "x16r" = " -i 20" #X16r (2080)
 "x16s" = " -i 20" #X16s (2080)
 "sonoa" = " -i 20" #SonoA (2080)
