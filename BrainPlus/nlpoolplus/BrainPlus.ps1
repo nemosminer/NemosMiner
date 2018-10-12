@@ -96,6 +96,7 @@ $CurDate = Get-Date
 $RetryInterval = 0
 try{$AlgoData = Invoke-WebRequest $PoolStatusUri -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json}catch{$RetryInterval=$Interval}
 Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
+        $BasePrice = If ($AlgoData.($Algo).actual_last24h) {$AlgoData.($Algo).actual_last24h / 1000} else {$AlgoData.($Algo).estimate_last24h / 1000}
         $AlgoObject += [PSCustomObject]@{
             Date                = $CurDate
             Name                = $AlgoData.($Algo).name
@@ -106,11 +107,11 @@ Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
             Workers             = $AlgoData.($Algo).Workers
             estimate_current    = $AlgoData.($Algo).estimate_current -as [Decimal]
             estimate_last24h    = $AlgoData.($Algo).estimate_last24h
-            actual_last24h      = $AlgoData.($Algo).actual_last24h / 1000
+            actual_last24h      = $BasePrice
             hashrate_last24h    = $AlgoData.($Algo).hashrate_last24h
-            Last24Drift         = $AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h /1000)
-            Last24DriftSign     = If ($AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h /1000) -ge 0) {"Up"} else {"Down"}
-            Last24DriftPercent  = if ($AlgoData.($Algo).actual_last24h -gt 0) {($AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h /1000)) / ($AlgoData.($Algo).actual_last24h /1000)} else {0}
+            Last24Drift         = $AlgoData.($Algo).estimate_current - $BasePrice
+            Last24DriftSign     = If (($AlgoData.($Algo).estimate_current - $BasePrice) -ge 0) {"Up"} else {"Down"}
+            Last24DriftPercent  = if ($BasePrice -gt 0) {($AlgoData.($Algo).estimate_current - $BasePrice) / $BasePrice} else {0}
             FirstDate           = ($AlgoObject[0]).Date
             TimeSpan            = If($AlgoObject.Date -ne $null) {(New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes}
         }
@@ -161,5 +162,7 @@ $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinu
 $MathObject = @()
 Sleep ($Interval+$RetryInterval-(Get-Date).Second)
 }
+
+
 
 
