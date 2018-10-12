@@ -1,13 +1,10 @@
 <#
-This file is part of NPlusMiner
-Copyright (c) 2018 MrPlus
-
-NPlusMiner is free software: you can redistribute it and/or modify
+NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-NPlusMiner is distributed in the hope that it will be useful,
+NemosMiner is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -17,7 +14,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
 <#
-Product:        NPlusMiner
+Product:        NemosMiner
 File:           BrainPlus.ps1
 version:        2.2
 version date:   20180408
@@ -165,5 +162,7 @@ $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinu
 $MathObject = @()
 Sleep ($Interval+$RetryInterval-(Get-Date).Second)
 }
+
+
 
 
