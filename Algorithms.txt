@@ -83,6 +83,7 @@
     "cryptonightv7stellitev4":  "CryptoNightXtl",
     "cryptonightxhvheavy":  "CryptoNightHeavyXhv",
     "daggerhashimoto":  "Ethash",
+    "dagger":  "Ethash",
     "darkcoinmod":  "X11",
     "dash":  "X11",
     "dashcoin":  "X11",
