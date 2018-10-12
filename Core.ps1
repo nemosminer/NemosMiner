@@ -198,15 +198,15 @@ Function NPMCycle {
     $Variables.StatusText = "Loading pool stats.."
     $PoolFilter = @()
     $Config.PoolName | foreach {$PoolFilter += ($_ += ".*")}
-    Do {
-        $AllPools = if (Test-Path "Pools") {Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
-                Where {$_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and (!$Config.Algorithm -or $_.Algorithm -in $Config.Algorithm)}
-        }
-        if ($AllPools.Count -eq 0) {
-            $Variables.StatusText = "! Error contacting pool retrying in 30 seconds.."
-            Sleep 30
-        }
-    } While ($AllPools.Count -eq 0)
+	Do {
+		$AllPools = if(Test-Path "Pools"){Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} | 
+			Where {$_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and (!$Config.Algorithm -or ((!($Config.Algorithm | ? {$_ -like "+*"}) -or $_.Algorithm -in ($Config.Algorithm | ? {$_ -like "+*"}).Replace("+","")) -and (!($Config.Algorithm | ? {$_ -like "-*"}) -or $_.Algorithm -notin ($Config.Algorithm | ? {$_ -like "-*"}).Replace("-",""))) )}
+		}
+			if ($AllPools.Count -eq 0) {
+			$Variables.StatusText = "! Error contacting pool retrying in 30 seconds.."
+			Sleep 30
+		}
+	} While ($AllPools.Count -eq 0)
     $Variables.StatusText = "Computing pool stats.."
     # Use location as preference and not the only one
     $AllPools = ($AllPools | ? {$_.location -eq $Config.Location}) + ($AllPools | ? {$_.name -notin ($AllPools | ? {$_.location -eq $Config.Location}).Name})
@@ -274,7 +274,7 @@ Function NPMCycle {
                 if (Test-Path "CustomMiners") { Get-ChildItemContent "CustomMiners"}
             ) | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} |
             Where {$Config.Type.Count -eq 0 -or (Compare $Config.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
-            Where {!$Config.Algorithm -or (Compare $Config.Algorithm $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
+            Where {!($Config.Algorithm | ? {$_.StartsWith("+")}) -or (Compare (($Config.Algorithm | ? {$_.StartsWith("+")}).Replace("+","")) $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
             Where {$Config.MinerName.Count -eq 0 -or (Compare $Config.MinerName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}
     }
     $Variables.Miners = $Variables.Miners | ForEach {
