@@ -22,6 +22,7 @@ $Commands = [PSCustomObject]@{
     "yescrypt" = " -d $($Config.SelGPUCC)" #yescrypt
     "yescryptR8" = " -d $($Config.SelGPUCC)"
     "yescryptR16" = " -d $($Config.SelGPUCC)" #YescryptR16 #Yenten
+    "yescryptR32" = " -d $($Config.SelGPUCC)" #YescryptR32 
     "yescryptR16v2" = " -d $($Config.SelGPUCC)" #PPN
     #"neoscrypt" = " -d $($Config.SelGPUCC)" #NeoScrypt
     #"nist5" = " -d $($Config.SelGPUCC)" #Nist5
