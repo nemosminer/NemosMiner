@@ -1,10 +1,13 @@
 <#
-NemosMiner is free software: you can redistribute it and/or modify
+This file is part of NPlusMiner
+Copyright (c) 2018 MrPlus
+
+NPlusMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-NemosMiner is distributed in the hope that it will be useful,
+NPlusMiner is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -14,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
 <#
-Product:        NemosMiner
+Product:        NPlusMiner
 File:           BrainPlus.ps1
 version:        2.2
 version date:   20180408
@@ -96,6 +99,7 @@ $CurDate = Get-Date
 $RetryInterval = 0
 try{$AlgoData = Invoke-WebRequest $PoolStatusUri -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json}catch{$RetryInterval=$Interval}
 Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
+        $BasePrice = If ($AlgoData.($Algo).actual_last24h) {$AlgoData.($Algo).actual_last24h / 1000} else {$AlgoData.($Algo).estimate_last24h / 1000}
         $AlgoObject += [PSCustomObject]@{
             Date                = $CurDate
             Name                = $AlgoData.($Algo).name
@@ -106,11 +110,11 @@ Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
             Workers             = $AlgoData.($Algo).Workers
             estimate_current    = $AlgoData.($Algo).estimate_current -as [Decimal]
             estimate_last24h    = $AlgoData.($Algo).estimate_last24h
-            actual_last24h      = $AlgoData.($Algo).actual_last24h / 1000
+            actual_last24h      = $BasePrice
             hashrate_last24h    = $AlgoData.($Algo).hashrate_last24h
-            Last24Drift         = $AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h /1000)
-            Last24DriftSign     = If ($AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h /1000) -ge 0) {"Up"} else {"Down"}
-            Last24DriftPercent  = if ($AlgoData.($Algo).actual_last24h -gt 0) {($AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h /1000)) / ($AlgoData.($Algo).actual_last24h /1000)} else {0}
+            Last24Drift         = $AlgoData.($Algo).estimate_current - $BasePrice
+            Last24DriftSign     = If (($AlgoData.($Algo).estimate_current - $BasePrice) -ge 0) {"Up"} else {"Down"}
+            Last24DriftPercent  = if ($BasePrice -gt 0) {($AlgoData.($Algo).estimate_current - $BasePrice) / $BasePrice} else {0}
             FirstDate           = ($AlgoObject[0]).Date
             TimeSpan            = If($AlgoObject.Date -ne $null) {(New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes}
         }
