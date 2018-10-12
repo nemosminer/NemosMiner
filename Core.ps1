@@ -31,7 +31,7 @@ Function InitApplication {
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     Get-ChildItem . -Recurse | Unblock-File
 	if (Get-MpComputerStatus -ErrorAction SilentlyContinue) {
-		Update-Status("INFO: Adding NemosMiner path to Windows Defender's exclusions.. (may show an error if Windows Defender is disabled)")
+		Update-Status("INFO: Adding NemosMiner path to Windows Defender's exclusions..")
 		try {if ((Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {Start-Process powershell -Verb runAs -ArgumentList "Add-MpPreference -ExclusionPath '$(Convert-Path .)'"}}catch {}
 	} 
 	else {
