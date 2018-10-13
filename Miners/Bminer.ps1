@@ -3,10 +3,10 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Bminer1040\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v10.4.0-b73432a-amd64.zip"
 $Commands = [PSCustomObject]@{
-    "equihashBTG" = " -uri zhash://" #EquihashBTG(testing)
-    "equihash" = " -uri stratum://" #Equihash(fastest)
-    "equihash144" = " -pers auto -uri equihash1445://" #Equihash144(testing)
-    "ethash" = " -uri ethstratum://" #Ethash(testing 2080)
+    #"equihashBTG" = " -uri zhash://" #EquihashBTG(testing)
+    #"equihash" = " -uri stratum://" #Equihash(fastest)
+    #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144(testing)
+    #"ethash" = " -uri ethstratum://" #Ethash(testing 2080)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
