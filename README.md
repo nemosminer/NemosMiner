@@ -143,7 +143,36 @@ Keep tabs on all your mining rigs from one place
       Simple algo switching log in csv switching.log file found in Logs folder.
       You can easily track switching rate.
 
-   Pools variants
+   Algo selection / removal
+  
+       +algo for algo selection
+      -algo for algo removal
+
+      If "+" Used, all selected algo have to be listed
+      If "Minus" Used, all algo selected but exluded ones.
+
+      Do not combine + and - for the same algo
+
+     Examples:
+     Algo list = -x16r
+     Will mine anything but x16r
+
+     Algo list = -x16r,-bcd
+     Will mine anything but x16r and bcd
+
+     Algo list = +x16r
+     Will mine only x16r
+
+     Algo list = +x16r,+bcd
+     Will mine only x16r and BCD
+
+     Algo list = +x16r
+     Will mine only x16r
+
+     Algo list blank
+     Will mine anything
+  
+  Pools variants
 
       24hr - uses last 24hour Actual API too request profit
          -Low switching rate
