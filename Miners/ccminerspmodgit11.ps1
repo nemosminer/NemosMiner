@@ -35,9 +35,9 @@ $Commands = [PSCustomObject]@{
     "c11" = " -d $($Config.SelGPUCC)" #C11 (trex faster/ fastest open source)
     #"veltor" = "" #Veltor
     #"x11evo" = " -d $($Config.SelGPUCC)" #X11evo
-    "x17" = " -d $($Config.SelGPUCC)" #X17 (testing)
-    "x16r" = " -d $($Config.SelGPUCC)" #X16r(testing)
-    "x16s" = " -d $($Config.SelGPUCC)" #X16s (testing)
+    "x17" = " -d $($Config.SelGPUCC)" #X17 (trex faster/ fastest open source)
+    "x16r" = " -d $($Config.SelGPUCC)" #X16r(trex faster/ fastest open source)
+    "x16s" = " -d $($Config.SelGPUCC)" #X16s (trex faster/ fastest open source)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
