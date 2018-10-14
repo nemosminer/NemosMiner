@@ -113,7 +113,6 @@ Keep tabs on all your mining rigs from one place
       Displays BTC/H and BTC/D as well a estimation of when the pool payment threshold will be reached.
       Supported pools:
             ahashpool
-            zergpool
             zpool
             nicehash
             miningpoolhub (partial)
@@ -145,7 +144,7 @@ Keep tabs on all your mining rigs from one place
 
    Algo selection / removal
   
-       +algo for algo selection
+      +algo for algo selection
       -algo for algo removal
 
       If "+" Used, all selected algo have to be listed
