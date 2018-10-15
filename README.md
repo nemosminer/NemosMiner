@@ -1,6 +1,6 @@
  ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
 # NemosMiner
-www.nemosminer.com
+https://nemosminer.com
 
 Updated 15 October 2018
 
