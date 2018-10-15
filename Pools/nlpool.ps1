@@ -13,7 +13,7 @@ $HostSuffix = "mine.nlpool.nl"
 $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
 
- switch ($NLPool_Algorithm_Norm) {
+ switch ($PoolAlgorithm) {
         "Yescrypt" {$Divisor *= 100}       #temp fix
      }
  
