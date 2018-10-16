@@ -56,7 +56,7 @@ sleep $StartDelay
 
 if (-not $APIUri) {
     try {
-        $poolapi = Invoke-WebRequest "http://nemosminer.x10host.com/poolapiref.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+        $poolapi = Invoke-WebRequest "https://nemosminer.com/data/poolapiref.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
     catch {$poolapi = Get-content ".\Config\poolapiref.json" | Convertfrom-json}
     if ($poolapi -ne $null) {
