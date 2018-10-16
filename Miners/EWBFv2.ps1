@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-EWBF0.6\\miner.exe"
-$Uri = "http://nemos.dx.am/opt/nemos/EWBFEquihashminerv0.6.7z"
+$Uri = "https://nemosminer.com/data/optional/EWBFEquihashminerv0.6.7z"
 $Commands = [PSCustomObject]@{
     "equihash144" = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144(fastest)
     "equihash192" = " --cuda_devices $($Config.SelGPUDSTM) --algo 192_7 --pers ZERO_PoW" #Equihash192(fastest)
