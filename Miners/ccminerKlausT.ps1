@@ -37,7 +37,6 @@ $Commands = [PSCustomObject]@{
     #"veltor" = "" #Veltor
     #"x11evo" = "" #X11evo
     #"c11" = " -d $($Config.SelGPUCC)" #C11
-    "neoscrypt" = " -d $($Config.SelGPUCC)" #Neoscrypt
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
