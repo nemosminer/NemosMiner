@@ -1055,7 +1055,7 @@ Function Autoupdate {
     # write-host "Checking autoupdate"
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
     try {
-        $AutoUpdateVersion = Invoke-WebRequest "http://nemosminer.x10host.com/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+        $AutoUpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
     catch {$AutoUpdateVersion = Get-content ".\Config\AutoUpdateVersion.json" | Convertfrom-json}
     If ($AutoUpdateVersion -ne $null) {$AutoUpdateVersion | ConvertTo-json | Out-File ".\Config\AutoUpdateVersion.json"}
