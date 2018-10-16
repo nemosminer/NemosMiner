@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.5.1
-version date:   14 October 2018
+version date:   16 October 2018
 #>
 
 param(
@@ -449,7 +449,7 @@ $MainForm.add_Shown( {
         $TimerCheckVersion.Add_Tick( {
                 Update-Status("Checking version")
                 try {
-                    $Version = Invoke-WebRequest "http://nemosminer.x10host.com/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+                    $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
                 }
                 catch {$Version = Get-content ".\Config\version.json" | Convertfrom-json}
                 If ($Version -ne $null) {$Version | ConvertTo-json | Out-File ".\Config\version.json"}
@@ -1260,7 +1260,7 @@ $ConfigPageControls += $ButtonLoadDefaultPoolsAlgos
     
 $ButtonLoadDefaultPoolsAlgos.Add_Click( {
         try {
-            $PoolsAlgos = Invoke-WebRequest "http://nemosminer.x10host.com/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json; $PoolsAlgos | ConvertTo-json | Out-File ".\Config\PoolsAlgos.json" 
+            $PoolsAlgos = Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json; $PoolsAlgos | ConvertTo-json | Out-File ".\Config\PoolsAlgos.json" 
         }
         catch { $PoolsAlgos = Get-content ".\Config\PoolsAlgos.json" | Convertfrom-json}
         If ($PoolsAlgos) {
