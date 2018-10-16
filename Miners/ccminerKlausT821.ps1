@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcminerKlaust\ccminer.exe"
+$Path = ".\Bin\NVIDIA-CcminerKlaustr14\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r14/releases/download/8.21-mod-r14/ccminer-KlausT-8.21-r14.7z"
 
 $Commands = [PSCustomObject]@{
