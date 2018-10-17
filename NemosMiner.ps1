@@ -430,7 +430,7 @@ $MainForm.add_Shown( {
         # Check if new version is available
         Update-Status("Checking version")
         try {
-            $Version = Invoke-WebRequest "http://nemosminer.x10host.com/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+            $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
         }
         catch {$Version = Get-content ".\Config\version.json" | Convertfrom-json}
         If ($Version -ne $null) {$Version | ConvertTo-json | Out-File ".\Config\version.json"}
