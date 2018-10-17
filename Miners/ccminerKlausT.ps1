@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-CcminerKlaustr14\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r14/releases/download/8.21-mod-r14/ccminer-KlausT-8.21-r14.7z"
+$Uri = "https://github.com/nemosminer/ccminerKlausT-r11-fix/releases/download/r11-fix/ccminerKlausTr11.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -24,7 +24,7 @@ $Commands = [PSCustomObject]@{
     "yescryptR16" = " -d $($Config.SelGPUCC)" #YescryptR16 #Yenten
     "yescryptR32" = " -d $($Config.SelGPUCC)" #YescryptR32 
     "yescryptR16v2" = " -d $($Config.SelGPUCC)" #PPN
-    "neoscrypt" = " -d $($Config.SelGPUCC)" #NeoScrypt
+    #"neoscrypt" = " -d $($Config.SelGPUCC)" #NeoScrypt
     #"nist5" = " -d $($Config.SelGPUCC)" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
