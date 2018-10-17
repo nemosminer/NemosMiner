@@ -11,7 +11,6 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = "mine.nlpool.nl"
 $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
-$DivisorMultiplier = 1000000000
  
 $Location = "US"
 
@@ -24,7 +23,12 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
-    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+      $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
+
+    switch ($PoolAlgorithm) {
+        "Yescrypt" {$Divisor *= 100}       #temp fix
+
+    }
 
     if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
