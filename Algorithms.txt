@@ -75,6 +75,8 @@
     "cryptonightmasari":  "CryptoNightMsr",
     "cryptonightmonero":  "CryptoNightV7",
     "cryptonightmonero":  "Cryptonightmonero",
+    "cryptonightv8" = "Cryptonightv8"
+    "cryptonight-monero" = "Cryptonightv8"
     "cryptonightmonerov7":  "CryptoNightV7",
     "cryptonightnormalv7":  "CryptoNightV7",
     "cryptonightstellite":  "CryptoNightXtl",
