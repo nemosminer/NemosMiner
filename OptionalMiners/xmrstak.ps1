@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     "cryptonight_lite"  = "" # CryptoNight-Lite
     "cryptonight_v7"    = "" # CryptoNightV7(cryptodredge faster)
     # "monero"     = "" # Monero(v8)
-    "cryptonight_v8"    = " -a monero" # CryptoNightV7(cryptodredge faster)
+    "cryptonight_v8"    = "" # CryptoNightV8
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
