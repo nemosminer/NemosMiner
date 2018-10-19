@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
 #"tribus" = "" #Tribus (cryptodredge faster)
 "c11" = " -i 20" #C11 (2080)
 #"xevan" = " -i 20" #Xevan (x32)
-"x17" = " -i 20" #X17
+#"x17" = " -i 20" #X17(2080)
 #"hex" = " -i 20" #Hex (2080)
 }
 
