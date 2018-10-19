@@ -16,7 +16,7 @@ $Commands = [PSCustomObject]@{
     "cryptonightheavy"  = " -a cryptonightheavy" # CryptoNightHeavy(fastest)
     "cryptonightv7"     = " -a cryptonightv7" # CryptoNightV7(fastest)
     "cryptonightmonero" = " -a CNv2" # Cryptonightmonero
-    "cryptonightv8"            = " -a CNv2" #CNv2 
+    "cryptonightv8"     = " -a CNv2" #CNv2 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
