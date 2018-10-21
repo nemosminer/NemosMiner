@@ -307,8 +307,8 @@ Function Form_Load {
                         # $Variables.Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
                         $Variables.Earnings.Values | foreach {
                             Write-Host "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" -F DarkGray
-							Write-Host "Pool name           " -NoNewline; Write-Host $_.pool -B DarkGreen -F Black -NoNewline; Write-Host "." -B Black -F Black
-							Write-Host "Wallet              " -NoNewline; Write-Host $_.Wallet -F Green
+							Write-Host "Pool name           " -NoNewline; Write-Host $_.pool -F Yellow
+							Write-Host "Wallet              " -NoNewline; Write-Host $_.Wallet -F Yellow
 							Write-Host "Balance            " $_.balance ("{0:P0}" -f ($_.balance / $_.PaymentThreshold))
                             Write-Host "Trust Level        " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " Avg based on [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))"]"
                             Write-Host "Average BTC/H" -NoNewline; Write-Host " BTC = " -F DarkGray -NoNewline; Write-Host ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth * 1000))
