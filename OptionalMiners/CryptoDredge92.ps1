@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     #"skein"             = " -a skein" #Skein
     #"skunk"            = "" #Skunk(trex faster)
     "cryptonightheavy"  = " -a cryptonightheavy" # CryptoNightHeavy(fastest)
-    "cryptonightv7"     = " -a cryptonightv7" # CryptoNightV7(fastest)
+    #"cryptonightv7"     = " -a cryptonightv7" # CryptoNightV7(fastest)
     #"cryptonightmonero" = " -a cryptonightv7" # Cryptonightmonero(fastest)
     "tribus"            = " -a tribus" #Tribus (fastest)
 }
