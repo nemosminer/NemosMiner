@@ -39,9 +39,9 @@
     "cnhaven":  "CryptonightHeavyHaven",
     "cnheavy":  "CryptonightHeavy",
     "cnsaber":  "CryptonightHeavyTube",
-    "cnheavy" = "Cryptonightheavy"
-    "cnv7" = "Cryptonightv7"
-	"cnv8" = "Cryptonightv8,
+    "cnheavy" = "Cryptonightheavy",
+    "cnv7" = "Cryptonightv7",
+    "cnv8" = "Cryptonightv8",
     "creativecoin":  "KeccakC",
     "credits":  "Argon2dCRDS",
     "cryptolight":  "CryptonightLite",
