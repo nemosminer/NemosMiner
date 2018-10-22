@@ -158,7 +158,7 @@ Function Update-Monitoring {
         }
         $DataJSON = ConvertTo-Json @($Data)
         # Calculate total estimated profit
-        $Profit = ([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8)).ToString()
+        $Profit = [string]([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8))
 
         # Send the request
         $Body = @{user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON}
