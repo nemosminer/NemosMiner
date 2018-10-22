@@ -80,7 +80,7 @@
     "cryptonightlitev8":  "CryptonightLiteV8",
     "cryptonightmarketcash":  "CryptonightMarketCash",
     "cryptonightmasari":  "CryptonightFast",
-    "cryptonightmonero":  "CryptonightV7",
+    "cryptonightmonero":  "Cryptonightmonero",
     "cryptonightmonerov7":  "CryptonightV7",
     "cryptonightmonerov8":  "CryptonightV8",
     "cryptonightnormalv7":  "CryptonightV7",
