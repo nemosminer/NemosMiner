@@ -4,19 +4,19 @@ $Path = ".\Bin\NVIDIA-CryptoDredge092\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.2/CryptoDredge_0.9.2_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "allium"            = " -a allium" #Allium (fastetst)
-    "lyra2v2"           = " -a lyra2v2" #Lyra2RE2 (fastest)
-    "lyra2z"            = " -a lyra2z" #Lyra2z (fastest)
-    "neoscrypt"         = " -a neoscrypt" #NeoScrypt (fastest)
-    "phi"               = " -a phi" #Phi
-    "phi2"              = " -a phi2" #Phi2 (fastest)
-    "lbk3"              = " -a lbk3" #Lbk3(test)
+    "allium"           = " -a allium" #Allium (fastetst)
+    "lyra2v2"          = " -a lyra2v2" #Lyra2RE2 (fastest)
+    "lyra2z"           = " -a lyra2z" #Lyra2z (fastest)
+    "neoscrypt"        = " -a neoscrypt" #NeoScrypt (fastest)
+    "phi"              = " -a phi" #Phi
+    "phi2"             = " -a phi2" #Phi2 (fastest)
+    "lbk3"             = " -a lbk3" #Lbk3(test)
     #"skein"             = " -a skein" #Skein
     #"skunk"            = "" #Skunk(trex faster)
-    "cryptonightheavy"  = " -a cryptonightheavy" # CryptoNightHeavy(fastest)
-    #"cryptonightv7"     = " -a cryptonightv7" # CryptoNightV7(fastest)
+    "cryptonightheavy" = " -a cryptonightheavy" # CryptoNightHeavy(fastest)
+    "cryptonightv7"    = " -a cryptonightv7" # CryptoNightV7(fastest)
     #"cryptonightmonero" = " -a cryptonightv7" # Cryptonightmonero(fastest)
-    "tribus"            = " -a tribus" #Tribus (fastest)
+    "tribus"           = " -a tribus" #Tribus (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
