@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex070\t-rex.exe"
-$Uri = "https://nemosminer.com/data/optional/t-rex-0.7.0-win-cuda10.0.7z"
+$Path = ".\Bin\NVIDIA-trex071\t-rex.exe"
+$Uri = "https://nemosminer.com/data/optional/t-rex-0.7.1-win-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
@@ -17,7 +17,9 @@ $Commands = [PSCustomObject]@{
 "x16s" = "" #X16s(fastest)
 "x16r" = "" #X16r(fastest)
 "sonoa" = "" #SonoA(fastest)
-"hmq1725" = "" #hmq1725(fastest)
+"hmq1725" = "" #Hmq1725(fastest)
+"sha256t" = "" #Sha256t(testing)
+"timetravel" = "" #Timetravel(testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
