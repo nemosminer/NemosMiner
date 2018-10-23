@@ -2,7 +2,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-Spmodskunk\ccminer.exe"
-$Uri = ""
+$Uri = "http://nemos.dx.am/opt/nemos/ccminer-skunkhash-sp-mod_v8.7z"
 
 $Commands = [PSCustomObject]@{
     "skunk" = "" #Skunk
