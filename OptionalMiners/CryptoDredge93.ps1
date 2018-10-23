@@ -5,7 +5,7 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.3/Crypt
 
 $Commands = [PSCustomObject]@{
     "cnv8" = " -a cnv8" #CryptoNightv8 
-    cryptonightmonero" = " -a cnv8" # Cryptonightmonero
+    "cryptonightmonero" = " -a cnv8" # Cryptonightmonero
     "allium"           = " -a allium" #Allium 
     "phi2"             = " -a phi2" #Phi2 
     
