@@ -87,8 +87,6 @@ Keep tabs on all your mining rigs from one place
  [Monitoring setup instructions](https://nemosminer.com/setup.php).
 
    
-*****
-
    GUI
    
       Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
