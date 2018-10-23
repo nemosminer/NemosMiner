@@ -35,6 +35,44 @@ Easy configuration, easy start:
       
       note: 2. you only need to change Username if you are using Miningpoolhub
       
+     Algo selection / removal
+  
+      +algo for algo selection
+      -algo for algo removal
+
+      If "+" Used, all selected algo have to be listed
+      If "Minus" Used, all algo selected but exluded ones.
+
+      Do not combine + and - for the same algo
+
+     Examples:
+     Algo list = -x16r
+     Will mine anything but x16r
+
+     Algo list = -x16r,-bcd
+     Will mine anything but x16r and bcd
+
+     Algo list = +x16r
+     Will mine only x16r
+
+     Algo list = +x16r,+bcd
+     Will mine only x16r and BCD
+
+     Algo list = +x16r
+     Will mine only x16r
+
+     Algo list blank
+     Will mine anything
+  
+  Pools variants
+
+      24hr - uses last 24hour Actual API too request profit
+         -Low switching rate
+      plus - uses advanced calculations to reduce switching
+         -Medium switching rate
+      normal - uses current estimate API too request profit
+         -High switching rate
+  
   Fee:
   Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
      
@@ -142,44 +180,6 @@ Keep tabs on all your mining rigs from one place
    
       Simple algo switching log in csv switching.log file found in Logs folder.
       You can easily track switching rate.
-
-   Algo selection / removal
-  
-      +algo for algo selection
-      -algo for algo removal
-
-      If "+" Used, all selected algo have to be listed
-      If "Minus" Used, all algo selected but exluded ones.
-
-      Do not combine + and - for the same algo
-
-     Examples:
-     Algo list = -x16r
-     Will mine anything but x16r
-
-     Algo list = -x16r,-bcd
-     Will mine anything but x16r and bcd
-
-     Algo list = +x16r
-     Will mine only x16r
-
-     Algo list = +x16r,+bcd
-     Will mine only x16r and BCD
-
-     Algo list = +x16r
-     Will mine only x16r
-
-     Algo list blank
-     Will mine anything
-  
-  Pools variants
-
-      24hr - uses last 24hour Actual API too request profit
-         -Low switching rate
-      plus - uses advanced calculations to reduce switching
-         -Medium switching rate
-      normal - uses current estimate API too request profit
-         -High switching rate
 
    Console Display Options
    
