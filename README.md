@@ -79,7 +79,7 @@ Easy configuration, easy start:
       There is a 8 minute per day fee (0.5%), that can be changed in the config (Minimum is 3)0.2%
       We want to stay completely transparent on the way fees are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 8 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:52 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
 
-NemosMiner Monitoring Server 
+NemosMiner Monitoring Server : https://nemosminer.com
 
      Keep tabs on all your mining rigs from one place
      You can now optionally monitor all your workers remotely, both in the GUI and via https://nemosminer.com  
