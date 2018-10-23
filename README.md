@@ -218,15 +218,5 @@ Some miners do not support more that 9 cards
 
 *****
 
-Any donations will be much appreciated:
-
-aaronsace = 1MsrCoAt8qM53HUMsUxvy9gMj3QVbHLazH
-
-nemo = 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
-
-MrPlus = 134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy
-
-grantemsley = 16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity
-
 Licensed under the GNU General Public License v3.1
 Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
