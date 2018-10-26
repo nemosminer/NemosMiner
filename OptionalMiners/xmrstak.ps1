@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\CryptoNight-FireIce251\xmr-stak.exe"
-$Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/2.5.2/xmr-stak-win64-2.5.2.zip"
+$Uri = "https://github.com/nemosminer/xmr-stak/releases/download/v2.5.2/xmr-stak-win64-2.5.2.7z"
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $Port = 3335
@@ -54,7 +54,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_Nvidia.txt --noAMD --noCPU -i $($Port)"
-        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Week * .98} # substract 2% devfee
+        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Week}
         API       = "fireice"
         Port      = $Port
         URI       = $Uri
