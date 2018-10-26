@@ -5,7 +5,7 @@ $Uri = 'https://github.com/zjazz/zjazz_cuda_miner/releases/download/1.2/zjazz_cu
 
 
 $Commands = [PSCustomObject]@{
-	x22i = '' #SUQA
+	"x22i" = "" #SUQA
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
