@@ -18,9 +18,9 @@ $Commands = [PSCustomObject]@{
 "x16r" = "" #X16r(fastest)
 "sonoa" = "" #SonoA(fastest)
 "hmq1725" = "" #Hmq1725(fastest)
-"sha256t" = "" #Sha256t(testing)
-"x22i" = "" #Suqa(testing)
-"timetravel" = "" #Timetravel(testing)
+"sha256t" = "" #Sha256t(fastest)
+"x22i" = "" #Suqa(fastest)
+"timetravel" = "" #Timetravel(fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
