@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminercool177\coolMiner-x64.exe"
 $Uri = "https://nemosminer.com/data/optional/coolMiner-x64-v1-7.7z"
 
 $Commands = [PSCustomObject]@{
-    "lyra2z" = " -d $($Config.SelGPUCC) --submit-stale -N 1" #Lyra2z
+    "lyra2z" = " -d $($Config.SelGPUCC) --submit-stale -N 1" #Lyra2z (compare speed and wattage draw compared to trx and cryptodreage as they all have 1%fee only require the best one not all 3..)
 
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
