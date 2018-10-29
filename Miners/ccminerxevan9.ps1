@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminerxevan9\ccminer_x86.exe"
-$Uri = "https://github.com/nemosminer/ccminer-xevan/releases/download/ccminer-xevan/ccminer_x86.7z"
+$Path = ".\Bin\NVIDIA-ccminerxevan9\z-enemy.exe"
+$Uri = "http://nemosminer.esy.es/download/z-enemy.1-22-cuda9.1_x32.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = " -d $($Config.SelGPUCC)" #Bitcore
