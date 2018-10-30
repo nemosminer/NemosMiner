@@ -1,13 +1,18 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CryptoDredge093\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.3/CryptoDredge_0.9.3_cuda_9.2_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge094\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.4/CryptoDredge_0.9.4_cuda_9.2_windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "cnv8" = " -a cnv8" #CryptoNightv8 
+    "cnv8"              = " -a cnv8" #CryptoNightv8 
     "cryptonightmonero" = " -a cnv8" # Cryptonightmonero
-    "allium"           = " -a allium" #Allium 
-    "phi2"             = " -a phi2" #Phi2 
+    "allium"            = " -a allium" #Allium 
+    "phi2"              = " -a phi2" #Phi2 
+    "c11"               = " -a c11" #C11
+    "polytimos "        = " -a polytimos " #Polytimos 
+    "skunk"             = " -a skunk" #Skunk
+    "bcd"               = " -a bcd" #Bcd
+    
     
     
    
