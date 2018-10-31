@@ -3,12 +3,10 @@ NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 NemosMiner is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
@@ -417,6 +415,9 @@ Function NPMCycle {
         if ($filtered.Count -eq 0) {
             if ($_.Process -eq $null) {
                 $_.Status = "Failed"
+                # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
+                $KillPath = $_.Path
+                Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
             }
             elseif ($_.Process.HasExited -eq $false) {
                 $_.Active += (Get-Date) - $_.Process.StartTime
@@ -424,7 +425,11 @@ Function NPMCycle {
                 Sleep 1
                 # simply "Kill with power"
                 Stop-Process $_.Process -Force | Out-Null
-                Write-Host -ForegroundColor Yellow "closing current miner and switching"
+                Sleep 1
+                # Kill any process with the same path, in case $_.Process is incorrect
+                $KillPath = $_.Path
+                Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
+                $Variables.StatusText = "closing current miner and switching"
                 Sleep 1
                 $_.Status = "Idle"
             }
