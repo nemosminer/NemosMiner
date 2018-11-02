@@ -5,6 +5,7 @@ $Uri = "https://github.com/SUQAORG/ccminer-x22i/releases/download/v1.2.0/ccminer
 
 $Commands = [PSCustomObject]@{
     "x221" = " -N 1 -d $($Config.SelGPUCC)" #X22i
+    }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
