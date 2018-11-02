@@ -1,26 +1,26 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-enemyzealot64122a\z-enemy.exe"
-$Uri = "https://nemosminer.com/data/optional/z-enemy.1-22a-cuda10.0_x64_v1.7z"
+$Path = ".\Bin\NVIDIA-enemyzealot64123\z-enemy.exe"
+$Uri = "https://nemosminer.com/data/optional/z-enemy.1-23-cuda10.0_x64.7z"
 
 $Commands = [PSCustomObject]@{
-#"aeriumx" = " -i 20" #AeriumX(x32)
-#"bcd" = " -i 20" #Bcd(x32)
+"aeriumx" = " -i 20" #AeriumX(RTX)
+"bcd" = " -i 20" #Bcd(RTX)
 #"hsr" = "" #Hsr
 #"phi" = "" #Phi
-#"phi2" = "" #Phi2 (cryptodredge faster)
-#"poly" = " -i 20" #Polytimos(x32) 
-#"bitcore" = " -i 20" #Bitcore (x32)
-"x16r" = " -i 20" #X16r (2080)
-"x16s" = " -i 20" #X16s (2080)
-#"sonoa" = " -i 20" #SonoA (x32)
-#"skunk" = " -i 20" #Skunk (trex)
-#"timetravel" = " -i 20" #Timetravel (trex)
-#"tribus" = "" #Tribus (cryptodredge faster)
-"c11" = " -i 20" #C11 (2080)
-#"xevan" = " -i 20" #Xevan (x32)
-#"x17" = " -i 20" #X17(2080)
-#"hex" = " -i 20" #Hex (2080)
+"phi2" = "" #Phi2 (RTX)
+"poly" = " -i 20" #Polytimos(RTX) 
+"bitcore" = " -i 20" #Bitcore (RTX)
+"x16r" = " -i 20" #X16r (RTX)
+"x16s" = " -i 20" #X16s (RTX)
+"sonoa" = " -i 20" #SonoA (RTX)
+"skunk" = " -i 20" #Skunk (RTX)
+"timetravel" = " -i 20" #Timetravel (RTX)
+"tribus" = "" #Tribus (RTX)
+"c11" = " -i 20" #C11 (RTX)
+"xevan" = " -i 20" #Xevan (RTX)
+"x17" = " -i 20" #X17(RTX)
+"hex" = " -i 20" #Hex (RTX)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
