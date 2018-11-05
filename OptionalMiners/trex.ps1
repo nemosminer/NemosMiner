@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex072\t-rex.exe"
+$Path = ".\Bin\NVIDIA-trex073\t-rex.exe"
 $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.7.3/t-rex-0.7.3-win-cuda10.0.zip"
 
 $Commands = [PSCustomObject]@{
@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
 "sonoa" = "" #SonoA(fastest)
 "hmq1725" = "" #Hmq1725(fastest)
 "sha256t" = "" #Sha256t(fastest)
-"x22i" = "" #Suqa(fastest)
+"x22i" = "" #Suqa
 "timetravel" = "" #Timetravel(fastest)
 }
 
