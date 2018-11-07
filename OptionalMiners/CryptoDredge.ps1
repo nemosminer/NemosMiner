@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-CryptoDredge097\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.7/CryptoDredge_0.9.7_cuda_9.2_windows.zip"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.9.7/CryptoDredge_0.9.7_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"            = " -a allium" #Allium (fastetst)
