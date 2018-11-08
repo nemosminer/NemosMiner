@@ -1,4 +1,8 @@
- ![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
+Copyright (c) 2018 Nemo	(https://github.com/nemosminer/NemosMiner)
+
+Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
+
+![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
 # NemosMiner
 https://nemosminer.com
 
