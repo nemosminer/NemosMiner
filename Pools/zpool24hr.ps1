@@ -35,7 +35,6 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     if ($PoolConf.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm
-            Info          = "$ahashpool_Coin $ahashpool_Coinname"
             Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
