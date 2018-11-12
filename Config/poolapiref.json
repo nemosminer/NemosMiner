@@ -139,7 +139,7 @@
       "StatusUri":"http://blockmasters.co/api/status",
       "CurrenciesUri":"http://blockmasters.co/api/currencies",
       "PaymentThreshold":0.005,
-      "Total":"total_earned",
+      "Total":"total",
       "Balance":"balance"
    },
    {  
@@ -150,7 +150,7 @@
       "StatusUri":"http://blockmasters.co/api/status",
       "CurrenciesUri":"http://blockmasters.co/api/currencies",
       "PaymentThreshold":0.005,
-      "Total":"total_earned",
+      "Total":"total",
       "Balance":"balance"
    },
    {  
@@ -161,7 +161,7 @@
       "StatusUri":"http://blockmasters.co/api/status",
       "CurrenciesUri":"http://blockmasters.co/api/currencies",
       "PaymentThreshold":0.005,
-      "Total":"total_earned",
+      "Total":"total",
       "Balance":"balance"
    },
    {  
@@ -194,39 +194,6 @@
       "StatusUri":"https://pool.hashrefinery.com/api/status",
       "CurrenciesUri":"https://pool.hashrefinery.com/api/currencies",
       "PaymentThreshold":0.003,
-      "Total":"total",
-      "Balance":"balance"
-   },
-   {  
-      "Name":"zergpool",
-      "EarnTrackSupport":"yes",
-      "PoolUri":"http://www.zergpool.com",
-      "WalletUri":"http://api.zergpool.com:8080/api/walletEx?address=",
-      "StatusUri":"http://api.zergpool.com:8080/api/status",
-      "CurrenciesUri":"http://api.zergpool.com:8080/api/currencies",
-      "PaymentThreshold":0.0025,
-      "Total":"total",
-      "Balance":"balance"
-   },
-   {  
-      "Name":"zergpool24hr",
-      "EarnTrackSupport":"yes",
-      "PoolUri":"http://www.zergpool.com",
-      "WalletUri":"http://api.zergpool.com:8080/api/walletEx?address=",
-      "StatusUri":"http://api.zergpool.com:8080/api/status",
-      "CurrenciesUri":"http://api.zergpool.com:8080/api/currencies",
-      "PaymentThreshold":0.0025,
-      "Total":"total",
-      "Balance":"balance"
-   },
-   {  
-      "Name":"zergpoolplus",
-      "EarnTrackSupport":"yes",
-      "PoolUri":"http://www.zergpool.com",
-      "WalletUri":"http://api.zergpool.com:8080/api/walletEx?address=",
-      "StatusUri":"http://api.zergpool.com:8080/api/status",
-      "CurrenciesUri":"http://api.zergpool.com:8080/api/currencies",
-      "PaymentThreshold":0.0025,
       "Total":"total",
       "Balance":"balance"
    },
