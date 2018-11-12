@@ -14,25 +14,25 @@ $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
  
 $Locations = "eu", "us", "na", "sea"
-$Locations | ForEach-Object
-$Zpool_Location = $_
+$Locations | ForEach-Object {
+    $Zpool_Location = $_
         
-switch ($Zpool_Location) {
-    "eu" {$Location = "eu"} #Europe
-    "us" {$Location = "us"} #United States of America
-    "na" {$Location = "na"} #North America
-    "sea" {$Location = "sea"} #South East Asia
-    default {$Location = "us"}
-}
+    switch ($Zpool_Location) {
+        "eu" {$Location = "eu"} #Europe
+        "us" {$Location = "us"} #United States of America
+        "na" {$Location = "na"} #North America
+        "sea" {$Location = "sea"} #South East Asia
+        default {$Location = "us"}
+    }
     
-# Placed here for Perf (Disk reads)
-$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
-$PoolConf = $Config.PoolsConfig.$ConfName
+    # Placed here for Perf (Disk reads)
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $PoolHost = "$($_).$($Location)$($HostSuffix)"
-    $PoolPort = $Request.$_.port
-    $PoolAlgorithm = Get-Algorithm $Request.$_.name
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+        $PoolHost = "$($_).$($Location)$($HostSuffix)"
+        $PoolPort = $Request.$_.port
+        $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
     $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
@@ -45,7 +45,6 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     if ($PoolConf.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm
-            Info          = "$ahashpool_Coin $ahashpool_Coinname"
             Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
