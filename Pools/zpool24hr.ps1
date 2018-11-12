@@ -13,14 +13,24 @@ $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000000
  
-$Location = "US"
-
+$Locations = "eu", "us", "na", "sea"
+$Locations | ForEach-Object
+$Zpool_Location = $_
+        
+switch ($Zpool_Location) {
+    "eu" {$Location = "eu"} #Europe
+    "us" {$Location = "us"} #United States of America
+    "na" {$Location = "na"} #North America
+    "sea" {$Location = "sea"} #South East Asia
+    default {$Location = "us"}
+}
+    
 # Placed here for Perf (Disk reads)
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
-    $PoolConf = $Config.PoolsConfig.$ConfName
+$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+$PoolConf = $Config.PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $PoolHost = "$($_)$($HostSuffix)"
+    $PoolHost = "$($_).$($Location)$($HostSuffix)"
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
