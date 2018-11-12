@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 try {
     $Request = Invoke-WebRequest "https://api.nicehash.com/api?method=simplemultialgo.info" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
@@ -9,20 +9,26 @@ if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-# Placed here for Perf (Disk reads)
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
-    $PoolConf = $Config.PoolsConfig.$ConfName
+
 
 $Locations = "eu", "usa", "hk", "jp", "in", "br"
 $Locations | ForEach-Object {
-        $NiceHash_Location = $_
+    $NiceHash_Location = $_
         
-        switch ($NiceHash_Location) {
-            "eu" {$Location = "Europe"}
-            "usa" {$Location = "US"}
-            "jp" {$Location = "JP"}
-            default {$Location = "Asia"}
-        }
+    switch ($NiceHash_Location) {
+        "eu" {$Location = "eu"}
+        "us" {$Location = "us"}
+        "jp" {$Location = "jp"}
+        "hk" {$Location = "hk"}
+        "in" {$Location = "in"}
+        "br" {$Location = "br"}
+
+        default {$Location = "us"}
+    }
+
+    # Placed here for Perf (Disk reads)
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
 
     $Request.result.simplemultialgo | ForEach-Object {
         $NiceHash_Host = "$($_.Name).$NiceHash_Location.nicehash.com"
@@ -38,7 +44,7 @@ $Locations | ForEach-Object {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
-                Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
+                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
                 StablePrice   = $Stat.Week
                 MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+tcp"
@@ -53,7 +59,7 @@ $Locations | ForEach-Object {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
-                Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
+                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
                 StablePrice   = $Stat.Week
                 MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+ssl"
