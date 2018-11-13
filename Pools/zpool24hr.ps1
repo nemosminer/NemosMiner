@@ -9,9 +9,8 @@ if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = ".mine.zpool.ca"
-# $PriceField = "actual_last24h"
-$PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
+$PriceField = "actual_last24h"
+$DivisorMultiplier = 1000000000
  
 $Locations = "eu", "us", "na", "sea"
 $Locations | ForEach-Object {
