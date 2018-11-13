@@ -16,12 +16,12 @@ $Locations | ForEach-Object {
     $NiceHash_Location = $_
         
     switch ($NiceHash_Location) {
-        "eu" {$Location = "eu"}
-        "us" {$Location = "us"}
-        "jp" {$Location = "jp"}
-        "hk" {$Location = "hk"}
-        "in" {$Location = "in"}
-        "br" {$Location = "br"}
+        "eu" {$Location = "eu"} #Europe(Amsterdam)
+        "us" {$Location = "us"} #USA(San Jose)
+        "jp" {$Location = "jp"} #Japan(Tokyo)
+        "hk" {$Location = "hk"} #China(Hong Kong)
+        "in" {$Location = "in"} #India(Chennai)
+        "br" {$Location = "br"} #Brazil(Sao Paulo)
 
         default {$Location = "us"}
     }
