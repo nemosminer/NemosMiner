@@ -1,13 +1,13 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-enemyzealot64123\z-enemy.exe"
-$Uri = "https://nemosminer.com/data/optional/z-enemy.1-23-cuda10.0_x64.7z"
+$Path = ".\Bin\NVIDIA-enemyzealot64124\z-enemy.exe"
+$Uri = "https://nemosminer.com/data/optional/z-enemy.1-24-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
 "aeriumx" = " -i 20" #AeriumX(RTX)
 "bcd" = " -i 20" #Bcd(RTX)
 #"hsr" = "" #Hsr
-#"phi" = "" #Phi
+"phi" = " -i 20" #Phi (RTX)
 "phi2" = "" #Phi2 (RTX)
 "poly" = " -i 20" #Polytimos(RTX) 
 "bitcore" = " -i 20" #Bitcore (RTX)
