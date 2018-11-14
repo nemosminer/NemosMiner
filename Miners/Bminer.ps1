@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Bminer1050\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v10.5.0-74955e3-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer1060\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v10.6.0-36a62b2-CUDA-9.2-amd64.zip"
 $Commands = [PSCustomObject]@{
     #"equihashBTG" = " -uri zhash://" #EquihashBTG(testing)
     #"equihash" = " -uri stratum://" #Equihash(fastest)
