@@ -1,3 +1,4 @@
+# NemosMiner
 https://nemosminer.com
 
 Updated 15 November 2018
@@ -9,9 +10,6 @@ Updated 15 November 2018
 Copyright (c) 2018 Nemo	(https://github.com/nemosminer/NemosMiner)
 
 Copyright (c) 2018 MrPlus (https://github.com/MrPlusGH/NPlusMiner)
-
-![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
-# NemosMiner
 
 by Nemo/Minerx117
 
