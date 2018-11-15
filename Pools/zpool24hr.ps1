@@ -12,13 +12,14 @@ $HostSuffix = ".mine.zpool.ca"
 $PriceField = "actual_last24h"
 $DivisorMultiplier = 1000000000
  
-$Locations = "eu", "us", "na", "sea"
+$Locations = "eu", "us", "jp", "na", "sea"
 $Locations | ForEach-Object {
-    $zpool24hr_Location = $_
+    $zpoolplus_Location = $_
         
-    switch ($zpool24hr_Location) {
+    switch ($zpoolplus_Location) {
         "eu" {$Location = "eu"} #Europe
         "us" {$Location = "us"} #United States of America
+        "jp" {$Location = "jp"} #Japan
         "na" {$Location = "na"} #North America
         "sea" {$Location = "sea"} #South East Asia
         default {$Location = "us"}
