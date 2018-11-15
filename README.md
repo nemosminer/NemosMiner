@@ -1,9 +1,3 @@
-Copyright (c) 2018 Nemo	(https://github.com/nemosminer/NemosMiner)
-
-Copyright (c) 2018 MrPlus	(https://github.com/MrPlusGH/NPlusMiner)
-
-![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
-# NemosMiner
 https://nemosminer.com
 
 Updated 15 November 2018
@@ -11,6 +5,13 @@ Updated 15 November 2018
 [![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/Nemosminer/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/issues)
 [![GitHub license](https://img.shields.io/github/license/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/blob/master/LICENSE)
 ![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
+
+Copyright (c) 2018 Nemo	(https://github.com/nemosminer/NemosMiner)
+
+Copyright (c) 2018 MrPlus (https://github.com/MrPlusGH/NPlusMiner)
+
+![alt text](https://github.com/nemosminer/NemosMiner/blob/master/NM.png)
+# NemosMiner
 
 by Nemo/Minerx117
 
