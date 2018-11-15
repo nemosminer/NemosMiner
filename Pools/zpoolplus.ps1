@@ -13,13 +13,14 @@ $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
  
-$Locations = "eu", "us", "na", "sea"
+$Locations = "eu", "us", "jp", "na", "sea"
 $Locations | ForEach-Object {
     $zpoolplus_Location = $_
         
     switch ($zpoolplus_Location) {
         "eu" {$Location = "eu"} #Europe
         "us" {$Location = "us"} #United States of America
+        "jp" {$Location = "jp"} #Japan
         "na" {$Location = "na"} #North America
         "sea" {$Location = "sea"} #South East Asia
         default {$Location = "us"}
