@@ -1,5 +1,4 @@
 # NemosMiner
-https://nemosminer.com
 
 Updated 18 November 2018
 
