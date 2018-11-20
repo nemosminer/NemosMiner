@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex075\t-rex.exe"
-$Uri = "https://nemosminer.com/data/optional/t-rex-0.7.5-win-cuda10.0.7z"
+$Path = ".\Bin\NVIDIA-trex080\t-rex.exe"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.8.0/t-rex-0.8.0-win-cuda10.0.zip"
 
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
