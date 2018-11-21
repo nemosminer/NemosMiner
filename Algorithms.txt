@@ -106,6 +106,7 @@
     "dropcoin":  "Drop",
     "dynamic":  "Argon2dDYN",
     "equihash":  "Equihash",
+    "exosis":  "Exosis",
     "equihash192":  "Equihash192",
     "equihash144":  "Equihash144",
     "equihash96":  "Equihash96",
