@@ -25,6 +25,7 @@ $Commands = [PSCustomObject]@{
     "x17"               = " -a x17" #X17
     "bitcore"           = " -a bitcore" #Bitcore
     "hmq1725"           = " -a hmq1725" #Hmq1725
+    "exosis"            = " -a exosis" #Exosis   
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
