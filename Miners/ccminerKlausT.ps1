@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcminerKlaustr11\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerKlausT-r11-fix/releases/download/r11-fix/ccminerKlausTr11.7z"
+$Path = ".\Bin\NVIDIA-CcminerKlaustv7\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminerKlausTyescrypt/releases/download/v7/ccminerKlausTyescrypt.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     #"lyra2v2" = " -d $($Config.SelGPUCC)" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $($Config.SelGPUCC)" #MyriadGroestl
-    "yescrypt" = " -d $($Config.SelGPUCC)" #yescrypt
+    "yescrypt" = " -i 12.5 -d $($Config.SelGPUCC)" #yescrypt
     "yescryptR8" = " -d $($Config.SelGPUCC)"
     "yescryptR16" = " -d $($Config.SelGPUCC)" #YescryptR16 #Yenten
     "yescryptR32" = " -i 12.25 -d $($Config.SelGPUCC)" #YescryptR32 
@@ -31,7 +31,7 @@ $Commands = [PSCustomObject]@{
     #"scrypt" = "" #Scrypt
     #"sia" = "" #Sia
     #"sib" = "" #Sib
-    #"skein" = " -d $($Config.SelGPUCC)" #Skein
+    #"skein" = " -i 28 -d $($Config.SelGPUCC)" #Skein
     #"timetravel" = "" #Timetravel
     #"x11" = "" #X11
     #"veltor" = "" #Veltor
