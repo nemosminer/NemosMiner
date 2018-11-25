@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
 "sonoa" = "" #SonoA(fastest)
 "hmq1725" = "" #Hmq1725(fastest)
 "sha256t" = "" #Sha256t(fastest)
-"x22i" = "" #Suqa
+#"x22i" = "" #Suqa
 "timetravel" = "" #Timetravel(fastest)
 }
 
