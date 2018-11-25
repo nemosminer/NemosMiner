@@ -6,9 +6,11 @@ Updated 25 November 2018
 [![GitHub license](https://img.shields.io/github/license/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/blob/master/LICENSE)
 ![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
 
-Copyright (c) 2018 Nemo	(https://github.com/nemosminer/NemosMiner)
-
-Copyright (c) 2018 MrPlus (https://github.com/MrPlusGH/NPlusMiner)
+NemosMiner
+Copyright (c) 2018 Nemo and MrPlus
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
 
 by Nemo/Minerx117
 
