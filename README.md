@@ -8,6 +8,7 @@ Updated 25 November 2018
 
 NemosMiner
 Copyright (c) 2018 Nemo and MrPlus
+
 This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
