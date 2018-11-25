@@ -84,14 +84,8 @@ param(
 . .\Core.ps1
 
 @"
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions.
-https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
-
 NemosMiner
 Copyright (c) 2018 Nemo and MrPlus
-This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
