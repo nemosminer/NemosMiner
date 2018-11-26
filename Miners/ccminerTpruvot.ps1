@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Tpruvotv2.3cuda10\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerTpruvot/releases/download/v2.3-cuda10/ccminertpruvotx32.7z"
 
 $Commands = [PSCustomObject]@{
-    "polytimos"  = " -d $($Config.SelGPUCC)" #Polytimos
+    #"polytimos"  = " -d $($Config.SelGPUCC)" #Polytimos
     #"hsr" = " -d $($Config.SelGPUCC)" #Hsr
     "phi"        = " -d $($Config.SelGPUCC)" #Phi (testing)
     #"phi2"       = " -d $($Config.SelGPUCC)" #Phi2 (testing)
