@@ -5,7 +5,7 @@ $Uri = "https://github.com/nemosminer/ccminer-xevan/releases/download/Alexis78xe
 
 $Commands = [PSCustomObject]@{
     "xevan" = " -N 1 -d $($Config.SelGPUCC)" #Xevan(fastest on most 10series cards/enemyzealot1.18x32 faster on 1080ti's)
-    "skein" = " -N 1 -d $($Config.SelGPUCC) -i 27" #Skein
+    #"skein" = " -N 1 -d $($Config.SelGPUCC) -i 27" #Skein
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
