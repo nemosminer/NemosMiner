@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-Alexis78x64\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Alexis78v1.4\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/Alexis78-v1.4/ccminerAlexis78v1.4x64.7z"
 
 $Commands = [PSCustomObject]@{
@@ -32,10 +32,10 @@ $Commands = [PSCustomObject]@{
     #"sib" = " -i 21 -d $($Config.SelGPUCC)" #Sib
     "skein" = " -N 1 -d $($Config.SelGPUCC)" #Skein
     #"timetravel" = "" #Timetravel
-    "c11" = " -N 1 -i 21 -d $($Config.SelGPUCC)" #C11
+    #"c11" = " -N 1 -i 21 -d $($Config.SelGPUCC)" #C11
     "x11evo" = " -N 1 -i 21 -d $($Config.SelGPUCC) " #X11evo
     #"x11gost" = " -i 21 -d $($Config.SelGPUCC) --api-remote" #X11gost
-    "x17" = " -N 1 -i 20 -d $($Config.SelGPUCC)" #X17
+    #"x17" = " -N 1 -i 20 -d $($Config.SelGPUCC)" #X17
     #"yescrypt" = "" #Yescrypt
 }
 
