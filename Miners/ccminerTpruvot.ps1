@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-Tpruvot32\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Tpruvotv2.3cuda10\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerTpruvot/releases/download/v2.3-cuda10/ccminertpruvotx32.7z"
 
 $Commands = [PSCustomObject]@{
