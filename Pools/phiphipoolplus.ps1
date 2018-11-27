@@ -13,16 +13,24 @@ $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
  
-$Location = "US"
-
-# Placed here for Perf (Disk reads)
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+$Locations = "asia", "eu"
+$Locations | ForEach-Object {
+    $zpoolplus_Location = $_
+        
+    switch ($zpoolplus_Location) {
+        "eu" {$Location = "eu"} #Europe
+        "asia" {$Location = "asia"} #Asia [Thailand]
+        default {$Location = "asia"}
+    }
+    
+    # Placed here for Perf (Disk reads)
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
     $PoolConf = $Config.PoolsConfig.$ConfName
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $PoolHost = "$($HostSuffix)"
-    $PoolPort = $Request.$_.port
-    $PoolAlgorithm = Get-Algorithm $Request.$_.name
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+        $PoolHost = "$($Location)$($HostSuffix)"
+        $PoolPort = $Request.$_.port
+        $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
     $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
@@ -35,17 +43,17 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     if ($PoolConf.Wallet) {
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm
-            Info          = "$ahashpool_Coin $ahashpool_Coinname"
             Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
             Host          = $PoolHost
             Port          = $PoolPort
-            User          = $PoolConf.Wallet
-            Pass          = "$($WorkerName),c=$($PwdCurr)"
+            User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName)"
+            Pass          = "c=$($PwdCurr)"
             Location      = $Location
             SSL           = $false
-        }
-    }
+			}
+		}
+	}
 }
