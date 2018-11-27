@@ -99,6 +99,7 @@
     "dashpay":  "X11",
     "decred":  "Decred",
     "deep":  "Deep",
+    "dedal":  "Dedal",
     "deepcoin":  "Deep",
     "diamondgroestl":  "DMDGR",
     "dmdgr":  "DMDGR",
