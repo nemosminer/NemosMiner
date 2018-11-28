@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcminerKlausTv9\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerKlausTyescrypt/releases/download/v9/ccminerKlausTyescryptv9.7z"
+$Path = ".\Bin\NVIDIA-CcminerKlausTv10\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminerKlausTyescrypt/releases/download/v10/ccminerKlausTyescryptv10.7z"
 
 $Commands = [PSCustomObject]@{
     #"bitcore" = "" #Bitcore
@@ -19,12 +19,13 @@ $Commands = [PSCustomObject]@{
     #"lyra2v2" = " -d $($Config.SelGPUCC)" #Lyra2RE2
     #"lyra2z" = "" #Lyra2z
     #"myr-gr" = " -d $($Config.SelGPUCC)" #MyriadGroestl
-    "yescrypt" = " -i 12.5 -d $($Config.SelGPUCC)" #yescrypt
-    "yescryptR8" = " -d $($Config.SelGPUCC)"
-    "yescryptR16" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16 #Yenten
+    "yescrypt" = " -i 12.5 -d $($Config.SelGPUCC)" #Yescrypt
+    "yescryptR8" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR8
+    "yescryptR16" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16
+    "yescryptR24" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR24 
     "yescryptR32" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR32 
-    "yescryptR16v2" = " -d $($Config.SelGPUCC)" #PPN
-    "neoscrypt" = " -d $($Config.SelGPUCC)" #NeoScrypt
+    "yescryptR16v2" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16v2
+    "neoscrypt" = " -i 17 -d $($Config.SelGPUCC)" #NeoScrypt
     #"nist5" = " -d $($Config.SelGPUCC)" #Nist5
     #"pascal" = "" #Pascal
     #"qubit" = "" #Qubit
