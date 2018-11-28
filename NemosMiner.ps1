@@ -195,16 +195,17 @@ Function Form_Load {
 
                     # Set row color
                     $WorkersDGV.Rows | ForEach-Object {
-                        if($_.DataBoundItem.Status -eq "Offline") {
-                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,213,142,176)
+                        if ($_.DataBoundItem.Status -eq "Offline") {
+                            $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 213, 142, 176)
                         }
                         elseif ($_.DataBoundItem.Status -eq "Paused") {
-                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,247,252,168)
+                            $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 247, 252, 168)
                         }
                         elseif ($_.DataBoundItem.Status -eq "Running") {
-                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,127,191,144)
-                        } else {
-                            $_.DefaultCellStyle.Backcolor=[System.Drawing.Color]::FromArgb(255,255,255,255)
+                            $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 127, 191, 144)
+                        }
+                        else {
+                            $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255)
                         }
                     }
 
@@ -307,9 +308,9 @@ Function Form_Load {
                         # $Variables.Earnings.Values | select Pool,Wallet,Balance,AvgDailyGrowth,EstimatedPayDate,TrustLevel | ft *
                         $Variables.Earnings.Values | foreach {
                             Write-Host "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" -F DarkGray
-							Write-Host "Pool name           " -NoNewline; Write-Host $_.pool -F Yellow
-							Write-Host "Wallet              " -NoNewline; Write-Host $_.Wallet -F Yellow
-							Write-Host "Balance            " $_.balance ("{0:P0}" -f ($_.balance / $_.PaymentThreshold))
+                            Write-Host "Pool name           " -NoNewline; Write-Host $_.pool -F Yellow
+                            Write-Host "Wallet              " -NoNewline; Write-Host $_.Wallet -F Yellow
+                            Write-Host "Balance            " $_.balance ("{0:P0}" -f ($_.balance / $_.PaymentThreshold))
                             Write-Host "Trust Level        " ("{0:P0}" -f $_.TrustLevel) -NoNewline; Write-Host -F darkgray " Avg based on [" ("{0:dd\ \d\a\y\s\ hh\:mm}" -f ($_.Date - $_.StartTime))"]"
                             Write-Host "Average BTC/H" -NoNewline; Write-Host " BTC = " -F DarkGray -NoNewline; Write-Host ("{0:N8}" -f $_.AvgHourlyGrowth) "| mBTC =" ("{0:N3}" -f ($_.AvgHourlyGrowth * 1000))
                             Write-Host "Average BTC/D" -NoNewline; Write-Host " BTC =" ("{0:N8}" -f ($_.BTCD)) "| mBTC =" ("{0:N3}" -f ($_.BTCD * 1000)) -F Yellow
@@ -378,7 +379,7 @@ Function Form_Load {
                 Sleep -Milliseconds 1
             }
             $TimerUI.Start()
-    })
+        })
     $TimerUI.Start()
 }
 
@@ -439,10 +440,17 @@ $MainForm.add_Shown( {
         If ($Version -ne $null) {$Version | ConvertTo-json | Out-File ".\Config\version.json"}
         If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$version.Version -gt $Variables.CurrentVersion -and $Version.Update) {
             Update-Status("Version $($version.Version) available. (You are running $($Variables.CurrentVersion))")
-            $LabelNotifications.ForeColor = "Green"
-            $LabelNotifications.Lines += "Version $([Version]$version.Version) available"
-            $LabelNotifications.Lines += $version.Message
-            If ($Config.Autoupdate -and ! $Config.ManualConfig) {Autoupdate}
+            If ([version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion) {
+                $LabelNotifications.ForeColor = "Green"
+                $LabelNotifications.Lines += "Version $([Version]$version.Version) available"
+                $LabelNotifications.Lines += $version.Message
+                If ($Config.Autoupdate -and ! $Config.ManualConfig) {Autoupdate}
+            }
+            else {
+                Update-Status("Version $($version.Version) available. Please update NVIDIA driver. Will not AutoUpdate")
+                $LabelNotifications.ForeColor = "Red"
+                $LabelNotifications.Lines += "Driver update required. Version $([Version]$version.Version) available"
+            }
         }
     
         # TimerCheckVersion
@@ -457,10 +465,18 @@ $MainForm.add_Shown( {
                 catch {$Version = Get-content ".\Config\version.json" | Convertfrom-json}
                 If ($Version -ne $null) {$Version | ConvertTo-json | Out-File ".\Config\version.json"}
                 If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$version.Version -gt $Variables.CurrentVersion -and $Version.Update) {
-                    Update-Status("Version $($version.Version) available. (You are running $Variables.CurrentVersion)")
-                    $LabelNotifications.ForeColor = "Green"
-                    $LabelNotifications.Lines += "Version $([Version]$version.Version) available"
-                    If ($Config.Autoupdate -and ! $Config.ManualConfig) {Autoupdate}
+                    If ([version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion) {
+                        $LabelNotifications.ForeColor = "Green"
+                        $LabelNotifications.Lines += "Version $([Version]$version.Version) available"
+                        $LabelNotifications.Lines += $version.Message
+                        If ($Config.Autoupdate -and ! $Config.ManualConfig) {Autoupdate}
+                    }
+                    else {
+                        Update-Status("Version $($version.Version) available. Please update NVIDIA driver. Will not AutoUpdate")
+                        $LabelNotifications.ForeColor = "Red"
+                        $LabelNotifications.Lines += "Driver update required. Version $([Version]$version.Version) available"
+                    }
+                    
                 }
             })
         # Detects GPU count if 0 or Null in config
@@ -1146,20 +1162,21 @@ $CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
 $CheckBoxAutostart.Checked = $Config.Autostart
 $ConfigPageControls += $CheckBoxAutostart
 
-$CheckBoxAutoStart.Add_Click({
-    # Disable CheckBoxStartPaused and mine when idle when Auto Start is unchecked
-    if($CheckBoxAutoStart.Checked) {
-        $CheckBoxStartPaused.Enabled = $True
-        $CheckBoxMineWhenIdle.Enabled = $True
-        $TBIdleSec.Enabled = $True
-    } else {
-        $CheckBoxStartPaused.Checked = $False
-        $CheckBoxStartPaused.Enabled = $False
-        $CheckBoxMineWhenIdle.Checked = $False
-        $CheckBoxMineWhenIdle.Enabled = $False
-        $TBIdleSec.Enabled = $False
-    }
-})
+$CheckBoxAutoStart.Add_Click( {
+        # Disable CheckBoxStartPaused and mine when idle when Auto Start is unchecked
+        if ($CheckBoxAutoStart.Checked) {
+            $CheckBoxStartPaused.Enabled = $True
+            $CheckBoxMineWhenIdle.Enabled = $True
+            $TBIdleSec.Enabled = $True
+        }
+        else {
+            $CheckBoxStartPaused.Checked = $False
+            $CheckBoxStartPaused.Enabled = $False
+            $CheckBoxMineWhenIdle.Checked = $False
+            $CheckBoxMineWhenIdle.Enabled = $False
+            $TBIdleSec.Enabled = $False
+        }
+    })
 
 $CheckBoxStartPaused = New-Object system.Windows.Forms.CheckBox
 $CheckBoxStartPaused.Tag = "StartPaused"
@@ -1344,7 +1361,7 @@ $GroupMonitoringSettings = New-Object system.Windows.Forms.GroupBox
 $GroupMonitoringSettings.Height = 60
 $GroupMonitoringSettings.Width = 710
 $GroupMonitoringSettings.Text = "Monitoring Settings"
-$GroupMonitoringSettings.Location = New-Object System.Drawing.Point(1,272)
+$GroupMonitoringSettings.Location = New-Object System.Drawing.Point(1, 272)
 $MonitoringPageControls += $GroupMonitoringSettings
 
 $LabelMonitoringServer = New-Object system.Windows.Forms.Label
@@ -1394,7 +1411,7 @@ $LabelMonitoringUser.text = "User ID"
 $LabelMonitoringUser.AutoSize = $false
 $LabelMonitoringUser.width = 60
 $LabelMonitoringUser.height = 20
-$LabelMonitoringUser.location = New-Object System.Drawing.Point(2,37)
+$LabelMonitoringUser.location = New-Object System.Drawing.Point(2, 37)
 $LabelMonitoringUser.Font = 'Microsoft Sans Serif,10'
 $MonitoringSettingsControls += $LabelMonitoringUser
 
@@ -1413,14 +1430,14 @@ $ButtonGenerateMonitoringUser = New-Object system.Windows.Forms.Button
 $ButtonGenerateMonitoringUser.text = "Generate New User ID"
 $ButtonGenerateMonitoringUser.width = 160
 $ButtonGenerateMonitoringUser.height = 20
-$ButtonGenerateMonitoringUser.location = New-Object System.Drawing.Point(324,37)
+$ButtonGenerateMonitoringUser.location = New-Object System.Drawing.Point(324, 37)
 $ButtonGenerateMonitoringUser.Font = 'Microsoft Sans Serif,10'
 $ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.text -eq "")
 $MonitoringSettingsControls += $ButtonGenerateMonitoringUser
 
-$ButtonGenerateMonitoringUser.Add_Click({$TBMonitoringUser.text = [GUID]::NewGuid()})
+$ButtonGenerateMonitoringUser.Add_Click( {$TBMonitoringUser.text = [GUID]::NewGuid()})
 # Only enable the generate button when user is blank.
-$TBMonitoringUser.Add_TextChanged({ $ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.text -eq "") })
+$TBMonitoringUser.Add_TextChanged( { $ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.text -eq "") })
 
 
 $ButtonMonitoringWriteConfig = New-Object system.Windows.Forms.Button
@@ -1443,7 +1460,7 @@ $TimerUI = New-Object System.Windows.Forms.Timer
 
 $TimerUI.Stop()
 $ButtonPause.Add_Click( {
-        If(!$Variables.Paused) {
+        If (!$Variables.Paused) {
             Update-Status("Stopping miners")
             $Variables.Paused = $True
 
@@ -1500,7 +1517,8 @@ $ButtonStart.Add_Click( {
                 # Disable the pause button - pausing controlled by idle timer
                 $Variables.Paused = $True
                 $ButtonPause.Visible = $False
-            } else {
+            }
+            else {
                 $ButtonPause.Visible = $True
             }
 
@@ -1511,14 +1529,15 @@ $ButtonStart.Add_Click( {
     })
 
 $CheckBoxConsole.Add_Click( {
-        If($CheckBoxConsole.Checked) {
+        If ($CheckBoxConsole.Checked) {
             $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)
             Update-Status("Console window hidden")
-        } else {
+        }
+        else {
             $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 8)
             Update-Status("Console window shown")
         }
-})
+    })
 
 $ShowWindow = Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);' -Name Win32ShowWindowAsync -Namespace Win32Functions -PassThru
 $ParentPID = (Get-CimInstance -Class Win32_Process -Filter "ProcessID = $pid").ParentProcessId
