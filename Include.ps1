@@ -24,7 +24,7 @@ version date:   29 November 2018
 
 
 Function GetNVIDIADriverVersion {
-	((gwmi win32_VideoController) | select name,description,@{Name = "NVIDIAVersion" ; Expression = {([regex]"[0-9.]{6}$").match($_.driverVersion).value.Replace(".","").Insert(3,'.')}} | ? {$_.Description -like "*NVIDIA*"} | select -First 1).NVIDIAVersion
+    ((gwmi win32_VideoController) | select name, description, @{Name = "NVIDIAVersion" ; Expression = {([regex]"[0-9.]{6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.')}} | ? {$_.Description -like "*NVIDIA*"} | select -First 1).NVIDIAVersion
 }
  
 Function Global:RegisterLoaded ($File) {
@@ -122,7 +122,7 @@ namespace PInvoke.Win32 {
                 }
                 Start-Sleep 1
             }
-    } ) | Out-Null
+        } ) | Out-Null
     $Variables | Add-Member -Force @{IdleRunspaceHandle = $idlePowershell.BeginInvoke()}
 }
 
@@ -150,14 +150,14 @@ Function Update-Monitoring {
         $Data = $RunningMiners | Foreach-Object {
             $RunningMiner = $_
             [pscustomobject]@{
-                Name = $RunningMiner.Name
-                Path = Resolve-Path -Relative $RunningMiner.Path
-                Type = $RunningMiner.Type -join ','
-                Algorithm = $RunningMiner.Algorithms -join ','
-                Pool = $RunningMiner.Miner.Pools.PSObject.Properties.Value.Name -join ','
-                CurrentSpeed = $RunningMiner.HashRate -join ','
+                Name           = $RunningMiner.Name
+                Path           = Resolve-Path -Relative $RunningMiner.Path
+                Type           = $RunningMiner.Type -join ','
+                Algorithm      = $RunningMiner.Algorithms -join ','
+                Pool           = $RunningMiner.Miner.Pools.PSObject.Properties.Value.Name -join ','
+                CurrentSpeed   = $RunningMiner.HashRate -join ','
                 EstimatedSpeed = $RunningMiner.Miner.HashRates.PSObject.Properties.Value -join ','
-                Profit = $RunningMiner.Miner.Profit
+                Profit         = $RunningMiner.Miner.Profit
             }
         }
         $DataJSON = ConvertTo-Json @($Data)
@@ -223,42 +223,42 @@ Function Start-Mining {
     $Global:powershell = [powershell]::Create()
     $powershell.Runspace = $CycleRunspace
     $powershell.AddScript( {
-        Start-Transcript ".\logs\CoreCyle.log" -Append -Force
-        $ProgressPreference = "SilentlyContinue"
-        . .\Include.ps1; RegisterLoaded(".\Include.ps1")
-        Update-Monitoring
-        While ($True) {
-            if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
-            if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
-            If($Variables.Paused) {
-                # Run a dummy cycle to keep the UI updating.
+            Start-Transcript ".\logs\CoreCyle.log" -Append -Force
+            $ProgressPreference = "SilentlyContinue"
+            . .\Include.ps1; RegisterLoaded(".\Include.ps1")
+            Update-Monitoring
+            While ($True) {
+                if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+                if (!(IsLoaded(".\Core.ps1"))) {. .\Core.ps1; RegisterLoaded(".\Core.ps1")}
+                If ($Variables.Paused) {
+                    # Run a dummy cycle to keep the UI updating.
 
-                # Keep updating exchange rate
-                $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
-                $Config.Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
-                $Variables | Add-Member -Force @{Rates = $Rates}
+                    # Keep updating exchange rate
+                    $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
+                    $Config.Currency | Where-Object {$Rates.$_} | ForEach-Object {$Rates | Add-Member $_ ([Double]$Rates.$_) -Force}
+                    $Variables | Add-Member -Force @{Rates = $Rates}
 
-                # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
-                for ($i = 0; $i -lt 4; $i++) {
-                    if ($i -eq 3) {
-                        $Variables | Add-Member -Force @{EndLoop = $True}
-                        Update-Monitoring
+                    # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
+                    for ($i = 0; $i -lt 4; $i++) {
+                        if ($i -eq 3) {
+                            $Variables | Add-Member -Force @{EndLoop = $True}
+                            Update-Monitoring
+                        }
+                        else {
+                            $Variables | Add-Member -Force @{EndLoop = $False}
+                        }
+
+                        $Variables.StatusText = "Mining paused"
+                        Start-Sleep 30
                     }
-                    else {
-                        $Variables | Add-Member -Force @{EndLoop = $False}
-                    }
-
-                    $Variables.StatusText = "Mining paused"
-                    Start-Sleep 30
+                }
+                else {
+                    NPMCycle
+                    Update-Monitoring
+                    Sleep $Variables.TimeToSleep
                 }
             }
-            else {
-                NPMCycle
-                Update-Monitoring
-                Sleep $Variables.TimeToSleep
-            }
-        }
-    }) | Out-Null
+        }) | Out-Null
     $Variables | add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke()}
 }
 
