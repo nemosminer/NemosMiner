@@ -230,6 +230,7 @@
     "x17":  "X17",
     "x18":  "X18",
     "x22i":  "X22i",
+    "x21s":  "X21s",
     "xevan":  "Xevan",
     "xevanmod": "Xevan",
     "xmg":  "m7m",
