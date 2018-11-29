@@ -21,6 +21,11 @@ version date:   29 November 2018
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
 # Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{"File" = $MyInvocation.MyCommand.path} -EA SilentlyContinue
+
+
+Function GetNVIDIADriverVersion {
+	((gwmi win32_VideoController) | select name,description,@{Name = "NVIDIAVersion" ; Expression = {([regex]"[0-9.]{6}$").match($_.driverVersion).value.Replace(".","").Insert(3,'.')}} | ? {$_.Description -like "*NVIDIA*"} | select -First 1).NVIDIAVersion
+}
  
 Function Global:RegisterLoaded ($File) {
     New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value {$true} -EA SilentlyContinue | Add-Member @{"File" = (Resolve-Path $File).Path} -EA SilentlyContinue
