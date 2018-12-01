@@ -6,7 +6,7 @@ $Commands = [PSCustomObject]@{
     #"equihashBTG" = " -uri zhash://" #EquihashBTG(testing)
     #"equihash" = " -uri stratum://" #Equihash(fastest)
     #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144(testing)
-    "zhash" = " -pers auto -uri equihash1445://" #Zhash(testing)
+    #"zhash" = " -pers auto -uri equihash1445://" #Zhash(testing)
     
     #"ethash" = " -uri ethstratum://" #Ethash(testing 2080)
 }
