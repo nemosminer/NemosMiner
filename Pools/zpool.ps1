@@ -59,3 +59,4 @@ $Locations | ForEach-Object {
         }
     }
 }
+}
