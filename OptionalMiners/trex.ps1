@@ -10,6 +10,7 @@ $Commands = [PSCustomObject]@{
 "skunk" = "" #Skunk(fastest)
 "hsr" = "" #Hsr(Testing)
 "bitcore" = "" #Bitcore(fastest)
+"geek"= "" #Geekcash
 "lyra2z" = "" #Lyra2z (cryptodredge faster)
 "tribus" = "" #Tribus(CryptoDredge faster)
 "c11" = "" #C11(fastest)
