@@ -9,6 +9,7 @@ $Commands = [PSCustomObject]@{
     "lyra2z"            = " -a lyra2z" #Lyra2z (fastest)
     "neoscrypt"         = " -a neoscrypt" #NeoScrypt (fastest)
     "phi"               = " -a phi" #Phi
+    "blake2s"           = " -a blake2s" #Blake2s
     "phi2"              = " -a phi2" #Phi2 (fastest)
     "lbk3"              = " -a lbk3" #Lbk3(test)
     "lyra2vc0ban"       = " -a lyra2vc0ban" #Lyra2vc0banHash
