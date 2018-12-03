@@ -21,7 +21,7 @@ version date:   4 December 2018
 
 # param(
 # [Parameter(Mandatory=$false)]
-# [String]$Pool = "zpoolpool", 
+# [String]$Pool = "zpool", 
 # [Parameter(Mandatory=$false)]
 # [String]$Wallet = "", 
 # [Parameter(Mandatory=$false)]
