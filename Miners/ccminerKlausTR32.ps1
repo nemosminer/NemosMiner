@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcminerKlausTv10\ccminer.exe"
+$Path = ".\Bin\NVIDIA-CcminerKlausTv10r32\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerKlausTyescrypt/releases/download/v10/ccminerKlausTyescryptv10.7z"
 
 $Commands = [PSCustomObject]@{
