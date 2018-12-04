@@ -77,6 +77,9 @@ $PrevTrend = 0
 # Remove progress info from job.childjobs.Progress to avoid memory leak
 $ProgressPreference="SilentlyContinue"
 
+# Fix TLS Version erroring
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
 While ($true) {
 #Get-Config{
     If (Test-Path ".\BrainConfig.xml") {
