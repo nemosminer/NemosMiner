@@ -11,7 +11,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = ".phi-phi-pool.com"
 $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
+$DivisorMultiplier = 1000000000
  
 $Locations = "asia", "eu"
 $Locations | ForEach-Object {
