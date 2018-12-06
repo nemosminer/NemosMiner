@@ -4,14 +4,14 @@
                     "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
                     "UserName":  "mrplus",
                     "WorkerName":  "NemosMinerRocks",
-                    "APIKey":  "2c7f2ab04f6dc195db661b7b854e70c5a3bddb90b610f8fc70238b0b4b6a3f78"
+                    "APIKey":  ""
                 },
     "phiphipoolplus":  {
                            "PricePenaltyFactor":  1,
                            "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
                            "UserName":  "mrplus",
                            "WorkerName":  "NemosMinerRocks",
-                           "APIKey":  "2c7f2ab04f6dc195db661b7b854e70c5a3bddb90b610f8fc70238b0b4b6a3f78",
+                           "APIKey":  "",
                            "Algorithm":  [
                                              "+x21s"
                                          ]
