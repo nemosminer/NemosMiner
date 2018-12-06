@@ -7,7 +7,7 @@
                     "APIKey":  ""
                 },
     "phiphipoolplus":  {
-                           "PricePenaltyFactor":  1,
+                           "PricePenaltyFactor":  0.97,
                            "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
                            "UserName":  "nemo",
                            "WorkerName":  "NemosMiner",
