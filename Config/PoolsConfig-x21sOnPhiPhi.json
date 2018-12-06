@@ -1,16 +1,16 @@
 {
     "default":  {
                     "PricePenaltyFactor":  1,
-                    "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
-                    "UserName":  "mrplus",
-                    "WorkerName":  "NemosMinerRocks",
+                    "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+                    "UserName":  "nemo",
+                    "WorkerName":  "NemosMiner",
                     "APIKey":  ""
                 },
     "phiphipoolplus":  {
                            "PricePenaltyFactor":  1,
-                           "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
-                           "UserName":  "mrplus",
-                           "WorkerName":  "NemosMinerRocks",
+                           "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+                           "UserName":  "nemo",
+                           "WorkerName":  "NemosMiner",
                            "APIKey":  "",
                            "Algorithm":  [
                                              "+x21s"
