@@ -49,8 +49,8 @@ $Locations | ForEach-Object {
             Protocol      = "stratum+tcp"
             Host          = $PoolHost
             Port          = $PoolPort
-            User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName)"
-            Pass          = "c=$($PwdCurr)"
+            User          = $PoolConf.Wallet
+            Pass          = "$($WorkerName),c=$($PwdCurr)"
             Location      = $Location
             SSL           = $false
 			}
