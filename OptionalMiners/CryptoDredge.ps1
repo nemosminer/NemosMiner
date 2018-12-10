@@ -26,7 +26,6 @@ $Commands = [PSCustomObject]@{
     "bcd"               = " -a bcd" #Bcd
     "x16r"              = " -a x16r" #X16r
     "x21s"              = " -a x21s" #X21s
-    "x22i"              = " -a x22i" #X22i
     "x16s"              = " -a x16s" #X16s
     "x17"               = " -a x17" #X17
     "bitcore"           = " -a bitcore" #Bitcore
