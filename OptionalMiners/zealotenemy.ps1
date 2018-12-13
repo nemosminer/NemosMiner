@@ -1,12 +1,12 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-zealotenemy127\z-enemy.exe"
-$Uri = "https://nemosminer.com/data/optional/z-enemy.1-27-cuda10.0.7z"
+$Path = ".\Bin\NVIDIA-zealotenemy128\z-enemy.exe"
+$Uri = "https://nemosminer.com/data/optional/z-enemy.1-28-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
     "aeriumx"    = "" #AeriumX(RTX)
     "bcd"        = "" #Bcd(RTX)
-    "hsr"        = " -i 21" #Hsr
+    "hsr"        = "" #Hsr
     "phi"        = "" #Phi (RTX)
     "phi2"       = "" #Phi2 (RTX)
     "poly"       = "" #Polytimos(RTX) 
@@ -17,9 +17,9 @@ $Commands = [PSCustomObject]@{
     "skunk"      = "" #Skunk (RTX)
     "timetravel" = "" #Timetravel (RTX)
     "tribus"     = "" #Tribus (RTX)
-    "c11"        = " -i 21" #C11 (RTX)
+    "c11"        = "" #C11 (RTX)
     "xevan"      = "" #Xevan (RTX)
-    "x17"        = " -i 21" #X17(RTX)
+    "x17"        = "" #X17(RTX)
     "hex"        = "" #Hex (RTX)
 }
 
