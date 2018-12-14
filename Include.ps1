@@ -972,6 +972,7 @@ function Start-SubProcess {
         # Need to investigate. lpProcessInformation sometimes comes null even if process started
         # So getting process with the same FilePath if so
         if ($Process -eq $null) {
+            Sleep 2
             $Process = (Get-Process | ? {$_.Path -eq $FilePath})[0]
         }
 
