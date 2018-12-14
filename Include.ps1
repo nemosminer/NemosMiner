@@ -968,6 +968,13 @@ function Start-SubProcess {
         Write-Host "Last error $x"
         $Process = Get-Process -Id $lpProcessInformation.dwProcessID
 
+        # Dirty workaround
+        # Need to investigate. lpProcessInformation sometimes comes null even if process started
+        # So getting process with the same FilePath if so
+        if ($Process -eq $null) {
+            $Process = (Get-Process | ? {$_.Path -eq $FilePath})[0]
+        }
+
         if ($Process -eq $null) {
             [PSCustomObject]@{ProcessId = $null}
             return
