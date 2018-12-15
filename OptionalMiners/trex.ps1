@@ -5,6 +5,10 @@ $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.8.8/t-rex-0.8.8-w
 
 $Commands = [PSCustomObject]@{
 "balloon" = "" #Balloon(fastest)
+"astralhash" = "" #Astralhash
+"jeonghash" = "" #Jeonghash
+"padihash" = "" #Padihash
+"pawelhash" = "" #Pawelhash
 "polytimos" = "" #Poly(fastest)
 "bcd" = "" #Bcd(fastest)
 "skunk" = "" #Skunk(fastest)
