@@ -7,6 +7,7 @@ $Commands = [PSCustomObject]@{
     "allium"            = " -a allium" #Allium (fastetst)
     "lyra2v2"           = " -a lyra2v2" #Lyra2RE2 (fastest)
     "lyrarev3"          = " -a lyrarev3" #Lyra2REv3 
+    "lyra2v3"           = " -a lyrarev3" #Lyra2v3
     "lyra2z"            = " -a lyra2z" #Lyra2z (fastest)
     "neoscrypt"         = " -a neoscrypt" #NeoScrypt (fastest)
     "phi"               = " -a phi" #Phi
