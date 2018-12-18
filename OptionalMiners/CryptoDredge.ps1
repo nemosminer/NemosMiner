@@ -16,7 +16,6 @@ $Commands = [PSCustomObject]@{
     "lbk3"              = " -a lbk3" #Lbk3(test)
     "lyra2vc0ban"       = " -a lyra2vc0ban" #Lyra2vc0banHash
     "cryptonightheavy"  = " -a cryptonightheavy" # CryptoNightHeavy(fastest)
-    "cryptonightv7"     = " -a cryptonightv7" # CryptoNightV7(fastest)
     "x22i"              = " -a x22i" # X22i
     "tribus"            = " -a tribus" #Tribus (fastest)
     "cnv8"              = " -a cnv8" #CryptoNightv8 
