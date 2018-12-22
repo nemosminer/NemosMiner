@@ -1,4 +1,3 @@
-
 <#
 Copyright (c) 2018 Nemo
 Copyright (c) 2018 MrPlus
@@ -968,48 +967,44 @@ function Start-SubProcess {
         Write-Host "Last error $x"
         $Process = Get-Process -Id $lpProcessInformation.dwProcessID
 
-			# Dirty workaround
-			# Need to investigate. lpProcessInformation sometimes comes null even if process started
-			# So getting process with the same FilePath if so
-			$Tries = 0
-			While ($Process -eq $null -and $Tries -le 5) {
-				Write-Host "Can't get process - $Tries"
-				$Tries++
-				Sleep 1
-				$Process = (Get-Process | ? {$_.Path -eq $FilePath})[0]
-				Write-Host "Process= $($Process.Handle)"
-			}
+        # Dirty workaround
+        # Need to investigate. lpProcessInformation sometimes comes null even if process started
+        # So getting process with the same FilePath if so
+        $Tries = 0
+        While ($Process -eq $null -and $Tries -le 5) {
+            Write-Host "Can't get process - $Tries"
+            $Tries++
+            Sleep 1
+            $Process = (Get-Process | ? {$_.Path -eq $FilePath})[0]
+            Write-Host "Process= $($Process.Handle)"
+        }
 
-			if ($Process -eq $null) {
-				Write-Host "Case 2 - Failed Get-Process"
-				[PSCustomObject]@{ProcessId = $null}
-				return
-			}
-		} else {
-			Write-Host "Case 1 - Failed CreateProcess"
-			[PSCustomObject]@{ProcessId = $null}
-			return
-		}
-
-        [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle}
-
-        $ControllerProcess.Handle | Out-Null
-        $Process.Handle | Out-Null
-
-        do {if ($ControllerProcess.WaitForExit(1000)) {$Process.CloseMainWindow() | Out-Null}}
-        while ($Process.HasExited -eq $false)
+        if ($Process -eq $null) {
+            Write-Host "Case 2 - Failed Get-Process"
+            [PSCustomObject]@{ProcessId = $null}
+            return
+        }
+    } else {
+        Write-Host "Case 1 - Failed CreateProcess"
+        [PSCustomObject]@{ProcessId = $null}
+        return
     }
 
-    do {Start-Sleep 1; $JobOutput = Receive-Job $Job}
-    while ($JobOutput -eq $null)
+    [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle}
 
-    $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
+    $ControllerProcess.Handle | Out-Null
     $Process.Handle | Out-Null
-    $Process
+
+    do {if ($ControllerProcess.WaitForExit(1000)) {$Process.CloseMainWindow() | Out-Null}}
+    while ($Process.HasExited -eq $false)
 }
 
+do {Start-Sleep 1; $JobOutput = Receive-Job $Job}
+while ($JobOutput -eq $null)
 
-
+$Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
+$Process.Handle | Out-Null
+$Process
 
 function Expand-WebRequest {
     param(
@@ -1200,3 +1195,4 @@ Function Autoupdate {
         $LabelNotifications.ForeColor = "Green"
     }
 }
+
