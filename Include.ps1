@@ -968,28 +968,18 @@ function Start-SubProcess {
         Write-Host "Last error $x"
         $Process = Get-Process -Id $lpProcessInformation.dwProcessID
 
-			# Dirty workaround
-			# Need to investigate. lpProcessInformation sometimes comes null even if process started
-			# So getting process with the same FilePath if so
-			$Tries = 0
-			While ($Process -eq $null -and $Tries -le 5) {
-				Write-Host "Can't get process - $Tries"
-				$Tries++
-				Sleep 1
-				$Process = (Get-Process | ? {$_.Path -eq $FilePath})[0]
-				Write-Host "Process= $($Process.Handle)"
-			}
+        # Dirty workaround
+        # Need to investigate. lpProcessInformation sometimes comes null even if process started
+        # So getting process with the same FilePath if so
+        if ($Process -eq $null) {
+            Sleep 2
+            $Process = (Get-Process | ? {$_.Path -eq $FilePath})[0]
+        }
 
-			if ($Process -eq $null) {
-				Write-Host "Case 2 - Failed Get-Process"
-				[PSCustomObject]@{ProcessId = $null}
-				return
-			}
-		} else {
-			Write-Host "Case 1 - Failed CreateProcess"
-			[PSCustomObject]@{ProcessId = $null}
-			return
-		}
+        if ($Process -eq $null) {
+            [PSCustomObject]@{ProcessId = $null}
+            return
+        }
 
         [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle}
 
