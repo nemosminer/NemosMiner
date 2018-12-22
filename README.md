@@ -212,7 +212,7 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Nvidia driver 417.35 / http://us.download.nvidia.com/Windows/417.35/417.35-desktop-win10-64bit-international-whql.exe
+recommended/optimal Nvidia driver 417.35 / http://us.download.nvidia.com/Windows/417.35/417.35-desktop-win10-64bit-international-whql-rp.exe
 
 Tested with 6x1070 6x1070ti 6x1080ti 6x2080 (users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
