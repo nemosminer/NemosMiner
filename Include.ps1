@@ -678,6 +678,12 @@ function Get-HashRate {
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
             }
+            "gminer" {
+                $Message = @{id = 1; method = "getstat"} | ConvertTo-Json -Compress
+                $Request = Invoke_httpRequest $Server $Port "/stat" 5
+                $Data = $Request | ConvertFrom-Json
+                $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+            }
             "claymore" {
 
                 $Request = Invoke_httpRequest $Server $Port "" 5
