@@ -3,7 +3,7 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Gminer112\miner.exe"
 $Uri = "https://nemosminer.com/data/optional/gminer_1_12_minimal_windows64.7z"
 $Commands = [PSCustomObject]@{
-    "zhash" = "" #Zhash(testing)
+    #"zhash" = "" #Zhash(working with 10series/ not RTX)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
