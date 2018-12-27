@@ -1,13 +1,13 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CryptoDredge014\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.14.0/CryptoDredge_0.14.0_cuda_10.0_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge015\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.15.0/CryptoDredge_0.15.0_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"            = " -a allium" #Allium (fastetst)
     "lyra2v2"           = " -a lyra2v2" #Lyra2RE2 (fastest)
-    "lyrarev3"          = " -a lyrarev3" #Lyra2REv3 
-    "lyra2v3"           = " -a lyrarev3" #Lyra2v3
+    "lyrarev3"          = " -a lyra2v3" #Lyra2REv3 
+    "lyra2v3"           = " -a lyra2v3" #Lyra2v3
     "lyra2z"            = " -a lyra2z" #Lyra2z (fastest)
     "neoscrypt"         = " -a neoscrypt" #NeoScrypt (fastest)
     "phi"               = " -a phi" #Phi
@@ -23,6 +23,7 @@ $Commands = [PSCustomObject]@{
     "c11"               = " -a c11" #C11
     "polytimos "        = " -a polytimos " #Polytimos 
     "skunk"             = " -a skunk" #Skunk
+    "mtp"               = " -a mtp" #Mtp
     "bcd"               = " -a bcd" #Bcd
     "x16r"              = " -a x16r" #X16r
     "x21s"              = " -a x21s" #X21s
