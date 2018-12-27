@@ -152,6 +152,7 @@
     "machine":  "Timetravel",
     "machinecoin":  "Timetravel",
     "magi":  "m7m",
+    "mtp":  "Mtp",
     "maxcoin":  "Keccak",
     "memohash":  "Axiom",
     "monero":  "CryptoNightV7",
