@@ -735,9 +735,9 @@ function Get-HashRate {
             "miniZ" {
                 $Request = Invoke_httpRequest $Server $Port "/gplots-1" 5
                 if ($Request -ne "" -and $request -ne $null) {
-		    $Data = $Request.ParsedHtml.title
+                    $Data = $Request.ParsedHtml.title
                     $HashRate = [Double]($Data -replace 'MiniZ Control Panel \(' -replace ' Sol/s\)')
-		}
+                }
             }
 
             "wrapper" {
