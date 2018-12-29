@@ -14,8 +14,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.6.1
-version date:   23 December 2018
+version:        3.6.2
+version date:   30 December 2018
 #>
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
@@ -732,7 +732,7 @@ function Get-HashRate {
                 }
             }
 
-            "MiniX" {
+            "miniZ" {
                 $Request = Invoke_httpRequest $Server $Port "/gplots-1" 5
                 if ($Request -ne "" -and $request -ne $null) {
 		    $Data = $Request.ParsedHtml.title
