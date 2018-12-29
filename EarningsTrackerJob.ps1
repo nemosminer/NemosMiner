@@ -15,8 +15,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EarningsTrackerJob.ps1
-version:        3.6.1
-version date:   23 December 2018
+version:        3.6.2
+version date:   30 December 2018
 #>
 
 # param(
