@@ -650,7 +650,6 @@ function Get-HashRate {
 
             }
 
-
             "palgin" {
                 $Request = Invoke_TcpRequest $server $port  "summary" 5
                 $Data = $Request -split ";"
@@ -663,6 +662,7 @@ function Get-HashRate {
                 $Data = $Request -split ";" | ConvertFrom-StringData
                 $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {[Double]$Data.KHS * $Multiplier}
             }
+
             "excavator" {
                 $Message = @{id = 1; method = "algorithm.list"; params = @()} | ConvertTo-Json -Compress
                 $Request = Invoke_TcpRequest $server $port $message 5
@@ -672,20 +672,22 @@ function Get-HashRate {
                     $HashRate = [Double](($Data.workers.speed) | Measure-Object -Sum).Sum
                 }
             }
+
             "ewbf" {
                 $Message = @{id = 1; method = "getstat"} | ConvertTo-Json -Compress
                 $Request = Invoke_TcpRequest $server $port $message 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
             }
+
             "gminer" {
                 $Message = @{id = 1; method = "getstat"} | ConvertTo-Json -Compress
                 $Request = Invoke_httpRequest $Server $Port "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
             }
-            "claymore" {
 
+            "claymore" {
                 $Request = Invoke_httpRequest $Server $Port "" 5
                 if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{"), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{") + 1) | ConvertFrom-Json
@@ -694,8 +696,8 @@ function Get-HashRate {
                 }
 
             }
-            "ethminer" {
 
+            "ethminer" {
                 $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json  -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
                 if ($Request -ne "" -and $request -ne $null) {
@@ -705,7 +707,6 @@ function Get-HashRate {
             }
 
             "ClaymoreV2" {
-
                 $Request = Invoke_httpRequest $Server $Port "" 5
                 if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{"), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{") + 1) | ConvertFrom-Json
@@ -730,6 +731,15 @@ function Get-HashRate {
                     if ($HashRate -eq "") {$HashRate = $Data[3]}
                 }
             }
+
+            "MiniX" {
+                $Request = Invoke_httpRequest $Server $Port "/gplots-1" 5
+                if ($Request -ne "" -and $request -ne $null) {
+		    $Data = $Request.ParsedHtml.title
+                    $HashRate = [Double]($Data -replace 'MiniZ Control Panel \(' -replace ' Sol/s\)')
+		}
+            }
+
             "wrapper" {
                 $HashRate = ""
                 $wrpath = ".\Wrapper_$Id.txt"
@@ -757,7 +767,6 @@ function Get-HashRate {
                     $HashRate = [Double]$Data.hashrate.total[0]
                 }
             }
-
 
             "bminer" { 
                 $Request = Invoke_httpRequest $Server $Port "/api/status" 5
