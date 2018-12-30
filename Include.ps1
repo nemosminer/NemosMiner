@@ -616,7 +616,6 @@ function Get-HashRate {
         switch ($API) {
 
             "Dtsm" {
-                 
                 $Request = Invoke_TcpRequest $server $port "empty" 5
                 if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
@@ -624,6 +623,7 @@ function Get-HashRate {
                 }
 
             }
+
             "xgminer" {
                 $Message = @{command = "summary"; parameter = ""} | ConvertTo-Json -Compress
                 $Request = Invoke_TcpRequest $server $port $Message 5
@@ -657,7 +657,6 @@ function Get-HashRate {
             }
                 
             "ccminer" {
-                
                 $Request = Invoke_TcpRequest $server $port  "summary" 5
                 $Data = $Request -split ";" | ConvertFrom-StringData
                 $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {[Double]$Data.KHS * $Multiplier}
@@ -694,11 +693,10 @@ function Get-HashRate {
                     $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
                     $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
                 }
-
             }
 
             "ethminer" {
-                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json  -Compress
+                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
                 if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request | ConvertFrom-Json
@@ -733,11 +731,10 @@ function Get-HashRate {
             }
 
             "miniZ" {
-                $Request = Invoke_httpRequest $Server $Port "/gplots-1" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request.ParsedHtml.title
-                    $HashRate = [Double]($Data -replace 'MiniZ Control Panel \(' -replace ' Sol/s\)')
-                }
+                $Message = '{"id":"0", "method":"getstat"}'
+                $Request = Invoke_TcpRequest $server $port $message 5
+                $Data = $Request | ConvertFrom-Json
+                $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
             }
 
             "wrapper" {
