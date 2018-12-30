@@ -23,7 +23,7 @@ $Commands = [PSCustomObject]@{
     #"keccakc"    = " -d $($Config.SelGPUCC) -i 29" #Keccakc
     #"keccak"     = " -d $($Config.SelGPUCC) -i 29" #Keccak
     #"lyra2v2"    = " -d $($Config.SelGPUCC)" #Lyra2RE2
-    "lyra2z"     = " -d $($Config.SelGPUCC) --submit-stale" #Lyra2z
+    #"lyra2z"     = " -d $($Config.SelGPUCC) --submit-stale" #Lyra2z
     #"myr-gr"     = " -d $($Config.SelGPUCC)" #MyriadGroestl
     #"neoscrypt"  = " -d $($Config.SelGPUCC)" #NeoScrypt
     #"nist5" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Nist5
@@ -36,7 +36,7 @@ $Commands = [PSCustomObject]@{
     "sonoa"      = " -d $($Config.SelGPUCC)" #Sonoa
     "skunk"      = " -d $($Config.SelGPUCC)" #Skunk
     "timetravel" = " -d $($Config.SelGPUCC)" #Timetravel
-    "tribus"     = " -d $($Config.SelGPUCC)" #Tribus
+    #"tribus"     = " -d $($Config.SelGPUCC)" #Tribus
     #"c11"        = " -d $($Config.SelGPUCC)" #C11
     #"veltor" = "" #Veltor
     #"x11evo"     = " -d $($Config.SelGPUCC)" #X11evo (Alexis78 faster)
