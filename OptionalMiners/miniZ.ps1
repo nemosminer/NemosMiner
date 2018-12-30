@@ -3,7 +3,7 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-miniZ1.0i\miniZ.exe"
 $Uri = "https://nemosminer.com/data/optional/miniZ_v1.0i_win-x64.7z"
 $Commands = [PSCustomObject]@{
-    "zhash" = "" #Zhash(10/20 series cuda9.2 testing)
+    "zhash" = "" #Zhash(fastest)
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
