@@ -33,7 +33,7 @@
     "Proxy": "",
     "SSL": false,
     "StartGUIMinimized": false,
-    "StatsInterval": 300,
+    "StatsInterval": 150,
     "SyncRoot": {},
     "TrackEarnings": true,
     "Type": [
