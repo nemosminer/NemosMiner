@@ -5,7 +5,7 @@ $Uri = "https://nemosminer.com/data/optional/z-enemy.1-28-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
     "aeriumx"    = "" #AeriumX(RTX)
-    "bcd"        = "" #Bcd(RTX)
+    "bcd"        = "" #Bcd(RTX)(trex faster/close tho)
     "hsr"        = "" #Hsr
     "phi"        = "" #Phi (RTX)
     "phi2"       = "" #Phi2 (RTX)
