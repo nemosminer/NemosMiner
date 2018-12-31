@@ -27,7 +27,7 @@ $Locations | ForEach-Object {
     }
 
     # Placed here for Perf (Disk reads)
-    $ConfName = if (-ne $Null $Config.PoolsConfig.$Name) {$Name}else {"default"}
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
     $PoolConf = $Config.PoolsConfig.$ConfName
 
     $Request.result.simplemultialgo | ForEach-Object {

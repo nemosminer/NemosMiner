@@ -4,22 +4,22 @@ $Path = ".\Bin\NVIDIA-zealotenemy128\z-enemy.exe"
 $Uri = "https://nemosminer.com/data/optional/z-enemy.1-28-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
-    "aeriumx" = "" #AeriumX(testing)
-    "bcd"     = "" #Bcd(trex faster/close tho)
+    "aeriumx"    = "" #AeriumX(testing)
+    "bcd"        = "" #Bcd(trex faster/close tho)
     #"phi"        = "" #Phi (CryptoDredge faster)
     #"phi2"       = "" #Phi2 (CryptoDredge faster)
-    "poly"    = "" #Polytimos(fastest) 
+    "poly"       = "" #Polytimos(fastest) 
     #"bitcore"    = "" #Bitcore (trex faster)
     #"x16r"       = "" #X16r (trex faster)
     #"x16s"       = "" #X16s (trex faster)
-    "sonoa"   = "" #SonoA (trex faster)
+    "sonoa"      = "" #SonoA (trex faster)
     #"skunk"      = "" #Skunk (CryptoDredge faster)
     #"timetravel" = "" #Timetravel (trex faster)
     #"tribus"     = "" #Tribus (not profitable atm)
     #"c11"        = "" #C11 (trex faster)
-    "xevan"   = "" #Xevan (fastest)
+    "xevan"      = "" #Xevan (fastest)
     #"x17"        = "" #X17(trex faster)
-    "hex"     = "" #Hex (fastest)
+    "hex"        = "" #Hex (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName

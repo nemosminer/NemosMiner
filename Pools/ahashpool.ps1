@@ -1,8 +1,8 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
     $Request = Invoke-WebRequest "https://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
-    #$ahashpoolCoins_Request = Invoke-RestMethod "http://www.ahashpool.com/api/currencies" -UseBasicParsing -TimeoutSec 20 -ErrorAction Stop
+    $ahashpoolCoins_Request = Invoke-RestMethod "http://www.ahashpool.com/api/currencies" -UseBasicParsing -TimeoutSec 20 -ErrorAction Stop
 }
 catch { return }
 
@@ -17,8 +17,8 @@ $DivisorMultiplier = 1000000
 $Location = "US"
 
 # Placed here for Perf (Disk reads)
-$ConfName = if (-ne $Null $Config.PoolsConfig.$Name) {$Name}else {"default"}
-$PoolConf = $Config.PoolsConfig.$ConfName
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     $PoolHost = "$($_)$($HostSuffix)"
@@ -37,7 +37,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm
             Info          = "$ahashpool_Coin $ahashpool_Coinname"
-            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
