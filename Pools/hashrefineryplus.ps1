@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 Try {
     $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\BrainPlus\hashrefineryplus\hashrefineryplus.json") | ConvertFrom-Json 
@@ -16,8 +16,8 @@ $DivisorMultiplier = 1000000
 $Location = "US"
 
 # Placed here for Perf (Disk reads)
-    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
-    $PoolConf = $Config.PoolsConfig.$ConfName
+$ConfName = if (-ne $Null $Config.PoolsConfig.$Name) {$Name}else {"default"}
+$PoolConf = $Config.PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     $PoolHost = "$($_)$($HostSuffix)"
@@ -36,7 +36,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm
             Info          = "$ahashpool_Coin $ahashpool_Coinname"
-            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
+            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
