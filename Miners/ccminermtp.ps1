@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 
-$Path = ".\Bin\NVIDIA-ccminermtp117/ccmier.exe
-$Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/1.1.7/ccminerMTPkrnlx.7z"
+$Path = ".\Bin\NVIDIA-ccminermtp119/ccminer_sm61.exe
+$Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/1.1.9/ccminermtp119.7z"
 
 $Commands = [PSCustomObject]@{
     "mtp= "" #MTP
