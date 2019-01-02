@@ -8,6 +8,8 @@ $Commands = [PSCustomObject]@{
     #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144(miniZ faster)
     #"zhash" = " -pers auto -uri equihash1445://" #Zhash(miniZ faster)
     #"ethash" = " -uri ethstratum://" #Ethash(ethminer faster)
+    "aeternity" = " -uri aeternity://" #aeternity(testing)
+    
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -17,7 +19,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "$($Commands.$_)$($Pools.(Get-Algorithm($_)).User):$($Pools.(Get-Algorithm($_)).Pass.ToString().replace(',','%2C'))@$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -max-temperature 94 -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day} 
+        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day * .98} # substract 2% devfee 
         API       = "bminer"
         Port      = $Port
         Wrap      = $false
