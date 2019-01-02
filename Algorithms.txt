@@ -1,5 +1,6 @@
 {
     "aergo": "Aergo",
+    "aeternity": "Aeternity",
     "aeriumx": "Aergo",
     "allium":  "Allium",
     "anime":  "Anime",
