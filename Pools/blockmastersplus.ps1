@@ -21,7 +21,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    $ConfName = if (-ne $Null $Config.PoolsConfig.$Name) {$Name}else {"default"}
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
     $PoolConf = $Config.PoolsConfig.$ConfName
 
 
