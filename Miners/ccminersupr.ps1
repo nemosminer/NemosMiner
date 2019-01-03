@@ -4,7 +4,6 @@ $Path = ".\Bin\NVIDIA-ccminersupr20\ccminer.exe"
 $Uri = "https://github.com/ocminer/suprminer/releases/download/2.0/suprminer-2.0.7z"
 
 $Commands = [PSCustomObject]@{
-    "x16r" = " -d $($Config.SelGPUCC)" #X16r(testing)
     "x16rt" = " -d $($Config.SelGPUCC)" #X16RT 
 }
 
