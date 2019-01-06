@@ -4,8 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerxevan9\ccminer_x86.exe"
 $Uri = "https://github.com/nemosminer/ccminer-xevan/releases/download/ccminer-xevan/ccminer_x86.7z"
 
 $Commands = [PSCustomObject]@{
-    "xevan" = " -N 1 -d $($Config.SelGPUCC) -i 21" #Xevan(fastest on most 10series cards/enemyzealot1.18x32 faster on 1080ti's)
-    "skein" = " -N 1 -d $($Config.SelGPUCC) -i 28" #Skein
+    "xevan" = " -N 1 -d $($Config.SelGPUCC) -i 21" #Xevan
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -15,7 +14,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         Type = "NVIDIA"
         Path = $Path
         Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Week}
+        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
         API = "ccminer"
         Port = $Variables.NVIDIAMinerAPITCPPort
         Wrap = $false
