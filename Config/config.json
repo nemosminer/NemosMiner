@@ -15,7 +15,7 @@
     "Donate": 8,
     "EnableEarningsTrackerLogs": false,
     "FirstInterval": 30,
-    "Interval": 150,
+    "Interval": 60,
     "IsFixedSize": false,
     "IsReadOnly": false,
     "IsSynchronized": true,
@@ -33,7 +33,7 @@
     "Proxy": "",
     "SSL": false,
     "StartGUIMinimized": false,
-    "StatsInterval": 150,
+    "StatsInterval": 120,
     "SyncRoot": {},
     "TrackEarnings": true,
     "Type": [
