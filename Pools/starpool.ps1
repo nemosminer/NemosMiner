@@ -16,7 +16,7 @@ $DivisorMultiplier = 1000000
 $Location = "US"
 
 # Placed here for Perf (Disk reads)
-$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
+$ConfName = if (-ne $Null $Config.PoolsConfig.$Name) {$Name}else {"default"}
 $PoolConf = $Config.PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
