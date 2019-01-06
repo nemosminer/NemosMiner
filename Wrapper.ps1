@@ -59,7 +59,7 @@ do {
         Write-Host $Line -NoNewline
     }
 
-    if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
+    if ((-eq $null Get-Process | Where-Object Id -EQ $ControllerProcessID)) {$PowerShell.Stop() | Out-Null}
 }
 until($Result.IsCompleted)
 
