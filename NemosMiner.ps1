@@ -32,11 +32,11 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory = $false)]
-    [Int]$Interval = 120, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 60, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
     [Int]$FirstInterval = 30, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory = $false)]
-    [Int]$StatsInterval = 150, #seconds of current active to gather hashrate if not gathered yet
+    [Int]$StatsInterval = 120, #seconds of current active to gather hashrate if not gathered yet
     [Parameter(Mandatory = $false)]
     [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory = $false)]
