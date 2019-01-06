@@ -1,4 +1,3 @@
-
 <#
 EarningsTrackerJob written by MrPlus
 Copyright (c) 2018 MrPlus
