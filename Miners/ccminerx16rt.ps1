@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerx16rt\ccminer.exe"
 $Uri = "https://github.com/Nigeleyeit/ccminer/releases/download/v1.7/ccminerv1.7_Cuda10.zip"
 
 $Commands = [PSCustomObject]@{
-    "x16rt" = " -d $($Config.SelGPUCC)" #X16RT 
+    #"x16rt" = " -d $($Config.SelGPUCC)" #X16RT 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
