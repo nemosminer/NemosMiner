@@ -8,7 +8,7 @@ $Commands = [PSCustomObject]@{
     #"lyra2v2"           = " -a lyra2v2" #Lyra2RE2 (Asic)
     "lyrarev3"          = " -a lyra2v3" #Lyra2REv3 (Not Asic :)
     "lyra2v3"           = " -a lyra2v3" #Lyra2v3 (Not Asic :)
-    "lyra2zz "           = " -a lyra2zz" #Lyra2zz (Testing)
+    "lyra2zz "          = " -a lyra2zz" #Lyra2zz (Testing)
     "neoscrypt"         = " -a neoscrypt" #NeoScrypt (fastest)
     "phi"               = " -a phi" #Phi (fastest)
     #"blake2s"           = " -a blake2s" #Blake2s (not profitable)
@@ -25,7 +25,7 @@ $Commands = [PSCustomObject]@{
     "skunk"             = " -a skunk" #Skunk (fastest)
     "mtp"               = " -a mtp" #Mtp (not Asic :)
     #"bcd"               = " -a bcd" #Bcd (trex faster)
-    "x16rt"              = " -a x16rt" #X16rt (testing)
+    "x16rt"             = " -a x16rt" #X16rt (testing)
     "x21s"              = " -a x21s" #X21s (fastest)
     #"x16s"              = " -a x16s" #X16s (trex faster)
     #"x17"               = " -a x17" #X17 (trex faster)
@@ -38,7 +38,7 @@ $Commands = [PSCustomObject]@{
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-$Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
