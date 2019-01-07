@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex089\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.8.9/t-rex-0.8.9-win-cuda10.0.zip"
+$Path = ".\Bin\NVIDIA-trex090\t-rex.exe"
+$Uri = "https://nemosminer.com/data/optional/t-rex-0.9.0-win-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
     "balloon"    = "" #Balloon(fastest)
@@ -20,10 +20,12 @@ $Commands = [PSCustomObject]@{
     "x17"        = "" #X17 (fastest)
     "x16s"       = "" #X16s (fastest)
     "x16r"       = "" #X16r (fastest)
+    "x16rt"       = "" #X16rt (testing)
     "sonoa"      = "" #SonoA (fastest)
     #"hmq1725" = "" #Hmq1725 (CryptoDredge faster)
     "dedal"      = "" #Dedal (fastest)
     "sha256t"    = "" #Sha256t (fastest)
+    "sha256q"    = "" #Sha256q (testing)
     "x21s"       = "" #X21s (fastest)
     "x22i"       = "" #X22i (fastest)
     "timetravel" = "" #Timetravel (fastest)
