@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Bminer111\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v11.1.0-6fe8c9e-CUDA-9.2-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer113\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v11.3.0-92cace8-cuda-9.2-amd64.zip"
 $Commands = [PSCustomObject]@{
     #"equihashBTG" = " -uri zhash://" #EquihashBTG(miniZ faster)
     #"equihash" = " -uri stratum://" #Equihash(Asic)
@@ -9,6 +9,7 @@ $Commands = [PSCustomObject]@{
     #"zhash" = " -pers auto -uri equihash1445://" #Zhash(miniZ faster)
     #"ethash" = " -uri ethstratum://" #Ethash(ethminer faster)
     "aeternity" = " -uri aeternity://" #aeternity(testing)
+    "beam" = " -uri beam+ssl://" #beam(testing)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
