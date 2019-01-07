@@ -19,6 +19,7 @@
     "bcd":  "BCD",
     "x13bcd":  "Bcd",
     "bastion":  "Bastion",
+    "beam":  "Beam",
     "bitcore":  "Bitcore",
     "blake":  "Blakecoin",
     "blake14r":  "Decred",
