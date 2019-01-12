@@ -15,7 +15,6 @@
     "Donate":  8,
     "EnableEarningsTrackerLogs":  false,
     "FirstInterval":  30,
-    "GPUCount":  6,
     "HideConsole":  false,
     "IdleSec":  120,
     "IncludeOptionalMiners":  false,
