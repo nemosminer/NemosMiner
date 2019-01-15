@@ -3,7 +3,7 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\\Bin\\Ethash-Claymore12\\EthDcrMiner64.exe"
 $Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/v12.0/Claymore.s.Dual.Ethereum.GPU.Miner.v12.0.7z"
 $Commands = [PSCustomObject]@{
-    "ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash(fastest)
+    #"ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash(PhoenixMiner_4.0b faster)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
