@@ -15,7 +15,7 @@ $PriceField = "actual_last24h"
 $Location = "US"
 
 # Placed here for Perf (Disk reads)
-$ConfName = if (-ne $Null $Config.PoolsConfig.$Name) {$Name}else {"default"}
+$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
 $PoolConf = $Config.PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
