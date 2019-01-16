@@ -18,7 +18,7 @@
     "HideConsole":  false,
     "IdleSec":  120,
     "IncludeOptionalMiners":  false,
-    "Interval":  60,
+    "Interval":  180,
     "IsFixedSize":  false,
     "IsReadOnly":  false,
     "IsSynchronized":  true,
