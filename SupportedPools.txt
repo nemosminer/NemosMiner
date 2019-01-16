@@ -10,3 +10,4 @@ phiphipool
 blockmasters
 starpool
 nlpool
+zergpool
