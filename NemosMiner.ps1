@@ -673,7 +673,7 @@ $LabelGitHub.add_Click( {[system.Diagnostics.Process]::start("https://github.com
 $MainFormControls += $LabelGitHub
 
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
-$LabelCopyright.Location = New-Object System.Drawing.Size(415, 80)
+$LabelCopyright.Location = New-Object System.Drawing.Size(415, 72)
 $LabelCopyright.Size = New-Object System.Drawing.Size(200, 20)
 $LabelCopyright.LinkColor = "BLUE"
 $LabelCopyright.ActiveLinkColor = "RED"
