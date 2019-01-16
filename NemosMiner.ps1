@@ -90,6 +90,9 @@ This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
 "@
+Write-Host -F Yellow " Copyright and license notices must be preserved."
+@"
+"@
 
 $Global:Config = [hashtable]::Synchronized(@{})
 $Global:Variables = [hashtable]::Synchronized(@{})
