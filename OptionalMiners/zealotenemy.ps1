@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     #"c11"        = "" #C11 (trex faster)
     "xevan"   = " -i 22" #Xevan (fastest)
     #"x17"        = "" #X17(trex faster)
-    "hex"     = "" #Hex (fastest)
+    "hex"     = " -i 25" #Hex (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
