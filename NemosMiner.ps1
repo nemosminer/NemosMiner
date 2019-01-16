@@ -85,7 +85,7 @@ param(
 
 @"
 NemosMiner
-Copyright (c) 2018 Nemo and MrPlus
+Copyright (c) 2019 Nemo and MrPlus
 This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
@@ -677,7 +677,7 @@ $LabelCopyright.Location = New-Object System.Drawing.Size(415, 72)
 $LabelCopyright.Size = New-Object System.Drawing.Size(200, 20)
 $LabelCopyright.LinkColor = "BLUE"
 $LabelCopyright.ActiveLinkColor = "RED"
-$LabelCopyright.Text = "Copyright (c) 2018 Nemo and MrPlus"
+$LabelCopyright.Text = "Copyright (c) 2019 Nemo and MrPlus"
 $LabelCopyright.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner/blob/master/LICENSE")})
 $MainFormControls += $LabelCopyright
 
