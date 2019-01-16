@@ -22,13 +22,13 @@ $Commands = [PSCustomObject]@{
     #"bcd"               = " --intensity 8 -a bcd" #Bcd (trex faster)
     "x16rt"             = " --intensity 8 -a x16rt" #X16rt (testing)
     "x21s"              = " --intensity 8 -a x21s" #X21s (fastest)
-    "x16s"              = " --intensity 8 -a x16s" #X16s (trex faster)
+    #"x16s"              = " --intensity 8 -a x16s" #X16s (trex faster)
     #"x17"               = " --intensity 8 -a x17" #X17 (trex faster)
     #"bitcore"           = " --intensity 8 -a bitcore" #Bitcore (trex faster)
     "hmq1725"           = " --intensity 8 -a hmq1725" #Hmq1725 (fastest thanks for the fix)
     "dedal"             = " --intensity 8 -a dedal" #Dedal (trex faster second place)
     "pipe"              = " --intensity 8 -a pipe" #Pipe (fastest)
-    "x16r"              = " --intensity 8 -a x16r" #x16r (fastest)
+    #"x16r"              = " --intensity 8 -a x16r" #x16r (trex fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
