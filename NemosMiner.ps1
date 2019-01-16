@@ -32,7 +32,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory = $false)]
-    [Int]$Interval = 60, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 180, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
     [Int]$FirstInterval = 30, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory = $false)]
