@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-multiminer1001201\cpuminer-aes-sse42.exe"
+$Path = ".\Bin\NVIDIA-multiminer1001201\multiminer.exe"
 $Uri = "https://github.com/bogdanadnan/multiminer/releases/download/v1.0.0/multiminer_v1.0.0_12.01.2019.zip"
 
 $Commands = [PSCustomObject]@{
