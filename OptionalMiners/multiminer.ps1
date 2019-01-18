@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-multiminer1001201\cpuminer-aes-sse42.exe"
 $Uri = "https://github.com/bogdanadnan/multiminer/releases/download/v1.0.0/multiminer_v1.0.0_12.01.2019.zip"
 
 $Commands = [PSCustomObject]@{
-    #"argon2d-dyn" = " -a argon2d250" #argon2d-dyn (testing)
+    #"argon2d-dyn" = " --use-gpu CUDA --gpu-batchsize=1024 -t 2 -a argon2d250" #argon2d-dyn (testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
