@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerdyn10\ccminer.exe"
 $Uri = "https://nemosminer.com/data/optional/ccminerdyn.7z"
 
 $Commands = [PSCustomObject]@{
-    #"argon2d-dyn" = "" #argon2d-dyn (testing)
+    "argon2d-dyn" = "" #argon2d-dyn (testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
