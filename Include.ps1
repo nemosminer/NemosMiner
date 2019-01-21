@@ -15,7 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.6.6
-version date:   16 January 2019
+version date:   22 January 2019
 #>
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
@@ -660,6 +660,12 @@ function Get-HashRate {
                 $Request = Invoke_TcpRequest $server $port  "summary" 5
                 $Data = $Request -split ";" | ConvertFrom-StringData
                 $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) {[Double]$Data.KHS * $Multiplier}
+            }
+
+            "zjazz" {
+                $Request = Invoke_TcpRequest $server $port  "summary" 10
+                $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
+                $HashRate = [Double]$Data.KHS * 1000000
             }
 
             "excavator" {
