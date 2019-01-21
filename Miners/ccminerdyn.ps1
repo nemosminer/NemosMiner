@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerdyn10\ccminer.exe"
 $Uri = "https://nemosminer.com/data/optional/ccminerdyn.7z"
 
 $Commands = [PSCustomObject]@{
-    "argon2d-dyn" = "" #argon2d-dyn (fastest)
+    "argon2d-dyn" = " -i 13.7" #argon2d-dyn (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.(Get-Algorithm $_).Host):$($Pools.(Get-Algorithm $_).Port) -a argon2d -u $($Pools.(Get-Algorithm $_).User) -p $($Pools.(Get-Algorithm $_).Pass)$($Commands.$_)"
+        Arguments = "-R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.(Get-Algorithm $_).Host):$($Pools.(Get-Algorithm $_).Port) -a argon2d -u $($Pools.(Get-Algorithm $_).User) -p $($Pools.(Get-Algorithm $_).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
