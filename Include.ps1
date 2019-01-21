@@ -665,7 +665,7 @@ function Get-HashRate {
             "zjazz" {
                 $Request = Invoke_TcpRequest $server $port  "summary" 10
                 $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
-                $HashRate = [Double]$Data.KHS * 1000000
+                $HashRate = [Double]$Data.KHS * 2000000
             }
 
             "excavator" {
