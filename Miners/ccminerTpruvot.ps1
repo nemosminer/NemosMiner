@@ -13,7 +13,7 @@ $Commands = [PSCustomObject]@{
     "skunk"      = " -d $($Config.SelGPUCC)" #Skunk
     "timetravel" = " -d $($Config.SelGPUCC)" #Timetravel
     "exosis"     = " -d $($Config.SelGPUCC)" #Exosis
-
+    "phi2"       = " -i 19 -d $($Config.SelGPUCC)" #Phi2
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
