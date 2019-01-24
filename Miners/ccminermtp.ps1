@@ -5,7 +5,7 @@ $Path = ".\Bin\NVIDIA-ccminermtp1110/ccminer.exe"
 $Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/1.1.10/ccminermtpv1.1.10.7z"
 
 $Commands = [PSCustomObject]@{
-     "mtp" = " -i 20.5" #MTP (fastest) 
+     "mtp" = " -i 21.5" #MTP (fastest) 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
