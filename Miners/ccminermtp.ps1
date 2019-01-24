@@ -1,11 +1,11 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 
-$Path = ".\Bin\NVIDIA-ccminermtp1113/ccminer.exe"
-$Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/v1.1.13/ccminermtpv1113.7z"
+$Path = ".\Bin\NVIDIA-ccminermtp1110/ccminer.exe"
+$Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/1.1.10/ccminermtpv1.1.10.7z"
 
 $Commands = [PSCustomObject]@{
-    #"mtp" = " -i 20.5" #MTP (fastest,requires 8gb system ram for 5+ cards 4gb can do upto 5 cards) 
+    #"mtp" = " -i 20.5" #MTP (fastest) 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
