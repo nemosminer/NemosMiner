@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-miniZ1.0i\miniZ.exe"
-$Uri = "https://nemosminer.com/data/optional/miniZ_v1.0i_win-x64.7z"
+$Path = ".\Bin\NVIDIA-miniZ1.0j\miniZ.exe"
+$Uri = "https://nemosminer.com/data/optional/miniZ_v1.0j_cuda10_win-x64"
 $Commands = [PSCustomObject]@{
     #"zhash" = "" #Zhash(Gminer faster)
 }
