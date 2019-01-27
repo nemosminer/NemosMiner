@@ -745,7 +745,7 @@ function Get-HashRate {
 
             "wrapper" {
                 $HashRate = ""
-                $wrpath = ".\Wrapper_$Id.txt"
+                $wrpath = ".\energi.txt"
                 $HashRate = if (test-path -path $wrpath ) {
                     Get-Content  $wrpath
                     $HashRate = ($HashRate -split ',')[0]
