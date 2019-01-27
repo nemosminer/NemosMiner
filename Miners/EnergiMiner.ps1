@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-EnergiMiner221\energiminer.exe"
 $Uri = "https://nemosminer.com/data/optional/energiminer-2.2.1-Windows.7z"
 
 $Commands = [PSCustomObject]@{
-    #"nrghash" = "" #Nrghash (testing running/get-hasrate needs work)
+    "nrghash" = "" #Nrghash (testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -13,11 +13,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--cuda-devices $($Config.SelGPUCC) -U stratum://$($Pools.(Get-Algorithm($_)).User).$($Pools.(Get-Algorithm($_)).Pass)@nrghash.mine.zergpool.com:$($Pools.(Get-Algorithm($_)).Port)"
+        Arguments = "--cuda-devices $($Config.SelGPUDSTM) -U stratum://$($Pools.(Get-Algorithm($_)).User).$($Pools.(Get-Algorithm($_)).Pass)@nrghash.mine.zergpool.com:$($Pools.(Get-Algorithm($_)).Port)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
-        API       = "ccminer"
+        API       = "wrapper"
         Port      = $Variables.NVIDIAMinerAPITCPPort
-        Wrap      = $false
+        Wrap      = $true
         URI       = $Uri
         User      = $Pools.(Get-Algorithm($_)).User
     }
