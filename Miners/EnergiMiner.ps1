@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-EnergiMiner221\ccminer.exe"
+$Path = ".\Bin\NVIDIA-EnergiMiner221\energiminer.exe"
 $Uri = "https://nemosminer.com/data/optional/energiminer-2.2.1-Windows.7z"
 
 $Commands = [PSCustomObject]@{
