@@ -166,6 +166,7 @@
     "myriadgroestl":  "MyriadGroestl",
     "neoscrypt":  "NeoScrypt",
     "ninja":  "Polytimos",
+    "nrghash":  "Nrghash",
     "nist5":  "Nist5",
     "pascal":  "Pascal",
     "pentablake":  "PentaBlake",
