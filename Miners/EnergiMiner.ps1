@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-cuda-devices --devices $($Config.SelGPUDSTM) stratum+tcp://$($Pools.(Get-Algorithm($_)).User):c=BTC@nrghash.mine.zergpool.com:3100 -U --response-timeout 10 --cuda-parallel-hash 8 --cuda-block-size 256"
+        Arguments = "--cuda-devices $($Config.SelGPUDSTM) stratum+tcp://$($Pools.(Get-Algorithm($_)).User):c=BTC@nrghash.mine.zergpool.com:3100 -U --response-timeout 10 --cuda-parallel-hash 8 --cuda-block-size 256"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
