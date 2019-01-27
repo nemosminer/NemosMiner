@@ -15,7 +15,7 @@ Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 . .\Include.ps1
 
-Remove-Item ".\Wrapper_$Id.txt" -ErrorAction Ignore
+Remove-Item ".\energi.txt" -ErrorAction Ignore
 
 $PowerShell = [PowerShell]::Create()
 if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
@@ -31,7 +31,7 @@ do {
     $PowerShell.Streams.Verbose.ReadAll() | ForEach-Object {
         $Line = $_
 
-        if ($Line -like "*total speed:*" -or $Line -like "*accepted:*" -or $Line -like "*mining *:*") {
+        if ($Line -like "*speed*") {
             $Words = $Line -split " "
 
             $matches = $null
@@ -53,14 +53,14 @@ do {
                 "ph/s" {$HashRate *= [Math]::Pow(1000, 5)}
             }
 
-            $HashRate | ConvertTo-Json | Set-Content ".\Wrapper_$Id.txt"
+            $HashRate | ConvertTo-Json | Set-Content ".\energi.txt"
         }
 
         Write-Host $Line -NoNewline
     }
 
-    if ((-eq $null Get-Process | Where-Object Id -EQ $ControllerProcessID)) {$PowerShell.Stop() | Out-Null}
+    if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
 }
 until($Result.IsCompleted)
 
-Remove-Item ".\Wrapper_$Id.txt" -ErrorAction Ignore
+Remove-Item ".\energi.txt" -ErrorAction Ignore
