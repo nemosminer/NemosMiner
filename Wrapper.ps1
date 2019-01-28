@@ -36,21 +36,18 @@ do {
 
             $matches = $null
 
-            if ($Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1))] -match "^((?:\d*\.)?\d+)(.*)$") {
+            if ($Words[$Words.IndexOf(($Words -like "Mh/s" | Select-Object -First 1))] -match "^((?:\d*\.)?\d+)(.*)$") {
                 $HashRate = [Decimal]$matches[1]
                 $HashRate_Unit = $matches[2]
             }
             else {
-                $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1)) - 1]
-                $HashRate_Unit = $Words[$Words.IndexOf(($Words -like "*/s" | Select-Object -Last 1))]
+                $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "Mh/s" | Select-Object -First 1)) - 1]
+                $HashRate_Unit = $Words[$Words.IndexOf(($Words -like "Mh/s" | Select-Object -First 1))]
             }
 
             switch ($HashRate_Unit) {
-                "kh/s" {$HashRate *= [Math]::Pow(1000, 1)}
-                "mh/s" {$HashRate *= [Math]::Pow(1000, 2)}
-                "gh/s" {$HashRate *= [Math]::Pow(1000, 3)}
-                "th/s" {$HashRate *= [Math]::Pow(1000, 4)}
-                "ph/s" {$HashRate *= [Math]::Pow(1000, 5)}
+                "Mh/s" {$HashRate *= [Math]::Pow(1000, 2)}
+         
             }
 
             $HashRate | ConvertTo-Json | Set-Content ".\energi.txt"
