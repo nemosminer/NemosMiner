@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Gminer123\miner.exe"
-$Uri = "https://nemosminer.com/data/optional/gminer_1_23_minimal_windows64.7z"
+$Path = ".\Bin\NVIDIA-Gminer124\miner.exe"
+$Uri = "https://nemosminer.com/data/optional/gminer_1_24_minimal_windows64.7z"
 $Commands = [PSCustomObject]@{
     #"cuckaroo29"  = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Equihash Cuckaroo29/GRIN (testing)
     "equihash144"  = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144 (fastest)
