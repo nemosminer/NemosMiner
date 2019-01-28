@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--cuda-devices $($Config.SelGPUDSTM) -U stratum://$($Pools.(Get-Algorithm($_)).User).$($Pools.(Get-Algorithm($_)).Pass)@nrghash.mine.zergpool.com:$($Pools.(Get-Algorithm($_)).Port)"
+        Arguments = "--response-timeout 10 --cuda-parallel-hash 8 --cuda-block-size 256 --cuda-devices $($Config.SelGPUDSTM) -U stratum://$($Pools.(Get-Algorithm($_)).User).$($Pools.(Get-Algorithm($_)).Pass)@nrghash.mine.zergpool.com:$($Pools.(Get-Algorithm($_)).Port)"
         HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
         API       = "wrapper"
         Port      = $Variables.NVIDIAMinerAPITCPPort
