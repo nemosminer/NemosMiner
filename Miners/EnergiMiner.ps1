@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-EnergiMiner221\energiminer.exe"
 $Uri = "https://nemosminer.com/data/optional/energiminer-2.2.1-Windows.7z"
 
 $Commands = [PSCustomObject]@{
-    #"nrghash" = "" #Nrghash (fastest)
+    "nrghash" = "" #Nrghash (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
