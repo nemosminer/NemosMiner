@@ -5,7 +5,7 @@ $Uri = "https://github.com/zjazz/zjazz_cuda_miner/releases/download/1.2/zjazz_cu
 
 $Commands = [PSCustomObject]@{
     # "bitcash" = " -a bitcash" #Bitcash (testing)
-    "cuckoo"  = " -a bitcash --cuckoo-intensity 22 " #Cuckoo (testing nlpool) --cuckoo-cpu-assist-min 
+    #"cuckoo"  = " -a bitcash --cuckoo-intensity 22 " #Cuckoo (fastest/10 series only no RTX support) --cuckoo-cpu-assist-min 
     #"x22i"    = " -a x22i" #SUQA (testing)
 }
 
