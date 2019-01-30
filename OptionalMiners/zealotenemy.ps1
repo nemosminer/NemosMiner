@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-zealotenemy\z-enemy.exe"
+$Path = ".\Bin\NVIDIA-zealotenemy128\z-enemy.exe"
 $Uri = "https://nemosminer.com/data/optional/z-enemy.1-28-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
