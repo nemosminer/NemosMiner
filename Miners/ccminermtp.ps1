@@ -1,25 +1,27 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-
-$Path = ".\Bin\NVIDIA-ccminermtp11102/ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerMTP/releases/download/v1.1.10.2-mtp/ccminermtp-1.1.10.2.7z"
+$Path = ".\Bin\NVIDIA-ccminermtp\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminerMTP/releases/download/v1.1.10.1-mtp/ccminermtp-1.1.10.1.7z"
 
 $Commands = [PSCustomObject]@{
-     "mtp" = "" #MTP (fastest) 
+    # "mtp" = "" #mtp
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+	$Algo = Get-Algorithm($_)
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-d $($Config.SelGPUCC) --cpu-priority 5 -b $($Variables.NVIDIAMinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.(Get-Algorithm($_)).Host):$($Pools.(Get-Algorithm($_)).Port) -u $($Pools.(Get-Algorithm($_)).User) -p $($Pools.(Get-Algorithm($_)).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day}
+        Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -a $Algo -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Week}
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         Wrap      = $false
         URI       = $Uri
-        User      = $Pools.(Get-Algorithm($_)).User
+        User      = $Pools.($Algo).User
+        Host      = $Pools.($Algo).Host
+        Coin      = $Pools.($Algo).Coin
     }
 }
