@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CryptoDredge\CryptoDredge.exe"
+$Path = ".\Bin\NVIDIA-CryptoDredge0161\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.1/CryptoDredge_0.16.1_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
@@ -12,23 +12,23 @@ $Commands = [PSCustomObject]@{
     "phi2"              = " --intensity 8 -a phi2" #Phi2 (fastest)
     "lyra2vc0ban"       = " --intensity 8 -a lyra2vc0ban" #Lyra2vc0banHash (fastest)
     "cryptonightheavy"  = " --intensity 8 -a cryptonightheavy" # CryptoNightHeavy(fastest)
-    #"x22i"              = " --intensity 8 -a x22i" # X22i (trex faster)
-    #"tribus"            = " --intensity 8 -a tribus" #Tribus (not profitable)
+    #"x22i"             = " --intensity 8 -a x22i" # X22i (trex faster)
+    #"tribus"           = " --intensity 8 -a tribus" #Tribus (not profitable)
     "cnv8"              = " --intensity 8 -a cnv8" #CryptoNightv8 (fastest)
     "cryptonightmonero" = " --intensity 8 -a cnv8" # Cryptonightmonero (fastest)
-    #"c11"               = " --intensity 8 -a c11" #C11 (trex faster)
+    #"c11"              = " --intensity 8 -a c11" #C11 (trex faster)
     "skunk"             = " --intensity 8 -a skunk" #Skunk (fastest)
     "mtp"               = " --intensity 8 -a mtp" #Mtp (not Asic :)
-    #"bcd"               = " --intensity 8 -a bcd" #Bcd (trex faster)
-    "x16rt"             = " --intensity 8 -a x16rt" #X16rt (testing)
+    #"bcd"              = " --intensity 8 -a bcd" #Bcd (trex faster)
+    #"x16rt"            = " --intensity 8 -a x16rt" #X16rt (does not work on nlpool testnet need work)
     "x21s"              = " --intensity 8 -a x21s" #X21s (fastest)
-    #"x16s"              = " --intensity 8 -a x16s" #X16s (trex faster)
-    #"x17"               = " --intensity 8 -a x17" #X17 (trex faster)
-    #"bitcore"           = " --intensity 8 -a bitcore" #Bitcore (trex faster)
+    #"x16s"             = " --intensity 8 -a x16s" #X16s (trex faster)
+    #"x17"              = " --intensity 8 -a x17" #X17 (trex faster)
+    #"bitcore"          = " --intensity 8 -a bitcore" #Bitcore (trex faster)
     "hmq1725"           = " --intensity 8 -a hmq1725" #Hmq1725 (fastest thanks for the fix)
     "dedal"             = " --intensity 8 -a dedal" #Dedal (trex faster second place)
     "pipe"              = " --intensity 8 -a pipe" #Pipe (fastest)
-    #"x16r"              = " --intensity 8 -a x16r" #x16r (trex fastest)
+    #"x16r"             = " --intensity 8 -a x16r" #x16r (trex fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
