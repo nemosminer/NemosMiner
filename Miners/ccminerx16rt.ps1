@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminerx16rt\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerx16rt1.7\ccminer.exe"
 $Uri = "https://github.com/Nigeleyeit/ccminer/releases/download/v1.7/ccminerv1.7_Cuda10.zip"
 
 $Commands = [PSCustomObject]@{
