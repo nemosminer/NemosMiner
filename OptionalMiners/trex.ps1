@@ -1,32 +1,32 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.9.1/t-rex-0.9.1-win-cuda10.0.zip"
+$Path = ".\Bin\NVIDIA-trex091gin\t-rex.exe"
+$Uri = "https://nemosminer.com/data/optional/t-rex-0.9.1-win-cuda10.0-gin.7z"
 
 $Commands = [PSCustomObject]@{
-    "balloon"    = "" #Balloon(fastest)
-    "astralhash" = "" #Astralhash
-    "jeonghash"  = "" #Jeonghash
-    "padihash"   = "" #Padihash
-    "pawelhash"  = "" #Pawelhash
+    "balloon"    = " -i 23" #Balloon(fastest)
+    "astralhash" = " -i 23" #Astralhash
+    "jeonghash"  = " -i 23" #Jeonghash
+    "padihash"   = " -i 23" #Padihash
+    "pawelhash"  = " -i 23" #Pawelhash
     "polytimos"  = " -i 25" #Poly (fastest) 
     "bcd"        = " -i 24" #Bcd (fastest)
-    #"skunk" = "" #Skunk (CryptoDredge faster)
+    #"skunk"     = "" #Skunk (CryptoDredge faster)
     "bitcore"    = " -i 25" #Bitcore( fastest)
-    "geek"       = "" #Geekcash
-    #"lyra2z" = "" #Lyra2z (Asic)
-    #"tribus" = "" #Tribus (not profitable atm)
+    "geek"       = " -i 23" #Geekcash
+    #"lyra2z"    = "" #Lyra2z (Asic)
+    #"tribus"    = "" #Tribus (not profitable atm)
     "c11"        = " -i 24" #C11 (fastest)
     "x17"        = " -i 24" #X17 (fastest)
     "x16s"       = " -i 24" #X16s (fastest)
     "x16r"       = " -i 24" #X16r (fastest)
-    "x16rt"      = " -i 24" #X16rt (fastest)
+    #"x16rt"     = " -i 24" #X16rt (test net/ only trex 091-gin is compatible)
     "sonoa"      = " -i 23" #Sonoa (fastest)
-    #"hmq1725" = " -i 23" #Hmq1725 (CryptoDredge faster)
-    "dedal"      = "" #Dedal (fastest)
+    #"hmq1725"   = " -i 23" #Hmq1725 (CryptoDredge faster)
+    "dedal"      = " -i 23" #Dedal (fastest)
     "sha256t"    = " -i 26" #Sha256t (fastest)
-    "sha256q"    = "" #Sha256q (testing)
-    "x21s"       = ",d=16 " #X21s (fastest)
+    "sha256q"    = " -i 23" #Sha256q (testing)
+    "x21s"       = ",d=16 -i 23 " #X21s (fastest)
     "x22i"       = " -i 23" #X22i (fastest)
     "timetravel" = " -i 25" #Timetravel (fastest)
 }
