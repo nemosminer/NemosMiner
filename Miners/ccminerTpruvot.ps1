@@ -45,7 +45,9 @@ $Commands = [PSCustomObject]@{
     #"x16s"       = " -d $($Config.SelGPUCC)" #X16s
     #"x17"        = " -d $($Config.SelGPUCC)" #X17(Enemy1.03 faster)
     #"yescrypt" = "" #Yescrypt
+    "sha256q"       = " -d $($Config.SelGPUCC)" #Sha256q
     #"lyra2v3"       = " -d $($Config.SelGPUCC)" #Lyra2v3
+    "blake2b"       = " -d $($Config.SelGPUCC)" #blake2b
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
