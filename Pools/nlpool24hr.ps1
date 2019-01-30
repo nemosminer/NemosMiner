@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 try {
     $Request = Invoke-WebRequest "http://www.nlpool.nl/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
@@ -15,15 +15,20 @@ $PriceField = "actual_last24h"
 $Location = "US"
 
 # Placed here for Perf (Disk reads)
-$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) {$Name}else {"default"}
-$PoolConf = $Config.PoolsConfig.$ConfName
+    $ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}
+    $PoolConf = $Config.PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     $PoolHost = $HostSuffix
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
-    $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
+      $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
+
+    switch ($PoolAlgorithm) {
+        "Yescrypt" {$Divisor *= 100}       #temp fix
+
+    }
 
     if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
@@ -35,7 +40,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         [PSCustomObject]@{
             Algorithm     = $PoolAlgorithm
             Info          = ""
-            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
             StablePrice   = $Stat.Week
             MarginOfError = $Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"
