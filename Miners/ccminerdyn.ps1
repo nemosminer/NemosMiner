@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminerdyn\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerdyn101\ccminer.exe"
 $Uri = "https://github.com/nemosminer/Dynamic-GPU-Miner-Nvidia/releases/download/v1.0.1/ccminerdyn-1.0.1.7z"
 
 $Commands = [PSCustomObject]@{
