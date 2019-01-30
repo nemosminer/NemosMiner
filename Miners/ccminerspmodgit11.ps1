@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminerspmodgit\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerspmodgit11\ccminer.exe"
 $Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git11/spmodgit11.7z"
 
 $Commands = [PSCustomObject]@{
