@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-Tpruvot231\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Tpruvot231\ccminer-x64.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccminer-2.3.1-cuda10.7z"
 
 $Commands = [PSCustomObject]@{
@@ -45,7 +45,7 @@ $Commands = [PSCustomObject]@{
     #"x16s"       = " -d $($Config.SelGPUCC)" #X16s
     #"x17"        = " -d $($Config.SelGPUCC)" #X17(Enemy1.03 faster)
     #"yescrypt" = "" #Yescrypt
-    #"lyra2v3"       = " -d $($Config.SelGPUCC)" #:yra2v3
+    #"lyra2v3"       = " -d $($Config.SelGPUCC)" #Lyra2v3
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
