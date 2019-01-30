@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-Tpruvotv2.3cuda10\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerTpruvot/releases/download/v2.3-cuda10/ccminertpruvotx32.7z"
+$Path = ".\Bin\NVIDIA-Tpruvotv2.3.1\ccminer.exe"
+$Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccminer-2.3.1-cuda10.7z"
 
 $Commands = [PSCustomObject]@{
     "phi"        = " -d $($Config.SelGPUCC)" #Phi (testing)
@@ -14,6 +14,7 @@ $Commands = [PSCustomObject]@{
     "timetravel" = " -d $($Config.SelGPUCC)" #Timetravel
     "exosis"     = " -d $($Config.SelGPUCC)" #Exosis
     "phi2"       = " -i 19 -d $($Config.SelGPUCC)" #Phi2
+    "lyra2v3"    = " -d $($Config.SelGPUCC)" #Lyra2v3
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
