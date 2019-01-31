@@ -12,7 +12,7 @@ $Commands = [PSCustomObject]@{
     "sha256t"    = " -d $($Config.SelGPUCC) -i 29" #Sha256t
     #"skunk"      = " -d $($Config.SelGPUCC)" #Skunk
     #"sonoa"      = " -d $($Config.SelGPUCC)" #Sonoa
-    "tribus"     = " -d $($Config.SelGPUCC)" #Tribus
+    #"tribus"     = " -d $($Config.SelGPUCC)" #Tribus
     #"blake2s" = " -d $($Config.SelGPUCC) --api-remote --api-allow=0/0" #Blake2s
     #"bitcore"    = " -d $($Config.SelGPUCC)" #Bitcore(spmodbitcore faster)
     #"c11"        = " -d $($Config.SelGPUCC)" #C11
