@@ -411,7 +411,8 @@ Function NPMCycle {
                 Port              = $_.Port
                 Algorithms        = $_.HashRates.PSObject.Properties.Name
                 New               = $false
-                Active            = [TimeSpan]0
+                Active = [TimeSpan]0
+                TotalActive = [TimeSpan]0
                 Activated         = 0
                 Status            = "Idle"
                 HashRate          = 0
@@ -435,7 +436,6 @@ Function NPMCycle {
                 Get-Process | Where-Object {$_.Path -eq $KillPath} | Stop-Process -Force
             }
             elseif ($_.Process.HasExited -eq $false) {
-                $_.Active += (Get-Date) - $_.Process.StartTime
                 $_.Process.CloseMainWindow() | Out-Null
                 Sleep 1
                 # simply "Kill with power"
@@ -486,7 +486,7 @@ Function NPMCycle {
                 $Variables.DecayStart = Get-Date
                 $_.New = $true
                 $_.Activated++
-                if ($_.Process -ne $null) {$_.Active += $_.Process.ExitTime - $_.Process.StartTime}
+                # if ($_.Process -ne $null) {$_.Active += $_.Process.ExitTime - $_.Process.StartTime}
                 if ($_.Wrap) {$_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-WindowStyle Minimized -executionpolicy bypass -command . '$(Convert-Path ".\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$($_.Arguments)' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru}
                 else {$_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $_.Arguments -WorkingDirectory (Split-Path $_.Path)}
                 if ($_.Process -eq $null) {$_.Status = "Failed"}
@@ -496,6 +496,10 @@ Function NPMCycle {
                     #Newely started miner should looks better than other in the first run too
                     $Variables.Miners | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments | ForEach {$_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100)}
                 }
+            } else {
+                $now = Get-Date
+                $_.TotalActive = $_.TotalActive + ( $Now - $_.Process.StartTime ) - $_.Active
+                $_.Active = $Now - $_.Process.StartTime
             }
             $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
         }
