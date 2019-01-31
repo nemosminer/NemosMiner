@@ -122,6 +122,7 @@ Function Start-ChildJobs {
 }
 
 Function NPMCycle {
+$CycleTime = Measure-Command -Expression {
     if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1"); "LoadedInclude" | out-host}
 
     $Variables | Add-Member -Force @{EndLoop = $False}
@@ -595,6 +596,9 @@ Function NPMCycle {
 
     # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
     if (Test-Path ".\EndLoopCode.ps1") {Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw)}
+}
+    $Variables.StatusText = "Cycle Time (seconds): $($CycleTime.TotalSeconds)"
+    "Cycle Time (seconds): $($CycleTime.TotalSeconds)" | out-host
     $Variables | Add-Member -Force @{EndLoop = $True}
     $Variables.StatusText = "Sleeping $($Variables.TimeToSleep)"
     # Sleep $Variables.TimeToSleep
