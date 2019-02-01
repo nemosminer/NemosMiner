@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CryptoDredge0161\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.1/CryptoDredge_0.16.1_cuda_10.0_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge0162\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.2/CryptoDredge_0.16.2_cuda_9.2_windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"            = " --intensity 8 -a allium" #Allium (fastest)
@@ -20,7 +20,7 @@ $Commands = [PSCustomObject]@{
     "skunk"             = " --intensity 8 -a skunk" #Skunk (fastest)
     "mtp"               = " --intensity 8 -a mtp" #Mtp (not Asic :)
     #"bcd"              = " --intensity 8 -a bcd" #Bcd (trex faster)
-    #"x16rt"            = " --intensity 8 -a x16rt" #X16rt (does not work on nlpool testnet need work)
+    "x16rt"             = " --intensity 8 -a x16rt" #X16rt (re testing nlpool support)
     "x21s"              = " --intensity 8 -a x21s" #X21s (fastest)
     #"x16s"             = " --intensity 8 -a x16s" #X16s (trex faster)
     #"x17"              = " --intensity 8 -a x17" #X17 (trex faster)
