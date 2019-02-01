@@ -46,7 +46,7 @@ $Commands = [PSCustomObject]@{
     #"x17"        = " -d $($Config.SelGPUCC)" #X17(Enemy1.03 faster)
     #"yescrypt" = "" #Yescrypt
     "sha256q"       = " -d $($Config.SelGPUCC)" #Sha256q
-    #"lyra2v3"       = " -d $($Config.SelGPUCC)" #Lyra2v3
+    "lyra2v3"       = " -d $($Config.SelGPUCC)" #Lyra2v3 (testing NiceHash)
     #"blake2b"       = " -d $($Config.SelGPUCC)" #blake2b
 }
 
