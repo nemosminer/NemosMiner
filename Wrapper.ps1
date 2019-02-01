@@ -1,21 +1,27 @@
 param(
     [Parameter(Mandatory = $true)]
-    [Int]$ControllerProcessID, 
+    [Int]$ControllerProcessID,
     [Parameter(Mandatory = $true)]
-    [String]$Id, 
+    [String]$Id,
     [Parameter(Mandatory = $true)]
-    [String]$FilePath, 
+    [String]$FilePath,
     [Parameter(Mandatory = $false)]
-    [String]$ArgumentList = "", 
+    [String]$ArgumentList = "",
     [Parameter(Mandatory = $false)]
     [String]$WorkingDirectory = ""
 )
+
+# Force Culture to en-US
+$culture = [System.Globalization.CultureInfo]::CreateSpecificCulture("en-US")
+$culture.NumberFormat.NumberDecimalSeparator = "."
+$culture.NumberFormat.NumberGroupSeparator = ","
+[System.Threading.Thread]::CurrentThread.CurrentCulture = $culture
 
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 . .\Include.ps1
 
-Remove-Item ".\energi.txt" -ErrorAction Ignore
+0 | Set-Content ".\energi.txt"
 
 $PowerShell = [PowerShell]::Create()
 if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
@@ -24,40 +30,41 @@ if ($ArgumentList -ne "") {$Command += " $ArgumentList"}
 $PowerShell.AddScript("$Command 2>&1 | Write-Verbose -Verbose") | Out-Null
 $Result = $PowerShell.BeginInvoke()
 
+Write-Host "energiminer v2.2.1" -BackgroundColor Yellow -ForegroundColor Black
 
 do {
-    Start-Sleep 1
+    Start-Sleep -Seconds 1
 
     $PowerShell.Streams.Verbose.ReadAll() | ForEach-Object {
-        $Line = $_
+        $Param = @{}
+        if ($Command -like '*energiminer.exe*') {$Param.NoNewLine = $true}
+        Write-Host $_ @Param
 
-        if ($Line -like "*speed*") {
-            $Words = $Line -split " "
+        $HashRate = 0
+        if (
+            $_ -match "Speed\s([0-9.,]+)\s?([kmgtp]?h/s)" -or # EnergiMiner
+            $_ -match "Accepted.*\s([0-9.,]+)\s([kmgtp]?h/s)" -or # lyclMiner
+            $false
+        ) {
+            $HashRate = [decimal]($Matches[1] -replace ',', '.')
+            $Units = $Matches[2]
 
-            $matches = $null
+            if ($HashRate -gt 0) {
+                "`nHashRate Detected: $HashRate $Units" | Write-Host -BackgroundColor Yellow -ForegroundColor Black
 
-            if ($Words[$Words.IndexOf(($Words -like "Mh/s" | Select-Object -First 1))] -match "^((?:\d*\.)?\d+)(.*)$") {
-                $HashRate = [Decimal]$matches[1]
-                $HashRate_Unit = $matches[2]
+                $HashRate *= switch ($Units) {
+                    "kh/s" { 1e3 }
+                    "mh/s" { 1e6 }
+                    "gh/s" { 1e9 }
+                    "th/s" { 1e12 }
+                    "ph/s" { 1e15 }
+                    Default { 1 }
+                }
+                $HashRate -replace ',', '.' | Set-Content ".\energi.txt"
             }
-            else {
-                $HashRate = [Decimal]$Words[$Words.IndexOf(($Words -like "Mh/s" | Select-Object -First 1)) - 1]
-                $HashRate_Unit = $Words[$Words.IndexOf(($Words -like "Mh/s" | Select-Object -First 1))]
-            }
-
-            switch ($HashRate_Unit) {
-                "Mh/s" {$HashRate *= [Math]::Pow(1000, 2)}
-         
-            }
-
-            $HashRate | ConvertTo-Json | Set-Content ".\energi.txt"
         }
-
-        Write-Host $Line -NoNewline
     }
-
-    if ((Get-Process | Where-Object Id -EQ $ControllerProcessID) -eq $null) {$PowerShell.Stop() | Out-Null}
-}
-until($Result.IsCompleted)
+    if (-not (Get-Process | Where-Object Id -EQ $ControllerProcessID)) {$PowerShell.Stop() | Out-Null}
+} until($Result.IsCompleted)
 
 Remove-Item ".\energi.txt" -ErrorAction Ignore
