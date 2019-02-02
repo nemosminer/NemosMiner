@@ -94,6 +94,7 @@
     "cryptonightv7stellitev4":  "CryptonightXtl",
     "cryptonightv8":  "CryptonightV8",
     "cryptonightxhvheavy":  "CryptonightHeavyXhv",
+    "grincuckaroo29": "Grincuckaroo29",
     "cuckaroo29": "Cuckaroo29",
     "daggerhashimoto":  "Ethash",
     "dagger":  "Ethash",
