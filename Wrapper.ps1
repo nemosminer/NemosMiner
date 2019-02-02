@@ -21,7 +21,7 @@ Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
 . .\Include.ps1
 
-0 | Set-Content ".\energi.txt"
+0 | Set-Content ".\Logs\energi.txt"
 
 $PowerShell = [PowerShell]::Create()
 if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
@@ -60,11 +60,11 @@ do {
                     "ph/s" { 1e15 }
                     Default { 1 }
                 }
-                $HashRate -replace ',', '.' | Set-Content ".\energi.txt"
+                $HashRate -replace ',', '.' | Set-Content ".\Logs\energi.txt"
             }
         }
     }
     if (-not (Get-Process | Where-Object Id -EQ $ControllerProcessID)) {$PowerShell.Stop() | Out-Null}
 } until($Result.IsCompleted)
 
-Remove-Item ".\energi.txt" -ErrorAction Ignore
+Remove-Item ".\Logs\energi.txt" -ErrorAction Ignore
