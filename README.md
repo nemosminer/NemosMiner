@@ -16,7 +16,10 @@ by Nemo/Minerx117
 
 with Help From MrPlusGH and grantemsley 
  
+[![Discord tag](https://img.shields.io/discord/522832112311599124.svg?label=Discord&style=plastic)](https://discord.gg/2BCqPxe) [Click to Join Discord](https://discord.gg/2BCqPxe)
+
 *****
+**Have questions? Need help?** We're on Discord: https://discord.gg/2BCqPxe
 
 NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
 
