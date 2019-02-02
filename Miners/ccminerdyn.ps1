@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerdyn101\ccminer.exe"
 $Uri = "https://github.com/nemosminer/Dynamic-GPU-Miner-Nvidia/releases/download/v1.0.1/ccminerdyn-1.0.1.7z"
 
 $Commands = [PSCustomObject]@{
-    #"argon2d-dyn" = " -i 13.7" #argon2d-dyn (fastest needs 8gb of gpu vram not working on 6gb cards)
+    "argon2d-dyn" = "" #argon2d-dyn (fastest, works with 2GB GPUs)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
