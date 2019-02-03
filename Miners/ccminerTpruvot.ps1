@@ -46,8 +46,8 @@ $Commands = [PSCustomObject]@{
     #"x17"        = " -d $($Config.SelGPUCC)" #X17(Enemy1.03 faster)
     #"yescrypt" = "" #Yescrypt
     "sha256q"       = " -d $($Config.SelGPUCC)" #Sha256q
-    "lyra2v3"       = " -a lyra2v3 -i 21 -d $($Config.SelGPUCC)" #Lyra2v3 (tested working on yiimp pools)
-    "lyra2REv3"     = " -a lyra2v3 -i 21 -d $($Config.SelGPUCC)" # (Nicehash testing)
+    #"lyra2v3"       = " -a lyra2v3 -i 21 -d $($Config.SelGPUCC)" #Lyra2v3 (slow compared to other ccminers)
+    #"lyra2REv3"     = " -a lyra2v3 -i 21 -d $($Config.SelGPUCC)" # (slow compared to other ccminers)
     #"blake2b"       = " -d $($Config.SelGPUCC)" #blake2b
 }
 
