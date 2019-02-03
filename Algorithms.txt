@@ -182,6 +182,7 @@
     "poly":  "Polytimos",
     "polytimos":  "Polytimos",
     "padihash":  "padihash",
+    "progpow":  "Progpow",   
     "pawelhash":  "pawelhash",
     "quark":  "Quark",
     "quarkcoin":  "Quark",
