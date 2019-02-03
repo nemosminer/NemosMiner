@@ -1,10 +1,10 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcminerKlausTR32v10\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerKlausTyescrypt/releases/download/v10/ccminerKlausTyescryptv10.7z"
+$Path = ".\Bin\NVIDIA-CcminerKlausTR32\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/8.21-r18-fix%2Blyra2v3/ccminer-8.21-yescrypt-algos+lyra2v3.7z"
 
 $Commands = [PSCustomObject]@{
-    "yescryptR32" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR32
+    "yescryptR32" = " -d $($Config.SelGPUCC)" #YescryptR32
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
