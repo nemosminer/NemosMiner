@@ -5,8 +5,8 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.2/Cryp
 
 $Commands = [PSCustomObject]@{
     "allium"            = " --intensity 8 -a allium" #Allium (fastest)
-    "lyra2v3"           = " --intensity 8 -a lyra2v3" #Lyra2v3 (yiimp pools working well)
-    "lyra2REv3"         = " --intensity 8 -a lyra2v3" #lyra2REv3 (nicehash testing)
+    #"lyra2v3"           = " --intensity 8 -a lyra2v3" #Lyra2v3 (ccminer faster)
+    #"lyra2REv3"         = " --intensity 8 -a lyra2v3" #lyra2REv3 (ccminer faster)
     #"lyra2zz "          = " --intensity 8 -a lyra2zz" #Lyra2zz (Testing)
     "neoscrypt"         = " --intensity 6 -a neoscrypt" #NeoScrypt (fastest)
     "phi"               = " --intensity 8 -a phi" #Phi (fastest)
