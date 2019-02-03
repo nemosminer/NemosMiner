@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminermtp1113\ccminer.exe"
 $Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/v1.1.13/ccminermtpv1113.7z"
 
 $Commands = [PSCustomObject]@{
-    #"mtp" = " -i 18" #mtp(disabled as alot of users still running 4gb rigs i have 8gb now.. requires 6gb min ram + large vm/swap fastest check pool speed over CD for 24-48hours + no dev fee)
+    "mtp" = " -i 18" #mtp(+fatestest requires 6gb+ ram)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
