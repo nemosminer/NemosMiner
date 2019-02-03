@@ -5,11 +5,11 @@ $Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releas
 
 $Commands = [PSCustomObject]@{
     "neoscrypt" = " -a neoscrypt -i 17 -d $($Config.SelGPUCC)" #NeoScrypt
-    "yescrypt" = " -a yescrypt -i 12.5 -d $($Config.SelGPUCC)" #Yescrypt
-    "yescryptR16" = " -a yescryptr16 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16
-    "yescryptR16v2" = " -a yescryptr16v2 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16v2
-    "yescryptR24" = " -a yescryptr24 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR24 
-    "yescryptR8" = " -a yescryptr8 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR8
+    #"yescrypt" = " -a yescrypt -i 12.5 -d $($Config.SelGPUCC)" #Yescrypt
+    #"yescryptR16" = " -a yescryptr16 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16
+    #"yescryptR16v2" = " -a yescryptr16v2 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR16v2
+    #"yescryptR24" = " -a yescryptr24 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR24 
+    #"yescryptR8" = " -a yescryptr8 -i 12.5 -d $($Config.SelGPUCC)" #YescryptR8
     #"bitcore" = "" #Bitcore
     #"blake2s" = "" #Blake2s
     #"blakecoin" = " -d $($Config.SelGPUCC)" #Blakecoin
