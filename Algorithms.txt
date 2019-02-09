@@ -95,7 +95,7 @@
     "cryptonightv8":  "CryptonightV8",
     "cryptonightxhvheavy":  "CryptonightHeavyXhv",
     "grincuckaroo29": "Grincuckaroo29",
-    "grincuckatoo31": "grincuckatoo31",
+    "grincuckatoo31": "Grincuckatoo31",
     "daggerhashimoto":  "Ethash",
     "dagger":  "Ethash",
     "darkcoinmod":  "X11",
