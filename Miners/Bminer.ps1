@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     #"zhash" = " -pers auto -uri equihash1445://" #Zhash(gminer faster)
     #"ethash" = " -uri ethstratum://" #Ethash(ethminer faster)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
-    # "beam" = " -uri beam://" #beam(Re Test NiceHash Support)
+    "beam" = " -uri beam://" #beam(fastest)
     # "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(testing Nicehash)
     # "cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(testing Nicehash)
     
