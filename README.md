@@ -16,7 +16,7 @@
  
  
  
- # NemosMiner-v2.5.1
+ # NemosMiner-v3.0
  Updated 2018 Feb 27
  
  Instructions at bottom of the page.
