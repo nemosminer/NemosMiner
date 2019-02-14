@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(faster on 20 series, 10 series prefers gminer)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(fastest on 10 series, 20 series prefers Gminer)
     #"cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(Gminer works on 8gb cards with linux/win7 this does not..)
     
 }
