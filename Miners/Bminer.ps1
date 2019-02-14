@@ -7,10 +7,10 @@ $Commands = [PSCustomObject]@{
     #"equihash" = " -uri stratum://" #Equihash(Asic)
     #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144(gminer faster)
     #"zhash" = " -pers auto -uri equihash1445://" #Zhash(gminer faster)
-    "ethash" = " -uri ethstratum://" #Ethash
+    "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(testing Nicehash)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(faster on 20 series, 10 series prefers gminer)
     #"cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(Gminer works on 8gb cards with linux/win7 this does not..)
     
 }
@@ -19,10 +19,11 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     $Algo = Get-Algorithm($_)
+    $Pass = If ($Pools.($Algo).Pass -like "*,*") {$Pools.($Algo).Pass.ToString().replace(',','%2C')} else {$Pass}
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "$($Commands.$_)$($Pools.($Algo).User):$($Pools.($Algo).Pass.ToString().replace(',','%2C'))@$($Pools.($Algo).Host):$($Pools.($Algo).Port) -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port"
+        Arguments = "$($Commands.$_)$($Pools.($Algo).User):$($Pass)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day}
         API       = "bminer"
         Port      = $Port
