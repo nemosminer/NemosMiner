@@ -19,9 +19,9 @@ $Commands = [PSCustomObject]@{
     #"cryptonightmonero" = " --intensity 8 -a cnv8" # Cryptonightmonero (fastest)
     #"c11"              = " --intensity 8 -a c11" #C11 (trex faster)
     "skunk"             = " --intensity 8 -a skunk" #Skunk (fastest)
-    "mtp"               = " --intensity 8 -a mtp" #Mtp (not Asic :)
+    "mtp"               = " --intensity 8 -a mtp" #Mtp (fastest)
     #"bcd"              = " --intensity 8 -a bcd" #Bcd (trex faster)
-    #"x16rt"             = " --intensity 8 -a x16rt" #X16rt (re test)
+    #"x16rt"             = " --intensity 8 -a x16rt" #X16rt (trex faster)
     "x21s"              = " --intensity 8 -a x21s" #X21s (fastest)
     #"x16s"             = " --intensity 8 -a x16s" #X16s (trex faster)
     #"x17"              = " --intensity 8 -a x17" #X17 (trex faster)
@@ -30,7 +30,7 @@ $Commands = [PSCustomObject]@{
     #"dedal"            = " --intensity 8 -a dedal" #Dedal (trex faster second place)
     #"pipe"             = " --intensity 8 -a pipe" #Pipe (fastest)
     #"x16r"             = " --intensity 8 -a x16r" #x16r (trex fastest)
-    #"grincuckaroo29"   = " --intensity 8 -a cuckaroo29" #Grincuckaroo29 (testing)
+    #"grincuckaroo29"   = " --intensity 8 -a cuckaroo29" #Grincuckaroo29 (not compatible with Nicehash)
   
 }
 
