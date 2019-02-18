@@ -231,7 +231,7 @@
     "vergelyra2v2":  "Lyra2RE2",
     "vergex17":  "X17",
     "vertcoin":  "Lyra2RE2",
-    "veil":  "x16rt",
+    "veil":  "Veil",
     "vit":  "Vitalium",
     "whirlpool":  "whirlpool",
     "whirlpoolx":  "whirlpoolX",
