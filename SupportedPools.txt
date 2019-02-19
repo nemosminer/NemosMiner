@@ -8,6 +8,5 @@ minemoney
 blazepool
 phiphipool
 blockmasters
-starpool
 nlpool
 zergpool
