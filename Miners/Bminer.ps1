@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Bminer1431\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v14.3.1-8d9471b-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer15\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.0.0-e143cb4-amd64.zip"
 $Commands = [PSCustomObject]@{
     #"equihashBTG" = " -uri zhash://" #EquihashBTG(miniZ faster)
     #"equihash" = " -uri stratum://" #Equihash(Asic)
@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
     "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(fastest on 10 series, 20 series prefers Gminer)
-    #"cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(Gminer works on 8gb cards with linux/win7 this does not..)
+    #"cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(Re Testing NiceHash support win7 only for 8gb cards..)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
