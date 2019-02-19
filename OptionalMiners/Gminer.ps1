@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Gminer132\miner.exe"
-$Uri = "https://nemosminer.com/data/optional/gminer_1_32_minimal_windows64.7z"
+$Path = ".\Bin\NVIDIA-Gminer133\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.33/gminer_1_33_minimal_windows64.zip"
 $Commands = [PSCustomObject]@{
     "equihash144"  = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144 (fastest)
     "zhash"        = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Zhash (fastest)
@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     "equihash-btg" = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers BgoldPoW" # Equihash-btg (fastest)
     "equihash96"   = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96 (fastest)
     #"beam"         = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers Beam-PoW" #Equihash150 (Bminer faster)
-    #"grincuckaroo29"  = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29 (fastest on 20 series, Bminer faster on 10series)
+    "grincuckaroo29"  = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29 (fastest on 20 series, Bminer faster on 10series)
     #"grincuckatoo31"  = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31 requires 7.4GB VRam, will work on 8GB cards under Linux and Windows 7, will not work under Windows 10)
  
 }
