@@ -38,6 +38,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     $Algo = Get-Algorithm($_)
+    If ($Algo -eq "mtp" -and $Pools.($Algo).Host -like "*nicehash*") {return}
     switch ($_) {
         "mtp" {$Fee = 0.02}
         default {$Fee = 0.01}
