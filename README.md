@@ -204,13 +204,13 @@ NemosMiner Monitoring Server : https://nemosminer.com
 *****
  
 If you have Windows 7, 8, or 8.1, please update PowerShell:
-https://www.microsoft.com/en-us/download/details.aspx?id=54616
+[update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
 
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
-https://www.microsoft.com/en-gb/download/details.aspx?id=40784
+[MSVCR120](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)
 
 CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
-https://www.microsoft.com/en-us/download/details.aspx?id=48145
+[VCRUNTIME140](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
 
 CCminer may need 'Visual C++' if you don't already have it:
 [Visual C++ Redistributable for Visual Studio 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
@@ -219,13 +219,13 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 recommended/optimal Windows Nvidia driver 418.91 
 
-Windows10: http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win10-64bit-international-whql.exe
+[Windows10 Driver](http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win10-64bit-international-whql.exe)
 
-Windows7,8: http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win8-win7-64bit-international-whql.exe
+[Windows7,8 Driver](http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win8-win7-64bit-international-whql.exe)
 
 recommended/optimal Linux Nvidia driver 410.93
 
-Linux: http://us.download.nvidia.com/XFree86/Linux-x86_64/410.93/NVIDIA-Linux-x86_64-410.93.run
+[Linux Driver](http://us.download.nvidia.com/XFree86/Linux-x86_64/410.93/NVIDIA-Linux-x86_64-410.93.run)
 
 Made for & Tested with 6x1070 6x1070ti 6x1080 6x1080ti 6x1660ti 6x2060 6x2070 6x2080 6x2080ti(users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
