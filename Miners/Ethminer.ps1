@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Ethminer0170\ethminer.exe"
-$Uri = "https://github.com/ethereum-mining/ethminer/releases/download/v0.17.0/ethminer-0.17.0-cuda10.0-windows-amd64.zip"
+$Path = ".\Bin\NVIDIA-Ethminer0171\ethminer.exe"
+$Uri = "https://github.com/ethereum-mining/ethminer/releases/download/v0.17.1-rc.0/ethminer-0.17.1-rc.0-cuda10.0-windows-amd64.zip"
 $Commands = [PSCustomObject]@{
     #"ethash" = "" #Ethash
 }
