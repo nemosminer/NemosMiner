@@ -6,6 +6,7 @@ $Uri = "https://tradeproject.de/download/Miner/TT-Miner-2.1.11-beta7.zip"
 $Commands = [PSCustomObject]@{
     "progpow"  = ""
     "mtp"  = "" (Supports NiceHash)
+    "ethash"  = "" (testing) 
 }
  
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
