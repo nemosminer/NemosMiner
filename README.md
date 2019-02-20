@@ -213,7 +213,7 @@ https://www.microsoft.com/en-gb/download/details.aspx?id=40784
 CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-Windows 7/8.1/10 (64-bit versions) 
+Windows 7/8.1/10 (64-bit versions) may Require (Choose Repair if it is already installed)
 [Visual C++ Redistributable for Visual Studio 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
