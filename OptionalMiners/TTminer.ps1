@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-TTMiner2111b\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner-2.1.11-beta7.zip"
 
 $Commands = [PSCustomObject]@{  
-    "mtp"     = "-A MTP-100" #(Supports NiceHash)  
+    #"mtp"     = "-A MTP-100" #(Supports NiceHash)  
     #"ethash"  = "-A ETHASH-100" #(Supports NiceHash)
     #"progpow" = "-A PROGPOW-100" #(Supports NiceHash)
     #"lyra2v3" = "-A LYRA2V3-100" #(Supports NiceHash)
