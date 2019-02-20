@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CcminerKlausT\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/8.21-r18-fix%2Blyra2v3/ccminer-8.21-yescrypt-algos+lyra2v3.7z"
+$Path = ".\Bin\NVIDIA-CcminerKlausTv2\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/v2/ccminerKlausT.7z"
 
 $Commands = [PSCustomObject]@{
     "neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #NeoScrypt
