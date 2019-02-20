@@ -11,6 +11,7 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
 	$Algo = Get-Algorithm($_)
+    If ($Pools.($Algo).Host -like "*nicehash*") {return}
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
