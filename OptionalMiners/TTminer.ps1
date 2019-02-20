@@ -17,7 +17,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "$($Commands.$_) -P $($Pools.($Algo).User):x@$($Pools.($Algo).Host):$($Pools.($Algo).Port)"
+        Arguments = "$($Commands.$_) -d $($Config.SelGPUDSTM) --api-bind 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -P $($Pools.($Algo).User):x@$($Pools.($Algo).Host):$($Pools.($Algo).Port)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".day * .98} # substract 2% devfee
         API       = "TTminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
