@@ -1,17 +1,16 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminermtp1113\ccminer.exe"
-$Uri = "https://github.com/nemosminer/djm34mtpccminer/releases/download/v1.1.13/ccminermtpv1113.7z"
+$Path = ".\Bin\NVIDIA-ccminermtp1115\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminer/releases/download/1.1.15/ccminermtp.7z"
 
 $Commands = [PSCustomObject]@{
-    "mtp" = " -d $($Config.SelGPUCC) -i 18" #mtp(requires 6gb+ ram)
+    "mtp" = " -d $($Config.SelGPUCC)" #mtp(requires 6gb+ ram)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-	$Algo = Get-Algorithm($_)
-    If ($Pools.($Algo).Host -like "*nicehash*") {return}
+        $Algo = Get-Algorithm($_)
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
