@@ -212,8 +212,11 @@ CCMiner may need 'MSVCR120.dll' if you don't already have it:
 CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
 [VCRUNTIME140](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
 
-CCminer may need 'Visual C++' if you don't already have it:
+CCminer may need 'Visual C++ 2015' if you don't already have it:
 [Visual C++ Redistributable for Visual Studio 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
+
+CCminer may need 'Visual C++ 2013' if you don't already have it:
+[Visual C++ Redistributable for Visual Studio 2013/2012](https://www.microsoft.com/en-nz/download/details.aspx?id=40784)
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
