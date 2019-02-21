@@ -1,13 +1,13 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminerspmodgit11\ccminer.exe"
-$Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git11/spmodgit11.7z"
+$Path = ".\Bin\NVIDIA-ccminersuprminer20\ccminer.exe"
+$Uri = "https://github.com/ocminer/suprminer/releases/download/2.0/suprminer-2.0.7z"
 
 $Commands = [PSCustomObject]@{
     #"c11" = " -d $($Config.SelGPUCC)" #C11 (trex faster/ fastest open source)
-    #"x16r" = " -d $($Config.SelGPUCC)" #X16r(trex faster/ fastest open source)
-    #"x16s" = " -d $($Config.SelGPUCC)" #X16s (trex faster/ fastest open source)
-    #"x17" = " -d $($Config.SelGPUCC)" #X17 (trex faster/ fastest open source)
+    "x16r"  = " -a x16r -d $($Config.SelGPUCC)" #X16r(testing)
+    "x16rt" = " -a x16rt -d $($Config.SelGPUCC)" #X16rt (testing)
+    "veil"  = " -a x16rt -d $($Config.SelGPUCC)" #Veil (testing)
     #"bitcore" = " -d $($Config.SelGPUCC)" #Bitcore
     #"blake2s" = " -d $($Config.SelGPUCC)" #Blake2s
     #"blakecoin" = " -d $($Config.SelGPUCC)" #Blakecoin
@@ -47,7 +47,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -R 1 -a $_ -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "-b $($Variables.NVIDIAMinerAPITCPPort) -R 1 -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day}
         API = "ccminer"
         Port = $Variables.NVIDIAMinerAPITCPPort
