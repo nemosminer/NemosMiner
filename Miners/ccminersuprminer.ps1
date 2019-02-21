@@ -5,9 +5,9 @@ $Uri = "https://github.com/ocminer/suprminer/releases/download/2.0/suprminer-2.0
 
 $Commands = [PSCustomObject]@{
     #"c11" = " -d $($Config.SelGPUCC)" #C11 (trex faster/ fastest open source)
-    "x16r"  = " -a x16r -d $($Config.SelGPUCC)" #X16r(testing)
-    "x16rt" = " -a x16rt -d $($Config.SelGPUCC)" #X16rt (testing)
-    "veil"  = " -a x16rt -d $($Config.SelGPUCC)" #Veil (testing)
+    #"x16r"  = " -a x16r -d $($Config.SelGPUCC)" #X16r(testing)
+    #"x16rt" = " -a x16rt -d $($Config.SelGPUCC)" #X16rt (testing)
+    #"veil"  = " -a x16rt -d $($Config.SelGPUCC)" #Veil (testing)
     #"bitcore" = " -d $($Config.SelGPUCC)" #Bitcore
     #"blake2s" = " -d $($Config.SelGPUCC)" #Blake2s
     #"blakecoin" = " -d $($Config.SelGPUCC)" #Blakecoin
