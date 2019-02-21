@@ -222,13 +222,13 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 recommended/optimal Windows Nvidia driver 418.91 
 
-[Windows10 Driver](http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win10-64bit-international-whql.exe)
+[Windows10](http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win10-64bit-international-whql.exe)
 
-[Windows7,8 Driver](http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win8-win7-64bit-international-whql.exe)
+[Windows7,8](http://us.download.nvidia.com/Windows/418.91/418.91-desktop-win8-win7-64bit-international-whql.exe)
 
 recommended/optimal Linux Nvidia driver 410.93
 
-[Linux Driver](http://us.download.nvidia.com/XFree86/Linux-x86_64/410.93/NVIDIA-Linux-x86_64-410.93.run)
+[Linux/Hiveos](http://us.download.nvidia.com/XFree86/Linux-x86_64/410.93/NVIDIA-Linux-x86_64-410.93.run)
 
 Made for & Tested with 6x1070 6x1070ti 6x1080 6x1080ti 6x1660ti 6x2060 6x2070 6x2080 6x2080ti(users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
