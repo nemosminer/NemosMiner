@@ -5,8 +5,8 @@ $Uri = "https://github.com/zjazz/zjazz_cuda_miner/releases/download/1.2/zjazz_cu
 
 $Commands = [PSCustomObject]@{
     # "bitcash" = " -a bitcash" #Bitcash (testing)
-    #"cuckoo"  = " -a bitcash -g 2 --cuckoo-intensity 22" #Cuckoo (fastest/10 series only no RTX support)  if your cpu is low end and getting hammered add this --cuckoo-cpu-assist-min
-    #"x22i"    = " -a x22i" #SUQA (testing)
+    #"cuckoo"   = " -a bitcash -g 2 --cuckoo-intensity 22" #Cuckoo (fastest/10 series only no RTX support)  if your cpu is low end and getting hammered add this --cuckoo-cpu-assist-min
+    #"x22i"     = " -a x22i" #SUQA (testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
