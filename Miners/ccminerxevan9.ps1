@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerxevan9\ccminer_x86.exe"
 $Uri = "https://github.com/nemosminer/ccminer-xevan/releases/download/ccminer-xevan/ccminer_x86.7z"
 
 $Commands = [PSCustomObject]@{
-    "xevan" = " -i 21 -N 1 -d $($Config.SelGPUCC) " #Xevan(fastest on most 10series cards/enemyzealot1.18x32 faster on 1080ti's)
+    "xevan" = " -i 21 -N 1 -d $($Config.SelGPUCC) " #Xevan(fastest on most 10series cards/enemyzealot faster on 1080ti's and 20 series)
     #"skein" = " -N 1 -d $($Config.SelGPUCC) -i 27" #Skein
 }
 
