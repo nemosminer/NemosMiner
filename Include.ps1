@@ -486,12 +486,17 @@ function Get-ChildItemContent {
 
     $ChildItems = Get-ChildItem -Recurse -Path $Path -Include $Include | ForEach-Object {
         $Name = $_.BaseName
+        $FileName = $_.Name
         $Content = @()
         if ($_.Extension -eq ".ps1") {
             $Content = &$_.FullName
         }
         else {
-            $Content = $_ | Get-Content | ConvertFrom-Json
+            Try {
+                $Content = $_ | Get-Content | ConvertFrom-Json
+            } Catch {
+                Write-Host "Unable to load $Path\$FileName"
+            }
         }
         $Content | ForEach-Object {
             [PSCustomObject]@{Name = $Name; Content = $_}
