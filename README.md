@@ -206,14 +206,11 @@ NemosMiner Monitoring Server : https://nemosminer.com
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 [update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
 
-CCMiner may need 'MSVCR120.dll' if you don't already have it:
-[MSVCR120](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)
-
 CCminer may need 'Visual C++ 2015' if you don't already have it:
 [Visual C++ Redistributable for Visual Studio 2015/2014](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
 
 CCminer may need 'Visual C++ 2013' if you don't already have it:
-[Visual C++ Redistributable for Visual Studio 2013/2012](https://www.microsoft.com/en-nz/download/details.aspx?id=40784)
+[Visual C++ Redistributable for Visual Studio 2013/2012](https://www.microsoft.com/en-US/download/details.aspx?id=40784)
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
