@@ -29,7 +29,7 @@ $Commands = [PSCustomObject]@{
     "x21s"       = " -a x21s -i 23 " #X21s (fastest)
     "x22i"       = " -a x22i -i 23" #X22i (fastest)
     "timetravel" = " -a timetravel -i 25" #Timetravel (fastest)
-    "veil"       = " -a x16rt -i 24" #Veil (fastest)
+    #"veil"       = " -a x16rt -i 24" #Veil (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
