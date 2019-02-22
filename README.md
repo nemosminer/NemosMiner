@@ -209,11 +209,8 @@ If you have Windows 7, 8, or 8.1, please update PowerShell:
 CCMiner may need 'MSVCR120.dll' if you don't already have it:
 [MSVCR120](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)
 
-CCMiner may need 'VCRUNTIME140.DLL' if you don't already have it:
-[VCRUNTIME140](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
-
 CCminer may need 'Visual C++ 2015' if you don't already have it:
-[Visual C++ Redistributable for Visual Studio 2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
+[Visual C++ Redistributable for Visual Studio 2015/2014](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
 
 CCminer may need 'Visual C++ 2013' if you don't already have it:
 [Visual C++ Redistributable for Visual Studio 2013/2012](https://www.microsoft.com/en-nz/download/details.aspx?id=40784)
