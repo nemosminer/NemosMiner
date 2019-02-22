@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-CcminerKlausTv3R32\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/v3/ccminerKlausT.7z"
 
 $Commands = [PSCustomObject]@{
-    "yescryptR32" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR32
+    "yescryptR32" = " -i 12.5 -d $($Config.SelGPUCC)" #YescryptR32 (fastest)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
