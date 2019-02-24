@@ -66,9 +66,6 @@ Easy configuration, easy start:
      Algo list = +x16r,+bcd
      Will mine only x16r and BCD
 
-     Algo list = +x16r
-     Will mine only x16r
-
      Algo list blank
      Will mine anything
   
