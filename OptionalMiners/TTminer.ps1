@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-TTMiner2111b8\TT-Miner.exe"
+$Path = ".\Bin\NVIDIA-TTMiner2112r\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner.zip"
 
 $Commands = [PSCustomObject]@{
