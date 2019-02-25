@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Bminer1501\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.0.1-6e69b69-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer1502\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.0.2-4d8671d-amd64.zip"
 $Commands = [PSCustomObject]@{
     #"equihashBTG" = " -uri zhash://" #EquihashBTG(miniZ faster)
     #"equihash" = " -uri stratum://" #Equihash(Asic)
@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29(fastest on 10 series, 20 series prefers Gminer)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29
     #"cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(Re Testing NiceHash support win7 only for 8gb cards..)
     
 }
