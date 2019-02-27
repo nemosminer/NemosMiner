@@ -17,8 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-version:        3.7.4
-version date:   23 February 2019
+version:        3.7.5
+version date:   28 February 2019
 #>
 
 Function InitApplication {
