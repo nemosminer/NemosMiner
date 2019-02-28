@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-MultiMiner\multiminer.exe"
 $Uri = "https://github.com/bogdanadnan/multiminer/releases/download/v1.1.0/multiminer_v1.1.0_24.01.2019.zip"
 
 $Commands = [PSCustomObject]@{
-    "argon2d4096" = " --use-gpu=CUDA --gpu-batchsize=210 " #argon2d4096 
+    "argon2d4096" = " --use-gpu=CUDA --gpu-batchsize=210 " #Argon2d4096 
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
