@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-zealotenemy128\z-enemy.exe"
 $Uri = "https://nemosminer.com/data/optional/z-enemy.1-28-cuda10.0.7z"
 
 $Commands = [PSCustomObject]@{
-    "aeriumx"     = " -i 23" #AeriumX(fastest)
+    #"aeriumx"     = " -i 23" #AeriumX(fastest)
     #"bcd"        = "" #Bcd(trex faster)
     #"phi"        = "" #Phi (CryptoDredge faster)
     #"phi2"       = "" #Phi2 (CryptoDredge faster)
