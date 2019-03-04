@@ -12,7 +12,6 @@ $Commands = [PSCustomObject]@{
     "yescryptR8" = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8 (fastest)
     "lyra2v3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2v3 NICEHASH(fastest)
     "lyra2rev3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3 YIIMP(fastest)
-    "lyra2re3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2re3 MPH (fastest)
     #"bitcore" = "" #Bitcore
     #"blake2s" = "" #Blake2s
     #"blakecoin" = " -d $($Config.SelGPUCC)" #Blakecoin
