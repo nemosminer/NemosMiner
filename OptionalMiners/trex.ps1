@@ -15,7 +15,6 @@ $Commands = [PSCustomObject]@{
     "bitcore"    = " -a bitcore -i 25" #Bitcore( fastest)
     "geek"       = " -a geek -i 23" #Geekcash
     #"lyra2z"    = "" #Lyra2z (Asic)
-    #"tribus"    = "" #Tribus (not profitable atm)
     "c11"        = " -a c11 -i 24" #C11 (fastest)
     "x17"        = " -a x17 -i 24" #X17 (fastest)
     "x16s"       = " -a x16s -i 24" #X16s (fastest)
@@ -29,6 +28,7 @@ $Commands = [PSCustomObject]@{
     "x21s"       = " -a x21s -i 23 " #X21s (fastest)
     "x22i"       = " -a x22i -i 23" #X22i (fastest)
     "timetravel" = " -a timetravel -i 25" #Timetravel (fastest)
+    "tribus"     = " -a tribus -i 23" #Tribus (fastest)
     "veil"       = " -a x16rt -i 24" #Veil (fastest)
 }
 
