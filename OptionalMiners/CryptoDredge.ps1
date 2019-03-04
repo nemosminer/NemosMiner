@@ -31,6 +31,7 @@ $Commands = [PSCustomObject]@{
     #"pipe"             = " --intensity 8 -a pipe" #Pipe (fastest)
     #"x16r"             = " --intensity 8 -a x16r" #x16r (trex fastest)
     #"grincuckaroo29"   = " --intensity 8 -a cuckaroo29" #Grincuckaroo29 (not compatible with Nicehash)
+    "exosis"            = " --intensity 8 -a exosis" #Exosis (fastest)
   
 }
 
