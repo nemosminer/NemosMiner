@@ -3,13 +3,14 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Ethminer0171\ethminer.exe"
 $Uri = "https://github.com/ethereum-mining/ethminer/releases/download/v0.17.1/ethminer-0.17.1-cuda10.0-windows-amd64.zip"
 $Commands = [PSCustomObject]@{
-    #"ethash" = "" #Ethash
+     "ethash" = "" #Ethash
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
 	$Algo = Get-Algorithm($_)
+	If ($Pools.($Algo).Host -notlike "*nicehash*") {return}
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
