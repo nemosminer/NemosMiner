@@ -7,11 +7,7 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Port = 3335
 
 $Commands = [PSCustomObject]@{
-    #"cryptonight_heavy" = "" # CryptoNight-Heavy(cryptodredge faster)
-    #"cryptonight_lite"  = "" # CryptoNight-Lite
-    #"cryptonight_v7"    = "" # CryptoNightV7(cryptodredge faster)
-    #"cryptonight_v8"    = "" # CryptoNightV8
-    # "monero"     = "" # Monero(v8)
+     #"cryptonight_r"     = "" #Cryptonight_r (Monero)
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
