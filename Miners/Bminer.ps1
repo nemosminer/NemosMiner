@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
     #"grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 #(fastest but gminer is more stable)
-    #"cuckatoo31" = " -uri cuckatoo31://" #cuckatoo31(still not running on Nicehash gminer works on win7)
+    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31(still not running on Nicehash gminer works on win7)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
