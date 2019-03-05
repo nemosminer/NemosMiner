@@ -10,8 +10,8 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    #"grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 #(fastest but gminer is more stable)
-    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31(still not running on Nicehash gminer works on win7)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (re testing)
+    "grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (re testing)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
