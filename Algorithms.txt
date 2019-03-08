@@ -93,6 +93,7 @@
     "cryptonightv7":  "CryptonightV7",
     "cryptonightv7stellitev4":  "CryptonightXtl",
     "cryptonightv8":  "CryptonightV8",
+    "cryptonightr":  "CryptoNightR",
     "cryptonightxhvheavy":  "CryptonightHeavyXhv",
     "grincuckaroo29": "Grincuckaroo29",
     "grincuckatoo31": "Grincuckatoo31",
