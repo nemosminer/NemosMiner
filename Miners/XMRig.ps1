@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-XMRig2140\xmrig-nvidia.exe"
 $Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.14.0/xmrig-nvidia-2.14.0-cuda10-win64.zip"
 
 $Commands = [PSCustomObject]@{
-    #"cryptonight/r" = "" #cryptonight/r (testing)
+    #"cryptonightr" = "" #cryptonight/r (testing) 
 }
 $Port = 4068 #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
