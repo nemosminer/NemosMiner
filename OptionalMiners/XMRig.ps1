@@ -10,15 +10,18 @@ $Port = 4068 #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+$Algo = Get-Algorithm($_)
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) -o stratum+tcp://cryptonightr.usa.nicehash.com:3375 -u $($Pools.(Get-Algorithm($_)).User) -p x -a cryptonight/r --keepalive --nicehash --api-port=4068 --donate-level=1"
-        HashRates = [PSCustomObject]@{(Get-Algorithm($_)) = $Stats."$($Name)_$(Get-Algorithm($_))_HashRate".Day * .99} # substract 1% devfee
+        Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass) -a cryptonight/r --keepalive --nicehash --api-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level=1"
+        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .99} # substract 1% devfee
         API = "XMRig"
-        Port = 4068
-        Wrap = $false
-        URI = $Uri    
-        User = $Pools.(Get-Algorithm($_)).User
+        Port      = $Variables.NVIDIAMinerAPITCPPort
+        Wrap      = $false
+        URI       = $Uri
+        User      = $Pools.($Algo).User
+        Host      = $Pools.($Algo).Host
+        Coin      = $Pools.($Algo).Coin
     }
 }
