@@ -10,8 +10,8 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (re testing)
-    "grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (re testing)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (fastets)
+   #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb + vram cards only remove # from #"grincuckatoo31 to enable)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
