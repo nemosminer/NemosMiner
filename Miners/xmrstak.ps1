@@ -12,7 +12,7 @@ $Commands = [PSCustomObject]@{
     #"cryptonight_v7"    = "" # CryptoNightV7(cryptodredge faster)
     #"cryptonight_v8"    = "" # CryptoNightV8
     # "monero"     = "" # Monero(v8)
-    "cryptonight_r"     = "" #Cryptonight_r (Monero)
+    #"cryptonight_r"     = "" #Cryptonight_r (XMRig faster + lower fee)
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
@@ -55,7 +55,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_Nvidia.txt --noAMD --noCPU -i $($Port)"
-        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day} 
+        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day * .98} # substract 2% devfee 
         API       = "fireice"
         Port      = $Port
         URI       = $Uri
