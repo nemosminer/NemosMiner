@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-XMRig2140\xmrig-nvidia.exe"
-$Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.14.0/xmrig-nvidia-2.14.0-cuda10-win64.zip"
+$Path = ".\Bin\NVIDIA-XMRig2141\xmrig-nvidia.exe"
+$Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.14.1/xmrig-nvidia-2.14.1-cuda10-win64.zip"
 
 $Commands = [PSCustomObject]@{
      "cryptonightr" = " --nicehash" #cryptonight/r (NiceHash)
