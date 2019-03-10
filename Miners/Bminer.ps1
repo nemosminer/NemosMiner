@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (testing)
+    #"grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (gminer faster / still error on RTX cards not recording hashrate)
     #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (gminer faster)
     
 }
