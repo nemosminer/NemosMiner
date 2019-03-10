@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-TTMiner2114\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner.zip"
 
 $Commands = [PSCustomObject]@{
-    #"progpow"  = " -a PROGPOW-100 "
+     "progpow"  = " -a PROGPOW-100 "
     #"mtp"      = " -a MTP-100 " #(Supports NiceHash)
     #"ethash"   = " -a ETHASH-100 "
     #"ubqhash"  = " -a UBQHASH-100 "
