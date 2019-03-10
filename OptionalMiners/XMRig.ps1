@@ -4,7 +4,8 @@ $Path = ".\Bin\NVIDIA-XMRig2140\xmrig-nvidia.exe"
 $Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.14.0/xmrig-nvidia-2.14.0-cuda10-win64.zip"
 
 $Commands = [PSCustomObject]@{
-     "cryptonightr" = "" #cryptonight/r (fastest) 
+     "cryptonightr" = " --nicehash" #cryptonight/r (NiceHash)
+     "cryptonight-monero" = "" #cryptonight/r (Mining Pool Hub)
 }
 $Port = 4068 #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -14,7 +15,7 @@ $Algo = Get-Algorithm($_)
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass) -a cryptonight/r --keepalive --nicehash --api-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level=1"
+        Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_) -a cryptonight/r --keepalive --api-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level=1"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .99} # substract 1% devfee
         API = "XMRig"
         Port      = $Variables.NVIDIAMinerAPITCPPort
