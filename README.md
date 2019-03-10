@@ -2,9 +2,10 @@
 
 Updated 10 March 2019
 
-[![Version tag](https://img.shields.io/github/release/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/releases/latest) [![Version date tag](https://img.shields.io/github/release-date/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/Nemosminer/releases/latest) [![Issues tag](https://img.shields.io/github/issues-raw/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/issues)
-[![GitHub license](https://img.shields.io/github/license/nemosminer/NemosMiner.svg)](https://github.com/nemosminer/NemosMiner/blob/master/LICENSE)
-![Releases](https://img.shields.io/github/downloads/nemosminer/NemosMiner/total.svg)
+[![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases)
+[![GitHub release](https://img.shields.io/github/release/nemosminer/Nemosminer/all.svg)](https://github.com/nemosminer/Nemosminer/releases)
+[![GitHub Release Date](https://img.shields.io/github/release-date-pre/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/releases)
+[![GitHub license](https://img.shields.io/github/license/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
 
