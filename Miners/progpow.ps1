@@ -1,10 +1,10 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-progpowminer016\progpowminer-cuda.exe"
-$Uri = "https://github.com/BitcoinInterestOfficial/BitcoinInterest/releases/download/2.1/progpowminer-cuda-windows-0.16_final.zip"
+$Uri = "https://nemosminer.com/data/optional/progpowminer0.16-FinalCuda 10.7z"
 
 $Commands = [PSCustomObject]@{
-    #"progpow" = ""
+     "progpow" = ""
  
 }
 
