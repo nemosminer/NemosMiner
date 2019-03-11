@@ -4,12 +4,12 @@ $Path = ".\Bin\NVIDIA-TTMiner2114\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner.zip"
 
 $Commands = [PSCustomObject]@{
-    #"progpow"  = " -a PROGPOW-100 "
-    #"mtp"      = " -a MTP-100 " #(Supports NiceHash)
-    #"ethash"   = " -a ETHASH-100 "
-    #"ubqhash"  = " -a UBQHASH-100 "
-    #"myr-gr"   = " -a MYRGR-100 " 
-    #"lyra2v3"  = " -a LYRA2V3-100 "
+       #"progpow"  = " -a PROGPOW-100" # (progpowminer faster + 0% fee)
+       #"mtp"      = " -a MTP-100 " # (ccminer faster + 0% fee)
+       #"ethash"   = " -a ETHASH-100 "# (Bminer/Ethminer faster + 0% fee)
+       #"ubqhash"  = " -a UBQHASH-100 "
+       #"myr-gr"   = " -a MYRGR-100 " 
+       #"lyra2v3"  = " -a LYRA2V3-100 " # (ccminer faster + 0%fee)
 }
  
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
