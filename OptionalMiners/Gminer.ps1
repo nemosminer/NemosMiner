@@ -8,7 +8,7 @@ $Commands = [PSCustomObject]@{
     "equihash192"  = " --devices $($Config.SelGPUDSTM) --algo 192_7 --pers auto" #Equihash192 (fastest)
     "equihash-btg" = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers BgoldPoW " # Equihash-btg MPH (fastest)
     "equihash96"   = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96 (fastest)
-    #"beam"         = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150 (Bminer faster)
+   #"beam"         = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150 (Bminer faster)
     "grincuckaroo29"  = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29 (fastest)
    #"grincuckatoo31"  = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31 8gb + vram cards only remove # from #"grincuckatoo31 to enable
  
@@ -21,7 +21,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--intensity 100 test--watchdog 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.($Algo).Host) --port $($Pools.($Algo).Port) --user $($Pools.($Algo).User) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--intensity 100 --watchdog 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.($Algo).Host) --port $($Pools.($Algo).Port) --user $($Pools.($Algo).User) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98} # substract 2% devfee
         API       = "gminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
