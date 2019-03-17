@@ -397,7 +397,22 @@ $CycleTime = Measure-Command -Expression {
         $BestMiners_Combo = $BestMiners_Combo | ? {$_.type -ne "CPU"}
         $Variables.StatusText = "Miner prevents CPU mining"
     }
-    
+
+        # Ban miners if too many failures as defined by MaxMinerFailure
+        # 0 means no ban
+        # Int value means ban after x failures
+        # defaults to 3 if no value in config
+        # ** Ban is not persistent across sessions **
+        $Config = Load-Config -ConfigFile ".\Config\Config.json"
+        If ($Config.MaxMinerFailure -gt 0){
+            $Variables.StatusText = "Looking for failure : $($Config.MaxMinerFailure)"
+            $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3} }
+            $Config.MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3}
+            $BannedMiners = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" -and $_.Activated -ge $Config.MaxMinerFailure }
+            $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures." }
+            $BestMiners_Combo = $BestMiners_Combo | Where { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
+        }
+
     #Add the most profitable miners to the active list
     $BestMiners_Combo | ForEach {
         if (($Variables.ActiveMinerPrograms | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments).Count -eq 0) {
