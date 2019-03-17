@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-miniZ1.2l\miniZ.exe"
+$Path = ".\Bin\NVIDIA-miniZ12l\miniZ.exe"
 $Uri = "https://miniz.ch/?smd_process_download=1&download_id=1974"
 $Commands = [PSCustomObject]@{
     #"equihash144"  = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144 (testing)
