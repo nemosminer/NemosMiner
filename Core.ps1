@@ -405,11 +405,10 @@ $CycleTime = Measure-Command -Expression {
         # ** Ban is not persistent across sessions **
         $Config = Load-Config -ConfigFile ".\Config\Config.json"
         If ($Config.MaxMinerFailure -gt 0){
-            $Variables.StatusText = "Looking for failure : $($Config.MaxMinerFailure)"
             $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3} }
             $Config.MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3}
             $BannedMiners = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" -and $_.Activated -ge $Config.MaxMinerFailure }
-            $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures." }
+            $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
             $BestMiners_Combo = $BestMiners_Combo | Where { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
         }
 
