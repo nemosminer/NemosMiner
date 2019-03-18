@@ -4,12 +4,13 @@ $Path = ".\Bin\NVIDIA-TTMiner2119\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner-2.1.19.zip"
 
 $Commands = [PSCustomObject]@{
-       "progpow"  = " -a PROGPOW-101" # (progpowminer faster + 0% fee)
-       "mtp"      = " -a MTP-101 " # (ccminer faster + 0% fee)
-       "ethash"   = " -a ETHASH-101 "# (bminer/ethminer faster + 0% fee)
-       #"ubqhash"  = " -a UBQHASH-100 "
-       #"myr-gr"   = " -a MYRGR-100 " 
-       "lyra2v3"  = " -a LYRA2V3-101 " # (ccminer faster + 0% fee)
+       "progpow"    = " -a PROGPOW-101" # (testing)
+       "mtp"        = " -a MTP-101 " # (testing)
+       "ethash"     = " -a ETHASH-101 "# (testing)
+       #"ubqhash"   = " -a UBQHASH-100 "
+       #"myr-gr"    = " -a MYRGR-100 " 
+       "lyra2v3"    = " -a LYRA2V3-101 " # (testing)
+       "lyra2rev3"  = " -a LYRA2V3-101 " # (testing)
 }
  
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -20,7 +21,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-d $($Config.SelGPUDSTM) --api-bind 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98} # substract 2% devfee
+        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .99} # substract 1% devfee
         API       = "TTminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         Wrap      = $false
