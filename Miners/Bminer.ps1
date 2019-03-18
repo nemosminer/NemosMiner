@@ -3,14 +3,14 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Bminer1531\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.3.1-8887ee1-amd64.zip"
 $Commands = [PSCustomObject]@{
-    #"equihashBTG" = " -uri zhash://" #EquihashBTG(miniZ faster)
-    #"equihash" = " -uri stratum://" #Equihash(Asic)
-    #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144(gminer faster)
-    #"zhash" = " -pers auto -uri equihash1445://" #Zhash(gminer faster)
+    "equihashBTG" = " -uri zhash://" #EquihashBTG(miniZ faster)
+    "equihash" = " -uri stratum://" #Equihash(Asic)
+    "equihash144" = " -pers auto -uri equihash1445://" #Equihash144(gminer faster)
+    "zhash" = " -pers auto -uri equihash1445://" #Zhash(gminer faster)
     "ethash" = " -uri ethstratum://" #Ethash (fastest)
     # "aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    #"grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (gminer faster)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (gminer faster)
     #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (gminer faster)
     
 }
