@@ -431,7 +431,7 @@ $MainForm.ClientSize = '740,450' # best to keep under 800,600
 $MainForm.text = "Form"
 $MainForm.TopMost = $false
 $MainForm.FormBorderStyle = 'Fixed3D'
-$MainForm.MaximizeBox = $false
+$MainForm.MaximizeBox = $true
 
 $MainForm.add_Shown( {
         # Check if new version is available
