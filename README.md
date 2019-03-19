@@ -214,11 +214,11 @@ CCminer may need 'Visual C++ 2013' if you don't already have it:
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver 419.17 
+recommended/optimal Windows Nvidia driver 419.35 
 
-[Windows10](http://us.download.nvidia.com/Windows/419.17/419.17-desktop-win10-64bit-international-whql.exe)
+[Windows10](http://us.download.nvidia.com/Windows/419.35/419.35-desktop-win10-64bit-international-whql-rp.exe)
 
-[Windows7](http://us.download.nvidia.com/Windows/419.17/419.17-desktop-win7-64bit-international-whql.exe)
+[Windows7](http://us.download.nvidia.com/Windows/419.35/419.35-desktop-win7-64bit-international-whql-rp.exe)
 
 recommended/optimal Linux Nvidia driver 418.43
 
