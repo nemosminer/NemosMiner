@@ -14,8 +14,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.7.6
-version date:   09 March 2019
+version:        3.7.7
+version date:   20 March 2019
 #>
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
@@ -795,6 +795,25 @@ function Get-HashRate {
                     $Data.miners | Get-Member -MemberType NoteProperty | ForEach-Object {
                         $HashRate += $Data.miners.($_.name).solver.solution_rate
                     }
+                }
+            }
+
+            "GrinPro" {
+                $Request = Invoke-HTTPRequest -Port $Miner.ApiPort -Path "/api/status"
+                if ($Request) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
+                }
+            }
+
+            "NBMiner" {
+                $Request = Invoke-HTTPRequest -Port $Miner.ApiPort -Path "/api/v1/status"
+                if ($Request) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = @(
+                        [double]$Data.miner.total_hashrate_raw
+                        [double]$Data.miner.total_hashrate2_raw
+                    )
                 }
             }
 
