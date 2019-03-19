@@ -10,8 +10,8 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash (Phoenix faster)
    #"aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 (gminer faster)
-    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (gminer faster)
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
+    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
