@@ -3,14 +3,14 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Gminer136\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.36/gminer_1_36_minimal_windows64.zip"
 $Commands = [PSCustomObject]@{
-    #"equihash144"  = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144 (miniZ faster)
-    #"zhash"        = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Zhash (miniZ faster)
-    #"equihash192"  = " --devices $($Config.SelGPUDSTM) --algo 192_7 --pers auto" #Equihash192 (miniZ faster)
-    #"equihash-btg" = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers BgoldPoW " # Equihash-btg MPH (miniZ faster)
-    #"equihash96"   = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96 (miniZ faster)
-    #"beam"         = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150 (miniZ faster)
-    "grincuckaroo29"  = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29 (fastest)
-   #"grincuckatoo31"  = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31 8gb + vram cards only remove # from #"grincuckatoo31 to enable
+    #"equihash144"    = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144 (miniZ faster)
+    #"zhash"          = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Zhash (miniZ faster)
+    #"equihash192"    = " --devices $($Config.SelGPUDSTM) --algo 192_7 --pers auto" #Equihash192 (miniZ faster)
+    #"equihash-btg"   = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers BgoldPoW " # Equihash-btg MPH (miniZ faster)
+    #"equihash96"     = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96 (miniZ faster)
+     "beam"           = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150
+     "grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29 (fastest)
+    #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31 8gb + vram cards only remove # from #"grincuckatoo31 to enable
  
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
