@@ -494,7 +494,8 @@ function Get-ChildItemContent {
         else {
             Try {
                 $Content = $_ | Get-Content | ConvertFrom-Json
-            } Catch {
+            }
+            Catch {
                 Write-Host "Unable to load $Path\$FileName"
             }
         }
@@ -723,7 +724,7 @@ function Get-HashRate {
                 }
             }
 	    
-	         "TTminer" {
+            "TTminer" {
 
                 $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json  -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
@@ -796,6 +797,23 @@ function Get-HashRate {
                     }
                 }
             }
+
+            "LOL" {
+                $Request = Invoke_httpRequest $Server $Port "/summary" 5
+                if ($Request) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]$data.Session.Performance_Summary
+                }
+            }
+
+            "nheq" {
+                $Request = Invoke_TcpRequest $Server $Port "status" 5
+                if ($Request) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]$Data.result.speed_ips * 1000000
+                }
+            }
+            
         } #end switch
         
         $HashRates = @()
