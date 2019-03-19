@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-CcminerLyra2RE3\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/v3/ccminerKlausT.7z"
 
 $Commands = [PSCustomObject]@{
-    "lyra2re3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2RE3 (mining pool hub)
+    "lyra2re3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2RE3 (fastest) (mining pool hub)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
