@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-nbminer21.2\nbminer.exe"
 $Uri = "https://nemosminer.com/data/optional/NBMiner_Win.7z"
 
 $Commands = [PSCustomObject]@{
-    #"grincuckatoo31" = " -a cuckatoo -o stratum+tcp://" #grincuckatoo31 (testing) 
+    #"grincuckatoo31" = " -a cuckatoo -o stratum+tcp://" #grincuckatoo31 (fastest) 
      "grincuckaroo29" = " -a cuckaroo -o stratum+tcp://" #grincuckaroo29 (testing)
      "ethash" = " -a ethash -o ethnh+tcp://" #ethash (testing)
 }
