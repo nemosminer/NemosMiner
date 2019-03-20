@@ -799,7 +799,7 @@ function Get-HashRate {
             }
 
             "GrinPro" {
-                $Request = Invoke-HTTPRequest -Port $Miner.ApiPort -Path "/api/status"
+                $Request = Invoke-HTTPRequest $Server $Port "/api/status" 5
                 if ($Request) {
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
@@ -807,7 +807,7 @@ function Get-HashRate {
             }
 
             "NBMiner" {
-                $Request = Invoke-HTTPRequest -Port $Miner.ApiPort -Path "/api/v1/status"
+                $Request = Invoke-HTTPRequest $Server $Port "/api/v1/status" 5
                 if ($Request) {
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = @(
