@@ -14,8 +14,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.7.7
-version date:   20 March 2019
+version:        3.6.6
+version date:   22 January 2019
 #>
 
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
@@ -486,18 +486,12 @@ function Get-ChildItemContent {
 
     $ChildItems = Get-ChildItem -Recurse -Path $Path -Include $Include | ForEach-Object {
         $Name = $_.BaseName
-        $FileName = $_.Name
         $Content = @()
         if ($_.Extension -eq ".ps1") {
             $Content = &$_.FullName
         }
         else {
-            Try {
-                $Content = $_ | Get-Content | ConvertFrom-Json
-            }
-            Catch {
-                Write-Host "Unable to load $Path\$FileName"
-            }
+            $Content = $_ | Get-Content | ConvertFrom-Json
         }
         $Content | ForEach-Object {
             [PSCustomObject]@{Name = $Name; Content = $_}
@@ -671,7 +665,7 @@ function Get-HashRate {
             "zjazz" {
                 $Request = Invoke_TcpRequest $server $port  "summary" 10
                 $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
-                $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
+                $HashRate = [Double]$Data.KHS * 1000000
             }
 
             "excavator" {
@@ -723,16 +717,6 @@ function Get-HashRate {
                     $HashRate = [double]$Data.result[2].Split(";")[0] 
                 }
             }
-	    
-            "TTminer" {
-
-                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json  -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
-                }
-            }
 
             "prospector" {
                 $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" 5
@@ -761,7 +745,7 @@ function Get-HashRate {
 
             "wrapper" {
                 $HashRate = ""
-                $wrpath = ".\Logs\energi.txt"
+                $wrpath = ".\Wrapper_$Id.txt"
                 $HashRate = if (test-path -path $wrpath ) {
                     Get-Content  $wrpath
                     $HashRate = ($HashRate -split ',')[0]
@@ -797,42 +781,6 @@ function Get-HashRate {
                     }
                 }
             }
-
-            "GrinPro" {
-                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
-                }
-            }
-
-            "NBMiner" {
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = @(
-                        [double]$Data.miner.total_hashrate_raw
-                        [double]$Data.miner.total_hashrate2_raw
-                    )
-                }
-            }
-
-            "LOL" {
-                $Request = Invoke_httpRequest $Server $Port "/summary" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$data.Session.Performance_Summary
-                }
-            }
-
-            "nheq" {
-                $Request = Invoke_TcpRequest $Server $Port "status" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result.speed_ips * 1000000
-                }
-            }
-            
         } #end switch
         
         $HashRates = @()
