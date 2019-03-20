@@ -218,7 +218,7 @@ recommended/optimal Windows Nvidia driver 419.35
 
 [Windows10](http://us.download.nvidia.com/Windows/419.35/419.35-desktop-win10-64bit-international-whql-rp.exe)
 
-[Windows7](http://us.download.nvidia.com/Windows/419.35/419.35-desktop-win7-64bit-international-whql-rp.exe)
+[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/419.35/419.35-desktop-win8-win7-64bit-international-whql-rp.exe)
 
 recommended/optimal Linux Nvidia driver 418.43
 
