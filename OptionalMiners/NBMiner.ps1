@@ -4,9 +4,9 @@ $Path = ".\Bin\NVIDIA-nbminer21.2\nbminer.exe"
 $Uri = "https://nemosminer.com/data/optional/NBMiner_Win.7z"
 
 $Commands = [PSCustomObject]@{
-    #"grincuckatoo31" = " -a cuckatoo" #grincuckatoo31 (testing) 
-     "grincuckaroo29" = " -a cuckaroo" #grincuckaroo29 (testing)
-     "ethash" = " -a ethash" #ethash (testing)
+    #"grincuckatoo31" = " -a cuckatoo -o stratum+tcp://" #grincuckatoo31 (testing) 
+     "grincuckaroo29" = " -a cuckaroo -o stratum+tcp://" #grincuckaroo29 (testing)
+     "ethash" = " -a ethash -o ethnh+tcp://" #ethash (testing)
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -17,10 +17,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         "ethash" {$Fee = 0.0065}
         default {$Fee = 0.02}
     }
+    If ($Pools.($Algo).Host -notlike "*nicehash*") {return}
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User):$($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "$($Commands.$_)$($Pools.($Algo).Host):$($Pools.($Algo).Port) --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.($Algo).User):$($Pools.($Algo).Pass)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee)} # substract devfee
         API       = "NBMiner"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
