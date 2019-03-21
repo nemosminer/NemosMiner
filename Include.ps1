@@ -707,7 +707,7 @@ function Get-HashRate {
                 }
             }
 	    
-              "nanominer" {
+            "nanominer" {
                 $Parameters = @{id = 0; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
                 if ($Request -ne "" -and $request -ne $null) {
