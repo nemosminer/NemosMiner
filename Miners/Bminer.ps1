@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
    #"aeternity" = " -uri aeternity://" #aeternity(testing)
     "beam" = " -uri beam://" #beam(fastest)
     "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
-    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31
+    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
