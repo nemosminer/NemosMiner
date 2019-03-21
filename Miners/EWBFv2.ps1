@@ -5,7 +5,7 @@ $Uri = "https://nemosminer.com/data/optional/EWBFEquihashminerv0.6.7z"
 $Commands = [PSCustomObject]@{
     #"equihash144"  = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144 (miniZ faster)
     #"zhash"        = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Zhash (miniZ faster)
-    #"equihash192"  = " --cuda_devices $($Config.SelGPUDSTM) --algo 192_7 --pers ZERO_PoW" #Equihash192 (miniZ faster)
+     "equihash192"  = " --cuda_devices $($Config.SelGPUDSTM) --algo 192_7 --pers ZERO_PoW" #Equihash192 (miniZ faster)
     #"equihash-btg" = " --cuda_devices $($Config.SelGPUDSTM) --algo 144_5 --pers BgoldPoW" # Equihash-btg (miniZ faster)
     "equihash96"   = " --cuda_devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96
 }
