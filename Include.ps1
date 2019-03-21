@@ -706,7 +706,16 @@ function Get-HashRate {
                     $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
                 }
             }
-
+	    
+              "nanominer" {
+                $Parameters = @{id = 0; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json -Compress
+                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
+                if ($Request -ne "" -and $request -ne $null) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]($Data.result[2] -split ";")[0] #* 1000
+                }
+            }
+	    
             "ethminer" {
                 $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1"} | ConvertTo-Json -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
