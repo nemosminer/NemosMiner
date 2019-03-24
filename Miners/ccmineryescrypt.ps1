@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Ccmineryescrypt9\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerKlausTyescrypt/releases/download/v9/ccminerKlausTyescryptv9.7z"
 
 $Commands = [PSCustomObject]@{
-    "neoscrypt" = " -i 17.25 -d $($Config.SelGPUCC)" #NeoScrypt
+    #"neoscrypt" = " -i 17.25 -d $($Config.SelGPUCC)" #NeoScrypt
     "yescrypt" = " -d $($Config.SelGPUCC)" #Yescrypt
     "yescryptR16" = " -i 13.25 -d $($Config.SelGPUCC)" #YescryptR16
     "yescryptR16v2" = " -d $($Config.SelGPUCC)" #YescryptR16v2
