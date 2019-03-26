@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     "yescryptR16v2" = " -d $($Config.SelGPUCC)" #YescryptR16v2
     "yescryptR24" = " -d $($Config.SelGPUCC)" #YescryptR24 
     "yescryptR8" = " -d $($Config.SelGPUCC)" #YescryptR8
-    "yescryptR32" = " -i 12.51 -d $($Config.SelGPUCC)" #YescryptR32
+    "yescryptR32" = " -i 12.49 -d $($Config.SelGPUCC)" #YescryptR32
 }
    switch ($_) {
       "yescryptR32" {$staleshares = 0.14} # account for 14% stale shares
