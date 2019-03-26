@@ -11,14 +11,8 @@ $Commands = [PSCustomObject]@{
     #"yescryptR24" = " -a yescryptr24 -d $($Config.SelGPUCC)" #YescryptR24
     #"yescryptR8" = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8 
     "lyra2v3"   = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2v3 NICEHASH
-    "lyra2rev3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3 YIIMP
-    #"lyra2re3"  = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2RE3 (fastest) (mining pool hub)
+    "lyra2rev3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3 YIIMP   
 }
-#switch ($_) {
-    #"lyra2re3" {$poolport = 20534} # vertcoin Mining Pool Hub
-    #default {$poolport = $($Pools.($Algo).Port)}
-#}
-
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
