@@ -17,7 +17,7 @@ $Commands = [PSCustomObject]@{
 #switch ($_) {
     #"lyra2re3" {$poolport = 20534} # vertcoin Mining Pool Hub
     #default {$poolport = $($Pools.($Algo).Port)}
-}
+#}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
