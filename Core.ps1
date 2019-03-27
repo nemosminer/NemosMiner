@@ -24,7 +24,6 @@ version date:   21 March 2019
 Function InitApplication {
     $Variables | Add-Member -Force @{SourcesHash = @()}
     if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
-    try {Set-WindowSize 170 50} catch {}
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
     $Variables | Add-Member -Force @{ScriptStartDate = (Get-Date)}
