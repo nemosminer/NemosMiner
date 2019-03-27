@@ -159,3 +159,4 @@ $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinu
 $MathObject = @()
 Sleep ($Interval+$RetryInterval-(Get-Date).Second)
 }
+
