@@ -148,8 +148,8 @@ Foreach ($Name in ($AlgoObject.Name | Select -Unique)) {
         $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | ? {$_.Name -eq $Name+", Up"}).Count - ($GroupAvgSampleSize | ? {$_.Name -eq $Name+", Down"}).Count) / (($GroupMedSampleSize | ? {$_.Name -eq $Name}).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | ? {$_.Name -eq $Name}).Median)
         $Penalty = ($PenaltySampleSizeHalf*$SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower+1)
         $LiveTrend = ((Get-Trendline ($AlgoObjects | ? {$_.Name -eq $Name}).estimate_current)[1])
-        # $Price = (($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) 
-        $Price = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) )
+        # $Price = (($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared) 
+        $Price = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared) )
         If ( $UseFullTrust ) {
             If ( $Penalty -gt 0 ){
                 $Price = [Math]::max([decimal]$Price, [decimal]($CurAlgoObject | ? {$_.Name -eq $Name}).estimate_current)
@@ -166,10 +166,10 @@ Foreach ($Name in ($AlgoObject.Name | Select -Unique)) {
             DownDriftAvg        = ($GroupAvgSampleSize | ? {$_.Name -eq $Name+", Down"}).Avg
             Penalty             = $Penalty
             PlusPrice           = $Price
-            PlusPriceRaw        = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) )
+            PlusPriceRaw        = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared) )
             PlusPriceMax        = $Price
             CurrentLive         = ($CurAlgoObject | ? {$_.Name -eq $Name}).estimate_current
-            Current24hr         = ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h
+            Current24hr         = ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared
             Date                = $CurDate
             LiveTrend           = $LiveTrend
             APICallFails        = $APICallFails
