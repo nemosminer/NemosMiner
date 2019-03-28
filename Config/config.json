@@ -1,5 +1,5 @@
 ﻿{
-    "ActiveMinerGainPct":  19,
+    "ActiveMinerGainPct":  25,
     "Algorithm":  [
                       ""
                   ],
@@ -35,10 +35,7 @@
     "Passwordcurrency":  "BTC",
     "PoolName":  [
                      "nicehash",
-                     "nlpool",
-                     "miningpoolhub",
-                     "zpool",
-                     "zergpool"
+                     "zergpoolplus"
                  ],
     "Proxy":  "",
     "ReportToServer":  false,
