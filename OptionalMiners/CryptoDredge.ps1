@@ -29,8 +29,7 @@ $Commands = [PSCustomObject]@{
     #"dedal"            = " --intensity 8 -a dedal" #Dedal
     "pipe"             = " --intensity 8 -a pipe" #Pipe 
     #"x16r"             = " --intensity 8 -a x16r" #x16r
-    #"grincuckaroo29"   = " --intensity 8 -a cuckaroo29" #Grincuckaroo29 
-    "exosis"           = " --intensity 8 -a exosis" #Exosis
+    #"grincuckaroo29"   = " --intensity 8 -a cuckaroo29" #Grincuckaroo29
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
