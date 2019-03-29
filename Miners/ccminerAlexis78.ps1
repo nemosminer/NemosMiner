@@ -4,11 +4,11 @@ $Path = ".\Bin\NVIDIA-Alexis7815\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerAlexis78/releases/download/Alexis78-v1.5/ccminerAlexis78v1.5.7z"
 
 $Commands = [PSCustomObject]@{
-     "keccak" = " -N 2 -m 2 -i 29 -d $($Config.SelGPUCC)" #Keccak
-     "keccakc" = " -N 2 -i 29 -d $($Config.SelGPUCC)" #Keccakc
+    #"keccak" = " -N 2 -m 2 -i 29 -d $($Config.SelGPUCC)" #Keccak
+    #"keccakc" = " -N 2 -i 29 -d $($Config.SelGPUCC)" #Keccakc
     #"lyra2v2" = " -d $($Config.SelGPUCC) -N 1" #Lyra2RE2
     #"poly" = " -N 1 -d $($Config.SelGPUCC)" #polytimos
-    "skein" = " -i 28 -N 2 -d $($Config.SelGPUCC)" #Skein
+    #"skein" = " -i 28 -N 2 -d $($Config.SelGPUCC)" #Skein
     #"skein2" = " -i 28 -N 2 -d $($Config.SelGPUCC)" #Skein2
     #"x11evo" = " -N 1 -i 21 -d $($Config.SelGPUCC) " #X11evo
     #"bitcore" = "" #Bitcore
