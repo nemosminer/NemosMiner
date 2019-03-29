@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Bminer1531\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.3.1-8887ee1-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer1540miner.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.4.0-9e272fc-amd64.zip"
 $Commands = [PSCustomObject]@{
     "equihashBTG" = " -uri zhash://" #EquihashBTG
     "equihash144" = " -pers auto -uri equihash1445://" #Equihash144
@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -uri ethstratum://" #Ethash 
    #"aeternity" = " -uri aeternity://" #aeternity
     "beam" = " -uri beam://" #beam
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
+    "grincuckaroo29" = " --fast uri cuckaroo29://" #grincuckaroo29 
    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     
 }
