@@ -4,12 +4,12 @@ $Path = ".\Bin\NVIDIA-Bminer1540\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.4.0-9e272fc-amd64.zip"
 $Commands = [PSCustomObject]@{
     "equihashBTG" = " -uri zhash://" #EquihashBTG
-   #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144
+    "equihash144" = " -pers auto -uri equihash1445://" #Equihash144
     "zhash" = " -pers auto -uri equihash1445://" #Zhash
     "ethash" = " -uri ethstratum://" #Ethash 
    #"aeternity" = " -uri aeternity://" #aeternity
     "beam" = " -uri beam://" #beam
-    "grincuckaroo29" = " --fast -uri cuckaroo29://" #grincuckaroo29 
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     
 }
@@ -22,7 +22,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "$($Commands.$_)$($Pools.($Algo).User):$($Pass)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port"
+        Arguments = "$($Commands.$_)$($Pools.($Algo).User):$($Pass)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --fast -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day}
         API       = "bminer"
         Port      = $Port
