@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminermtp11141\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminerMTP/releases/download/v1.1.14.1-mtp/ccminermtp.7z"
+$Path = ".\Bin\NVIDIA-ccminermtp1161\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminerMTP/releases/download/v1.16.1/ccminerMTP1.16.1.7z"
 
 $Commands = [PSCustomObject]@{
     "mtp" = " -d $($Config.SelGPUCC)" #mtp (requires 6gb+ system ram to run, 4gb is not enough)
