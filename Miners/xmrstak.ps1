@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\CryptoNight-FireIce2103\xmr-stak.exe"
-$Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/2.10.3/xmr-stak-win64-2.10.3.7z"
+$Path = ".\Bin\CryptoNight-FireIce2104\xmr-stak.exe"
+$Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/2.10.4/xmr-stak-win64-2.10.4.7z"
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $Port = 3335
