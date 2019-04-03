@@ -16,9 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           BrainPlus.ps1
 version:        3.7.7
-version date:   March 28 2019
+version date:   April 04 2019
 #>
-
 
 set-location ($args[0])
 # Set Process priority
@@ -117,12 +116,12 @@ Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
             Port                = $AlgoData.($Algo).port
             coins               = $AlgoData.($Algo).coins
             Fees                = $AlgoData.($Algo).Fees
-            Hashrate            = $AlgoData.($Algo).hashrate_shared
-            Workers             = $AlgoData.($Algo).workers_shared
+            Hashrate            = $AlgoData.($Algo).Hashrate
+            Workers             = $AlgoData.($Algo).Workers
             estimate_current    = $AlgoData.($Algo).estimate_current -as [Decimal]
             estimate_last24h    = $AlgoData.($Algo).estimate_last24h
             actual_last24h      = $BasePrice
-            hashrate_last24h    = $AlgoData.($Algo).hashrate_last24h_shared
+            hashrate_last24h    = $AlgoData.($Algo).hashrate_last24h
             Last24Drift         = $AlgoData.($Algo).estimate_current - $BasePrice
             Last24DriftSign     = If (($AlgoData.($Algo).estimate_current - $BasePrice) -ge 0) {"Up"} else {"Down"}
             Last24DriftPercent  = if ($BasePrice -gt 0) {($AlgoData.($Algo).estimate_current - $BasePrice) / $BasePrice} else {0}
@@ -149,8 +148,8 @@ Foreach ($Name in ($AlgoObject.Name | Select -Unique)) {
         $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | ? {$_.Name -eq $Name+", Up"}).Count - ($GroupAvgSampleSize | ? {$_.Name -eq $Name+", Down"}).Count) / (($GroupMedSampleSize | ? {$_.Name -eq $Name}).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | ? {$_.Name -eq $Name}).Median)
         $Penalty = ($PenaltySampleSizeHalf*$SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower+1)
         $LiveTrend = ((Get-Trendline ($AlgoObjects | ? {$_.Name -eq $Name}).estimate_current)[1])
-        # $Price = (($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared) 
-        $Price = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared) )
+        # $Price = (($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) 
+        $Price = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) )
         If ( $UseFullTrust ) {
             If ( $Penalty -gt 0 ){
                 $Price = [Math]::max([decimal]$Price, [decimal]($CurAlgoObject | ? {$_.Name -eq $Name}).estimate_current)
@@ -170,7 +169,7 @@ Foreach ($Name in ($AlgoObject.Name | Select -Unique)) {
             PlusPriceRaw        = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) )
             PlusPriceMax        = $Price
             CurrentLive         = ($CurAlgoObject | ? {$_.Name -eq $Name}).estimate_current
-            Current24hr         = ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h_shared
+            Current24hr         = ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h
             Date                = $CurDate
             LiveTrend           = $LiveTrend
             APICallFails        = $APICallFails
@@ -188,4 +187,3 @@ $AlgoObject = $AlgoObject | ? {$_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinu
 $MathObject = @()
 Sleep ($Interval+$RetryInterval-(Get-Date).Second)
 }
-
