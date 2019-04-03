@@ -4,8 +4,8 @@ $Path = ".\Bin\NVIDIA-TTMiner221\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner-2.2.1.zip"
 
 $Commands = [PSCustomObject]@{
-       "progpow"    = " -a PROGPOW-101" 
-       "mtp"        = " -a MTP-101 " 
+       "progpow"    = " -a PROGPOW" 
+       "mtp"        = " -a MTP" 
        #"ethash"     = " -a ETHASH-101 "
        #"ubqhash"   = " -a UBQHASH-100 "
        #"myr-gr"    = " -a MYRGR-100 " 
