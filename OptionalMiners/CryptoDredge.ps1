@@ -5,7 +5,7 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.18.0/Cryp
 
 $Commands = [PSCustomObject]@{
 "argon2d-dyn" = "" #argon2d-dyn
-     "argon2d-dyn"       = " --intensity 8 -a argon2d" #Argon2d-dyn
+     "argon2ddyn"        = " --intensity 8 -a argon2d" #Argon2d-dyn
      "allium"            = " --intensity 8 -a allium" #Allium
      "lyra2v3"           = " --intensity 8 -a lyra2v3" #Lyra2v3
      "lyra2REv3"         = " --intensity 8 -a lyra2v3" #lyra2REv3
