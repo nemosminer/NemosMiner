@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     #"cnv8"              = " --intensity 7 -a cnv8" #CryptoNightv8
     #"c11"               = " --intensity 7 -a c11" #C11 
      "skunk"             = " --intensity 7 -a skunk" #Skunk 
-     "mtp"               = " --intensity 7 -a mtp" #Mtp
+     "mtp"               = " --intensity 6 -a mtp" #Mtp
     #"bcd"               = " --intensity 7 -a bcd" #Bcd 
     #"x16rt"             = " --intensity 7 -a x16rt" #X16rt
     #"x21s"              = " --intensity 7 -a x21s" #X21s 
@@ -45,7 +45,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--no-nvml --api-type ccminer-tcp --cpu-priority 4 --no-crashreport --no-watchdog -r -1 -R 1 -b 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--no-nvml --api-type ccminer-tcp --cpu-priority 3 --no-crashreport --no-watchdog -r -1 -R 1 -b 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee)} # substract 1% devfee
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
