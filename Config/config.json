@@ -34,9 +34,10 @@
     "MonitoringUser":  "",
     "Passwordcurrency":  "BTC",
     "PoolName":  [
-                     "nicehash",
                      "zpoolplus",
                      "miningpoolhub",
+                     "nlpoolplus",
+                     "nicehash",
                      "zergpoolplus"
                  ],
     "Proxy":  "",
