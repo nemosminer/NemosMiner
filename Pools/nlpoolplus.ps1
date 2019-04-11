@@ -9,7 +9,8 @@ if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = "mine.nlpool.nl"
-$PriceField = "actual_last24h"
+$PriceField = "Plus_Price"
+# $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
  
 $Location = "US"
