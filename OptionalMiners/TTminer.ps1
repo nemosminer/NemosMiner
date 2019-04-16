@@ -1,16 +1,16 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-TTMiner221\TT-Miner.exe"
-$Uri = "https://nemosminer.com/data/optional/TTMiner221.7z"
+$Path = ".\Bin\NVIDIA-TTMiner222\TT-Miner.exe"
+$Uri = "https://nemosminer.com/data/optional/TT-Miner-2.2.2.7z"
 
 $Commands = [PSCustomObject]@{
-       "progpow"    = " -a PROGPOW" 
-       "mtp"        = " -a MTP" 
-       #"ethash"     = " -a ETHASH-101 "
-       #"ubqhash"   = " -a UBQHASH-100 "
-       #"myr-gr"    = " -a MYRGR-100 " 
-       #"lyra2v3"    = " -a LYRA2V3-101 " 
-       #"lyra2rev3"  = " -a LYRA2V3-101 " 
+        "progpow"    = " -a PROGPOW" 
+        "mtp"        = " -a MTP" 
+        "ethash"     = " -a ETHASH"
+        "ubqhash"    = " -a UBQHASH"
+        "myr-gr"     = " -a MYRGR " 
+        "lyra2v3"    = " -a LYRA2V3" 
+        "lyra2rev3"  = " -a LYRA2V3" 
 }
  
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
