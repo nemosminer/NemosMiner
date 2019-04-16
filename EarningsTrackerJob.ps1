@@ -26,7 +26,7 @@ version date:   06 April 2019
 # [Parameter(Mandatory=$false)]
 # [String]$APIUri, 
 # [Parameter(Mandatory=$false)]
-# [Float]$PaymentThreshold = 0.01, 
+# [Float]$PaymentThreshold = 0.0025, 
 # [Parameter(Mandatory=$false)]
 # [Int]$Interval = 10,
 # [Parameter(Mandatory=$false)]
