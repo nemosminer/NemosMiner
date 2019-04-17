@@ -9,7 +9,7 @@ Updated 16 April 2019
 [![GitHub stars](https://img.shields.io/github/stars/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
 
-Copyright (c) 2019 Nemo and MrPlus
+Copyright (c) 2018-2019 Nemo and MrPlus
 
 This is free software, and you are welcome to redistribute it
 under certain conditions.
