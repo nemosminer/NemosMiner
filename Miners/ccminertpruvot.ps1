@@ -5,6 +5,7 @@ $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccmin
 
 $Commands = [PSCustomObject]@{
     "exosis" = " -a exosis -i 26" #exosis
+    "allium" = " -a allium -i 22" #allium
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
