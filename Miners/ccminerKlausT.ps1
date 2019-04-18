@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-CcminerKlausTv3\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/v3/ccminerKlausT.7z"
 
 $Commands = [PSCustomObject]@{
-    "neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #NeoScrypt
+    #"neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #NeoScrypt
     #"yescrypt" = " -a yescrypt -d $($Config.SelGPUCC)" #Yescrypt 
     #"yescryptR16" = " -i 13.25 -a yescryptr16 -d $($Config.SelGPUCC)" #YescryptR16
     #"yescryptR16v2" = " -a yescryptr16v2 -d $($Config.SelGPUCC)" #YescryptR16v2
