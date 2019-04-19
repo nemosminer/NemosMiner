@@ -1,5 +1,5 @@
 ﻿{
-    "ActiveMinerGainPct":  24,
+    "ActiveMinerGainPct":  25,
     "Algorithm":  [
                       ""
                   ],
@@ -45,7 +45,7 @@
     "SSL":  false,
     "StartGUIMinimized":  false,
     "StartPaused":  false,
-    "StatsInterval":  120,
+    "StatsInterval":  180,
     "SyncRoot":  {
 
                  },
