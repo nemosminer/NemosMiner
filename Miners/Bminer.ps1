@@ -3,13 +3,13 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Bminer1550\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.5.0-f720eee-amd64.zip"
 $Commands = [PSCustomObject]@{
-    "equihashBTG" = " -uri zhash://" #EquihashBTG
+   #"equihashBTG" = " -uri zhash://" #EquihashBTG
    #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144
-    "zhash" = " -pers auto -uri equihash1445://" #Zhash
+   #"zhash" = " -pers auto -uri equihash1445://" #Zhash
     "ethash" = " -uri ethstratum://" #Ethash 
    #"aeternity" = " -uri aeternity://" #aeternity
     "beam" = " -uri beam://" #beam
-   #"grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
+    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     
 }
