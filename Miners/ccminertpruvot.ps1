@@ -4,8 +4,11 @@ $Path = ".\Bin\NVIDIA-ccminertpruvot231\ccminer-x64.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccminer-2.3.1-cuda10.7z"
 
 $Commands = [PSCustomObject]@{
-    "exosis" = " -a exosis -i 26" #exosis
-    "allium" = " -a allium -i 22" #allium
+    "exosis"  = " -a exosis -i 26" #exosis
+    "allium"  = " -a allium -i 22" #allium
+    "keccak"  = " -a keccak -i 29" #keccak
+    "keccakc" = " -a keccakc -i 29" #keccakc
+    "phi2"    = " -a phi2 -i 22.25" #phi2
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
