@@ -6,6 +6,7 @@ $Uri = "https://github.com/ocminer/suprminer/releases/download/2.0/suprminer-2.0
 $Commands = [PSCustomObject]@{
     "veil" = " -a x16rt -i 21" #veil
     "neoscrypt" = " -a neoscrypt -i 21" #neoscrypt
+    "bitcore" = " -a bitcore -i 21" #bitcore
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
