@@ -4,10 +4,10 @@ $Path = ".\Bin\NVIDIA-ccminersupr161\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-x16r/releases/download/v1.6.1/ccminer-patch3-161.7z"
 
 $Commands = [PSCustomObject]@{
-    #"x16r" = " -a x16r -i 23" #x16r
-    #"x16s" = " -a x16s -i 23" #x16s
-    #"x17"  = " -a x17 -i 23" #x17
-    #"c11"  = " -a c11 -i 23" #c11
+     "x16r" = " -a x16r -i 23" #x16r
+     "x16s" = " -a x16s -i 23" #x16s
+     "x17"  = " -a x17 -i 23" #x17
+     "c11"  = " -a c11 -i 23" #c11
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
