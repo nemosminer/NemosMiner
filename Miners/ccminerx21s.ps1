@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Ccminerx21s2311\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminerx21s/releases/download/v2.3.1.1/ccminerx21s.7z"
 
 $Commands = [PSCustomObject]@{
-     "x21s" = " -a x21s -d $($Config.SelGPUCC)" #x21s
+     "x21s" = " -a x21s -i 20 -d $($Config.SelGPUCC)" #x21s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
