@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
      "equihash-btg"   = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers BgoldPoW " # Equihash-btg MPH
      "equihash96"     = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96
      "beam"           = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150
-    #"grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29
+     "grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
  
 }
