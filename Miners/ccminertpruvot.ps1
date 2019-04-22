@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminertpruvot231\ccminer-x64.exe"
 $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccminer-2.3.1-cuda10.7z"
 
 $Commands = [PSCustomObject]@{
-    "exosis"  = " -a exosis -i 25.5" #exosis
+    "exosis"  = " -a exosis -i 25.75" #exosis
     "allium"  = " -a allium -i 22" #allium
     "keccak"  = " -a keccak -i 29" #keccak
     "keccakc" = " -a keccakc -i 29" #keccakc
