@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-Ccminerverus3.3\ccminer.exe"
-$Uri = "https://nemosminer.com/data/optional/CCMinerVerus-3.3.7z"
+$Path = ".\Bin\NVIDIA-Ccminerverus3.4\ccminer.exe"
+$Uri = "https://github.com/nemosminer/ccminerverus/releases/download/v3.4/ccminerverus3.4.7z"
 
 $Commands = [PSCustomObject]@{
      "verushash" = " -a verus -i 18.75 -d $($Config.SelGPUCC)" #verus
