@@ -21,6 +21,8 @@ version date:   19 April 2019
 
 Function InitApplication {
     $Variables | Add-Member -Force @{SourcesHash = @()}
+    $Variables | Add-Member -Force @{ProcessorCount = (Get-WmiObject -class win32_processor).NumberOfLogicalProcessors}
+    
     if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
