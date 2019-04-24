@@ -678,7 +678,7 @@ $LabelCopyright.Location = New-Object System.Drawing.Size(415, 72)
 $LabelCopyright.Size = New-Object System.Drawing.Size(200, 20)
 $LabelCopyright.LinkColor = "BLUE"
 $LabelCopyright.ActiveLinkColor = "RED"
-$LabelCopyright.Text = "Copyright (c) 2019 Nemo and MrPlus"
+$LabelCopyright.Text = "Copyright (c) 2018-2019 Nemo and MrPlus"
 $LabelCopyright.add_Click( {[system.Diagnostics.Process]::start("https://github.com/nemosminer/NemosMiner/blob/master/LICENSE")})
 $MainFormControls += $LabelCopyright
 
