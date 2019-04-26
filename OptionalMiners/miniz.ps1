@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-miniZ12l\miniZ.exe"
-$Uri = "https://nemosminer.com/data/optional/miniZ_v1.2m_cuda10_win-x64.7z"
+$Path = ".\Bin\NVIDIA-miniZ13n\miniZ.exe"
+$Uri = "https://miniz.ch/?smd_process_download=1&download_id=2363"
 $Commands = [PSCustomObject]@{
     "equihash144"  = " --algo 144,5 --pers auto" #Equihash144 (fastest)
     "zhash"        = " --algo 144,5 --pers auto" #Zhash (fastest)
