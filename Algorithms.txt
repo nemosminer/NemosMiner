@@ -50,7 +50,7 @@
     "credits":  "Argon2dCRDS",
     "cryptolight":  "CryptonightLite",
     "cryptonight":  "Cryptonight",
-    "cryptonight/0":  "Cryptonight",
+    "cuckoocycle":  "Cuckoocycle",
     "cryptonight/1":  "CryptonightV7",
     "cryptonight/2":  "CryptonightV8",
     "cryptonight/heavy":  "CryptonightHeavy",
