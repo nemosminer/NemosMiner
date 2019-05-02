@@ -5,6 +5,7 @@ $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.2.4/nanominer
 
 $Commands = [PSCustomObject]@{
     "cryptonightr" = "" #cryptonight/r (NiceHash)
+    "cryptonight-monero" = "" #monero (Mining Pool Hub)
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
