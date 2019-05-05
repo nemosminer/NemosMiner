@@ -6,6 +6,8 @@ $Uri = "https://github.com/bogdanadnan/multiminer/releases/download/v1.1.0/multi
 $Commands = [PSCustomObject]@{
     "argon2d4096" = " -a argon2d4096 --use-gpu=CUDA --gpu-batchsize=512 -t 2" #Argon2d4096 ( --gpu-id=$($Config.SelGPUCC) )
     "argon2d-uis" = " -a argon2d4096 --use-gpu=CUDA --gpu-batchsize=512 -t 2" #Argon2d4096  
+    "argon2d250"  = " -a argon2d250 --use-gpu CUDA -t 4 --gpu-batchsize 2048" #Argon2d4096  
+   
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
