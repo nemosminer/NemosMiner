@@ -8,7 +8,7 @@
     "animecoin":  "Anime",
     "argon2d-dyn":  "Argon2d-dyn",
     "argon2d-uis":  "Argon2d-uis",
-    "argon2":  "Argon2",
+    "argon2ad":  "Argon2ad",
     "argon2coin":  "Argon2",
     "argon2d250":  "Argon2d250",
     "argon2d4096":  "Argon2d4096",
