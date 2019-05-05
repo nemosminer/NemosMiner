@@ -7,7 +7,7 @@
     "astralhash":  "Astralhash",
     "animecoin":  "Anime",
     "argon2d-dyn":  "Argon2d-dyn",
-    "argon2UIS":  "Argon2dUIS",
+    "argon2d-uis":  "Argon2d-uis",
     "argon2":  "Argon2",
     "argon2coin":  "Argon2",
     "argon2d250":  "Argon2dCRDS",
