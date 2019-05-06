@@ -3,9 +3,9 @@ if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps
 $Path = ".\Bin\NVIDIA-Bminerf1531\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.3.1-8887ee1-amd64.zip"
 $Commands = [PSCustomObject]@{
-    "equihashBTG" = " -uri zhash://" #EquihashBTG
-    "equihash144" = " -pers auto -uri equihash1445://" #Equihash144
-    "zhash" = " -pers auto -uri equihash1445://" #Zhash
+   #"equihashBTG" = " -uri zhash://" #EquihashBTG
+   #"equihash144" = " -pers auto -uri equihash1445://" #Equihash144
+   #"zhash" = " -pers auto -uri equihash1445://" #Zhash
     "ethash" = " -uri ethstratum://" #Ethash 
    #"cuckoocycle" = " -uri aeternity://" #aeternity
     "beam" = " -uri beam://" #beam
