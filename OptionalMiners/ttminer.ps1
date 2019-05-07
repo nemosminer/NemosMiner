@@ -8,9 +8,9 @@ $Commands = [PSCustomObject]@{
         "mtp"        = " -a MTP" 
        #"ethash"     = " -a ETHASH"
         "ubqhash"    = " -a UBQHASH"
-        "myr-gr"     = " -a MYRGR " 
-        "lyra2v3"    = " -a LYRA2V3" 
-        "lyra2rev3"  = " -a LYRA2V3" 
+       #"myr-gr"     = " -a MYRGR " 
+       #"lyra2v3"    = " -a LYRA2V3" 
+       #"lyra2rev3"  = " -a LYRA2V3" 
 }
  
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
