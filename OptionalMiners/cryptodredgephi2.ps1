@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-CryptoDredge0190phi2\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.19.0/CryptoDredge_0.19.0_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "phi2" = ",mc=SPDR/AGM --intensity 8 -a phi2" #Phi2 
+    "phi2" = ",mc=LUX --intensity 8 -a phi2" #Phi2 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
