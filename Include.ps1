@@ -13,7 +13,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.7.9.6
+version:        3.7.9.6.1
 version date:   08 May 2019
 #>
 
