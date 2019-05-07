@@ -37,8 +37,9 @@ $Commands = [PSCustomObject]@{
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algo = Get-Algorithm($_)
+    If ($Algo -eq "phi2" -and $Pools.($Algo).Host -like "*zergpool*") { return }
     switch ($_) {
         "mtp" { $Fee = 0.02 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
