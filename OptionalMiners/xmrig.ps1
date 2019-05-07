@@ -4,8 +4,8 @@ $Path = ".\Bin\NVIDIA-XMRig2143\xmrig-nvidia.exe"
 $Uri = "https://github.com/xmrig/xmrig-nvidia/releases/download/v2.14.3/xmrig-nvidia-2.14.3-cuda10_1-win64.zip"
 
 $Commands = [PSCustomObject]@{
-     "cryptonightr" = " --nicehash" #cryptonight/r (NiceHash)
-     "cryptonight-monero" = "" #cryptonight/r (Mining Pool Hub)
+     #"cryptonightr" = " --nicehash" #cryptonight/r (NiceHash)
+     #"cryptonight-monero" = "" #cryptonight/r (Mining Pool Hub)
 }
 $Port = 4068 #2222
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
