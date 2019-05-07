@@ -5,6 +5,7 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/Cryp
 
 $Commands = [PSCustomObject]@{
     "exosis" = " --intensity 8 -a exosis" #Exosis  
+    "phi"    = " --intensity 8 -a phi" #Phi
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
