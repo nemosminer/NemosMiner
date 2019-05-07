@@ -8,8 +8,8 @@ $Commands = [PSCustomObject]@{
    #"zhash" = " -pers auto -uri equihash1445://" #Zhash
    #"ethash" = " -uri ethstratum://" #Ethash 
    #"cuckoocycle" = " -uri aeternity://" #aeternity
-    "beam" = " -uri beam://" #beam
-    "grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
+   #"beam" = " -uri beam://" #beam
+   #"grincuckaroo29" = " -uri cuckaroo29://" #grincuckaroo29 
    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     
 }
