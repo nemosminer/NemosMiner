@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
 $Path = ".\Bin\NVIDIA-ccminerrfv2101\ccminer.exe"
-$Uri = "https://github.com/nemosminer"
+$Uri = "https://github.com/nemosminer/CudaMiner/releases/download/1.0.1/ccminerrfv2.7z"
 
 $Commands = [PSCustomObject]@{
     #"rfv2" = "" #rfv2
