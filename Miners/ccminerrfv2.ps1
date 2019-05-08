@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerrfv2101\ccminer.exe"
 $Uri = "https://github.com/nemosminer/CudaMiner/releases/download/1.0.1/ccminerrfv2.7z"
 
 $Commands = [PSCustomObject]@{
-    #"rfv2" = "" #rfv2
+     "rfv2" = "" #rfv2
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
