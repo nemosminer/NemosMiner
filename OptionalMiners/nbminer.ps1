@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-nbminer233fix\nbminer.exe"
-$Uri = "https://nemosminer.com/data/optional/NBMiner_Win23.3-fix.7z"
+$Path = ".\Bin\NVIDIA-nbminer2321\nbminer.exe"
+$Uri = "https://nemosminer.com/data/optional/NBMiner_Win23.2.1.7z"
 
 $Commands = [PSCustomObject]@{
     #"grincuckatoo31" = " -a cuckatoo -o stratum+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
