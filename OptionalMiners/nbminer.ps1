@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-nbminer223\nbminer.exe"
+$Path = ".\Bin\NVIDIA-nbminer232\nbminer.exe"
 $Uri = "https://nemosminer.com/data/optional/NBMiner_Win23.2.zip"
 
 $Commands = [PSCustomObject]@{
