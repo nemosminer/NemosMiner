@@ -1,0 +1,1 @@
+this folder is used for User selected miner.ps1 files
