@@ -1,3 +1,0 @@
-this folder would remain empty and unaffected by auto updates
-
-user have the option of placing any miner.ps1 in that folder and will only run the miner.ps1 they select
