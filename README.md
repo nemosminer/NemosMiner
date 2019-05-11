@@ -172,13 +172,16 @@ NemosMiner Monitoring Server : https://nemosminer.com
    Optional miners (Advanced)
    
       Some miners are not enabled by default in NemosMiner for a variety of reasons:
-          - ccminerenemy / zealot / trex / cryptodredge
+       
               These are closed source and therefore not enabled in NemosMiner by default.
               Use at your own risk.
-          - Excavator
-              Note as Excavator is owned by "Nicehash" and has a EULA it is NOT enabled in NemosMiner by default
-
+ 
       For advanced users, check the Optional Miners checkbox on the Config tab to enable these miners.
+      
+   CustomMiners (Advanced)
+      
+      Users can place any miner.ps1 from miners/optionalminers or custom user created miner.ps1 files, in CustomMiners folder 
+      leaving miners and optionalminers disabled in config will enable CustomMiners folder 
 
    Algo switching log
    
