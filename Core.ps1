@@ -288,7 +288,7 @@ Function NPMCycle {
         $StartPort = 4068
         $Variables.Miners = if (Test-Path "Miners") {
             @(
-                Get-ChildItemContent "Miners"
+                if ($Config.IncludeRegularMiners -and (Test-Path "Miners")) {Get-ChildItemContent "Miners"}
                 if ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners")) {Get-ChildItemContent "OptionalMiners"}
                 if (Test-Path "CustomMiners") { Get-ChildItemContent "CustomMiners"}
             ) | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} |
