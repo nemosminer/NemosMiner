@@ -2,4 +2,4 @@
 
 # Users can place any miner.ps1 from miners/optionalminers or custom user created miner.ps1 files, in CustomMiners folder 
      
-# leaving RegularMiners and OptionalMiners disabled in config will enable CustomMiners folder
+# Disabling RegularMiners and OptionalMiners in config will make NemosMiner only use miners from the CustomMiners folder
