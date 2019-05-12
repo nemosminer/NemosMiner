@@ -1,5 +1,7 @@
 # this folder is used for User selected miner.ps1 files
 
 # Users can place any miner.ps1 from miners/optionalminers or custom user created miner.ps1 files, in CustomMiners folder 
+
+# CustomMiners is always active
      
 # leaving RegularMiners and OptionalMiners disabled in config will enable CustomMiners folder only
