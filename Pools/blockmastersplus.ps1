@@ -9,7 +9,8 @@ if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = "blockmasters.co"
-$PriceField = "actual_last24h"
+$PriceField = "Plus_Price"
+# $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
  
@@ -31,21 +32,32 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
 	$PwdCurr = if ($PoolConf.PwdCurrency) {$PoolConf.PwdCurrency}else {$Config.Passwordcurrency}
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") {$PoolConf.WorkerName} else {"ID=$($PoolConf.WorkerName)"}
-	
-    if ($PoolConf.Wallet) {
-        [PSCustomObject]@{
-            Algorithm     = $PoolAlgorithm
-            Info          = "$ahashpool_Coin $ahashpool_Coinname"
-            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
-            StablePrice   = $Stat.Week
-            MarginOfError = $Stat.Week_Fluctuation
-            Protocol      = "stratum+tcp"
-            Host          = $PoolHost
-            Port          = $PoolPort
-            User          = $PoolConf.Wallet
-		    Pass          = "$($WorkerName),c=$($PwdCurr)"
-            Location      = $Location
-            SSL           = $false
+
+	$Locations = "eu.", ""
+	$Locations | ForEach-Object {
+		$Pool_Location = $_
+		
+		switch ($Pool_Location) {
+			"eu."    {$Location = "EU"}
+			""    {$Location = "US"}
+		}
+		$PoolHost = "$($Pool_Location)$($HostSuffix)"
+
+        if ($PoolConf.Wallet) {
+            [PSCustomObject]@{
+                Algorithm     = $PoolAlgorithm
+                Info          = "$ahashpool_Coin $ahashpool_Coinname"
+                Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
+                StablePrice   = $Stat.Week
+                MarginOfError = $Stat.Week_Fluctuation
+                Protocol      = "stratum+tcp"
+                Host          = $PoolHost
+                Port          = $PoolPort
+                User          = $PoolConf.Wallet
+                Pass          = "$($WorkerName),c=$($PwdCurr)"
+                Location      = $Location
+                SSL           = $false
+            }
         }
     }
 }
