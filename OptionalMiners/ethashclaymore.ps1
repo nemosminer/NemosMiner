@@ -5,8 +5,8 @@ $Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/
 #$Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/v14.2beta/ClaymoresDualEthereumv142cuda8.7z"
 
 $Commands = [PSCustomObject]@{
-    #"ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash
-}
+    #"ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash -strap 1 -strap 2 -strap 3
+} 
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
@@ -15,7 +15,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-esm 3 -allpools 1 -allcoins 1 -platform 2 -mode 1 -mport -$($Variables.NVIDIAMinerAPITCPPort) -epool $($Pools.($Algo).Host):$($Pools.($Algo).Port) -ewal $($Pools.($Algo).User) -epsw $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "-wd 0 -esm 3 -allpools 1 -allcoins 1 -platform 2 -mode 1 -mport -$($Variables.NVIDIAMinerAPITCPPort) -epool $($Pools.($Algo).Host):$($Pools.($Algo).Port) -ewal $($Pools.($Algo).User) -epsw $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Week * .99} # substract 1% devfee
         API       = "ethminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #3333
