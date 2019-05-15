@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-trex092\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.9.2/t-rex-0.9.2-win-cuda10.0.zip"
+$Path = ".\Bin\NVIDIA-trex102\t-rex.exe"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.10.2/t-rex-0.10.2-win-cuda10.0.zip"
 
 $Commands = [PSCustomObject]@{
     "balloon"    = " -a balloon -i 23" #Balloon
@@ -30,6 +30,7 @@ $Commands = [PSCustomObject]@{
     "timetravel" = " -a timetravel -i 25" #Timetravel
     "tribus"     = " -a tribus -i 23" #Tribus
     "veil"       = " -a x16rt -i 24" #Veil
+    "mtp"        = " -a mtp -i 23" #MTP 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
