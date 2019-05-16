@@ -4,7 +4,7 @@ $Path = ".\Bin\Ethash-Claymore143b\EthDcrMiner64.exe"
 $Uri = "https://github.com/nemosminer/Claymores-Dual-Ethereum/releases/download/v14.3/ClaymoresDualEthereumv143.7z"
 
 $Commands = [PSCustomObject]@{
-     "ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash -strap 1 -strap 2 -strap 3
+     "ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash -strap 1 -strap 2 -strap 3 -strap 4 -strap 5 -strap 6
 } 
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
