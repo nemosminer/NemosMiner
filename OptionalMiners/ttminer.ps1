@@ -5,7 +5,7 @@ $Uri = "https://nemosminer.com/data/optional/TT-Miner-2.2.2.7z"
 
 $Commands = [PSCustomObject]@{
         "progpow"    = " -a PROGPOW" 
-        "mtp"        = " -a MTP" 
+       #"mtp"        = " -a MTP" 
        #"ethash"     = " -a ETHASH"
         "ubqhash"    = " -a UBQHASH"
        #"myr-gr"     = " -a MYRGR " 
