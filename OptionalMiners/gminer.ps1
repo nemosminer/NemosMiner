@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
  
-$Path = ".\Bin\NVIDIA-Gminer142\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.42/gminer_1_42_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer143\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.43/gminer_1_43_windows64.zip"
 $Commands = [PSCustomObject]@{
      "equihash144"    = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144
      "zhash"          = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Zhash
@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
      "equihash96"     = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96
      "beam"           = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150
      "grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo grin29 --pers auto" #Grincuckaroo29
-    #"cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
+     "cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
  
 }
