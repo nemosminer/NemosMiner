@@ -14,6 +14,7 @@ $Commands = [PSCustomObject]@{
     "lyra2zz "    = " --intensity 8 -a lyra2zz" #Lyra2zz
     "neoscrypt"   = " --intensity 6 -a neoscrypt"
     "phi2"        = " --intensity 8 -a phi2" #Phi2 
+    "lux"         = " --intensity 8 -a phi2" #Lux
     "lyra2vc0ban" = " --intensity 8 -a lyra2vc0ban" #Lyra2vc0banHash
     #"cryptonightheavy"  = " --intensity 8 -a cryptonightheavy" # CryptoNightHeavy
     #"x22i"              = " --intensity 8 -a x22i" # X22i 
