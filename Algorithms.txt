@@ -156,6 +156,7 @@
     "lyra2z":  "Lyra2z",
     "lyra2zz":  "Lyra2zz",
     "lyra2z330":  "Lyra2z330",
+    "lux":  "Lux",
     "m7m":  "m7m",
     "machine":  "Timetravel",
     "machinecoin":  "Timetravel",
