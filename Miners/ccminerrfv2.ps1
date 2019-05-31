@@ -1,10 +1,10 @@
 if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminerrfv2101\ccminer.exe"
-$Uri = "https://github.com/nemosminer/CudaMiner/releases/download/1.0.1/ccminerrfv2.7z"
+$Path = ".\Bin\NVIDIA-ccminerrfv2102\ccminer.exe"
+$Uri = "https://github.com/Minerx117/CudaMiner/releases/download/v1.0.2/ccminerrfv2v1.02.7z"
 
 $Commands = [PSCustomObject]@{
-     "rfv2" = "" #rfv2
+     "rfv2" = " -i 28" #rfv2
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
