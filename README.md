@@ -217,11 +217,13 @@ some miners may need 'Visual C++ 2013' if you don't already have it: (install bo
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver 430.64 
+recommended/optimal Windows Nvidia driver 430.86 
 
-[Windows10](http://us.download.nvidia.com/Windows/430.64/430.64-desktop-win10-64bit-international-whql.exe)
+[Windows10 Standard](http://us.download.nvidia.com/Windows/430.86/430.86-desktop-win10-64bit-international-whql.exe)
 
-[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/430.64/430.64-desktop-win8-win7-64bit-international-whql.exe)
+[Windows10 DCH](http://us.download.nvidia.com/Windows/430.86/430.86-desktop-win10-64bit-international-dch-whql.exe)
+
+[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/430.86/430.86-desktop-win8-win7-64bit-international-whql.exe)
 
 recommended/optimal Linux Nvidia driver 430.14
 
