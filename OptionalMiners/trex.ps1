@@ -18,7 +18,7 @@ $Commands = [PSCustomObject]@{
     "c11"        = " -a c11 -i 24" #C11 
     "x17"        = " -a x17 -i 24" #X17 
     "x16s"       = " -a x16s -i 24" #X16s 
-    "x16r"       = " -a x16r -i 24 -N 175" #X16r 
+    "x16r"       = " -a x16r -i 24 -N 175" #X16r ,mc=RVN
     "x16rt"      = " -a x16rt -i 24 -N 175" #X16rt
     "sonoa"      = " -a sonoa -i 23" #Sonoa
    #"hmq1725"    = " -a hmq1725 -i 23" #Hmq1725 
@@ -31,7 +31,7 @@ $Commands = [PSCustomObject]@{
     "tribus"     = " -a tribus -i 23" #Tribus
     "veil"       = " -a x16rt -i 24 -N 175" #Veil
     "mtp"        = " -a mtp -i 21" #MTP 
-    "x25x"       = " -a x25x" #x25x
+    "x25x"       = " -a x25x -i 21" #x25x
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
