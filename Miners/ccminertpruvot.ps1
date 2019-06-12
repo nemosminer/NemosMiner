@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     "keccak"  = " -a keccak -i 29" #keccak
     "keccakc" = " -a keccakc -i 29" #keccakc
     "phi2"    = " -a phi2 -i 22.25" #phi2
-    "blake2b" = " -a blake2b -i 28" #blake2b
+    "blake2b" = " -a blake2b -i 27" #blake2b
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
