@@ -1,0 +1,66 @@
+**********************
+Windows PowerShell transcript start
+Start time: 20190613192742
+Username: DESKTOP-U4DE4GH\16threads8core
+RunAs User: DESKTOP-U4DE4GH\16threads8core
+Configuration Name: 
+Machine: DESKTOP-U4DE4GH (Microsoft Windows NT 10.0.17763.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -version 5.0 -executionpolicy bypass -windowstyle maximized -command .\NemosMiner.ps1 -ConfigFile '.\Config\config.json'
+Process ID: 12768
+PSVersion: 5.1.17763.503
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.17763.503
+BuildVersion: 10.0.17763.503
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Finding available TCP Port for NVIDIA
+Miners API Port: 4068
+Idle
+File loaded - .\Includes\Core.ps1 -
+File loaded - .\Includes\include.ps1 -
+File loaded - .\Includes\include.ps1 - <ScriptBlock>
+Starting BrainPlus for nlpoolplus...
+File loaded - .\Includes\Core.ps1 - <ScriptBlock>
+Starting Cycle
+File loaded - .\Includes\include.ps1 - <ScriptBlock>
+File loaded - .\Includes\Core.ps1 - <ScriptBlock>
+Loading BTC rate from 'api.coinbase.com'..
+Starting BrainPlus for zergpoolplus...
+Starting BrainPlus for zpoolplus...
+Starting Earnings Tracker
+Loading pool stats..
+Computing pool stats..
+Loading miners..
+Comparing miners and pools..
+No Miners!
+Waiting 120 seconds... | Next refresh: 06/13/2019 19:29:57
+      1BTC = 8133.795 USD
++++++ 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
+  nicehash Balance= 0.00094876 95%
+Trust Level                      0%
+ Avg based on [ 00 days 00:01 ]
+Average BTC/H                    BTC = 0.00000000 | mBTC = 0.000
+Average BTC/D
+                    BTC = 0.00000000 | mBTC = 0.000
+Estimated Pay Date               Unknown > 0.001 BTC
++++++ 1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE
+  zergpool Balance= 0.00010356 4%
+Trust Level                      0%
+ Avg based on [ 00 days 00:01 ]
+Average BTC/H                    BTC = 0.00000000 | mBTC = 0.000
+Average BTC/D
+                    BTC = 0.00000000 | mBTC = 0.000
+Estimated Pay Date               Unknown > 0.0025 BTC
++++++
+Running:
+--------------------------------------------------------------------------------
+Last refresh: 06/13/2019 19:27:58   |   Next refresh: 06/13/2019 19:29:58
+Stopping cycle
+Stopping jobs and miner
+**********************
+Windows PowerShell transcript end
+End time: 20190613192801
+**********************
