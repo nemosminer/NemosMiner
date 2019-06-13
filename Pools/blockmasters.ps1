@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 try {
     $Request = Invoke-WebRequest "http://blockmasters.co/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json 
@@ -25,30 +25,37 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    switch ($PoolAlgorithm) {
-        "bcd" {$Divisor /= 10}
-    }#temp fix
-
     if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
     else {$Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))}
 
     $PwdCurr = if ($PoolConf.PwdCurrency) {$PoolConf.PwdCurrency}else {$Config.Passwordcurrency}
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") {$PoolConf.WorkerName} else {"ID=$($PoolConf.WorkerName)"}
 
-    if ($PoolConf.Wallet) {
-        [PSCustomObject]@{
-            Algorithm     = $PoolAlgorithm
-            Info          = "$ahashpool_Coin $ahashpool_Coinname"
-            Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
-            StablePrice   = $Stat.Week
-            MarginOfError = $Stat.Week_Fluctuation
-            Protocol      = "stratum+tcp"
-            Host          = $PoolHost
-            Port          = $PoolPort
-            User          = $PoolConf.Wallet
-            Pass          = "$($WorkerName),c=$($PwdCurr)"
-            Location      = $Location
-            SSL           = $false
+	$Locations = "eu.", ""
+	$Locations | ForEach-Object {
+		$Pool_Location = $_
+		
+		switch ($Pool_Location) {
+			"eu."    {$Location = "EU"}
+			""    {$Location = "US"}
+		}
+		$PoolHost = "$($Pool_Location)$($HostSuffix)"
+
+        if ($PoolConf.Wallet) {
+            [PSCustomObject]@{
+                Algorithm     = $PoolAlgorithm
+                Info          = "$ahashpool_Coin $ahashpool_Coinname"
+                Price         = $Stat.Live*$PoolConf.PricePenaltyFactor
+                StablePrice   = $Stat.Week
+                MarginOfError = $Stat.Week_Fluctuation
+                Protocol      = "stratum+tcp"
+                Host          = $PoolHost
+                Port          = $PoolPort
+                User          = $PoolConf.Wallet
+                Pass          = "$($WorkerName),c=$($PwdCurr)"
+                Location      = $Location
+                SSL           = $false
+            }
         }
     }
 }

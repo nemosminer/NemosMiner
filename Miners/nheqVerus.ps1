@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 $Path = ".\Bin\CPU-nheqVerus\nheqminer.exe"
 $Uri = "https://github.com/VerusCoin/nheqminer/releases/download/0.7.1/nheqminer-Windows-v0.7.1.zip"

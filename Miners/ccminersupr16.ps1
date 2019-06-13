@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 $Path = ".\Bin\NVIDIA-ccminersupr161\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-x16r/releases/download/v1.6.1/ccminer-patch3-161.7z"

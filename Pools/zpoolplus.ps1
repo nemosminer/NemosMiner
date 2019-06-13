@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1;RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 Try {
     $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\BrainPlus\zpoolplus\zpoolplus.json") | ConvertFrom-Json 
@@ -9,10 +9,10 @@ if (-not $Request) {return}
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = ".mine.zpool.ca"
-  $PriceField = "Plus_Price"
+$PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
-  $DivisorMultiplier = 1000000
+$DivisorMultiplier = 1000000
 
 # Placed here for Perf (Disk reads)
 	$ConfName = if ($Config.PoolsConfig.$Name -ne $Null){$Name}else{"default"}

@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) { . .\Include.ps1; RegisterLoaded(".\Include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 $Path = ".\Bin\NVIDIA-nanominer134\cmdline_launcher.bat"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.3.4/nanominer-windows-1.3.4.zip"

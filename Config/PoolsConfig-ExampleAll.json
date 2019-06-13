@@ -1,111 +1,111 @@
 ﻿{
-    "default": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "ahashpool": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner3.0",
-        "PricePenaltyFactor": 1
-    },
-    "ahashpool24hr": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "ahashpoolplus": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "blazepool": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "blazepool24hr": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "blazepoolplus": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "hashrefinery": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "minemoney": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "minemoney24hr": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "miningpoolhub": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "NemosMiner",
-        "PricePenaltyFactor": 1,
-        "APIKey": ""
-    },
-    "nicehash": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "zergpool": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "zergpool24hr": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "zergpoolplus": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "zpool": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "zpool24hr": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    },
-    "zpoolplus": {
-        "UserName": "nemo",
-        "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-        "WorkerName": "ID=NemosMiner",
-        "PricePenaltyFactor": 1
-    }
+    "default":  {
+                    "UserName":  "mrplus",
+                    "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                    "WorkerName":  "ID=NPlusMinerRocks",
+                    "PricePenaltyFactor":  1
+                },
+    "ahashpool":  {
+                      "UserName":  "mrplus",
+                      "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                      "WorkerName":  "ID=NPlusMinerRocks",
+                      "PricePenaltyFactor":  1
+                  },
+    "ahashpool24hr":  {
+                          "UserName":  "mrplus",
+                          "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                          "WorkerName":  "ID=NPlusMinerRocks",
+                          "PricePenaltyFactor":  1
+                      },
+    "ahashpoolplus":  {
+                          "UserName":  "mrplus",
+                          "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                          "WorkerName":  "ID=NPlusMinerRocks",
+                          "PricePenaltyFactor":  1
+                      },
+    "blazepool":  {
+                      "UserName":  "mrplus",
+                      "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                      "WorkerName":  "ID=NPlusMinerRocks",
+                      "PricePenaltyFactor":  1
+                  },
+    "blazepool24hr":  {
+                          "UserName":  "mrplus",
+                          "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                          "WorkerName":  "ID=NPlusMinerRocks",
+                          "PricePenaltyFactor":  1
+                      },
+    "blazepoolplus":  {
+                          "UserName":  "mrplus",
+                          "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                          "WorkerName":  "ID=NPlusMinerRocks",
+                          "PricePenaltyFactor":  1
+                      },
+    "hashrefinery":  {
+                         "UserName":  "mrplus",
+                         "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                         "WorkerName":  "ID=NPlusMinerRocks",
+                         "PricePenaltyFactor":  1
+                     },
+    "minemoney":  {
+                      "UserName":  "mrplus",
+                      "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                      "WorkerName":  "ID=NPlusMinerRocks",
+                      "PricePenaltyFactor":  1
+                  },
+    "minemoney24hr":  {
+                          "UserName":  "mrplus",
+                          "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                          "WorkerName":  "ID=NPlusMinerRocks",
+                          "PricePenaltyFactor":  1
+                      },
+    "miningpoolhub":  {
+                          "UserName":  "mrplus",
+                          "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                          "WorkerName":  "NPlusMinerRocks",
+                          "PricePenaltyFactor":  1,
+                          "APIKey":  ""
+                      },
+    "nicehash":  {
+                     "UserName":  "mrplus",
+                     "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                     "WorkerName":  "NPlusMinerRocks",
+                     "PricePenaltyFactor":  1
+                 },
+    "zergpool":  {
+                     "UserName":  "mrplus",
+                     "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                     "WorkerName":  "ID=NPlusMinerRocks",
+                     "PricePenaltyFactor":  1
+                 },
+    "zergpool24hr":  {
+                         "UserName":  "mrplus",
+                         "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                         "WorkerName":  "ID=NPlusMinerRocks",
+                         "PricePenaltyFactor":  1
+                     },
+    "zergpoolplus":  {
+                         "UserName":  "mrplus",
+                         "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                         "WorkerName":  "ID=NPlusMinerRocks",
+                         "PricePenaltyFactor":  1
+                     },
+    "zpool":  {
+                  "UserName":  "mrplus",
+                  "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                  "WorkerName":  "ID=NPlusMinerRocks",
+                  "PricePenaltyFactor":  1
+              },
+    "zpool24hr":  {
+                      "UserName":  "mrplus",
+                      "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                      "WorkerName":  "ID=NPlusMinerRocks",
+                      "PricePenaltyFactor":  1
+                  },
+    "zpoolplus":  {
+                      "UserName":  "mrplus",
+                      "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
+                      "WorkerName":  "ID=NPlusMinerRocks",
+                      "PricePenaltyFactor":  1
+                  }
 }

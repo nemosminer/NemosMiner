@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
 $Path = ".\Bin\NVIDIA-ccminerrfv2102\ccminer.exe"
 $Uri = "https://github.com/Minerx117/CudaMiner/releases/download/v1.0.2/ccminerrfv2v1.02.7z"
