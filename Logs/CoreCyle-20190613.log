@@ -1,0 +1,186 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20190613192745
+Username: DESKTOP-U4DE4GH\16threads8core
+RunAs User: DESKTOP-U4DE4GH\16threads8core
+Configuration Name: 
+Machine: DESKTOP-U4DE4GH (Microsoft Windows NT 10.0.17763.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -version 5.0 -executionpolicy bypass -windowstyle maximized -command .\NemosMiner.ps1 -ConfigFile '.\Config\config.json'
+Process ID: 12768
+PSVersion: 5.1.17763.503
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.17763.503
+BuildVersion: 10.0.17763.503
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+False
+PS>TerminatingError(ConvertFrom-Json): "Invalid JSON primitive: ."
+ConvertFrom-Json : Invalid JSON primitive: .
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Include.ps1:509 char:43
++             $Content = $_ | Get-Content | ConvertFrom-Json
++                                           ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [ConvertFrom-Json], ArgumentException
+    + FullyQualifiedErrorId : System.ArgumentException,Microsoft.PowerShell.Commands.ConvertFromJsonCommand
+PS>TerminatingError(Test-Path): "Cannot bind argument to parameter 'Path' because it is null."
+Test-Path : Cannot bind argument to parameter 'Path' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:303 char:28
++             if ((Test-Path $Miner.Path) -eq $false) {
++                            ~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Test-Path], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.TestPathCommand
+Get-Member : You must specify an object for the Get-Member cmdlet.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:342 char:32
++ ...        $Miner.HashRates | Get-Member -MemberType NoteProperty | Selec ...
++                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : CloseError: (:) [Get-Member], InvalidOperationException
+    + FullyQualifiedErrorId : NoObjectInGetMember,Microsoft.PowerShell.Commands.GetMemberCommand
+Get-Member : You must specify an object for the Get-Member cmdlet.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:353 char:32
++ ...        $Miner.HashRates | Get-Member -MemberType NoteProperty | Selec ...
++                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : CloseError: (:) [Get-Member], InvalidOperationException
+    + FullyQualifiedErrorId : NoObjectInGetMember,Microsoft.PowerShell.Commands.GetMemberCommand
+The property 'HashRates' cannot be found on this object. Verify that the property exists and can be set.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:368 char:13
++             $Miner.HashRates = $Miner_HashRates
++             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+    + FullyQualifiedErrorId : PropertyNotFound
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:369 char:22
++             $Miner | Add-Member Pools $Miner_Pools
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:370 char:22
++             $Miner | Add-Member Profits $Miner_Profits
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:371 char:22
++ ...      $Miner | Add-Member Profits_Comparison $Miner_Profits_Comparison
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:372 char:22
++             $Miner | Add-Member Profits_Bias $Miner_Profits_Bias
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:373 char:22
++             $Miner | Add-Member Profit $Miner_Profit
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:374 char:22
++ ...        $Miner | Add-Member Profit_Comparison $Miner_Profit_Comparison
++                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:375 char:22
++             $Miner | Add-Member Profit_Bias $Miner_Profit_Bias
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:376 char:22
++             $Miner | Add-Member Profit_Bias_Orig $Miner_Profit_Bias
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:377 char:22
++             $Miner | Add-Member Type $Miner_Types -Force
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:378 char:22
++             $Miner | Add-Member Index $Miner_Indexes -Force
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+PS>TerminatingError(Convert-Path): "Cannot bind argument to parameter 'Path' because it is null."
+Convert-Path : Cannot bind argument to parameter 'Path' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:379 char:40
++             $Miner.Path = Convert-Path $Miner.Path
++                                        ~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Convert-Path], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.ConvertPathCommand
+PS>TerminatingError(Compare-Object): "Cannot bind argument to parameter 'ReferenceObject' because it is null."
+Compare-Object : Cannot bind argument to parameter 'ReferenceObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:384 char:100
++ ... r_Devices = ($Variables.Miners | Where { (Compare $Miner.Type $_.Type ...
++                                                       ~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Compare-Object], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.CompareObjectCommand
+Add-Member : Cannot bind argument to parameter 'InputObject' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:386 char:22
++             $Miner | Add-Member Device $Miner_Devices -Force
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Add-Member], ParameterBindingValidationException
+    + FullyQualifiedErrorId : 
+ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.AddMemberCommand
+PS>TerminatingError(Get-Combination): "Cannot bind argument to parameter 'Value' because it is null."
+Get-Combination : Cannot bind argument to parameter 'Value' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:398 char:91
++ ...  + (Get-Combination ($Variables.Miners | Select Type -Unique) | Where ...
++                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Get-Combination], ParameterBindingValidationException
+    + FullyQualifiedErrorId : ParameterArgumentValidationErrorNullNotAllowed,Get-Combination
+PS>TerminatingError(Get-Combination): "Cannot bind argument to parameter 'Value' because it is null."
+Get-Combination : Cannot bind argument to parameter 'Value' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:399 char:92
++ ... + (Get-Combination ($Variables.Miners | Select Index -Unique) | Where ...
++                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Get-Combination], ParameterBindingValidationException
+    + FullyQualifiedErrorId : ParameterArgumentValidationErrorNullNotAllowed,Get-Combination
+PS>TerminatingError(Get-Combination): "Cannot bind argument to parameter 'Value' because it is null."
+Get-Combination : Cannot bind argument to parameter 'Value' because it is null.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:400 char:50
++ ...  (Get-Combination ($Variables.Miners | Select Device -Unique) | Where ...
++                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [Get-Combination], ParameterBindingValidationException
+    + FullyQualifiedErrorId : ParameterArgumentValidationErrorNullNotAllowed,Get-Combination
+Method invocation failed because [System.Management.Automation.PSObject] does not contain a method named 'op_Addition'.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:402 char:9
++         $BestMiners_Combos += $Miners_Device_Combos | ForEach { $Mine ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (op_Addition:String) [], RuntimeException
+    + FullyQualifiedErrorId : MethodNotFound
+Method invocation failed because [System.Management.Automation.PSObject] does not contain a method named 'op_Addition'.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:404 char:9
++         $BestMiners_Combos_Comparison += $Miners_Device_Combos | ForE ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (op_Addition:String) [], RuntimeException
+    + FullyQualifiedErrorId : MethodNotFound
+--------------------------------------------------------------------------------
+rv : Cannot find a variable with the name 'ActiveMinerCOPY'.
+At C:\Users\16threads8core\Documents\NemosMiner-Format-Tidy-Code-06-2019\Includes\Core.ps1:614 char:9
++         rv ActiveMinerCOPY
++         ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (ActiveMinerCOPY:String) [Remove-Variable], ItemNotFoundException
+    + FullyQualifiedErrorId : VariableNotFound,Microsoft.PowerShell.Commands.RemoveVariableCommand
+Cycle Time (seconds): 11.7315348
