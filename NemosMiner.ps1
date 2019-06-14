@@ -186,7 +186,7 @@ Function Global:TimerUITick {
                 $DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | select @(
                         @{Name = "Pool"; Expression = { $_.Pool } },
                         @{Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } },
-                        @{Name = "Balance"; Expression = { $_.Balance } },
+                        @{Name = "Balance"; Expression = { [decimal]$_.Balance } },
                         # @{Name="Unpaid";Expression={$_.total_unpaid}},
                         # @{Name="BTC/D";Expression={"{0:N8}" -f ($_.BTCD)}},
                         @{Name = "1h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth1 * 1000 * 24) } },
