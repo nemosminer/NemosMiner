@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
  
-$Path = ".\Bin\AMD-SgminerFancyIX\sgminer.exe"
-$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/5.6.1.3.b5ip3/sgminer-phi2-fancyIX-win64-beta5ip3.zip"
+$Path = ".\Bin\AMD-SgminerFancyIX0600\sgminer.exe"
+$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/5.6.1.3.b6/sgminer-phi2-fancyIX-win64-0.6.0.0.zip"
 
 $Commands = [PSCustomObject]@{
     "allium" = " --kernel allium --gpu-threads 1 --worksize 256 -I 20"
@@ -12,6 +12,7 @@ $Commands = [PSCustomObject]@{
     "mtp" = " --kernel mtp -I 18"
     "phi2" = " --kernel phi2 --gpu-threads 1 --worksize 256 -I 22"
     "x22i" = " --kernel x22i --gpu-threads 2 --worksize 256 -I 22"
+    "x25x" = " --kernel x25x --gpu-threads 1 --worksize 256 -I 22"
     }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
