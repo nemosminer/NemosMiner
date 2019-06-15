@@ -34,7 +34,7 @@ $Commands = [PSCustomObject]@{
     "jeonghash"     = " --algo glt-jeonghash" #Jeonghash
     "astralhash"    = " --algo glt-astralhash" #Astralhash
     "padihash"      = " --algo glt-padihash" #Padihash
-    "rainforest"    = " --algo rainforest" #rainforest
+    "xevan"         = " --algo xevan" #Xevna
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
