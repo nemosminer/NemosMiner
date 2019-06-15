@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
  
-$Path = ".\Bin\CPU-JayDDeeYespower3884\cpuminer-sse42.exe"
+$Path = ".\Bin\CPU-JayDDeeYespower3884\cpuminer-aes-sse42"
 $Uri = "https://github.com/bubasik/cpuminer-opt-yespower/releases/download/3.8.8.4/Cpuminer-opt-yespower-ytn-ver3.zip"
 
 $Commands = [PSCustomObject]@{
