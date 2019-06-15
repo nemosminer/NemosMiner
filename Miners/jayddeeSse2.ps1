@@ -15,6 +15,7 @@ $Commands = [PSCustomObject]@{
     "sonoa" = "" #Sonoa
     "phi2" = "" #Phi2
     "yespower" = "" #Yespower
+    "yespowerr16" = "" #YespowerR16
     "x16r" = "" #X16r
     "yescrypt" = "" #Yescrypt
     "yescryptr8" = "" #YescryptR8
