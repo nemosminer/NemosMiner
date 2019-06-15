@@ -45,7 +45,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
         Type = "AMD"
         Path = $Path
         Arguments = "--api-port=$($Variables.AMDMinerAPITCPPort) --url=$($Pools.($Algo).Host):$($Pools.($Algo).Port) --opencl-threads auto --opencl-launch auto --user=$($Pools.($Algo).User) --pass=$($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Week * .99} # substract 1% devfee
+        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .99} # substract 1% devfee
         API = "Xmrig"
         Port = $Variables.AMDMinerAPITCPPort
         Wrap = $false
