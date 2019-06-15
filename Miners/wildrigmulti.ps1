@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
 $Path = ".\Bin\AMD-WildRigMulti\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.15.4p16/wildrig-multi-windows-0.15.4-preview16.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.17.5/wildrig-multi-windows-0.17.5-beta.7z"
 
 $Commands = [PSCustomObject]@{
     "bcd"           = " --algo bcd" #BitcoinDiamond
@@ -12,7 +12,7 @@ $Commands = [PSCustomObject]@{
     "geek"          = " --algo geek" #GeekCash
     "hex"           = " --algo hex" #XDNA
     "hmq1725"       = " --algo hmq1725" #Hmq1725
-    #"lyra2c0ban"    = " --algo lyra2vc0ban" #lyra2c0ban
+    "blake2b"       = " --algo blake2b" #Blake2b
     "lyra2v3"       = " --algo lyra2v3"
     "phi"           = " --algo phi" #Phi
     "polytimos"     = " --algo polytimos"
