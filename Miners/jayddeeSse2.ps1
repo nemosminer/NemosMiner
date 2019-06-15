@@ -1,45 +1,34 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\CPU-JayDDee\cpuminer-aes-sse42.exe"
-$Uri = "https://github.com/JayDDee/cpuminer-opt/files/1996977/cpuminer-opt-3.8.8.1-windows.zip"
+$Path = ".\Bin\CPU-JayDDee3931\cpuminer-aes-sse42.exe"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.3.1/cpuminer-opt-3.9.3.1-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium" = "" #Allium
     "argon2d-crds" = ",d=7 " #argon2d-crds
     "argon2d-dyn" = "" #argon2d-dyn
     "argon2d4096" = "" #argon2d4096 
-    #"bitcore" = "" #Bitcore
-    #"blake2s" = "" #Blake2s
-    #"blakecoin" = "" #Blakecoin
-    #"vanilla" = "" #BlakeVanilla
-    #"c11" = "" #C11
-    # "cryptonight" = "" #CryptoNight
-    #"cryptonightv7" = "" #cryptonightv7
-    #"decred" = "" #Decred
-    #"equihash" = "" #Equihash
-    #"ethash" = "" #Ethash
-    #"groestl" = "" #Groestl
     "hmq1725" = "" #HMQ1725
     #"hodl" = "" #Hodl
     #"jha" = "" #JHA
     #"keccak" = "" #Keccak
     #"lbry" = "" #Lbry
-    #"lyra2v2" = "" #Lyra2RE2
+    "lyra2v3" = "" #Lyra2RE3
     "lyra2z" = "" #Lyra2z
     "m7m" = "" #m7m
     #"myr-gr" = "" #MyriadGroestl
     #"neoscrypt" = "" #NeoScrypt
     #"nist5" = "" #Nist5
     #"pascal" = "" #Pascal
-    #"sib" = "" #Sib
+    "sonoa" = "" #Sonoa
     #"skein" = "" #Skein
     #"skunk" = "" #Skunk
     #"timetravel" = "" #Timetravel
     #"tribus" = "" #Tribus
-    #"veltor" = "" #Veltor
-    #"x11evo" = "" #X11evo
-    #"x17" = "" #X17
-    # "x16r" = "" #X16r
+    "Phi2" = "" #Phi2
+    "yespowerR16" = "" #YespowerR16
+    "yespower" = "" #Yespower
+    "x16r" = "" #X16r
     "yescrypt" = "" #Yescrypt
     "yescryptr8" = "" #YescryptR8
     "yescryptr16" = "" #YescryptR16
