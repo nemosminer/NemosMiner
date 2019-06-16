@@ -28,8 +28,8 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
 
     switch ($_) {
-        "hodl" {$ThreadCount = $Variables.ProcessorCount}
-        default {$ThreadCount = $Variables.ProcessorCount - 2}
+        "m7m" {$ThreadCount = $Variables.ProcessorCount - 1 }
+        default {$ThreadCount = $Variables.ProcessorCount - 2 }
     }
 
 	$Algo = Get-Algorithm($_)
