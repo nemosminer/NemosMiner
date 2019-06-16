@@ -1,6 +1,6 @@
 # NemosMiner
 
-Updated 14 June 2019
+Updated 16 June 2019
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases)
 [![GitHub release](https://img.shields.io/github/release/nemosminer/Nemosminer/all.svg)](https://github.com/nemosminer/Nemosminer/releases)
