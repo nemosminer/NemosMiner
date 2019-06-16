@@ -1,6 +1,6 @@
 # NemosMiner
 
-Updated 16 June 2019
+Updated 17 June 2019
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases)
 [![GitHub release](https://img.shields.io/github/release/nemosminer/Nemosminer/all.svg)](https://github.com/nemosminer/Nemosminer/releases)
@@ -84,7 +84,7 @@ Easy configuration, easy start:
   Developer/Contributors Donation: 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
      
-      There is a 3 minute per day donation (0.2%)
+      There is a 4 minute per day donation (0.27%)
       We want to stay completely transparent on the way donations are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 3 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:57 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
 
 NemosMiner Monitoring Server : https://nemosminer.com
