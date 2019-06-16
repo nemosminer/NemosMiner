@@ -36,7 +36,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 240, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
-    [Int]$FirstInterval = 20, #seconds of the first cycle of activated or started first time miner
+    [Int]$FirstInterval = 120, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory = $false)]
     [Int]$StatsInterval = 270, #seconds of current active to gather hashrate if not gathered yet
     [Parameter(Mandatory = $false)]
@@ -60,7 +60,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
     [Parameter(Mandatory = $false)]
-    [Int]$Donate = 3, #Minutes per Day
+    [Int]$Donate = 4, #Minutes per Day
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory = $false)]
@@ -68,7 +68,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$GPUCount = 1, # Number of GPU on the system
     [Parameter(Mandatory = $false)]
-    [Int]$ActiveMinerGainPct = 9, # percent of advantage that active miner has over candidates in term of profit
+    [Int]$ActiveMinerGainPct = 23, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory = $false)]
     [Float]$MarginOfError = 0, #0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
