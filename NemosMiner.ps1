@@ -19,14 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.8.0.0
-version date:   13 June 2019
+version date:   17 June 2019
 #>
 
 param(
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
-    [String]$UserName = "MrPlus", 
+    [String]$UserName = "Nemo", 
     [Parameter(Mandatory = $false)]
     [String]$WorkerName = "ID=NemosMiner-v3.8.0.0", 
     [Parameter(Mandatory = $false)]
@@ -34,11 +34,11 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory = $false)]
-    [Int]$Interval = 120, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 240, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
-    [Int]$FirstInterval = 30, #seconds of the first cycle of activated or started first time miner
+    [Int]$FirstInterval = 20, #seconds of the first cycle of activated or started first time miner
     [Parameter(Mandatory = $false)]
-    [Int]$StatsInterval = 180, #seconds of current active to gather hashrate if not gathered yet
+    [Int]$StatsInterval = 270, #seconds of current active to gather hashrate if not gathered yet
     [Parameter(Mandatory = $false)]
     [String]$Location = "US", #europe/us/asia
     [Parameter(Mandatory = $false)]
@@ -68,7 +68,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$GPUCount = 1, # Number of GPU on the system
     [Parameter(Mandatory = $false)]
-    [Int]$ActiveMinerGainPct = 5, # percent of advantage that active miner has over candidates in term of profit
+    [Int]$ActiveMinerGainPct = 9, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory = $false)]
     [Float]$MarginOfError = 0, #0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
