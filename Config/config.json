@@ -12,14 +12,14 @@
     "Currency":"USD",
     "Delay":1,
     "DisableGPU0":false,
-    "Donate":5,
+    "Donate":3,
     "EnableEarningsTrackerLogs":false,
-    "FirstInterval":30,
+    "FirstInterval":20,
     "HideConsole":false,
     "IdleSec":"120",
     "IncludeOptionalMiners":false,
     "IncludeRegularMiners":false,
-    "Interval":120,
+    "Interval":240,
     "IsFixedSize":false,
     "IsReadOnly":false,
     "IsSynchronized":true,
@@ -35,9 +35,6 @@
     "MonitoringUser":"",
     "Passwordcurrency":"BTC",
     "PoolName":[
-       "zpoolplus",
-       "miningpoolhub",
-       "nlpoolplus",
        "nicehash",
        "zergpoolplus"
     ],
@@ -49,7 +46,7 @@
     "SSL":false,
     "StartGUIMinimized":false,
     "StartPaused":false,
-    "StatsInterval":180,
+    "StatsInterval":270,
     "SyncRoot":{
  
     },
