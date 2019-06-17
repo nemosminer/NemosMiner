@@ -8,7 +8,7 @@ $Commands = [PSCustomObject]@{
     "argon2d-crds" = ",d=7 " #argon2d-crds
     "argon2d-dyn" = "" #argon2d-dyn
     "argon2d4096" = "" #argon2d4096 
-    "hmq1725" = "" #HMQ1725
+    "cryptonightv7" = "" #Cryptonightv7
     "lyra2v3" = "" #Lyra2RE3
     "lyra2z" = "" #Lyra2z
     "m7m" = "" #m7m
@@ -16,7 +16,7 @@ $Commands = [PSCustomObject]@{
     "phi2" = "" #Phi2
     "yespower" = "" #Yespower
     "yespowerr16" = "" #YespowerR16
-    "x16r" = "" #X16r
+    "skein2" = "" #Skein2
     "yescrypt" = "" #Yescrypt
     "yescryptr8" = "" #YescryptR8
     "yescryptr16" = "" #YescryptR16
