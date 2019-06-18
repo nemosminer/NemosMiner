@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminermtp1119t\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccminerMTP/releases/download/1.1.19-t/ccminermtp1119t.7z"
 
 $Commands = [PSCustomObject]@{
-    "mtp" = " -d $($Config.SelGPUCC)" #mtp (requires 6gb+ system ram to run, 4gb is not enough)
+    "mtp" = " -d $($Config.SelGPUCC)" #mtp
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
