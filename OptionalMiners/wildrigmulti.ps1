@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\AMD-WildRigMulti\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.17.5/wildrig-multi-windows-0.17.5-beta.7z"
+$Path = ".\Bin\AMD-WildRigMulti0176\wildrig.exe"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.17.6/wildrig-multi-windows-0.17.6-beta.7z"
 
 $Commands = [PSCustomObject]@{
     "bcd"           = " --algo bcd" #BitcoinDiamond
@@ -22,7 +22,7 @@ $Commands = [PSCustomObject]@{
     "skunkhash"     = " --algo skunkhash" #Skunk
     "sonoa"         = " --algo sonoa" #sonoa
     "timetravel"    = " --algo timetravel" #timetravel
-    #"timetravel10" = " --algo timetravel10" #Bitcore
+    "skein2"        = " --algo skein2" #Skein2
     "tribus"        = " --algo tribus" #Tribus
     "x16r"          = " --algo x16r" #x16r
     "x16rt"         = " --algo x16rt"
