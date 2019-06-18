@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminermtp1120t\ccminer.exe"
 $Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.1.20-test/ccminer.exe"
 
 $Commands = [PSCustomObject]@{
-    "mtp" = " -i 18 -d $($Config.SelGPUCC)" #mtp
+    "mtp" = " -i 17 -d $($Config.SelGPUCC)" #mtp
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
