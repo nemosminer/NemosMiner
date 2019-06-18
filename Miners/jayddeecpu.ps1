@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 $Path = ".\Bin\CPU-JayDDee3931\cpuminer-aes-sse42.exe"
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.3.1/cpuminer-opt-3.9.3.1-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.4/cpuminer-opt-3.9.4-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium" = "" #Allium
@@ -9,7 +9,9 @@ $Commands = [PSCustomObject]@{
     "argon2d-dyn" = "" #argon2d-dyn
     "argon2d4096" = "" #argon2d4096 
     "cryptonightv7" = "" #Cryptonightv7
+    "x16r" = "" #X16r
     "lyra2v3" = "" #Lyra2RE3
+    "quark" = "" #Quark
     "lyra2z" = "" #Lyra2z
     "m7m" = "" #m7m
     "sonoa" = "" #Sonoa
@@ -17,6 +19,7 @@ $Commands = [PSCustomObject]@{
     "yespower" = "" #Yespower
     "yespowerr16" = "" #YespowerR16
     "skein2" = "" #Skein2
+    "skein" = "" #Skein
     "yescrypt" = "" #Yescrypt
     "yescryptr8" = "" #YescryptR8
     "yescryptr16" = "" #YescryptR16
