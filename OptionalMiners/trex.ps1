@@ -31,8 +31,8 @@ $Commands = [PSCustomObject]@{
     "tribus"     = " -a tribus -i 23" #Tribus
     "veil"       = " -a x16rt -i 24" #Veil
     "mtp"        = " -a mtp -i 21" #MTP 
-    "x25x"       = " -a x25x -i 21" #x25xhoneycomb
-    "honeycomb"  = " -a honeycomb -i 21 #honeycomb"
+    "x25x"       = " -a x25x -i 21" #x25x
+    "honeycomb"  = " -a honeycomb -i 21" #honeycomb
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
