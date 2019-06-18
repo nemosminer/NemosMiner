@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     #"lyra2v2" = " -d $($Config.SelGPUCC) -N 1" #Lyra2RE2
     #"poly" = " -N 1 -d $($Config.SelGPUCC)" #polytimos
     #"skein" = " -i 28 -N 2 -d $($Config.SelGPUCC)" #Skein
-     "skein2" = " -i 29 -d $($Config.SelGPUCC)" #Skein2 1080ti 2080/ti can handle -i 31 for little xtra hashrate
+     "skein2" = " -i 29 -d $($Config.SelGPUCC)" #Skein2 1080ti 2080/ti can handle -i 31 for xtra hashrate
      "x11evo" = " -i 20.75 -d $($Config.SelGPUCC) " #X11evo
     #"bitcore" = "" #Bitcore
     #"blake2s" = " -r 0 -d $($Config.SelGPUCC)" #Blake2s
@@ -47,7 +47,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type = "NVIDIA"
         Path = $Path
-        Arguments = "--cuda-schedule 2 -N 1 -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "-N 1 -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)" #--cuda-schedule 2
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day}
         API = "ccminer"
         Port = $Variables.NVIDIAMinerAPITCPPort #4068
