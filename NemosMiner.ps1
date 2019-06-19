@@ -119,6 +119,7 @@ Function Global:TimerUITick {
         If ($Variables.Paused) {
             $EarningsDGV.DataSource = [System.Collections.ArrayList]@()
             $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@()
+            $WorkersDGV.DataSource = [System.Collections.ArrayList]@()
             $LabelBTCD.ForeColor = "Red"
             $TimerUI.Stop
         }
