@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\AMD-WildRigMulti0176\wildrig.exe"
+$Path = ".\Bin\AMD-WildRigMulti0177\wildrig.exe"
 $Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.17.7/wildrig-multi-windows-0.17.7-beta.7z"
 
 $Commands = [PSCustomObject]@{
