@@ -17,7 +17,7 @@ https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
 
 by Nemo/Minerx117
 
-with Help From MrPlusGH and grantemsley 
+with alot Help From MrPlusGH and grantemsley without them NemosMiner would not be possible
  
 *****
 
