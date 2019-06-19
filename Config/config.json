@@ -7,7 +7,7 @@
     "API_Key":  "",
     "APIKEY":  "373a71335e010d6928766a5cce6365b5e7f75ef798d0f6353ceca27f782d795b",
     "Autostart":  false,
-    "AutoUpdate":  false,
+    "AutoUpdate":  true,
     "Count":  0,
     "Currency":  "USD",
     "Delay":  1,
