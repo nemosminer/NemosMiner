@@ -795,8 +795,6 @@ $LabelGitHub.Location = New-Object System.Drawing.Size(600, 246)
 $LabelGitHub.Size = New-Object System.Drawing.Size(160, 20)
 $LabelGitHub.LinkColor = "BLUE"
 $LabelGitHub.ActiveLinkColor = "BLUE"
-$LabelGitHub.Text = "Help? Join on Discord"
-$LabelGitHub.add_Click( { [system.Diagnostics.Process]::start("https://discord.gg/2BCqPxe") })
 $RunPageControls += $LabelGitHub
 
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
