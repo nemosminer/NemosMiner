@@ -119,6 +119,7 @@
     "equihash96":  "Equihash96",
     "equihash-btg":  "EquihashBTG",
     "equihashbtg":  "EquihashBTG",
+    "equihash125":  "Equihash125",
     "Espers":  "HMQ1725",
     "eth":  "Ethash",
     "ethash":  "Ethash",
