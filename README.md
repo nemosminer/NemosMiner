@@ -5,8 +5,8 @@ NemosMiner Monitors mining pools in real-time in order to find the most profitab
 Updated 20 June 2019
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases)
-[![GitHub release](https://img.shields.io/github/release/nemosminer/Nemosminer/all.svg)](https://github.com/nemosminer/Nemosminer/releases)
-[![GitHub Release Date](https://img.shields.io/github/release-date-pre/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/releases)
+[![GitHub release](https://img.shields.io/github/release/Minerx117/Nemosminer/all.svg)](https://github.com/minerx117/Nemosminer/releases)
+[![GitHub Release Date](https://img.shields.io/github/release-date-pre/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/Nemosminer/releases)
 [![GitHub license](https://img.shields.io/github/license/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
