@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     #"yescryptR16v2" = " -a yescryptr16v2 -d $($Config.SelGPUCC)" #YescryptR16v2
     #"yescryptR24" = " -a yescryptr24 -d $($Config.SelGPUCC)" #YescryptR24
     #"yescryptR8" = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8  
-    "lyra2z330" = " -i 11.07 -a lyra2z330 -d $($Config.SelGPUCC)" #Lyra2z330
+    "lyra2z330" = " -i 11.01 -a lyra2z330 -d $($Config.SelGPUCC)" #Lyra2z330
     "lyra2v3"   = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2v3
     "lyra2rev3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3 
 }
@@ -21,7 +21,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--cpu-priority 4 -b $($Variables.NVIDIAMinerAPITCPPort) -N 2 -R 1 -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--cpu-priority 4 -b $($Variables.NVIDIAMinerAPITCPPort) -R 1 -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day }
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
