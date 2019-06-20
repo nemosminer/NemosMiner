@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     #"yescryptR16v2" = " -a yescryptr16v2 -d $($Config.SelGPUCC)" #YescryptR16v2
     #"yescryptR24" = " -a yescryptr24 -d $($Config.SelGPUCC)" #YescryptR24
     #"yescryptR8" = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8  
-    "lyra2z330" = " -i 11 -a lyra2z330 -d $($Config.SelGPUCC)" #Lyra2z330
+    "lyra2z330" = " -i 11.07 -a lyra2z330 -d $($Config.SelGPUCC)" #Lyra2z330
     "lyra2v3"   = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2v3
     "lyra2rev3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3 
 }
