@@ -6,6 +6,7 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.20.1/Cryp
 
 $Commands = [PSCustomObject]@{
     "argon2d250"  = " --intensity 8 -a argon2d250" #argon2d250
+    "argon2d500"  = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
     "argon2d4096" = " --intensity 8 -a argon2d4096" #argon2d4096
     #"argon2d-uis"    = " --intensity 8 -a argon2d4096" #argon2d4096
     "argon2ddyn"  = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
