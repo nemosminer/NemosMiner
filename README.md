@@ -231,6 +231,7 @@ recommended/optimal Linux Nvidia driver 430.14
 
 Made for & Tested with 6x1070 6x1070ti 6x1080 6x1080ti 6x1660ti 6x2060 6x2070 6x2080 6x2080ti(users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
+
 CPU miners are tested with AMD Ryzen 2700 CPU's
 
 *****
