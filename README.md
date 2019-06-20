@@ -21,8 +21,8 @@ Updated/Maintained by Nemo/Minerx117
 
 with alot of Help From MrPlusGH and grantemsley without them NemosMiner would not be possible
 
-NemosMiner was based of multipoolminer which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
-NemosMiner is now based of NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
+NemosMiner was based on MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
+NemosMiner is now based on NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
  
 *****
 
