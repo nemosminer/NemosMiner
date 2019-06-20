@@ -15,7 +15,7 @@ Copyright (c) 2018-2019 Nemo and MrPlus
 
 This is free software, and you are welcome to redistribute it
 under certain conditions.
-https://github.com/nemosminer/NemosMiner/blob/master/LICENSE
+https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 
 Updated/Maintained by Nemo/Minerx117
 
