@@ -17,7 +17,8 @@ $Commands = [PSCustomObject]@{
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
-    $Algo = Get-Algorithm($_)
+     $Algo = Get-Algorithm($_)
+        If ($Algo -eq "lyra2z330" -and $Pools.($Algo).Host -like "*zpool*") {return}
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
