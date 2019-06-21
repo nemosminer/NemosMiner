@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\CPU-JayDDee3931\cpuminer-aes-sse42.exe"
+$Path = ".\Bin\CPU-JayDDee394\cpuminer-aes-sse42.exe"
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.4/cpuminer-opt-3.9.4-windows.zip"
 
 $Commands = [PSCustomObject]@{
