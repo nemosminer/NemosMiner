@@ -24,7 +24,7 @@ $Commands = [PSCustomObject]@{
     "yescryptr8" = "" #YescryptR8
     "yescryptr16" = "" #YescryptR16
     "yescryptr32" = "" #YescryptR32 
-    #"lyra2z330" = "" #Lyra2z330 
+    "lyra2z330" = "" #Lyra2z330 
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
