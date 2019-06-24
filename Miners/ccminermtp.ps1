@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminermtp1121\ccminer.exe"
 $Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.1.21/ccminer.exe"
 
 $Commands = [PSCustomObject]@{
-    "mtp" = " -i 16 -d $($Config.SelGPUCC)" #mtp
+    #"mtp" = " -i 16 -d $($Config.SelGPUCC)" #mtp
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
@@ -15,7 +15,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--cpu-priority 4 -R 1 -r 90 -b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -a $Algo -u $($Pools.($Algo).User) --no-donation -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--cpu-priority 4 -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -a $Algo -u $($Pools.($Algo).User) --no-donation -p $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day }
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
