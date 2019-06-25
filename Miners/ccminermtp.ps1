@@ -1,10 +1,10 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-ccminermtp1121\ccminer.exe"
-$Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.1.21/ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminermtp1122\ccminer.exe"
+$Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.1.22/ccminer.exe"
 
 $Commands = [PSCustomObject]@{
-    #"mtp" = " -i 16 -d $($Config.SelGPUCC)" #mtp
+     "mtp" = " -i 16 -d $($Config.SelGPUCC)" #mtp
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
