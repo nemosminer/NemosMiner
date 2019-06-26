@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-version:        3.8.0.0
-version date:   17 June 2019
+version:        3.8.0.1
+version date:   26 June 2019
 #>
 
 param(
@@ -68,7 +68,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$GPUCount = 1, # Number of GPU on the system
     [Parameter(Mandatory = $false)]
-    [Int]$ActiveMinerGainPct = 23, # percent of advantage that active miner has over candidates in term of profit
+    [Int]$ActiveMinerGainPct = 21, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory = $false)]
     [Float]$MarginOfError = 0, #0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
