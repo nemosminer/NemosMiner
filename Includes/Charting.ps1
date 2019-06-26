@@ -1,5 +1,6 @@
 <#
 Copyright (c) 2018 MrPlus
+Charting.ps1 File Written By MrPlusGH https://github.com/MrPlusGH
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Charting.ps1
-version:        3.8.0.0
-version date:   13 June 2019
+version:        3.8.0.1
+version date:   26 June 2019
 #>
 
 
