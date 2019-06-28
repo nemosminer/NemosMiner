@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerklaust825\ccminer.exe"
 $Uri = "https://github.com/KlausT/ccminer/releases/download/8.25/ccminer-825-cuda100-x64.zip"
 
 $Commands = [PSCustomObject]@{
-     "neoscrypt" = " -d $($Config.SelGPUCC)" #Neoscrypt
+     "neoscrypt" = " -i 16 -d $($Config.SelGPUCC)" #Neoscrypt
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
