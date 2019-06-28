@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 version:        3.8.0.1
-version date:   26 June 2019
+version date:   29 June 2019
 #>
 
 Function InitApplication {
@@ -487,27 +487,27 @@ Function NPMCycle {
                     [pscustomobject]@{date = (get-date); Type = $_.Type; algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Host = $_.host } | export-csv .\Logs\switching.log -Append -NoTypeInformation
 
                     # Launch prerun if exists
-                    If ($_.Type -ne "AMD" -and (Test-Path ".\Prerun\AMDPrerun.bat")) {
-                        Start-Process ".\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                    If ($_.Type -ne "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat")) {
+                        Start-Process ".\Utils\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                     }
-                    If ($_.Type -ne "NVIDIA" -and (Test-Path ".\Prerun\NVIDIAPrerun.bat")) {
-                        Start-Process ".\Prerun\NVIDIAPrerun.bat" -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                    If ($_.Type -ne "NVIDIA" -and (Test-Path ".\Utils\Prerun\NVIDIAPrerun.bat")) {
+                        Start-Process ".\Utils\Prerun\NVIDIAPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                     }
-                    If ($_.Type -ne "CPU" -and (Test-Path ".\Prerun\CPUPrerun.bat")) {
-                        Start-Process ".\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                    If ($_.Type -ne "CPU" -and (Test-Path ".\Utils\Prerun\CPUPrerun.bat")) {
+                        Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                     }
                     If ($_.Type -ne "CPU") {
-                        $PrerunName = ".\Prerun\" + $_.Algorithms + ".bat"
-                        $DefaultPrerunName = ".\Prerun\default.bat"
+                        $PrerunName = ".\Utils\Prerun\" + $_.Algorithms + ".bat"
+                        $DefaultPrerunName = ".\Utils\Prerun\default.bat"
                         If (Test-Path $PrerunName) {
                             $Variables.StatusText = "Launching Prerun: $PrerunName"
-                            Start-Process $PrerunName -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                            Start-Process $PrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                             Sleep 2
                         }
                         else {
                             If (Test-Path $DefaultPrerunName) {
                                 $Variables.StatusText = "Launching Prerun: $DefaultPrerunName"
-                                Start-Process $DefaultPrerunName -WorkingDirectory ".\Prerun" -WindowStyle hidden
+                                Start-Process $DefaultPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                                 Sleep 2
                             }
                         }
