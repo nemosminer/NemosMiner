@@ -4,11 +4,6 @@ $Path = ".\Bin\NVIDIA-Ccminerlyra2v3\ccminer.exe"
 $Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/v3/ccminerKlausT.7z"
 
 $Commands = [PSCustomObject]@{
-    #"yescrypt" = " -a yescrypt -d $($Config.SelGPUCC)" #Yescrypt 
-    #"yescryptR16" = " -i 13.25 -a yescryptr16 -d $($Config.SelGPUCC)" #YescryptR16
-    #"yescryptR16v2" = " -a yescryptr16v2 -d $($Config.SelGPUCC)" #YescryptR16v2
-    #"yescryptR24" = " -a yescryptr24 -d $($Config.SelGPUCC)" #YescryptR24
-    #"yescryptR8" = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8  
     #"lyra2z330" = " -i 10 -a lyra2z330 -d $($Config.SelGPUCC)" #Lyra2z330 single GPU only, needs work for multicards rigs
     "lyra2v3"   = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2v3
     "lyra2rev3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3 
