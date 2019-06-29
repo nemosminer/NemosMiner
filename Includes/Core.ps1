@@ -33,6 +33,16 @@ Function InitApplication {
     # GitHub Supporting only TLSv1.2 on feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
+
+    if ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
+
+    if ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }               # For AMD
+    if ($env:GPU_MAX_HEAP_SIZE -ne 100) { $env:GPU_MAX_HEAP_SIZE = 100 }               # For AMD
+    if ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }             # For AMD
+    if ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }       # For AMD
+    if ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 } # For AMD
+    if ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 } # For AMD
+
     #Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
@@ -40,6 +50,7 @@ Function InitApplication {
     Import-Module Defender -ErrorAction SilentlyContinue
     Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
     Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
+    if ($PSEdition -eq 'core') { Import-Module -SkipEditionCheck NetTCPIP -ErrorAction SilentlyContinue }
 
     if (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
     if ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {
@@ -285,18 +296,18 @@ Function NPMCycle {
 
         
         $Variables.StatusText = "Loading miners.."
-        $Variables | Add-Member -Force @{Miners = @()}
+        $Variables | Add-Member -Force @{Miners = @() }
         $StartPort = 4068
         $Variables.Miners = if (Test-Path "Miners") {
             @(
-                if ($Config.IncludeRegularMiners -and (Test-Path "Miners")) {Get-ChildItemContent "Miners"}
-                if ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners")) {Get-ChildItemContent "OptionalMiners"}
-                if (Test-Path "CustomMiners") { Get-ChildItemContent "CustomMiners"}
-            ) | ForEach {$_.Content | Add-Member @{Name = $_.Name} -PassThru} |
-                Where {$Config.Type.Count -eq 0 -or (Compare $Config.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
-                Where {!($Config.Algorithm | ? {$_.StartsWith("+")}) -or (Compare (($Config.Algorithm | ? {$_.StartsWith("+")}).Replace("+", "")) $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0} | 
-                Where {$Config.MinerName.Count -eq 0 -or (Compare $Config.MinerName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0}
-}
+                if ($Config.IncludeRegularMiners -and (Test-Path "Miners")) { Get-ChildItemContent "Miners" }
+                if ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners")) { Get-ChildItemContent "OptionalMiners" }
+                if (Test-Path "CustomMiners") { Get-ChildItemContent "CustomMiners" }
+            ) | ForEach { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
+            Where { $Config.Type.Count -eq 0 -or (Compare $Config.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 } | 
+            Where { !($Config.Algorithm | ? { $_.StartsWith("+") }) -or (Compare (($Config.Algorithm | ? { $_.StartsWith("+") }).Replace("+", "")) $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 } | 
+            Where { $Config.MinerName.Count -eq 0 -or (Compare $Config.MinerName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 }
+        }
 
         $Variables.Miners = $Variables.Miners | ForEach {
             $Miner = $_
