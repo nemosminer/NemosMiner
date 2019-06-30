@@ -3,7 +3,7 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-Ethminer0180rc1\ethminer.exe"
 $Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.18.0-rc1/NVIDIA-Ethminer0180rc1.7z"
 $Commands = [PSCustomObject]@{
-    "ethash" = "" #Ethash
+    #"ethash" = "" #Ethash
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
