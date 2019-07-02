@@ -22,7 +22,7 @@ set /a gpu_average=%total%/6
 :end_for
 cls
 echo Average Usage of *6 GPUs usage is %gpu_average%%%
-if %gpu_average% GTR 40 (
+if %gpu_average% GTR 70 (
    echo [92;1mMining is working[0m
    echo [102;92;1mMining is working[0m
    timeout /t 10 >nul
