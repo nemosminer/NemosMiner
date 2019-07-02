@@ -6,7 +6,7 @@ $Uri = "https://github.com/NebuTech/NBMiner/releases/download/v23.3/NBMiner_23.3
 $Commands = [PSCustomObject]@{
     #"grincuckatoo31" = " -a cuckatoo -o stratum+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
      "grincuckaroo29" = " -a cuckaroo -o stratum+tcp://" #grincuckaroo29
-     "cuckoocycle" = " -a cuckoo_ae -o stratum+tcp://" #cuckoocycle  
+    #"cuckoocycle" = " -a cuckoo_ae -o stratum+tcp://" #cuckoocycle  
     #"ethash" = " -a ethash -o ethnh+tcp://" #ethash
 }
 
