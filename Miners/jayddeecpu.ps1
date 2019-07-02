@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\CPU-JayDDee395\cpuminer-aes-sse42.exe"
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.5/cpuminer-opt-3.9.5-windows.zip"
+$Path = ".\Bin\CPU-JayDDee3951\cpuminer-aes-sse42.exe"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.5.1/cpuminer-opt-3.9.5.1-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium" = "" #Allium
