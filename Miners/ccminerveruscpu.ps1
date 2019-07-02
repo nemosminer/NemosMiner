@@ -19,7 +19,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path
-        Arguments = "-t $($ThreadCount) --cpu-priority 4 -N 2 -R 1 -b $($Variables.CPUMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -a verus -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "-t $($ThreadCount) --cpu-priority 3 -N 2 -R 1 -b $($Variables.CPUMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -a verus -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day }
         API       = "ccminer"
         Port      = $Variables.CPUMinerAPITCPPort
