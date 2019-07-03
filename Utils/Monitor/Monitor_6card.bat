@@ -30,12 +30,12 @@ if %gpu_average% GTR 70 (
 )
 
 set log_file=mining_problems_log.txt
-set ping_time=500
+set ping_time=900
 FOR /F "skip=8 tokens=10" %%G in ('ping -n 3 google.com') DO set ping_time=%%G
 if %ping_time% GTR 0 (
    
-   echo Control checking of GPUs usage, timeout 30 sec...
-   timeout /t 30 >nul
+   echo Control checking of GPUs usage, timeout 240 sec...
+   timeout /t 240 >nul
    goto:recheck
    :endrecheck
    if %gpu_average% GTR 40 (
