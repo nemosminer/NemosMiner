@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
 
-$Path = ".\Bin\NVIDIA-CryptoDredge0201\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.20.1/CryptoDredge_0.20.1_cuda_10.1_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge0202\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.20.2/CryptoDredge_0.20.2_cuda_10.1_windows.zip"
 
 $Commands = [PSCustomObject]@{
     "argon2d250"  = " --intensity 8 -a argon2d250" #argon2d250
@@ -19,22 +19,22 @@ $Commands = [PSCustomObject]@{
     "lux"         = " --intensity 8 -a phi2" #Lux
     "lyra2vc0ban" = " --intensity 8 -a lyra2vc0ban" #Lyra2vc0banHash
     #"cryptonightheavy"  = " --intensity 8 -a cryptonightheavy" # CryptoNightHeavy
-    #"x22i"              = " --intensity 8 -a x22i" # X22i 
+    "x22i"              = " --intensity 8 -a x22i" # X22i 
     #"tribus"            = " --intensity 8 -a tribus" #Tribus 
     #"cnv8"              = " --intensity 8 -a cnv8" #CryptoNightv8
     #"c11"               = " --intensity 8 -a c11" #C11 
     "skunk"       = " --intensity 8 -a skunk" #Skunk 
-    #"mtp"         = " --intensity 8 -a mtp" #Mtp
+    "mtp"         = " --intensity 8 -a mtp" #Mtp
     #"bcd"               = " --intensity 8 -a bcd" #Bcd 
-    #"x16rt"             = " --intensity 8 -a x16rt" #X16rt
-    #"x21s"              = " --intensity 8 -a x21s" #X21s 
-    #"x16s"              = " --intensity 8 -a x16s" #X16s 
-    #"x17"               = " --intensity 8 -a x17" #X17 
+    "x16rt"             = " --intensity 8 -a x16rt" #X16rt
+    "x21s"              = " --intensity 8 -a x21s" #X21s 
+    "x16s"              = " --intensity 8 -a x16s" #X16s 
+    "x17"               = " --intensity 8 -a x17" #X17 
     #"bitcore"           = " --intensity 8 -a bitcore" #Bitcore 
     "hmq1725"     = " --intensity 8 -a hmq1725" #Hmq1725
     #"dedal"             = " --intensity 8 -a dedal" #Dedal
     "pipe"        = " --intensity 8 -a pipe" #Pipe 
-    #"x16r"              = " --intensity 8 -a x16r" #x16r
+    "x16r"              = " --intensity 8 -a x16r" #x16r
     #"grincuckaroo29" = " --intensity 8 -a cuckaroo29" #Grincuckaroo29  
 }
 
