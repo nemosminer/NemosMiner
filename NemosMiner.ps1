@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.8.0.1
-version date:   26 June 2019
+version date:   06 July 2019
 #>
 
 param(
@@ -28,7 +28,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "Nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.8.0.0", 
+    [String]$WorkerName = "ID=NemosMiner-v3.8.0.1", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -188,8 +188,7 @@ Function Global:TimerUITick {
                         @{Name = "Pool"; Expression = { $_.Pool } },
                         @{Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } },
                         @{Name = "Balance"; Expression = { [decimal]$_.Balance } },
-                        # @{Name="Unpaid";Expression={$_.total_unpaid}},
-                        # @{Name="BTC/D";Expression={"{0:N8}" -f ($_.BTCD)}},
+                        @{Name = "BTC/D"; Expression = { "{0:N8}" -f ($_.BTCD) } },
                         @{Name = "1h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth1 * 1000 * 24) } },
                         @{Name = "6h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth6 * 1000 * 4) } },
                         @{Name = "24h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth24 * 1000) } },
