@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 version:        3.8.0.1
-version date:   29 June 2019
+version date:   06 July 2019
 #>
 
 Function InitApplication {
@@ -30,8 +30,15 @@ Function InitApplication {
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
     $Variables | Add-Member -Force @{ScriptStartDate = (Get-Date) }
-    # GitHub Supporting only TLSv1.2 on feb 22 2018
-    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+    if ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) {
+        [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+    }
+    
+    # Force Culture to en-US
+    $culture = [System.Globalization.CultureInfo]::CreateSpecificCulture("en-US")
+    $culture.NumberFormat.NumberDecimalSeparator = "."
+    $culture.NumberFormat.NumberGroupSeparator = ","
+    [System.Threading.Thread]::CurrentThread.CurrentCulture = $culture
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
     if ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
