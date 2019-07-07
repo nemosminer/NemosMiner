@@ -31,6 +31,7 @@
     "blakecoin":  "Blakecoin",
     "blakevanilla":  "BlakeVanilla",
     "bmw":  "BMW",
+    "bmw512":  "BMW512",
     "bmw256":  "BMW",
     "cuckoo":  "Cuckoo",
     "c11":  "C11",
