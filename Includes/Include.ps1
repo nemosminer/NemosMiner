@@ -1168,9 +1168,9 @@ Function Autoupdate {
     Update-Status("Checking AutoUpdate")
     Update-Notifications("Checking AutoUpdate")
     # write-host "Checking autoupdate"
-    $NPlusMinerFileHash = (Get-FileHash ".\NPlusMiner.ps1").Hash
+    $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
     try {
-        $AutoUpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
+        $AutoUpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache"} | ConvertFrom-Json
     }
     catch {$AutoUpdateVersion = Get-content ".\Config\AutoUpdateVersion.json" | Convertfrom-json}
     If ($AutoUpdateVersion -ne $null) {$AutoUpdateVersion | ConvertTo-json | Out-File ".\Config\AutoUpdateVersion.json"}
@@ -1214,6 +1214,9 @@ Function Autoupdate {
                 Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
             }
             
+            # Empty OptionalMiners - Get rid of Obsolete ones
+            ls .\OptionalMiners\ | % {Remove-Item -Recurse -Force $_.FullName}
+            
             # unzip in child folder excluding config
             Update-Status("Unzipping update...")
             Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
@@ -1221,6 +1224,9 @@ Function Autoupdate {
             # copy files 
             Update-Status("Copying files...")
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
+
+            # Remove any obsolete Optional miner file (ie. Not in new version OptionalMiners)
+            ls .\OptionalMiners\ | ? {$_.name -notin (ls .\$UpdateFileName\OptionalMiners\).name} | % {Remove-Item -Recurse -Force $_.FullName}
 
             # Update Optional Miners to Miners if in use
             ls .\OptionalMiners\ | ? {$_.name -in (ls .\Miners\).name} | % {Copy-Item -Force $_.FullName .\Miners\}
@@ -1244,7 +1250,7 @@ Function Autoupdate {
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
-            If ($AutoUpdateVersion.RequireRestart -or ($NPlusMinerFileHash -ne (Get-FileHash ".\NPlusMiner.ps1").Hash)) {
+            If ($AutoUpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) {
                 Update-Status("Starting my brother")
                 $StartCommand = ((gwmi win32_process -filter "ProcessID=$PID" | select commandline).CommandLine)
                 $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
@@ -1297,3 +1303,32 @@ Function Autoupdate {
     }
 }
 
+function Merge-PoolsConfig {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Main, 
+        [Parameter(Mandatory = $true)]
+        $Secondary
+    )
+        $Main.PSObject.Properties.Name | ForEach {
+            If (! $Secondary.$_) {
+                $ObjectCopy = [PSCustomObject]@{}
+                $Secondary.default.PSObject.Properties.Name | % { $ObjectCopy | Add-Member -Force @{$_ = $Secondary.default.$_} }
+                $Secondary | Add-Member -Force @{$_ = $ObjectCopy}
+            }
+            If (! $Secondary.$_.Algorithm) {
+                $Secondary.$_ | Add-Member -Force @{ Algorithm = @()}
+            }
+        }
+
+        $Secondary.PSObject.Properties.Name | foreach {
+                [Array]$Secondary.$_.Algorithm += [Array]($Main.$_.Algorithm)
+                If ([Array]$Secondary.$_.Algorithm -ne $null) {
+                    $Secondary.$_.Algorithm = [Array]($Secondary.$_.Algorithm | sort -Unique)
+                } else {
+                    $Secondary.$_ | Add-Member -Force @{ Algorithm = @()}
+                }
+        }
+
+        $Secondary
+}
