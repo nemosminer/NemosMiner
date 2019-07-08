@@ -2,7 +2,7 @@ REM This file will run for ethash algo
 REM This file and nvidia inspector is disabled by default to Enable them, rename this file from ethash-example.bat to ethash.bat
 REM Below is a example for a 6 GPU setup
 
-SET PL=65
+SET PL=66
 SET MEMORY=750
 SET CORE=25
 SET TEMP=90
