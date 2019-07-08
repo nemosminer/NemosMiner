@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-version:        3.8.0.2
-version date:   06 July 2019
+version:        3.8.0.3
+version date:   08 July 2019
 #>
 
 param(
@@ -28,7 +28,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "Nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.8.0.2", 
+    [String]$WorkerName = "ID=NemosMiner-v3.8.0.3", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
@@ -104,7 +104,7 @@ $Global:Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusTe
 $Branding = [PSCustomObject]@{
     LogoPath     = "https://raw.githubusercontent.com/Minerx117/UpDateData/master/NM.png"
     BrandName    = "NemosMiner"
-    BrandWebSite = "https://github.com/Minerx117/NemosMiner"
+    BrandWebSite = "https://nemosminer.com"
     ProductLable = "NemosMiner"
 }
         
@@ -492,7 +492,7 @@ $MainForm.add_Shown( {
         # Check if new version is available
         Update-Status("Checking version")
         try {
-            $Version = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
+            $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
         }
         catch { $Version = Get-content ".\Config\version.json" | Convertfrom-json }
         If ($Version -ne $null) { $Version | ConvertTo-json | Out-File ".\Config\version.json" }
@@ -518,7 +518,7 @@ $MainForm.add_Shown( {
         $TimerCheckVersion.Add_Tick( {
                 Update-Status("Checking version")
                 try {
-                    $Version = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
+                    $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
                 }
                 catch { $Version = Get-content ".\Config\version.json" | Convertfrom-json }
                 If ($Version -ne $null) { $Version | ConvertTo-json | Out-File ".\Config\version.json" }
