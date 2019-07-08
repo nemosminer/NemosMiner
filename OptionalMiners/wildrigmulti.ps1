@@ -5,6 +5,7 @@ $Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.18.0/wild
 
 $Commands = [PSCustomObject]@{
     "bcd"           = " --algo bcd" #BitcoinDiamond
+    "bmw512"        = " --algo bmw512" #bmw512
     "bitcore"       = " --algo bitcore" #Bitcore
     "c11"           = " --algo c11" #C11
     "dedal"         = " --algo dedal" #Dedal
