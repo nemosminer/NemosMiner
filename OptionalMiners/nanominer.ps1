@@ -11,19 +11,27 @@ $Commands = [PSCustomObject]@{
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algo = Get-Algorithm($_)
-    [PSCustomObject]@{
-        Type      = "NVIDIA"
-        Path      = $Path
-        Arguments = "-mport -$($Variables.NVIDIAMinerAPITCPPort) -algo $($Commands.$_) -wallet $($Pools.($Algo).User) -rigName $($Pools.($Algo).Pass) -pool1 $($Pools.($Algo).Host):$($Pools.($Algo).Port)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .99 } # substract 1% devfee
-        API       = "nanominer"
-        Port      = $Variables.NVIDIAMinerAPITCPPort
-        Wrap      = $false
-        URI       = $Uri
-        User      = $Pools.($Algo).User
-        Host      = $Pools.($Algo).Host
-        Coin      = $Pools.($Algo).Coin
+    
+    switch ($_) {
+        "grincuckaroo29" { $Fee = 0.02 } # substract devfee
+        default { $Fee = 0.01 } # substract devfee
     }
-}
+
+    $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+        $Algo = Get-Algorithm($_)
+        [PSCustomObject]@{
+            Type      = "NVIDIA"
+            Path      = $Path
+            Arguments = "-mport -$($Variables.NVIDIAMinerAPITCPPort) -algo $($Commands.$_) -wallet $($Pools.($Algo).User) -rigName $($Pools.($Algo).Pass) -pool1 $($Pools.($Algo).Host):$($Pools.($Algo).Port)"
+            HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
+            API       = "nanominer"
+            Port      = $Variables.NVIDIAMinerAPITCPPort
+            Wrap      = $false
+            URI       = $Uri
+            User      = $Pools.($Algo).User
+            Host      = $Pools.($Algo).Host
+            Coin      = $Pools.($Algo).Coin
+        }
+    }
