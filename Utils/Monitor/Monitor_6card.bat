@@ -25,7 +25,7 @@ echo Average Usage of *6 GPUs usage is %gpu_average%%%
 if %gpu_average% GTR 5 (
    echo [92;1mMining is working[0m
    echo [102;92;1mMining is working[0m
-   timeout /t 10 >nul
+   timeout /t 120 >nul
    goto :start
 )
 
