@@ -9,7 +9,7 @@ if (-not $Request) { return }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) { $Name }else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
-$Request.miningAlgorithms | ForEach-Object {
+$Request.miningAlgorithms | Where-Object {$_.paying -gt 0} <# algos paying 0 fail stratum #> | ForEach-Object {
     $Algo = $_.Algorithm
     $NiceHash_Port = $_.algodetails.port
     $NiceHash_Algorithm = Get-Algorithm $_.Algorithm
