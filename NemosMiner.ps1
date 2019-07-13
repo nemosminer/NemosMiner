@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-version:        3.8.0.3
-version date:   08 July 2019
+version:        3.8.0.4
+version date:   13 July 2019
 #>
 
 param(
@@ -28,7 +28,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UserName = "Nemo", 
     [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.8.0.3", 
+    [String]$WorkerName = "ID=NemosMiner-v3.8.0.4", 
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
