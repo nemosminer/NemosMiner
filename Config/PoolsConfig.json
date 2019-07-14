@@ -2,7 +2,7 @@
     "default":  {
                     "PricePenaltyFactor":  1,
                     "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-                    "UserName":  "nemos",
+                    "UserName":  "nemo",
                     "WorkerName":  "ID=NemosMiner3804",
                     "APIKey":  ""
                 }
