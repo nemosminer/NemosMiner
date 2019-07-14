@@ -1,15 +1,10 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\NVIDIA-ccminertpruvot231\ccminer-x64.exe"
-$Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccminer-2.3.1-cuda10.7z"
+$Path = ".\Bin\NVIDIA-ccminertpruvot231x86\ccminer.exe"
+$Uri = "https://github.com/Minerx117/ccminertpruvot/releases/download/2.3.1-x86/ccminertpruvot231x86.7z"
 
 $Commands = [PSCustomObject]@{
-    "exosis"  = " -a exosis -i 25.75" #exosis
-    "allium"  = " -a allium -i 22" #allium
-    "keccak"  = " -a keccak -i 29" #keccak
-    "keccakc" = " -a keccakc -i 29" #keccakc
-    "phi2"    = " -a phi2 -i 22.25" #phi2
-    "blake2b" = " -a blake2b -i 31" #blake2b
+    "blake2b" = " -a blake2b" #blake2b
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
