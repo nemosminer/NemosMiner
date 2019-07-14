@@ -1,9 +1,11 @@
-﻿{
-    "PollInterval":  3,
-    "EnableLog":  true,
-    "WriteEvery":   10,
-    "Pools":  [
-                  "nicehash",
-                  "zergpoolplus"
-              ]
+{
+    "PollInterval": 3,
+    "EnableLog": true,
+    "WriteEvery": 10,
+    "Pools": [
+        "nicehash",
+        "zergpoolplus",
+        "mph",
+        "zpoolplus"
+    ]
 }
