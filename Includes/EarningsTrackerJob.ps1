@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           EarningsTrackerJob.ps1
 version:        3.8.0.4
-version date:   13 June 2019
+version date:   15 June 2019
 #>
 
 # To start the job one could use the following
@@ -81,7 +81,7 @@ while ($true) {
                 $PoolConf = $PoolsConfig.$ConfName
 
                 $Wallet =
-                if ($Pool -eq "miningpoolhub") {
+                if ($Pool -eq "mph") {
                     $PoolConf.APIKey
                 }
                 else {
@@ -99,7 +99,7 @@ while ($true) {
                     if (-not $TempBalanceData.$BalanceJson) { $TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force }
                     if (-not $TempBalanceData.$TotalJson) { $TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force }
                 }
-                elseif ($Pool -eq "miningpoolhub") {
+                elseif ($Pool -eq "mph") {
                     try {
                         $TempBalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where { $_.coin -eq "bitcoin" }) 
                     }
