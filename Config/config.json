@@ -36,6 +36,8 @@
     "Passwordcurrency":"BTC",
     "PoolName":[
        "nicehash",
+       "zpoolplus",
+       "mph",
        "zergpoolplus"
     ],
     "Proxy":"",
