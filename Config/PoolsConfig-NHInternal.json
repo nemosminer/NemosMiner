@@ -2,13 +2,13 @@
     "default":  {
                     "UserName":  "mrplus",
                     "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
-                    "WorkerName":  "ID=NPlusMinerRocks",
+                    "WorkerName":  "ID=3804",
                     "PricePenaltyFactor":  1
                 },
     "nicehash":  {
                      "UserName":  "mrplus",
                      "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
-                     "WorkerName":  "NPlusMinerRocks",
+                     "WorkerName":  "3804",
                      "PricePenaltyFactor":  1
                  }
 }
