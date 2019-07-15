@@ -1,31 +1,31 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 $Path = ".\Bin\NVIDIA-miniZ14o\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miniZ-/releases/download/v1.4o/miniz14o.7z"
 $Commands = [PSCustomObject]@{
-    "equihash144"  = " --algo 144,5 --pers auto" #Equihash144
-    "equihash125"  = " --algo 125,4 --pers auto" #Equihash125
-    "zhash"        = " --algo 144,5 --pers auto" #Zhash
-    "equihash192"  = " --algo 192,7 --pers auto" #Equihash192
-    "equihash-btg" = " --algo 144,5 --pers BgoldPoW " # Equihash-btg MPH
-    "equihash96"   = " --algo 96,5 --pers auto" #Equihash96
-    "beam"         = " --algo 150,5 --pers auto" #Beam
+    "equihash144"  = " --par=144,5 --pers auto" #Equihash144
+    "equihash125"  = " --par=125,4 --pers ZelProof" #Equihash125
+    "zhash"        = " --par=144,5 --pers auto" #Zhash
+    "equihash192"  = " --par=192,7 --pers auto" #Equihash192
+    "equihash-btg" = " --par=144,5 --pers BgoldPoW " # Equihash-btg MPH
+    "equihash96"   = " --par=96,5 --pers auto" #Equihash96
+    "beam"         = " --par=150,5 --pers auto" #Beam
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-$Algo = Get-Algorithm($_)
+    $Algo = Get-Algorithm($_)
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--templimit 95 --intensity 100 --latency --nocolor --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98} # substract 2% devfee
+        Arguments = "--templimit 95 --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
+        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98 } # substract 2% devfee
         API       = "miniZ"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri    
-        User = $Pools.($Algo).User
-        Host = $Pools.($Algo).Host
-        Coin = $Pools.($Algo).Coin
+        User      = $Pools.($Algo).User
+        Host      = $Pools.($Algo).Host
+        Coin      = $Pools.($Algo).Coin
     }
 }
