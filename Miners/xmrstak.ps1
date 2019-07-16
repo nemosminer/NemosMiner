@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     #"cryptonight_lite"  = "" # CryptoNight-Lite
     #"cryptonight_v7"    = "" # CryptoNightV7
     #"cryptonight_v8"    = "" # CryptoNightV8
-    # "monero"     = "" # Monero(v8)
+    #"monero"            = "" # Monero(v8)
     #"cryptonight_r"     = "" #Cryptonight_r
 }
 
