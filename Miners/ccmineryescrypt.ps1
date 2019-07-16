@@ -10,7 +10,6 @@ $Commands = [PSCustomObject]@{
     "yescryptR24" = " -d $($Config.SelGPUCC)" #YescryptR24 
     "yescryptR8" = " -d $($Config.SelGPUCC)" #YescryptR8
     "yescryptR32" = " -i 12.49 -d $($Config.SelGPUCC)" #YescryptR32
-   #"lyra2z330" = " -i 10 -a lyra2z330 -d $($Config.SelGPUCC)" #Lyra2z330 single GPU only, needs work for multicards rigs
 }
     switch ($_) {
         "yescryptR32" {$Fee = 0.14} # account for 14% stale shares
