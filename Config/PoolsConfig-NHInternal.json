@@ -1,14 +1,14 @@
 ﻿{
     "default":  {
                     "UserName":  "mrplus",
-                    "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
-                    "WorkerName":  "ID=3805",
+                    "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+                    "WorkerName":  "ID=3806",
                     "PricePenaltyFactor":  1
                 },
     "nicehash":  {
                      "UserName":  "mrplus",
-                     "Wallet":  "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy",
-                     "WorkerName":  "3805",
+                     "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+                     "WorkerName":  "3806",
                      "PricePenaltyFactor":  1
                  }
 }
