@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-progpowminer016\progpowminer-cuda.exe"
 $Uri = "https://nemosminer.com/data/optional/progpowminer0.16-FinalCuda10.7z"
 
 $Commands = [PSCustomObject]@{
-     "progpow"  = "" # (fastest) 
+     "progpow"  = "" #Progpow 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
