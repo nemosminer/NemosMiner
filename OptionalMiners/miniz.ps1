@@ -8,8 +8,6 @@ $Commands = [PSCustomObject]@{
     "zhash"        = " --par=144,5 --pers auto" #Zhash
     "equihash192"  = " --par=192,7 --pers auto" #Equihash192
     "equihash-btg" = " --par=144,5 --pers BgoldPoW " # Equihash-btg MPH
-    "equihash96"   = " --par=96,5 --pers auto" #Equihash96
-    "beam"         = " --par=150,5 --pers auto" #Beam
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
