@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Gminer151b\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerBetaRelease/releases/download/1.51/gminer_1_51_windows64.zip"
 $Commands = [PSCustomObject]@{
      "equihash96"     = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96
-     "beam"           = " --devices $($Config.SelGPUDSTM) --algo 150_5 --pers auto" #Equihash150
+     "beam"           = " --devices $($Config.SelGPUDSTM) --algo BeamHash --pers auto" #Equihash150
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
