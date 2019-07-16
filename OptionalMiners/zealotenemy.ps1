@@ -4,21 +4,8 @@ $Path = ".\Bin\NVIDIA-zealotenemy200\z-enemy.exe"
 $Uri = "https://github.com/Minerx117/ZEnemy-Miner/releases/download/v2.0.0/ZEnemy200cuda10.7z"
 
 $Commands = [PSCustomObject]@{
-    "aergo"     = " -i 23" #AeriumX
-   #"bcd"        = "" #Bcd
-   #"phi"        = " -i 22" #Phi 
-   #"phi2"       = "" #Phi2 
-   #"poly"       = "" #Polytimos
-   #"bitcore"    = "" #Bitcore
-   #"x16r"       = "" #X16r 
-   #"x16s"       = "" #X16s 
-   #"sonoa"      = "" #SonoA 
-   "skunk"      = "" #Skunk 
-   #"timetravel" = "" #Timetravel 
-   #"tribus"     = "" #Tribus 
-   #"c11"        = "" #C11 
+    "aergo"       = " -i 23" #AeriumX
     "xevan"       = " -i 22" #Xevan 
-   #"x17"        = "" #X17
     "hex"         = " -i 24" #Hex 
 }
 
