@@ -6,21 +6,10 @@ $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.5.4/cpumi
 
 $Commands = [PSCustomObject]@{
     "allium"        = "" #Allium
-    "argon2d-crds"  = ",d=7 " #argon2d-crds
-    "argon2d-dyn"   = "" #argon2d-dyn
-    "argon2d4096"   = "" #argon2d4096 
-    "cryptonightv7" = "" #Cryptonightv7
-    "x16r"          = "" #X16r
-    "lyra2v3"       = "" #Lyra2RE3
-    "quark"         = "" #Quark
-    "lyra2z"        = "" #Lyra2z
     "m7m"           = "" #m7m
-    "sonoa"         = "" #Sonoa
-    "phi2"          = "" #Phi2
     "yespower"      = "" #Yespower
     "yespowerr16"   = "" #YespowerR16
     "skein2"        = "" #Skein2
-    "skein"         = "" #Skein
     "yescrypt"      = "" #Yescrypt
     "yescryptr8"    = "" #YescryptR8
     "yescryptr16"   = "" #YescryptR16
