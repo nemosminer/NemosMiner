@@ -17,7 +17,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         "ethash" { $Fee = 0.0065 }
         default { $Fee = 0.02 }
     }
-    If ($Pools.($Algo).Host -notlike "*nicehash*") { return }
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
