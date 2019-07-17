@@ -5,7 +5,7 @@
                     "WorkerName":  "rig1",
                     "PricePenaltyFactor":  1
                 },
-    "nicehash":  {
+    "nicehashV2":  {
                      "UserName":  "nemo",
                      "Wallet":  "3MwuXefpUfYHGep59UskS8RSsM18sKo7kN",
                      "WorkerName":  "rig1",
