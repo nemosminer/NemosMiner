@@ -37,6 +37,7 @@
     "Passwordcurrency":  "BTC",
     "PoolName":  [
                      "mph",
+                     "nicehashV1",
                      "zergpoolplus",
                      "zpoolplus"
                  ],
