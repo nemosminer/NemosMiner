@@ -4,6 +4,7 @@
     "WriteEvery": 10,
     "Pools": [
         "nicehash",
+        "nicehashV2",
         "zergpoolplus",
         "mph",
         "zpoolplus"
