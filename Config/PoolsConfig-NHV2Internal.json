@@ -2,13 +2,13 @@
     "default":  {
                     "UserName":  "nemo",
                     "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-                    "WorkerName":  "rig1",
+                    "WorkerName":  "ID=NM3806",
                     "PricePenaltyFactor":  1
                 },
     "nicehashV2":  {
                      "UserName":  "nemo",
                      "Wallet":  "3MwuXefpUfYHGep59UskS8RSsM18sKo7kN",
-                     "WorkerName":  "rig1",
+                     "WorkerName":  "NM3806",
                      "PricePenaltyFactor":  1
                  }
 }
