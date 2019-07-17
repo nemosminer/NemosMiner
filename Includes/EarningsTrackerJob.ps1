@@ -91,7 +91,7 @@ while ($true) {
                 $CurDate = Get-Date
                 # Write-host $Pool
                 # Write-Host "$($APIUri)$($Wallet)"
-                If ($Pool -eq "nicehash-V1") {
+                If ($Pool -eq "nicehashV1") {
                     try {
                         $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
                     }
