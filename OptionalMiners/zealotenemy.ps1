@@ -1,12 +1,15 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\NVIDIA-zealotenemy200\z-enemy.exe"
-$Uri = "https://github.com/Minerx117/ZEnemy-Miner/releases/download/v2.0.0/ZEnemy200cuda10.7z"
+$Path = ".\Bin\NVIDIA-zealotenemy21\z-enemy.exe"
+$Uri = "https://github.com/Minerx117/ZEnemy-Miner/releases/download/v2.1/zealotenemy21cuda10.7z"
 
 $Commands = [PSCustomObject]@{
     "aergo"       = " -i 23" #AeriumX
     "xevan"       = " -i 22" #Xevan 
     "hex"         = " -i 24" #Hex 
+    "c11"         = " -i 22" #C11
+    "timetravel"  = " -i 22" #TimeTravel
+    "x16s"        = " -i 22" #X16s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
