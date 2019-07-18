@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-nosuch\cpuminer-aes-sse2.exe"
+$Path = ".\Bin\CPU-nosuch\cpuminer-aes-sse2.exe" #AMD and Intel
 $Uri = "https://github.com/patrykwnosuch/cpuminer-3.8.8.1-nosuch/releases/download/3.8.8.1-m2/cpuminer-nosuch-m2-win64.7z"
 
 $Commands = [PSCustomObject]@{
