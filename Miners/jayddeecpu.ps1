@@ -6,13 +6,10 @@ $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.6/cpumine
 
 $Commands = [PSCustomObject]@{
     "allium"      = " -a allium" #Allium
-    "m7m"         = " -a m7m" #m7m
     "yespower"    = " -a yespower" #Yespower
     "yespowerr16" = " -a yespowerr16" #YespowerR16
     "skein2"      = " -a skein2" #Skein2
     "yescrypt"    = " -a yescrypt" #Yescrypt
-    "yescryptr8"  = " -a yescryptr8" #YescryptR8
-    "yescryptr16" = " -a yescryptr16" #YescryptR16
     "yescryptr32" = " -a yescryptr32" #YescryptR32 
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330 
     "bmw512"      = " -a bmw512" #Bmw512 
