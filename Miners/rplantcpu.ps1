@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-Opt4012\cpuminer-sse2"
-#$Path = ".\Bin\CPU-Opt4012\cpuminer-ryzen.exe" 
+$Path = ".\Bin\CPU-Opt4012\cpuminer-sse42" #Intel
+#$Path = ".\Bin\CPU-Opt4012\cpuminer-ryzen.exe" #AMD
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v4.0.12/cpuminer-rplant-4.0.12-win.zip"
 
 $Commands = [PSCustomObject]@{
