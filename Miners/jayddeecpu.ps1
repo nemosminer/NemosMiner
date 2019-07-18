@@ -11,6 +11,7 @@ $Commands = [PSCustomObject]@{
     "skein2"      = " -a skein2" #Skein2
     "yescrypt"    = " -a yescrypt" #Yescrypt
     "yescryptr32" = " -a yescryptr32" #YescryptR32 
+    "m7m"         = " -a m7m" #M7m
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330 
     "bmw512"      = " -a bmw512" #Bmw512 
     "x16rt"       = " -a x16rt" #X16rt 
