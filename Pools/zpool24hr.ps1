@@ -40,7 +40,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
             "eu" { $Location = "EU" }
             "na" { $Location = "US" }
             "sea" { $Location = "JP" }
-            default { $Location = "US" }
+            default { $Location = "JP" }
         }
         $PoolHost = "$($Algo).$($Pool_Location)$($HostSuffix)"
         
