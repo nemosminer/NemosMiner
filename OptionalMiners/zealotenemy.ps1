@@ -7,9 +7,6 @@ $Commands = [PSCustomObject]@{
     "aergo"       = " -i 23" #AeriumX
     "xevan"       = " -i 22" #Xevan 
     "hex"         = " -i 24" #Hex 
-    "c11"         = " -i 22" #C11
-    "timetravel"  = " -i 22" #TimeTravel
-    "x16s"        = " -i 22" #X16s
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
