@@ -3,7 +3,6 @@ if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLo
 $Path = ".\Bin\NVIDIA-Gminer151\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.51/gminer_1_51_windows64.zip"
 $Commands = [PSCustomObject]@{
-     "equihash96"     = " --devices $($Config.SelGPUDSTM) --algo 96_5 --pers auto" #Equihash96
      "beam"           = " --devices $($Config.SelGPUDSTM) --algo BeamHash --pers auto" #Equihash150
      "equihash125"    = " --devices $($Config.SelGPUDSTM) --algo 125_4 --pers auto" #Equihash125
      "equihash144"    = " --devices $($Config.SelGPUDSTM) --algo 144_5 --pers auto" #Equihash144
@@ -19,7 +18,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--intensity 99 99 99 99 99 99 99 99 99 99 99 99 --watchdog 0 --nvml 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.($Algo).Host) --port $($Pools.($Algo).Port) --user $($Pools.($Algo).User) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--watchdog 0 --nvml 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.($Algo).Host) --port $($Pools.($Algo).Port) --user $($Pools.($Algo).User) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98} # substract 2% devfee
         API       = "gminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
