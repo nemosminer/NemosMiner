@@ -32,6 +32,7 @@ $Request.result.simplemultialgo | ForEach-Object {
             "eu" { $Location = "EU" }
             "usa" { $Location = "US" }
             "jp" { $Location = "JP" }
+             default { $Location = "JP" }
         }
         $NiceHash_Host = "$($Algo).$($NiceHash_Location).nicehash.com"
 
