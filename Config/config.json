@@ -38,6 +38,7 @@
     "PoolName":  [
                      "mph",
                      "nicehashV2",
+                     "nicehash",
                      "zergpoolplus",
                      "zpoolplus"
                  ],
