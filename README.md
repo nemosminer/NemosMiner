@@ -2,7 +2,7 @@
 
 NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 23 July 2019
+Updated 24 July 2019
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases)
 [![GitHub release](https://img.shields.io/github/release/Minerx117/Nemosminer/all.svg)](https://github.com/Minerx117/NemosMiner/releases)
