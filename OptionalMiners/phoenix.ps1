@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-Phoenix45b\PhoenixMiner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.5b/PhoenixMiner_4.5b_Windows.7z"
 $Commands = [PSCustomObject]@{
     "ethash"  = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash
-    "progpow" = " -coin bci -di $($($Config.SelGPUCC).Replace(',',''))" #Progpow 
+   #"progpow" = " -coin bci -di $($($Config.SelGPUCC).Replace(',',''))" #Progpow 
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
