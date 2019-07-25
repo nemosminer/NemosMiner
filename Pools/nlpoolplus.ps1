@@ -26,11 +26,6 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    switch ($PoolAlgorithm) {
-        "Yescrypt" { $Divisor *= 100 }       #temp fix
-
-    }
-
     $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))
 
     $PwdCurr = if ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency }else { $Config.Passwordcurrency }
