@@ -166,16 +166,27 @@ Function Global:TimerUITick {
             If (Test-Path ".\Logs\switching.log") { $SwitchingArray = [System.Collections.ArrayList]@(@((get-content ".\Logs\switching.log" -First 1) , (get-content ".\logs\switching.log" -last 50)) | ConvertFrom-Csv | ? { $_.Type -in $SwitchingDisplayTypes } | Select -Last 13) }
             $SwitchingDGV.DataSource = $SwitchingArray
             
-            If (Test-Path ".\logs\DailyEarnings.csv") {
-                If ($Chart1) { $RunPage.Controls.Remove($Chart1) }
+            # Fixed memory leak to to chart object not being properly disposed in 5.3.0
+            # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
+
+            If (Test-Path ".\logs\DailyEarnings.csv"){
+                If ($RunPage.Controls.IndexOf($Chart1) -ge 0) {
+                    $RunPage.Controls[$RunPage.Controls.IndexOf($Chart1)].Dispose()
+                    # $RunPage.Controls.Remove($Chart1)
+                    $Chart1.Dispose()
+                }
                 $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 85"
                 $Chart1.top = 74
                 $Chart1.left = 0
                 $RunPage.Controls.Add($Chart1)
                 $Chart1.BringToFront()
             }
-            If (Test-Path ".\logs\DailyEarnings.csv") {
-                If ($Chart2) { $RunPage.Controls.Remove($Chart2) }
+            If (Test-Path ".\logs\DailyEarnings.csv"){
+                If ($RunPage.Controls.IndexOf($Chart2) -ge 0) {
+                    $RunPage.Controls[$RunPage.Controls.IndexOf($Chart2)].Dispose()
+                    # $RunPage.Controls.Remove($Chart2)
+                    $Chart2.Dispose()
+                }
                 $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 85"
                 $Chart2.top = 74
                 $Chart2.left = 500
@@ -419,7 +430,23 @@ Function Form_Load {
     $MainForm.Text = "$($Branding.ProductLable) $($Variables.CurrentVersion)"
     $LabelBTCD.Text = "$($Branding.ProductLable) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
-    $TimerUI.Add_Tick( { TimerUITick })
+    $TimerUI.Add_Tick({
+        # Timer never disposes objects until it is disposed
+        $MainForm.Number = $MainForm.Number + 1
+        $TimerUI.Stop()
+        TimerUITick
+        If ($MainForm.Number -gt 6000) {
+            # Write-Host -B R "Releasing Timer"
+            $MainForm.Number = 0
+            # $TimerUI.Stop()
+            $TimerUI.Remove_Tick({TimerUITick})
+            $TimerUI.Dispose()
+            $TimerUI = New-Object System.Windows.Forms.Timer
+            $TimerUI.Add_Tick({TimerUITick})
+            # $TimerUI.Start()
+        }
+        $TimerUI.Start()
+    })
     $TimerUI.Interval = 50
     $TimerUI.Stop()
         
