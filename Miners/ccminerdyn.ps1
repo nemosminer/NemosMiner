@@ -4,8 +4,8 @@ $Path = ".\Bin\NVIDIA-ccminerdyn102\ccminer.exe"
 $Uri = "https://github.com/nemosminer/Dynamic-GPU-Miner-Nvidia/releases/download/v1.0.2/ccminerdyn.7z"
 
 $Commands = [PSCustomObject]@{
-    "argon2d-dyn" = "" #argon2d-dyn 
-    "argon2d500" = "" #argon2d-dyn
+    #"argon2d-dyn" = "" #argon2d-dyn 
+    #"argon2d500" = "" #argon2d-dyn
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
