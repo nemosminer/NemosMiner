@@ -170,28 +170,19 @@ Function Global:TimerUITick {
             # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
 
             If (Test-Path ".\logs\DailyEarnings.csv"){
-                If ($RunPage.Controls.IndexOf($Chart1) -ge 0) {
-                    $RunPage.Controls[$RunPage.Controls.IndexOf($Chart1)].Dispose()
-                    # $RunPage.Controls.Remove($Chart1)
-                    $Chart1.Dispose()
-                }
                 $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 85"
                 $Chart1.top = 74
                 $Chart1.left = 0
                 $RunPage.Controls.Add($Chart1)
                 $Chart1.BringToFront()
-            }
-            If (Test-Path ".\logs\DailyEarnings.csv"){
-                If ($RunPage.Controls.IndexOf($Chart2) -ge 0) {
-                    $RunPage.Controls[$RunPage.Controls.IndexOf($Chart2)].Dispose()
-                    # $RunPage.Controls.Remove($Chart2)
-                    $Chart2.Dispose()
-                }
+
                 $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 85"
                 $Chart2.top = 74
                 $Chart2.left = 500
                 $RunPage.Controls.Add($Chart2)
                 $Chart2.BringToFront()
+                
+                $RunPage.Controls | ? {($_.gettype()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2} | % {$RunPage.Controls[$RunPage.Controls.IndexOf($_)].Dispose();$RunPage.Controls.Remove($_)}
             }
 
             If ($Variables.Earnings -and $Config.TrackEarnings) {
