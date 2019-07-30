@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-#$Path = ".\Bin\CPU-JayDDee3961\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee3961\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.6.1/cpuminer-opt-3.9.6.1-windows.zip"
+#$Path = ".\Bin\CPU-JayDDee3962\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3962\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.6.2/cpuminer-opt-3.9.6.2-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"      = " -a allium" #Allium
@@ -14,6 +14,7 @@ $Commands = [PSCustomObject]@{
     "m7m"         = " -a m7m" #M7m
     "x21s"        = " -a x21s" #X21s
     "hex"         = " -a hex" #Hex
+    "blake2b"     = " -a blake2b" #blake2b
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330 
     "bmw512"      = " -a bmw512" #Bmw512 
     "x16rt"       = " -a x16rt" #X16rt 
