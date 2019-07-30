@@ -10,9 +10,9 @@ FOR /L %%A IN (60,-1,0) DO (
 :start
 cls
 :measure
-for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage0=%%p
-for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=1 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage1=%%p
-for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage2=%%p
+for /F %%p in ('"nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage0=%%p
+for /F %%p in ('"nvidia-smi" --id^=1 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage1=%%p
+for /F %%p in ('"nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage2=%%p
 
 set /a total=%gpu_usage0%+%gpu_usage1%+%gpu_usage2%
 set /a gpu_average=%total%/3
@@ -28,7 +28,7 @@ if %gpu_average% GTR 40 (
 )
 
 set log_file=mining_problems_log.txt
-set ping_time=500
+set ping_time=900
 FOR /F "skip=8 tokens=10" %%G in ('ping -n 3 google.com') DO set ping_time=%%G
 if %ping_time% GTR 0 (
    
@@ -67,7 +67,7 @@ echo.>> %log_file%
 echo ---------------------------------------------------------------------------------------------------->> %log_file%
 echo.>> %log_file%
 echo PC was restarted at %date% %time%>> %log_file%, mining issue. GPUs usage is %gpu_average%%%
-"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi">> %log_file%
+"nvidia-smi">> %log_file%
 echo.>> %log_file%
 echo ---------------------------------------------------------------------------------------------------->> %log_file%
 echo.>> %log_file%
@@ -80,9 +80,9 @@ goto :end
 
 
 :recheck
-   for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage0=%%p
-   for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=1 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage1=%%p
-   for /F %%p in ('"C:\Program Files\NVIDIA Corporation\NVSMI\nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage2=%%p
+   for /F %%p in ('"nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage0=%%p
+   for /F %%p in ('"nvidia-smi" --id^=1 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage1=%%p
+   for /F %%p in ('"nvidia-smi" --id^=0 --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits') do set gpu_usage2=%%p
 
    set /a total=%gpu_usage0%+%gpu_usage1%+%gpu_usage2%
    set /a gpu_average=%total%/3
