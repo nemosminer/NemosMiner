@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-nanominer152\cmdline_launcher.bat"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.5.2/nanominer-windows-1.5.2.zip"
+$Path = ".\Bin\NVIDIA-nanominer153\cmdline_launcher.bat"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.5.3/nanominer-windows-1.5.3.zip"
 
 $Commands = [PSCustomObject]@{
     #"cryptonightr"       = "cryptonightr" #cryptonight/r (NiceHash)
