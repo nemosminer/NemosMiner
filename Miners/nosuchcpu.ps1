@@ -4,18 +4,14 @@ $Path = ".\Bin\CPU-nosuch\cpuminer-aes-sse2.exe" #AMD and Intel
 $Uri = "https://github.com/patrykwnosuch/cpuminer-3.8.8.1-nosuch/releases/download/3.8.8.1-m2/cpuminer-nosuch-m2-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    "m7m"         = " -a m7m" #M7m
-    "binarium-v1" = " -a Binarium_hash_v1" #Binarium-v1
+    "m7m" = " -a m7m" #M7m
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
 
-    switch ($_) {
-        "binarium-v1" { $ThreadCount = $Variables.ProcessorCount - 1 }
-        default { $ThreadCount = $Variables.ProcessorCount - 1 }
-    }
+    $ThreadCount = $Variables.ProcessorCount - 1 
 
     $Algo = Get-Algorithm($_)
     [PSCustomObject]@{
