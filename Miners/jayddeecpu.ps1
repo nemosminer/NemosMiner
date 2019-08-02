@@ -10,8 +10,7 @@ $Commands = [PSCustomObject]@{
     "yespowerr16" = " -a yespowerr16" #YespowerR16
     "skein2"      = " -a skein2" #Skein2
     "yescrypt"    = " -a yescrypt" #Yescrypt
-    "yescryptr32" = " -a yescryptr32" #YescryptR32 
-    "m7m"         = " -a m7m" #M7m
+    "yescryptr32" = " -a yescryptr32" #YescryptR32
     "x21s"        = " -a x21s" #X21s
     "hex"         = " -a hex" #Hex
     "blake2b"     = " -a blake2b" #blake2b
@@ -26,10 +25,8 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 
 $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
 
-    switch ($_) {
-        "m7m" { $ThreadCount = $Variables.ProcessorCount - 1 }
-        default { $ThreadCount = $Variables.ProcessorCount - 2 }
-    }
+    $ThreadCount = $Variables.ProcessorCount - 2
+    
 
 	   $Algo = Get-Algorithm($_)
     If ($Algo -eq "lyra2z330" -and $Pools.($Algo).Host -like "*zpool*") { return }
