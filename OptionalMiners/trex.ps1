@@ -19,7 +19,6 @@ $Commands = [PSCustomObject]@{
     "x16r"       = " -a x16r -i 24" #X16r ,mc=RVN
     "x16rt"      = " -a x16rt -i 24" #X16rt
     "sonoa"      = " -a sonoa -i 23" #Sonoa
-    "dedal"      = " -a dedal -i 23" #Dedal
     "sha256t"    = " -a sha256t -i 26" #Sha256t
     "sha256q"    = " -a sha256q -i 23" #Sha256q 
     "x21s"       = " -a x21s -i 23 " #X21s 
