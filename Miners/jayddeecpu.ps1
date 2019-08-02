@@ -29,7 +29,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     
 
 	   $Algo = Get-Algorithm($_)
-    If ($Algo -eq "lyra2z330" -and $Pools.($Algo).Host -like "*zpool*") { return }
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path
