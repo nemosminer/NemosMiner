@@ -5,18 +5,15 @@ $Path = ".\Bin\CPU-Opt4012\cpuminer-sse42.exe" #Intel
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v4.0.12/cpuminer-rplant-4.0.12-win.zip"
 
 $Commands = [PSCustomObject]@{
-    "yescryptr8"  = " -a yescryptr8" #YescryptR8
-    "yespowerr16" = " -a yespowerr16" #YespowerR16
+    "yescryptr8" = " -a yescryptr8" #YescryptR8
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | ForEach {
 
-    switch ($_) {
-        "binarium-v1" { $ThreadCount = $Variables.ProcessorCount - 1 }
-        default { $ThreadCount = $Variables.ProcessorCount - 2 }
-    }
+    $ThreadCount = $Variables.ProcessorCount - 2 
+    
 
     $Algo = Get-Algorithm($_)
     [PSCustomObject]@{
