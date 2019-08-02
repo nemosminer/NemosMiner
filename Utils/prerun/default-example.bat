@@ -3,8 +3,8 @@ REM This file and nvidia inspector is disabled by default to Enable them, rename
 REM Below is a example for a 6 GPU setup
 
 SET PL=66
-SET MEMORY=325
-SET CORE=20
+SET MEMORY=250
+SET CORE=0
 SET TEMP=90
 
 SET GPU0=-setBaseClockOffset:0,0,%CORE% -setMemoryClockOffset:0,0,%MEMORY% -setPowerTarget:0,%PL% -setTempTarget:0,0,%TEMP%
