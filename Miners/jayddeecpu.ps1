@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-#$Path = ".\Bin\CPU-JayDDee3962\cpuminer-zen.exe" #AMD
+#$Path = ".\Bin\CPU-JayDDee397\cpuminer-zen.exe" #AMD
 $Path = ".\Bin\CPU-JayDDee3962\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.6.2/cpuminer-opt-3.9.6.2-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.7/cpuminer-opt-3.9.7-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"      = " -a allium" #Allium
