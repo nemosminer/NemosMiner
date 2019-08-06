@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-trex0130\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.13.0/t-rex-0.13.0-win-cuda10.0.zip"
+$Path = ".\Bin\NVIDIA-trex0132\t-rex.exe"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.13.2/t-rex-0.13.2-win-cuda10.0.zip"
 
 $Commands = [PSCustomObject]@{
     "balloon"    = " -a balloon -i 23" #Balloon
