@@ -2,7 +2,7 @@
 mode con cols=50 lines=10
 cls
 :begin
-FOR /L %%A IN (60,-1,0) DO (
+FOR /L %%A IN (120,-1,0) DO (
   cls
   echo Timeout [92;1m%%A[0m seconds...
   timeout /t 1 >nul
