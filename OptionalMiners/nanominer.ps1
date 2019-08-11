@@ -4,8 +4,8 @@ $Path = ".\Bin\NVIDIA-nanominer153\cmdline_launcher.bat"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.5.3/nanominer-windows-1.5.3.zip"
 
 $Commands = [PSCustomObject]@{
-    "cryptonightr"       = "cryptonightr" #cryptonight/r (NiceHash)
-    "cryptonight-monero" = "cryptonightr" #monero (Mining Pool Hub)
+    #"cryptonightr"       = "cryptonightr" #cryptonight/r (NiceHash)
+    #"cryptonight-monero" = "cryptonightr" #monero (Mining Pool Hub)
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
