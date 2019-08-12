@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-miniZ14ocuda8\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.4o/miniZ_v1.40_win-x64.7z"
 $Commands = [PSCustomObject]@{
     #"equihash144"  = " --par=144,5 --pers auto" #Equihash144
-    "equihash125" = " --par=125,4 --pers ZelProof" #Equihash125
+    #"equihash125" = " --par=125,4 --pers ZelProof" #Equihash125
     #"zhash"        = " --par=144,5 --pers auto" #Zhash
     #"equihash192"  = " --par=192,7 --pers auto" #Equihash192
     #"equihash-btg" = " --par=144,5 --pers BgoldPoW " # Equihash-btg MPH
