@@ -1,10 +1,10 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-miniZ14o\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miniZ-/releases/download/v1.4o/miniz14o.7z"
+$Path = ".\Bin\NVIDIA-miniZ14ocuda8\miniZ.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.4o/miniZ_v1.40_win-x64.7z"
 $Commands = [PSCustomObject]@{
     #"equihash144"  = " --par=144,5 --pers auto" #Equihash144
-    #"equihash125"  = " --par=125,4 --pers ZelProof" #Equihash125
+    "equihash125" = " --par=125,4 --pers ZelProof" #Equihash125
     #"zhash"        = " --par=144,5 --pers auto" #Zhash
     #"equihash192"  = " --par=192,7 --pers auto" #Equihash192
     #"equihash-btg" = " --par=144,5 --pers BgoldPoW " # Equihash-btg MPH
@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--templimit 95 --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98 } # substract 2% devfee
         API       = "miniZ"
         Port      = $Variables.NVIDIAMinerAPITCPPort
