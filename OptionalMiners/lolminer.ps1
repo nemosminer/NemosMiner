@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     "Equihash21x9" = "--coin AION" #Equihash 210,9
     "equihash144"  = " --coin AUTO144_5" #Equihash 144,5
     "equihash125"  = " --coin ZEL" #Equihash 125,4
-    "beam"         = " --coin BEAM" #Equihash 150,5
+    "beam"         = " --coin BEAM-I" #Equihash 150,5 (NiceHash)
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
