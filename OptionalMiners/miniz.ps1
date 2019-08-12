@@ -3,12 +3,12 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-miniZ14o\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miniZ-/releases/download/v1.4o/miniz14o.7z"
 $Commands = [PSCustomObject]@{
-    "equihash144"  = " --par=144,5 --pers auto" #Equihash144
-    "equihash125"  = " --par=125,4 --pers auto" #Equihash125
-    "zhash"        = " --par=144,5 --pers auto" #Zhash
-    "beam"         = " --par=150,5 --pers auto" #Beam
-    "equihash192"  = " --par=192,7 --pers auto" #Equihash192
-    "equihash-btg" = " --par=144,5 --pers BgoldPoW " # Equihash-btg MPH
+    #"equihash144"  = " --par=144,5 --pers auto" #Equihash144
+    #"equihash125"  = " --par=125,4 --pers auto" #Equihash125
+    #"zhash"        = " --par=144,5 --pers auto" #Zhash
+    #"beam"         = " --par=150,5 --pers auto" #Beam
+    #"equihash192"  = " --par=192,7 --pers auto" #Equihash192
+    #"equihash-btg" = " --par=144,5 --pers BgoldPoW " # Equihash-btg MPH
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
