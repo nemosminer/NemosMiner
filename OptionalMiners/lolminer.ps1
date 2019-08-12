@@ -4,10 +4,10 @@ $Path = ".\Bin\NVIDIA-lolMiner086\lolMiner.exe"
 $Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.6/lolMiner_v086_Win64.zip"
 
 $Commands = [PSCustomObject]@{
-    "Equihash21x9" = "--coin AION" #Equihash 210,9
-    "equihash144"  = " --coin AUTO144_5" #Equihash 144,5
-    "equihash125"  = " --coin ZEL" #Equihash 125,4
-    "beam"         = " --coin BEAM-I" #Equihash 150,5 (NiceHash)
+    #"Equihash21x9" = "--coin AION" #Equihash 210,9
+    #"equihash144"  = " --coin AUTO144_5" #Equihash 144,5
+    #"equihash125"  = " --coin ZEL" #Equihash 125,4
+    #"beam"         = " --coin BEAM-I" #Equihash 150,5 (NiceHash)
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
