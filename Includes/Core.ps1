@@ -83,7 +83,7 @@ Function InitApplication {
     #Set donation parameters
     $Variables | Add-Member -Force @{DonateRandom = [PSCustomObject]@{ } }
     $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
-    If ($Config.Donate -lt 3) { $Config.Donate = (0, (3..8)) | Get-Random }
+    If ($Config.Donate -lt 1) { $Config.Donate = (0, (0..0)) | Get-Random }
     $Variables | Add-Member -Force @{WalletBackup = $Config.Wallet }
     $Variables | Add-Member -Force @{UserNameBackup = $Config.UserName }
     $Variables | Add-Member -Force @{WorkerNameBackup = $Config.WorkerName }
