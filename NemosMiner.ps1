@@ -169,7 +169,7 @@ Function Global:TimerUITick {
             # Fixed memory leak to to chart object not being properly disposed in 5.3.0
             # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
 
-            If (Test-Path ".\logs\DailyEarnings.csv"){
+            If (Test-Path ".\logs\DailyEarnings.csv") {
                 $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 85"
                 $Chart1.top = 74
                 $Chart1.left = 0
@@ -182,7 +182,7 @@ Function Global:TimerUITick {
                 $RunPage.Controls.Add($Chart2)
                 $Chart2.BringToFront()
                 
-                $RunPage.Controls | ? {($_.gettype()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2} | % {$RunPage.Controls[$RunPage.Controls.IndexOf($_)].Dispose();$RunPage.Controls.Remove($_)}
+                $RunPage.Controls | ? { ($_.gettype()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | % { $RunPage.Controls[$RunPage.Controls.IndexOf($_)].Dispose(); $RunPage.Controls.Remove($_) }
             }
 
             If ($Variables.Earnings -and $Config.TrackEarnings) {
@@ -421,23 +421,23 @@ Function Form_Load {
     $MainForm.Text = "$($Branding.ProductLable) $($Variables.CurrentVersion)"
     $LabelBTCD.Text = "$($Branding.ProductLable) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
-    $TimerUI.Add_Tick({
-        # Timer never disposes objects until it is disposed
-        $MainForm.Number = $MainForm.Number + 1
-        $TimerUI.Stop()
-        TimerUITick
-        If ($MainForm.Number -gt 6000) {
-            # Write-Host -B R "Releasing Timer"
-            $MainForm.Number = 0
-            # $TimerUI.Stop()
-            $TimerUI.Remove_Tick({TimerUITick})
-            $TimerUI.Dispose()
-            $TimerUI = New-Object System.Windows.Forms.Timer
-            $TimerUI.Add_Tick({TimerUITick})
-            # $TimerUI.Start()
-        }
-        $TimerUI.Start()
-    })
+    $TimerUI.Add_Tick( {
+            # Timer never disposes objects until it is disposed
+            $MainForm.Number = $MainForm.Number + 1
+            $TimerUI.Stop()
+            TimerUITick
+            If ($MainForm.Number -gt 6000) {
+                # Write-Host -B R "Releasing Timer"
+                $MainForm.Number = 0
+                # $TimerUI.Stop()
+                $TimerUI.Remove_Tick( { TimerUITick })
+                $TimerUI.Dispose()
+                $TimerUI = New-Object System.Windows.Forms.Timer
+                $TimerUI.Add_Tick( { TimerUITick })
+                # $TimerUI.Start()
+            }
+            $TimerUI.Start()
+        })
     $TimerUI.Interval = 50
     $TimerUI.Stop()
         
@@ -1114,9 +1114,8 @@ $LabelDonate.text = "Donate (min)"
 $LabelDonate.AutoSize = $false
 $LabelDonate.width = 120
 $LabelDonate.height = 20
-$LabelDonate.location = New-Object System.Drawing.Point(2, 268)
+$LabelDonate.location = New-Object System.Drawing.Point(2, 178)
 $LabelDonate.Font = 'Microsoft Sans Serif,10'
-$LabelDonate.Visible = $False
 $ConfigPageControls += $LabelDonate
 
 $TBDonate = New-Object system.Windows.Forms.TextBox
@@ -1127,9 +1126,8 @@ $TBDonate.text = $Config.Donate
 $TBDonate.AutoSize = $false
 $TBDonate.width = 300
 $TBDonate.height = 20
-$TBDonate.location = New-Object System.Drawing.Point(122, 268)
+$TBDonate.location = New-Object System.Drawing.Point(122, 178)
 $TBDonate.Font = 'Microsoft Sans Serif,10'
-$TBDonate.Visible = $False
 $ConfigPageControls += $TBDonate
 
 $LabelProxy = New-Object system.Windows.Forms.Label
@@ -1696,5 +1694,3 @@ $MainForm.Add_Load( { Form_Load })
 # $TimerUI.Add_Tick({TimerUI_Tick})
 
 [void]$MainForm.ShowDialog()
-
-
