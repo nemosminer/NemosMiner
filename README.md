@@ -82,11 +82,9 @@ Easy configuration, easy start:
          -High switching rate
   
   Developer/Contributors Donation: 
+  There is a 14 minute per day donation (0.9%) 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
-     
-      There is a 4 minute per day donation (0.27%)
-      We want to stay completely transparent on the way donations are managed in the product. Donations occurs once every 24 hours for the selected amount of time (default 4 minutes). The first donation sequence occurs 1 hour after miners are started. If Interval is set higher than the donation time, the interval will prime. Example for default parameters. Miners started at 10, First donation cycle runs at 10:56 untill 11, Next donation cycle occurs 24 hours after.All donation time and addresses are recording in the logs folder.
-
+   
 NemosMiner Monitoring Server : https://nemosminer.com
 
      Keep tabs on all your mining rigs from one place
