@@ -83,6 +83,7 @@ Easy configuration, easy start:
   
   Developer/Contributors Donation: 
   There is a 14 minute per day donation (0.9%) 
+  Please help support the great team behind NemosMiner by leaving mining donations turned on 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
    
 NemosMiner Monitoring Server : https://nemosminer.com
