@@ -82,7 +82,7 @@ Easy configuration, easy start:
          -High switching rate
   
   Developer/Contributors Donation: 
-  There is a 14 minute per day donation (0.9%) 
+  There is a 14 minute per day default donation (0.9%) which can be increased or decreased in the config tab
   Please help support the great team behind NemosMiner by leaving mining donations turned on 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
    
