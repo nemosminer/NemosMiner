@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\NVIDIA-CryptoDredge02192phi2\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.21.0/CryptoDredge_0.21.0_cuda_9.2_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge021c10phi2\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.21.0/CryptoDredge_0.21.0_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
     "phi2" = ",mc=SPDR/AGM --intensity 8 -a phi2" #Phi2 
