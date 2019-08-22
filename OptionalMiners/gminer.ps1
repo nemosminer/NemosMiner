@@ -1,16 +1,16 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
  
-$Path = ".\Bin\NVIDIA-Gminer159\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.59/gminer_1_59_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer157\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.57/gminer_1_57_windows64.zip"
 $Commands = [PSCustomObject]@{
-   #"beam"         = " --devices $($Config.SelGPUDSTM) -a beamhash" #Equihash150 (NiceHash)
-    "beamv2"       = " --devices $($Config.SelGPUDSTM) -a beamhashII" #Equihash150 (NiceHash)
-    "equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
-    "equihash144"  = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
-    "equihash96"   = " --devices $($Config.SelGPUDSTM) -a 96_5 --pers auto" #Equihash144
-    "zhash"        = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Zhash
-    "equihash192"  = " --devices $($Config.SelGPUDSTM) -a 192_7 --pers auto" #Equihash192
-    "equihash-btg" = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers BgoldPoW " # Equihash-btg MPH
+    #"beam"         = " --devices $($Config.SelGPUDSTM) -a beamhash" #Equihash150 (NiceHash)
+    #"beamv2"       = " --devices $($Config.SelGPUDSTM) -a beamhashII" #Equihash150 (NiceHash)
+    #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
+    #"equihash144"  = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
+    #"equihash96"   = " --devices $($Config.SelGPUDSTM) -a 96_5 --pers auto" #Equihash144
+    #"zhash"        = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Zhash
+    #"equihash192"  = " --devices $($Config.SelGPUDSTM) -a 192_7 --pers auto" #Equihash192
+    #"equihash-btg" = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers BgoldPoW " # Equihash-btg MPH
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
