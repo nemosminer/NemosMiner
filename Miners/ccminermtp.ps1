@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-ccminermtp120\ccminer.exe"
-$Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.2.0/ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminermtp12092\ccminer.exe"
+$Uri = "https://github.com/Minerx117/ccminer/releases/download/v1.2.0/ccminermtp9.2.7z"
 
 $Commands = [PSCustomObject]@{
      #"mtp" = " -d $($Config.SelGPUCC)" #mtp
