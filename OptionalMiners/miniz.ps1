@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     "zhash"        = " --par=144,5 --pers auto" #Zhash
     "beamv2"       = " --par=beam2" #Beamv2
     "equihash192"  = " --par=192,7 --pers auto" #Equihash192
-    "equihash96"   = " --par=96,5 --pers auto" #Equihash192
+   #"equihash96"   = " --par=96,5 --pers auto" #Equihash192
     "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
