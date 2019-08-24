@@ -5,7 +5,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5q/mini
 
 $Commands = [PSCustomObject]@{
     "equihash144"  = " --par=144,5 --pers auto" #Equihash144
-    "equihash125"  = " --par=125,4" #Equihash125
+    "equihash125"  = " --par=125,4 --oc1 --f11=0" #Equihash125
     "zhash"        = " --par=144,5 --pers auto" #Zhash
    #"beamv2"       = " --par=beam2" #Beamv2
     "equihash192"  = " --par=192,7 --pers auto" #Equihash192
@@ -20,7 +20,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--oc1 --f11=0 --stat-int 60 --nonvml --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
+        Arguments = "--stat-int 60 --nonvml --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98 } # substract 2% devfee
         API       = "miniZ"
         Port      = $Variables.NVIDIAMinerAPITCPPort
