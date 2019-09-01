@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Charting.ps1
-version:        3.8.0.6
-version date:   16 July 2019
+version:        3.8.1.1
+version date:   02 Septemper 2019
 #>
 
 
