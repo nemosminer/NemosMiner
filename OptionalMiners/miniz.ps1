@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-miniZ15q3beta\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5q3beta/miniZv1.5q3.7z"
+$Path = ".\Bin\NVIDIA-miniZ15q4beta\miniZ.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5q4beta/miniZv1.5q4beta.7z"
 
 $Commands = [PSCustomObject]@{
     "equihash144"  = " --par=144,5 --pers auto" #Equihash144
