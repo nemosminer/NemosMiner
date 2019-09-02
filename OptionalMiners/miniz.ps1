@@ -5,7 +5,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5q4beta
 
 $Commands = [PSCustomObject]@{
     "equihash144"  = " --par=144,5 --pers auto" #Equihash144
-    "equihash125"  = " --par=125,4 --pers auto" #Equihash125
+   #"equihash125"  = " --par=125,4 --pers auto" #Equihash125
     "zhash"        = " --par=144,5 --pers auto" #Zhash
     "beamv2"       = " --par=beam --pers auto" #Beamv2
     "beam"         = " --par=150,5 --pers auto" #Beamv2
