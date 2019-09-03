@@ -844,7 +844,7 @@ function Get-HashRate {
                 $Request = Invoke_TcpRequest $Server $Port "status" 5
                 if ($Request) {
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result.speed_ips * 1000000
+                    $HashRate = [Double]$Data.result.speed_ips * 2000000 # pool is reporting exactly double console speed
                 }
             }
             
