@@ -5,6 +5,7 @@ $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.1/cc
 
 $Commands = [PSCustomObject]@{
      "skein2" = " -i 30 -d $($Config.SelGPUCC)" #Skein2
+     "x15" = " -d $($Config.SelGPUCC)" #X15
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
