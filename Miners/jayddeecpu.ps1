@@ -17,6 +17,8 @@ $Commands = [PSCustomObject]@{
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330 
     "bmw512"      = " -a bmw512" #Bmw512 
     "x16rt"       = " -a x16rt" #X16rt 
+    "x12"         = " -a x12" #X12
+    "x15"         = " -a x15" #X15
     "veil"        = " -a veil" #Veil 
     "bcd"         = " -a x13bcd" #Veil 
 }
