@@ -221,17 +221,17 @@ some miners may need 'Visual C++ 2015 update 3' if you don't already have it: (i
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver 436.02 
+recommended/optimal Windows Nvidia driver 436.15 
 
-[Windows10 Standard](http://us.download.nvidia.com/Windows/436.02/436.02-desktop-win10-64bit-international-whql-rp.exe)
+[Windows10 Standard](http://us.download.nvidia.com/Windows/436.15/436.15-desktop-win10-64bit-international-whql.exe)
 
-[Windows10 DCH](http://us.download.nvidia.com/Windows/436.02/436.02-desktop-win10-64bit-international-dch-whql-rp.exe)
+[Windows10 DCH](http://us.download.nvidia.com/Windows/436.15/436.15-desktop-win10-64bit-international-dch-whql.exe)
 
-[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/436.02/436.02-desktop-win8-win7-64bit-international-whql-rp.exe)
+[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/436.15/436.15-desktop-win8-win7-64bit-international-whql.exe)
 
-recommended/optimal Linux Nvidia driver 430.40 
+recommended/optimal Linux Nvidia driver 435.21 
 
-[Linux/Hiveos](http://us.download.nvidia.com/XFree86/Linux-x86_64/430.40/NVIDIA-Linux-x86_64-430.40.run)
+[Linux/Hiveos](http://us.download.nvidia.com/XFree86/Linux-x86_64/435.21/NVIDIA-Linux-x86_64-435.21.run)
 
 Tested with 6x1070 6x1070ti 6x1080 6x1080ti 9x1660ti 6x2060 6x2070 6x2080 6x2080ti(users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
