@@ -41,8 +41,7 @@
                      "nicehash",
                      "zergpoolplus",
                      "nlpoolplus",
-                     "zpoolplus",
-                     "blazepoolplus"
+                     "zpoolplus"
                  ],
     "Proxy":  "",
     "ReportToServer":  false,
