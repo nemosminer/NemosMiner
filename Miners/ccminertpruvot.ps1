@@ -5,7 +5,7 @@ $Uri = "https://github.com/Minerx117/ccminertpruvot/releases/download/2.3.1-x86/
 
 $Commands = [PSCustomObject]@{
     "blake2b" = " -a blake2b" #blake2b
-    "x12" = " -a x12" #X12
+    "x12" = " -a x12 -i 21" #X12
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
