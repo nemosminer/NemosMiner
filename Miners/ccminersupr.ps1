@@ -4,11 +4,11 @@ $Path = ".\Bin\NVIDIA-ccminertsupr13\ccminer.exe"
 $Uri = "https://github.com/sp-hash/suprminer/releases/download/spmod-git13/spmodgit13.zip"
 
 $Commands = [PSCustomObject]@{
-    "x16r" = " -a x16r" #x16r
-    "x17" = " -a x17" #X17
-    "x16s" = " -a x16s" #x16s
-    "x16rv2" = " -a x16rv2" #x16rv2
-    "c11" = " -a c11" #c11
+    #"x16r" = " -a x16r" #x16r
+    #"x17" = " -a x17" #X17
+    #"x16s" = " -a x16s" #x16s
+    #"x16rv2" = " -a x16rv2" #x16rv2
+    #"c11" = " -a c11" #c11
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
