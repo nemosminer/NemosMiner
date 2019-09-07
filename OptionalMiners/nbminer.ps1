@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-nbminer250\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v25.0/NBMiner_25.0_Win.zip"
+$Path = ".\Bin\NVIDIA-nbminer251\nbminer.exe"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v25.1/NBMiner_25.1_Win.zip"
 
 $Commands = [PSCustomObject]@{
     #"grincuckatoo31" = " -a cuckatoo -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
