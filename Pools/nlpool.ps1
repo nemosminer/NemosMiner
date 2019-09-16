@@ -29,6 +29,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         "equihash125" { $Divisor *= 100 } #temp fix
         "equihash144" { $Divisor *= 100 } #temp fix
         "equihash192" { $Divisor *= 100 } #temp fix
+        "verushash" { $Divisor *= 100 } #temp fix
 
     }
 
