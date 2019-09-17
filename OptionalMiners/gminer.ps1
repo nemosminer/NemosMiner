@@ -3,14 +3,16 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-Gminer165\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.65/gminer_1_65_windows64.zip"
 $Commands = [PSCustomObject]@{
-    #"beam"         = " --devices $($Config.SelGPUDSTM) -a beamhash" #Equihash150 (NiceHash)
-    #"beamv2"       = " --devices $($Config.SelGPUDSTM) -a beamhashII" #Equihash150 (NiceHash)
+    "beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
     #"equihash144"  = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
-     "equihash96"   = " --devices $($Config.SelGPUDSTM) -a 96_5 --pers auto" #Equihash144
+    "equihash96"     = " --devices $($Config.SelGPUDSTM) -a 96_5 --pers auto" #Equihash144
     #"zhash"        = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Zhash
     #"equihash192"  = " --devices $($Config.SelGPUDSTM) -a 192_7 --pers auto" #Equihash192
     #"equihash-btg" = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers BgoldPoW " # Equihash-btg MPH
+    "grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo cuckaroo29 --pers auto" #Grincuckaroo29
+    "cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
+    #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto"
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
