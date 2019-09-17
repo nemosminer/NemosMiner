@@ -6,8 +6,8 @@ $Uri = "https://github.com/NebuTech/NBMiner/releases/download/v25.2/NBMiner_25.2
 $Commands = [PSCustomObject]@{
     #"grincuckatoo31" = " -a cuckatoo -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     "grincuckarood29" = " -a cuckarood -o nicehash+tcp://" #grincuckaroo29
-    "grincuckaroo29"  = " -a cuckaroo -o nicehash+tcp://" #grincuckaroo29
-    "cuckoocycle"     = " -a cuckoo_ae -o nicehash+tcp://" #cuckoocycle  
+    #"grincuckaroo29"  = " -a cuckaroo -o nicehash+tcp://" #grincuckaroo29
+    #"cuckoocycle"     = " -a cuckoo_ae -o nicehash+tcp://" #cuckoocycle  
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
