@@ -11,6 +11,7 @@ $Commands = [PSCustomObject]@{
     #"equihash192"  = " --devices $($Config.SelGPUDSTM) -a 192_7 --pers auto" #Equihash192
     #"equihash-btg" = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers BgoldPoW " # Equihash-btg MPH
     "grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo cuckaroo29 --pers auto" #Grincuckaroo29
+    "grincuckarood29" = " --devices $($Config.SelGPUDSTM) --algo cuckarood29 --pers auto" #Grincuckarood29
     "cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto"
 }
