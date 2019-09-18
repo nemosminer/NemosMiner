@@ -2,7 +2,7 @@
 
 NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 18 September 2019
+Updated 18 August 2019
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases)
 [![GitHub release](https://img.shields.io/github/release/Minerx117/Nemosminer/all.svg)](https://github.com/Minerx117/NemosMiner/releases)
@@ -84,9 +84,8 @@ Easy configuration, easy start:
   Developer/Contributors Donation: 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
      
-      There is a 14 minute per day default donation (0.9%)
-      which can be increased or decreased in the config tab
-      please help support the great team behind NemosMiner by leaving mining donations turned on
+      There is a 14 minute per day donation (0.9%)
+      We want to stay completely transparent on the way donations are managed, there is a 14 minute per day default donation (0.9%) which can be increased or decreased in the config tab, please help support the great team behind NemosMiner by leaving mining donations turned on
    
 NemosMiner Monitoring Server : https://nemosminer.com
 
@@ -229,9 +228,9 @@ recommended/optimal Windows Nvidia driver 431.60
 
 [Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/431.60/431.60-desktop-win8-win7-64bit-international-whql.exe)
 
-recommended/optimal Linux Nvidia driver 435.21 
+recommended/optimal Linux Nvidia driver 430.34
 
-[Linux/Hiveos](http://us.download.nvidia.com/XFree86/Linux-x86_64/435.21/NVIDIA-Linux-x86_64-435.21.run)
+[Linux/Hiveos](http://us.download.nvidia.com/XFree86/Linux-x86_64/430.34/NVIDIA-Linux-x86_64-430.34.run)
 
 Tested with 6x1070 6x1070ti 6x1080 6x1080ti 9x1660ti 6x2060 6x2070 6x2080 6x2080ti(users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards

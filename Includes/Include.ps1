@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.8.1.1
-version date:   02 Septemper 2019
+version:        3.8.0.9
+version date:   14 August 2019
 #>
  
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
@@ -844,7 +844,7 @@ function Get-HashRate {
                 $Request = Invoke_TcpRequest $Server $Port "status" 5
                 if ($Request) {
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result.speed_ips * 1000000 # zerg and nlpool reporting different speeds 
+                    $HashRate = [Double]$Data.result.speed_ips * 1000000
                 }
             }
             

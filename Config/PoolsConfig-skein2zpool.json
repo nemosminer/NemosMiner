@@ -3,14 +3,14 @@
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3811",
+      "WorkerName":"ID=NM3807",
       "APIKey":""
    },
    "zpoolplus":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3811",
+      "WorkerName":"ID=NM3807",
       "APIKey":"",
       "Algorithm":[
          "+skein2",
