@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.8.1.1
-version date:   18 Septemper 2019
+version date:   18 September 2019
 #>
 
 param(
