@@ -9,7 +9,7 @@ Updated 20 September 2019
 [![GitHub release](https://img.shields.io/github/release/Minerx117/Nemosminer/all.svg)](https://github.com/Minerx117/NemosMiner/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date-pre/Minerx117/NemosMiner.svg)](https://github.com/Minerx117/NemosMiner/releases)
 [![GitHub license](https://img.shields.io/github/license/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/NemosMiner/blob/master/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/stargazers) +
 [![GitHub stars](https://img.shields.io/github/stars/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/Nemosminer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
 
