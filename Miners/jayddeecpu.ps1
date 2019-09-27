@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-#$Path = ".\Bin\CPU-JayDDee397\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee397\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.7/cpuminer-opt-3.9.7-windows.zip"
+#$Path = ".\Bin\CPU-JayDDee398\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee398\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.8/cpuminer-opt-3.9.8-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"      = " -a allium" #Allium
@@ -20,7 +20,9 @@ $Commands = [PSCustomObject]@{
     "x12"         = " -a x12" #X12
     "x15"         = " -a x15" #X15
     "veil"        = " -a veil" #Veil 
-    "bcd"         = " -a x13bcd" #Veil 
+    "phi2"        = " -a phi2" #Phi2 
+    "x16rv2"      = " -a x16rv2" #X16rv2
+    "phi2-lux"    = " -a phi2" #Phi-lux
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
