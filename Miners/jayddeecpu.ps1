@@ -32,7 +32,8 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     $ThreadCount = $Variables.ProcessorCount - 2
     
 
-	   $Algo = Get-Algorithm($_)
+	        $Algo = Get-Algorithm($_)
+    If ($Algo -eq "x16rv2" -and $Pools.($Algo).Host -like "*nicehash*") { return }
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path
