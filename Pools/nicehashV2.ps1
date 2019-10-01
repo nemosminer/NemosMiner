@@ -25,9 +25,9 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
             "eu" { $Location = "EU" }
             "usa" { $Location = "US" }
             "jp" { $Location = "JP" }
-              default { $Location = "JP" }
+            default { $Location = "JP" }
         }
-        $NiceHash_Host = "$($Algo).$($NiceHash_Location)-new.nicehash.com"
+        $NiceHash_Host = "$($Algo).$($NiceHash_Location).nicehash.com"
         if ($PoolConf.Wallet) {
             [PSCustomObject]@{
                 Algorithm     = $NiceHash_Algorithm
