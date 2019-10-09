@@ -185,6 +185,7 @@
     "pluck128":  "Pluck",
     "poly":  "Polytimos",
     "polytimos":  "Polytimos",
+    "power2b":  "Power2b",
     "padihash":  "Padihash",
     "progpow":  "Progpow",   
     "pawelhash":  "Pawelhash",
