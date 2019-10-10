@@ -4,7 +4,7 @@ $Path = ".\Bin\CPU-CPUPower2b100\cpuminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.0.0/cpuminer-opt-power2b-v1.0.0-w64.7z"
 
 $Commands = [PSCustomObject]@{
-    "power2b"      = " -a power2b" #power2b
+    "power2b" = " -a power2b" #power2b
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
