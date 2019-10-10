@@ -1,11 +1,13 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-Opt4012\cpuminer-sse42.exe" #Intel
-#$Path = ".\Bin\CPU-Opt4012\cpuminer-ryzen.exe" #AMD
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v4.0.12/cpuminer-rplant-4.0.12-win.zip"
+$Path = ".\Bin\CPU-Opt4020\cpuminer-sse42.exe" #Intel
+#$Path = ".\Bin\CPU-Opt4020\cpuminer-ryzen.exe" #AMD
+$Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.20/cpuminer-opt-win.zip"
 
 $Commands = [PSCustomObject]@{
     "yescryptr8" = " -a yescryptr8" #YescryptR8
+    "power2b" = " -a power2b" #power2b
+    
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
