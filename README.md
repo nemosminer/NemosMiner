@@ -222,7 +222,7 @@ some miners may need 'Visual C++ 2015 update 3' if you don't already have it: (i
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 10 = 431.68 
+recommended/optimal Windows Nvidia driver Windows 10 = 431.86 
 
 [Windows10 Standard](http://us.download.nvidia.com/Windows/431.86/431.86-desktop-win10-64bit-international-nsd-whql.exe)
 
