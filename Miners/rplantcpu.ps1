@@ -5,9 +5,7 @@ $Path = ".\Bin\CPU-Opt4020\cpuminer-sse42.exe" #Intel
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.20/cpuminer-opt-win.zip"
 
 $Commands = [PSCustomObject]@{
-    "yescryptr8" = " -a yescryptr8" #YescryptR8
-    "power2b" = " -a power2b" #power2b
-    
+    "yescryptr8" = " -a yescryptr8" #YescryptR8    
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
