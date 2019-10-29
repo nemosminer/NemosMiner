@@ -3,7 +3,7 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-Gminer170\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.70/gminer_1_70_windows64.zip"
 $Commands = [PSCustomObject]@{
-    "beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
+    #"beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
     #"equihash144"  = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
     "equihash96"     = " --devices $($Config.SelGPUDSTM) -a 96_5 --pers auto" #Equihash144
