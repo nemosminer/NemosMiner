@@ -2,7 +2,7 @@ REM This file will run for any algo if AlgoName.bat does not exist
 REM This file and nvidia inspector is disabled by default to Enable them, rename this file from default-example.bat to default.bat
 REM Below is a example for a 6 GPU setup
 
-SET PL=66
+SET PL=61
 SET MEMORY=250
 SET CORE=0
 SET TEMP=90
