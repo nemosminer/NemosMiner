@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
  
-$Path = ".\Bin\NVIDIA-Gminer171\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.71/gminer_1_71_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer172\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.72/gminer_1_72_windows64.zip"
 $Commands = [PSCustomObject]@{
     #"beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
@@ -14,17 +14,21 @@ $Commands = [PSCustomObject]@{
     "grincuckarood29" = " --devices $($Config.SelGPUDSTM) --algo cuckarood29 --pers auto" #Grincuckarood29
     "cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto"
+    #"ethash" = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash testing 
 }
-$Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     $Algo = Get-Algorithm($_)
+    switch ($_) {
+        "ethash" { $Fee = 0.0065 }
+        default { $Fee = 0.02 }
+    }
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--watchdog 0 --pec 0 --nvml 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.($Algo).Host) --port $($Pools.($Algo).Port) --user $($Pools.($Algo).User) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98 } # substract 2% devfee
+        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
         API       = "gminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
