@@ -24,7 +24,7 @@
       "WorkerName":"ID=NM3813",
       "APIKey":"",
       "Algorithm":[
-         "+ethash"
+         "+ethash"   
       ]
    },
       "nicehashV2":{
@@ -37,7 +37,8 @@
          "+beamv2",
          "+grincuckaroo29",
          "+grincuckarood29",
-         "+cuckoocycle"
+         "+cuckoocycle",
+         "+cryptonightr"
       ]
    }
 }
