@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     "grincuckarood29" = " --devices $($Config.SelGPUDSTM) --algo cuckarood29 --pers auto" #Grincuckarood29
     "cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto"
-    #"ethash" = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash testing 
+    #"ethash" = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
