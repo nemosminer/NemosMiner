@@ -39,9 +39,7 @@
                      "mph",
                      "nicehashV2",
                      "zergpoolplus",
-                     "nlpoolplus",
-                     "zpoolplus",
-                     "blazepoolplus"
+                     "zpoolplus"
                  ],
     "Proxy":  "",
     "ReportToServer":  false,
