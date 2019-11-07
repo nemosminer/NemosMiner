@@ -4,7 +4,7 @@ REM Below is a example for a 6 GPU setup
 
 SET PL=61
 SET MEMORY=750
-SET CORE=0
+SET CORE=25
 SET TEMP=90
 
 SET GPU0=-setBaseClockOffset:0,0,%CORE% -setMemoryClockOffset:0,0,%MEMORY% -setPowerTarget:0,%PL% -setTempTarget:0,0,%TEMP%
