@@ -1,13 +1,14 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 $Path = ".\Bin\NVIDIA-nanominer161\cmdline_launcher.bat"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6.1/nanominer-windows-1.6.1.7z"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6.2/nanominer-windows-1.6.2.7z"
 
 $Commands = [PSCustomObject]@{
     #"cryptonightr"       = "-algo cryptonightr" #cryptonight/r (NiceHash)
     #"grincuckarood29"    = "-algo cuckarood29" #grincuckarood29 (NiceHash)
     #"cryptonight-monero" = "-algo cryptonightr" #monero (Mining Pool Hub)
     #"ethash"             = "-algo ethash" #Ethash
+    #"randomx"            = "-algo randomx" #RandomX
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
