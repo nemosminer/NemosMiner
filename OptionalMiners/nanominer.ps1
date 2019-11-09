@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-nanominer161\cmdline_launcher.bat"
+$Path = ".\Bin\NVIDIA-nanominer162\cmdline_launcher.bat"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6.2/nanominer-windows-1.6.2.7z"
 
 $Commands = [PSCustomObject]@{
