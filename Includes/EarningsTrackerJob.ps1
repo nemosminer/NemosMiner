@@ -19,19 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EarningsTrackerJob.ps1
-version:        3.8.0.9
-version date:   14 August 2019
+version:        3.8.1.3
+version date:   10 November 2019
 #>
 
 # To start the job one could use the following
 # $job = Start-Job -FilePath .\EarningTrackerJob.ps1 -ArgumentList $params
 # Remove progress info from job.childjobs.Progress to avoid memory leak
-$ProgressPreference = "SilentlyContinue"
-
-# Fix TLS version erroring
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-
-# Set Process Priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
 $args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
@@ -91,21 +85,14 @@ while ($true) {
                 $CurDate = Get-Date
                 # Write-host $Pool
                 # Write-Host "$($APIUri)$($Wallet)"
-                If ($Pool -eq "nicehash") {
-                    try {
-                        $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
-                    }
-                    catch { }
-                    if (-not $TempBalanceData.$BalanceJson) { $TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force }
-                    if (-not $TempBalanceData.$TotalJson) { $TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force }
-                }
-                elseif ($Pool -eq "nicehashV2") {
+                If ($Pool -eq "nicehashV2") {
                     try {
                         $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs") -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
                     }
                     catch { }
-                    if (-not $TempBalanceData.$BalanceJson) { $TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force }
-                    if (-not $TempBalanceData.$TotalJson) { $TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue ($TempBalanceData.result.Stats | measure -sum $BalanceJson).sum -Force }
+                    [Double]$NHTotalBalance = [Double]($TempBalanceData.unpaidAmount) + [Double]($TempBalanceData.externalBalance)
+                    $TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
+                    $TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
                 }
                 elseif ($Pool -eq "mph") {
                     try {
