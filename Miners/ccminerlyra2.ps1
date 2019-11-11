@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 $Path = ".\Bin\NVIDIA-CcminerYescryptLyra2v3\ccminer.exe"
-$Uri = "https://github.com/nemosminer/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/v3/ccminerKlausT.7z"
+$Uri = "https://github.com/Minerx117/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/8.2.1-v3/ccminerKlausT-8.21.3-v3.7z"
 
 $Commands = [PSCustomObject]@{
     "lyra2z330"   = " -i 10 -t 1 -a lyra2z330" #Lyra2z330 single GPU only, needs work for multicards rigs
