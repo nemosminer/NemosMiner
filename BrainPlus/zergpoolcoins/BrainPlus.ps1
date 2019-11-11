@@ -1,5 +1,6 @@
 <#
 Copyright (c) 2018 MrPlus
+BrainPlus.ps1 Written by MrPlusGH https://github.com/MrPlusGH
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
