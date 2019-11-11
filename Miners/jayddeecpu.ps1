@@ -1,15 +1,13 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-#$Path = ".\Bin\CPU-JayDDee397\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee397\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.7/cpuminer-opt-3.9.7-windows.zip"
+#$Path = ".\Bin\CPU-JayDDee3991\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3991\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.9.1/cpuminer-opt-3.9.9.1-windows.zip"
 
 $Commands = [PSCustomObject]@{
     "allium"      = " -a allium" #Allium
-    "yespower"    = " -a yespower" #Yespower
     "yespowerr16" = " -a yespowerr16" #YespowerR16
     "skein2"      = " -a skein2" #Skein2
-    "yescrypt"    = " -a yescrypt" #Yescrypt
     "yescryptr32" = " -a yescryptr32" #YescryptR32
     "x21s"        = " -a x21s" #X21s
     "hex"         = " -a hex" #Hex
@@ -18,9 +16,10 @@ $Commands = [PSCustomObject]@{
     "bmw512"      = " -a bmw512" #Bmw512 
     "x16rt"       = " -a x16rt" #X16rt 
     "x12"         = " -a x12" #X12
-    "x15"         = " -a x15" #X15
     "veil"        = " -a veil" #Veil 
-    "bcd"         = " -a x13bcd" #Veil 
+    "phi2"        = " -a phi2" #Phi2 
+    "x16rv2"      = " -a x16rv2" #X16rv2
+    "phi2-lux"    = " -a phi2" #Phi-lux
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
@@ -30,7 +29,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     $ThreadCount = $Variables.ProcessorCount - 2
     
 
-	   $Algo = Get-Algorithm($_)
+    $Algo = Get-Algorithm($_)
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path

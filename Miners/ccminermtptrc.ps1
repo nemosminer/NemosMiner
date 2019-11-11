@@ -1,13 +1,12 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-XMRig2141\xmrig-nvidia.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.14.4/xmrig-nvidia-2.14.4-win64-cuda101.7z"
+$Path = ".\Bin\NVIDIA-ccminermtptrc126\ccminer.exe"
+$Uri = "https://github.com/tecracoin/ccminer/releases/download/1.2.6/ccminer.exe"
 
 $Commands = [PSCustomObject]@{
-    "cryptonightr"       = " --nicehash" #cryptonight/r (NiceHash)
-    "cryptonight-monero" = "" #cryptonight/r (Mining Pool Hub)
+       "mtp-trc" = " -d $($Config.SelGPUCC)" #mtp-trc
 }
-$Port = 4068 #2222
+
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
@@ -15,10 +14,10 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_) -a cryptonight/r --keepalive --api-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level=0"
+        Arguments = "--cpu-priority 4 -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -a $Algo -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day }
-        API       = "XMRig"
-        Port      = $Variables.NVIDIAMinerAPITCPPort
+        API       = "ccminer"
+        Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         Wrap      = $false
         URI       = $Uri
         User      = $Pools.($Algo).User

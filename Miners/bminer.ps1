@@ -1,16 +1,16 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
  
-$Path = ".\Bin\NVIDIA-Bminer1586\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.8.6-5f20661-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer1587\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v15.8.7-6831c33-amd64.zip"
 $Commands = [PSCustomObject]@{
     #"equihashBTG"     = " -uri zhash://" #EquihashBTG
     #"equihash144"     = " -pers auto -uri equihash1445://" #Equihash144
     #"zhash"           = " -pers auto -uri equihash1445://" #Zhash
     #"ethash"          = " -uri ethstratum://" #Ethash 
     #"cuckoocycle"     = " -uri aeternity://" #aeternity
-    #"beam"            = " -uri beam://" #beam
+    #"beamv2"          = " -uri beamhash2://" #beam
     #"grincuckarood29" = " -uri cuckaroo29d://" #grincuckaroo29 
-    #"grincuckatoo31" = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
+    #"grincuckatoo31"  = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort

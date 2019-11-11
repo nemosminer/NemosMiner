@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\AMD-WildRigMulti0191\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.19.1/wildrig-multi-windows-0.19.1-preview.7z"
+$Path = ".\Bin\AMD-WildRigMulti0201\wildrig.exe"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.20.1/wildrig-multi-windows-0.20.1.7z"
 
 $Commands = [PSCustomObject]@{
     "bcd"           = " --algo bcd" #BitcoinDiamond
@@ -35,8 +35,10 @@ $Commands = [PSCustomObject]@{
     "jeonghash"     = " --algo glt-jeonghash" #Jeonghash
     "astralhash"    = " --algo glt-astralhash" #Astralhash
     "padihash"      = " --algo glt-padihash" #Padihash
-    "honeycomb"     = " --algo honeycomb" #Honeycomb
-    "xevan"         = " --algo xevan" #Xevan
+    "honeycomb"     = " --algo honeycomb" #Honeycomb 
+    "x16rv2"        = " --algo x16rv2" #X16rv2
+    "mtp"           = " --algo mtp" #Mtp
+    "mtp-trc"       = " --algo mtp-trc" #Mtp-trc
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
