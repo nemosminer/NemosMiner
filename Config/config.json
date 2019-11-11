@@ -38,8 +38,8 @@
     "PoolName":  [
                      "mph",
                      "nicehashV2",
-                     "zergpoolplus",
-                     "zpoolplus"
+                     "zergpool",
+                     "zpool"
                  ],
     "Proxy":  "",
     "ReportToServer":  false,
