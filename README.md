@@ -78,10 +78,13 @@ Easy configuration, easy start:
 
       24hr - uses last 24hour Actual API too request profit
          -Low switching rate
-      plus - uses advanced calculations to reduce switching
+	 
+      normal - uses advanced calculations to reduce switching
          -Medium switching rate
-      normal - uses current estimate API too request profit
-         -High switching rate
+	 
+      coins - mines only the top paying current coin in Algo 
+         -Instead of spreading hashrate across lowing paying coins ZergPool only
+	 
   
   Developer/Contributors Donation: 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
