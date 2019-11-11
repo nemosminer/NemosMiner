@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-CcminerYescryptLyra2v3\ccminer.exe"
+$Path = ".\Bin\NVIDIA-CcminerYescryptLyra2\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/8.2.1-v3/ccminerKlausT-8.21.3-v3.7z"
 
 $Commands = [PSCustomObject]@{
