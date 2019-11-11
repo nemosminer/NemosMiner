@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.8.1.3
-version date:   30 October 2019
+version date:   11 November 2019
 #>
 
 param(
@@ -461,7 +461,8 @@ Function CheckedListBoxPools_Click ($Control) {
 
 Function PrepareWriteConfig {
     If ($Config.ManualConfig) { Update-Status("Manual config mode - Not saving config"); return }
-    If ($Config -eq $null) { $Config = [hashtable]::Synchronized(@{ })
+    If ($Config -eq $null) {
+        $Config = [hashtable]::Synchronized(@{ })
     }
     $Config | Add-Member -Force @{$TBAddress.Tag = $TBAddress.Text }
     $Config | Add-Member -Force @{$TBWorkerName.Tag = $TBWorkerName.Text }
@@ -557,7 +558,8 @@ $MainForm.add_Shown( {
             })
         # Detects GPU count if 0 or Null in config
         If ($Config.GPUCount -eq $null -or $Config.GPUCount -lt 1) {
-            If ($Config -eq $null) { $Config = [hashtable]::Synchronized(@{ })
+            If ($Config -eq $null) {
+                $Config = [hashtable]::Synchronized(@{ })
             }
             $Config | Add-Member -Force @{GPUCount = DetectGPUCount }
             $TBGPUCount.Text = $Config.GPUCount
@@ -698,7 +700,7 @@ $LabelBTCPrice.text = If ($Variables.Rates.$Currency -gt 0) { "BTC/$($Config.Cur
 $LabelBTCPrice.AutoSize = $false
 $LabelBTCPrice.width = 400
 $LabelBTCPrice.height = 20
-$LabelBTCPrice.location = New-Object System.Drawing.Point(630, 39)
+$LabelBTCPrice.location = New-Object System.Drawing.Point(510, 39)
 $LabelBTCPrice.Font = 'Microsoft Sans Serif,8'
 # $LabelBTCPrice.ForeColor              = "Gray"
 $MainFormControls += $LabelBTCPrice
@@ -817,7 +819,7 @@ $RunPageControls += $LabelGitHub
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
 # $LabelCopyright.Location        = New-Object System.Drawing.Size(415,61)
 # $LabelCopyright.Size            = New-Object System.Drawing.Size(200,20)
-$LabelCopyright.Location = New-Object System.Drawing.Size(390, 246)
+$LabelCopyright.Location = New-Object System.Drawing.Size(360, 246)
 $LabelCopyright.Size = New-Object System.Drawing.Size(250, 14)
 $LabelCopyright.LinkColor = "BLUE"
 $LabelCopyright.ActiveLinkColor = "BLUE"
@@ -1110,7 +1112,7 @@ $TBPwdCurrency.Font = 'Microsoft Sans Serif,10'
 $ConfigPageControls += $TBPwdCurrency
 
 $LabelDonate = New-Object system.Windows.Forms.Label
-$LabelDonate.text = "Donate (min)"
+$LabelDonate.text = "Donate"
 $LabelDonate.AutoSize = $false
 $LabelDonate.width = 120
 $LabelDonate.height = 20
