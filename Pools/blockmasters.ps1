@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-try {
-    $Request = Invoke-WebRequest "http://blockmasters.co/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
+Try {
+    $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\blockmasters\blockmasters.json") | ConvertFrom-Json 
 }
 catch { return }
 
@@ -9,8 +9,10 @@ if (-not $Request) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = "blockmasters.co"
+$PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
-$PriceField = "estimate_current"
+# $PriceField = "estimate_current"
+$DivisorMultiplier = 1000000
  
 $Location = "US"
 
@@ -23,7 +25,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
-    $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
+    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
     if ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) { $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100))) }
     else { $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100))) }

@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-try {
-    $Request = Invoke-WebRequest "https://www.ahashpool.com/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
+Try {
+    $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\ahashpool\ahashpool.json") | ConvertFrom-Json
 }
 catch { return }
 
@@ -9,8 +9,9 @@ if (-not $Request) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = ".mine.ahashpool.com"
+$PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
-$PriceField = "estimate_current"
+# $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
  
 $Location = "US"
