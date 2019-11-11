@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminermtptrc126\ccminer.exe"
 $Uri = "https://github.com/tecracoin/ccminer/releases/download/1.2.6/ccminer.exe"
 
 $Commands = [PSCustomObject]@{
-       "mtp-trc" = " -d $($Config.SelGPUCC)" #mtp-trc
+    "mtp-trc" = " -d $($Config.SelGPUCC)" #mtp-trc
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName

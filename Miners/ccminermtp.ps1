@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminermtp131\ccminer.exe"
 $Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.3.1/ccminer.exe"
 
 $Commands = [PSCustomObject]@{
-      #"mtp" = " -d $($Config.SelGPUCC)" #mtp working on 6card rigs now but not on 9card+ rigs trex is fine..
+    #"mtp" = " -d $($Config.SelGPUCC)" #mtp working on 6card rigs now but not on 9card+ rigs trex is fine..
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName

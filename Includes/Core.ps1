@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-version:        3.8.1.2
-version date:   02 October 2019
+version:        3.8.1.3
+version date:   12 November 2019
 #>
 
 Function InitApplication {
@@ -190,9 +190,11 @@ Function NPMCycle {
             # Get donation addresses randomly from agreed developers list
             # This will fairly distribute donations to Developers
             # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
-            try { $Donation = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
+            try {
+                $Donation = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
             }
-            catch { $Donation = @([PSCustomObject]@{Name = "nemo"; Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo" }, [PSCustomObject]@{Name = "mrplus"; Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "mrplus" })
+            catch {
+                $Donation = @([PSCustomObject]@{Name = "nemo"; Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo" }, [PSCustomObject]@{Name = "mrplus"; Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "mrplus" })
             }
             if ($Donation -ne $null) {
                 If ($Config.Donate -lt 3) { $Config.Donate = (0, (3..8)) | Get-Random }
@@ -230,7 +232,8 @@ Function NPMCycle {
         $PoolFilter = @()
         $Config.PoolName | foreach { $PoolFilter += ($_ += ".*") }
         Do {
-            $AllPools = if (Test-Path "Pools") { Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | 
+            $AllPools = if (Test-Path "Pools") {
+                Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | 
                 Where { $_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and (!$Config.Algorithm -or ((!($Config.Algorithm | ? { $_ -like "+*" }) -or $_.Algorithm -in ($Config.Algorithm | ? { $_ -like "+*" }).Replace("+", "")) -and (!($Config.Algorithm | ? { $_ -like "-*" }) -or $_.Algorithm -notin ($Config.Algorithm | ? { $_ -like "-*" }).Replace("-", ""))) ) }
             }
             if ($AllPools.Count -eq 0) {

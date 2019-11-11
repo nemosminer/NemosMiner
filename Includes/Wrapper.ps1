@@ -24,9 +24,9 @@ Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 0 | Set-Content "..\Logs\energi.txt"
 
 $PowerShell = [PowerShell]::Create()
-if ($WorkingDirectory -ne "") {$PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null}
+if ($WorkingDirectory -ne "") { $PowerShell.AddScript("Set-Location '$WorkingDirectory'") | Out-Null }
 $Command = ". '$FilePath'"
-if ($ArgumentList -ne "") {$Command += " $ArgumentList"}
+if ($ArgumentList -ne "") { $Command += " $ArgumentList" }
 $PowerShell.AddScript("$Command 2>&1 | Write-Verbose -Verbose") | Out-Null
 $Result = $PowerShell.BeginInvoke()
 
@@ -36,8 +36,8 @@ do {
     Start-Sleep -Seconds 1
 
     $PowerShell.Streams.Verbose.ReadAll() | ForEach-Object {
-        $Param = @{}
-        if ($Command -like '*energiminer.exe*') {$Param.NoNewLine = $true}
+        $Param = @{ }
+        if ($Command -like '*energiminer.exe*') { $Param.NoNewLine = $true }
         Write-Host $_ @Param
 
         $HashRate = 0
@@ -64,7 +64,7 @@ do {
             }
         }
     }
-    if (-not (Get-Process | Where-Object Id -EQ $ControllerProcessID)) {$PowerShell.Stop() | Out-Null}
+    if (-not (Get-Process | Where-Object Id -EQ $ControllerProcessID)) { $PowerShell.Stop() | Out-Null }
 } until($Result.IsCompleted)
 
 Remove-Item "..\Logs\energi.txt" -ErrorAction Ignore

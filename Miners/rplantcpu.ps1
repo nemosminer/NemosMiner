@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name | 
     
 
     $Algo = Get-Algorithm($_)
-        If ($Algo -eq "yescryptr8" -and $Pools.($Algo).Host -like "*nlpool*") { return }
+    If ($Algo -eq "yescryptr8" -and $Pools.($Algo).Host -like "*nlpool*") { return }
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path

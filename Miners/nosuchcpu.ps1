@@ -4,7 +4,7 @@ $Path = ".\Bin\CPU-nosuch\cpuminer-aes-sse2.exe" #AMD and Intel
 $Uri = "https://github.com/patrykwnosuch/cpuminer-nosuch/releases/download/3.8.8.1-nosuch-m4/cpu-nosuch-m4-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    "m7m" = " -a m7m" #M7m
+    "m7m"         = " -a m7m" #M7m
     "yescryptr32" = " -a yescryptr32" #YescryptR32
 }
 

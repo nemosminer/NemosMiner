@@ -3,12 +3,9 @@
     "EnableLog": true,
     "WriteEvery": 10,
     "Pools": [
-        "nicehash",
-        "nicehashV2",
-        "zergpoolplus",
-        "mph",
-        "nlpool",
-        "blazepool",
-        "zpoolplus"
+      "nicehashV2",
+      "zergpool",
+      "mph",
+      "zpool"
     ]
-}
+  }
