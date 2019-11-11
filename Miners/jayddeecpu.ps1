@@ -8,7 +8,6 @@ $Commands = [PSCustomObject]@{
     "allium"      = " -a allium" #Allium
     "yespowerr16" = " -a yespowerr16" #YespowerR16
     "skein2"      = " -a skein2" #Skein2
-    "yescryptr32" = " -a yescryptr32" #YescryptR32
     "x21s"        = " -a x21s" #X21s
     "hex"         = " -a hex" #Hex
     "blake2b"     = " -a blake2b" #blake2b
