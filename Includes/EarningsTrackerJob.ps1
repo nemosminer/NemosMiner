@@ -46,7 +46,7 @@ while ($true) {
     $Interval = $EarningsTrackerConfig.PollInterval
     
     #Filter pools variants
-    $TrackPools = (($EarningsTrackerConfig.pools | sort -Unique).replace("plus", "")).replace("24hr", "").replace("coins", "")
+    $TrackPools = (($EarningsTrackerConfig.pools | sort -Unique).replace("coins", "")).replace("24hr", "")
 
     # Get pools api ref
     If (-not $poolapi -or ($LastAPIUpdateTime -le (Get-Date).AddDays(-1))) {
