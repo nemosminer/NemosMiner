@@ -437,13 +437,13 @@ Function NPMCycle {
         # Int value means ban after x failures
         # defaults to 3 if no value in config
         # ** Ban is not persistent across sessions **
-        #        If ($Config.MaxMinerFailure -gt 0){
-        #            $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3} }
-        #            $Config.MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3}
-        #            $BannedMiners = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" -and $_.Activated -ge $Config.MaxMinerFailure }
-        #            $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
-        #            $BestMiners_Combo = $BestMiners_Combo | Where { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
-        #        }
+        If ($Config.MaxMinerFailure -gt 0) {
+            $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) { $Config.MaxMinerFailure } else { 3 } }
+            $BannedMiners = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" -and $_.FailedCount -ge $Config.MaxMinerFailure }
+            # $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
+            $BannedMiners | foreach { "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." | Out-Host }
+            $Variables.Miners = $Variables.Miners | Where { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
+        }
 
         #Add the most profitable miners to the active list
         $BestMiners_Combo | ForEach {
