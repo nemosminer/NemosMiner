@@ -21,7 +21,7 @@ https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 
 Updated/Maintained by Nemo/Minerx117
 
-with alot of Help From MrPlusGH and grantemsley without them NemosMiner would not be possible
+with alot of Help From MrPlusGH grantemsley UselessGuru without them NemosMiner would not be possible
 
 NemosMiner was based on MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
 NemosMiner is currently based on NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
