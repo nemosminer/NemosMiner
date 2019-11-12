@@ -116,10 +116,10 @@ Function InitApplication {
 Function Start-ChildJobs {
     # Starts Brains if necessary
     $Config.PoolName | foreach { if ($_ -notin $Variables.BrainJobs.PoolName) {
-            $BrainPath = "$($Variables.MainPath)\BrainPlus\$($_)"
-            $BrainName = (".\BrainPlus\" + $_ + "\BrainPlus.ps1")
+            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
+            $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
             if (Test-Path $BrainName) {
-                $Variables.StatusText = "Starting BrainPlus for $($_)..."
+                $Variables.StatusText = "Starting Brains for $($_)..."
                 $BrainJob = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
                 $BrainJob | Add-Member -Force @{PoolName = $_ }
                 $Variables.BrainJobs += $BrainJob
