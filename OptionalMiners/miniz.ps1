@@ -15,21 +15,20 @@ $Commands = [PSCustomObject]@{
     "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
 }
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $Algo = Get-Algorithm($_)
-    
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--cleanjobs --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 60 --nonvml --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.($Algo).User)@$($Pools.($Algo).Host):$($Pools.($Algo).Port) --pass $($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .98 } # substract 2% devfee
+        Arguments = "--cleanjobs --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 60 --nonvml --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.$Algo.User)@$($Pools.$Algo.Host):$($Pools.$Algo.Port) --pass $($Pools.$Algo.Pass)$($Commands.$_)"
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * .98 } # substract 2% devfee
         API       = "miniZ"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri    
-        User      = $Pools.($Algo).User
-        Host      = $Pools.($Algo).Host
-        Coin      = $Pools.($Algo).Coin
+        User      = $Pools.$Algo.User
+        Host      = $Pools.$Algo.Host
+        Coin      = $Pools.$Algo.Coin
     }
 }
