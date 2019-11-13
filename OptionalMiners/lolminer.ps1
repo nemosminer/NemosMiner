@@ -5,8 +5,10 @@ $Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.8/
 
 $Commands = [PSCustomObject]@{
     "equihash144" = " --coin AUTO144_5" #Equihash 144,5
-    "equihash125" = " --coin ZEL" #Equihash 125,4
-    "beam"        = " --coin BEAM-I" #Equihash 150,5 (NiceHash)
+    "equihash192" = " --coin AUTO192_7" #Equihash 144,5
+    "equihash96"  = " --coin AUTO96_5" #Equihash 144,5
+    "equihash125" = " --coin AUTO125_4" #Equihash 125,4
+    "beamv2"      = " --coin BEAM-II" #Equihash 150,5 (NiceHash)
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
