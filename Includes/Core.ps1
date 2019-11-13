@@ -116,10 +116,10 @@ Function InitApplication {
 Function Start-ChildJobs {
     # Starts Brains if necessary
     $Config.PoolName | ForEach-Object { if ($_ -notin $Variables.BrainJobs.PoolName) {
-            $BrainPath = "$($Variables.MainPath)\BrainPlus\$($_)"
-            $BrainName = (".\BrainPlus\" + $_ + "\BrainPlus.ps1")
+            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
+            $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
             if (Test-Path $BrainName) {
-                $Variables.StatusText = "Starting BrainPlus for $($_)..."
+                $Variables.StatusText = "Starting Brains for $($_)..."
                 $BrainJob = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
                 $BrainJob | Add-Member -Force @{PoolName = $_ }
                 $Variables.BrainJobs += $BrainJob
@@ -190,9 +190,11 @@ Function NPMCycle {
             # Get donation addresses randomly from agreed developers list
             # This will fairly distribute donations to Developers
             # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
-            try { $Donation = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
+            try {
+                $Donation = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
             }
-            catch { $Donation = @([PSCustomObject]@{Name = "nemo"; Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo" }, [PSCustomObject]@{Name = "mrplus"; Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "mrplus" })
+            catch {
+                $Donation = @([PSCustomObject]@{Name = "nemo"; Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo" }, [PSCustomObject]@{Name = "mrplus"; Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "mrplus" })
             }
             if ($Donation -ne $null) {
                 If ($Config.Donate -lt 3) { $Config.Donate = (0, (3..8)) | Get-Random }
@@ -230,7 +232,8 @@ Function NPMCycle {
         $PoolFilter = @()
         $Config.PoolName | ForEach-Object { $PoolFilter += ($_ += ".*") }
         Do {
-            $AllPools = if (Test-Path "Pools") { Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | 
+            $AllPools = if (Test-Path "Pools") {
+                Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | 
                 Where-Object { $_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and (!$Config.Algorithm -or ((!($Config.Algorithm | Where-Object { $_ -like "+*" }) -or $_.Algorithm -in ($Config.Algorithm | Where-Object { $_ -like "+*" }).Replace("+", "")) -and (!($Config.Algorithm | Where-Object { $_ -like "-*" }) -or $_.Algorithm -notin ($Config.Algorithm | Where-Object { $_ -like "-*" }).Replace("-", ""))) ) }
             }
             if ($AllPools.Count -eq 0) {
@@ -407,8 +410,8 @@ Function NPMCycle {
         If (($Variables.Miners | Where-Object { ($_.Pools.PSObject.Properties.Value.Price -ne $null) -and ($_.Pools.PSObject.Properties.Value.Price -gt 0) }).Count -gt 0) { $Variables.Miners = $Variables.Miners | Where-Object { ($_.Pools.PSObject.Properties.Value.Price -ne $null) -and ($_.Pools.PSObject.Properties.Value.Price -gt 0) } }
 
         #Use only use the most profitable miner per algo and device. E.g. if there are several miners available to mine the same algo, only the most profitable of them will ever be used in the further calculations, all other will also be hidden in the summary screen
-#        $Variables.Miners = @($Variables.Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName -and ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName } | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')" }, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, Profit_Bias, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count } | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')" } | ForEach-Object { $_.Group[0] }) + @($Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -contains $_.DeviceName -or ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -contains $_.DeviceName })
-#        $Variables.Miners = @($Variables.Miners | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | Foreach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })"}, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, { ([Double]($_ | Measure-Object Profit_Bias -Sum).Sum)}, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count} | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object { $_ -split "-" | Select-Object -Index 0 }) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })" } | ForEach-Object { $_.Group[0] })
+        #        $Variables.Miners = @($Variables.Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName -and ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName } | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')" }, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, Profit_Bias, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count } | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')" } | ForEach-Object { $_.Group[0] }) + @($Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -contains $_.DeviceName -or ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -contains $_.DeviceName })
+        #        $Variables.Miners = @($Variables.Miners | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | Foreach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })"}, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, { ([Double]($_ | Measure-Object Profit_Bias -Sum).Sum)}, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count} | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object { $_ -split "-" | Select-Object -Index 0 }) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })" } | ForEach-Object { $_.Group[0] })
 
         #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
         $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | ForEach-Object { $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100) } }
@@ -438,13 +441,14 @@ Function NPMCycle {
         # Int value means ban after x failures
         # defaults to 3 if no value in config
         # ** Ban is not persistent across sessions **
-        #        If ($Config.MaxMinerFailure -gt 0){
-        #            $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3} }
-        #            $Config.MaxMinerFailure = If ($Config.MaxMinerFailure) {$Config.MaxMinerFailure} else {3}
-        #            $BannedMiners = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Failed" -and $_.Activated -ge $Config.MaxMinerFailure }
-        #            $BannedMiners | ForEach-Object { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
-        #            $BestMiners_Combo = $BestMiners_Combo | Where-Object { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
-        #        }
+        #Ban Failed Miners code by @MrPlusGH
+        If ($Config.MaxMinerFailure -gt 0) {
+            $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) { $Config.MaxMinerFailure } else { 3 } }
+            $BannedMiners = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" -and $_.FailedCount -ge $Config.MaxMinerFailure }
+            # $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
+            $BannedMiners | foreach { "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." | Out-Host }
+            $Variables.Miners = $Variables.Miners | Where { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
+        }
 
         #Add the most profitable miners to the active list
         $BestMiners_Combo | ForEach-Object {
