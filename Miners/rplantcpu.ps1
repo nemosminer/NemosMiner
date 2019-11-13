@@ -5,7 +5,8 @@ $Path = ".\Bin\CPU-Opt4023a\cpuminer-sse42.exe" #Intel
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.0.23a/cpuminer-rplant-4.0.23a-win.7z"
 
 $Commands = [PSCustomObject]@{
-    "yescryptr8" = " -a yescryptr8" #YescryptR8    
+    "yescryptr8"  = " -a yescryptr8" #YescryptR8 
+    "yescryptr8g" = " -a yescryptr8g" #YescryptR8g     
 }
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
