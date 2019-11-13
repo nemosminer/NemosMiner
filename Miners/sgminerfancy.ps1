@@ -14,23 +14,22 @@ $Commands = [PSCustomObject]@{
     "x22i"        = " --kernel x22i --gpu-threads 2 --worksize 256 -I 22"
     "x25x"        = " --kernel x25x --gpu-threads 1 --worksize 256 -I 22"
 }
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
-    $Algo = Get-Algorithm($_)
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     [PSCustomObject]@{
         Type      = "AMD"
         Path      = $Path
-        Arguments = "--api-port $($Variables.AMDMinerAPITCPPort) --api-listen -o stratum+tcp://$($Pools.($Algo).Host):$($Pools.($Algo).Port) -u $($Pools.($Algo).User) -p $($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day } 
+        Arguments = "--api-port $($Variables.AMDMinerAPITCPPort) --api-listen -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } 
         API       = "Xgminer"
         Port      = $Variables.AMDMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri    
-        User      = $Pools.($Algo).User
-        Host      = $Pools.($Algo).Host
-        Coin      = $Pools.($Algo).Coin
+        User      = $Pools.$Algo.User
+        Host      = $Pools.$Algo.Host
+        Coin      = $Pools.$Algo.Coin
     }
 
 }

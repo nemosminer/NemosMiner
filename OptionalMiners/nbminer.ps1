@@ -10,10 +10,10 @@ $Commands = [PSCustomObject]@{
     #"cuckoocycle"     = " -a cuckoo_ae -o nicehash+tcp://" #cuckoocycle  
 }
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-    $Algo = Get-Algorithm($_)
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
+
     switch ($_) {
         "ethash" { $Fee = 0.0065 }
         default { $Fee = 0.02 }
@@ -21,14 +21,14 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "$($Commands.$_)$($Pools.($Algo).Host):$($Pools.($Algo).Port) -no-nvml --cuckoo-intensity 0 --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.($Algo).User):$($Pools.($Algo).Pass)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
+        Arguments = "$($Commands.$_)$($Pools.$Algo.Host):$($Pools.$Algo.Port) -no-nvml --cuckoo-intensity 0 --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.$Algo.User):$($Pools.$Algo.Pass)"
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
         API       = "NBMiner"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         Wrap      = $false
         URI       = $Uri
-        User      = $Pools.($Algo).User
-        Host      = $Pools.($Algo).Host
-        Coin      = $Pools.($Algo).Coin
+        User      = $Pools.$Algo.User
+        Host      = $Pools.$Algo.Host
+        Coin      = $Pools.$Algo.Coin
     }
 }

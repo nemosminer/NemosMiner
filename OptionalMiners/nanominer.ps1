@@ -10,10 +10,9 @@ $Commands = [PSCustomObject]@{
     #"ethash"             = "-algo ethash" #Ethash
     #"randomx"            = "-algo randomx" #RandomX
 }
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-    $Algo = Get-Algorithm($_)
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     
     switch ($_) {
         "grincuckarood29" { $Fee = 0.02 } # substract devfee
@@ -23,14 +22,14 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-mport -$($Variables.NVIDIAMinerAPITCPPort) $($Commands.$_) -wallet $($Pools.($Algo).User) -rigName $($Pools.($Algo).Pass) -pool1 $($Pools.($Algo).Host):$($Pools.($Algo).Port)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
+        Arguments = "-mport -$($Variables.NVIDIAMinerAPITCPPort) $($Commands.$_) -wallet $($Pools.$Algo.User) -rigName $($Pools.$Algo.Pass) -pool1 $($Pools.$Algo.Host):$($Pools.$Algo.Port)"
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
         API       = "nanominer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
-        User      = $Pools.($Algo).User
-        Host      = $Pools.($Algo).Host
-        Coin      = $Pools.($Algo).Coin
+        User      = $Pools.$Algo.User
+        Host      = $Pools.$Algo.Host
+        Coin      = $Pools.$Algo.Coin
     }
 }

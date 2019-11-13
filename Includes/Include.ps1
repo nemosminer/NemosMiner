@@ -28,7 +28,7 @@ version date:   12 November 2019
 
 
 Function GetNVIDIADriverVersion {
-    ((gwmi win32_VideoController) | select name, description, @{Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | ? { $_.Description -like "*NVIDIA*" } | select -First 1).NVIDIAVersion
+    ((gwmi win32_VideoController) | Select-Object name, description, @{Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
 }
  
 Function Global:RegisterLoaded ($File) {
@@ -42,7 +42,7 @@ Function Global:IsLoaded ($File) {
         $True
     }
     else {
-        ls function: | ? { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
+        Get-ChildItem function: | Where-Object { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
         $false
     }
 }
@@ -124,7 +124,7 @@ namespace PInvoke.Win32 {
                         }
                     }
                 }
-                Start-Sleep 1
+                Start-Sleep  1
             }
         } ) | Out-Null
     $Variables | Add-Member -Force @{IdleRunspaceHandle = $idlePowershell.BeginInvoke() }
@@ -145,7 +145,7 @@ Function Update-Monitoring {
         $RunningMiners | Foreach-Object {
             $RunningMiner = $_
             $Miner = $Variables.Miners | Where-Object { $_.Name -eq $RunningMiner.Name -and $_.Path -eq $RunningMiner.Path -and $_.Arguments -eq $RunningMiner.Arguments }
-            $_ | Add-Member -Force @{'Miner' = $Miner }
+            $_ | Add-Member -Force @{ 'Miner' = $Miner }
         }
 
         # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
@@ -217,6 +217,9 @@ Function Update-Monitoring {
 
 Function Start-Mining {
  
+#    NPMCycle
+
+
     $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
     $CycleRunspace.Open()
     $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
@@ -226,57 +229,57 @@ Function Start-Mining {
     $Global:powershell = [powershell]::Create()
     $powershell.Runspace = $CycleRunspace
     $powershell.AddScript( {
-            #Start the log
-            Start-Transcript -Path ".\logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
-            # Purge Logs more than 10 days
-            If ((ls ".\logs\CoreCyle-*.log").Count -gt 10) {
-                ls ".\logs\CoreCyle-*.log" | Where { $_.name -notin (ls ".\logs\CoreCyle-*.log" | sort LastWriteTime -Descending | select -First 10).FullName } | Remove-Item -Force -Recurse
-            }
-            $ProgressPreference = "SilentlyContinue"
-            . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
-            Update-Monitoring
-            While ($True) {
-                if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-                if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
-                $Variables.Paused | out-host
-                If ($Variables.Paused) {
-                    # Run a dummy cycle to keep the UI updating.
+        #Start the log
+        Start-Transcript -Path ".\logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
+        # Purge Logs more than 10 days
+        If ((Get-ChildItem ".\logs\CoreCyle-*.log").Count -gt 10) {
+            Get-ChildItem ".\logs\CoreCyle-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\logs\CoreCyle-*.log" | Sort-Object  LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
+        }
+        $ProgressPreference = "SilentlyContinue"
+        . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
+        Update-Monitoring
+        While ($True) {
+            if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+            if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
+            $Variables.Paused | Out-Host
+            If ($Variables.Paused) {
+                # Run a dummy cycle to keep the UI updating.
 
-                    # Keep updating exchange rate
-                    $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
-                    $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
-                    $Variables | Add-Member -Force @{Rates = $Rates }
+                # Keep updating exchange rate
+                $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
+                $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
+                $Variables | Add-Member -Force @{Rates = $Rates }
 
-                    # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
-                    for ($i = 0; $i -lt 4; $i++) {
-                        if ($i -eq 3) {
-                            $Variables | Add-Member -Force @{EndLoop = $True }
-                            Update-Monitoring
-                        }
-                        else {
-                            $Variables | Add-Member -Force @{EndLoop = $False }
-                        }
-
-                        $Variables.StatusText = "Mining paused"
-                        Start-Sleep 30
+                # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
+                for ($i = 0; $i -lt 4; $i++) {
+                    if ($i -eq 3) {
+                        $Variables | Add-Member -Force @{EndLoop = $True }
+                        Update-Monitoring
                     }
-                }
-                else {
-                    NPMCycle
-                    Update-Monitoring
-                    Sleep $Variables.TimeToSleep
+                    else {
+                        $Variables | Add-Member -Force @{EndLoop = $False }
+                    }
+
+                    $Variables.StatusText = "Mining paused"
+                    Start-Sleep  30
                 }
             }
-        }) | Out-Null
-    $Variables | add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke() }
+            else {
+                NPMCycle
+                Update-Monitoring
+                Start-Sleep $Variables.TimeToSleep
+            }
+        }
+    }) | Out-Null
+    $Variables | Add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke() }
     $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
 }
 
 Function Stop-Mining {
   
     If ($Variables.ActiveMinerPrograms) {
-        $Variables.ActiveMinerPrograms | ForEach {
-            [Array]$filtered = ($BestMiners_Combo | Where Path -EQ $_.Path | Where Arguments -EQ $_.Arguments)
+        $Variables.ActiveMinerPrograms | ForEach-Object {
+            [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             if ($filtered.Count -eq 0) {
                 if ($_.Process -eq $null) {
                     $_.Status = "Failed"
@@ -284,14 +287,14 @@ Function Stop-Mining {
                 elseif ($_.Process.HasExited -eq $false) {
                     $_.Active += (Get-Date) - $_.Process.StartTime
                     $_.Process.CloseMainWindow() | Out-Null
-                    Sleep 1
+                    Start-Sleep 1
                     # simply "Kill with power"
                     Stop-Process $_.Process -Force | Out-Null
                     # Try to kill any process with the same path, in case it is still running but the process handle is incorrect
                     $KillPath = $_.Path
                     Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force
                     Write-Host -ForegroundColor Yellow "closing miner"
-                    Sleep 1
+                    Start-Sleep 1
                     $_.Status = "Idle"
                 }
             }
@@ -303,7 +306,7 @@ Function Stop-Mining {
 }
 
 Function Update-Status ($Text) {
-    $Text | out-host
+    $Text | Out-Host
     # $Variables.StatusText = $Text 
     $LabelStatus.Lines += $Text
     If ($LabelStatus.Lines.Count -gt 20) { $LabelStatus.Lines = $LabelStatus.Lines[($LabelStatus.Lines.count - 10)..$LabelStatus.Lines.Count] }
@@ -324,16 +327,16 @@ Function DetectGPUCount {
     Update-Status("Fetching GPU Count")
     $DetectedGPU = @()
     try {
-        $DetectedGPU += @(Get-WmiObject Win32_PnPEntity | Select Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
+        $DetectedGPU += @(Get-WmiObject Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
     }
     catch { Update-Status("NVIDIA Detection failed") }
     try {
-        $DetectedGPU += @(Get-WmiObject Win32_PnPEntity | Select Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
+        $DetectedGPU += @(Get-WmiObject Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
     }
     catch { Update-Status("AMD Detection failed") }
     $DetectedGPUCount = $DetectedGPU.Count
     $i = 0
-    $DetectedGPU | foreach { Update-Status("$($i): $($_.Name)") | Out-Null; $i++ }
+    $DetectedGPU | ForEach-Object { Update-Status("$($i): $($_.Name)") | Out-Null; $i++ }
     Update-Status("Found $($DetectedGPUCount) GPU(s)")
     $DetectedGPUCount
 }
@@ -345,7 +348,7 @@ Function Load-Config {
     )
     If (Test-Path $ConfigFile) {
         $ConfigLoad = Get-Content $ConfigFile | ConvertFrom-json
-        $Config = [hashtable]::Synchronized(@{ }); $configLoad | % { $_.psobject.properties | sort Name | % { $Config | Add-Member -Force @{$_.Name = $_.Value } } }
+        $Config = [hashtable]::Synchronized(@{ }); $configLoad | ForEach-Object { $_.psobject.properties | Sort-Object  Name | ForEach-Object { $Config | Add-Member -Force @{$_.Name = $_.Value } } }
         $Config
     }
 }
@@ -360,21 +363,21 @@ Function Write-Config {
     If ($Config.ManualConfig) { Update-Status("Manual config mode - Not saving config"); return }
     If ($Config -ne $null) {
         if (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" }
-        $OrderedConfig = [PSCustomObject]@{ }; ($config | select -Property * -ExcludeProperty PoolsConfig) | % { $_.psobject.properties | sort Name | % { $OrderedConfig | Add-Member -Force @{$_.Name = $_.Value } } }
+        $OrderedConfig = [PSCustomObject]@{ }; ($config | Select-Object -Property * -ExcludeProperty PoolsConfig) | ForEach-Object { $_.psobject.properties | Sort-Object  Name | ForEach-Object { $OrderedConfig | Add-Member -Force @{$_.Name = $_.Value } } }
         $OrderedConfig | ConvertTo-json | out-file $ConfigFile
         $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-        $OrderedPoolsConfig = [PSCustomObject]@{ }; $PoolsConfig | % { $_.psobject.properties | sort Name | % { $OrderedPoolsConfig | Add-Member -Force @{$_.Name = $_.Value } } }
-        $OrderedPoolsConfig.default | Add-member -Force @{Wallet = $Config.Wallet }
-        $OrderedPoolsConfig.default | Add-member -Force @{UserName = $Config.UserName }
-        $OrderedPoolsConfig.default | Add-member -Force @{WorkerName = $Config.WorkerName }
-        $OrderedPoolsConfig.default | Add-member -Force @{APIKey = $Config.APIKey }
+        $OrderedPoolsConfig = [PSCustomObject]@{ }; $PoolsConfig | ForEach-Object { $_.psobject.properties | Sort-Object  Name | ForEach-Object { $OrderedPoolsConfig | Add-Member -Force @{$_.Name = $_.Value } } }
+        $OrderedPoolsConfig.default | Add-Member -Force @{Wallet = $Config.Wallet }
+        $OrderedPoolsConfig.default | Add-Member -Force @{UserName = $Config.UserName }
+        $OrderedPoolsConfig.default | Add-Member -Force @{WorkerName = $Config.WorkerName }
+        $OrderedPoolsConfig.default | Add-Member -Force @{APIKey = $Config.APIKey }
         $OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
     }
 }
 
 Function Get-FreeTcpPort ($StartPort) {
     # While ($Port -le ($StartPort + 10) -and !$PortFound) {try{$Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} catch {$Port;$PortFound=$True}}
-    # $UsedPorts = (Get-NetTCPConnection | ? {$_.state -eq "listen"}).LocalPort
+    # $UsedPorts = (Get-NetTCPConnection | Where-Object {$_.state -eq "listen"}).LocalPort
     # While ($StartPort -in $UsedPorts) {
     While (Get-NetTCPConnection -LocalPort $StartPort -EA SilentlyContinue) { $StartPort++ }
     $StartPort
@@ -414,18 +417,18 @@ function Set-Stat {
     if (Test-Path $Path) { $Stat = Get-Content $Path | ConvertFrom-Json }
 
     $Stat = [PSCustomObject]@{
-        Live                  = [Double]$Stat.Live
-        Minute                = [Double]$Stat.Minute
+        Live                  = [Decimal]$Stat.Live
+        Minute                = [Decimal]$Stat.Minute
         Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
-        Minute_5              = [Double]$Stat.Minute_5
+        Minute_5              = [Decimal]$Stat.Minute_5
         Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
-        Minute_10             = [Double]$Stat.Minute_10
+        Minute_10             = [Decimal]$Stat.Minute_10
         Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-        Hour                  = [Double]$Stat.Hour
+        Hour                  = [Decimal]$Stat.Hour
         Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
-        Day                   = [Double]$Stat.Day
+        Day                   = [Decimal]$Stat.Day
         Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
-        Week                  = [Double]$Stat.Week
+        Week                  = [Decimal]$Stat.Week
         Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
         Updated               = [DateTime]$Stat.Updated
     }
@@ -506,14 +509,19 @@ function Get-ChildItemContent {
             $Content = &$_.FullName
         }
         else {
-            $Content = $_ | Get-Content | ConvertFrom-Json
+            try {
+                $Content = $_ | Get-Content | ConvertFrom-Json
+            }
+            catch [ArgumentException] {
+                $null
+            }
         }
         $Content | ForEach-Object {
             [PSCustomObject]@{Name = $Name; Content = $_ }
         }
     }
     
-    $ChildItems | ForEach-Object {
+    $ChildItems | Select-Object | ForEach-Object {
         $Item = $_
         $ItemKeys = $Item.Content.PSObject.Properties.Name.Clone()
         $ItemKeys | ForEach-Object {
@@ -531,7 +539,6 @@ function Get-ChildItemContent {
             }
         }
     }
-    
     $ChildItems
 }
 function Invoke_TcpRequest {
@@ -860,16 +867,11 @@ function Get-HashRate {
 }
 
 filter ConvertTo-Hash { 
-    $Hash = $_
-    switch ([math]::truncate([math]::log($Hash, [Math]::Pow(1000, 1)))) {
-        "-Infinity" { "0  H" }
-        0 { "{0:n2}  H" -f ($Hash / [Math]::Pow(1000, 0)) }
-        1 { "{0:n2} KH" -f ($Hash / [Math]::Pow(1000, 1)) }
-        2 { "{0:n2} MH" -f ($Hash / [Math]::Pow(1000, 2)) }
-        3 { "{0:n2} GH" -f ($Hash / [Math]::Pow(1000, 3)) }
-        4 { "{0:n2} TH" -f ($Hash / [Math]::Pow(1000, 4)) }
-        Default { "{0:n2} PH" -f ($Hash / [Math]::Pow(1000, 5)) }
-    }
+    [CmdletBinding()]
+    $Units = " kMGTPEZY" #k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
+    $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs($_), [Math]::Pow(1000, 1)))
+    $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
+    "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
 }
 
 function Get-Combination {
@@ -1070,8 +1072,8 @@ function Start-SubProcess {
             While ($Process -eq $null -and $Tries -le 5) {
                 Write-Host "Can't get process - $Tries"
                 $Tries++
-                Sleep 1
-                $Process = (Get-Process | ? { $_.Path -eq $FilePath })[0]
+                Start-Sleep 1
+                $Process = (Get-Process | Where-Object { $_.Path -eq $FilePath })[0]
                 Write-Host "Process= $($Process.Handle)"
             }
 
@@ -1096,7 +1098,7 @@ function Start-SubProcess {
         while ($Process.HasExited -eq $false)
     }
 
-    do { Start-Sleep 1; $JobOutput = Receive-Job $Job }
+    do { Start-Sleep  1; $JobOutput = Receive-Job $Job }
     while ($JobOutput -eq $null)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
@@ -1216,7 +1218,7 @@ Function Autoupdate {
             }
             
             # Empty OptionalMiners - Get rid of Obsolete ones
-            ls .\OptionalMiners\ | % { Remove-Item -Recurse -Force $_.FullName }
+            Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
             
             # unzip in child folder excluding config
             Update-Status("Unzipping update...")
@@ -1227,13 +1229,13 @@ Function Autoupdate {
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
 
             # Remove any obsolete Optional miner file (ie. Not in new version OptionalMiners)
-            ls .\OptionalMiners\ | ? { $_.name -notin (ls .\$UpdateFileName\OptionalMiners\).name } | % { Remove-Item -Recurse -Force $_.FullName }
+            Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
             # Update Optional Miners to Miners if in use
-            ls .\OptionalMiners\ | ? { $_.name -in (ls .\Miners\).name } | % { Copy-Item -Force $_.FullName .\Miners\ }
+            Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
 
             # Remove any obsolete miner file (ie. Not in new version Miners or OptionalMiners)
-            ls .\Miners\ | ? { $_.name -notin (ls .\$UpdateFileName\Miners\).name -and $_.name -notin (ls .\$UpdateFileName\OptionalMiners\).name } | % { Remove-Item -Recurse -Force $_.FullName }
+            Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
             # Post update specific actions if any
             # Use PostUpdateActions.ps1 in new release to place code
@@ -1247,18 +1249,18 @@ Function Autoupdate {
             Remove-Item ".\$($UpdateFileName).zip" -Force -Recurse
             If (Test-Path ".\PreUpdateActions.ps1") { Remove-Item ".\PreUpdateActions.ps1" -Force -Recurse }
             If (Test-Path ".\PostUpdateActions.ps1") { Remove-Item ".\PostUpdateActions.ps1" -Force -Recurse }
-            ls "AutoupdateBackup-*.zip" | Where { $_.name -notin (ls "AutoupdateBackup-*.zip" | sort LastWriteTime -Descending | select -First 2).name } | Remove-Item -Force -Recurse
+            Get-ChildItem "AutoupdateBackup-*.zip" | Where-Object { $_.name -notin (Get-ChildItem "AutoupdateBackup-*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
             If ($AutoUpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) {
                 Update-Status("Starting my brother")
-                $StartCommand = ((gwmi win32_process -filter "ProcessID=$PID" | select commandline).CommandLine)
+                $StartCommand = ((gwmi win32_process -filter "ProcessID=$PID" | Select-Object commandline).CommandLine)
                 $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
                 # Giving 10 seconds for process to start
                 $Waited = 0
-                sleep 10
-                While (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue) -and ($waited -le 10)) { sleep 1; $waited++ }
+                Start-Sleep 10
+                While (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
                 If (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue)) {
                     Update-Status("Failed to start new instance of $($Variables.CurrentProduct)")
                     Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
