@@ -7,9 +7,9 @@ $Commands = [PSCustomObject]@{
     "lyra2z330"   = " -i 10 -t 1 -a lyra2z330" #Lyra2z330 single GPU only, needs work for multicards rigs
     "lyra2v3"     = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2v3
     "lyra2rev3"   = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2rev3
-    "yescryptR8"  = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8
-    "yescryptR16" = " -i 13.25 -a yescryptr16 -d $($Config.SelGPUCC)" #YescryptR16
-    "yescryptR32" = " -i 12.49 -a yescryptr32 -d $($Config.SelGPUCC)" #YescryptR32
+    "yescryptr8"  = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8
+    "yescryptr16" = " -i 13.25 -a yescryptr16 -d $($Config.SelGPUCC)" #YescryptR16
+    "yescryptr32" = " -i 12.49 -a yescryptr32 -d $($Config.SelGPUCC)" #YescryptR32
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
