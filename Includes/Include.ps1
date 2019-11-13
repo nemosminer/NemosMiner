@@ -1,7 +1,6 @@
 <#
 Copyright (c) 2018-2019 Nemo & MrPlus
 
-
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -18,266 +17,468 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           include.ps1
+File:           Core.ps1
 version:        3.8.1.3
 version date:   12 November 2019
 #>
- 
-# New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value {$true} -EA SilentlyContinue | out-null
-# Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{"File" = $MyInvocation.MyCommand.path} -EA SilentlyContinue
 
+Function InitApplication {
+    $Variables | Add-Member -Force @{SourcesHash = @() }
+    $Variables | Add-Member -Force @{ProcessorCount = (Get-WmiObject -class win32_processor).NumberOfLogicalProcessors }
+	
+    if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 
-Function GetNVIDIADriverVersion {
-    ((gwmi win32_VideoController) | Select-Object name, description, @{Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
-}
- 
-Function Global:RegisterLoaded ($File) {
-    New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value { $true } -EA SilentlyContinue | Add-Member @{"File" = (Resolve-Path $File).Path } -EA SilentlyContinue
-    $Variables.StatusText = "File loaded - $($file) - $((Get-PSCallStack).Command[1])"
-}
+    $Variables | Add-Member -Force @{ScriptStartDate = (Get-Date) }
+    if ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) {
+        [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+    }
     
-Function Global:IsLoaded ($File) {
-    $Hash = (Get-FileHash (Resolve-Path $File).Path).hash
-    If (Test-Path function::$Hash) {
-        $True
+    # Force Culture to en-US
+    $culture = [System.Globalization.CultureInfo]::CreateSpecificCulture("en-US")
+    $culture.NumberFormat.NumberDecimalSeparator = "."
+    $culture.NumberFormat.NumberGroupSeparator = ","
+    [System.Threading.Thread]::CurrentThread.CurrentCulture = $culture
+    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
+
+    if ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
+
+    if ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }               # For AMD
+    if ($env:GPU_MAX_HEAP_SIZE -ne 100) { $env:GPU_MAX_HEAP_SIZE = 100 }               # For AMD
+    if ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }             # For AMD
+    if ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }       # For AMD
+    if ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 } # For AMD
+    if ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 } # For AMD
+
+    #Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
+
+    Import-Module NetSecurity -ErrorAction SilentlyContinue
+    Import-Module Defender -ErrorAction SilentlyContinue
+    Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
+    Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
+    if ($PSEdition -eq 'core') { Import-Module -SkipEditionCheck NetTCPIP -ErrorAction SilentlyContinue }
+
+    if (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
+    if ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) {
+        Start-Process (@{desktop = "powershell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
     }
-    else {
-        Get-ChildItem function: | Where-Object { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
-        $false
+
+    if ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
+    else { $PSDefaultParameterValues["*:Proxy"] = $Proxy }
+    Update-Status("Initializing Variables...")
+    $Variables | Add-Member -Force @{DecayStart = Get-Date }
+    $Variables | Add-Member -Force @{DecayPeriod = 120 } #seconds
+    $Variables | Add-Member -Force @{DecayBase = 1 - 0.1 } #decimal percentage
+    $Variables | Add-Member -Force @{ActiveMinerPrograms = @() }
+    $Variables | Add-Member -Force @{Miners = @() }
+    #Start the log
+    Start-Transcript -Path ".\Logs\miner-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
+    # Purge Logs more than 10 days
+    If ((ls ".\logs\miner-*.log").Count -gt 10) {
+        ls ".\Logs\miner-*.log" | Where-Object { $_.name -notin (ls ".\Logs\miner-*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
+    }
+    #Update stats with missing data and set to today's date/time
+    if (Test-Path "Stats") { Get-ChildItemContent "Stats" | ForEach-Object { $Stat = Set-Stat $_.Name $_.Content.Week } }
+    #Set donation parameters
+    $Variables | Add-Member -Force @{DonateRandom = [PSCustomObject]@{ } }
+    $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
+    If ($Config.Donate -lt 1) { $Config.Donate = (0, (0..0)) | Get-Random }
+    $Variables | Add-Member -Force @{WalletBackup = $Config.Wallet }
+    $Variables | Add-Member -Force @{UserNameBackup = $Config.UserName }
+    $Variables | Add-Member -Force @{WorkerNameBackup = $Config.WorkerName }
+    $Variables | Add-Member -Force @{EarningsPool = "" }
+    $Variables | Add-Member -Force @{BrainJobs = @() }
+    $Variables | Add-Member -Force @{EarningsTrackerJobs = @() }
+    $Variables | Add-Member -Force @{Earnings = @{ } }
+
+	
+    $Global:Variables | Add-Member -Force @{StartPaused = $False }
+    $Global:Variables | Add-Member -Force @{Started = $False }
+    $Global:Variables | Add-Member -Force @{Paused = $False }
+    $Global:Variables | Add-Member -Force @{RestartCycle = $False }
+
+    
+    $Location = $Config.Location
+ 
+    # Find available TCP Ports
+    $StartPort = 4068
+    $Config.Type | Sort-Object | ForEach-Object {
+        Update-Status("Finding available TCP Port for $($_)")
+        $Port = Get-FreeTcpPort($StartPort)
+        $Variables | Add-Member -Force @{"$($_)MinerAPITCPPort" = $Port }
+        Update-Status("Miners API Port: $($Port)")
+        $StartPort = $Port + 1
+    }
+    Start-Sleep 2
+}
+
+Function Start-ChildJobs {
+    # Starts Brains if necessary
+    $Config.PoolName | ForEach-Object { if ($_ -notin $Variables.BrainJobs.PoolName) {
+            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
+            $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
+            if (Test-Path $BrainName) {
+                $Variables.StatusText = "Starting Brains for $($_)..."
+                $BrainJob = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
+                $BrainJob | Add-Member -Force @{PoolName = $_ }
+                $Variables.BrainJobs += $BrainJob
+                Remove-Variable BrainJob
+            }
+        } }
+    # Starts Earnings Tracker Job if necessary
+    $StartDelay = 0
+    # if ($Config.TrackEarnings -and (($EarningTrackerConfig.Pools | sort) -ne ($Config.PoolName | sort))) {
+    # $Variables.StatusText = "Updating Earnings Tracker Configuration"
+    # $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
+    # $EarningTrackerConfig | Add-Member -Force @{"Pools" = ($Config.PoolName)}
+    # $EarningTrackerConfig | ConvertTo-JSON | Out-File ".\Config\EarningTrackerConfig.json"
+    # }
+        
+    if (($Config.TrackEarnings) -and (!($Variables.EarningsTrackerJobs))) {
+        $Params = @{
+            WorkingDirectory = ($Variables.MainPath)
+            PoolsConfig      = $Config.PoolsConfig
+        }
+        $EarningsJob = Start-Job -FilePath ".\Includes\EarningsTrackerJob.ps1" -ArgumentList $Params
+        If ($EarningsJob) {
+            $Variables.StatusText = "Starting Earnings Tracker"
+            $Variables.EarningsTrackerJobs += $EarningsJob
+            Remove-Variable EarningsJob
+            # Delay Start when several instances to avoid conflicts.
+        }
     }
 }
 
-Function Start-IdleTracking {
-    # Function tracks how long the system has been idle and controls the paused state
-    $Global:IdleRunspace = [runspacefactory]::CreateRunspace()
-    $IdleRunspace.Open()
-    $IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-    $IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-    $IdleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-    $IdleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
-    $Global:idlepowershell = [powershell]::Create()
-    $idlePowershell.Runspace = $IdleRunspace
-    $idlePowershell.AddScript( {
-            # No native way to check how long the system has been idle in powershell. Have to use .NET code.
-            Add-Type -TypeDefinition @'
-using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-namespace PInvoke.Win32 {
-    public static class UserInput {
-        [DllImport("user32.dll", SetLastError=false)]
-        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+Function NPMCycle {
+    $CycleTime = Measure-Command -Expression {
+        if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1"); "LoadedInclude" | out-host }
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct LASTINPUTINFO {
-            public uint cbSize;
-            public int dwTime;
-        }
+        $Variables | Add-Member -Force @{EndLoop = $False }
 
-        public static DateTime LastInput {
-            get {
-                DateTime bootTime = DateTime.UtcNow.AddMilliseconds(-Environment.TickCount);
-                DateTime lastInput = bootTime.AddMilliseconds(LastInputTicks);
-                return lastInput;
-            }
-        }
-        public static TimeSpan IdleTime {
-            get {
-                return DateTime.UtcNow.Subtract(LastInput);
-            }
-        }
-        public static int LastInputTicks {
-            get {
-                LASTINPUTINFO lii = new LASTINPUTINFO();
-                lii.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
-                GetLastInputInfo(ref lii);
-                return lii.dwTime;
-            }
-        }
-    }
-}
-'@
-            # Start-Transcript ".\logs\IdleTracking.log" -Append -Force
-            $ProgressPreference = "SilentlyContinue"
-            . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
-            While ($True) {
-                if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-                if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
-                $IdleSeconds = [math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
+        $Variables.StatusText = "Starting Cycle"
+        $DecayExponent = [int](((Get-Date) - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
 
-                # Only do anything if Mine only when idle is turned on
-                If ($Config.MineWhenIdle) {
-                    If ($Variables.Paused) {
-                        # Check if system has been idle long enough to unpause
-                        If ($IdleSeconds -gt $Config.IdleSec) {
-                            $Variables.Paused = $False
-                            $Variables.RestartCycle = $True
-                            $Variables.StatusText = "System idle for $IdleSeconds seconds, starting mining..."
+        # Ensure we get the hashrate for running miners prior looking for best miner
+        $Variables.ActiveMinerPrograms | ForEach-Object {
+            if ($_.Process -eq $null -or $_.Process.HasExited) {
+                if ($_.Status -eq "Running") { $_.Status = "Failed" }
+            }
+            else {
+                # we don't want to store hashrates if we run less than $Config.StatsInterval sec
+                $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
+                if ($WasActive -ge $Config.StatsInterval) {
+                    $_.HashRate = 0
+                    $Miner_HashRates = $null
+                    if ($_.New) { $_.Benchmarked++ }         
+                    $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
+                    $_.HashRate = $Miner_HashRates | Select-Object -First $_.Algorithms.Count           
+                    if ($Miner_HashRates.Count -ge $_.Algorithms.Count) {
+                        for ($i = 0; $i -lt $_.Algorithms.Count; $i++) {
+                            $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate" -Value ($Miner_HashRates | Select-Object -Index $i)
                         }
-                    } 
-                    else {
-                        # Pause if system has become active
-                        If ($IdleSeconds -lt $Config.IdleSec) {
-                            $Variables.Paused = $True
-                            $Variables.RestartCycle = $True
-                            $Variables.StatusText = "System active, pausing mining..."
-                        }
+                        $_.New = $false
+                        $_.Hashrate_Gathered = $true
+                        "Stats $($_.Algorithms) -> $($Miner_HashRates | ConvertTo-Hash) after $($WasActive) sec" | out-host
                     }
                 }
-                Start-Sleep  1
-            }
-        } ) | Out-Null
-    $Variables | Add-Member -Force @{IdleRunspaceHandle = $idlePowershell.BeginInvoke() }
-}
-
-Function Update-Monitoring {
-    # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
-
-    # Skip if server and user aren't filled out
-    if (!$Config.MonitoringServer) { return }
-    if (!$Config.MonitoringUser) { return }
-
-    If ($Config.ReportToServer) {
-        $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
-        $Status = If ($Variables.Paused) { "Paused" } else { "Running" }
-        $RunningMiners = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" }
-        # Add the associated object from $Variables.Miners since we need data from that too
-        $RunningMiners | Foreach-Object {
-            $RunningMiner = $_
-            $Miner = $Variables.Miners | Where-Object { $_.Name -eq $RunningMiner.Name -and $_.Path -eq $RunningMiner.Path -and $_.Arguments -eq $RunningMiner.Arguments }
-            $_ | Add-Member -Force @{ 'Miner' = $Miner }
-        }
-
-        # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
-        # reveal someone's windows username or other system information they might not want sent
-        # For the ones that can be an array, comma separate them
-        $Data = $RunningMiners | Foreach-Object {
-            $RunningMiner = $_
-            [pscustomobject]@{
-                Name           = $RunningMiner.Name
-                Path           = Resolve-Path -Relative $RunningMiner.Path
-                Type           = $RunningMiner.Type -join ','
-                Algorithm      = $RunningMiner.Algorithms -join ','
-                Pool           = $RunningMiner.Miner.Pools.PSObject.Properties.Value.Name -join ','
-                CurrentSpeed   = $RunningMiner.HashRate -join ','
-                EstimatedSpeed = $RunningMiner.Miner.HashRates.PSObject.Properties.Value -join ','
-                Profit         = $RunningMiner.Miner.Profit
             }
         }
-        $DataJSON = ConvertTo-Json @($Data)
-        # Calculate total estimated profit
-        $Profit = [string]([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8))
 
-        # Send the request
-        $Body = @{user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON }
-        Try {
-            $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            $Variables.StatusText = "Reporting status to server... $Response"
+        #Activate or deactivate donation
+        if ((Get-Date).AddDays(-1).AddMinutes($Config.Donate) -ge $Variables.LastDonated -and $Variables.DonateRandom.wallet -eq $Null) {
+            # Get donation addresses randomly from agreed developers list
+            # This will fairly distribute donations to Developers
+            # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
+            try {
+                $Donation = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
+            }
+            catch {
+                $Donation = @([PSCustomObject]@{Name = "nemo"; Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo" }, [PSCustomObject]@{Name = "mrplus"; Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "mrplus" })
+            }
+            if ($Donation -ne $null) {
+                If ($Config.Donate -lt 3) { $Config.Donate = (0, (3..8)) | Get-Random }
+                $Variables.DonateRandom = $Donation | Get-Random
+                $Config | Add-Member -Force @{PoolsConfig = [PSCustomObject]@{default = [PSCustomObject]@{Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString().replace('.',''))"; PricePenaltyFactor = 1 } } }
+            }
         }
-        Catch {
-            $Variables.StatusText = "Unable to send status to $($Config.MonitoringServer)"
-        }
-    }
-
-    If ($Config.ShowWorkerStatus) {
-        $Variables.StatusText = "Updating status of workers for $($Config.MonitoringUser)"
-        Try {
-            $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{user = $Config.MonitoringUser } -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            # Calculate some additional properties and format others
-            $Workers | Foreach-Object {
-                # Convert the unix timestamp to a datetime object, taking into account the local time zone
-                $_ | Add-Member -Force @{date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen)) }
-
-                # If a machine hasn't reported in for > 10 minutes, mark it as offline
-                $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
-                If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
-                # Show friendly time since last report in seconds, minutes, hours or days
-                If ($TimeSinceLastReport.Days -ge 1) {
-                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays }
-                }
-                elseif ($TimeSinceLastReport.Hours -ge 1) {
-                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours }
-                }
-                elseif ($TimeSinceLastReport.Minutes -ge 1) {
-                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes }
+        if (((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) -or (! $Config.PoolsConfig)) {
+            $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value {
+                If (Test-Path ".\Config\PoolsConfig.json") {
+                    get-content ".\Config\PoolsConfig.json" | ConvertFrom-json
                 }
                 else {
-                    $_ | Add-Member -Force @{timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds }
+                    [PSCustomObject]@{default = [PSCustomObject]@{
+                            Wallet      = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+                            UserName    = "nemo"
+                            WorkerName  = "NemosMinerNoCfg"
+                            PoolPenalty = 1
+                        }
+                    }
                 }
             }
-
-            $Variables | Add-Member -Force @{Workers = $Workers }
-            $Variables | Add-Member -Force @{WorkersLastUpdated = (Get-Date) }
+            $Variables.LastDonated = Get-Date
+            $Variables.DonateRandom = [PSCustomObject]@{ }
         }
-        Catch {
-            $Variables.StatusText = "Unable to retrieve worker data from $($Config.MonitoringServer)"
+        $Variables.StatusText = "Loading BTC rate from 'api.coinbase.com'.."
+        $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
+        $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
+        $Variables | Add-Member -Force @{Rates = $Rates }
+        #Load the Stats
+        $Stats = [PSCustomObject]@{ }
+        if (Test-Path "Stats") { Get-ChildItemContent "Stats" | ForEach-Object { $Stats | Add-Member $_.Name $_.Content } }
+        #Load information about the Pools
+        $Variables.StatusText = "Loading pool stats.."
+        $PoolFilter = @()
+        $Config.PoolName | ForEach-Object { $PoolFilter += ($_ += ".*") }
+        Do {
+            $AllPools = if (Test-Path "Pools") {
+                Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | 
+                Where-Object { $_.SSL -EQ $Config.SSL -and ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and (!$Config.Algorithm -or ((!($Config.Algorithm | Where-Object { $_ -like "+*" }) -or $_.Algorithm -in ($Config.Algorithm | Where-Object { $_ -like "+*" }).Replace("+", "")) -and (!($Config.Algorithm | Where-Object { $_ -like "-*" }) -or $_.Algorithm -notin ($Config.Algorithm | Where-Object { $_ -like "-*" }).Replace("-", ""))) ) }
+            }
+            if ($AllPools.Count -eq 0) {
+                $Variables.StatusText = "! Error contacting pool retrying in 30 seconds.."
+                Start-Sleep 30
+            }
+        } While ($AllPools.Count -eq 0)
+        $Variables.StatusText = "Computing pool stats.."
+        # Use location as preference and not the only one
+        $LocPools = @($AllPools | Where-Object { $_.location -eq $Config.Location } )
+        $AllPools = $LocPools + @($AllPools | Where-Object { $_.name -notin $LocPools.name } )
+        Remove-Variable LocPools
+        # Filter Algo based on Per Pool Config
+        $PoolsConf = $Config.PoolsConfig
+        $AllPools = $AllPools | Where-Object { $_.Name -notin ($PoolsConf | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) -or ($_.Name -in ($PoolsConf | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) -and ((!($PoolsConf.($_.Name).Algorithm | Where-Object { $_ -like "+*" }) -or ("+$($_.Algorithm)" -in $PoolsConf.($_.Name).Algorithm)) -and ("-$($_.Algorithm)" -notin $PoolsConf.($_.Name).Algorithm))) }
+
+        # if($AllPools.Count -eq 0){$Variables.StatusText = "Error contacting pool, retrying.."; $timerCycle.Interval = 15000 ; $timerCycle.Start() ; return}
+        $Pools = [PSCustomObject]@{ }
+        $Pools_Comparison = [PSCustomObject]@{ }
+        $AllPools.Algorithm | Sort-Object -Unique | ForEach-Object {
+            $Pools | Add-Member $_ ($AllPools | Where-Object Algorithm -EQ $_ | Sort-Object Price -Descending | Select-Object -First 1)
+            $Pools_Comparison | Add-Member $_ ($AllPools | Where-Object Algorithm -EQ $_ | Sort-Object StablePrice -Descending | Select-Object -First 1)
         }
-    }
-}
-
-Function Start-Mining {
- 
-#    NPMCycle
-
-
-    $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
-    $CycleRunspace.Open()
-    $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-    $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-    $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-    $CycleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
-    $Global:powershell = [powershell]::Create()
-    $powershell.Runspace = $CycleRunspace
-    $powershell.AddScript( {
-        #Start the log
-        Start-Transcript -Path ".\logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
-        # Purge Logs more than 10 days
-        If ((Get-ChildItem ".\logs\CoreCyle-*.log").Count -gt 10) {
-            Get-ChildItem ".\logs\CoreCyle-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\logs\CoreCyle-*.log" | Sort-Object  LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
+        # $AllPools.Algorithm | Select-Object -Unique | ForEach-Object {$Pools_Comparison | Add-Member $_ ($AllPools | Where-Object Algorithm -EQ $_ | Sort-Object StablePrice -Descending | Select-Object -First 1)}
+        #Load information about the Miners
+        #Messy...?
+        
+        # $Variables.StatusText = "Looking for Miners file changes.."
+        if (!($Variables.MinersHash)) {
+            If (Test-Path ".\Config\MinersHash.json") {
+                $Variables.MinersHash = Get-Content ".\Config\MinersHash.json" | ConvertFrom-Json
+            }
+            else {
+                $Variables.MinersHash = Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash
+                $Variables.MinersHash | ConvertTo-Json | out-file ".\Config\MinersHash.json"
+            }
         }
-        $ProgressPreference = "SilentlyContinue"
-        . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
-        Update-Monitoring
-        While ($True) {
-            if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-            if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
-            $Variables.Paused | Out-Host
-            If ($Variables.Paused) {
-                # Run a dummy cycle to keep the UI updating.
+        else {
+            Compare-Object $Variables.MinersHash (Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash) -Property "Hash", "Path" | Sort-Object "Path" -Unique | ForEach-Object {
+                $Variables.StatusText = "Miner Updated: $($_.Path)"
+                $NewMiner = &$_.path
+                $NewMiner | Add-Member -Force @{Name = (Get-Item $_.Path).BaseName }
+                If (Test-Path (Split-Path $NewMiner.Path)) {
+                    $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $NewMiner.Path) } | ForEach-Object {
+                        [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
+                        if ($filtered.Count -eq 0) {
+                            if ($_.Process -eq $null) {
+                                $_.Status = "Failed"
+                            }
+                            elseif ($_.Process.HasExited -eq $false) {
+                                $_.Process.CloseMainWindow() | Out-Null
+                                Start-Sleep 1
+                                # simply "Kill with power"
+                                Stop-Process $_.Process -Force | Out-Null
+                                $Variables.StatusText = "closing current miner for Update"
+                                Start-Sleep 1
+                                $_.Status = "Idle"
+                            }
+                            #Restore Bias for non-active miners
+                            $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit_Bias_Orig }
+                        }
+                    }
+                    Get-ChildItem -path ".\stats\" -filter "$($NewMiner.Name)_*.txt" | Remove-Item -Force -Recurse
+                    Remove-Item -Force -Recurse (Split-Path $NewMiner.Path)
+                }
+                $Variables.MinersHash = Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash
+                $Variables.MinersHash | ConvertTo-Json | out-file ".\Config\MinersHash.json"
+            }
+        }
 
-                # Keep updating exchange rate
-                $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
-                $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
-                $Variables | Add-Member -Force @{Rates = $Rates }
+        
+        $Variables.StatusText = "Loading miners.."
+        $Variables | Add-Member -Force @{Miners = @() }
+        $StartPort = 4068
+        $Variables.Miners = if (Test-Path "Miners") {
+            @(
+                if ($Config.IncludeRegularMiners -and (Test-Path "Miners")) { Get-ChildItemContent "Miners" }
+                if ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners")) { Get-ChildItemContent "OptionalMiners" }
+                if (Test-Path "CustomMiners") { Get-ChildItemContent "CustomMiners" }
+            ) | Select-Object | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } |
+            Where-Object { $Config.Type.Count -eq 0 -or (Compare $Config.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 } | 
+            Where-Object { -not ($Config.Algorithm | Where-Object { $_.StartsWith("+") }) -or (Compare (($Config.Algorithm | Where-Object { $_.StartsWith("+") }).Replace("+", "")) $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 } | 
+            Where-Object { $Config.MinerName.Count -eq 0 -or (Compare $Config.MinerName $_.Name -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 }
+        }
 
-                # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
-                for ($i = 0; $i -lt 4; $i++) {
-                    if ($i -eq 3) {
-                        $Variables | Add-Member -Force @{EndLoop = $True }
-                        Update-Monitoring
+        $Variables.Miners = $Variables.Miners | ForEach-Object {
+            $Miner = $_
+            if ((Test-Path $Miner.Path) -eq $false) {
+                $Variables.StatusText = "Downloading $($Miner.Name).."
+                if ((Split-Path $Miner.URI -Leaf) -eq (Split-Path $Miner.Path -Leaf)) {
+                    New-Item (Split-Path $Miner.Path) -ItemType "Directory" | Out-Null
+                    Invoke-WebRequest $Miner.URI -TimeoutSec 15 -OutFile $_.Path -UseBasicParsing
+                }
+                elseif (([IO.FileInfo](Split-Path $_.URI -Leaf)).Extension -eq '') {
+                    $Path_Old = Get-PSDrive -PSProvider FileSystem | ForEach-Object { Get-ChildItem -Path $_.Root -Include (Split-Path $Miner.Path -Leaf) -Recurse -ErrorAction Ignore } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+                    $Path_New = $Miner.Path
+
+                    if ($Path_Old -ne $null) {
+                        if (Test-Path (Split-Path $Path_New)) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
+                        (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
                     }
                     else {
-                        $Variables | Add-Member -Force @{EndLoop = $False }
+                        $Variables.StatusText = "Cannot find $($Miner.Path) distributed at $($Miner.URI). "
                     }
-
-                    $Variables.StatusText = "Mining paused"
-                    Start-Sleep  30
+                }
+                else {
+                    Expand-WebRequest $Miner.URI (Split-Path $Miner.Path)
                 }
             }
             else {
-                NPMCycle
-                Update-Monitoring
-                Start-Sleep $Variables.TimeToSleep
+                $Miner
             }
         }
-    }) | Out-Null
-    $Variables | Add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke() }
-    $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
-}
+        $Variables.StatusText = "Comparing miners and pools.."
+        if ($Variables.Miners.Count -eq 0) { $Variables.StatusText = "No Miners!" }#; Start-Sleep $Config.Interval; continue}
 
-Function Stop-Mining {
-  
-    If ($Variables.ActiveMinerPrograms) {
+        $Variables.Miners | ForEach-Object {
+            $Miner = $_
+            $Miner_HashRates = [PSCustomObject]@{ }
+            $Miner_Pools = [PSCustomObject]@{ }
+            $Miner_Pools_Comparison = [PSCustomObject]@{ }
+            $Miner_Profits = [PSCustomObject]@{ }
+            $Miner_Profits_Comparison = [PSCustomObject]@{ }
+            $Miner_Profits_Bias = [PSCustomObject]@{ }
+            $Miner_Types = $Miner.Type | Select-Object -Unique
+            $Miner_Indexes = $Miner.Index | Select-Object -Unique
+            $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+                $Miner_HashRates | Add-Member $_ ([Double]$Miner.HashRates.$_)
+                $Miner_Pools | Add-Member $_ ([PSCustomObject]$Pools.$_)
+                $Miner_Pools_Comparison | Add-Member $_ ([PSCustomObject]$Pools_Comparison.$_)
+                $Miner_Profits | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools.$_.Price)
+                $Miner_Profits_Comparison | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools_Comparison.$_.Price)
+                $Miner_Profits_Bias | Add-Member $_ ([Double]$Miner.HashRates.$_ * $Pools.$_.Price * (1 - ($Config.MarginOfError * [Math]::Pow($Variables.DecayBase, $DecayExponent))))
+            }
+            $Miner_Profit = [Double]($Miner_Profits.PSObject.Properties.Value | Measure -Sum).Sum
+            $Miner_Profit_Comparison = [Double]($Miner_Profits_Comparison.PSObject.Properties.Value | Measure -Sum).Sum
+            $Miner_Profit_Bias = [Double]($Miner_Profits_Bias.PSObject.Properties.Value | Measure -Sum).Sum
+            $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+                if (-not [String]$Miner.HashRates.$_) {
+                    $Miner_HashRates.$_ = $null
+                    $Miner_Profits.$_ = $null
+                    $Miner_Profits_Comparison.$_ = $null
+                    $Miner_Profits_Bias.$_ = $null
+                    $Miner_Profit = $null
+                    $Miner_Profit_Comparison = $null
+                    $Miner_Profit_Bias = $null
+                }
+            }
+            if ($Miner_Types -eq $null) { $Miner_Types = $Variables.Miners.Type | Select-Object -Unique }
+            if ($Miner_Indexes -eq $null) { $Miner_Indexes = $Variables.Miners.Index | Select-Object -Unique }
+            if ($Miner_Types -eq $null) { $Miner_Types = "" }
+            if ($Miner_Indexes -eq $null) { $Miner_Indexes = 0 }
+            $Miner.HashRates = $Miner_HashRates
+            $Miner | Add-Member Pools $Miner_Pools
+            $Miner | Add-Member Profits $Miner_Profits
+            $Miner | Add-Member Profits_Comparison $Miner_Profits_Comparison
+            $Miner | Add-Member Profits_Bias $Miner_Profits_Bias
+            $Miner | Add-Member Profit $Miner_Profit
+            $Miner | Add-Member Profit_Comparison $Miner_Profit_Comparison
+            $Miner | Add-Member Profit_Bias $Miner_Profit_Bias
+            $Miner | Add-Member Profit_Bias_Orig $Miner_Profit_Bias
+            $Miner | Add-Member Type $Miner_Types -Force
+            $Miner | Add-Member Index $Miner_Indexes -Force
+            $Miner.Path = Convert-Path $Miner.Path
+        }
+        $Variables.Miners | ForEach-Object {
+            $Miner = $_ 
+            $Miner_Devices = $Miner.Device | Select-Object -Unique
+            if ($Miner_Devices -eq $null) { $Miner_Devices = ($Variables.Miners | Where-Object { (Compare $Miner.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure).Count -gt 0 }).Device | Select-Object -Unique }
+            if ($Miner_Devices -eq $null) { $Miner_Devices = $Miner.Type }
+            $Miner | Add-Member Device $Miner_Devices -Force
+        }
+        # Remove miners when no estimation info from pools or 0BTC. Avoids mining when algo down at pool or benchmarking for ever
+        If (($Variables.Miners | Where-Object { ($_.Pools.PSObject.Properties.Value.Price -ne $null) -and ($_.Pools.PSObject.Properties.Value.Price -gt 0) }).Count -gt 0) { $Variables.Miners = $Variables.Miners | Where-Object { ($_.Pools.PSObject.Properties.Value.Price -ne $null) -and ($_.Pools.PSObject.Properties.Value.Price -gt 0) } }
+
+        #Use only use the most profitable miner per algo and device. E.g. if there are several miners available to mine the same algo, only the most profitable of them will ever be used in the further calculations, all other will also be hidden in the summary screen
+        #        $Variables.Miners = @($Variables.Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName -and ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName } | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')" }, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, Profit_Bias, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count } | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')" } | ForEach-Object { $_.Group[0] }) + @($Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -contains $_.DeviceName -or ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -contains $_.DeviceName })
+        #        $Variables.Miners = @($Variables.Miners | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | Foreach-Object {$_ -split "-" | Select-Object -Index 0}) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })"}, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, { ([Double]($_ | Measure-Object Profit_Bias -Sum).Sum)}, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count} | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object { $_ -split "-" | Select-Object -Index 0 }) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })" } | ForEach-Object { $_.Group[0] })
+
+        #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
+        $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | ForEach-Object { $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100) } }
+        #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
+        $BestMiners = $Variables.Miners | Select-Object Type, Index -Unique | ForEach-Object { $Miner_GPU = $_; ($Variables.Miners | Where-Object { (Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0 } | Sort-Object -Descending { ($_ | Where-Object Profit -EQ $null | Measure).Count }, { ($_ | Measure Profit_Bias -Sum).Sum }, { ($_ | Where-Object Profit -NE 0 | Measure).Count } | Select-Object -First 1) }
+        $BestDeviceMiners = $Variables.Miners | Select-Object Device -Unique | ForEach-Object { $Miner_GPU = $_; ($Variables.Miners | Where-Object { (Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0 } | Sort-Object -Descending { ($_ | Where-Object Profit -EQ $null | Measure).Count }, { ($_ | Measure Profit_Bias -Sum).Sum }, { ($_ | Where-Object Profit -NE 0 | Measure).Count } | Select-Object -First 1) }
+        $BestMiners_Comparison = $Variables.Miners | Select-Object Type, Index -Unique | ForEach-Object { $Miner_GPU = $_; ($Variables.Miners | Where-Object { (Compare $Miner_GPU.Type $_.Type | Measure).Count -eq 0 -and (Compare $Miner_GPU.Index $_.Index | Measure).Count -eq 0 } | Sort-Object -Descending { ($_ | Where-Object Profit -EQ $null | Measure).Count }, { ($_ | Measure Profit_Comparison -Sum).Sum }, { ($_ | Where-Object Profit -NE 0 | Measure).Count } | Select-Object -First 1) }
+        $BestDeviceMiners_Comparison = $Variables.Miners | Select-Object Device -Unique | ForEach-Object { $Miner_GPU = $_; ($Variables.Miners | Where-Object { (Compare $Miner_GPU.Device $_.Device | Measure).Count -eq 0 } | Sort-Object -Descending { ($_ | Where-Object Profit -EQ $null | Measure).Count }, { ($_ | Measure Profit_Comparison -Sum).Sum }, { ($_ | Where-Object Profit -NE 0 | Measure).Count } | Select-Object -First 1) }
+        $Miners_Type_Combos = @([PSCustomObject]@{Combination = @() }) + (Get-Combination ($Variables.Miners | Select-Object Type -Unique) | Where-Object { (Compare ($_.Combination | Select-Object -ExpandProperty Type -Unique) ($_.Combination | Select-Object -ExpandProperty Type) | Measure).Count -eq 0 })
+        $Miners_Index_Combos = @([PSCustomObject]@{Combination = @() }) + (Get-Combination ($Variables.Miners | Select-Object Index -Unique) | Where-Object { (Compare ($_.Combination | Select-Object -ExpandProperty Index -Unique) ($_.Combination | Select-Object -ExpandProperty Index) | Measure).Count -eq 0 })
+        $Miners_Device_Combos = (Get-Combination ($Variables.Miners | Select-Object Device -Unique) | Where-Object { (Compare ($_.Combination | Select-Object -ExpandProperty Device -Unique) ($_.Combination | Select-Object -ExpandProperty Device) | Measure).Count -eq 0 })
+        $BestMiners_Combos = $Miners_Type_Combos | ForEach-Object { $Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach-Object { $Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach-Object { $Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ')$'; $Miner_Index_Combo | ForEach-Object { $Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ')$'; $BestMiners | Where-Object { ([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count } } } } } }
+        $BestMiners_Combos += $Miners_Device_Combos | ForEach-Object { $Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach-Object { $Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ')$'; $BestDeviceMiners | Where-Object { ([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count } } } }
+        $BestMiners_Combos_Comparison = $Miners_Type_Combos | ForEach-Object { $Miner_Type_Combo = $_.Combination; $Miners_Index_Combos | ForEach-Object { $Miner_Index_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Type_Combo | ForEach-Object { $Miner_Type_Count = $_.Type.Count; [Regex]$Miner_Type_Regex = '^(' + (($_.Type | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ')$'; $Miner_Index_Combo | ForEach-Object { $Miner_Index_Count = $_.Index.Count; [Regex]$Miner_Index_Regex = '^(' + (($_.Index | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ')$'; $BestMiners_Comparison | Where-Object { ([Array]$_.Type -notmatch $Miner_Type_Regex).Count -eq 0 -and ([Array]$_.Index -notmatch $Miner_Index_Regex).Count -eq 0 -and ([Array]$_.Type -match $Miner_Type_Regex).Count -eq $Miner_Type_Count -and ([Array]$_.Index -match $Miner_Index_Regex).Count -eq $Miner_Index_Count } } } } } }
+        $BestMiners_Combos_Comparison += $Miners_Device_Combos | ForEach-Object { $Miner_Device_Combo = $_.Combination; [PSCustomObject]@{Combination = $Miner_Device_Combo | ForEach-Object { $Miner_Device_Count = $_.Device.Count; [Regex]$Miner_Device_Regex = '^(' + (($_.Device | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ')$'; $BestDeviceMiners_Comparison | Where-Object { ([Array]$_.Device -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.Device -match $Miner_Device_Regex).Count -eq $Miner_Device_Count } } } }
+        $BestMiners_Combo = $BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object Profit -EQ $null | Measure).Count }, { ($_.Combination | Measure Profit_Bias -Sum).Sum }, { ($_.Combination | Where-Object Profit -NE 0 | Measure).Count } | Select-Object -First 1 | Select-Object -ExpandProperty Combination
+        $BestMiners_Combo_Comparison = $BestMiners_Combos_Comparison | Sort-Object -Descending { ($_.Combination | Where-Object Profit -EQ $null | Measure).Count }, { ($_.Combination | Measure Profit_Comparison -Sum).Sum }, { ($_.Combination | Where-Object Profit -NE 0 | Measure).Count } | Select-Object -First 1 | Select-Object -ExpandProperty Combination
+
+        # No CPU mining if GPU miner prevents it
+        If ($BestMiners_Combo.PreventCPUMining -contains $true) {
+            $BestMiners_Combo = $BestMiners_Combo | Where-Object { $_.type -ne "CPU" }
+            $Variables.StatusText = "Miner prevents CPU mining"
+        }
+
+        # Ban miners if too many failures as defined by MaxMinerFailure
+        # 0 means no ban
+        # Int value means ban after x failures
+        # defaults to 3 if no value in config
+        # ** Ban is not persistent across sessions **
+        #Ban Failed Miners code by @MrPlusGH
+        If ($Config.MaxMinerFailure -gt 0) {
+            $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) { $Config.MaxMinerFailure } else { 3 } }
+            $BannedMiners = $Variables.ActiveMinerPrograms | Where { $_.Status -eq "Failed" -and $_.FailedCount -ge $Config.MaxMinerFailure }
+            # $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
+            $BannedMiners | foreach { "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." | Out-Host }
+            $Variables.Miners = $Variables.Miners | Where { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
+        }
+
+        #Add the most profitable miners to the active list
+        $BestMiners_Combo | ForEach-Object {
+            if (($Variables.ActiveMinerPrograms | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments).Count -eq 0) {
+                $Variables.ActiveMinerPrograms += [PSCustomObject]@{
+                    Type              = $_.Type
+                    Name              = $_.Name
+                    Path              = $_.Path
+                    Arguments         = $_.Arguments
+                    Wrap              = $_.Wrap
+                    Process           = $null
+                    API               = $_.API
+                    Port              = $_.Port
+                    Algorithms        = $_.HashRates.PSObject.Properties.Name
+                    New               = $false
+                    Active            = [TimeSpan]0
+                    TotalActive       = [TimeSpan]0
+                    Activated         = 0
+                    Status            = "Idle"
+                    HashRate          = 0
+                    Benchmarked       = 0
+                    Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
+                    User              = $_.User
+                    Host              = $_.Host
+                    Coin              = $_.Coin
+                }
+            }
+        }
+        #Stop or start miners in the active list depending on if they are the most profitable
+        # We have to stop processes first or the port would be busy
         $Variables.ActiveMinerPrograms | ForEach-Object {
             [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             if ($filtered.Count -eq 0) {
@@ -285,7 +486,6 @@ Function Stop-Mining {
                     $_.Status = "Failed"
                 }
                 elseif ($_.Process.HasExited -eq $false) {
-                    $_.Active += (Get-Date) - $_.Process.StartTime
                     $_.Process.CloseMainWindow() | Out-Null
                     Start-Sleep 1
                     # simply "Kill with power"
@@ -297,1011 +497,172 @@ Function Stop-Mining {
                     Start-Sleep 1
                     $_.Status = "Idle"
                 }
+                #Restore Bias for non-active miners
+                $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit_Bias_Orig }
             }
         }
-    }
+        $newMiner = $false
+        $CurrentMinerHashrate_Gathered = $false 
+        $newMiner = $false
+        $CurrentMinerHashrate_Gathered = $false 
+        $Variables.ActiveMinerPrograms | ForEach-Object {
+            [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
+            if ($filtered.Count -gt 0) {
+                if ($_.Process -eq $null -or $_.Process.HasExited -ne $false) {
+                    # Log switching information to .\log\swicthing.log
+                    [pscustomobject]@{date = (get-date); Type = $_.Type; algo = $_.Algorithms; wallet = $_.User; username = $Config.UserName; Host = $_.host } | export-csv .\Logs\switching.log -Append -NoTypeInformation
 
-    $Global:CycleRunspace.Close()
-    $Global:powershell.Dispose()
-}
+                    # Launch prerun if exists
+                    If ($_.Type -ne "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat")) {
+                        Start-Process ".\Utils\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                    }
+                    If ($_.Type -ne "NVIDIA" -and (Test-Path ".\Utils\Prerun\NVIDIAPrerun.bat")) {
+                        Start-Process ".\Utils\Prerun\NVIDIAPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                    }
+                    If ($_.Type -ne "CPU" -and (Test-Path ".\Utils\Prerun\CPUPrerun.bat")) {
+                        Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                    }
+                    If ($_.Type -ne "CPU") {
+                        $PrerunName = ".\Utils\Prerun\" + $_.Algorithms + ".bat"
+                        $DefaultPrerunName = ".\Utils\Prerun\default.bat"
+                        If (Test-Path $PrerunName) {
+                            $Variables.StatusText = "Launching Prerun: $PrerunName"
+                            Start-Process $PrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                            Start-Sleep 2
+                        }
+                        else {
+                            If (Test-Path $DefaultPrerunName) {
+                                $Variables.StatusText = "Launching Prerun: $DefaultPrerunName"
+                                Start-Process $DefaultPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                                Start-Sleep 2
+                            }
+                        }
+                    }
 
-Function Update-Status ($Text) {
-    $Text | Out-Host
-    # $Variables.StatusText = $Text 
-    $LabelStatus.Lines += $Text
-    If ($LabelStatus.Lines.Count -gt 20) { $LabelStatus.Lines = $LabelStatus.Lines[($LabelStatus.Lines.count - 10)..$LabelStatus.Lines.Count] }
-    $LabelStatus.SelectionStart = $LabelStatus.TextLength;
-    $LabelStatus.ScrollToCaret();
-    $LabelStatus.Refresh | out-null
-}
-
-Function Update-Notifications ($Text) {
-    $LabelNotifications.Lines += $Text
-    If ($LabelNotifications.Lines.Count -gt 20) { $LabelNotifications.Lines = $LabelNotifications.Lines[($LabelNotifications.Lines.count - 10)..$LabelNotifications.Lines.Count] }
-    $LabelNotifications.SelectionStart = $LabelStatus.TextLength;
-    $LabelNotifications.ScrollToCaret();
-    $LabelStatus.Refresh | out-null
-}
-
-Function DetectGPUCount {
-    Update-Status("Fetching GPU Count")
-    $DetectedGPU = @()
-    try {
-        $DetectedGPU += @(Get-WmiObject Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
-    }
-    catch { Update-Status("NVIDIA Detection failed") }
-    try {
-        $DetectedGPU += @(Get-WmiObject Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
-    }
-    catch { Update-Status("AMD Detection failed") }
-    $DetectedGPUCount = $DetectedGPU.Count
-    $i = 0
-    $DetectedGPU | ForEach-Object { Update-Status("$($i): $($_.Name)") | Out-Null; $i++ }
-    Update-Status("Found $($DetectedGPUCount) GPU(s)")
-    $DetectedGPUCount
-}
-
-Function Load-Config {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$ConfigFile
-    )
-    If (Test-Path $ConfigFile) {
-        $ConfigLoad = Get-Content $ConfigFile | ConvertFrom-json
-        $Config = [hashtable]::Synchronized(@{ }); $configLoad | ForEach-Object { $_.psobject.properties | Sort-Object  Name | ForEach-Object { $Config | Add-Member -Force @{$_.Name = $_.Value } } }
-        $Config
-    }
-}
-
-Function Write-Config {
-    param(
-        [Parameter(Mandatory = $true)]
-        [PSCustomObject]$Config,
-        [Parameter(Mandatory = $true)]
-        [String]$ConfigFile
-    )
-    If ($Config.ManualConfig) { Update-Status("Manual config mode - Not saving config"); return }
-    If ($Config -ne $null) {
-        if (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" }
-        $OrderedConfig = [PSCustomObject]@{ }; ($config | Select-Object -Property * -ExcludeProperty PoolsConfig) | ForEach-Object { $_.psobject.properties | Sort-Object  Name | ForEach-Object { $OrderedConfig | Add-Member -Force @{$_.Name = $_.Value } } }
-        $OrderedConfig | ConvertTo-json | out-file $ConfigFile
-        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-        $OrderedPoolsConfig = [PSCustomObject]@{ }; $PoolsConfig | ForEach-Object { $_.psobject.properties | Sort-Object  Name | ForEach-Object { $OrderedPoolsConfig | Add-Member -Force @{$_.Name = $_.Value } } }
-        $OrderedPoolsConfig.default | Add-Member -Force @{Wallet = $Config.Wallet }
-        $OrderedPoolsConfig.default | Add-Member -Force @{UserName = $Config.UserName }
-        $OrderedPoolsConfig.default | Add-Member -Force @{WorkerName = $Config.WorkerName }
-        $OrderedPoolsConfig.default | Add-Member -Force @{APIKey = $Config.APIKey }
-        $OrderedPoolsConfig | ConvertTo-json | out-file ".\Config\PoolsConfig.json"
-    }
-}
-
-Function Get-FreeTcpPort ($StartPort) {
-    # While ($Port -le ($StartPort + 10) -and !$PortFound) {try{$Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} catch {$Port;$PortFound=$True}}
-    # $UsedPorts = (Get-NetTCPConnection | Where-Object {$_.state -eq "listen"}).LocalPort
-    # While ($StartPort -in $UsedPorts) {
-    While (Get-NetTCPConnection -LocalPort $StartPort -EA SilentlyContinue) { $StartPort++ }
-    $StartPort
-}
-
-function Set-Stat {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Name, 
-        [Parameter(Mandatory = $true)]
-        [Double]$Value, 
-        [Parameter(Mandatory = $false)]
-        [DateTime]$Date = (Get-Date)
-    )
-
-    $Path = "Stats\$Name.txt"
-    $Date = $Date.ToUniversalTime()
-    $SmallestValue = 1E-20
-
-    $Stat = [PSCustomObject]@{
-        Live                  = $Value
-        Minute                = $Value
-        Minute_Fluctuation    = 1 / 2
-        Minute_5              = $Value
-        Minute_5_Fluctuation  = 1 / 2
-        Minute_10             = $Value
-        Minute_10_Fluctuation = 1 / 2
-        Hour                  = $Value
-        Hour_Fluctuation      = 1 / 2
-        Day                   = $Value
-        Day_Fluctuation       = 1 / 2
-        Week                  = $Value
-        Week_Fluctuation      = 1 / 2
-        Updated               = $Date
-    }
-
-    if (Test-Path $Path) { $Stat = Get-Content $Path | ConvertFrom-Json }
-
-    $Stat = [PSCustomObject]@{
-        Live                  = [Decimal]$Stat.Live
-        Minute                = [Decimal]$Stat.Minute
-        Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
-        Minute_5              = [Decimal]$Stat.Minute_5
-        Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
-        Minute_10             = [Decimal]$Stat.Minute_10
-        Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-        Hour                  = [Decimal]$Stat.Hour
-        Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
-        Day                   = [Decimal]$Stat.Day
-        Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
-        Week                  = [Decimal]$Stat.Week
-        Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
-        Updated               = [DateTime]$Stat.Updated
-    }
-    
-    $Span_Minute = [Math]::Min(($Date - $Stat.Updated).TotalMinutes, 1)
-    $Span_Minute_5 = [Math]::Min((($Date - $Stat.Updated).TotalMinutes / 5), 1)
-    $Span_Minute_10 = [Math]::Min((($Date - $Stat.Updated).TotalMinutes / 10), 1)
-    $Span_Hour = [Math]::Min(($Date - $Stat.Updated).TotalHours, 1)
-    $Span_Day = [Math]::Min(($Date - $Stat.Updated).TotalDays, 1)
-    $Span_Week = [Math]::Min((($Date - $Stat.Updated).TotalDays / 7), 1)
-
-    $Stat = [PSCustomObject]@{
-        Live                  = $Value
-        Minute                = ((1 - $Span_Minute) * $Stat.Minute) + ($Span_Minute * $Value)
-        Minute_Fluctuation    = ((1 - $Span_Minute) * $Stat.Minute_Fluctuation) + 
-        ($Span_Minute * ([Math]::Abs($Value - $Stat.Minute) / [Math]::Max([Math]::Abs($Stat.Minute), $SmallestValue)))
-        Minute_5              = ((1 - $Span_Minute_5) * $Stat.Minute_5) + ($Span_Minute_5 * $Value)
-        Minute_5_Fluctuation  = ((1 - $Span_Minute_5) * $Stat.Minute_5_Fluctuation) + 
-        ($Span_Minute_5 * ([Math]::Abs($Value - $Stat.Minute_5) / [Math]::Max([Math]::Abs($Stat.Minute_5), $SmallestValue)))
-        Minute_10             = ((1 - $Span_Minute_10) * $Stat.Minute_10) + ($Span_Minute_10 * $Value)
-        Minute_10_Fluctuation = ((1 - $Span_Minute_10) * $Stat.Minute_10_Fluctuation) + 
-        ($Span_Minute_10 * ([Math]::Abs($Value - $Stat.Minute_10) / [Math]::Max([Math]::Abs($Stat.Minute_10), $SmallestValue)))
-        Hour                  = ((1 - $Span_Hour) * $Stat.Hour) + ($Span_Hour * $Value)
-        Hour_Fluctuation      = ((1 - $Span_Hour) * $Stat.Hour_Fluctuation) + 
-        ($Span_Hour * ([Math]::Abs($Value - $Stat.Hour) / [Math]::Max([Math]::Abs($Stat.Hour), $SmallestValue)))
-        Day                   = ((1 - $Span_Day) * $Stat.Day) + ($Span_Day * $Value)
-        Day_Fluctuation       = ((1 - $Span_Day) * $Stat.Day_Fluctuation) + 
-        ($Span_Day * ([Math]::Abs($Value - $Stat.Day) / [Math]::Max([Math]::Abs($Stat.Day), $SmallestValue)))
-        Week                  = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
-        Week_Fluctuation      = ((1 - $Span_Week) * $Stat.Week_Fluctuation) + 
-        ($Span_Week * ([Math]::Abs($Value - $Stat.Week) / [Math]::Max([Math]::Abs($Stat.Week), $SmallestValue)))
-        Updated               = $Date
-    }
-
-    if (-not (Test-Path "Stats")) { New-Item "Stats" -ItemType "directory" }
-    [PSCustomObject]@{
-        Live                  = [Decimal]$Stat.Live
-        Minute                = [Decimal]$Stat.Minute
-        Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
-        Minute_5              = [Decimal]$Stat.Minute_5
-        Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
-        Minute_10             = [Decimal]$Stat.Minute_10
-        Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-        Hour                  = [Decimal]$Stat.Hour
-        Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
-        Day                   = [Decimal]$Stat.Day
-        Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
-        Week                  = [Decimal]$Stat.Week
-        Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
-        Updated               = [DateTime]$Stat.Updated
-    } | ConvertTo-Json | Set-Content $Path
-
-    $Stat
-}
-
-function Get-Stat {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Name
-    )
-    
-    if (-not (Test-Path "Stats")) { New-Item "Stats" -ItemType "directory" }
-    Get-ChildItem "Stats" | Where-Object Extension -NE ".ps1" | Where-Object BaseName -EQ $Name | Get-Content | ConvertFrom-Json
-}
-
-function Get-ChildItemContent {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Path,
-        [Parameter(Mandatory = $false)]
-        [Array]$Include = @()
-    )
-
-    $ChildItems = Get-ChildItem -Recurse -Path $Path -Include $Include | ForEach-Object {
-        $Name = $_.BaseName
-        $Content = @()
-        if ($_.Extension -eq ".ps1") {
-            $Content = &$_.FullName
-        }
-        else {
-            try {
-                $Content = $_ | Get-Content | ConvertFrom-Json
-            }
-            catch [ArgumentException] {
-                $null
-            }
-        }
-        $Content | ForEach-Object {
-            [PSCustomObject]@{Name = $Name; Content = $_ }
-        }
-    }
-    
-    $ChildItems | Select-Object | ForEach-Object {
-        $Item = $_
-        $ItemKeys = $Item.Content.PSObject.Properties.Name.Clone()
-        $ItemKeys | ForEach-Object {
-            if ($Item.Content.$_ -is [String]) {
-                $Item.Content.$_ = Invoke-Expression "`"$($Item.Content.$_)`""
-            }
-            elseif ($Item.Content.$_ -is [PSCustomObject]) {
-                $Property = $Item.Content.$_
-                $PropertyKeys = $Property.PSObject.Properties.Name
-                $PropertyKeys | ForEach-Object {
-                    if ($Property.$_ -is [String]) {
-                        $Property.$_ = Invoke-Expression "`"$($Property.$_)`""
+                    Start-Sleep $Config.Delay #Wait to prevent BSOD
+                    $Variables.StatusText = "Starting miner"
+                    $Variables.DecayStart = Get-Date
+                    $_.New = $true
+                    $_.Activated++
+                    # if($_.Process -ne $null){$_.TotalActive += $_.Process.ExitTime-$_.Process.StartTime}
+                    if ($_.Process -ne $null) { $_.Active = [TimeSpan]0 }
+					
+                    if ($_.Wrap) { $_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Includes\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$($_.Arguments)' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru }
+                    else { $_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $_.Arguments -WorkingDirectory (Split-Path $_.Path) }
+                    if ($_.Process -eq $null) { $_.Status = "Failed" }
+                    else {
+                        $_.Status = "Running"
+                        $newMiner = $true
+                        #Newely started miner should looks better than other in the first run too
+                        $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100) }
                     }
                 }
+                else {
+                    $now = Get-Date
+                    $_.TotalActive = $_.TotalActive + ( $Now - $_.Process.StartTime ) - $_.Active
+                    $_.Active = $Now - $_.Process.StartTime
+                }
+                $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
             }
         }
-    }
-    $ChildItems
-}
-function Invoke_TcpRequest {
-     
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Server = "localhost", 
-        [Parameter(Mandatory = $true)]
-        [String]$Port, 
-        [Parameter(Mandatory = $true)]
-        [String]$Request, 
-        [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 10 #seconds
-    )
-
-    try {
-        $Client = New-Object System.Net.Sockets.TcpClient $Server, $Port
-        $Stream = $Client.GetStream()
-        $Writer = New-Object System.IO.StreamWriter $Stream
-        $Reader = New-Object System.IO.StreamReader $Stream
-        $client.SendTimeout = $Timeout * 1000
-        $client.ReceiveTimeout = $Timeout * 1000
-        $Writer.AutoFlush = $true
-
-        $Writer.WriteLine($Request)
-        $Response = $Reader.ReadLine()
-    }
-    catch { $Error.Remove($error[$Error.Count - 1]) }
-    finally {
-        if ($Reader) { $Reader.Close() }
-        if ($Writer) { $Writer.Close() }
-        if ($Stream) { $Stream.Close() }
-        if ($Client) { $Client.Close() }
-    }
-
-    $response
-    
-}
-
-
-
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-
-
-
-function Invoke_httpRequest {
-     
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Server = "localhost", 
-        [Parameter(Mandatory = $true)]
-        [String]$Port, 
-        [Parameter(Mandatory = $false)]
-        [String]$Request, 
-        [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 10 #seconds
-    )
-
-    try {
-
-        $response = Invoke-WebRequest "http://$($Server):$Port$Request" -UseBasicParsing -TimeoutSec $timeout
-    }
-    catch { $Error.Remove($error[$Error.Count - 1]) }
-  
-
-    $response
-    
-}
-
-
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-
-function Get-HashRate {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$API, 
-        [Parameter(Mandatory = $true)]
-        [Int]$Port, 
-        [Parameter(Mandatory = $false)]
-        [Object]$Parameters = @{ } 
-
-    )
-    
-    $Server = "localhost"
-    
-    $Multiplier = 1000
-    #$Delta = 0.05
-    #$Interval = 5
-    #$HashRates = @()
-    #$HashRates_Dual = @()
-
-    try {
-        switch ($API) {
-
-            "Dtsm" {
-                $Request = Invoke_TcpRequest $server $port "empty" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
-                    $HashRate = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
-                }
-
-            }
-
-            "xgminer" {
-                $Message = @{command = "summary"; parameter = "" } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $Message 5
-
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request.Substring($Request.IndexOf("{"), $Request.LastIndexOf("}") - $Request.IndexOf("{") + 1) -replace " ", "_" | ConvertFrom-Json
-
-                    $HashRate = if ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow($Multiplier, 0) }
-                    elseif ($Data.SUMMARY.KHS_5s -ne $null) { [Double]$Data.SUMMARY.KHS_5s * [math]::Pow($Multiplier, 1) }
-                    elseif ($Data.SUMMARY.MHS_5s -ne $null) { [Double]$Data.SUMMARY.MHS_5s * [math]::Pow($Multiplier, 2) }
-                    elseif ($Data.SUMMARY.GHS_5s -ne $null) { [Double]$Data.SUMMARY.GHS_5s * [math]::Pow($Multiplier, 3) }
-                    elseif ($Data.SUMMARY.THS_5s -ne $null) { [Double]$Data.SUMMARY.THS_5s * [math]::Pow($Multiplier, 4) }
-                    elseif ($Data.SUMMARY.PHS_5s -ne $null) { [Double]$Data.SUMMARY.PHS_5s * [math]::Pow($Multiplier, 5) }
-
-                    if ($HashRate -eq $null) {
-                        $HashRate = if ($Data.SUMMARY.HS_av -ne $null) { [Double]$Data.SUMMARY.HS_av * [math]::Pow($Multiplier, 0) }
-                        elseif ($Data.SUMMARY.KHS_av -ne $null) { [Double]$Data.SUMMARY.KHS_av * [math]::Pow($Multiplier, 1) }
-                        elseif ($Data.SUMMARY.MHS_av -ne $null) { [Double]$Data.SUMMARY.MHS_av * [math]::Pow($Multiplier, 2) }
-                        elseif ($Data.SUMMARY.GHS_av -ne $null) { [Double]$Data.SUMMARY.GHS_av * [math]::Pow($Multiplier, 3) }
-                        elseif ($Data.SUMMARY.THS_av -ne $null) { [Double]$Data.SUMMARY.THS_av * [math]::Pow($Multiplier, 4) }
-                        elseif ($Data.SUMMARY.PHS_av -ne $null) { [Double]$Data.SUMMARY.PHS_av * [math]::Pow($Multiplier, 5) }
-                    }
-                }
-
-            }
-
-            "palgin" {
-                $Request = Invoke_TcpRequest $server $port  "summary" 5
-                $Data = $Request -split ";"
-                $HashRate = [double]($Data[5] -split '=')[1] * 1000
-            }
-                
-            "ccminer" {
-                $Request = Invoke_TcpRequest $server $port  "summary" 5
-                $Data = $Request -split ";" | ConvertFrom-StringData
-                $HashRate = if ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * $Multiplier }
-            }
-
-            "zjazz" {
-                $Request = Invoke_TcpRequest $server $port  "summary" 10
-                $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
-                $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
-            }
-
-            "excavator" {
-                $Message = @{id = 1; method = "algorithm.list"; params = @() } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $message 5
-
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = ($Request | ConvertFrom-Json).Algorithms
-                    $HashRate = [Double](($Data.workers.speed) | Measure-Object -Sum).Sum
-                }
-            }
-
-            "ewbf" {
-                $Message = @{id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $message 5
-                $Data = $Request | ConvertFrom-Json
-                $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
-            }
-
-            "gminer" {
-                $Message = @{id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke_httpRequest $Server $Port "/stat" 5
-                $Data = $Request | ConvertFrom-Json
-                $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
-            }
-
-            "claymore" {
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{"), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
-                    $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
-                }
-            }
-	    
-            "nanominer" {
-                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
-                }
-            }
-	    
-            "ethminer" {
-                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) * 1000
-                }
-            }
-
-            "ClaymoreV2" {
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{"), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] 
-                }
-            }
-	    
-            "TTminer" {
-
-                $Parameters = @{id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json  -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
-                }
-            }
-
-            "prospector" {
-                $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]($Data.rate | Measure-Object -Sum).sum
-                }
-            }
-
-            "fireice" {
-                $Request = Invoke_httpRequest $Server $Port "/h" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
-                    $HashRate = $Data[1]
-                    if ($HashRate -eq "") { $HashRate = $Data[2] }
-                    if ($HashRate -eq "") { $HashRate = $Data[3] }
-                }
-            }
-
-            "miniZ" {
-                $Message = '{"id":"0", "method":"getstat"}'
-                $Request = Invoke_TcpRequest $server $port $message 5
-                $Data = $Request | ConvertFrom-Json
-                $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
-            }
-
-            "wrapper" {
-                $HashRate = ""
-                $wrpath = ".\Logs\energi.txt"
-                $HashRate = if (test-path -path $wrpath ) {
-                    Get-Content  $wrpath
-                    $HashRate = ($HashRate -split ',')[0]
-                    $HashRate = ($HashRate -split '.')[0]
-
-                }
-                else { $hashrate = 0 }
-            }
-
-            "castXMR" {
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json 
-                    $HashRate = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
-                }
-            }
-
-            "XMrig" {
-                $Request = Invoke_httpRequest $Server $Port "/api.json" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request | ConvertFrom-Json 
-                    $HashRate = [Double]$Data.hashrate.total[0]
-                }
-            }
-
-            "bminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
-                if ($Request -ne "" -and $request -ne $null) {
-                    $Data = $Request.content | ConvertFrom-Json 
-                    $HashRate = 0
-                    $Data.miners | Get-Member -MemberType NoteProperty | ForEach-Object {
-                        $HashRate += $Data.miners.($_.name).solver.solution_rate
-                    }
-                }
-            }
-
-            "GrinPro" {
-                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
-                }
-            }
-
-            "NBMiner" {
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double]$Data.miner.total_hashrate_raw
-                }
-            }
-
-            "LOL" {
-                $Request = Invoke_httpRequest $Server $Port "/summary" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$data.Session.Performance_Summary
-                }
-            }
-
-            "nheq" {
-                $Request = Invoke_TcpRequest $Server $Port "status" 5
-                if ($Request) {
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result.speed_ips * 1000000
-                }
-            }
-            
-        } #end switch
-        
-        $HashRates = @()
-        $HashRates += [double]$HashRate
-        $HashRates += [double]$HashRate_Dual
-
-        $HashRates
-    }
-    catch { }
-}
-
-filter ConvertTo-Hash { 
-    [CmdletBinding()]
-    $Units = " kMGTPEZY" #k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
-    $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs($_), [Math]::Pow(1000, 1)))
-    $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
-    "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
-}
-
-function Get-Combination {
-    param(
-        [Parameter(Mandatory = $true)]
-        [Array]$Value, 
-        [Parameter(Mandatory = $false)]
-        [Int]$SizeMax = $Value.Count, 
-        [Parameter(Mandatory = $false)]
-        [Int]$SizeMin = 1
-    )
-
-    $Combination = [PSCustomObject]@{ }
-
-    for ($i = 0; $i -lt $Value.Count; $i++) {
-        $Combination | Add-Member @{[Math]::Pow(2, $i) = $Value[$i] }
-    }
-
-    $Combination_Keys = $Combination | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
-
-    for ($i = $SizeMin; $i -le $SizeMax; $i++) {
-        $x = [Math]::Pow(2, $i) - 1
-
-        while ($x -le [Math]::Pow(2, $Value.Count) - 1) {
-            [PSCustomObject]@{Combination = $Combination_Keys | Where-Object { $_ -band $x } | ForEach-Object { $Combination.$_ } }
-            $smallest = ($x -band - $x)
-            $ripple = $x + $smallest
-            $new_smallest = ($ripple -band - $ripple)
-            $ones = (($new_smallest / $smallest) -shr 1) - 1
-            $x = $ripple -bor $ones
-        }
-    }
-}
-
-function Start-SubProcess {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$FilePath, 
-        [Parameter(Mandatory = $false)]
-        [String]$ArgumentList = "", 
-        [Parameter(Mandatory = $false)]
-        [String]$WorkingDirectory = ""
-    )
-
-    $Job = Start-Job -ArgumentList $PID, $FilePath, $ArgumentList, $WorkingDirectory {
-        param($ControllerProcessID, $FilePath, $ArgumentList, $WorkingDirectory)
-
-        $ControllerProcess = Get-Process -Id $ControllerProcessID
-        if ($ControllerProcess -eq $null) { return }
-
-
-
-
-        Add-Type -TypeDefinition @"
-            // http://www.daveamenta.com/2013-08/powershell-start-process-without-taking-focus/
-
-            using System;
-            using System.Diagnostics;
-            using System.Runtime.InteropServices;
-             
-            [StructLayout(LayoutKind.Sequential)]
-            public struct PROCESS_INFORMATION {
-                public IntPtr hProcess;
-                public IntPtr hThread;
-                public uint dwProcessId;
-                public uint dwThreadId;
-            }
-             
-            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-            public struct STARTUPINFO {
-                public uint cb;
-                public string lpReserved;
-                public string lpDesktop;
-                public string lpTitle;
-                public uint dwX;
-                public uint dwY;
-                public uint dwXSize;
-                public uint dwYSize;
-                public uint dwXCountChars;
-                public uint dwYCountChars;
-                public uint dwFillAttribute;
-                public STARTF dwFlags;
-                public ShowWindow wShowWindow;
-                public short cbReserved2;
-                public IntPtr lpReserved2;
-                public IntPtr hStdInput;
-                public IntPtr hStdOutput;
-                public IntPtr hStdError;
-            }
-             
-            [StructLayout(LayoutKind.Sequential)]
-            public struct SECURITY_ATTRIBUTES {
-                public int length;
-                public IntPtr lpSecurityDescriptor;
-                public bool bInheritHandle;
-            }
-             
-            [Flags]
-            public enum CreationFlags : int {
-                NONE = 0,
-                DEBUG_PROCESS = 0x00000001,
-                DEBUG_ONLY_THIS_PROCESS = 0x00000002,
-                CREATE_SUSPENDED = 0x00000004,
-                DETACHED_PROCESS = 0x00000008,
-                CREATE_NEW_CONSOLE = 0x00000010,
-                CREATE_NEW_PROCESS_GROUP = 0x00000200,
-                CREATE_UNICODE_ENVIRONMENT = 0x00000400,
-                CREATE_SEPARATE_WOW_VDM = 0x00000800,
-                CREATE_SHARED_WOW_VDM = 0x00001000,
-                CREATE_PROTECTED_PROCESS = 0x00040000,
-                EXTENDED_STARTUPINFO_PRESENT = 0x00080000,
-                CREATE_BREAKAWAY_FROM_JOB = 0x01000000,
-                CREATE_PRESERVE_CODE_AUTHZ_LEVEL = 0x02000000,
-                CREATE_DEFAULT_ERROR_MODE = 0x04000000,
-                CREATE_NO_WINDOW = 0x08000000,
-            }
-             
-            [Flags]
-            public enum STARTF : uint {
-                STARTF_USESHOWWINDOW = 0x00000001,
-                STARTF_USESIZE = 0x00000002,
-                STARTF_USEPOSITION = 0x00000004,
-                STARTF_USECOUNTCHARS = 0x00000008,
-                STARTF_USEFILLATTRIBUTE = 0x00000010,
-                STARTF_RUNFULLSCREEN = 0x00000020,  // ignored for non-x86 platforms
-                STARTF_FORCEONFEEDBACK = 0x00000040,
-                STARTF_FORCEOFFFEEDBACK = 0x00000080,
-                STARTF_USESTDHANDLES = 0x00000100,
-            }
-             
-            public enum ShowWindow : short {
-                SW_HIDE = 0,
-                SW_SHOWNORMAL = 1,
-                SW_NORMAL = 1,
-                SW_SHOWMINIMIZED = 2,
-                SW_SHOWMAXIMIZED = 3,
-                SW_MAXIMIZE = 3,
-                SW_SHOWNOACTIVATE = 4,
-                SW_SHOW = 5,
-                SW_MINIMIZE = 6,
-                SW_SHOWMINNOACTIVE = 7,
-                SW_SHOWNA = 8,
-                SW_RESTORE = 9,
-                SW_SHOWDEFAULT = 10,
-                SW_FORCEMINIMIZE = 11,
-                SW_MAX = 11
-            }
-             
-            public static class Kernel32 {
-                [DllImport("kernel32.dll", SetLastError=true)]
-                public static extern bool CreateProcess(
-                    string lpApplicationName, 
-                    string lpCommandLine, 
-                    ref SECURITY_ATTRIBUTES lpProcessAttributes, 
-                    ref SECURITY_ATTRIBUTES lpThreadAttributes,
-                    bool bInheritHandles, 
-                    CreationFlags dwCreationFlags, 
-                    IntPtr lpEnvironment,
-                    string lpCurrentDirectory, 
-                    ref STARTUPINFO lpStartupInfo, 
-                    out PROCESS_INFORMATION lpProcessInformation);
-            }
-"@
-        $lpApplicationName = $FilePath;
-        $lpCommandLine = '"' + $FilePath + '"' #Windows paths cannot contain ", so there is no need to escape
-        if ($ArgumentList -ne "") { $lpCommandLine += " " + $ArgumentList }
-        $lpProcessAttributes = New-Object SECURITY_ATTRIBUTES
-        $lpProcessAttributes.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($lpProcessAttributes)
-        $lpThreadAttributes = New-Object SECURITY_ATTRIBUTES
-        $lpThreadAttributes.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($lpThreadAttributes)
-        $bInheritHandles = $false
-        $dwCreationFlags = [CreationFlags]::CREATE_NEW_CONSOLE
-        $lpEnvironment = [IntPtr]::Zero
-        if ($WorkingDirectory -ne "") { $lpCurrentDirectory = $WorkingDirectory } else { $lpCurrentDirectory = $pwd }
-
-        $lpStartupInfo = New-Object STARTUPINFO
-        $lpStartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($lpStartupInfo)
-        $lpStartupInfo.wShowWindow = [ShowWindow]::SW_SHOWMINNOACTIVE
-        $lpStartupInfo.dwFlags = [STARTF]::STARTF_USESHOWWINDOW
-        $lpProcessInformation = New-Object PROCESS_INFORMATION
-
-        $CreateProcessExitCode = [Kernel32]::CreateProcess($lpApplicationName, $lpCommandLine, [ref] $lpProcessAttributes, [ref] $lpThreadAttributes, $bInheritHandles, $dwCreationFlags, $lpEnvironment, $lpCurrentDirectory, [ref] $lpStartupInfo, [ref] $lpProcessInformation)
-        $x = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
-        Write-Host "CreateProcessExitCode: $CreateProcessExitCode"
-        Write-Host "Last error $x"
-        Write-Host $lpCommandLine
-        Write-Host "lpProcessInformation.dwProcessID: $($lpProcessInformation.dwProcessID)"
-		
-        If ($CreateProcessExitCode) {
-            Write-Host "lpProcessInformation.dwProcessID - WHEN TRUE: $($lpProcessInformation.dwProcessID)"
-
-            $Process = Get-Process -Id $lpProcessInformation.dwProcessID
-
-            # Dirty workaround
-            # Need to investigate. lpProcessInformation sometimes comes null even if process started
-            # So getting process with the same FilePath if so
-            $Tries = 0
-            While ($Process -eq $null -and $Tries -le 5) {
-                Write-Host "Can't get process - $Tries"
-                $Tries++
-                Start-Sleep 1
-                $Process = (Get-Process | Where-Object { $_.Path -eq $FilePath })[0]
-                Write-Host "Process= $($Process.Handle)"
-            }
-
-            if ($Process -eq $null) {
-                Write-Host "Case 2 - Failed Get-Process"
-                [PSCustomObject]@{ProcessId = $null }
-                return
+        #Do nothing for a few seconds as to not overload the APIs
+        if ($newMiner -eq $true) {
+            if ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
+            else {
+                if ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
+                else { $Variables.TimeToSleep = $Config.StatsInterval }
             }
         }
         else {
-            Write-Host "Case 1 - Failed CreateProcess"
-            [PSCustomObject]@{ProcessId = $null }
-            return
+            $Variables.TimeToSleep = $Config.Interval
         }
-
-        [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle }
-
-        $ControllerProcess.Handle | Out-Null
-        $Process.Handle | Out-Null
-
-        do { if ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
-        while ($Process.HasExited -eq $false)
-    }
-
-    do { Start-Sleep  1; $JobOutput = Receive-Job $Job }
-    while ($JobOutput -eq $null)
-
-    $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
-    $Process.Handle | Out-Null
-    $Process
-}
-
-
-function Expand-WebRequest {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Uri, 
-        [Parameter(Mandatory = $true)]
-        [String]$Path
-    )
-
-    $FolderName_Old = ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName
-    $FolderName_New = Split-Path $Path -Leaf
-    $FileName = "$FolderName_New$(([IO.FileInfo](Split-Path $Uri -Leaf)).Extension)"
-
-    if (Test-Path $FileName) { Remove-Item $FileName }
-    if (Test-Path "$(Split-Path $Path)\$FolderName_New") { Remove-Item "$(Split-Path $Path)\$FolderName_New" -Recurse -Force }
-    if (Test-Path "$(Split-Path $Path)\$FolderName_Old") { Remove-Item "$(Split-Path $Path)\$FolderName_Old" -Recurse -Force }
-
-    Invoke-WebRequest $Uri -OutFile $FileName -TimeoutSec 15 -UseBasicParsing
-    Start-Process ".\Utils\7z" "x $FileName -o$(Split-Path $Path)\$FolderName_Old -y -spe" -Wait
-    if (Get-ChildItem "$(Split-Path $Path)\$FolderName_Old" | Where-Object PSIsContainer -EQ $false) {
-        Rename-Item "$(Split-Path $Path)\$FolderName_Old" "$FolderName_New"
-    }
-    else {
-        Get-ChildItem "$(Split-Path $Path)\$FolderName_Old" | Where-Object PSIsContainer -EQ $true | ForEach-Object { Move-Item "$(Split-Path $Path)\$FolderName_Old\$_" "$(Split-Path $Path)\$FolderName_New" }
-        Remove-Item "$(Split-Path $Path)\$FolderName_Old"
-    }
-    Remove-item $FileName
-}
-
-function Get-Algorithm {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Algorithm
-    )
-    
-    $Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
-
-    $Algorithm = (Get-Culture).TextInfo.ToTitleCase(($Algorithm -replace "-", " " -replace "_", " ")) -replace " "
-
-    if ($Algorithms.$Algorithm) { $Algorithms.$Algorithm }
-    else { $Algorithm }
-}
-
-function Get-Location {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Location
-    )
-    
-    $Locations = Get-Content "Locations.txt" | ConvertFrom-Json
-
-    $Location = (Get-Culture).TextInfo.ToTitleCase(($Location -replace "-", " " -replace "_", " ")) -replace " "
-
-    if ($Locations.$Location) { $Locations.$Location }
-    else { $Location }
-}
-
-Function Autoupdate {
-    # GitHub Supporting only TLSv1.2 on feb 22 2018
-    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
-    Write-host (Split-Path $script:MyInvocation.MyCommand.Path)
-    Update-Status("Checking AutoUpdate")
-    Update-Notifications("Checking AutoUpdate")
-    # write-host "Checking autoupdate"
-    $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
-    try {
-        $AutoUpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
-    }
-    catch { $AutoUpdateVersion = Get-content ".\Config\AutoUpdateVersion.json" | Convertfrom-json }
-    If ($AutoUpdateVersion -ne $null) { $AutoUpdateVersion | ConvertTo-json | Out-File ".\Config\AutoUpdateVersion.json" }
-    If ($AutoUpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoUpdateVersion.Version -gt $Variables.CurrentVersion -and $AutoUpdateVersion.AutoUpdate) {
-        Update-Status("Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))")
-        # Write-host "Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
-        $LabelNotifications.ForeColor = "Green"
-        $LabelNotifications.Lines += "Version $([Version]$AutoUpdateVersion.Version) available"
-
-        If ($AutoUpdateVersion.Autoupdate) {
-            $LabelNotifications.Lines += "Starting Auto Update"
-            # Setting autostart to true
-            If ($Variables.Started) { $Config.autostart = $true }
-            Write-Config -ConfigFile $ConfigFile -Config $Config
-            
-            # Download update file
-            $UpdateFileName = ".\$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version)"
-            Update-Status("Downloading version $($AutoUpdateVersion.Version)")
-            Update-Notifications("Downloading version $($AutoUpdateVersion.Version)")
-            try {
-                Invoke-WebRequest $AutoUpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+        "--------------------------------------------------------------------------------" | out-host
+        #Do nothing for a few seconds as to not overload the APIs
+        if ($newMiner -eq $true) {
+            if ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
+            else {
+                if ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
+                else { $Variables.TimeToSleep = $Config.StatsInterval }
             }
-            catch { Update-Status("Update download failed"); Update-Notifications("Update download failed"); $LabelNotifications.ForeColor = "Red"; return }
-            If (!(test-path ".\$($UpdateFileName).zip")) {
-                Update-Status("Cannot find update file")
-                Update-Notifications("Cannot find update file")
-                $LabelNotifications.ForeColor = "Red"
-                return
-            }
-            
-            # Backup current version folder in zip file
-            Update-Status("Backing up current version...")
-            Update-Notifications("Backing up current version...")
-            $BackupFileName = ("AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
-            Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
-            If (!(test-path .\$BackupFileName)) { Update-Status("Backup failed"); return }
-            
-            # Pre update specific actions if any
-            # Use PreUpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1") {
-                Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
-            }
-            
-            # Empty OptionalMiners - Get rid of Obsolete ones
-            Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-            
-            # unzip in child folder excluding config
-            Update-Status("Unzipping update...")
-            Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
-            
-            # copy files 
-            Update-Status("Copying files...")
-            Copy-Item .\$UpdateFileName\* .\ -force -Recurse
-
-            # Remove any obsolete Optional miner file (ie. Not in new version OptionalMiners)
-            Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-
-            # Update Optional Miners to Miners if in use
-            Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
-
-            # Remove any obsolete miner file (ie. Not in new version Miners or OptionalMiners)
-            Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-
-            # Post update specific actions if any
-            # Use PostUpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1") {
-                Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
-            }
-            
-            #Remove temp files
-            Update-Status("Removing temporary files...")
-            Remove-Item .\$UpdateFileName -Force -Recurse
-            Remove-Item ".\$($UpdateFileName).zip" -Force -Recurse
-            If (Test-Path ".\PreUpdateActions.ps1") { Remove-Item ".\PreUpdateActions.ps1" -Force -Recurse }
-            If (Test-Path ".\PostUpdateActions.ps1") { Remove-Item ".\PostUpdateActions.ps1" -Force -Recurse }
-            Get-ChildItem "AutoupdateBackup-*.zip" | Where-Object { $_.name -notin (Get-ChildItem "AutoupdateBackup-*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
-            
-            # Start new instance (Wait and confirm start)
-            # Kill old instance
-            If ($AutoUpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) {
-                Update-Status("Starting my brother")
-                $StartCommand = ((gwmi win32_process -filter "ProcessID=$PID" | Select-Object commandline).CommandLine)
-                $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
-                # Giving 10 seconds for process to start
-                $Waited = 0
-                Start-Sleep 10
-                While (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
-                If (!(Get-Process -id $NewKid.ProcessId -EA silentlycontinue)) {
-                    Update-Status("Failed to start new instance of $($Variables.CurrentProduct)")
-                    Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
-                    $LabelNotifications.ForeColor = "Red"
-                    return
-                }
-                
-                $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-                $TempVerObject | Add-Member -Force @{AutoUpdated = (Get-Date) }
-                $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-                
-                Update-Status("$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)")
-                Update-Notifications("$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)")
-
-                Update-Status("Killing myself")
-                If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
+        }
+        else {
+            $Variables.TimeToSleep = $Config.Interval
+        }
+        #Save current hash rates
+        $Variables.ActiveMinerPrograms | ForEach-Object {
+            if ($_.Process -eq $null -or $_.Process.HasExited) {
+                if ($_.Status -eq "Running") { $_.Status = "Failed" }
             }
             else {
-                $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-                $TempVerObject | Add-Member -Force @{AutoUpdated = (Get-Date) }
-                $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-                
-                Update-Status("Successfully updated to version $($AutoUpdateVersion.Version)")
-                Update-Notifications("Successfully updated to version $($AutoUpdateVersion.Version)")
-                $LabelNotifications.ForeColor = "Green"
+                # we don't want to store hashrates if we run less than $Config.StatsInterval sec
+                $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
+                if ($WasActive -ge $Config.StatsInterval) {
+                    $_.HashRate = 0
+                    $Miner_HashRates = $null
+                    if ($_.New) { $_.Benchmarked++ }         
+                    $Miner_HashRates = Get-HashRate $_.API $_.Port ($_.New -and $_.Benchmarked -lt 3)
+                    $_.HashRate = $Miner_HashRates | Select-Object -First $_.Algorithms.Count           
+                    if ($Miner_HashRates.Count -ge $_.Algorithms.Count) {
+                        for ($i = 0; $i -lt $_.Algorithms.Count; $i++) {
+                            $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate" -Value ($Miner_HashRates | Select-Object -Index $i)
+                        }
+                        $_.New = $false
+                        $_.Hashrate_Gathered = $true
+                        "Stats $($_.Algorithms) -> $($Miner_HashRates | ConvertTo-Hash) after $($WasActive) sec" | out-host
+                    }
+                }
             }
+            #Benchmark timeout
+            #        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
+            #        {
+            #            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
+            #            {
+            #                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate") -eq $null)
+            #                {
+            #                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate" -Value 0
+            #                }
+            #            }
+            #        }
         }
-        elseif (!($Config.Autostart)) {
-            UpdateStatus("Cannot autoupdate as autostart not selected")
-            Update-Notifications("Cannot autoupdate as autostart not selected")
-            $LabelNotifications.ForeColor = "Red"
+        # }
+
+        <#
+     For some reason (need to investigate) $Variables.ActiveMinerPrograms.psobject.TypeNames
+     Inflates adding several lines at each loop and causing a memory leak after log runtime
+     Code below copies the object which results in a new version which avoid the problem.
+     Will need rework. 
+    #>
+        $Variables.ActiveMinerPrograms | Where-Object { $_.Status -ne "Running" } | ForEach-Object { $_.process = $_.process | Select-Object HasExited, StartTime, ExitTime }
+        $ActiveMinerProgramsCOPY = @()
+        $Variables.ActiveMinerPrograms | ForEach-Object { $ActiveMinerCOPY = [PSCustomObject]@{ }; $_.psobject.properties | Sort-Object Name | ForEach-Object { $ActiveMinerCOPY | Add-Member -Force @{$_.Name = $_.Value } }; $ActiveMinerProgramsCOPY += $ActiveMinerCOPY }
+        $Variables.ActiveMinerPrograms = $ActiveMinerProgramsCOPY
+        Remove-Variable ActiveMinerProgramsCOPY
+        Remove-Variable ActiveMinerCOPY
+    
+        $Error.Clear()
+        $Global:Error.clear()
+    
+        Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
+        if ($Variables.BrainJobs.count -gt 0) {
+            $Variables.BrainJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Error.Clear() } }
+            $Variables.BrainJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Progress.Clear() } }
+            $Variables.BrainJobs.ChildJobs | ForEach-Object { $_.Output.Clear() }
         }
-        else {
-            UpdateStatus("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
-            Update-Notifications("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
-            $LabelNotifications.ForeColor = "Red"
+        if ($Variables.EarningsTrackerJobs.count -gt 0) {
+            $Variables.EarningsTrackerJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Error.Clear() } }
+            $Variables.EarningsTrackerJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Progress.Clear() } }
+            $Variables.EarningsTrackerJobs.ChildJobs | ForEach-Object { $_.Output.Clear() }
         }
+
+        # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
+        if (Test-Path ".\EndLoopCode.ps1") { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }
     }
-    else {
-        Update-Status("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
-        Update-Notifications("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
-        $LabelNotifications.ForeColor = "Green"
-    }
+    # $Variables.StatusText = "Cycle Time (seconds): $($CycleTime.TotalSeconds)"
+    "Cycle Time (seconds): $($CycleTime.TotalSeconds)" | out-host
+    $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep))"
+    $Variables | Add-Member -Force @{EndLoop = $True }
+    # Start-Sleep $Variables.TimeToSleep
+    # }
 }
+#Stop the log
+# Stop-Transcript
