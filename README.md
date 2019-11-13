@@ -76,14 +76,11 @@ Easy configuration, easy start:
   
   Pools variants
 
-      24hr - uses last 24hour Actual API too request profit
-         -Low switching rate
+      24hr - uses last 24hour Actual API too request profit (no estimates or advanced calculations)
 	 
-      normal - uses advanced calculations to reduce switching
-         -Medium switching rate
+      normal - uses advanced calculations to reduce uneeded switching
 	 
-      coins - mines only the top paying current coin in Algo 
-         -Instead of spreading hashrate across lowing paying coins ZergPool only
+      coins - uses advanced calculations, mines only top paying coin in Algo (ZergPool Only)
 	 
   
   Developer/Contributors Donation: 
