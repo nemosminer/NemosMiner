@@ -2,7 +2,7 @@ if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLo
 
 
 $Path = ".\Bin\Ethash-Claymore147\EthDcrMiner64.exe"
-$Uri = "https://github.com/Minerx117/Claymore-s-Dual-Ethereum/releases/download/v14.7/ClaymoresDualEthereumv147.7z"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v15.0/Claymoresethereumv15.0.7z"
 
 $Commands = [PSCustomObject]@{
      #"ethash" = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash -strap 1 -strap 2 -strap 3 -strap 4 -strap 5 -strap 6
