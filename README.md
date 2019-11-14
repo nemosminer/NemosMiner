@@ -148,7 +148,7 @@ NemosMiner Monitoring Server : https://nemosminer.com
 
   zergpool/zergpoolcoins/nlpool/ahashpool/zpool/blazepool/blockmasters
    
-      Uses calculations based on 24hractual and currentestimate prices to a more realistic estimate.
+      Uses calculations based on 24hractual and currentestimate prices to get a more realistic estimate.
       Includes some trust index based on past 1hr currentestimate variation from 24hr.
       AND is NOT sensible to spikes.
       This shows less switching than following Current Estimate and more switching that following the 24hr Actual.
