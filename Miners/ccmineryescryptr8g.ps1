@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-Ccmineryescrypt821r8gv1\ccminer.exe"
+$Path = ".\Bin\NVIDIA-Ccmineryescrypt821r8gv2\ccminer.exe"
 $Uri = "https://github.com/Kudaraidee/ccminer-KlausT-8.21-mod-koto-sapling-2/releases/download/8.21-mod-r17-koto-sapling/ccminer-KlausT-8.21-mod-r17-koto-sapling-2.zip"
 
 $Commands = [PSCustomObject]@{
