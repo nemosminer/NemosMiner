@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-XMRig462b\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v4.6.2-beta/xmrig-4.6.2-beta-msvc-cuda10_1-win64.7z"
+$Path = ".\Bin\CPU-XMRig500\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v5.0.0/xmrig-5.0.0-msvc-cuda10_1-win64.7z"
 
 $Commands = [PSCustomObject]@{
     "cryptonightr"       = " -a cryptonight/r --nicehash" #cryptonight/r (NiceHash)
