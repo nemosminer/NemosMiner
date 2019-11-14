@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
  
-$Path = ".\Bin\NVIDIA-Gminer173\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.73/gminer_1_73_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer174\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.74/gminer_1_74_windows64.zip"
 $Commands = [PSCustomObject]@{
     #"beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
@@ -13,7 +13,7 @@ $Commands = [PSCustomObject]@{
     "grincuckaroo29" = " --devices $($Config.SelGPUDSTM) --algo cuckaroo29 --pers auto" #Grincuckaroo29
     "grincuckarood29" = " --devices $($Config.SelGPUDSTM) --algo cuckarood29 --pers auto" #Grincuckarood29
     "cuckoocycle"    = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
-    #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto"
+    #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"ethash" = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
 }
 
