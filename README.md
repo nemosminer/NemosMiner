@@ -146,9 +146,9 @@ NemosMiner Monitoring Server : https://nemosminer.com
           - NiceHash has a 4% fee - Set PricePenaltyFactor to 0.96 (1-0.04)
           - You feel like a pool is exaggerating his estimations by 10% - Set PricePenaltyFactor to 0.9
 
-  zergpoolplus/nlpoolplus/ahashpoolplus/zpoolplus/blazepoolplus/phiphipoolplus/blockmastersplus/hashrefineryplus
+  zergpool/zergpoolcoins/nlpool/ahashpool/zpool/blazepool/blockmasters
    
-      Uses calculations based on 24hractual and currentestimate ahashpool prices to get more realistic estimate.
+      Uses calculations based on 24hractual and currentestimate prices to a more realistic estimate.
       Includes some trust index based on past 1hr currentestimate variation from 24hr.
       AND is NOT sensible to spikes.
       This shows less switching than following Current Estimate and more switching that following the 24hr Actual.
