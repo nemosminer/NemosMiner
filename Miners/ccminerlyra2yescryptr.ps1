@@ -10,6 +10,7 @@ $Commands = [PSCustomObject]@{
     "yescryptr8"  = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8
     "yescryptr16" = " -i 13.2 -a yescryptr16 -d $($Config.SelGPUCC)" #YescryptR16
     "yescryptr32" = " -i 12.49 -a yescryptr32 -d $($Config.SelGPUCC)" #YescryptR32
+    "yescryptr8g" = " -a yescrypt -d $($Config.SelGPUCC)" #YescryptR8g
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
