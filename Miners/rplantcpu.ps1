@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-Opt4023a\cpuminer-sse42.exe" #Intel
-#$Path = ".\Bin\CPU-Opt4023a\cpuminer-ryzen.exe" #AMD
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.0.23a/cpuminer-rplant-4.0.23a-win.7z"
+$Path = ".\Bin\CPU-Opt4027\cpuminer-sse42.exe" #Intel
+#$Path = ".\Bin\CPU-Opt4027\cpuminer-ryzen.exe" #AMD
+$Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.27/cpuminer-opt-win.zip"
 
 $Commands = [PSCustomObject]@{
     "yescryptr8"  = " -a yescryptr8" #YescryptR8 
