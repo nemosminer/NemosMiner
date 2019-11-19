@@ -4,7 +4,6 @@ $Path = ".\Bin\NVIDIA-CcmineryescryptrV4\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccmineryescryptr8g/releases/download/v4/ccmineryescryptrv4.zip"
 
 $Commands = [PSCustomObject]@{
-    "lyra2z330"   = " -i 10 -t 1 -a lyra2z330" #Lyra2z330 single GPU only, needs work for multicards rigs
     "yescryptr8"  = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8
     "yescryptr16" = " -i 13.2 -a yescryptr16 -d $($Config.SelGPUCC)" #YescryptR16
     "yescryptr32" = " -i 12.49 -a yescryptr32 -d $($Config.SelGPUCC)" #YescryptR32
