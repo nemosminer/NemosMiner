@@ -1,14 +1,15 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
  
-$Path = ".\Bin\NVIDIA-lolMiner088\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.8/lolMiner_v088_Win64.zip"
+$Path = ".\Bin\NVIDIA-lolMiner09\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.9/lolMiner_v09_Win64.zip"
 
 $Commands = [PSCustomObject]@{
-     "equihash144"  = " --coin AUTO144_5" #Equihash 144,5
-     "equihash192" = " --coin AUTO192_7" #Equihash 144,5
-     "equihash96"  = " --coin AUTO96_5" #Equihash 144,5
-     "equihash125" = " --coin AUTO125_4" #Equihash 125,4
-     "beamv2"      = " --coin BEAM-II" #Equihash 150,5 (NiceHash)
+     "equihash144"    = " --coin AUTO144_5" #Equihash 144,5
+     "equihash192"    = " --coin AUTO192_7" #Equihash 144,5
+     "equihash96"     = " --coin AUTO96_5" #Equihash 144,5
+     "equihash125"    = " --coin AUTO125_4" #Equihash 125,4
+     "beamv2"         = " --coin BEAM-II" #Equihash 150,5 (NiceHash)
+    #"grincuckatoo31" = " --coin GRIN-AT31" 
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
