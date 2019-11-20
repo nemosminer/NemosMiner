@@ -18,7 +18,7 @@
     "GPUCount": 0,
     "HideConsole": false,
     "IdleSec": "120",
-    "IncludeOptionalMiners": true,
+    "IncludeOptionalMiners": false,
     "IncludeRegularMiners": true,
     "Interval": 240,
     "IsFixedSize": false,
