@@ -7,6 +7,7 @@ try {
 catch { return }
 if (-not $Request) { return }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
+$Fees = 5 #5% FOR EXTERNAL WALLET CHANGE TO 2% IF YOU USE INTERNAL
 $ConfName = if ($Config.PoolsConfig.$Name -ne $Null) { $Name }else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
 $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 fail stratum #> | ForEach-Object {
@@ -17,7 +18,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
     $DivisorMultiplier = 1000000000
     $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
     $Divisor = 100000000
-    $Stat = Set-Stat -Name "$($Name)_$($NiceHash_Algorithm)_Profit" -Value ([Double]$_.paying / $Divisor)
+    $Stat = Set-Stat -Name "$($Name)_$($NiceHash_Algorithm)_Profit" -Value ([Double]$_.paying / $Divisor * (1 - ($Fees / 100)))
     $Locations = "eu", "usa", "jp"
     $Locations | ForEach-Object {
         $NiceHash_Location = $_
