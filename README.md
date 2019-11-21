@@ -143,7 +143,6 @@ NemosMiner Monitoring Server : https://nemosminer.com
 
         - When using advanced per pool configuration, it is possible to add a penalty factor for a specific pool. This simply adds as a multiplicator on estimations presented by the pool.
         - Example scenario
-          - NiceHash has a 4% fee - Set PricePenaltyFactor to 0.96 (1-0.04)
           - You feel like a pool is exaggerating his estimations by 10% - Set PricePenaltyFactor to 0.9
 
   zergpool/zergpoolcoins/nlpool/ahashpool/zpool/blazepool/blockmasters
@@ -223,11 +222,11 @@ some miners may need 'Visual C++ 2015 update 3' if you don't already have it: (i
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 10 = 431.86 
+recommended/optimal Windows Nvidia driver Windows 10 = 431.68 hotfix 
 
-[Windows10 Standard](http://us.download.nvidia.com/Windows/431.86/431.86-desktop-win10-64bit-international-nsd-whql.exe)
+[Windows10 Standard](https://international.download.nvidia.com/Windows/431.68hf/431.68-desktop-notebook-win10-64bit-international.hf.exe)
 
-[Windows10 DCH](http://us.download.nvidia.com/Windows/431.86/431.86-desktop-win10-64bit-international-nsd-dch-whql.exe)
+[Windows10 DCH](https://international.download.nvidia.com/Windows/431.68hf/431.68-desktop-notebook-win10-64bit-international-dch.hf.exe)
 
 recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
 
