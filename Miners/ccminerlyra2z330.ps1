@@ -4,8 +4,8 @@ $Path = ".\Bin\NVIDIA-Ccminerlyra2z330v2\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccminer8.21r9-lyra2z330/releases/download/v2/ccminerlyra2z330v2.zip"
 
 $Commands = [PSCustomObject]@{
-     "lyra2z330" = " -i 11.87 -d $($Config.SelGPUCC) -a lyra2z330" #Lyra2z330
-     "yescrypt"  = " -a yescrypt -d $($Config.SelGPUCC)" #Yescrypt
+    "lyra2z330" = " -i 11.87 -d $($Config.SelGPUCC) -a lyra2z330" #Lyra2z330
+    "yescrypt"  = " -a yescrypt -d $($Config.SelGPUCC)" #Yescrypt
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
