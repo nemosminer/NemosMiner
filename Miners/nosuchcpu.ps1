@@ -5,7 +5,6 @@ $Uri = "https://github.com/patrykwnosuch/cpuminer-nosuch/releases/download/3.8.8
 
 $Commands = [PSCustomObject]@{
     "m7m"         = " -a m7m" #M7m
-    "yescryptr32" = " -a yescryptr32" #YescryptR32
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
