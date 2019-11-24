@@ -5,8 +5,10 @@ $Path = ".\Bin\CPU-Opt4028\cpuminer-sse42.exe" #Intel
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.28/cpuminer-opt-win.zip"
 
 $Commands = [PSCustomObject]@{
-    "yescryptr8"  = " -a yescryptr8" #YescryptR8 
-    "yescryptr8g" = " -a yescryptr8g" #YescryptR8g     
+    "yescryptr8"   = " -a yescryptr8" #YescryptR8 
+    "yescryptr16"  = " -a yescryptr16" #YescryptR16 
+    "yescryptr32"  = " -a yescryptr32" #YescryptR32 
+    "yescryptr8g"  = " -a yescryptr8g" #YescryptR8g     
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
