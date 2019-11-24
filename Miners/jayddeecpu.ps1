@@ -5,20 +5,8 @@ $Path = ".\Bin\CPU-JayDDee3910\cpuminer-aes-sse42.exe" #Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.9.10/cpuminer-opt-3.9.10-windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "allium"      = " -a allium" #Allium
+    "lyra2z330"   = " -a lyra2z330" #Lyra2z330
     "yespowerr16" = " -a yespowerr16" #YespowerR16
-    "skein2"      = " -a skein2" #Skein2
-    "x21s"        = " -a x21s" #X21s
-    "hex"         = " -a hex" #Hex
-    "blake2b"     = " -a blake2b" #blake2b
-    "lyra2z330"   = " -a lyra2z330" #Lyra2z330 
-    "bmw512"      = " -a bmw512" #Bmw512 
-    "x16rt"       = " -a x16rt" #X16rt 
-    "x12"         = " -a x12" #X12
-    "veil"        = " -a veil" #Veil 
-    "phi2"        = " -a phi2" #Phi2 
-    "x16rv2"      = " -a x16rv2" #X16rv2
-    "phi2-lux"    = " -a phi2" #Phi-lux
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
