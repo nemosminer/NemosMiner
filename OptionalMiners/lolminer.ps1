@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
  
-$Path = ".\Bin\NVIDIA-lolMiner09\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.9/lolMiner_v09_Win64.zip"
+$Path = ".\Bin\NVIDIA-lolMiner091\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.91/lolMiner_v091_Win64.zip"
 
 $Commands = [PSCustomObject]@{
      "equihash144"    = " --coin AUTO144_5" #Equihash 144,5
