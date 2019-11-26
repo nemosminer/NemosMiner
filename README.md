@@ -86,8 +86,11 @@ Easy configuration, easy start:
   Developer/Contributors Donation: 
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
      
-      There is a 14 minute per day default donation (0.9%),
-      which can be increased or decreased in the config tab, 
+      Donation fee free = 0% for 3 Months over Christmas and New Years
+      Happy Mining 27/11/2019-27/02/2020
+      
+      There was a 14 minute per day default donation (0.9%),
+      which could be increased or decreased in the config tab, 
       please help support the great team behind NemosMiner by leaving mining donations turned on
    
 NemosMiner Monitoring Server : https://nemosminer.com
