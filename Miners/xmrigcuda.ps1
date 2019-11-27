@@ -4,8 +4,9 @@ $Path = ".\Bin\NVIDIA-XMRig501\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v5.0.1/xmrig-5.0.1-msvc-cuda10_1-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    "cryptonightr"       = " --coin=monero --nicehash" #cryptonight/r (NiceHash)
-    "cryptonight-monero" = " --coin=monero" #cryptonight/r (Mining Pool Hub)
+    #"randomx"       = " --coin=monero --nicehash" #cryptonight/r
+    "cryptonightr"       = " -a cryptonight/r --nicehash" #cryptonight/r (NiceHash)
+    "cryptonight-monero" = " -a cryptonight/r" #cryptonight/r (Mining Pool Hub)
 }
 
 $Port = $Variables.NVIDIAMinerAPITCPPort
