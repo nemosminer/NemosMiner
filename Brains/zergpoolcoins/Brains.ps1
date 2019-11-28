@@ -78,6 +78,10 @@ $PrevTrend = 0
 # Remove progress info from job.childjobs.Progress to avoid memory leak
 $ProgressPreference = "SilentlyContinue"
 
+# Fix TLS Version erroring
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
+
 While ($true) {
     #Get-Config{
     If (Test-Path ".\BrainConfig.xml") {
@@ -92,12 +96,25 @@ While ($true) {
         $EnableLog = $Config.EnableLog
         $PoolName = $Config.PoolName
         $PoolStatusUri = $Config.PoolStatusUri
+        $PerAPIFailPercentPenalty = $Config.PerAPIFailPercentPenalty
+        $AllowedAPIFailureCount = $Config.AllowedAPIFailureCount
+        $UseFullTrust = $Config.UseFullTrust
     }
     else { return }
     $CurDate = Get-Date
     $RetryInterval = 0
-    try { $AlgoData = Invoke-WebRequest $PoolStatusUri -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json }catch { $RetryInterval = $Interval }
+    try {
+        # $AlgoData = Invoke-WebRequest $PoolStatusUri -TimeoutSec 15 -UseBasicParsing -Headers @{"Cache-Control"="no-cache"} | ConvertFrom-Json
+        $AlgoData = Invoke-WebRequest $PoolStatusUri -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $APICallFails = 0
+    }
+    catch {
+        $APICallFails++
+        $RetryInterval = $Interval * [math]::max(0, $APICallFails - $AllowedAPIFailureCount)
+    }
     Foreach ($Algo in ($AlgoData | gm -MemberType NoteProperty).Name) {
+        $BasePrice = If ($AlgoData.($Algo).actual_last24h) { $AlgoData.($Algo).actual_last24h / 1000 } else { $AlgoData.($Algo).estimate_last24h }
+        $AlgoData.($Algo).estimate_current = [math]::max(0, [decimal]($AlgoData.($Algo).estimate_current * ( 1 - ($PerAPIFailPercentPenalty * [math]::max(0, $APICallFails - $AllowedAPIFailureCount) / 100))))
         $AlgoObject += [PSCustomObject]@{
             Date               = $CurDate
             Name               = $AlgoData.($Algo).name
@@ -108,11 +125,11 @@ While ($true) {
             Workers            = $AlgoData.($Algo).Workers
             estimate_current   = $AlgoData.($Algo).estimate_current -as [Decimal]
             estimate_last24h   = $AlgoData.($Algo).estimate_last24h
-            actual_last24h     = $AlgoData.($Algo).actual_last24h / 1000
+            actual_last24h     = $BasePrice
             hashrate_last24h   = $AlgoData.($Algo).hashrate_last24h
-            Last24Drift        = $AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h / 1000)
-            Last24DriftSign    = If ($AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h / 1000) -ge 0) { "Up" } else { "Down" }
-            Last24DriftPercent = if ($AlgoData.($Algo).actual_last24h -gt 0) { ($AlgoData.($Algo).estimate_current - ($AlgoData.($Algo).actual_last24h / 1000)) / ($AlgoData.($Algo).actual_last24h / 1000) } else { 0 }
+            Last24Drift        = $AlgoData.($Algo).estimate_current - $BasePrice
+            Last24DriftSign    = If (($AlgoData.($Algo).estimate_current - $BasePrice) -ge 0) { "Up" } else { "Down" }
+            Last24DriftPercent = if ($BasePrice -gt 0) { ($AlgoData.($Algo).estimate_current - $BasePrice) / $BasePrice } else { 0 }
             FirstDate          = ($AlgoObject[0]).Date
             TimeSpan           = If ($AlgoObject.Date -ne $null) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
         }
@@ -136,7 +153,16 @@ While ($true) {
         $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | ? { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | ? { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | ? { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | ? { $_.Name -eq $Name }).Median)
         $Penalty = ($PenaltySampleSizeHalf * $SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower + 1)
         $LiveTrend = ((Get-Trendline ($AlgoObjects | ? { $_.Name -eq $Name }).estimate_current)[1])
-        $Price = ($Penalty) + ($CurAlgoObject | ? { $_.Name -eq $Name }).actual_last24h
+        # $Price = (($Penalty) + ($CurAlgoObject | ? {$_.Name -eq $Name}).actual_last24h) 
+        $Price = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? { $_.Name -eq $Name }).actual_last24h) )
+        If ( $UseFullTrust ) {
+            If ( $Penalty -gt 0 ) {
+                $Price = [Math]::max([decimal]$Price, [decimal]($CurAlgoObject | ? { $_.Name -eq $Name }).estimate_current)
+            }
+            else {
+                $Price = [Math]::min([decimal]$Price, [decimal]($CurAlgoObject | ? { $_.Name -eq $Name }).estimate_current)
+            }
+        }
 
         $MathObject += [PSCustomObject]@{
             Name         = $Name
@@ -146,12 +172,15 @@ While ($true) {
             DownDriftAvg = ($GroupAvgSampleSize | ? { $_.Name -eq $Name + ", Down" }).Avg
             Penalty      = $Penalty
             PlusPrice    = $Price
+            PlusPriceRaw = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | ? { $_.Name -eq $Name }).actual_last24h) )
+            PlusPriceMax = $Price
             CurrentLive  = ($CurAlgoObject | ? { $_.Name -eq $Name }).estimate_current
             Current24hr  = ($CurAlgoObject | ? { $_.Name -eq $Name }).actual_last24h
             Date         = $CurDate
             LiveTrend    = $LiveTrend
+            APICallFails = $APICallFails
         }
-        #$AlgoData.($Name).actual_last24h = $Price
+        # $AlgoData.($Name).actual_last24h = $Price
         $AlgoData.($Name) | Add-Member -Force @{Plus_Price = $Price }
     }
     if ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
