@@ -5,7 +5,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v5.0.1/xmr
 
 $Commands = [PSCustomObject]@{
     #"randomx"            = " --coin=monero --nicehash" #RandomX
-    #"randomx"            = " -a rx/0 --nicehash" #RandomX
+    "randomx"             = " -a rx/0 --nicehash" #RandomX
     "cryptonightr"        = " -a cryptonight/r --nicehash" #cryptonight/r (NiceHash)
     "cryptonight-monero"  = " -a cryptonight/r" #cryptonight/r (Mining Pool Hub)
 }
