@@ -2,16 +2,17 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 
 $Path = ".\Bin\NVIDIA-miniZ15s\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5s/miniZ_v1.5s_cuda10_win-x64.zip"
+
 $Commands = [PSCustomObject]@{
-    "beamv2"       = " --par=beam --pers auto " #Beamv2
-    "equihash-btg" = " --algo 144,5 --pers BgoldPoW " # Equihash-btg MPH (fastest)
+    "equihash144"  = " --par=144,5 --pers auto" #Equihash144
+    "equihash125"  = " --par=125,4 --pers auto" #Equihash125
+    "zhash"        = " --par=144,5 --pers auto" #Zhash
+    "beamv2"       = " --par=beam --pers auto" #Beamv2
+    "beam"         = " --par=150,5 --pers auto" #Beamv2
+    "equihash192"  = " --par=192,7 --pers auto" #Equihash192
+    #"equihash96"   = " --par=96,5 --pers auto" #Equihash192
+    "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
     "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
-    "equihash125"  = " --par=125,4 --oc1 " #Equihash125
-    "equihash144"  = " --algo 144,5 --pers auto --oc1 " #Equihash144 (fastest)
-    "equihash192"  = " --algo 192,7 --pers auto --oc1 " #Equihash192 (fastest)
-    "zhash"        = " --algo 144,5 --pers auto " #Zhash (fastest)
-    # "beam"         = " --algo 150,5 --pers auto" #Beam
-    # "equihash96"   = " --algo 96,5  --pers auto --oc1 " #Equihash96 (ewbf faster)
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
