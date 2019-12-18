@@ -14,7 +14,6 @@ $Commands = [PSCustomObject]@{
     "hmq1725"     = " --intensity 8 -a hmq1725" #Hmq1725
     "pipe"        = " --intensity 8 -a pipe" #Pipe 
 }
-}
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
