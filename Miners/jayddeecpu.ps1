@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-JayDDee3911\cpuminer-zen.exe" #AMD
-#$Path = ".\Bin\CPU-JayDDee3911\cpuminer-aes-sse42.exe" #Intel
+#$Path = ".\Bin\CPU-JayDDee3911\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3911\cpuminer-aes-sse42.exe" #Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.10.4/cpuminer-opt-3.10.4-windows.zip"
 
 $Commands = [PSCustomObject]@{
