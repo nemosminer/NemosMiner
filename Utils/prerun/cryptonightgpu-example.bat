@@ -1,5 +1,5 @@
-REM This file will run for skein2 algo
-REM This file and nvidia inspector is disabled by default to Enable them, rename this file from skein2-example.bat to skein2.bat
+REM This file will run for cryptonightgpu algo
+REM This file and nvidia inspector is disabled by default to Enable them, rename this file from cryptonightgpu-example.bat to cryptonightgpu.bat
 REM Below is a example for a 6 GPU setup
 
 SET PL=61
