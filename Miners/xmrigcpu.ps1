@@ -1,13 +1,14 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-XMRig501\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v5.0.1/xmrig-5.0.1-msvc-cuda10_1-win64.7z"
+$Path = ".\Bin\CPU-XMRig530\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.3.0/xmrig-5.3.0-msvc-cuda10_1-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    #"randomx"            = " --coin=monero --nicehash" #RandomX
-    "randomxmonero"       = " -a rx/0 --nicehash" #RandomX
-    "cryptonightr"        = " -a cryptonight/r --nicehash" #cryptonight/r (NiceHash)
-    "cryptonight-monero"  = " -a cryptonight/r" #cryptonight/r (Mining Pool Hub)
+    "randomxmonero"         = " -a rx/0 --nicehash" #RandomX
+    "randomx"               = " -a rx/0 --nicehash" #RandomX
+    "cryptonight_heavyx"    = " -a cn/double --nicehash" #cryptonight_heavyx
+    "cryptonight_saber"     = " -a cn-heavy/tube --nicehash" #cryptonight_heavyx
+    "cryptonightv7"         = " -a cn/1 --nicehash" #cryptonightv7
 }
 
 $ThreadCount = $Variables.ProcessorCount - 1

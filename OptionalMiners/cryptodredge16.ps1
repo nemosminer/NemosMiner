@@ -4,9 +4,16 @@ $Path = ".\Bin\NVIDIA-CryptoDredge0160c10\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/CryptoDredge_0.16.0_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "exosis" = " --intensity 8 -a exosis" #Exosis  
-    "phi"    = " --intensity 8 -a phi" #Phi
-    "dedal"  = " --intensity 8 -a dedal" #Dedal
+    "exosis"      = " --intensity 8 -a exosis" #Exosis  
+    "phi"         = " --intensity 8 -a phi" #Phi
+    "dedal"       = " --intensity 8 -a dedal" #Dedal
+    "allium"      = " --intensity 8 -a allium" #Allium  
+    "neoscrypt"   = " --intensity 6 -a neoscrypt" #Neoscrypt
+    "phi2"        = " --intensity 8 -a phi2" #Phi2 
+    "phi2-lux"    = " --intensity 8 -a phi2" #Phi2-lux   
+    "hmq1725"     = " --intensity 8 -a hmq1725" #Hmq1725
+    "pipe"        = " --intensity 8 -a pipe" #Pipe 
+}
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

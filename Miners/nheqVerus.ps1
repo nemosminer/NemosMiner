@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-nheqVerus072\nheqminer.exe"
-$Uri = "https://github.com/VerusCoin/nheqminer/releases/download/0.7.2/nheqminer-Windows-v0.7.2.zip"
+$Path = ".\Bin\CPU-nheqVerus080\nheqminer.exe"
+$Uri = "https://github.com/VerusCoin/nheqminer/releases/download/v0.8.0/nheqminer-Windows-v0.8.0.zip"
 
 $Commands = [PSCustomObject]@{
     "verus" = "" #Verushash
@@ -13,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
 
     switch ($_) {
         "hodl" { $ThreadCount = $Variables.ProcessorCount }
-        default { $ThreadCount = $Variables.ProcessorCount - 2 }
+        default { $ThreadCount = $Variables.ProcessorCount - 1 }
     }
 
     [PSCustomObject]@{

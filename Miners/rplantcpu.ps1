@@ -1,10 +1,11 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-Opt4028\cpuminer-sse42.exe" #Intel
-#$Path = ".\Bin\CPU-Opt4028\cpuminer-ryzen.exe" #AMD
+#$Path = ".\Bin\CPU-Opt4028\cpuminer-sse42.exe" #Intel
+$Path = ".\Bin\CPU-Opt4028\cpuminer-ryzen.exe" #AMD
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.0.28/cpuminer-opt-win.zip"
 
 $Commands = [PSCustomObject]@{
+    "yespoweriots" = " -a yespoweriots" #yespoweriots
     "yescryptr8"   = " -a yescryptr8" #YescryptR8 
     "yescryptr16"  = " -a yescryptr16" #YescryptR16 
     "yescryptr32"  = " -a yescryptr32" #YescryptR32 
@@ -15,9 +16,8 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
 
-    $ThreadCount = $Variables.ProcessorCount - 2 
+    $ThreadCount = $Variables.ProcessorCount - 1 
 
-    If ($Algo -eq "yescryptr8" -and $Pools.$Algo.Host -like "*nlpool*") { return }
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path

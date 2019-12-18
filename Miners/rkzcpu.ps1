@@ -14,7 +14,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
 
-    $ThreadCount = $Variables.ProcessorCount - 2
+    $ThreadCount = $Variables.ProcessorCount - 1
 
     [PSCustomObject]@{
         Type      = "CPU"
