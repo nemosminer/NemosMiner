@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-CcmineryescryptrV4\ccminer.exe"
-$Uri = "https://github.com/Minerx117/ccmineryescryptr8g/releases/download/v4/ccmineryescryptrv4.zip"
+$Path = ".\Bin\NVIDIA-CcmineryescryptrV5\ccminer.exe"
+$Uri = "https://github.com/okoto-xyz/ccminer/releases/download/8.21-mod-r18-o1/ccminer-KlausT-8.21-r18-o1.zip"
 
 $Commands = [PSCustomObject]@{
     "yescryptr8"  = " -a yescryptr8 -d $($Config.SelGPUCC)" #YescryptR8
