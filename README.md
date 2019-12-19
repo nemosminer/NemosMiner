@@ -214,7 +214,7 @@ NemosMiner Monitoring Server : https://nemosminer.com
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 [update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
 
-some miners may need 'Visual C+ RunTimes download and extract, and run install_all.bat file
+some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
 [Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
