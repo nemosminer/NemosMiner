@@ -214,14 +214,8 @@ NemosMiner Monitoring Server : https://nemosminer.com
 If you have Windows 7, 8, or 8.1, please update PowerShell:
 [update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
 
-some miners may need 'Visual C++ 2013' if you don't already have it: (install both x86 & x64) 
-[Visual C++ Redistributable for Visual Studio 2012/2013](https://www.microsoft.com/en-US/download/details.aspx?id=40784)
-
-some miners may need 'Visual C++ 2015' if you don't already have it: (install both x86 & x64) 
-[Visual C++ Redistributable for Visual Studio 2014/2015](https://www.microsoft.com/en-US/download/details.aspx?id=48145)
-
-some miners may need 'Visual C++ 2015 update 3' if you don't already have it: (install both x86 & x64) 
-[Visual C++ Redistributable for Visual Studio 2015 update 3](https://www.microsoft.com/en-us/download/details.aspx?id=53587)
+some miners may need 'Visual C+ RunTimes download and extract, and run install_all.bat file
+[Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
