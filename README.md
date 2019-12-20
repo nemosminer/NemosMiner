@@ -225,7 +225,12 @@ recommended/optimal Windows Nvidia driver Windows 10 = 441.66
 
 [Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win8-win7-64bit-international-whql.exe)
 
-Tested with 6x1070 6x1070ti 6x1080 6x1080ti 9x1660ti 6x2060 6x2070 6x2080 6x2080ti(users have reported up to 12cards working have not tested myself)
+Current Test Rigs 
+1xGTX-1070/RYZEN-3700x 
+9xGTX-1660ti/Octominer
+6xRTX-2060/RYZEN-3700x
+6xRTX2080/RYZEN-3700x 
+(users have reported up to 12cards working have not tested myself)
 Some miners do not support more that 9 cards
 
 CPU miners are tested with AMD Ryzen 3700x CPU's
