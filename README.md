@@ -210,15 +210,21 @@ NemosMiner Monitoring Server : https://nemosminer.com
    
       NemosMiner will notify new version availability
  
-   If you have Windows 7, 8, or 8.1, please update PowerShell:
+If you have Windows 7, 8, or 8.1, please update PowerShell: 
+ 
+[update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
+ 
+Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
+ 
+[Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
+ 
+Running multiple cards its recommended to increase Virtual Memory 64gb is optimal
+ 
+Current Recommended/optimal Windows Nvidia driver Windows 10 = 441.66
       
-      [update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
-      Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
-      [Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
-      running multiple cards its recommended to increase Virtual Memory 64gb is optimal
-      recommended/optimal Windows Nvidia driver Windows 10 = 441.66
-      [Windows10 Standard](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win10-64bit-international-dch-whql.exe)
-      [Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win8-win7-64bit-international-whql.exe)
+[Windows10 Standard](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win10-64bit-international-dch-whql.exe)
+      
+[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win8-win7-64bit-international-whql.exe)
 
    Current Test Rigs 
       
