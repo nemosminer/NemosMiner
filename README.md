@@ -220,7 +220,7 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
  
 Running multiple cards its recommended to increase Virtual Memory 64gb is optimal
  
-Current Recommended/optimal Windows Nvidia driver Windows 10 = 441.66
+Current Recommended/optimal Windows Nvidia driver = 441.66
       
 [Windows10 Standard](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win10-64bit-international-dch-whql.exe)
       
