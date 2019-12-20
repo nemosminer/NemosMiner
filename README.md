@@ -231,7 +231,7 @@ Current Recommended/optimal Windows Nvidia driver = 441.66
       1xGTX-1070/RYZEN-3700x 
       9xGTX-1660ti/Octominer
       6xRTX-2060/RYZEN-3700x
-      6xRTX2080/RYZEN-3700x 
+      6xRTX-2080/RYZEN-3700x 
       (users have reported up to 12cards working have not tested myself)
       Some miners do not support more that 9 cards
 
