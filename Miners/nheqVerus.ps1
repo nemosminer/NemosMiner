@@ -4,7 +4,7 @@ $Path = ".\Bin\CPU-nheqVerus080\nheqminer.exe"
 $Uri = "https://github.com/VerusCoin/nheqminer/releases/download/v0.8.0/nheqminer-Windows-v0.8.0.zip"
 
 $Commands = [PSCustomObject]@{
-    #"verus" = "" #Verushash
+     "verus" = "" #Verushash
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
