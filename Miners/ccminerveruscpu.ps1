@@ -4,7 +4,7 @@ $Path = ".\Bin\CPU-ccminerverushash361\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.61/ccminerverus-3.61cpu-win.7z"
 
 $Commands = [PSCustomObject]@{
-    "verushash" = "" #Verushash
+    #"verushash" = "" #Verushash
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
