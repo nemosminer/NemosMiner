@@ -1,5 +1,5 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-ccminerneoscrypt\ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminerneoscryptV1\ccminer.exe"
 $Uri = ""
 $Commands = [PSCustomObject]@{
     "neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #neoscrypt
