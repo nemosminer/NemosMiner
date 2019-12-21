@@ -217,6 +217,7 @@ If you have Windows 7, 8, or 8.1, please update PowerShell:
 Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
  
 [Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
+<<<<<<< HEAD
  
 Running multiple cards its recommended to increase Virtual Memory 64gb is optimal
  
@@ -225,6 +226,24 @@ Current Recommended/optimal Windows Nvidia driver = 441.66
 [Windows10 Standard](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win10-64bit-international-dch-whql.exe)
       
 [Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/441.66/441.66-desktop-win8-win7-64bit-international-whql.exe)
+=======
+
+running multiple cards its recommended to increase Virtual Memory 64gb is optimal
+
+recommended/optimal Windows Nvidia driver Windows 10 = 431.68 hotfix 
+
+[Windows10 Standard](https://international.download.nvidia.com/Windows/431.68hf/431.68-desktop-notebook-win10-64bit-international.hf.exe)
+
+[Windows10 DCH](https://international.download.nvidia.com/Windows/431.68hf/431.68-desktop-notebook-win10-64bit-international-dch.hf.exe)
+
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
+
+[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/431.60/431.60-desktop-win8-win7-64bit-international-whql.exe)
+
+recommended/optimal Linux Nvidia driver = 430.34
+
+[Linux/Hiveos](http://us.download.nvidia.com/XFree86/Linux-x86_64/430.34/NVIDIA-Linux-x86_64-430.34.run)
+>>>>>>> parent of 2b502379... nvidia drivers update
 
    Current Test Rigs 
       
