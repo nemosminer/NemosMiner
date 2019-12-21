@@ -28,7 +28,7 @@ $Commands = [PSCustomObject]@{
     "timetravel" = " -a timetravel -i 25" #Timetravel
     "tribus"     = " -a tribus -i 23" #Tribus
     "veil"       = " -a x16rt -i 24" #Veil
-    "mtp"        = " -a mtp -i 21" #MTP 
+    #"mtp"        = " -a mtp -i 21" #MTP 
     "x25x"       = " -a x25x -i 21" #x25x
     "honeycomb"  = " -a honeycomb -i 26" #Honeycomb
 }
@@ -39,7 +39,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "--no-watchdog --no-nvml --gpu-report-interval 25 -b 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --quiet -R 1 -T 50000 --cpu-priority 3"
+        Arguments = "--no-watchdog --no-nvml --gpu-report-interval 25 -b 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --quiet -R 1 -T 50000 --cpu-priority 4"
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * .99 } # substract 1% devfee
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
