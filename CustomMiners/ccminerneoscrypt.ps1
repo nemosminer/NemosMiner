@@ -2,7 +2,7 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-ccminerneoscryptV1\ccminer.exe"
 $Uri = ""
 $Commands = [PSCustomObject]@{
-    "neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #neoscrypt
+    #"neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #neoscrypt
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
