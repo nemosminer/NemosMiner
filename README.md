@@ -221,15 +221,14 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
 recommended/optimal Windows Nvidia driver Windows 10 = 432.00 (From Microsoft/Windows Update)
-install 431.68, reboot and run windows update (should auto install 432.00) 
+unistall any previous drivers with DDU
+download run DDU (CLEAN AND RESTART NVIDIA) https://www.guru3d.com/files-get/display-driver-uninstaller-download,1.html, reboot and run windows update (will auto install 432.00) 
 
-[Windows10 Standard](https://international.download.nvidia.com/Windows/431.68hf/431.68-desktop-notebook-win10-64bit-international.hf.exe)
+All Nvidia drivers higher than 432 is giving stability problems in alot of miners
+Any driver lower than 432 is auto updated eventually by windows update even if its disabled
+432 should remain default for 8-12months, will continue to test latest drivers for fixes.  
 
-[Windows10 DCH](https://international.download.nvidia.com/Windows/431.68hf/431.68-desktop-notebook-win10-64bit-international-dch.hf.exe)
-
-[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/431.60/431.60-desktop-win8-win7-64bit-international-whql.exe)
-
-   Current Test Rigs 
+   NemosMiner is Currently Tested on the following Rigs: 
       
       1xGTX-1070/RYZEN-3700x 
       9xGTX-1660ti/Octominer
@@ -244,3 +243,5 @@ install 431.68, reboot and run windows update (should auto install 432.00)
 
 Licensed under the GNU General Public License v3.0
 Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
+
+Happy Mining
