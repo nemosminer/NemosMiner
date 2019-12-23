@@ -221,8 +221,12 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
 recommended/optimal Windows Nvidia driver Windows 10 = 432.00 (From Microsoft/Windows Update)
+
 unistall any previous drivers with DDU
-download run DDU (CLEAN AND RESTART NVIDIA) https://www.guru3d.com/files-get/display-driver-uninstaller-download,1.html, reboot and run windows update (will auto install 432.00) 
+
+download run DDU (CLEAN AND RESTART NVIDIA) https://www.guru3d.com/files-get/display-driver-uninstaller-download,1.html
+
+reboot and run windows update (will auto install 432.00) 
 
 All Nvidia drivers higher than 432 is giving stability problems in alot of miners
 Any driver lower than 432 is auto updated eventually by windows update even if its disabled
