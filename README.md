@@ -222,7 +222,7 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 recommended/optimal Windows Nvidia driver Windows 10 = 432.00 (From Microsoft/Windows Update)
 
-unistall any previous drivers with DDU
+uninstall any previous drivers with DDU
 
 download run DDU (CLEAN AND RESTART NVIDIA) https://www.guru3d.com/files-get/display-driver-uninstaller-download,1.html
 
