@@ -6,7 +6,8 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10.8/xmr
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 
 $Commands = [PSCustomObject]@{
-    "cryptonight_gpu"     = "" #Cryptonight_gpu
+    "cryptonight_gpu" = "" #Cryptonight_gpu 
+    "cryptonight_xeq" = "" #cryptonight_xeq
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
@@ -25,7 +26,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                     rig_id          = ""
                 }
             )
-            currency        = if ($Pools.$Algorithm_Norm.Info) {"$($Pools.$Algorithm_Norm.Info -replace '^randomx$', 'randomxmonero' -replace '^aeon$', 'aeon7')"} else {"$_"}
+            currency        = "cryptonight_gpu"
             call_timeout    = 10
             retry_time      = 10
             giveup_limit    = 0
@@ -49,7 +50,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_Nvidia.txt --noAMD --noCPU -i $($Variables.NVIDIAMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day} #Recompiled 0% fee
+        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day } #Recompiled 0% fee
         API       = "fireice"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         URI       = $Uri
