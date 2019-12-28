@@ -5,6 +5,7 @@ $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.1/cc
 
 $Commands = [PSCustomObject]@{
     "skein2" = " -i 30 -d $($Config.SelGPUCC) --cuda-schedule 2" #Skein2
+   #"neoscrypt" = " -i 16.250 -d $($Config.SelGPUCC) --cuda-schedule 2" #Neoscrypt (1070) rigs
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
