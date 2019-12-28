@@ -1,8 +1,8 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-#$Path = ".\Bin\CPU-JayDDee3106\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee3106\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.10.6/cpuminer-opt-3.10.6-windows.zip"
+#$Path = ".\Bin\CPU-JayDDee3107\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3107\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.10.7/cpuminer-opt-3.10.7-windows.zipp"
 
 $Commands = [PSCustomObject]@{
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330
