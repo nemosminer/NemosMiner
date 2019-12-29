@@ -1,11 +1,11 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 $Path = ".\Bin\NVIDIA-XMRig530\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.4.0/xmrig-5.4.0-msvc-cuda10_1-win64.7z"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.5.0/xmrig-5.5.0-msvc-cuda10_1-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    "randomxmonero"         = " -a rx/0 --nicehash" #RandomX
-    "randomx"               = " -a rx/0 --nicehash" #RandomX
+   #"randomxmonero"         = " -a rx/0 --nicehash" #RandomX
+   #"randomx"               = " -a rx/0 --nicehash" #RandomX
     "cryptonightv7"         = " -a cn/1 --nicehash" #cryptonightv7
     "cryptonight_heavyx"    = " -a cn/double --nicehash" #cryptonight_heavyx
 
