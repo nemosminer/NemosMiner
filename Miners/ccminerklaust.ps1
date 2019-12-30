@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerklaust820\ccminer.exe"
 $Uri = "https://github.com/KlausT/ccminer/releases/download/8.20/ccminer-820-cuda91-x64.zip"
 
 $Commands = [PSCustomObject]@{
-    #"neoscrypt" = " -d $($Config.SelGPUCC)" #-i 17 
+    #"neoscrypt" = " -d $($Config.SelGPUCC)" # 4 RBM.. default -i is best for RTX cards, -i 17 is only for small increase over default for 1070 gpu/rigs default is optimal for majority of GPUS   
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
