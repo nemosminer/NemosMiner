@@ -1,12 +1,18 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CryptoNight-FireIcexeq2108\xmr-stak.exe"
+$Path = ".\Bin\Nvidia-FireIce2108\xmr-stak.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10.8/xmr-stak-win64-2.10.8-cuda10.0.7z"
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 
-$Commands = [PSCustomObject]@{ 
-    "cryptonight_xeq" = "" #cryptonight_xeq
+$Commands = [PSCustomObject]@{
+    "cryptonight_haven"   = "cryptonight_haven" #cryptonight_haven 
+    "cryptonight_gpu"     = "cryptonight_gpu" #Cryptonight_gpu
+    "cryptonight_fast"    = "cryptonight_v8_half" #cryptonightFast
+    "cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
+    "cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
+    "cryptonight-saber"   = "cryptonight_bittube2" #cryptonight-saber
+    "cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
@@ -25,7 +31,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                     rig_id          = ""
                 }
             )
-            currency        = "cryptonight_gpu"
+            currency        = $Commands.$_
             call_timeout    = 10
             retry_time      = 10
             giveup_limit    = 0
