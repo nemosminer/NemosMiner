@@ -1,10 +1,10 @@
   if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-Ccminerverus214\ccminer.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.14/ccminer2.14.zip"
+$Path = ".\Bin\NVIDIA-Ccminerverus3611\ccminer.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.611revD/ccminerverus-3.611cuda-revD-win.7z"
 
 $Commands = [PSCustomObject]@{
-     "verushash" = " -a verus -i 18.84 -d $($Config.SelGPUCC)" #verus
+     "verushash" = " -a verus -i 20 -d $($Config.SelGPUCC)" #verus
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
