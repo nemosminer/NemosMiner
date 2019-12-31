@@ -10,7 +10,6 @@ $Commands = [PSCustomObject]@{
     "cryptonight_haven"   = "cryptonight_haven" #cryptonight_haven 
     "cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
     "cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
-    "cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
     "cryptonight_heavyx"  = "cryptonight_v8_double" #cryptonight_heavyx
 }
 
