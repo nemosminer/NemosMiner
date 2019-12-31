@@ -12,7 +12,6 @@ $Commands = [PSCustomObject]@{
     "cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
     "cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
     "cryptonight_heavyx"  = "cryptonight_v8_double" #cryptonight_heavyx
-    "cryptonight_fast"    = "cryptonight_v8_half" #cryptonightFast
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
