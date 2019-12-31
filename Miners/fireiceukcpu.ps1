@@ -8,11 +8,11 @@ $Port = $Variables.CPUMinerAPITCPPort
 
 $Commands = [PSCustomObject]@{
     "cryptonight_haven"   = "cryptonight_haven" #cryptonight_haven 
-    "cryptonight_gpu"     = "cryptonight_gpu" #Cryptonight_gpu
     "cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
     "cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
     "cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
     "cryptonight_heavyx"  = "cryptonight_v8_double" #cryptonight_heavyx
+    "cryptonight_fast"    = "cryptonight_v8_half" #cryptonightFast
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
@@ -55,7 +55,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_CPU.txt --noAMD --noNVIDIA -i $($Variables.CPUMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day } #Recompiled 0% fee
+        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day } #ThankYou FireIceUK
         API       = "fireice"
         Port      = $Variables.CPUMinerAPITCPPort
         URI       = $Uri
