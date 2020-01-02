@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-Phoenix48c\PhoenixMiner.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.8c/PhoenixMiner_4.8c_Windows.7z"
+$Path = ".\Bin\NVIDIA-Phoenix49b\PhoenixMiner.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.9b/PhoenixMiner_4.9b_Windows.7z"
 $Commands = [PSCustomObject]@{
     "ethash"  = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash
     "progpow" = " -coin bci -di $($($Config.SelGPUCC).Replace(',',''))" #Progpow 
