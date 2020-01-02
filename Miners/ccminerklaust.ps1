@@ -4,7 +4,7 @@ $Path = ".\Bin\NVIDIA-ccminerklaust825\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccminerklaust/releases/download/8.25/ccminerklaust.zip"
 
 $Commands = [PSCustomObject]@{
-    #"neoscrypt" = " -d $($Config.SelGPUCC)" 
+     "neoscrypt" = " -d $($Config.SelGPUCC)" 
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
