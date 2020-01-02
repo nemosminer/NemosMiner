@@ -1,10 +1,10 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\NVIDIA-ccminerklaust820\ccminer.exe"
-$Uri = "https://github.com/KlausT/ccminer/releases/download/8.20/ccminer-820-cuda91-x64.zip"
+$Path = ".\Bin\NVIDIA-ccminerklaust825\ccminer.exe"
+$Uri = "https://github.com/Minerx117/ccminerklaust/releases/download/8.25/ccminerklaust.zip"
 
 $Commands = [PSCustomObject]@{
-    #"neoscrypt" = " -d $($Config.SelGPUCC)" #OG  
+    #"neoscrypt" = " -d $($Config.SelGPUCC)" 
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
