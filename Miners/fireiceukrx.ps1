@@ -8,7 +8,7 @@ $Port = $Variables.CPUMinerAPITCPPort
 
 $Commands = [PSCustomObject]@{
     "randomxmonero" = "randomx" #Randomxmonero
-    "randomx"       = "randomx" #Randomxmonero randomARQ
+    "randomx"       = "randomx" #Randomxmonero 
     "randomarq"     = "arqma" #randomARQ
 }
 
