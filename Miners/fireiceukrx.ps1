@@ -7,8 +7,9 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Port = $Variables.CPUMinerAPITCPPort
 
 $Commands = [PSCustomObject]@{
-    "randomxmonero" = "" #Randomxmonero
-    "randomx"       = "" #Randomxmonero
+    "randomxmonero" = "randomx" #Randomxmonero
+    "randomx"       = "randomx" #Randomxmonero randomARQ
+    "randomarq"     = "arqma" #randomARQ
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
@@ -27,7 +28,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                     rig_id          = ""
                 }
             )
-            currency        = "randomx"
+            currency        = $Commands.$_
             call_timeout    = 10
             retry_time      = 10
             giveup_limit    = 0
