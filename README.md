@@ -232,6 +232,10 @@ All Nvidia drivers higher than 432 is giving stability problems in alot of miner
 Any driver lower than 432 is auto updated eventually by windows update even if its disabled
 432 should remain default for 8-12months, will continue to test latest drivers for fixes.  
 
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
+
+[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/431.60/431.60-desktop-win8-win7-64bit-international-whql.exe)
+
    NemosMiner is Currently Tested on the following Rigs: 
       
       1xGTX-1070/RYZEN-3700x 
