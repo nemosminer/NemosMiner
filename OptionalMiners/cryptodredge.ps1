@@ -1,28 +1,31 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1;RegisterLoaded(".\Includes\include.ps1")}
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 
 $Path = ".\Bin\NVIDIA-CryptoDredge022\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.22.0/CryptoDredge_0.22.0_cuda_10.0_windows.zip"
 
 $Commands = [PSCustomObject]@{
-    "argon2d250"  = " --intensity 8 -a argon2d250" #argon2d250
-   # "argon2d500"  = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
-    "argon2d4096" = " --intensity 8 -a argon2d4096" #argon2d4096
+    "argon2d250"          = " --intensity 8 -a argon2d250" #argon2d250
+    # "argon2d500"  = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
+    "argon2d4096"         = " --intensity 8 -a argon2d4096" #argon2d4096
     #"argon2ddyn"  = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
     #"allium"      = " --intensity 8 -a allium" #Allium
-    "lyra2zz "    = " --intensity 8 -a lyra2zz" #Lyra2zz
+    "lyra2zz "            = " --intensity 8 -a lyra2zz" #Lyra2zz
     #"neoscrypt"   = " --intensity 6 -a neoscrypt" #Neoscrypt
     #"phi2"        = " --intensity 8 -a phi2" #Phi2 
     #"phi2-lux"    = " --intensity 8 -a phi2" #Phi2-lux   
-    "lux"         = " --intensity 8 -a phi2" #Lux
-    "lyra2vc0ban" = " --intensity 8 -a lyra2vc0ban" #Lyra2vc0banHash
-    "skunk"       = " --intensity 8 -a skunk" #Skunk 
+    "lux"                 = " --intensity 8 -a phi2" #Lux
+    "lyra2vc0ban"         = " --intensity 8 -a lyra2vc0ban" #Lyra2vc0banHash
+    "skunk"               = " --intensity 8 -a skunk" #Skunk 
     #"hmq1725"     = " --intensity 8 -a hmq1725" #Hmq1725
-    "pipe"        = " --intensity 8 -a pipe" #Pipe 
-    "cryptonight_gpu" = " --intensity 8 -a cngpu" # CryptonightGPU
-    "cryptonight_xeq" = " --intensity 8 -a cngpu" # CryptonightGPU (XEQ Zergpool)
-    "cryptonight_saber" = " --intensity 8 -a cnsaber" # CryptonightSaber
+    "pipe"                = " --intensity 8 -a pipe" #Pipe 
+    "cryptonight_gpu"     = " --intensity 8 -a cngpu" # CryptonightGPU
+    "cryptonight_xeq"     = " --intensity 8 -a cngpu" # CryptonightGPU (XEQ Zergpool)
+    "cryptonight_saber"   = " --intensity 8 -a cnsaber" # CryptonightSaber
     "cryptonight_conceal" = " --intensity 8 -a cnconceal" # Cryptonight_Conceal
+    "cryptonight_fast"    = " --intensity 8 -a cnfast2" # cnfast2
+    "cryptonight_haven"   = " --intensity 8 -a cnhaven" # cnhaven
+    "cryptonight_heavy"   = " --intensity 8 -a cnheavy" # cnhaven
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
