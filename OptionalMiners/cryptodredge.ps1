@@ -19,6 +19,10 @@ $Commands = [PSCustomObject]@{
     "skunk"       = " --intensity 8 -a skunk" #Skunk 
     #"hmq1725"     = " --intensity 8 -a hmq1725" #Hmq1725
     "pipe"        = " --intensity 8 -a pipe" #Pipe 
+    "cryptonight_gpu" = " --intensity 8 -a cngpu" # CryptonightGPU
+    "cryptonight_xeq" = " --intensity 8 -a cngpu" # CryptonightGPU (XEQ Zergpool)
+    "cryptonight_saber" = " --intensity 8 -a cnsaber" # CryptonightSaber
+    "cryptonight_conceal" = " --intensity 8 -a cnconceal" # Cryptonight_Conceal
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
