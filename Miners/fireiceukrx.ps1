@@ -7,9 +7,9 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Port = $Variables.CPUMinerAPITCPPort
 
 $Commands = [PSCustomObject]@{
-    "randomxmonero" = "randomx" #Randomxmonero
-    "randomx"       = "randomx" #Randomxmonero 
-    "randomarq"     = "arqma" #randomARQ
+    #"randomxmonero" = "randomx" #Randomxmonero
+    #"randomx"       = "randomx" #Randomxmonero 
+    #"randomarq"     = "arqma" #randomARQ
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
