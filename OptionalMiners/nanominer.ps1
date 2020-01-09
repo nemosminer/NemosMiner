@@ -1,8 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-
 $Path = ".\Bin\NVIDIA-nanominer162\cmdline_launcher.bat"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6.2/nanominer-windows-1.6.2.7z"
-
 $Commands = [PSCustomObject]@{
     #"cryptonightr"       = "-algo cryptonightr" #cryptonight/r (NiceHash)
     #"grincuckarood29"    = "-algo cuckarood29" #grincuckarood29 (NiceHash)
@@ -11,14 +9,11 @@ $Commands = [PSCustomObject]@{
     #"randomx"            = "-algo randomx" #RandomX
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {  
     switch ($_) {
         "grincuckarood29" { $Fee = 0.02 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
     }
-
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path

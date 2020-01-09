@@ -1,15 +1,10 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-
-
 $Path = ".\Bin\NVIDIA-CcminerLyra2RE3\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccminer-KlausT-8.21-mod-r18-src-fix/releases/download/8.21-v3/ccminerlyra2v3.7z"
-
 $Commands = [PSCustomObject]@{
     "lyra2re3" = " -i 24 -a lyra2v3 -d $($Config.SelGPUCC)" #Lyra2RE3 (mining pool hub)
 }
-
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     [PSCustomObject]@{
         Type      = "NVIDIA"

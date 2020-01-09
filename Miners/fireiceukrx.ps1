@@ -1,28 +1,20 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-
 $Path = ".\Bin\cpu-FireIce104\xmr-stak-rx.exe"
 $Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.4-rx/xmr-stak-rx-win64-1.0.4.7z"
-
-$Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$Port = $Variables.CPUMinerAPITCPPort
-
 $Commands = [PSCustomObject]@{
     #"randomxmonero" = "randomx" #Randomxmonero
     #"randomx"       = "randomx" #Randomxmonero 
     #"randomarq"     = "arqma" #randomARQ
 }
-
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-
-    $Algorithm_Norm = Get-Algorithm($_)
-
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     ([PSCustomObject]@{
             pool_list       = @([PSCustomObject]@{
-                    pool_address    = "$($Pools.$Algorithm_Norm.Host):$($Pools.$Algorithm_Norm.Port)"
-                    wallet_address  = "$($Pools.$Algorithm_Norm.User)"
-                    pool_password   = "$($Pools.$Algorithm_Norm.Pass)"
+                    pool_address    = "$($Pools.$Algo.Host):$($Pools.$Algo.Port)"
+                    wallet_address  = "$($Pools.$Algo.User)"
+                    pool_password   = "$($Pools.$Algo.Pass)"
                     use_nicehash    = $true
-                    use_tls         = $Pools.$Algorithm_Norm.SSL
+                    use_tls         = "$($Pools.$Algo.SSL)"
                     tls_fingerprint = ""
                     pool_weight     = 1
                     rig_id          = ""
@@ -46,15 +38,18 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
             http_pass       = ""
             prefer_ipv4     = $true
         } | ConvertTo-Json -Depth 10
-    ) -replace "^{" -replace "}$" | Set-Content "$(Split-Path $Path)\$($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_CPU.txt" -Force -ErrorAction SilentlyContinue
-
+    ) -replace "^{" -replace "}$" | Set-Content "$(Split-Path $Path)\$($Pools.$Algo.Name)_$($Pools.$Algo)_$($Pools.$Algo.User)_CPU.txt" -Force -ErrorAction SilentlyContinue
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path
-        Arguments = "-C $($Pools.$Algorithm_Norm.Name)_$($Algorithm_Norm)_$($Pools.$Algorithm_Norm.User)_CPU.txt --noAMD --noNVIDIA -i $($Variables.CPUMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{$Algorithm_Norm = $Stats."$($Name)_$($Algorithm_Norm)_HashRate".Day } #ThankYou FireIceUK
+        Arguments = "-C $($Pools.$Algo.Name)_$($Pools.$Algo)_$($Pools.$Algo.User)_CPU.txt --noAMD --noNVIDIA -i $($Variables.CPUMinerAPITCPPort)"
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #recompiled 0% Dev fee
         API       = "fireice"
-        Port      = $Variables.CPUMinerAPITCPPort
+        Port      = $Variables.CPUMinerAPITCPPort #4068
+        Wrap      = $false
         URI       = $Uri
+        User      = $Pools.$Algo.User
+        Host      = $Pools.$Algo.Host
+        Coin      = $Pools.$Algo.Coin
     }
 } 

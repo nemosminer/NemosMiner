@@ -1,21 +1,15 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-
 $Path = ".\Bin\CPU-RKZCPU42b\cpuminer.exe"
 $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpuminer-RKZ.zip"
-
 $Commands = [PSCustomObject]@{
     "yespower" = " -a yespower" #Yespower
     "yescrypt" = " -a yescrypt" #Yescrypt
     "cpupower" = " -a cpupower" #Cpupower
     "power2b"  = " -a power2b" #Power2b 
 }
-
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-
     $ThreadCount = $Variables.ProcessorCount - 1
-
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path

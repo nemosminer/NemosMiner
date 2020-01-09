@@ -1,5 +1,4 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
- 
 $Path = ".\Bin\NVIDIA-Bminer1587\bminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/15.8.7/Bminer1587.zip"
 $Commands = [PSCustomObject]@{
@@ -12,11 +11,8 @@ $Commands = [PSCustomObject]@{
     #"grincuckarood29" = " -uri cuckaroo29d://" #grincuckaroo29 
     #"grincuckatoo31"  = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
 }
-
 $Port = $Variables.NVIDIAMinerAPITCPPort
-
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     $Pass = If ($Pools.$Algo.Pass -like "*,*") { $Pools.$Algo.Pass.ToString().replace(',', '%2C') } else { $Pools.$Algo.Pass }
     [PSCustomObject]@{

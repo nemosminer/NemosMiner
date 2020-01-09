@@ -1,21 +1,15 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-
 $Path = ".\Bin\CPU-nheqVerus080\nheqminer.exe"
 $Uri = "https://github.com/VerusCoin/nheqminer/releases/download/v0.8.0/nheqminer-Windows-v0.8.0.zip"
-
 $Commands = [PSCustomObject]@{
-     "verus" = "" #Verushash
+    "verus" = "" #Verushash
 }
-
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-
     switch ($_) {
         "hodl" { $ThreadCount = $Variables.ProcessorCount }
         default { $ThreadCount = $Variables.ProcessorCount - 1 }
     }
-
     [PSCustomObject]@{
         Type      = "CPU"
         Path      = $Path
