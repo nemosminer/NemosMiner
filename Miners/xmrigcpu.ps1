@@ -4,9 +4,17 @@ $Path = ".\Bin\CPU-XMRig550\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.5.0/xmrig-5.5.0-msvc-cuda10_1-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    "cryptonight_saber" = " -a cn-heavy/tube --nicehash" #cryptonight_heavyx
-    "randomsfx"         = " -a rx/sfx --nicehash" #Randomsfx
-    "cryptonight_fast"  = " -a cn/half --nicehash" #cryptonightFast
+    "randomxmonero"         = " -a rx/0 --nicehash" #RandomX
+    "randomarq"             = " -a rx/arq --nicehash" #Randomarq
+    "randomx"               = " -a rx/0 --nicehash" #RandomX
+    "randomsfx"             = " -a rx/sfx --nicehash" #RandomX
+    "cryptonightv7"         = " -a cn/1 --nicehash" #cryptonightv7
+    "cryptonight_gpu"       = " -a cn/gpu --nicehash" #cryptonightGPU
+    "cryptonight_heavy"     = " -a cn-heavy/0 --nicehash" #cryptonight_heavyx
+    "cryptonight_heavyx"    = " -a cn/double --nicehash" #cryptonight_heavyx
+    "cryptonight_saber"     = " -a cn-heavy/0 --nicehash" #cryptonightGPU
+    "cryptonight_fast"      = " -a cn/half --nicehash" #cryptonightFast
+    "cryptonight_haven"      = " -a cn-heavy/xhv --nicehash" #cryptonightFast
 }
 
 $ThreadCount = $Variables.ProcessorCount - 1
