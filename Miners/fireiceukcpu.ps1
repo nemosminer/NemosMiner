@@ -7,10 +7,10 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Port = $Variables.CPUMinerAPITCPPort
 
 $Commands = [PSCustomObject]@{
-    "cryptonight_haven"   = "cryptonight_haven" #cryptonight_haven 
-    "cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
-    "cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
-    "cryptonight_heavyx"  = "cryptonight_v8_double" #cryptonight_heavyx
+    #"cryptonight_haven"   = "cryptonight_haven" #cryptonight_haven 
+    #"cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
+    #"cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
+    #"cryptonight_heavyx"  = "cryptonight_v8_double" #cryptonight_heavyx
 }
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
