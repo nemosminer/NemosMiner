@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 $Path = ".\Bin\CPU-XMRigUPX020\xmrig.exe"
-$Uri = "https://github.com/Minerx117/xmrig-upx/releases/download/0.2.0/XMRigUPX020.zip"
+$Uri = "https://github.com/uPlexa/xmrig-upx/releases/download/v0.2.0/xmrig-upx-v0.2.0-win64.zip"
 
 $Commands = [PSCustomObject]@{
   "cryptonight_upx" = " -a cryptonight-upx/2 --nicehash"
@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     Type      = "CPU"
     Path      = $Path
     Arguments = "-t $($ThreadCount) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --keepalive --api-port=$($Variables.CPUMinerAPITCPPort) --donate-level 0"
-    HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #Recompiled 0% fee
+    HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #Recompiled 1% fee
     API       = "XMRig"
     Port      = $Variables.CPUMinerAPITCPPort
     Wrap      = $false
