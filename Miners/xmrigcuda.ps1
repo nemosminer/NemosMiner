@@ -4,7 +4,14 @@ $Path = ".\Bin\NVIDIA-XMRig550\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.5.0/xmrig-5.5.0-msvc-cuda10_1-win64.7z"
 
 $Commands = [PSCustomObject]@{
-    "cryptonight_heavyx" = " -a cn/double --nicehash" #cryptonight_heavyx
+    "randomxmonero"         = " -a rx/0 --nicehash" #RandomX
+    "randomarq"             = " -a rx/arq --nicehash" #Randomarq
+    "randomx"               = " -a rx/0 --nicehash" #RandomX
+    "randomsfx"             = " -a rx/sfx --nicehash" #RandomX
+    "cryptonightv7"         = " -a cn/1 --nicehash" #cryptonightv7
+    "cryptonight_heavy"     = " -a cn-heavy/0 --nicehash" #cryptonight_heavyx
+    "cryptonight_fast"      = " -a cn/half --nicehash" #cryptonightFast
+    "cryptonight_haven"      = " -a cn-heavy/xhv --nicehash" #cryptonightFast
 }
 
 $Port = $Variables.NVIDIAMinerAPITCPPort
