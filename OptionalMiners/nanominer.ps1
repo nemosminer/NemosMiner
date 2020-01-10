@@ -1,26 +1,22 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nanominer162\cmdline_launcher.bat"
+$Path = ".\Bin\CPU-nanominer162\cmdline_launcher.bat"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6.2/nanominer-windows-1.6.2.7z"
 $Commands = [PSCustomObject]@{
-    #"cryptonightr"       = "-algo cryptonightr" #cryptonight/r (NiceHash)
-    #"grincuckarood29"    = "-algo cuckarood29" #grincuckarood29 (NiceHash)
-    #"cryptonight-monero" = "-algo cryptonightr" #monero (Mining Pool Hub)
-    #"ethash"             = "-algo ethash" #Ethash
-    #"randomx"            = "-algo randomx" #RandomX
+    "randomx" = "-algo randomx" #RandomX
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {  
     switch ($_) {
-        "grincuckarood29" { $Fee = 0.02 } # substract devfee
+        "randomx" { $Fee = 0.02 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
     }
     [PSCustomObject]@{
-        Type      = "NVIDIA"
+        Type      = "CPU"
         Path      = $Path
-        Arguments = "-mport -$($Variables.NVIDIAMinerAPITCPPort) $($Commands.$_) -wallet $($Pools.$Algo.User) -rigName $($Pools.$Algo.Pass) -pool1 $($Pools.$Algo.Host):$($Pools.$Algo.Port)"
+        Arguments = "-mport -$($Variables.CPUMinerAPITCPPort) $($Commands.$_) -wallet $($Pools.$Algo.User) -pool1 $($Pools.$Algo.Host):$($Pools.$Algo.Port) -rigName $($Pools.$Algo.Pass)"
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
         API       = "nanominer"
-        Port      = $Variables.NVIDIAMinerAPITCPPort
+        Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
         User      = $Pools.$Algo.User
