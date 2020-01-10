@@ -13,7 +13,7 @@ $Commands = [PSCustomObject]@{
     "cryptonight_saber"  = " -a cn-heavy/0 --nicehash" #cryptonightGPU
     "cryptonight_fast"   = " -a cn/half --nicehash" #cryptonightFast
     "cryptonight_haven"  = " -a cn-heavy/xhv --nicehash" #cryptonightFast
-    "cryptonight_upx"    = " -a cryptonight-upx/2 --nicehash" #cryptonightupx
+    "cryptonight_upx"    = " -a cryptonight-extremelite --nicehash" #cryptonightupx
 }
 $ThreadCount = $Variables.ProcessorCount - 1
 $Port = $Variables.CPUMinerAPITCPPort
