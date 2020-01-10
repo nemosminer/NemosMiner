@@ -10,7 +10,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --api-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level 0"
+        Arguments = "-R 1 -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --nicehash --keepalive --api-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level 0"
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #Recompiled 0% fee
         API       = "XMRig"
         Port      = $Variables.NVIDIAMinerAPITCPPort
