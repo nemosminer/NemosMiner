@@ -217,7 +217,7 @@ Function Update-Monitoring {
 
 Function Start-Mining {
  
-#    NPMCycle
+    #    NPMCycle
 
 
     $Global:CycleRunspace = [runspacefactory]::CreateRunspace()
@@ -229,48 +229,48 @@ Function Start-Mining {
     $Global:powershell = [powershell]::Create()
     $powershell.Runspace = $CycleRunspace
     $powershell.AddScript( {
-        #Start the log
-        Start-Transcript -Path ".\logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
-        # Purge Logs more than 10 days
-        If ((Get-ChildItem ".\logs\CoreCyle-*.log").Count -gt 10) {
-            Get-ChildItem ".\logs\CoreCyle-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\logs\CoreCyle-*.log" | Sort-Object  LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
-        }
-        $ProgressPreference = "SilentlyContinue"
-        . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
-        Update-Monitoring
-        While ($True) {
-            if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-            if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
-            $Variables.Paused | Out-Host
-            If ($Variables.Paused) {
-                # Run a dummy cycle to keep the UI updating.
+            #Start the log
+            Start-Transcript -Path ".\logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
+            # Purge Logs more than 10 days
+            If ((Get-ChildItem ".\logs\CoreCyle-*.log").Count -gt 10) {
+                Get-ChildItem ".\logs\CoreCyle-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\logs\CoreCyle-*.log" | Sort-Object  LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
+            }
+            $ProgressPreference = "SilentlyContinue"
+            . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
+            Update-Monitoring
+            While ($True) {
+                if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+                if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
+                $Variables.Paused | Out-Host
+                If ($Variables.Paused) {
+                    # Run a dummy cycle to keep the UI updating.
 
-                # Keep updating exchange rate
-                $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
-                $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
-                $Variables | Add-Member -Force @{Rates = $Rates }
+                    # Keep updating exchange rate
+                    $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
+                    $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
+                    $Variables | Add-Member -Force @{Rates = $Rates }
 
-                # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
-                for ($i = 0; $i -lt 4; $i++) {
-                    if ($i -eq 3) {
-                        $Variables | Add-Member -Force @{EndLoop = $True }
-                        Update-Monitoring
+                    # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
+                    for ($i = 0; $i -lt 4; $i++) {
+                        if ($i -eq 3) {
+                            $Variables | Add-Member -Force @{EndLoop = $True }
+                            Update-Monitoring
+                        }
+                        else {
+                            $Variables | Add-Member -Force @{EndLoop = $False }
+                        }
+
+                        $Variables.StatusText = "Mining paused"
+                        Start-Sleep  30
                     }
-                    else {
-                        $Variables | Add-Member -Force @{EndLoop = $False }
-                    }
-
-                    $Variables.StatusText = "Mining paused"
-                    Start-Sleep  30
+                }
+                else {
+                    NPMCycle
+                    Update-Monitoring
+                    Start-Sleep $Variables.TimeToSleep
                 }
             }
-            else {
-                NPMCycle
-                Update-Monitoring
-                Start-Sleep $Variables.TimeToSleep
-            }
-        }
-    }) | Out-Null
+        }) | Out-Null
     $Variables | Add-Member -Force @{CycleRunspaceHandle = $powershell.BeginInvoke() }
     $Variables | Add-Member -Force @{LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
 }
@@ -712,6 +712,15 @@ function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+                $HashRate_Dual = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+            }
+
+            "gminerdual" {
+                $Message = @{id = 1; method = "getstat" } | ConvertTo-Json -Compress
+                $Request = Invoke_httpRequest $Server 4077 "/stat" 5
+                $Data = $Request | ConvertFrom-Json
+                $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+                $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
             }
 
             "claymore" {
