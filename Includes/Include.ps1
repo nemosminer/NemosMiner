@@ -712,7 +712,6 @@ function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
-                $HashRate_Dual = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
             }
 
             "gminerdual" {
