@@ -846,6 +846,14 @@ function Get-HashRate {
                     $HashRate = [double]$Data.miner.total_hashrate_raw
                 }
             }
+            "NBMinerdual" {
+                $Request = Invoke_httpRequest $Server 4079 "/api/v1/status" 5
+                if ($Request) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [double]$Data.miner.total_hashrate_raw
+                    $HashRate_Dual = [double]$Data.miner.total_hashrate2_raw
+                }
+            }
 
             "LOL" {
                 $Request = Invoke_httpRequest $Server $Port "/summary" 5
