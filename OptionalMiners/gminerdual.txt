@@ -1,0 +1,10 @@
+{
+    "Type":  "NVIDIA",
+    "Path":  ".\\Bin\\NVIDIA-Gminer192dual\\miner.exe",
+    "Uri":  "https://github.com/develsoftware/GMinerRelease/releases/download/1.92/gminer_1_92_windows64.zip",
+    "Arguments":  "--api $($Variables.NVIDIAMinerAPITCPPort) --algo eth+ckb --server $($Pools.Ethash.Host):$($Pools.Ethash.Port) --user $($Pools.Ethash.User) --dserver $($Pools.eaglesong.Host):$($Pools.eaglesong.Port) --duser $($Pools.eaglesong.User)",
+    "HashRates":  {"Ethash":  "$($Stats.gminer_Ethash_HashRate.Day)","eaglesong":  "$($Stats.gminer_eaglesong_HashRate.Day)"},
+    "API":  "gminer",
+    "Port":  "$Variables.NVIDIAMinerAPITCPPort",
+    "Wrap":  false
+}
