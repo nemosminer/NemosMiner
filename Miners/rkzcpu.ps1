@@ -2,7 +2,6 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\CPU-RKZCPU42b\cpuminer.exe"
 $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpuminer-RKZ.zip"
 $Commands = [PSCustomObject]@{
-    "yespower" = " -a yespower" #Yespower
     "cpupower" = " -a cpupower" #Cpupower
     "power2b"  = " -a power2b" #Power2b 
 }
