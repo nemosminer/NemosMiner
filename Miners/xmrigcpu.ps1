@@ -3,7 +3,6 @@ $Path = ".\Bin\CPU-XMRigcc250\xmrigDaemon.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.5.0/xmrigcc.zip"
 $Commands = [PSCustomObject]@{
     "randomxmonero"       = " -a rx/0 --nicehash" #RandomX
-    "randomarq"           = " -a rx/arq --nicehash" #Randomarq
     "randomx"             = " -a rx/0 --nicehash" #RandomX
     "randomsfx"           = " -a rx/sfx --nicehash" #RandomX
     "cryptonightv7"       = " -a cn/1 --nicehash" #cryptonightv7
