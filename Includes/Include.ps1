@@ -716,7 +716,7 @@ function Get-HashRate {
 
             "gminerdual" {
                 $Message = @{id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke_httpRequest $Server $Port "/stat" 5
+                $Request = Invoke_httpRequest $Server 4077 "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
                 $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
@@ -764,6 +764,16 @@ function Get-HashRate {
                 if ($Request -ne "" -and $request -ne $null) {
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
+                }
+            }
+            "SRB" {
+                $Request = Invoke_httpRequest $Server $Port "" 5
+                if ($Request) {
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = @(
+                        [double]$Data.HashRate_total_now
+                        [double]$Data.HashRate_total_5min
+                    ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
                 }
             }
 
