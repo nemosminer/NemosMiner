@@ -2,9 +2,9 @@
     "Type":  "NVIDIA",
     "Path":  ".\\Bin\\NVIDIA-NBminer26.2dual\\nbminer.exe",
     "Uri":  "https://github.com/NebuTech/NBMiner/releases/download/v26.2/NBMiner_26.2_Win.zip",
-    "Arguments":  "--algo eaglesong_ethash -di 24 --devices $($Config.SelGPUCC) --no-nvml --api 127.0.0.1:4079 -o stratum+tcp://$($Pools.eaglesong.Host):$($Pools.eaglesong.Port) -u $($Pools.eaglesong.User) -do nicehash+tcp://$($Pools.Ethash.Host):$($Pools.Ethash.Port) -du $($Pools.Ethash.User)",
+    "Arguments":  "--algo eaglesong_ethash -di 24 --devices $($Config.SelGPUCC) --no-nvml --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -o stratum+tcp://$($Pools.eaglesong.Host):$($Pools.eaglesong.Port) -u $($Pools.eaglesong.User) -do nicehash+tcp://$($Pools.Ethash.Host):$($Pools.Ethash.Port) -du $($Pools.Ethash.User)",
     "HashRates":  {"Ethash":  "$($Stats.nbminerdual_Ethash_HashRate.Day)","eaglesong":  "$($Stats.nbminerdual_eaglesong_HashRate.Day)"},
     "API":  "nbminerdual",
-    "Port":  "4079",
+    "Port":  "$($Variables.NVIDIAMinerAPITCPPort)",
     "Wrap":  false
 }
