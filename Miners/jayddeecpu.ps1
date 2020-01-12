@@ -4,7 +4,6 @@ $Path = ".\Bin\CPU-JayDDee3113\cpuminer-aes-sse42.exe" #Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.11.3/cpuminer-opt-3.11.3-windows.zip"
 $Commands = [PSCustomObject]@{
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330
-    "yespowerr16" = " -a yespowerr16" #YespowerR16
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
