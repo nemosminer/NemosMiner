@@ -12,8 +12,7 @@ $Commands = [PSCustomObject]@{
     "yescryptR16"  = " --algorithm yescryptR16" #yescryptR16  
     "yescryptR32"  = " --algorithm yescryptR32" #yescryptR32   
     "yespower"     = " --algorithm yespower" #yespower 
-    "yespowerIOTS" = " --algorithm yespowerIOTS" #randomx 
-    "yespowerr16"  = " --algorithm yespowerr16" #randomx 
+    "yespowerr16"  = " --algorithm yespowerr16" #yespowerr16 
 }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
