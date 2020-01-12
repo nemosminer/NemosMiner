@@ -716,7 +716,7 @@ function Get-HashRate {
 
             "gminerdual" {
                 $Message = @{id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke_httpRequest $Server 4077 "/stat" 5
+                $Request = Invoke_httpRequest $Server $Port "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
                 $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
@@ -847,7 +847,7 @@ function Get-HashRate {
                 }
             }
             "NBMinerdual" {
-                $Request = Invoke_httpRequest $Server 4079 "/api/v1/status" 5
+                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
                 if ($Request) {
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [double]$Data.miner.total_hashrate_raw
