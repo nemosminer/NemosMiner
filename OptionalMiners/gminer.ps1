@@ -13,7 +13,7 @@ $Commands = [PSCustomObject]@{
     "grincuckarood29" = " --devices $($Config.SelGPUDSTM) --algo cuckarood29 --pers auto" #Grincuckarood29
     "cuckoocycle"     = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
-    "ethash"          = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
+    #"ethash"          = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
     "eaglesong"       = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #eaglesong
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
