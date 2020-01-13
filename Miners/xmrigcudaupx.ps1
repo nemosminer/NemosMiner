@@ -2,7 +2,7 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-XMRig2144upx\xmrig-nvidia.exe"
 $Uri = "https://github.com/Minerx117/xmrig-nvidia/releases/download/2.14.4%2Bupx/xmrigcudaupx.zip"
 $Commands = [PSCustomObject]@{
-    "cryptonight_upx" = " -a cn-extremelite --nicehash" #cryptonight_upx
+    "cryptonight_upx" = " -a cn-extremelite" #cryptonight_upx
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
