@@ -14,12 +14,14 @@ $Commands = [PSCustomObject]@{
     "cuckoocycle"     = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"ethash"          = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
-    "eaglesong"       = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #eaglesong
+    "eaglesong"       = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #eaglesong 
+   #"cuckaroom"       = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     switch ($_) {
         "ethash" { $Fee = 0.0065 }
+        "cuckaroom" { $Fee = 0.03 }
         default { $Fee = 0.02 }
     }
     [PSCustomObject]@{
