@@ -1,4 +1,4 @@
-﻿function Start-APIServer { 
+﻿Function Start-APIServer { 
     Param(
         [Parameter(Mandatory = $false)]
         [Int]$Port = 3990
