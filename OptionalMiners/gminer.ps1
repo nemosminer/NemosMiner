@@ -15,7 +15,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"ethash"          = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
     "eaglesong"       = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #eaglesong 
-   #"cuckaroom"       = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
+    "cuckaroom"       = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
