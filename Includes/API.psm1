@@ -1,4 +1,28 @@
-﻿Function Start-APIServer { 
+﻿<#
+Copyright (c) 2018-2020 Nemo & MrPlus
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+File:           API.psm1
+version:        3.8.1.3
+version date:   12 November 2019
+#>
+
+Function Start-APIServer { 
     Param(
         [Parameter(Mandatory = $false)]
         [Int]$Port = 3990
@@ -72,12 +96,20 @@
 
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path) { 
+                    "/activeMinerprograms" { 
+                        $Data = $Variables.ActiveMinerPrograms | ConvertTo-Json -Depth 10
+                        Break
+                    }
                     "/apiversion" { 
                         $Data = $Variables.APIVersion | ConvertTo-Json -Depth 10
                         Break
                     }
                     "/config" { 
                         $Data = $Config | ConvertTo-Json -Depth 10
+                        Break
+                    }
+                    "/poolsconfig" { 
+                        $Data = $Config.PoolsConfig | ConvertTo-Json -Depth 10
                         Break
                     }
                     "/variables" { 
