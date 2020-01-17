@@ -526,7 +526,7 @@ Function Set-Stat {
         Updated               = $Date
     } 
 
-    if (-not (Test-Path "Stats" -PathType Leaf)) { New-Item "Stats" -ItemType "directory" } 
+    if (-not (Test-Path "Stats" -PathType Container)) { New-Item "Stats" -ItemType "directory" } 
     [PSCustomObject]@{ 
         Live                  = [Decimal]$Stat.Live
         Minute                = [Decimal]$Stat.Minute
