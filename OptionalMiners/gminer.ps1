@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-Gminer195\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.95/gminer_1_95_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer196\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.96/gminer_1_96_windows64.zip"
 $Commands = [PSCustomObject]@{
     #"beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
@@ -15,7 +15,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckatoo31" = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"ethash"          = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
     "eaglesong"       = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #eaglesong 
-   #"cuckaroom"       = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
+    "cuckaroom"       = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
