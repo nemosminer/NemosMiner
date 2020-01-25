@@ -4,9 +4,9 @@ $Path = ".\Bin\cpu-SRBMiner-Multi-0-3-1/SRBMiner-MULTI.exe"
 $Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.3.1/SRBMiner-Multi-0-3-1-win64.zip"
 
 $Commands = [PSCustomObject]@{
-    "randomx"      = " --algorithm randomx" #randomx 
+   #"randomx"      = " --algorithm randomx" #randomx 
     "randomarq"    = " --algorithm randomarq" #randomarq  
-    "randomsfx"    = " --algorithm randomsfx" #randomsfx  
+   #"randomsfx"    = " --algorithm randomsfx" #randomsfx  
     "eaglesong"    = " --algorithm eaglesong" #eaglesong  
     "yescrypt"     = " --algorithm yescrypt" #yescrypt    
     "yescryptR16"  = " --algorithm yescryptR16" #yescryptR16  
