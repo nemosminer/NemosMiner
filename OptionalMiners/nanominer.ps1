@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {  
     switch ($_) {
-        "randomx" { $Fee = 0.02 } # substract devfee
+        "randomhash" { $Fee = 0.05 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
     }
     [PSCustomObject]@{
