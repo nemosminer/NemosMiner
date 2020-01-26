@@ -20,7 +20,7 @@
      "PricePenaltyFactor": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
-     "WorkerName": "ID=NM3813",
+     "WorkerName": "NM3813",
      "APIKey": "",
      "Algorithm": [
        "+ethash"
@@ -30,13 +30,15 @@
      "PricePenaltyFactor": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
-     "WorkerName": "ID=NM3813",
+     "WorkerName": "NM3813",
      "APIKey": "",
      "Algorithm": [
        "+beamv2",
        "+grincuckaroo29",
+       "+grincuckatoo31",
        "+grincuckarood29",
        "+eaglesong",
+       "+cuckaroom",
        "+cuckoocycle"
      ]
    }

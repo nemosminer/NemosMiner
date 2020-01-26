@@ -1,13 +1,13 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-nanominer162\cmdline_launcher.bat"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6.2/nanominer-windows-1.6.2.7z"
+$Path = ".\Bin\CPU-nanominer173\cmdline_launcher.bat"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.7.3/nanominer-windows-1.7.3.zip"
 $Commands = [PSCustomObject]@{
-    #"randomx" = "-algo randomx" #RandomX
+    #"randomhash" = "-algo RandomHash2" #RandomX
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {  
     switch ($_) {
-        "randomx" { $Fee = 0.02 } # substract devfee
+        "randomhash" { $Fee = 0.05 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
     }
     [PSCustomObject]@{

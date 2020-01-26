@@ -1,9 +1,10 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
-#$Path = ".\Bin\CPU-JayDDee3115\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee3116\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.11.6/cpuminer-opt-3.11.6-windows.zip"
+#$Path = ".\Bin\CPU-JayDDee3117\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3117\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.11.7/cpuminer-opt-3.11.7-windows.zip"
 $Commands = [PSCustomObject]@{ 
     "lyra2z330"   = " -a lyra2z330" #Lyra2z330
+    "sha3d"   = " -a sha3d" #sha3d
 } 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
