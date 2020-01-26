@@ -1,7 +1,7 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
 $Path = ".\Bin\NVIDIA-CryptoDredge022\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.22.0/CryptoDredge_0.22.0_cuda_10.0_windows.zip"
-$Commands = [PSCustomObject]@{
+$Commands = [PSCustomObject]@{ 
     "argon2d250"          = " --intensity 8 -a argon2d250" #argon2d250
     "argon2d500"          = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
     "argon2d4096"         = " --intensity 8 -a argon2d4096" #argon2d4096
@@ -24,15 +24,15 @@ $Commands = [PSCustomObject]@{
     "cryptonight_fast"    = " --intensity 8 -a cnfast2" # cnfast2
     "cryptonight_haven"   = " --intensity 8 -a cnhaven" # cnhaven
     "cryptonight_heavy"   = " --intensity 8 -a cnheavy" # cnhaven
-}
+} 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    If ($Algo -eq "phi2" -and $Pools.$Algo.Host -like "*zergpool*") { return }
-    switch ($_) {
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    If ($Algo -eq "phi2" -and $Pools.$Algo.Host -like "*zergpool*") { return } 
+    switch ($_) { 
         "mtp" { $Fee = 0.02 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
-    }
-    [PSCustomObject]@{
+    } 
+    [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--timeout 60 --api-type ccminer-tcp --cpu-priority 4 --no-watchdog -r -1 -R 1 -b 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
@@ -41,8 +41,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
-        User      = $Pools.$Algo.User
-        Host      = $Pools.$Algo.Host
-        Coin      = $Pools.$Algo.Coin
-    }
-}
+    } 
+} 

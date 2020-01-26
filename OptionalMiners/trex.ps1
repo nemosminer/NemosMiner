@@ -1,7 +1,7 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
 $Path = ".\Bin\NVIDIA-trex0146\t-rex.exe"
 $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.14.6/t-rex-0.14.6-win-cuda10.0.zip"
-$Commands = [PSCustomObject]@{
+$Commands = [PSCustomObject]@{ 
     "balloon"    = " -a balloon -i 23" #Balloon
     "astralhash" = " -a astralhash -i 23" #Astralhash
     #"dedal"      = " -a dedal -i 23" #Dedal
@@ -29,10 +29,10 @@ $Commands = [PSCustomObject]@{
     "mtp"        = " -a mtp -i 21" #MTP 
     "x25x"       = " -a x25x -i 21" #x25x
     "honeycomb"  = " -a honeycomb -i 26" #Honeycomb
-}
+} 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    [PSCustomObject]@{
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--no-watchdog --no-nvml --gpu-report-interval 25 -b 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --quiet -R 1 -T 50000 --cpu-priority 4"
@@ -41,8 +41,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
-        User      = $Pools.$Algo.User
-        Host      = $Pools.$Algo.Host
-        Coin      = $Pools.$Algo.Coin
-    }
-}
+    } 
+} 
