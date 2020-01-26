@@ -5,12 +5,12 @@ $Commands = [PSCustomObject]@{
     #"equihashBTG"     = " -uri zhash://" #EquihashBTG
     #"equihash144"     = " -pers auto -uri equihash1445://" #Equihash144
     #"zhash"           = " -pers auto -uri equihash1445://" #Zhash
-     "ethash"          = " -uri ethstratum://" #Ethash 
+    #"ethash"          = " -uri ethstratum://" #Ethash 
     #"cuckoocycle"     = " -uri aeternity://" #aeternity
     #"beamv2"          = " -uri beamhash2://" #beam
     #"grincuckarood29" = " -uri cuckaroo29d://" #grincuckaroo29 
     #"grincuckatoo31"  = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram) 
-     "cuckaroom" = " -uri cuckaroo29m://" #cuckaroo29m
+    #"cuckaroom" = " -uri cuckaroo29m://" #cuckaroo29m
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
