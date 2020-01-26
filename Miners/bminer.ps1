@@ -1,32 +1,29 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
 $Path = ".\Bin\NVIDIA-Bminer1602\bminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/16.0.2/bminer-v16.0.2-9094ce6.zip"
-$Commands = [PSCustomObject]@{
+$Commands = [PSCustomObject]@{ 
     #"equihashBTG"     = " -uri zhash://" #EquihashBTG
     #"equihash144"     = " -pers auto -uri equihash1445://" #Equihash144
     #"zhash"           = " -pers auto -uri equihash1445://" #Zhash
-    #"ethash"          = " -uri ethstratum://" #Ethash 
+     "ethash"          = " -uri ethstratum://" #Ethash 
     #"cuckoocycle"     = " -uri aeternity://" #aeternity
     #"beamv2"          = " -uri beamhash2://" #beam
     #"grincuckarood29" = " -uri cuckaroo29d://" #grincuckaroo29 
     #"grincuckatoo31"  = " -uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram) 
     #"cuckaroom" = " -uri cuckaroo29m://" #cuckaroo29m
-}
+} 
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    $Pass = If ($Pools.$Algo.Pass -like "*,*") { $Pools.$Algo.Pass.ToString().replace(',', '%2C') } else { $Pools.$Algo.Pass }
-    [PSCustomObject]@{
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    $Pass = If ($Pools.$Algo.Pass -like "*,*") { $Pools.$Algo.Pass.ToString().replace(',', '%2C') } else { $Pools.$Algo.Pass } 
+    [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "$($Commands.$_)$($Pools.$Algo.User):$($Pass)@$($Pools.$Algo.Host):$($Pools.$Algo.Port) -intensity 12 --fast -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day }
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } 
         API       = "bminer"
         Port      = $Port
         Wrap      = $false
-        URI       = $Uri    
-        User      = $Pools.$Algo.User
-        Host      = $Pools.$Algo.Host
-        Coin      = $Pools.$Algo.Coin
+        URI       = $Uri
     }
-}
+} 
