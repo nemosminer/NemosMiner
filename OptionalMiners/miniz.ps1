@@ -1,7 +1,7 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
 $Path = ".\Bin\NVIDIA-miniZ15s\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5s/miniZ_v1.5s_cuda10_win-x64.zip"
-$Commands = [PSCustomObject]@{
+$Commands = [PSCustomObject]@{ 
     "equihash144"  = " --par=144,5 --pers auto" #Equihash144
     "equihash125"  = " --par=125,4 --pers auto" #Equihash125
     "zhash"        = " --par=144,5 --pers auto" #Zhash
@@ -11,10 +11,10 @@ $Commands = [PSCustomObject]@{
     #"equihash96"   = " --par=96,5 --pers auto" #Equihash192
     "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
     "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
-}
+} 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    [PSCustomObject]@{
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--cleanjobs --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 60 --nonvml --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.$Algo.User)@$($Pools.$Algo.Host):$($Pools.$Algo.Port) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #--oc1 --oc2 --f11=0
@@ -22,9 +22,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         API       = "miniZ"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
-        URI       = $Uri    
-        User      = $Pools.$Algo.User
-        Host      = $Pools.$Algo.Host
-        Coin      = $Pools.$Algo.Coin
-    }
-}
+        URI       = $Uri
+    } 
+} 

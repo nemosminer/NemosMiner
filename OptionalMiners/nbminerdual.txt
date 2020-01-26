@@ -1,4 +1,4 @@
-{
+{ 
     "Type":       "NVIDIA",
     "Path":       ".\\Bin\\NVIDIA-NBminer26.2dual\\nbminer.exe",
     "Uri":        "https://github.com/NebuTech/NBMiner/releases/download/v26.2/NBMiner_26.2_Win.zip",
@@ -7,4 +7,4 @@
     "API":        "nbminerdual",
     "Port":       "$($Variables.NVIDIAMinerAPITCPPort)",
     "Wrap":       false
-}
+} 

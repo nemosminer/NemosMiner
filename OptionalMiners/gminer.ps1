@@ -1,7 +1,7 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
 $Path = ".\Bin\NVIDIA-Gminer196\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/1.96/gminer_1_96_windows64.zip"
-$Commands = [PSCustomObject]@{
+$Commands = [PSCustomObject]@{ 
     #"beamv2"         = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"  = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
     #"equihash144"  = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
@@ -16,15 +16,15 @@ $Commands = [PSCustomObject]@{
     #"ethash"          = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
     "eaglesong"       = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #eaglesong 
     "cuckaroom"       = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
-}
+} 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    switch ($_) {
-        "ethash" { $Fee = 0.0065 }
-        "cuckaroom" { $Fee = 0.03 }
-        default { $Fee = 0.02 }
-    }
-    [PSCustomObject]@{
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    switch ($_) { 
+        "ethash" { $Fee = 0.0065 } 
+        "cuckaroom" { $Fee = 0.03 } 
+        default { $Fee = 0.02 } 
+    } 
+    [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--watchdog 0 --pec 0 --nvml 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.$Algo.Host) --port $($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)"
@@ -32,9 +32,6 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         API       = "gminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
-        URI       = $Uri    
-        User      = $Pools.$Algo.User
-        Host      = $Pools.$Algo.Host
-        Coin      = $Pools.$Algo.Coin
-    }
-}
+        URI       = $Uri
+    } 
+} 

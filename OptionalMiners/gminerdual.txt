@@ -1,4 +1,4 @@
-{
+{ 
     "Type":       "NVIDIA",
     "Path":       ".\\Bin\\NVIDIA-Gminer195dual\\miner.exe",
     "Uri":        "https://github.com/develsoftware/GMinerRelease/releases/download/1.95/gminer_1_95_windows64.zip",
@@ -7,4 +7,4 @@
     "API":        "gminerdual",
     "Port":       "$($Variables.NVIDIAMinerAPITCPPort)",
     "Wrap":       false
-}
+} 
