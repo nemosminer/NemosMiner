@@ -1,15 +1,16 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
 $Path = ".\Bin\cpu-FireIce104\xmr-stak-rx.exe"
 $Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.4-rx/xmr-stak-rx-win64-1.0.4.7z"
-$Commands = [PSCustomObject]@{
+$Commands = [PSCustomObject]@{ 
     #"randomxmonero" = "randomx" #Randomxmonero
     #"randomx"       = "randomx" #Randomxmonero 
     #"randomarq"     = "arqma" #randomARQ
-}
+} 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
-    ([PSCustomObject]@{
-            pool_list       = @([PSCustomObject]@{
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    ([PSCustomObject]@{ 
+            pool_list       = @(
+                [PSCustomObject]@{ 
                     pool_address    = "$($Pools.$Algo.Host):$($Pools.$Algo.Port)"
                     wallet_address  = "$($Pools.$Algo.User)"
                     pool_password   = "$($Pools.$Algo.Pass)"
@@ -18,7 +19,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                     tls_fingerprint = ""
                     pool_weight     = 1
                     rig_id          = ""
-                }
+                } 
             )
             currency        = $Commands.$_
             call_timeout    = 10
@@ -39,7 +40,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
             prefer_ipv4     = $true
         } | ConvertTo-Json -Depth 10
     ) -replace "^{" -replace "}$" | Set-Content "$(Split-Path $Path)\$($Pools.$Algo.Name)_$($Pools.$Algo)_$($Pools.$Algo.User)_CPU.txt" -Force -ErrorAction SilentlyContinue
-    [PSCustomObject]@{
+    [PSCustomObject]@{ 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-C $($Pools.$Algo.Name)_$($Pools.$Algo)_$($Pools.$Algo.User)_CPU.txt --noAMD --noNVIDIA -i $($Variables.CPUMinerAPITCPPort)"
@@ -48,8 +49,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.CPUMinerAPITCPPort #4068
         Wrap      = $false
         URI       = $Uri
-        User      = $Pools.$Algo.User
-        Host      = $Pools.$Algo.Host
-        Coin      = $Pools.$Algo.Coin
-    }
+    } 
 } 
