@@ -407,8 +407,8 @@ Function Global:TimerUITick {
                 Write-Host "Running:"
                 $ProcessRunning | Sort-Object { if ($_.Process -eq $null) { [DateTime]0 } else { $_.Process.StartTime } } | Format-Table -Wrap (
                     @{ Label = "Speeds"; Expression = { ($_.HashRate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" } ) -join ' & ' } ; Align = 'right' } , 
-                    @{ Label = "Started"; Expression = { "{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) { (0) } else { (Get-Date) - $_.Process.StartTime } ) } } ,
-                    @{ Label = "Active"; Expression = { "{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) { $_.Active } else { if ($_.Process.ExitTime -gt $_.Process.StartTime) { ($_.Active + ($_.Process.ExitTime - $_.Process.StartTime)) } else { ($_.Active + ((Get-Date) - $_.Process.StartTime)) } } ) } } , 
+                    @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(if ($_.Process -eq $null) { 0 } else { (Get-Date) - $_.Process.StartTime } ) } } ,
+                    @{ Label = "Active (total)"; Expression = { "{0:n0} hrs {1:mm} min {1:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active).TotalHours, ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } } ,
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } } 
                 ) | Out-Host
