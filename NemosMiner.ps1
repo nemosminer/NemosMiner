@@ -344,7 +344,8 @@ Function Global:TimerUITick {
                 if ($ProcessesIdle.Count -gt 0) { 
                     Write-Host "Run Miners: " $ProcessesIdle.Count
                     $ProcessesIdle | Sort-Object { if ($_.Process -eq $null) { (Get-Date) } else { $_.Process.ExitTime } } | Format-Table -Wrap (
-                        @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } 
+                        @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } ,
+                        @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } }  
                     ) | Out-Host
                 } 
             } 
