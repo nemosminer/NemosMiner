@@ -339,16 +339,12 @@ Function Global:TimerUITick {
                 } 
             } 
             Clear-Host
-            [Array] $ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Idle" } 
+            [Array] $ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Run Miners" } 
             if ($Config.UIStyle -eq "Full") { 
                 if ($ProcessesIdle.Count -gt 0) { 
-                    Write-Host "Idle: " $ProcessesIdle.Count
+                    Write-Host "Run Miners: " $ProcessesIdle.Count
                     $ProcessesIdle | Sort-Object { if ($_.Process -eq $null) { (Get-Date) } else { $_.Process.ExitTime } } | Format-Table -Wrap (
-                        @{ Label = "Speed(s)"; Expression = { $_.HashRate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" } -join ' & ' } ; Align = 'right' } , 
-                        @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(if ($_.Process -eq $null) { 0 } else { (Get-Date) - $_.Process.StartTime } ) } } ,
-                        @{ Label = "Active (total)"; Expression = { "{0:n0} hrs {1:mm} min {1:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active).TotalHours, ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } } ,  
-                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
-                        @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } } 
+                        @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } 
                     ) | Out-Host
                 } 
             } 
@@ -386,7 +382,7 @@ Function Global:TimerUITick {
                     @{ Label = "Speed"; Expression = { ($_.HashRate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" } ) -join ' & ' } ; Align = 'right' } , 
                     @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(if ($_.Process -eq $null) { 0 } else { (Get-Date) - $_.Process.StartTime } ) } } ,
                     @{ Label = "Active (total)"; Expression = { "{0:n0} hrs {1:mm} min {1:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active).TotalHours, ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } } , 
-                    @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
+                    @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } } 
                 ) | Out-Host
                 [Array] $ProcessesFailed = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Failed" } 
@@ -396,7 +392,7 @@ Function Global:TimerUITick {
                         @{ Label = "Speed"; Expression = { ($_.HashRate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" } ) -join ' & ' } ; Align = 'right' } , 
                         @{ Label = "Exited"; Expression = { "{0:dd}:{0:hh}:{0:mm}" -f $(if ($_.Process -eq $null) { 0 } else { (Get-Date) - $_.Process.ExitTime } ) } } ,
                         @{ Label = "Active (total)"; Expression = { "{0:n0} hrs {1:mm} min {1:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active).TotalHours, ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } } , 
-                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
+                        @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } } 
                     ) | Out-Host
                 } 
@@ -409,7 +405,7 @@ Function Global:TimerUITick {
                     @{ Label = "Speeds"; Expression = { ($_.HashRate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" } ) -join ' & ' } ; Align = 'right' } , 
                     @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(if ($_.Process -eq $null) { 0 } else { (Get-Date) - $_.Process.StartTime } ) } } ,
                     @{ Label = "Active (total)"; Expression = { "{0:n0} hrs {1:mm} min {1:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active).TotalHours, ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } } ,
-                    @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
+                    @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } } , 
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } } 
                 ) | Out-Host
                 Write-Host "--------------------------------------------------------------------------------"
