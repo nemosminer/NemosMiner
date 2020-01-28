@@ -339,7 +339,7 @@ Function Global:TimerUITick {
                 } 
             } 
             Clear-Host
-            [Array] $ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Run Miners" } 
+            [Array] $ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Idle" } 
             if ($Config.UIStyle -eq "Full") { 
                 if ($ProcessesIdle.Count -gt 0) { 
                     Write-Host "Run Miners: " $ProcessesIdle.Count
