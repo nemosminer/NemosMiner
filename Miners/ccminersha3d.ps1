@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
-$Path = ".\Bin\NVIDIA-ccminersha3d1.0\ccminer.exe"
-$Uri = "https://github.com/brian112358/ccminer-bsha3/releases/download/v1.0/ccminer-bsha3-v1.0-win64.zip"
+$Path = ".\Bin\NVIDIA-ccminersha3dV1.0\ccminer.exe"
+$Uri = "https://github.com/Minerx117/ccminer-bsha3/releases/download/1.0/ccminersha3dV1.zip"
 $Commands = [PSCustomObject]@{ 
     "sha3d" = " -i 27 -d $($Config.SelGPUCC)" #sha3d
 } 
