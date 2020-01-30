@@ -238,7 +238,7 @@ recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
 
    NemosMiner is Currently Tested on the following Rigs: 
       
-      winows10-1xGTX-1070/RYZEN-3700x 
+      windows10-1xGTX-1070/RYZEN-3700x 
       windows8.1-9xGTX-1660ti/Octominer
       windows10-6xRTX-2060/RYZEN-3700x
       windows7-6xRTX-2080/RYZEN-3700x 
