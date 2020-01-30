@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\cpu-SRBMiner-Multi-0-3-1/SRBMiner-MULTI.exe"
 $Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.3.1/SRBMiner-Multi-0-3-1-win64.zip"
 $Commands = [PSCustomObject]@{ 
@@ -11,12 +11,12 @@ $Commands = [PSCustomObject]@{
     "yescryptR32"  = " --algorithm yescryptR32" #yescryptR32   
     "yespower"     = " --algorithm yespower" #yespower 
     "yespowerr16"  = " --algorithm yespowerr16" #yespowerr16 
-} 
+}
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     switch ($_) { 
         default { $ThreadCount = $Variables.ProcessorCount - 1 }
-    } 
+    }
 
     $Algo = Get-Algorithm($_)
     [PSCustomObject]@{ 
@@ -28,5 +28,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
-    } 
-} 
+    }
+}

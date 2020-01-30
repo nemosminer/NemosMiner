@@ -1,9 +1,9 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-ccminerneoscryptV3\ccminer.exe"
 $Uri = ""
 $Commands = [PSCustomObject]@{ 
     #"neoscrypt" = " -a neoscrypt -d $($Config.SelGPUCC)" #neoscrypt
-} 
+}
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     [PSCustomObject]@{ 
@@ -15,5 +15,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
-    } 
-} 
+    }
+}
