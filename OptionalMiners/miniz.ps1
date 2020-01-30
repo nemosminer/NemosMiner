@@ -6,9 +6,9 @@ $Commands = [PSCustomObject]@{
     "equihash125"  = " --par=125,4 --pers auto" #Equihash125
     "zhash"        = " --par=144,5 --pers auto" #Zhash
     "beamv2"       = " --par=beam --pers auto" #Beamv2
-    "beam"         = " --par=150,5 --pers auto" #Beamv2
+    "beam"         = " --par=150,5 --pers auto" #Beam
     "equihash192"  = " --par=192,7 --pers auto" #Equihash192
-    "equihash96"   = " --par=96,5 --pers auto" #Equihash192
+   #"equihash96"   = " --par=96,5 --pers auto" #equihash96
     "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
     "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
 } 
