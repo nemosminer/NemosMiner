@@ -75,6 +75,7 @@ Function Start-APIServer {
 
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
+                $Path >> .\Logs\API.log
 
                 # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                 $Parameters = @{ }
@@ -95,8 +96,8 @@ Function Start-APIServer {
                 $Data = ""
 
                 # Set the proper content type, status code and data for each resource
-                Switch ($Path) { 
-                    "/activeMinerprograms" { 
+                Switch ($Path -Split '\.' | Select-Object -Index 0) { 
+                    "/activeminerprograms" { 
                         $Data = $Variables.ActiveMinerPrograms | ConvertTo-Json -Depth 10
                         Break
                     }
@@ -104,8 +105,24 @@ Function Start-APIServer {
                         $Data = $Variables.APIVersion | ConvertTo-Json -Depth 10
                         Break
                     }
+                    "/brainjobs" { 
+                        $Data = $Variables.BrainJobs | ConvertTo-Json -Depth 10
+                        Break
+                    }
                     "/config" { 
                         $Data = $Config | ConvertTo-Json -Depth 10
+                        Break
+                    }
+                    "/earnings" { 
+                        $Data = $Variables.earnings | ConvertTo-Json -Depth 10
+                        Break
+                    }
+                    "/earningstrackerjobs" { 
+                        $Data = $Variables.EarningsTrackerJobs | ConvertTo-Json -Depth 10
+                        Break
+                    }
+                    "/miners" { 
+                        $Data = $Variables.miners | ConvertTo-Json -Depth 10
                         Break
                     }
                     "/poolsconfig" { 
@@ -113,7 +130,12 @@ Function Start-APIServer {
                         Break
                     }
                     "/variables" { 
-                        $Data = $Variables | ConvertTo-Json -Depth 10
+                        if ($Path -match "^.+\..+$") {
+                            $Data = $Variables.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | ConvertTo-Json -Depth 10
+                        }
+                        else {
+                            $Data = $Variables | ConvertTo-Json -Depth 10
+                        }
                         break
                     }
                     default { 
