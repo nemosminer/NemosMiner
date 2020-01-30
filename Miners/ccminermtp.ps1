@@ -2,7 +2,7 @@ if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterL
 $Path = ".\Bin\NVIDIA-ccminermtp131\ccminer.exe"
 $Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.3.1/ccminer.exe"
 $Commands = [PSCustomObject]@{ 
-    #"mtp" = " -d $($Config.SelGPUCC)" #mtp working on 6card rigs now but not on 9card+ rigs trex is fine..
+    #"mtp" = " -d $($Config.SelGPUCC) -i 21" #mtp working on 6card rigs now but not on 9card+ rigs trex is fine..
 } 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
