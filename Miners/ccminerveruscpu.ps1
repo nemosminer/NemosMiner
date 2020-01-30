@@ -1,21 +1,21 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
 $Path = ".\Bin\CPU-ccminerverushash361\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.61/ccminerverus-3.61cpu-win.7z"
 $Commands = [PSCustomObject]@{ 
     #"verushash" = "" #Verushash
-} 
+}
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     switch ($_) { 
-        default { $ThreadCount = $Variables.ProcessorCount - 1 } 
-    } 
+        default { $ThreadCount = $Variables.ProcessorCount - 1 }
+    }
     $Algo = Get-Algorithm($_)
     [PSCustomObject]@{ 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-t $($ThreadCount) -N 1 -R 1 -b $($Variables.CPUMinerAPITCPPort) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -a verus -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } 
+        HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Day }
         API       = "ccminer"
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
@@ -23,5 +23,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         User      = $Pools.$Algo.User
         Host      = $Pools.$Algo.Host
         Coin      = $Pools.$Algo.Coin
-    } 
-} 
+    }
+}

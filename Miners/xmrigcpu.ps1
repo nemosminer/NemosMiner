@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\CPU-XMRigcc250\xmrigDaemon.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.5.0/xmrigcc.zip"
 $Commands = [PSCustomObject]@{ 
@@ -14,7 +14,7 @@ $Commands = [PSCustomObject]@{
     "cryptonight_haven"   = " -a cn-heavy/xhv --nicehash" #cryptonightFast
     "cryptonight_upx"     = " -a cryptonight-extremelite --nicehash" #cryptonightupx
     "chukwa"              = " -a argon2/chukwa --nicehash" #chukwa
-} 
+}
 $ThreadCount = $Variables.ProcessorCount - 1
 $Port = $Variables.CPUMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -28,5 +28,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri    
-    } 
-} 
+    }
+}

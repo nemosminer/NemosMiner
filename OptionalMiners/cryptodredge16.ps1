@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-CryptoDredge0160\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/CryptoDredge_0.16.0_cuda_10.0_windows.zip"
 $Commands = [PSCustomObject]@{ 
@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     "phi2-lux"  = " --intensity 8 -a phi2" #Phi2-lux   
     "hmq1725"   = " --intensity 8 -a hmq1725" #Hmq1725
     "pipe"      = " --intensity 8 -a pipe" #Pipe 
-} 
+}
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     [PSCustomObject]@{ 
@@ -23,5 +23,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
-    } 
-} 
+    }
+}

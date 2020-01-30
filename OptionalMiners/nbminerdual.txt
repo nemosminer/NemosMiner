@@ -7,4 +7,4 @@
     "API":        "nbminerdual",
     "Port":       "$($Variables.NVIDIAMinerAPITCPPort)",
     "Wrap":       false
-} 
+}

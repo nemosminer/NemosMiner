@@ -1,4 +1,4 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\Nvidia-FireIce2108\xmr-stak.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10.8/xmr-stak-win64-2.10.8-cuda10.0.7z"
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
@@ -11,7 +11,7 @@ $Commands = [PSCustomObject]@{
     #"cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
     #"cryptonight-saber"   = "cryptonight_bittube2" #cryptonight-saber
     #"cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
-} 
+}
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algo = Get-Algorithm($_)
     ([PSCustomObject]@{
@@ -25,7 +25,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
                     tls_fingerprint = ""
                     pool_weight     = 1
                     rig_id          = ""
-                } 
+                }
             )
             currency        = $Commands.$_
             call_timeout    = 10
@@ -55,5 +55,5 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         API       = "fireice"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         URI       = $Uri
-    } 
-} 
+    }
+}
