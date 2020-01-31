@@ -40,15 +40,13 @@ Function InitApplication {
     $culture.NumberFormat.NumberGroupSeparator = ","
     [System.Threading.Thread]::CurrentThread.CurrentCulture = $culture
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
-
-    if ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
-
-    if ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }               # For AMD
-    if ($env:GPU_MAX_HEAP_SIZE -ne 100) { $env:GPU_MAX_HEAP_SIZE = 100 }               # For AMD
-    if ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }             # For AMD
-    if ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }       # For AMD
-    if ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 } # For AMD
-    if ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }     # For AMD
+    If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
+    If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
+    If ($env:GPU_MAX_HEAP_SIZE -ne 100) { $env:GPU_MAX_HEAP_SIZE = 100 }                   # For AMD
+    If ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }                 # For AMD
+    If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }           # For AMD
+    If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
+    If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
 
     #Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -79,7 +77,7 @@ Function InitApplication {
         Get-ChildItem ".\Logs\miner-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
     } 
     #Update stats with missing data and set to today's date/time
-    if (Test-Path "Stats" -PathType Container) { Get-ChildItemContent "Stats" | ForEach-Object { $Stat = Set-Stat $_.Name $_.Content.Week } } 
+    Get-Stat; $Now = (Get-Date).ToUniversalTime(); $Stats | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Stats.$_.Updated = $Now }
     #Set donation parameters
     $Variables | Add-Member -Force @{ DonateRandom = [PSCustomObject]@{ } } 
     $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) } 
