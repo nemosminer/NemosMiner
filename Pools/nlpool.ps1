@@ -1,11 +1,11 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-Try {
-    $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\nlpool\nlpool.json") | ConvertFrom-Json
+Try { 
+    $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\nlpool\nlpool.json") | ConvertFrom-Json
 }
-catch { return }
+Catch { return }
 
-if (-not $Request) { return }
+If (-not $Request) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = "mine.nlpool.nl"
@@ -16,32 +16,30 @@ $PriceField = "Plus_Price"
 $Location = "US"
 
 # Placed here for Perf (Disk reads)
-$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) { $Name }else { "default" }
+$ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
+$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $PoolHost = $HostSuffix
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    
-    switch ($PoolAlgorithm) {
+    switch ($PoolAlgorithm) { 
         "equihash125" { $Divisor *= 2 } #temp fix
         "equihash144" { $Divisor *= 2 } #temp fix
         "equihash192" { $Divisor *= 2 } #temp fix
         "verushash" { $Divisor *= 2 } #temp fix
-
     }
 
     $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))
 
-    $PwdCurr = if ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency }else { $Config.Passwordcurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } else { "ID=$($PoolConf.WorkerName)" }
+    $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
+    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
 
-    if ($PoolConf.Wallet) {
-        [PSCustomObject]@{
+    If ($PoolConf.Wallet) { 
+        [PSCustomObject]@{ 
             Algorithm     = $PoolAlgorithm
             Info          = ""
             Price         = $Stat.Live * $PoolConf.PricePenaltyFactor

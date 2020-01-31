@@ -1,25 +1,22 @@
-if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-try {
+Try { 
     $Request = Invoke-WebRequest "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
 }
-catch { return }
+Catch { return }
 
-if (-not $Request.success) {
-    return
-}
+If (-not $Request.success) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
 $Locations = 'EU', 'US', 'Asia'
 $Fee = 0.0090
 # Placed here for Perf (Disk reads)
-$ConfName = if ($Config.PoolsConfig.$Name -ne $Null) { $Name }else { "default" }
+$ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
 $Divisor = 1000000000
 
-
-$Request.return | ForEach-Object {
+$Request.return | ForEach-Object { 
     $Current = $_
     $Algorithm = $_.algo -replace "-"
     $Coin = (Get-Culture).TextInfo.ToTitleCase(($_.current_mining_coin -replace "-", " ")) -replace " "
@@ -27,10 +24,10 @@ $Request.return | ForEach-Object {
     $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([decimal]$_.profit / $Divisor * (1 - $Fee))
     $Price = (($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
 
-    $Locations | ForEach-Object {
+    $Locations | ForEach-Object { 
         $Location = $_
-	
-        [PSCustomObject]@{
+
+        [PSCustomObject]@{ 
             Algorithm   = $Algorithm
             Info        = $Coin
             Price       = $Stat.Live * $PoolConf.PricePenaltyFactor
@@ -38,13 +35,13 @@ $Request.return | ForEach-Object {
             Protocol    = 'stratum+tcp'
             Host        = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
             Port        = $Current.algo_switch_port
-            User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=',''))"
+            User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
             Pass        = 'x'
             Location    = $Location
             SSL         = $false
         }
-        
-        [PSCustomObject]@{
+
+        [PSCustomObject]@{ 
             Algorithm   = $Algorithm
             Info        = $Coin
             Price       = $Stat.Live * $PoolConf.PricePenaltyFactor
@@ -52,12 +49,10 @@ $Request.return | ForEach-Object {
             Protocol    = 'stratum+ssl'
             Host        = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
             Port        = $Current.algo_switch_port
-            User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=',''))"
+            User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
             Pass        = 'x'
             Location    = $Location
             SSL         = $true
         }
     }
 }
-
-
