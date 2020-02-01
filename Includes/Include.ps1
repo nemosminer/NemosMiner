@@ -398,11 +398,11 @@ Function DetectGPUCount {
     Update-Status("Fetching GPU Count")
     $DetectedGPU = @()
     Try { 
-        $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" } ) 
+        $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
     }
     Catch { Update-Status("NVIDIA Detection failed") }
     Try { 
-        $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" } ) 
+        $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
     }
     Catch { Update-Status("AMD Detection failed") }
     $DetectedGPUCount = $DetectedGPU.Count
@@ -1266,7 +1266,7 @@ Function Start-SubProcess {
                 Write-Host "Can't get process - $Tries"
                 $Tries++
                 Start-Sleep 1
-                $Process = (Get-Process | Where-Object { $_.Path -eq $FilePath } )[0]
+                $Process = (Get-Process | Where-Object { $_.Path -eq $FilePath })[0]
                 Write-Host "Process= $($Process.Handle)"
             }
 
