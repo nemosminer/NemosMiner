@@ -34,11 +34,6 @@ Function InitApplication {
         [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
     } 
     
-    # Force Culture to en-US
-    $culture = [System.Globalization.CultureInfo]::CreateSpecificCulture("en-US")
-    $culture.NumberFormat.NumberDecimalSeparator = "."
-    $culture.NumberFormat.NumberGroupSeparator = ","
-    [System.Threading.Thread]::CurrentThread.CurrentCulture = $culture
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
     If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -663,7 +658,7 @@ Function NPMCycle {
     } 
     # $Variables.StatusText = "Cycle Time (seconds): $($CycleTime.TotalSeconds)"
     "Cycle Time (seconds): $($CycleTime.TotalSeconds)" | Out-Host
-    $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep))"
+    $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
     $Variables | Add-Member -Force @{ EndLoop = $True } 
     # Start-Sleep $Variables.TimeToSleep
     # } 
