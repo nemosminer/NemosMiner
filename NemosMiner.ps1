@@ -110,7 +110,7 @@ $Branding = [PSCustomObject]@{
 
 # #Start the log
 # Start-Transcript ".\Logs\$($Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
-# Write-Log "Starting $($Branding.ProductLabel) © 2018-$((Get-Date).Year) Nemo and MrPlus"
+# Write-Log "Starting $($Branding.ProductLabel) Â© 2018-$((Get-Date).Year) Nemo and MrPlus"
 
 #Initialize variables
 New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop

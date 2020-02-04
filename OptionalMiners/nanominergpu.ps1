@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\CPU-nanominer173\cmdline_launcher.bat"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.7.3/nanominer-windows-1.7.3.zip"
 $Commands = [PSCustomObject]@{ 
-    "randomhash" = "-algo RandomHash2" #RandomX
+    #"randomhash" = "-algo RandomHash2" #RandomX
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
