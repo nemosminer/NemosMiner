@@ -1,5 +1,5 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-#$Path = ".\Bin\CPU-JayDDee3118\cpuminer-zen.exe" #AMD
+#$Path = ".\Bin\CPU-JayDDee3119\cpuminer-zen.exe" #AMD
 $Path = ".\Bin\CPU-JayDDee3119\cpuminer-aes-sse42.exe" #Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.11.9/cpuminer-opt-3.11.9-windows.zip"
 $Commands = [PSCustomObject]@{ 
