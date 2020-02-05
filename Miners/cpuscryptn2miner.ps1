@@ -3,7 +3,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\CPU-Verium14\cpuminer.exe"
 $Uri = "https://github.com/fireworm71/veriumMiner/releases/download/v1.4/cpuminer_1.4_windows_x64_O2_GCC7.zip"
 $Commands = [PSCustomObject]@{ 
-     #"scryptn2" = "" #Verushash
+     "scryptn2" = "" #Verushash
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
