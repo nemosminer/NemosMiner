@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-nanominer173\cmdline_launcher.bat"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.7.3/nanominer-windows-1.7.3.zip"
+$Path = ".\Bin\CPU-nanominer180\cmdline_launcher.bat"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.8.0/nanominer-windows-1.8.0.zip"
 $Commands = [PSCustomObject]@{ 
     #"randomhash" = "-algo RandomHash2" #RandomX
 }
