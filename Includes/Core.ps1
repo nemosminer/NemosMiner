@@ -71,7 +71,7 @@ Function InitApplication {
         Get-ChildItem ".\Logs\miner-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
     }
     #Update stats with missing data and set to today's date/time
-    Get-Stat; $Now = (Get-Date).ToUniversalTime(); $Stats | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Stats.$_.Updated = $Now }
+    Get-Stat; $Now = (Get-Date).ToUniversalTime(); if ($Stats ) { $Stats | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Stats.$_.Updated = $Now } }
     #Set donation parameters
     $Variables | Add-Member -Force @{ DonateRandom = [PSCustomObject]@{ } }
     $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
@@ -260,7 +260,7 @@ Function NPMCycle {
                 $Variables.StatusText = "Miner Updated: $($_.Path)"
                 $NewMiner = &$_.path
                 $NewMiner | Add-Member -Force @{ Name = (Get-Item $_.Path).BaseName }
-                If (Test-Path (Split-Path $NewMiner.Path -PathType Container)) { 
+                If (Test-Path (Split-Path $NewMiner.Path) -PathType Container) { 
                     $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $NewMiner.Path) } | ForEach-Object { 
                         [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
                         If ($Filtered.Count -eq 0) { 
