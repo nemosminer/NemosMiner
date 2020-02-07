@@ -351,7 +351,7 @@ Function Global:TimerUITick {
                     Write-Host "Average mBTC/Day:" -NoNewline; Write-Host "           $(($_.BTCD * 1000).ToString('N6'))" -F Yellow
                     Write-Host "Balance mBTC:               $(($_.Balance).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold).ToString('N3')) BTC payment threshold)"
                     Write-Host "Balance $($Config.Currency):                $(($_.Balance * $Variables.Rates.($Config.Currency)).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold * $Variables.Rates.($Config.Currency)).ToString('n')) $($Config.Currency) payment threshold)"
-                    Write-Host "Estimated Pay Date:         $(if( $_.EstimatedPayDate -ne "Unknown") { ($_.EstimatedPayDate).ToShortDateString() } Else { "Unknown" })"
+                    Write-Host "Estimated Pay Date:         $(Try { ($_.EstimatedPayDate).ToShortDateString() } Catch { $_.EstimatedPayDate })"
                 }
             }
 
