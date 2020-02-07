@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.8.1.3
-version date:   06 February 2020
+version date:   07 February 2020
 #>
 
 param(
@@ -1670,11 +1670,6 @@ $ButtonStart.Add_Click(
                 $ButtonPause.Visible = $True
             }
             $TimerUI.Start()
-
-#$DebugLoop = $true # Enable for debug only!
-While ($DebugLoop) {
-    NPMCycle #Added temporary, set a trace point.
-}
 
             Start-Mining
 
