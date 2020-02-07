@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 version:        3.8.1.3
-version date:   03 February 2020
+version date:   07 February 2020
 #>
 
 param(
@@ -106,43 +106,43 @@ $Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-} 
+}
 
 # #Start the log
 # Start-Transcript ".\Logs\$($Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
-# Write-Log "Starting $($Branding.ProductLabel) Â© 2018-$((Get-Date).Year) Nemo and MrPlus"
+# Write-Log "Starting $($Branding.ProductLabel) © 2018-$((Get-Date).Year) Nemo and MrPlus"
 
 #Initialize variables
 New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 
-$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() } -SecondValue { If (!$this._StatusText) { $this._StatusText = @() } ; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $True } } 
+$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() } -SecondValue { If (!$this._StatusText) { $this._StatusText = @() } ; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $True } }
 
 #Initialize API (for debug purposes)
 If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
     Import-Module .\Includes\API.psm1
     Start-APIServer -Port $APIPort
-} 
+}
 
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $False
 
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
-    if ($Variables.RestartCycle) { 
+    If ($Variables.RestartCycle) { 
         $Variables.RestartCycle = $False
         Stop-Mining
         Start-Mining
-        if ($Variables.Paused) { 
+        If ($Variables.Paused) { 
             $EarningsDGV.DataSource = [System.Collections.ArrayList]@()
             $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@()
             $WorkersDGV.DataSource = [System.Collections.ArrayList]@()
             $LabelBTCD.ForeColor = "Red"
             $TimerUI.Stop
-        } 
-    } 
+        }
+    }
 
-    if ($Variables.RefreshNeeded -and $Variables.Started -and -not $Variables.Paused) { 
-        if (!$Variables.EndLoop) { Update-Status($Variables.StatusText) } 
+    If ($Variables.RefreshNeeded -and $Variables.Started -and -not $Variables.Paused) { 
+        If (!$Variables.EndLoop) { Update-Status($Variables.StatusText) }
         # $TimerUI.Interval = 1
 
         $LabelBTCD.ForeColor = "Green"
@@ -150,15 +150,14 @@ Function Global:TimerUITick {
 
         $Variables.EarningsTrackerJobs | Where-Object { $_.state -eq "Running" } | ForEach-Object { 
             $EarnTrack = $_ | Receive-Job
-            if ($EarnTrack) { 
-                # $Variables.Earnings = @{ } 
+            If ($EarnTrack) { 
                 $EarnTrack | Where-Object { $_.Pool -ne "" } | Sort-Object date, pool | Select-Object -Last ($EarnTrack.Pool | Sort-Object -Unique).Count | ForEach-Object { 
-                    if ($true) { 
+                    If ($true) { 
                         #$_.Pool -in ($Config.PoolName -replace "24hr","" -replace "plus","")) { 
                         $Variables.EarningsPool = $_.Pool
                         $Variables.Earnings.($_.Pool) = $_
-                    } 
-                } 
+                    }
+                }
                 Remove-Variable EarnTrack
             }
         }
@@ -174,15 +173,14 @@ Function Global:TimerUITick {
 
         If ($Variables.EndLoop) { 
             $SwitchingDisplayTypes = @()
-            $SwitchingPageControls | ForEach-Object { if ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } } 
-            # if (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | Where-Object { $_.Type -in $SwitchingDisplayTypes} | Select-Object -Last 13) } 
-            if (Test-Path ".\Logs\switching.log") { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1) , (Get-Content ".\Logs\switching.log" -last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13) } 
+            $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
+            If (Test-Path ".\Logs\switching.log") { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1) , (Get-Content ".\Logs\switching.log" -last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13) }
             $SwitchingDGV.DataSource = $SwitchingArray
 
             # Fixed memory leak to chart object not being properly disposed in 5.3.0
             # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
 
-            if (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+            If (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
                 $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 85"
                 $Chart1.top = 74
                 $Chart1.left = 0
@@ -195,43 +193,42 @@ Function Global:TimerUITick {
                 $RunPage.Controls.Add($Chart2)
                 $Chart2.BringToFront()
                 
-                $RunPage.Controls | Where-Object { ($_.gettype()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | ForEach-Object { $RunPage.Controls[$RunPage.Controls.IndexOf($_)].Dispose(); $RunPage.Controls.Remove($_) } 
-            } 
+                $RunPage.Controls | Where-Object { ($_.gettype()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | ForEach-Object { $RunPage.Controls[$RunPage.Controls.IndexOf($_)].Dispose(); $RunPage.Controls.Remove($_) }
+            }
 
-            if ($Variables.Earnings -and $Config.TrackEarnings) { 
+            If ($Variables.Earnings -and $Config.TrackEarnings) { 
                 $DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | Select-Object @(
-                        @{ Name = "Pool"; Expression = { $_.Pool } },
-                        @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } },
-                        @{ Name = "Balance"; Expression = { [decimal]$_.Balance } },
-                        @{ Name = "BTC/D"; Expression = { "{0:N8}" -f ($_.BTCD) } },
-                        @{ Name = "1h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth1 * 1000 * 24) } },
-                        @{ Name = "6h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth6 * 1000 * 4) } },
-                        @{ Name = "24h m$([char]0x20BF)/D"; Expression = { "{0:N3}" -f ($_.Growth24 * 1000) } },
-                        @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is 'DateTime') { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } },
-                        @{ Name = "PaymentThreshold"; Expression = { "$($_.PaymentThreshold) ($('{0:P0} ' -f $($_.Balance / $_.PaymentThreshold)))" } } #,
-                        # @{ Name="Wallet";Expression={ $_.Wallet} } 
-                    ) | Sort-Object "1h m$([char]0x20BF)/D", "6h m$([char]0x20BF)/D", "24h m$([char]0x20BF)/D" -Descending)
+                    @{ Name = "Pool"; Expression = { $_.Pool } },
+                    @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } },
+                    @{ Name = "Balance"; Expression = { [decimal]$_.Balance } },
+                    @{ Name = "BTC/D"; Expression = { "{0:N8}" -f ($_.BTCD) } },
+                    @{ Name = "m$([char]0x20BF) in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * 1000 * 24) } },
+                    @{ Name = "m$([char]0x20BF) in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * 1000 * 4) } },
+                    @{ Name = "m$([char]0x20BF) in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * 1000) } },
+                    @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is 'DateTime') { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } },
+                    @{ Name = "PaymentThreshold"; Expression = { "$($_.PaymentThreshold) ($('{0:P0} ' -f $($_.Balance / $_.PaymentThreshold)))" } }
+                ) | Sort-Object "m$([char]0x20BF) in 1h", "m$([char]0x20BF) in 6h", "m$([char]0x20BF) in 24h" -Descending)
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
                 $EarningsDGV.ClearSelection()
-            } 
+            }
 
-            if ($Variables.Miners) { 
+            If ($Variables.Miners) { 
                 $DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Select-Object @(
-                        @{ Name = "Miner"; Expression = { $_.Name } },
-                        @{ Name = "Algorithm(s)"; Expression = { $_.HashRates.PSObject.Properties.Name -join ' & ' } },
-                        @{ Name = "Speed"; Expression = { ($_.HashRates.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { "$($_ | ConvertTo-Hash)/s" -replace '  ', ' ' } Else { "Benchmarking" } }) -join ' & ' } },
-                        @{ Name = "mBTC/Day"; Expression = { ($_.Profits.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { ($_ * 1000).ToString("N3") } Else { "Benchmarking" } }) -join ' + ' } },
-                        #@{ Name = "BTC/Day"; Expression = { ($_.Profits.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { $_.ToString("N5") } Else { "Benchmarking" } }) -join ' + ' } },
-                        @{ Name = "BTC/GH/Day"; Expression = { ($_.Pools.PSObject.Properties.Value.Price | ForEach-Object { ($_ * 1000000000).ToString("N5") }) -join ' + ' } },
-                        @{ Name = "Pool(s)"; Expression = { ($_.Pools.PSObject.Properties.Value | ForEach-Object { (@($_.Name | Select-Object) + @($_.Coin | Select-Object)) -join '-' }) -join ';' } }
-                    ) | Sort-Object "mBTC/Day" -Descending)
+                    @{ Name = "Miner"; Expression = { $_.Name } },
+                    @{ Name = "Algorithm(s)"; Expression = { $_.HashRates.PSObject.Properties.Name -join ' & ' } },
+                    @{ Name = "Speed"; Expression = { ($_.HashRates.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { "$($_ | ConvertTo-Hash)/s" -replace '  ', ' ' } Else { "Benchmarking" } }) -join ' & ' } },
+                    @{ Name = "mBTC/Day"; Expression = { ($_.Profits.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { ($_ * 1000).ToString("N3") } Else { "Benchmarking" } }) -join ' + ' } },
+                    @{ Name = "$($Config.Currency)/Day"; Expression = { ($_.Profits.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { ($_ * ($Variables.Rates.($Config.Currency))).ToString("N3") } Else { "Benchmarking" } }) -join ' + ' } },
+                    @{ Name = "BTC/GH/Day"; Expression = { ($_.Pools.PSObject.Properties.Value.Price | ForEach-Object { ($_ * 1000000000).ToString("N5") }) -join ' + ' } },
+                    @{ Name = "Pool(s)"; Expression = { ($_.Pools.PSObject.Properties.Value | ForEach-Object { (@($_.Name | Select-Object) + @($_.Coin | Select-Object)) -join '-' }) -join ';' } }
+                ) | Sort-Object "mBTC/Day" -Descending)
                 $EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
-            } 
+            }
             $EstimationsDGV.ClearSelection()
 
             $SwitchingDGV.ClearSelection()
 
-            if ($Variables.Workers -and $Config.ShowWorkerStatus) { 
+            If ($Variables.Workers -and $Config.ShowWorkerStatus) { 
                 $DisplayWorkers = [System.Collections.ArrayList]@($Variables.Workers | Select-Object @(
                     @{ Name = "Worker"; Expression = { $_.worker } },
                     @{ Name = "Status"; Expression = { $_.status } },
@@ -248,93 +245,93 @@ Function Global:TimerUITick {
 
                 # Set row color
                 $WorkersDGV.Rows | ForEach-Object { 
-                    if ($_.DataBoundItem.Status -eq "Offline") { 
+                    If ($_.DataBoundItem.Status -eq "Offline") { 
                         $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 213, 142, 176)
-                    } 
-                    elseif ($_.DataBoundItem.Status -eq "Paused") { 
+                    }
+                    ElseIf ($_.DataBoundItem.Status -eq "Paused") { 
                         $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 247, 252, 168)
-                    } 
-                    elseif ($_.DataBoundItem.Status -eq "Running") { 
+                    }
+                    ElseIf ($_.DataBoundItem.Status -eq "Running") { 
                         $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 127, 191, 144)
-                    } 
-                    else { 
+                    }
+                    Else { 
                         $_.DefaultCellStyle.Backcolor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255)
-                    } 
-                } 
+                    }
+                }
 
                 $WorkersDGV.ClearSelection()
                 $LabelMonitoringWorkers.text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
-            } 
+            }
 
-            if ($Variables.ActiveMinerPrograms) { 
+            If ($Variables.ActiveMinerPrograms) { 
                 # $MinerHosts = $_.Algorithm | ForEach-Object {
                 #     $Pools.$_
                 #     "$($_)@$($Miner.PoolName | Select-Object -Index ([array]::indexof($Miner.Algorithm, $_)))" }) -join "; ")}). "
 
-                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | Select-Object Type, @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.HashRate | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:hh}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:hh}:{0:mm}:{0:ss}" -f $_.TotalActive } }, @{ Name = "Host(s)"; Expression = { $($_.Host | Select-Object) -join '; ' } } | Sort-Object Type)
+                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | Select-Object Type, @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.HashRates | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.TotalActive } }, @{ Name = "Host(s)"; Expression = { $($_.Host | Select-Object) -join '; '} }  | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
             
-                [Array] $ProcessRunning = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } 
-                if ($ProcessRunning -eq $null) { 
+                [Array]$ProcessRunning = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" }
+                If ($ProcessRunning -eq $null) { 
                     # Update-Status("No miner running")
                 }
             }
             $LabelBTCPrice.text = If ($Variables.Rates.$($Config.Currency) -gt 0) { "1 BTC = $(($Variables.Rates.($Config.Currency)).ToString('n')) $($Config.Currency)" }
             $Variables | Add-Member -Force @{ InCycle = $False }
 
-            if ($Variables.Earnings.Values -ne $Null) { 
+            If ($Variables.Earnings.Values -ne $Null) { 
                 $LabelBTCD.Text = "Avg: " + ("{0:N6}" -f ($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) + " $([char]0x20BF)/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)) + " m$([char]0x20BF)/D"
                 
                 $LabelEarningsDetails.Lines = @()
-                # if ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum*1000*24) -lt ((($Variables.Earnings.Values | Measure-Object -Property BTCD -Sum).sum*1000)*0.999)) { 
-                # $LabelEarningsDetails.ForeColor = "Red" } else { $LabelEarningsDetails.ForeColor = "Green" } 
+                # If ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum*1000*24) -lt ((($Variables.Earnings.Values | Measure-Object -Property BTCD -Sum).sum*1000)*0.999)) { 
+                # $LabelEarningsDetails.ForeColor = "Red" } Else { $LabelEarningsDetails.ForeColor = "Green" }
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3)) { 
-                    { $_ -eq 0 } { "=" } 
-                    { $_ -gt 0 } { ">" } 
-                    { $_ -lt 0 } { "<" } 
-                } 
+                    { $_ -eq 0 } { "=" }
+                    { $_ -gt 0 } { ">" }
+                    { $_ -lt 0 } { "<" }
+                }
                 $LabelEarningsDetails.Lines += "Last  1h: " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24)) + " m$([char]0x20BF)/D " + $TrendSign
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000), 3)) { 
-                    { $_ -eq 0 } { "=" } 
-                    { $_ -gt 0 } { ">" } 
-                    { $_ -lt 0 } { "<" } 
-                } 
+                    { $_ -eq 0 } { "=" }
+                    { $_ -gt 0 } { ">" }
+                    { $_ -lt 0 } { "<" }
+                }
                 $LabelEarningsDetails.Lines += "Last  6h: " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4)) + " m$([char]0x20BF)/D " + $TrendSign
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property BTCD -Sum).sum * 1000 * 0.96), 3)) { 
-                    { $_ -eq 0 } { "=" } 
-                    { $_ -gt 0 } { ">" } 
-                    { $_ -lt 0 } { "<" } 
-                } 
+                    { $_ -eq 0 } { "=" }
+                    { $_ -gt 0 } { ">" }
+                    { $_ -lt 0 } { "<" }
+                }
                 $LabelEarningsDetails.Lines += "Last 24h: " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)) + " m$([char]0x20BF)/D " + $TrendSign
                 Remove-Variable TrendSign
-            } 
-            else { 
+            }
+            Else { 
                 $LabelBTCD.Text = "Waiting data from pools."
                 $LabelEarningsDetails.Lines = @()
-            } 
+            }
 
-            if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
-            if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") } 
+            If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+            If (-not (IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
 
-            $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product } 
-            $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version } 
-            $Variables | Add-Member -Force @{ CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value } 
-            if ((Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoUpdated)") { 
+            $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
+            $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
+            $Variables | Add-Member -Force @{ CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value }
+            If ((Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoUpdated)") { 
                 $LabelNotifications.ForeColor = "Green"
                 Update-Notifications("Running $($Variables.CurrentProduct) Version $([Version]$Variables.CurrentVersion)")
                 Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoUpdated)")
-            } 
+            }
 
             #Display mining information
-            if ($host.UI.RawUI.Keyavailable) { 
+            If ($host.UI.RawUI.Keyavailable) { 
                 $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp"); Start-Sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
-                if ($KeyPressed.KeyDown) { 
+                If ($KeyPressed.KeyDown) { 
                     Switch ($KeyPressed.Character) { 
-                        "s" { if ($Config.UIStyle -eq "Light") { $Config.UIStyle = "Full" } else { $Config.UIStyle = "Light" } } 
-                        "e" { $Config.TrackEarnings = -not $Config.TrackEarnings } 
-                    } 
-                } 
-            } 
+                        "s" { If ($Config.UIStyle -eq "Light") { $Config.UIStyle = "Full" } Else { $Config.UIStyle = "Light" } }
+                        "e" { $Config.TrackEarnings = -not $Config.TrackEarnings }
+                    }
+                }
+            }
             Clear-Host
             If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Run Miners" })) { 
                 Write-Host "Run Miners: " $ProcessesIdle.Count
@@ -349,7 +346,7 @@ Function Global:TimerUITick {
             If ($Variables.Earnings -and $Config.TrackEarnings) { 
                 $Variables.Earnings.Values | Sort-Object { $_.Pool } | ForEach-Object { 
                     Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " $($_.Pool)"
-                    Write-Host "Trust Level:                $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F darkgray " (based on data from $(([DateTime]$_.Date - [DateTime]$_.StartTime).ToString('dd\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
+                    Write-Host "Trust Level:                $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F darkgray " (based on data from $(([DateTime]$_.Date - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
                     Write-Host "Average mBTC/Hour:          $(($_.AvgHourlyGrowth * 1000).ToString('N6'))"
                     Write-Host "Average mBTC/Day:" -NoNewline; Write-Host "           $(($_.BTCD * 1000).ToString('N6'))" -F Yellow
                     Write-Host "Balance mBTC:               $(($_.Balance).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold).ToString('N3')) BTC payment threshold)"
@@ -374,36 +371,47 @@ Function Global:TimerUITick {
 
             #Display active miners list
             If ([Array]$ProcessRunning = $Variables.ActiveMinerPrograms | Where-Object{ $_.Status -eq "Running" }) { 
-                Write-Host "Running:" 
+                Write-Host "Running: $($ProcessRunning.Count)" 
                 $ProcessRunning | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                     @{ Label = "Speed"; Expression = { (($_.HashRates | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '  ', ' ' } ; Align = 'right' }, 
-                    @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(if ($_.Process -eq $null) { 0 } Else { ((Get-Date) - $_.Process.StartTime) }) } },
+                    @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { ((Get-Date) - $_.Process.StartTime) }) } },
                     @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } }, 
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } }
+                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
+                ) | Out-Host
+            }
+
+            If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
+                Write-Host "Previously Executed: $($ProcessesIdle.Count)"
+                $ProcessesIdle | Sort-Object { $_.Process.StartTime } | Format-Table -Wrap (
+                    @{ Label = "Speed"; Expression = { (($_.HashRates | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '  ', ' ' } ; Align = 'right' }, 
+                    @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { (Get-Date) - $_.Process.ExitTime }) } },
+                    @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalActive } }, 
+                    @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
+                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                 ) | Out-Host
             }
 
             If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesFailed = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Failed" })) { 
-                Write-Host -ForegroundColor Red "Failed: " $ProcessesFailed.Count
+                Write-Host -ForegroundColor Red "Failed: $($ProcessesFailed.Count)"
                 $ProcessesFailed | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                     @{ Label = "Speed"; Expression = { (($_.HashRates | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '  ', ' ' } ; Align = 'right' }, 
-                    @{ Label = "Time since fail"; Expression = { "{0:hh} hrs {0:mm} min {0:ss} sec" -f $(if ($_.Process -eq $null) { 0 } Else { (Get-Date) - $_.Process.ExitTime }) } },
+                    @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { (Get-Date) - $_.Process.ExitTime }) } },
                     @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalActive } }, 
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } }
+                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                 ) | Out-Host
             }
             Write-Host "--------------------------------------------------------------------------------"
             Write-Host -ForegroundColor Yellow "Last refresh: $((Get-Date).ToString('g'))   |   Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
             Update-Status($Variables.StatusText)
-        } 
-        if (Test-Path ".\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndUIRefresh.ps1" -Raw) } 
+        }
+        If (Test-Path ".\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndUIRefresh.ps1" -Raw) }
 
         $Variables.RefreshNeeded = $False
-    } 
+    }
     $TimerUI.Start()
-} 
+}
 
 Function Form_Load { 
     $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion)"
@@ -415,7 +423,7 @@ Function Form_Load {
             $MainForm.Number = $MainForm.Number + 1
             $TimerUI.Stop()
             TimerUITick
-            if ($MainForm.Number -gt 6000) { 
+            If ($MainForm.Number -gt 6000) { 
                 # Write-Host -B R "Releasing Timer"
                 $MainForm.Number = 0
                 # $TimerUI.Stop()
@@ -424,29 +432,29 @@ Function Form_Load {
                 $TimerUI = New-Object System.Windows.Forms.Timer
                 $TimerUI.Add_Tick( { TimerUITick })
                 # $TimerUI.Start()
-            } 
+            }
             $TimerUI.Start()
-        } 
+        }
     )
     $TimerUI.Interval = 50
     $TimerUI.Stop()
         
-    if ($CheckBoxConsole.Checked) { 
+    If ($CheckBoxConsole.Checked) { 
         $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)
         Update-Status("Console window hidden")
-    } 
-    else { 
+    }
+    Else { 
         $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 8)
         # Update-Status("Console window shown")
-    } 
-} 
+    }
+}
 
 Function CheckedListBoxPools_Click ($Control) { 
-    $Config | Add-Member -Force @{ $Control.Tag = $Control.CheckedItems } 
+    $Config | Add-Member -Force @{ $Control.Tag = $Control.CheckedItems }
     $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
-    $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Control.CheckedItems.Replace("24hr", "")).Replace("Plus", "") | Sort-Object -Unique } 
+    $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Control.CheckedItems.Replace("24hr", "")).Replace("Plus", "") | Sort-Object -Unique }
     $EarningTrackerConfig | ConvertTo-Json | Out-File ".\Config\EarningTrackerConfig.json"
-} 
+}
 
 Function PrepareWriteConfig { 
     If ($Config.ManualConfig) { Update-Status("Manual config mode - Not saving config"); return }
@@ -458,34 +466,32 @@ Function PrepareWriteConfig {
     $ConfigPageControls | Where-Object { (($_.gettype()).Name -eq "CheckBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Checked } }
     $ConfigPageControls | Where-Object { (($_.gettype()).Name -eq "TextBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Text } }
     $ConfigPageControls | Where-Object { (($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "GPUCount") } | ForEach-Object { 
-        $Config | Add-Member -Force @{ $_.Tag = [Int]$_.Text } 
-        if ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1) { $FirstGPU = 1 } else { $FirstGPU = 0 } 
-        $Config | Add-Member -Force @{ SelGPUCC = (($FirstGPU..($_.Text - 1)) -join ",") } 
-        $Config | Add-Member -Force @{ SelGPUDSTM = (($FirstGPU..($_.Text - 1)) -join " ") } 
-    } 
+        $Config | Add-Member -Force @{ $_.Tag = [Int]$_.Text }
+        If ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1) { $FirstGPU = 1 } Else { $FirstGPU = 0 }
+        $Config | Add-Member -Force @{ SelGPUCC = (($FirstGPU..($_.Text - 1)) -join ",") }
+        $Config | Add-Member -Force @{ SelGPUDSTM = (($FirstGPU..($_.Text - 1)) -join " ") }
+    }
     $ConfigPageControls | Where-Object { (($_.gettype()).Name -eq "TextBox") -and ($_.Tag -eq "Algorithm") } | ForEach-Object { 
-        $Config | Add-Member -Force @{ $_.Tag = @($_.Text -split ",") } 
-    } 
+        $Config | Add-Member -Force @{ $_.Tag = @($_.Text -split ",") }
+    }
     $ConfigPageControls | Where-Object { (($_.gettype()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct")) } | ForEach-Object { 
-        $Config | Add-Member -Force @{ $_.Tag = [Int]$_.Text } 
-    } 
-    $Config | Add-Member -Force @{ $CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems } 
+        $Config | Add-Member -Force @{ $_.Tag = [Int]$_.Text }
+    }
+    $Config | Add-Member -Force @{ $CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems }
 
-    $MonitoringSettingsControls | Where-Object { (($_.gettype()).Name -eq "CheckBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Checked } } 
-    $MonitoringSettingsControls | Where-Object { (($_.gettype()).Name -eq "TextBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Text } } 
+    $MonitoringSettingsControls | Where-Object { (($_.gettype()).Name -eq "CheckBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Checked } }
+    $MonitoringSettingsControls | Where-Object { (($_.gettype()).Name -eq "TextBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Text } }
 
     Write-Config -ConfigFile $ConfigFile
     Load-Config -ConfigFile $ConfigFile
     $MainForm.Refresh
     # [System.Windows.Forms.Messagebox]::show("Please restart NPlusMiner",'Config saved','ok','Information') | Out-Null
-} 
+}
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-# if (Test-Path ".\Logs\switching.log" -PathType Leaf) { $log=Import-Csv ".\Logs\switching.log" | Select-Object -Last 14 } 
-# $SwitchingArray = [System.Collections.ArrayList]@($Log)
-If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | Select-Object -Last 14) } 
+If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1) , (Get-Content ".\Logs\switching.log" -last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13) }
 
 $MainForm = New-Object System.Windows.Forms.Form
 $NMIcon = New-Object system.drawing.icon ("$($PWD)\Includes\NM.ICO")
@@ -500,24 +506,24 @@ $MainForm.Add_Shown(
     { 
         # Check if new version is available
         Update-Status("Checking version")
-        try { 
+        Try { 
             $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        } 
-        catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json } 
-        if ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" } 
-        if ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
+        }
+        Catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json }
+        If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
+        If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
             Update-Status("Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))")
-            # if ([Version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
+            # If ([Version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
             $LabelNotifications.ForeColor = "Green"
             $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
             $LabelNotifications.Lines += $Version.Message
-            if ($Config.Autoupdate -and ! $Config.ManualConfig) { Autoupdate } 
-            # } else { 
+            If ($Config.Autoupdate -and ! $Config.ManualConfig) { Autoupdate }
+            # } Else { 
             # Update-Status("Version $($Version.Version) available. Please update NVIDIA driver. Will not AutoUpdate")
             # $LabelNotifications.ForeColor = "Red"
             # $LabelNotifications.Lines += "Driver update required. Version $([Version]$Version.Version) available"
-            # } 
-        } 
+            # }
+        }
 
         # TimerCheckVersion
         $TimerCheckVersion = New-Object System.Windows.Forms.Timer
@@ -525,19 +531,19 @@ $MainForm.Add_Shown(
         $TimerCheckVersion.Interval = 700 * 60 * 1000
         $TimerCheckVersion.Add_Tick( { 
                 Update-Status("Checking version")
-                try { 
+                Try { 
                     $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-                } 
-                catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json } 
-                if ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" } 
-                if ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
+                }
+                Catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json }
+                If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
+                If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
                     Update-Status("Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))")
-                    # if ([Version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
+                    # If ([Version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
                     $LabelNotifications.ForeColor = "Green"
                     $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
                     $LabelNotifications.Lines += $Version.Message
-                    if ($Config.Autoupdate -and ! $Config.ManualConfig) { Autoupdate } 
-                    # } else { 
+                    If ($Config.Autoupdate -and ! $Config.ManualConfig) { Autoupdate }
+                    # } Else { 
                     # Update-Status("Version $($Version.Version) available. Please update NVIDIA driver. Will not AutoUpdate")
                     # $LabelNotifications.ForeColor = "Red"
                     # $LabelNotifications.Lines += "Driver update required. Version $([Version]$Version.Version) available"
@@ -552,11 +558,11 @@ $MainForm.Add_Shown(
             $Config | Add-Member -Force @{ GPUCount = DetectGPUCount }
             $TBGPUCount.Text = $Config.GPUCount
             PrepareWriteConfig
-        } 
+        }
         # Start on load if Autostart
-        if ($Config.Autostart) { $ButtonStart.PerformClick() } 
-        if ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized } 
-    } 
+        If ($Config.Autostart) { $ButtonStart.PerformClick() }
+        If ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
+    }
 )
 
 $MainForm.Add_FormClosing(
@@ -564,17 +570,17 @@ $MainForm.Add_FormClosing(
         $TimerUI.Stop()
         Update-Status("Stopping jobs and miner")
 
-        if ($Variables.EarningsTrackerJobs) { $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job | Remove-Job } } 
-        if ($Variables.BrainJobs) { $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job | Remove-Job } } 
+        If ($Variables.EarningsTrackerJobs) { $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job | Remove-Job } }
+        If ($Variables.BrainJobs) { $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job | Remove-Job } }
 
-        if ($Variables.ActiveMinerPrograms) { 
+        If ($Variables.ActiveMinerPrograms) { 
             $Variables.ActiveMinerPrograms | ForEach-Object { 
                 [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
-                if ($filtered.Count -eq 0) { 
-                    if ($_.Process -eq $null) { 
+                If ($filtered.Count -eq 0) { 
+                    If ($_.Process -eq $null) { 
                         $_.Status = "Failed"
-                    } 
-                    elseif ($_.Process.HasExited -eq $false) { 
+                    }
+                    ElseIf ($_.Process.HasExited -eq $false) { 
                         $_.Active += (Get-Date) - $_.Process.StartTime
                         $_.Process.CloseMainWindow() | Out-Null
                         Start-Sleep 1
@@ -583,36 +589,36 @@ $MainForm.Add_FormClosing(
                         Write-Host -ForegroundColor Yellow "closing miner"
                         Start-Sleep 1
                         $_.Status = "Idle"
-                    } 
-                } 
-            } 
-        } 
+                    }
+                }
+            }
+        }
 
         # $Result = $powershell.EndInvoke($Variables.CycleRunspaceHandle)
-        if ($CycleRunspace) { $CycleRunspace.Close() } 
-        if ($powershell) { $powershell.Dispose() } 
+        If ($CycleRunspace) { $CycleRunspace.Close() }
+        If ($powershell) { $powershell.Dispose() }
 
-        if ($IdleRunspace) { $IdleRunspace.Close() } 
-        if ($idlePowershell) { $idlePowershell.Dispose() } 
-    } 
+        If ($IdleRunspace) { $IdleRunspace.Close() }
+        If ($idlePowershell) { $idlePowershell.Dispose() }
+    }
 )
 
 Load-Config -ConfigFile $ConfigFile
 
 $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value { 
-    if (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
+    If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
         Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-json
-    } 
-    else { 
+    }
+    Else { 
         [PSCustomObject]@{ default = [PSCustomObject]@{ 
                 Wallet             = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
                 UserName           = "nemo"
                 WorkerName         = "NemosMinerNoCfg"
                 PricePenaltyFactor = 1
-            } 
-        } 
-    } 
-} 
+            }
+        }
+    }
+}
 
 $MainForm | Add-Member -Name "Config" -Value $Config -MemberType NoteProperty -Force
 
@@ -620,9 +626,9 @@ $SelGPUDSTM = $Config.SelGPUDSTM
 $SelGPUCC = $Config.SelGPUCC
 $MainForm | Add-Member -Name "Variables" -Value $Variables -MemberType NoteProperty -Force
 
-$Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product } 
-$Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version } 
-$Variables | Add-Member -Force @{ CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value } 
+$Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
+$Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
+$Variables | Add-Member -Force @{ CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value }
 $Variables.StatusText = "Idle"
 $TabControl = New-object System.Windows.Forms.TabControl
 $RunPage = New-Object System.Windows.Forms.TabPage
@@ -678,7 +684,7 @@ $LabelBTCD.AutoSize = $False
 $LabelBTCD.width = 473
 $LabelBTCD.height = 35
 $LabelBTCD.location = New-Object System.Drawing.Point(247, 2)
-$LabelBTCD.Font = 'Microsoft Sans Serif,14'
+$LabelBTCD.Font = 'Microsoft Sans Serif, 14'
 $LabelBTCD.TextAlign = "MiddleRight"
 $LabelBTCD.ForeColor = "Green"
 $LabelBTCD.Backcolor = "Transparent"
@@ -686,12 +692,12 @@ $LabelBTCD.Backcolor = "Transparent"
 $MainFormControls += $LabelBTCD
 
 $LabelBTCPrice = New-Object System.Windows.Forms.Label
-$LabelBTCPrice.text = if ($Variables.Rates.$Currency -gt 0) { "BTC/$($Config.Currency) $($Variables.Rates.$Currency)" } 
+$LabelBTCPrice.text = If ($Variables.Rates.$Currency -gt 0) { "BTC/$($Config.Currency) $($Variables.Rates.$Currency)" }
 $LabelBTCPrice.AutoSize = $false
 $LabelBTCPrice.width = 400
 $LabelBTCPrice.height = 20
 $LabelBTCPrice.location = New-Object System.Drawing.Point(510, 39)
-$LabelBTCPrice.Font = 'Microsoft Sans Serif,8'
+$LabelBTCPrice.Font = 'Microsoft Sans Serif, 8'
 # $LabelBTCPrice.ForeColor              = "Gray"
 $MainFormControls += $LabelBTCPrice
 
@@ -700,7 +706,7 @@ $ButtonPause.text = "Pause"
 $ButtonPause.width = 60
 $ButtonPause.height = 30
 $ButtonPause.location = New-Object System.Drawing.Point(610, 62)
-$ButtonPause.Font = 'Microsoft Sans Serif,10'
+$ButtonPause.Font = 'Microsoft Sans Serif, 10'
 $ButtonPause.Visible = $False
 $MainFormControls += $ButtonPause
 
@@ -709,7 +715,7 @@ $ButtonStart.text = "Start"
 $ButtonStart.width = 60
 $ButtonStart.height = 30
 $ButtonStart.location = New-Object System.Drawing.Point(670, 62)
-$ButtonStart.Font = 'Microsoft Sans Serif,10'
+$ButtonStart.Font = 'Microsoft Sans Serif, 10'
 $MainFormControls += $ButtonStart
 
 $LabelNotifications = New-Object System.Windows.Forms.TextBox
@@ -721,7 +727,7 @@ $LabelNotifications.AutoSize = $false
 $LabelNotifications.width = 280
 $LabelNotifications.height = 18
 $LabelNotifications.location = New-Object System.Drawing.Point(10, 49)
-$LabelNotifications.Font = 'Microsoft Sans Serif,10'
+$LabelNotifications.Font = 'Microsoft Sans Serif, 10'
 $LabelNotifications.BorderStyle = 'None'
 $LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
 $LabelNotifications.Visible = $True
@@ -734,7 +740,7 @@ $LabelAddress.AutoSize = $false
 $LabelAddress.width = 100
 $LabelAddress.height = 20
 $LabelAddress.location = New-Object System.Drawing.Point(10, 68)
-$LabelAddress.Font = 'Microsoft Sans Serif,10'
+$LabelAddress.Font = 'Microsoft Sans Serif, 10'
 $MainFormControls += $LabelAddress
 
 $TBAddress = New-Object System.Windows.Forms.TextBox
@@ -746,7 +752,7 @@ $TBAddress.AutoSize = $false
 $TBAddress.width = 280
 $TBAddress.height = 20
 $TBAddress.location = New-Object System.Drawing.Point(112, 68)
-$TBAddress.Font = 'Microsoft Sans Serif,10'
+$TBAddress.Font = 'Microsoft Sans Serif, 10'
 # $TBAddress.TextAlign                = "Right"
 $MainFormControls += $TBAddress
 
@@ -761,30 +767,29 @@ $LabelStatus.AutoSize = $true
 $LabelStatus.width = 712
 $LabelStatus.height = 50
 $LabelStatus.location = New-Object System.Drawing.Point(2, 2)
-$LabelStatus.Font = 'Microsoft Sans Serif,10'
+$LabelStatus.Font = 'Microsoft Sans Serif, 10'
 $RunPageControls += $LabelStatus
 
-$LabelEarnings = New-Object System.Windows.Forms.Label
-$LabelEarnings.text = "Earnings Tracker (Past 7 days earnings / Per pool earnings today)"
-$LabelEarnings.AutoSize = $false
-$LabelEarnings.width = 600
-$LabelEarnings.height = 20
-$LabelEarnings.location = New-Object System.Drawing.Point(2, 54)
-$LabelEarnings.Font = 'Microsoft Sans Serif,10'
-$RunPageControls += $LabelEarnings
-
 If (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+    $LabelEarnings = New-Object System.Windows.Forms.Label
+    $LabelEarnings.text = "Earnings Tracker (mBTC)    [past 7 days earnings / per pool earnings today]"
+    $LabelEarnings.AutoSize = $false
+    $LabelEarnings.width = 600
+    $LabelEarnings.height = 20
+    $LabelEarnings.location = New-Object System.Drawing.Point(2, 54)
+    $LabelEarnings.Font = 'Microsoft Sans Serif, 10'
+    $RunPageControls += $LabelEarnings
+
     $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 85"
     $Chart1.top = 74
     $Chart1.left = 2
     $RunPageControls += $Chart1
-} 
-If (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+
     $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 85"
     $Chart2.top = 74
     $Chart2.left = 500
     $RunPageControls += $Chart2
-} 
+}
 
 $EarningsDGV = New-Object System.Windows.Forms.DataGridView
 $EarningsDGV.width = 712
@@ -823,7 +828,7 @@ $LabelRunningMiners.AutoSize = $false
 $LabelRunningMiners.width = 200
 $LabelRunningMiners.height = 20
 $LabelRunningMiners.location = New-Object System.Drawing.Point(2, 246)
-$LabelRunningMiners.Font = 'Microsoft Sans Serif,10'
+$LabelRunningMiners.Font = 'Microsoft Sans Serif, 10'
 $RunPageControls += $LabelRunningMiners
 
 $RunningMinersDGV = New-Object System.Windows.Forms.DataGridView
@@ -846,7 +851,7 @@ $CheckShowSwitchingCPU.AutoSize = $false
 $CheckShowSwitchingCPU.width = 60
 $CheckShowSwitchingCPU.height = 20
 $CheckShowSwitchingCPU.location = New-Object System.Drawing.Point(2, 2)
-$CheckShowSwitchingCPU.Font = 'Microsoft Sans Serif,10'
+$CheckShowSwitchingCPU.Font = 'Microsoft Sans Serif, 10'
 $CheckShowSwitchingCPU.Checked = ("CPU" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingCPU
 
@@ -859,7 +864,7 @@ $CheckShowSwitchingNVIDIA.AutoSize = $false
 $CheckShowSwitchingNVIDIA.width = 70
 $CheckShowSwitchingNVIDIA.height = 20
 $CheckShowSwitchingNVIDIA.location = New-Object System.Drawing.Point(62, 2)
-$CheckShowSwitchingNVIDIA.Font = 'Microsoft Sans Serif,10'
+$CheckShowSwitchingNVIDIA.Font = 'Microsoft Sans Serif, 10'
 $CheckShowSwitchingNVIDIA.Checked = ("NVIDIA" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
 
@@ -870,7 +875,7 @@ $CheckShowSwitchingAMD.AutoSize = $false
 $CheckShowSwitchingAMD.width = 100
 $CheckShowSwitchingAMD.height = 20
 $CheckShowSwitchingAMD.location = New-Object System.Drawing.Point(137, 2)
-$CheckShowSwitchingAMD.Font = 'Microsoft Sans Serif,10'
+$CheckShowSwitchingAMD.Font = 'Microsoft Sans Serif, 10'
 $CheckShowSwitchingAMD.Checked = ("AMD" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingAMD
 
@@ -879,13 +884,10 @@ $CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_C
 
 Function CheckBoxSwitching_Click { 
     $SwitchingDisplayTypes = @()
-    $SwitchingPageControls | ForEach-Object { if ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } } 
-    # if (Test-Path ".\Logs\switching.log" -PathType Leaf) { $log=Import-Csv ".\Logs\switching.log" | Where-Object { $_.Type -in $SwitchingDisplayTypes} | Select-Object -Last 13 } 
-    # $SwitchingArray = [System.Collections.ArrayList]@($Log)
-    # if (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(Import-Csv ".\Logs\switching.log" | Where-Object { $_.Type -in $SwitchingDisplayTypes} | Select-Object -Last 13) } 
-    if (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1) , (Get-Content ".\Logs\switching.log" -last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13) } 
+    $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
+    If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1) , (Get-Content ".\Logs\switching.log" -last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13) }
     $SwitchingDGV.DataSource = $SwitchingArray
-} 
+}
 
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
@@ -916,7 +918,7 @@ $LabelWorkerName.AutoSize = $false
 $LabelWorkerName.width = 120
 $LabelWorkerName.height = 20
 $LabelWorkerName.location = New-Object System.Drawing.Point(2, 2)
-$LabelWorkerName.Font = 'Microsoft Sans Serif,10'
+$LabelWorkerName.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelWorkerName
 
 $TBWorkerName = New-Object System.Windows.Forms.TextBox
@@ -928,7 +930,7 @@ $TBWorkerName.AutoSize = $false
 $TBWorkerName.width = 300
 $TBWorkerName.height = 20
 $TBWorkerName.location = New-Object System.Drawing.Point(122, 2)
-$TBWorkerName.Font = 'Microsoft Sans Serif,10'
+$TBWorkerName.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBWorkerName
 
 $LabelUserName = New-Object System.Windows.Forms.Label
@@ -937,7 +939,7 @@ $LabelUserName.AutoSize = $false
 $LabelUserName.width = 120
 $LabelUserName.height = 20
 $LabelUserName.location = New-Object System.Drawing.Point(2, 24)
-$LabelUserName.Font = 'Microsoft Sans Serif,10'
+$LabelUserName.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelUserName
 
 $TBUserName = New-Object System.Windows.Forms.TextBox
@@ -949,7 +951,7 @@ $TBUserName.AutoSize = $false
 $TBUserName.width = 300
 $TBUserName.height = 20
 $TBUserName.location = New-Object System.Drawing.Point(122, 24)
-$TBUserName.Font = 'Microsoft Sans Serif,10'
+$TBUserName.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBUserName
 
 $LabelInterval = New-Object System.Windows.Forms.Label
@@ -958,7 +960,7 @@ $LabelInterval.AutoSize = $false
 $LabelInterval.width = 120
 $LabelInterval.height = 20
 $LabelInterval.location = New-Object System.Drawing.Point(2, 46)
-$LabelInterval.Font = 'Microsoft Sans Serif,10'
+$LabelInterval.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelInterval
 
 $TBInterval = New-Object System.Windows.Forms.TextBox
@@ -970,7 +972,7 @@ $TBInterval.AutoSize = $false
 $TBInterval.width = 300
 $TBInterval.height = 20
 $TBInterval.location = New-Object System.Drawing.Point(122, 46)
-$TBInterval.Font = 'Microsoft Sans Serif,10'
+$TBInterval.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBInterval
 
 $LabelLocation = New-Object System.Windows.Forms.Label
@@ -979,7 +981,7 @@ $LabelLocation.AutoSize = $false
 $LabelLocation.width = 120
 $LabelLocation.height = 20
 $LabelLocation.location = New-Object System.Drawing.Point(2, 68)
-$LabelLocation.Font = 'Microsoft Sans Serif,10'
+$LabelLocation.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelLocation
 
 $TBLocation = New-Object System.Windows.Forms.TextBox
@@ -991,7 +993,7 @@ $TBLocation.AutoSize = $false
 $TBLocation.width = 300
 $TBLocation.height = 20
 $TBLocation.location = New-Object System.Drawing.Point(122, 68)
-$TBLocation.Font = 'Microsoft Sans Serif,10'
+$TBLocation.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBLocation
 
 $LabelGPUCount = New-Object System.Windows.Forms.Label
@@ -1000,7 +1002,7 @@ $LabelGPUCount.AutoSize = $false
 $LabelGPUCount.width = 120
 $LabelGPUCount.height = 20
 $LabelGPUCount.location = New-Object System.Drawing.Point(2, 90)
-$LabelGPUCount.Font = 'Microsoft Sans Serif,10'
+$LabelGPUCount.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelGPUCount
 
 $TBGPUCount = New-Object System.Windows.Forms.TextBox
@@ -1012,7 +1014,7 @@ $TBGPUCount.AutoSize = $false
 $TBGPUCount.width = 50
 $TBGPUCount.height = 20
 $TBGPUCount.location = New-Object System.Drawing.Point(122, 90)
-$TBGPUCount.Font = 'Microsoft Sans Serif,10'
+$TBGPUCount.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBGPUCount
 
 $CheckBoxDisableGPU0 = New-Object System.Windows.Forms.CheckBox
@@ -1022,7 +1024,7 @@ $CheckBoxDisableGPU0.AutoSize = $false
 $CheckBoxDisableGPU0.width = 140
 $CheckBoxDisableGPU0.height = 20
 $CheckBoxDisableGPU0.location = New-Object System.Drawing.Point(177, 90)
-$CheckBoxDisableGPU0.Font = 'Microsoft Sans Serif,10'
+$CheckBoxDisableGPU0.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxDisableGPU0.Checked = $Config.DisableGPU0
 $ConfigPageControls += $CheckBoxDisableGPU0
     
@@ -1031,7 +1033,7 @@ $ButtonDetectGPU.text = "Detect GPU"
 $ButtonDetectGPU.width = 100
 $ButtonDetectGPU.height = 20
 $ButtonDetectGPU.location = New-Object System.Drawing.Point(320, 90)
-$ButtonDetectGPU.Font = 'Microsoft Sans Serif,10'
+$ButtonDetectGPU.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $ButtonDetectGPU
 
 $ButtonDetectGPU.Add_Click( { $TBGPUCount.text = DetectGPUCount })
@@ -1042,7 +1044,7 @@ $LabelAlgos.AutoSize = $false
 $LabelAlgos.width = 120
 $LabelAlgos.height = 20
 $LabelAlgos.location = New-Object System.Drawing.Point(2, 112)
-$LabelAlgos.Font = 'Microsoft Sans Serif,10'
+$LabelAlgos.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelAlgos
 
 $TBAlgos = New-Object System.Windows.Forms.TextBox
@@ -1054,7 +1056,7 @@ $TBAlgos.AutoSize = $false
 $TBAlgos.width = 300
 $TBAlgos.height = 20
 $TBAlgos.location = New-Object System.Drawing.Point(122, 112)
-$TBAlgos.Font = 'Microsoft Sans Serif,10'
+$TBAlgos.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBAlgos
 
 $LabelCurrency = New-Object System.Windows.Forms.Label
@@ -1063,7 +1065,7 @@ $LabelCurrency.AutoSize = $false
 $LabelCurrency.width = 120
 $LabelCurrency.height = 20
 $LabelCurrency.location = New-Object System.Drawing.Point(2, 134)
-$LabelCurrency.Font = 'Microsoft Sans Serif,10'
+$LabelCurrency.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelCurrency
 
 $TBCurrency = New-Object System.Windows.Forms.TextBox
@@ -1075,7 +1077,7 @@ $TBCurrency.AutoSize = $false
 $TBCurrency.width = 300
 $TBCurrency.height = 20
 $TBCurrency.location = New-Object System.Drawing.Point(122, 134)
-$TBCurrency.Font = 'Microsoft Sans Serif,10'
+$TBCurrency.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBCurrency
 
 $LabelPwdCurrency = New-Object System.Windows.Forms.Label
@@ -1084,7 +1086,7 @@ $LabelPwdCurrency.AutoSize = $false
 $LabelPwdCurrency.width = 120
 $LabelPwdCurrency.height = 20
 $LabelPwdCurrency.location = New-Object System.Drawing.Point(2, 156)
-$LabelPwdCurrency.Font = 'Microsoft Sans Serif,10'
+$LabelPwdCurrency.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelPwdCurrency
 
 $TBPwdCurrency = New-Object System.Windows.Forms.TextBox
@@ -1096,7 +1098,7 @@ $TBPwdCurrency.AutoSize = $false
 $TBPwdCurrency.width = 300
 $TBPwdCurrency.height = 20
 $TBPwdCurrency.location = New-Object System.Drawing.Point(122, 156)
-$TBPwdCurrency.Font = 'Microsoft Sans Serif,10'
+$TBPwdCurrency.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBPwdCurrency
 
 $LabelDonate = New-Object System.Windows.Forms.Label
@@ -1105,7 +1107,7 @@ $LabelDonate.AutoSize = $false
 $LabelDonate.width = 120
 $LabelDonate.height = 20
 $LabelDonate.location = New-Object System.Drawing.Point(2, 178)
-$LabelDonate.Font = 'Microsoft Sans Serif,10'
+$LabelDonate.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelDonate
 
 $TBDonate = New-Object System.Windows.Forms.TextBox
@@ -1117,7 +1119,7 @@ $TBDonate.AutoSize = $false
 $TBDonate.width = 300
 $TBDonate.height = 20
 $TBDonate.location = New-Object System.Drawing.Point(122, 178)
-$TBDonate.Font = 'Microsoft Sans Serif,10'
+$TBDonate.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBDonate
 
 $LabelProxy = New-Object System.Windows.Forms.Label
@@ -1126,7 +1128,7 @@ $LabelProxy.AutoSize = $false
 $LabelProxy.width = 120
 $LabelProxy.height = 20
 $LabelProxy.location = New-Object System.Drawing.Point(2, 178)
-$LabelProxy.Font = 'Microsoft Sans Serif,10'
+$LabelProxy.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelProxy
 
 $TBProxy = New-Object System.Windows.Forms.TextBox
@@ -1138,7 +1140,7 @@ $TBProxy.AutoSize = $false
 $TBProxy.width = 300
 $TBProxy.height = 20
 $TBProxy.location = New-Object System.Drawing.Point(122, 178)    
-$TBProxy.Font = 'Microsoft Sans Serif,10'
+$TBProxy.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBProxy
 
 $LabelActiveMinerGainPct = New-Object System.Windows.Forms.Label
@@ -1147,7 +1149,7 @@ $LabelActiveMinerGainPct.AutoSize = $false
 $LabelActiveMinerGainPct.width = 120
 $LabelActiveMinerGainPct.height = 20
 $LabelActiveMinerGainPct.location = New-Object System.Drawing.Point(2, 202)
-$LabelActiveMinerGainPct.Font = 'Microsoft Sans Serif,10'
+$LabelActiveMinerGainPct.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelActiveMinerGainPct
 
 $TBActiveMinerGainPct = New-Object System.Windows.Forms.TextBox
@@ -1159,7 +1161,7 @@ $TBActiveMinerGainPct.AutoSize = $false
 $TBActiveMinerGainPct.width = 300
 $TBActiveMinerGainPct.height = 20
 $TBActiveMinerGainPct.location = New-Object System.Drawing.Point(122, 202)
-$TBActiveMinerGainPct.Font = 'Microsoft Sans Serif,10'
+$TBActiveMinerGainPct.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBActiveMinerGainPct
 
 $LabelMPHAPIKey = New-Object System.Windows.Forms.Label
@@ -1168,7 +1170,7 @@ $LabelMPHAPIKey.AutoSize = $false
 $LabelMPHAPIKey.width = 120
 $LabelMPHAPIKey.height = 20
 $LabelMPHAPIKey.location = New-Object System.Drawing.Point(2, 224)
-$LabelMPHAPIKey.Font = 'Microsoft Sans Serif,10'
+$LabelMPHAPIKey.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelMPHAPIKey
 
 $TBMPHAPIKey = New-Object System.Windows.Forms.TextBox
@@ -1179,7 +1181,7 @@ $TBMPHAPIKey.AutoSize = $false
 $TBMPHAPIKey.width = 300
 $TBMPHAPIKey.height = 20
 $TBMPHAPIKey.location = New-Object System.Drawing.Point(122, 224)
-$TBMPHAPIKey.Font = 'Microsoft Sans Serif,10'
+$TBMPHAPIKey.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $TBMPHAPIKey
 
 $LabelMinersTypes = New-Object System.Windows.Forms.Label
@@ -1188,7 +1190,7 @@ $LabelMinersTypes.AutoSize = $false
 $LabelMinersTypes.width = 120
 $LabelMinersTypes.height = 20
 $LabelMinersTypes.location = New-Object System.Drawing.Point(2, 246)
-$LabelMinersTypes.Font = 'Microsoft Sans Serif,10'
+$LabelMinersTypes.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelMinersTypes
 
 $CheckBoxMinerTypeCPU = New-Object System.Windows.Forms.CheckBox
@@ -1198,13 +1200,13 @@ $CheckBoxMinerTypeCPU.AutoSize = $false
 $CheckBoxMinerTypeCPU.width = 60
 $CheckBoxMinerTypeCPU.height = 20
 $CheckBoxMinerTypeCPU.location = New-Object System.Drawing.Point(124, 246)
-$CheckBoxMinerTypeCPU.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMinerTypeCPU.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxMinerTypeCPU.Checked = ($CheckBoxMinerTypeCPU.text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeCPU
 
 $CheckBoxMinerTypeCPU.Add_Click(
     { 
-        if ($This.checked -and $This.Text -notin $Config.Type) { 
+        If ($This.checked -and $This.Text -notin $Config.Type) { 
             [Array]$Config.Type += $This.Text
             # If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null){ 
             If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null -or ($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
@@ -1212,7 +1214,7 @@ $CheckBoxMinerTypeCPU.Add_Click(
                 $StartPort = 4068
                 Update-Status("Finding available TCP Port for $($This.Text)")
                 $Port = Get-FreeTcpPort($StartPort)
-                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port } 
+                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port }
                 Update-Status("Miners API Port: $($Port)")
                 $StartPort = $Port + 1
             }
@@ -1228,20 +1230,20 @@ $CheckBoxMinerTypeNVIDIA.AutoSize = $false
 $CheckBoxMinerTypeNVIDIA.width = 70
 $CheckBoxMinerTypeNVIDIA.height = 20
 $CheckBoxMinerTypeNVIDIA.location = New-Object System.Drawing.Point(186, 246)
-$CheckBoxMinerTypeNVIDIA.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMinerTypeNVIDIA.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxMinerTypeNVIDIA.Checked = ($CheckBoxMinerTypeNVIDIA.text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeNVIDIA
 
 $CheckBoxMinerTypeNVIDIA.Add_Click(
     { 
-        if ($This.checked -and $This.Text -notin $Config.Type) { 
+        If ($This.checked -and $This.Text -notin $Config.Type) { 
             [Array]$Config.Type += $This.Text
             If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null -or ($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
                 Update-Status("Finding available TCP Port for $($This.Text)")
                 $Port = Get-FreeTcpPort($StartPort)
-                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port } 
+                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port }
                 Update-Status("Miners API Port: $($Port)")
                 $StartPort = $Port + 1
             }
@@ -1257,20 +1259,20 @@ $CheckBoxMinerTypeAMD.AutoSize = $false
 $CheckBoxMinerTypeAMD.width = 60
 $CheckBoxMinerTypeAMD.height = 20
 $CheckBoxMinerTypeAMD.location = New-Object System.Drawing.Point(261, 246)
-$CheckBoxMinerTypeAMD.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMinerTypeAMD.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxMinerTypeAMD.Checked = ($CheckBoxMinerTypeAMD.text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeAMD
 
 $CheckBoxMinerTypeAMD.Add_Click( 
     { 
-        if ($This.checked -and $This.Text -notin $Config.Type) { 
+        If ($This.checked -and $This.Text -notin $Config.Type) { 
             [Array]$Config.Type += $This.Text
             If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null -or ($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
                 Update-Status("Finding available TCP Port for $($This.Text)")
                 $Port = Get-FreeTcpPort($StartPort)
-                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port } 
+                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port }
                 Update-Status("Miners API Port: $($Port)")
                 $StartPort = $Port + 1
             }
@@ -1286,28 +1288,28 @@ $CheckBoxAutostart.AutoSize = $false
 $CheckBoxAutostart.width = 100
 $CheckBoxAutostart.height = 20
 $CheckBoxAutostart.location = New-Object System.Drawing.Point(560, 2)
-$CheckBoxAutostart.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAutostart.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxAutostart.Checked = $Config.Autostart
 $ConfigPageControls += $CheckBoxAutostart
 
 $CheckBoxAutoStart.Add_Click(
     { 
         # Disable CheckBoxStartPaused and mine when idle when Auto Start is unchecked
-        if ($CheckBoxAutoStart.Checked) { 
+        If ($CheckBoxAutoStart.Checked) { 
             $CheckBoxStartPaused.Enabled = $True
             $CheckBoxMineWhenIdle.Enabled = $True
             $TBIdleSec.Enabled = $True
-        } 
-        else { 
+        }
+        Else { 
             $CheckBoxStartPaused.Checked = $False
             $CheckBoxStartPaused.Enabled = $False
             $CheckBoxMineWhenIdle.Checked = $False
             $CheckBoxMineWhenIdle.Enabled = $False
             $TBIdleSec.Enabled = $False
-        } 
-    } 
+        }
+    }
 )
-    
+
 $CheckBoxStartPaused = New-Object System.Windows.Forms.CheckBox
 $CheckBoxStartPaused.Tag = "StartPaused"
 $CheckBoxStartPaused.text = "Pause on Auto Start"
@@ -1315,7 +1317,7 @@ $CheckBoxStartPaused.AutoSize = $false
 $CheckBoxStartPaused.width = 160
 $CheckBoxStartPaused.height = 20
 $CheckBoxStartPaused.location = New-Object System.Drawing.Point(560, 24)
-$CheckBoxStartPaused.Font = 'Microsoft Sans Serif,10'
+$CheckBoxStartPaused.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxStartPaused.Checked = $Config.StartPaused
 $CheckBoxStartPaused.Enabled = $CheckBoxAutoStart.Checked
 $ConfigPageControls += $CheckBoxStartPaused
@@ -1327,7 +1329,7 @@ $CheckBoxMineWhenIdle.AutoSize = $false
 $CheckBoxMineWhenIdle.width = 160
 $CheckBoxMineWhenIdle.height = 20
 $CheckBoxMineWhenIdle.location = New-Object System.Drawing.Point(560, 46)
-$CheckBoxMineWhenIdle.Font = 'Microsoft Sans Serif,10'
+$CheckBoxMineWhenIdle.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxMineWhenIdle.Checked = $Config.MineWhenIdle
 $CheckBoxMineWhenIdle.Enabled = $CheckBoxAutoStart.Checked
 $ConfigPageControls += $CheckBoxMineWhenIdle
@@ -1335,12 +1337,12 @@ $ConfigPageControls += $CheckBoxMineWhenIdle
 $TBIdleSec = New-Object System.Windows.Forms.TextBox
 $TBIdleSec.Tag = "IdleSec"
 $TBIdleSec.MultiLine = $False
-$TBIdleSec.text = if ($Config.IdleSec -gt 1) { $Config.IdleSec } else { 120 } 
+$TBIdleSec.text = If ($Config.IdleSec -gt 1) { $Config.IdleSec } Else { 120 }
 $TBIdleSec.AutoSize = $false
 $TBIdleSec.width = 50
 $TBIdleSec.height = 20
 $TBIdleSec.location = New-Object System.Drawing.Point(580, 68)
-$TBIdleSec.Font = 'Microsoft Sans Serif,10'
+$TBIdleSec.Font = 'Microsoft Sans Serif, 10'
 $TBIdleSec.Enabled = $CheckBoxAutoStart.Checked
 $ConfigPageControls += $TBIdleSec
 
@@ -1350,7 +1352,7 @@ $LabelIdleSec.AutoSize = $false
 $LabelIdleSec.width = 60
 $LabelIdleSec.height = 20
 $LabelIdleSec.location = New-Object System.Drawing.Point(630, 68)
-$LabelIdleSec.Font = 'Microsoft Sans Serif,10'
+$LabelIdleSec.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $LabelIdleSec
 
 $CheckBoxEarningTrackerLogs = New-Object System.Windows.Forms.CheckBox
@@ -1360,7 +1362,7 @@ $CheckBoxEarningTrackerLogs.AutoSize = $false
 $CheckBoxEarningTrackerLogs.width = 160
 $CheckBoxEarningTrackerLogs.height = 20
 $CheckBoxEarningTrackerLogs.location = New-Object System.Drawing.Point(560, 90)
-$CheckBoxEarningTrackerLogs.Font = 'Microsoft Sans Serif,10'
+$CheckBoxEarningTrackerLogs.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxEarningTrackerLogs.Checked = $Config.EnableEarningsTrackerLogs
 $ConfigPageControls += $CheckBoxEarningTrackerLogs
 
@@ -1371,7 +1373,7 @@ $CheckBoxGUIMinimized.AutoSize = $false
 $CheckBoxGUIMinimized.width = 160
 $CheckBoxGUIMinimized.height = 20
 $CheckBoxGUIMinimized.location = New-Object System.Drawing.Point(560, 112)
-$CheckBoxGUIMinimized.Font = 'Microsoft Sans Serif,10'
+$CheckBoxGUIMinimized.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxGUIMinimized.Checked = $Config.StartGUIMinimized
 $ConfigPageControls += $CheckBoxGUIMinimized
 
@@ -1382,7 +1384,7 @@ $CheckBoxAutoUpdate.AutoSize = $true
 $CheckBoxAutoUpdate.width = 100
 $CheckBoxAutoUpdate.height = 20
 $CheckBoxAutoUpdate.location = New-Object System.Drawing.Point(560, 134)
-$CheckBoxAutoUpdate.Font = 'Microsoft Sans Serif,10'
+$CheckBoxAutoUpdate.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxAutoUpdate.Checked = $Config.AutoUpdate
 # $CheckBoxAutoUpdate.Enabled               =   $False
 $ConfigPageControls += $CheckBoxAutoUpdate
@@ -1394,7 +1396,7 @@ $CheckBoxIncludeRegularMiners.AutoSize = $false
 $CheckBoxIncludeRegularMiners.width = 160
 $CheckBoxIncludeRegularMiners.height = 20
 $CheckBoxIncludeRegularMiners.location = New-Object System.Drawing.Point(560, 156)
-$CheckBoxIncludeRegularMiners.Font = 'Microsoft Sans Serif,10'
+$CheckBoxIncludeRegularMiners.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxIncludeRegularMiners.Checked = $Config.IncludeRegularMiners
 $ConfigPageControls += $CheckBoxIncludeRegularMiners
 
@@ -1405,7 +1407,7 @@ $CheckBoxIncludeOptionalMiners.AutoSize = $false
 $CheckBoxIncludeOptionalMiners.width = 160
 $CheckBoxIncludeOptionalMiners.height = 20
 $CheckBoxIncludeOptionalMiners.location = New-Object System.Drawing.Point(560, 178)
-$CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif,10'
+$CheckBoxIncludeOptionalMiners.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
 $ConfigPageControls += $CheckBoxIncludeOptionalMiners
 
@@ -1416,7 +1418,7 @@ $CheckBoxConsole.AutoSize = $false
 $CheckBoxConsole.width = 160
 $CheckBoxConsole.height = 20
 $CheckBoxConsole.location = New-Object System.Drawing.Point(560, 200)
-$CheckBoxConsole.Font = 'Microsoft Sans Serif,10'
+$CheckBoxConsole.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxConsole.Checked = $Config.HideConsole
 $ConfigPageControls += $CheckBoxConsole
 
@@ -1425,21 +1427,21 @@ $ButtonLoadDefaultPoolsAlgos.text = "Load default algos for selected pools"
 $ButtonLoadDefaultPoolsAlgos.width = 250
 $ButtonLoadDefaultPoolsAlgos.height = 30
 $ButtonLoadDefaultPoolsAlgos.location = New-Object System.Drawing.Point(358, 300)
-$ButtonLoadDefaultPoolsAlgos.Font = 'Microsoft Sans Serif,10'
+$ButtonLoadDefaultPoolsAlgos.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $ButtonLoadDefaultPoolsAlgos
 
 $ButtonLoadDefaultPoolsAlgos.Add_Click(
     { 
-        try { 
+        Try { 
             $PoolsAlgos = Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json; $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
-        } 
-        catch { $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json } 
-        if ($PoolsAlgos) { 
-            $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in $Config.PoolName } 
+        }
+        Catch { $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json }
+        If ($PoolsAlgos) { 
+            $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in $Config.PoolName }
             $PoolsAlgos = $PoolsAlgos.Value | Sort-Object -Unique
             $TBAlgos.text = $PoolsAlgos -Join ","
-        } 
-    } 
+        }
+    }
 )
 
 $ButtonWriteConfig = New-Object System.Windows.Forms.Button
@@ -1447,7 +1449,7 @@ $ButtonWriteConfig.text = "Save Config"
 $ButtonWriteConfig.width = 100
 $ButtonWriteConfig.height = 30
 $ButtonWriteConfig.location = New-Object System.Drawing.Point(610, 300)
-$ButtonWriteConfig.Font = 'Microsoft Sans Serif,10'
+$ButtonWriteConfig.Font = 'Microsoft Sans Serif, 10'
 $ConfigPageControls += $ButtonWriteConfig
 
 $ButtonWriteConfig.Add_Click( { PrepareWriteConfig })
@@ -1458,7 +1460,7 @@ $LabelPoolsSelect.AutoSize = $false
 $LabelPoolsSelect.width = 130
 $LabelPoolsSelect.height = 50
 $LabelPoolsSelect.location = New-Object System.Drawing.Point(427, 2)
-$LabelPoolsSelect.Font = 'Microsoft Sans Serif,10'
+$LabelPoolsSelect.Font = 'Microsoft Sans Serif, 10'
 $LabelPoolsSelect.TextAlign = 'MiddleCenter'
 $LabelPoolsSelect.BorderStyle = 'FixedSingle'
 $ConfigPageControls += $LabelPoolsSelect
@@ -1488,7 +1490,7 @@ $LabelMonitoringWorkers.AutoSize = $false
 $LabelMonitoringWorkers.width = 710
 $LabelMonitoringWorkers.height = 20
 $LabelMonitoringWorkers.location = New-Object System.Drawing.Point(2, 4)
-$LabelMonitoringWorkers.Font = 'Microsoft Sans Serif,10'
+$LabelMonitoringWorkers.Font = 'Microsoft Sans Serif, 10'
 $MonitoringPageControls += $LabelMonitoringWorkers
 
 $WorkersDGV = New-Object System.Windows.Forms.DataGridView
@@ -1513,7 +1515,7 @@ $LabelMonitoringServer.AutoSize = $false
 $LabelMonitoringServer.width = 60
 $LabelMonitoringServer.height = 20
 $LabelMonitoringServer.location = New-Object System.Drawing.Point(2, 15)
-$LabelMonitoringServer.Font = 'Microsoft Sans Serif,10'
+$LabelMonitoringServer.Font = 'Microsoft Sans Serif, 10'
 $MonitoringSettingsControls += $LabelMonitoringServer
 
 $TBMonitoringServer = New-Object System.Windows.Forms.TextBox
@@ -1524,7 +1526,7 @@ $TBMonitoringServer.AutoSize = $false
 $TBMonitoringServer.width = 260
 $TBMonitoringServer.height = 20
 $TBMonitoringServer.location = New-Object System.Drawing.Point(62, 15)
-$TBMonitoringServer.Font = 'Microsoft Sans Serif,10'
+$TBMonitoringServer.Font = 'Microsoft Sans Serif, 10'
 $MonitoringSettingsControls += $TBMonitoringServer
 
 $CheckBoxReportToServer = New-Object System.Windows.Forms.CheckBox
@@ -1534,7 +1536,7 @@ $CheckBoxReportToServer.AutoSize = $false
 $CheckBoxReportToServer.width = 130
 $CheckBoxReportToServer.height = 20
 $CheckBoxReportToServer.location = New-Object System.Drawing.Point(324, 15)
-$CheckBoxReportToServer.Font = 'Microsoft Sans Serif,10'
+$CheckBoxReportToServer.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxReportToServer.Checked = $Config.ReportToServer
 $MonitoringSettingsControls += $CheckBoxReportToServer
 
@@ -1545,7 +1547,7 @@ $CheckBoxShowWorkerStatus.AutoSize = $false
 $CheckBoxShowWorkerStatus.width = 145
 $CheckBoxShowWorkerStatus.height = 20
 $CheckBoxShowWorkerStatus.location = New-Object System.Drawing.Point(456, 15)
-$CheckBoxShowWorkerStatus.Font = 'Microsoft Sans Serif,10'
+$CheckBoxShowWorkerStatus.Font = 'Microsoft Sans Serif, 10'
 $CheckBoxShowWorkerStatus.Checked = $Config.ShowWorkerStatus
 $MonitoringSettingsControls += $CheckBoxShowWorkerStatus
 
@@ -1555,7 +1557,7 @@ $LabelMonitoringUser.AutoSize = $false
 $LabelMonitoringUser.width = 60
 $LabelMonitoringUser.height = 20
 $LabelMonitoringUser.location = New-Object System.Drawing.Point(2, 37)
-$LabelMonitoringUser.Font = 'Microsoft Sans Serif,10'
+$LabelMonitoringUser.Font = 'Microsoft Sans Serif, 10'
 $MonitoringSettingsControls += $LabelMonitoringUser
 
 $TBMonitoringUser = New-Object System.Windows.Forms.TextBox
@@ -1566,7 +1568,7 @@ $TBMonitoringUser.AutoSize = $false
 $TBMonitoringUser.width = 260
 $TBMonitoringUser.height = 20
 $TBMonitoringUser.location = New-Object System.Drawing.Point(62, 37)
-$TBMonitoringUser.Font = 'Microsoft Sans Serif,10'
+$TBMonitoringUser.Font = 'Microsoft Sans Serif, 10'
 $MonitoringSettingsControls += $TBMonitoringUser
 
 $ButtonGenerateMonitoringUser = New-Object System.Windows.Forms.Button
@@ -1574,7 +1576,7 @@ $ButtonGenerateMonitoringUser.text = "Generate New User ID"
 $ButtonGenerateMonitoringUser.width = 160
 $ButtonGenerateMonitoringUser.height = 20
 $ButtonGenerateMonitoringUser.location = New-Object System.Drawing.Point(324, 37)
-$ButtonGenerateMonitoringUser.Font = 'Microsoft Sans Serif,10'
+$ButtonGenerateMonitoringUser.Font = 'Microsoft Sans Serif, 10'
 $ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.text -eq "")
 $MonitoringSettingsControls += $ButtonGenerateMonitoringUser
 
@@ -1587,11 +1589,9 @@ $ButtonMonitoringWriteConfig.text = "Save Config"
 $ButtonMonitoringWriteConfig.width = 100
 $ButtonMonitoringWriteConfig.height = 30
 $ButtonMonitoringWriteConfig.location = New-Object System.Drawing.Point(600, 15)
-$ButtonMonitoringWriteConfig.Font = 'Microsoft Sans Serif,10'
+$ButtonMonitoringWriteConfig.Font = 'Microsoft Sans Serif, 10'
 $MonitoringSettingsControls += $ButtonMonitoringWriteConfig
 $ButtonMonitoringWriteConfig.Add_Click( { PrepareWriteConfig })
-
-# ***
 
 $MainForm | Add-Member -Name number -Value 0 -MemberType NoteProperty
 
@@ -1602,7 +1602,7 @@ $TimerUI.Enabled = $false
 
 $ButtonPause.Add_Click(
     { 
-        if (!$Variables.Paused) { 
+        If (!$Variables.Paused) { 
             Update-Status("Stopping miners")
             $Variables.Paused = $True
 
@@ -1613,74 +1613,70 @@ $ButtonPause.Add_Click(
             Update-Status("Mining paused. BrainPlus and Earning tracker running.")
             $LabelBTCD.Text = "Mining Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             # $TimerUI.Stop()
-        } 
-        else { 
+        }
+        Else { 
             $Variables.Paused = $False
             $ButtonPause.Text = "Pause"
-            $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) } 
+            $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
             $TimerUI.Start()
 
             # Stop and start mining to immediately switch to unpaused state without waiting for current sleep to finish
             $Variables.RestartCycle = $True
-        } 
-    } 
+        }
+    }
 )
 
 $ButtonStart.Add_Click(
     { 
-        if ($Variables.Started) { 
+        If ($Variables.Started) { 
             $ButtonPause.Visible = $False
             Update-Status("Stopping cycle")
             $Variables.Started = $False
             Update-Status("Stopping jobs and miner")
 
-            $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job } 
+            $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job }
             $Variables.EarningsTrackerJobs = @()
-            $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job } 
+            $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job }
             $Variables.BrainJobs = @()
 
             Stop-Mining
 
             # Stop idle tracking
-            if ($IdleRunspace) { $IdleRunspace.Close() } 
-            if ($idlePowershell) { $idlePowershell.Dispose() } 
+            If ($IdleRunspace) { $IdleRunspace.Close() }
+            If ($idlePowershell) { $idlePowershell.Dispose() }
 
             $LabelBTCD.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             Update-Status("Idle")
             $ButtonStart.Text = "Start"
             # $TimerUI.Interval = 1000
             $TimerUI.Stop()
-        } 
-        else { 
-            if (!(IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") } 
-            if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") } 
+        }
+        Else { 
+            If (-not (IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
+            If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
             PrepareWriteConfig
             $ButtonStart.Text = "Stop"
             InitApplication
-            $Variables | Add-Member -Force @{ MainPath = (Split-Path $script:MyInvocation.MyCommand.Path) } 
+            $Variables | Add-Member -Force @{ MainPath = (Split-Path $script:MyInvocation.MyCommand.Path) }
 
             Start-IdleTracking
 
-            if ($Config.MineWhenIdle) { 
+            If ($Config.MineWhenIdle) { 
                 # Disable the pause button - pausing controlled by idle timer
                 $Variables.Paused = $True
                 $ButtonPause.Visible = $False
-            } 
-            else { 
+            }
+            Else { 
                 $ButtonPause.Visible = $True
-            } 
+            }
             $TimerUI.Start()
 
             Start-Mining
 
-            # Enable for debug only!
-            #            NPMCycle #Added temporary, set a trace point.
-
             $Variables.Started = $True
-        } 
+        }
     }
 )
-
 
 $ShowWindow = Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);' -Name Win32ShowWindowAsync -Namespace Win32Functions -PassThru
 $ParentPID = (Get-CimInstance -Class Win32_Process -Filter "ProcessID = $pid").ParentProcessId

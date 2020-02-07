@@ -26,6 +26,15 @@ version date:   29 January 2020
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
 # Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
 
+Function Get-CommandLineParameters ($Arguments) { 
+    if ($Arguments -match "^{.+}$") { 
+        return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
+    }
+    else { 
+        return $Arguments
+    }
+}
+
 Function Get-Rates {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
@@ -806,7 +815,7 @@ Function Get-HashRate {
 
             "Dtsm" { 
                 $Request = Invoke_TcpRequest $server $port "empty" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
                     $HashRate = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
                 }
@@ -816,7 +825,7 @@ Function Get-HashRate {
                 $Message = @{ command = "summary"; parameter = "" } | ConvertTo-Json -Compress
                 $Request = Invoke_TcpRequest $server $port $Message 5
 
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Substring($Request.IndexOf("{ "), $Request.LastIndexOf("}") - $Request.IndexOf("{ ") + 1) -replace " ", "_" | ConvertFrom-Json
 
                     $HashRate = If ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow($Multiplier, 0) }
@@ -862,7 +871,7 @@ Function Get-HashRate {
                 $Message = @{ id = 1; method = "algorithm.list"; params = @() } | ConvertTo-Json -Compress
                 $Request = Invoke_TcpRequest $server $port $message 5
 
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = ($Request | ConvertFrom-Json).Algorithms
                     $HashRate = [Double](($Data.workers.speed) | Measure-Object -Sum).Sum
                 }
@@ -876,7 +885,6 @@ Function Get-HashRate {
             }
 
             "gminer" { 
-                $Message = @{ id = 1; method = "getstat" } | ConvertTo-Json -Compress
                 $Request = Invoke_httpRequest $Server $Port "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 If (($Data.Algorithm -split '\+').Count -gt 1) { 
@@ -889,7 +897,6 @@ Function Get-HashRate {
             }
 
             "gminerdual" { 
-                $Message = @{ id = 1; method = "getstat" } | ConvertTo-Json -Compress
                 $Request = Invoke_httpRequest $Server $Port "/stat" 5
                 $Data = $Request | ConvertFrom-Json
                 $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
@@ -898,7 +905,7 @@ Function Get-HashRate {
 
             "claymore" { 
                 $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
                     $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
                     $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
@@ -906,18 +913,27 @@ Function Get-HashRate {
             }
 
             "nanominer" { 
-                $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                $Request = Invoke_httpRequest $Server $Port "/stat" 5
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
+                    $Data.Statistics.Devices | ForEach-Object { 
+                        $DeviceData = $_
+                        Switch ($DeviceData.Hashrates[0].unit) { 
+                            "KH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
+                            "MH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
+                            "GH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
+                            "TH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
+                            "PH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
+                            default { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
+                        }
+                    }
                 }
             }
 
             "ethminer" { 
                 $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [int](($Data.result[2] -split ';')[0]) * 1000
                 }
@@ -925,7 +941,7 @@ Function Get-HashRate {
 
             "ClaymoreV2" { 
                 $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
                     $HashRate = [double]$Data.result[2].Split(";")[0] 
                 }
@@ -934,7 +950,7 @@ Function Get-HashRate {
             "TTminer" { 
                 $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json  -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
                 }
@@ -953,7 +969,7 @@ Function Get-HashRate {
 
             "prospector" { 
                 $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [Double]($Data.rate | Measure-Object -Sum).sum
                 }
@@ -961,7 +977,7 @@ Function Get-HashRate {
 
             "fireice" { 
                 $Request = Invoke_httpRequest $Server $Port "/h" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
                     $HashRate = $Data[1]
                     If ($HashRate -eq "") { $HashRate = $Data[2] }
@@ -990,7 +1006,7 @@ Function Get-HashRate {
 
             "castXMR" { 
                 $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json 
                     $HashRate = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
                 }
@@ -998,7 +1014,7 @@ Function Get-HashRate {
 
             "XMrig" { 
                 $Request = Invoke_httpRequest $Server $Port "/api.json" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request | ConvertFrom-Json 
                     $HashRate = [Double]$Data.hashrate.total[0]
                 }
@@ -1006,7 +1022,7 @@ Function Get-HashRate {
 
             "bminer" { 
                 $Request = Invoke_httpRequest $Server $Port "/api/status" 5
-                If ($Request -ne "" -and $request -ne $null) { 
+                If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.content | ConvertFrom-Json 
                     $HashRate = 0
                     $Data.miners | Get-Member -MemberType NoteProperty | ForEach-Object { 

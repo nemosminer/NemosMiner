@@ -1,9 +1,14 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-nanominer180\cmdline_launcher.bat"
+$Path = ".\Bin\NVIDIA-nanominer180\nanominer.exe"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.8.0/nanominer-windows-1.8.0.zip"
 $Commands = [PSCustomObject]@{ 
-    #"randomhash" = "-algo RandomHash2" #RandomX
+    "Ethash" = "" #GPU Only
+    "Ubqhash" = "" #GPU Only
+    "Cuckaroo30" = "" #GPU Only
+    #"RandomX" = "" #CPU only
+    #"RandomHash2" = "" #CPU only
 }
+
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     Switch ($_) { 
@@ -11,6 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         default { $Fee = 0.01 } # substract devfee
     }
 
+    $ConfigFileName = "$((@("Config") + @($Algo) + @("GPU$($Config.SelGPUDSTM)") + @($Algorithm_Norm) + @($Variables.NVIDIAMinerAPITCPPort) + @($Pools.$Algo.User) | Select-Object) -join '-').ini"
     $Arguments = [PSCustomObject]@{ 
         ConfigFile = [PSCustomObject]@{ 
         FileName = $ConfigFileName
@@ -21,9 +27,9 @@ mport=0
 noLog=true
 rigName=$($Config.WorkerName)
 watchdog=false
-webPort=$($Variables.CPUMinerAPITCPPort)
+webPort=$($Variables.NVIDIAMinerAPITCPPort)
 
-[$($Algorithm)]
+[$($_)]
 devices=$($Config.SelGPUDSTM)
 pool1=$($Pools.$Algo.Host):$($Pools.$Algo.Port)
 wallet=$($Pools.$Algo.User)"
@@ -32,12 +38,12 @@ wallet=$($Pools.$Algo.User)"
     }
 
     [PSCustomObject]@{ 
-        Type      = "CPU"
+        Type      = "NVIDIA"
         Path      = $Path
         Arguments = $Arguments
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
         API       = "nanominer"
-        Port      = $Variables.CPUMinerAPITCPPort
+        Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
     }
