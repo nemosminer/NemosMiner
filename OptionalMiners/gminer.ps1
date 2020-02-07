@@ -19,17 +19,17 @@ $Commands = [PSCustomObject]@{
     "ethash+eaglesong" = " --devices $($Config.SelGPUDSTM) --algo eth+ckb --proto stratum --dproto stratum --dual_intensity 0" #Ethash + Eaglesong
 }
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-    switch ($_) { 
+    Switch ($_) { 
         "ethash" { $Fee = 0.0065 }
         "cuckaroom" { $Fee = 0.03 }
         "ethash+eaglesong" { $Fee = 0.03 }
         default { $Fee = 0.02 }
     }
 
-    if ($Algo2) { 
+    If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo2"
         $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee); $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Day * (1 - $Fee) } # substract devfee
-        $Algo2Parameter =" --dserver $($Pools.$Algo2.Host) --dport $($Pools.$Algo2.Port) --duser $($Pools.$Algo2.User) --dpass $($Pools.$Algo2.Pass)"
+        $Algo2Parameter = " --dserver $($Pools.$Algo2.Host) --dport $($Pools.$Algo2.Port) --duser $($Pools.$Algo2.User) --dpass $($Pools.$Algo2.Pass)"
     }
     Else { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
