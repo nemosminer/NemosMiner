@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-ccminertpruvot231x86\ccminer.exe"
-$Uri = "https://github.com/Minerx117/ccminertpruvot/releases/download/2.3.1-x86/ccminertpruvot231x86.7z"
+$Path = ".\Bin\NVIDIA-ccminertpruvot231x64\ccminer-x64.exe"
+$Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccminer-2.3.1-cuda10.7z"
 $Commands = [PSCustomObject]@{ 
     #"blake2b" = " -a blake2b" #blake2b
     "x12"       = " -a x12 -i 20" #X12
