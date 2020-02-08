@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-Bminer1602\bminer.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/16.0.2/bminer-v16.0.2-9094ce6.zip"
+$Path = ".\Bin\NVIDIA-Bminer1605\bminer.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/16.0.5/bminer-v16.0.5-21104ec.zip"
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
