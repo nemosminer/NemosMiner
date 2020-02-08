@@ -151,6 +151,9 @@ Function NPMCycle {
         $Variables.StatusText = "Starting Cycle"
         $DecayExponent = [int](((Get-Date) - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
 
+        # Read stats
+        Get-Stat
+
         # Ensure we get the hashrate for running miners prior looking for best miner
         $Variables.ActiveMinerPrograms | ForEach-Object { 
             If ($_.Process -eq $null -or $_.Process.HasExited) { 
@@ -159,7 +162,7 @@ Function NPMCycle {
             Else { 
                 $Miner = $_
                 #Read hashrate from miner
-                $Miner_HashRates = Get-HashRate $Miner.API $Miner.Port ($Miner.New -and $Miner.Benchmarked -lt 3)
+                $Miner_HashRates = Get-HashRate $Miner.API $Miner.Port $Miner.Algorithms
                 $Miner.HashRates = @($Miner_HashRates | Select-Object -First $Miner.Algorithms.Count)
                 # we don't want to store hashrates if we run less than $Config.StatsInterval sec
                 $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
@@ -346,7 +349,7 @@ Function NPMCycle {
             $Miner_Profits_Bias = [PSCustomObject]@{ }
             $Miner_Types = $Miner.Type | Select-Object -Unique
             $Miner_Indexes = $Miner.Index | Select-Object -Unique
-            $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+            $Miner.HashRates.PSObject.Properties.Name | ForEach-Object { #temp fix, must use 'PSObject.Properties' to preserve order
                 $Miner_HashRates | Add-Member $_ ([Double]$Miner.HashRates.$_)
                 $Miner_Pools | Add-Member $_ ([PSCustomObject]$Pools.$_)
                 $Miner_Pools_Comparison | Add-Member $_ ([PSCustomObject]$Pools_Comparison.$_)
@@ -357,7 +360,7 @@ Function NPMCycle {
             $Miner_Profit = [Double]($Miner_Profits.PSObject.Properties.Value | Measure-Object -Sum).Sum
             $Miner_Profit_Comparison = [Double]($Miner_Profits_Comparison.PSObject.Properties.Value | Measure-Object -Sum).Sum
             $Miner_Profit_Bias = [Double]($Miner_Profits_Bias.PSObject.Properties.Value | Measure-Object -Sum).Sum
-            $Miner.HashRates | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+            $Miner.HashRates.PSObject.Properties.Name | ForEach-Object { #temp fix, must use 'PSObject.Properties' to preserve order 
                 If (-not [String]$Miner.HashRates.$_) { 
                     $Miner_HashRates.$_ = $null
                     $Miner_Profits.$_ = $null
@@ -475,15 +478,16 @@ Function NPMCycle {
                     $_.Status = "Failed"
                 }
                 ElseIf ($_.Process.HasExited -eq $false) { 
+                    Write-Host -ForegroundColor Yellow "Closing miner"
                     $_.Process.CloseMainWindow() | Out-Null
                     Start-Sleep 1
                     # simply "Kill with power"
                     Stop-Process $_.Process -Force | Out-Null
                     # try to kill any process with the same path, in case it is still running but the process handle is incorrect
                     $KillPath = $_.Path
-                    Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force
-                    Write-Host -ForegroundColor Yellow "closing miner"
-                    Start-Sleep 1
+                    If (Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force ( {} )) { 
+                        Start-Sleep 1
+                    }
                     $_.Status = "Idle"
                     $_.TotalActive += (-$_.Active + ($_.Active = (Get-Date) - $_.Process.StartTime))
                 }
@@ -491,8 +495,6 @@ Function NPMCycle {
                 $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit_Bias_Orig }
             }
         }
-        $NewMiner = $false
-        $CurrentMinerHashrate_Gathered = $false 
         $NewMiner = $false
         $CurrentMinerHashrate_Gathered = $false 
         $Variables.ActiveMinerPrograms | ForEach-Object { 
@@ -558,29 +560,19 @@ Function NPMCycle {
                 $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
             }
         }
-        #Do nothing for a few seconds as to not overload the APIs
-        If ($NewMiner -eq $true) { 
-            If ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
-            Else { 
-                If ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
-                Else { $Variables.TimeToSleep = $Config.StatsInterval }
-            }
+        #Set idle duration a few seconds as to not overload the APIs
+        If ($NewMiner) { 
+            $Variables.TimeToSleep = ( $Config.FirstInterval, $Config.StatsInterval | Measure-Object -Minimum).Minimum
+
+            # If ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
+            # ElseIf ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
+            # Else { $Variables.TimeToSleep = $Config.StatsInterval }
         }
         Else { 
             $Variables.TimeToSleep = $Config.Interval
         }
         "--------------------------------------------------------------------------------" | Out-Host
-        #Do nothing for a few seconds as to not overload the APIs
-        If ($NewMiner -eq $true) { 
-            If ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
-            Else { 
-                If ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
-                Else { $Variables.TimeToSleep = $Config.StatsInterval }
-            }
-        }
-        Else { 
-            $Variables.TimeToSleep = $Config.Interval
-        }
+
         #Save current hash rates
         $Variables.ActiveMinerPrograms | ForEach-Object { 
             If ($_.Process -eq $null -or $_.Process.HasExited) { 
@@ -589,7 +581,7 @@ Function NPMCycle {
             Else { 
                 $Miner = $_
                 #Read hashrate from miner
-                $Miner_HashRates = Get-HashRate $Miner.API $Miner.Port ($Miner.New -and $Miner.Benchmarked -lt 3)
+                $Miner_HashRates = Get-HashRate $Miner.API $Miner.Port $Miner.Algorithms
                 $Miner.HashRates = @($Miner_HashRates | Select-Object -First $Miner.Algorithms.Count)
                 # we don't want to store hashrates if we run less than $Config.StatsInterval sec
                 $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
@@ -649,12 +641,10 @@ Function NPMCycle {
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }
     }
-    # $Variables.StatusText = "Cycle Time (seconds): $($CycleTime.TotalSeconds)"
+
     "Cycle Time (seconds): $($CycleTime.TotalSeconds)" | Out-Host
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
     $Variables | Add-Member -Force @{ EndLoop = $True }
-    # Start-Sleep $Variables.TimeToSleep
-    # }
 }
 #Stop the log
 # Stop-Transcript

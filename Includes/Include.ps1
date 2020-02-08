@@ -346,7 +346,10 @@ Function Start-Mining {
                 Else { 
                     NPMCycle
                     Update-Monitoring
-                    Start-Sleep $Variables.TimeToSleep
+                    $EndLoop = (Get-Date).AddSeconds($Variables.TimeToSleep)
+                    While ((Get-Date) -lt $EndLoop -and ($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } )) {
+                        Start-Sleep 2
+                    }
                 }
             }
         }
@@ -801,9 +804,7 @@ Function Get-HashRate {
         [Parameter(Mandatory = $true)]
         [Int]$Port, 
         [Parameter(Mandatory = $true)]
-        [String[]]$Algorithms, 
-        [Parameter(Mandatory = $false)]
-        [Object]$Parameters = @{ }
+        [String[]]$Algorithms
     )
 
     $Server = "localhost"
@@ -852,7 +853,7 @@ Function Get-HashRate {
             "palgin" { 
                 $Request = Invoke_TcpRequest $server $port  "summary" 5
                 $Data = $Request -split ";"
-                $HashRate = [double]($Data[5] -split '=')[1] * 1000
+                $HashRate = [Double]($Data[5] -split '=')[1] * 1000
             }
 
             "ccminer" { 
@@ -907,8 +908,8 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "" 5
                 If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
-                    $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
+                    $HashRate = [Double]$Data.result[2].Split(";")[0] * $Multiplier
+                    $HashRate_Dual = [Double]$Data.result[4].Split(";")[0] * $Multiplier
                 }
             }
 
@@ -943,7 +944,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "" 5
                 If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] 
+                    $HashRate = [Double]$Data.result[2].Split(";")[0] 
                 }
             }
 
@@ -961,8 +962,8 @@ Function Get-HashRate {
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = @(
-                        [double]$Data.HashRate_total_now
-                        [double]$Data.HashRate_total_5min
+                        [Double]$Data.HashRate_total_now
+                        [Double]$Data.HashRate_total_5min
                     ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
                 }
             }
@@ -1021,12 +1022,14 @@ Function Get-HashRate {
             }
 
             "bminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
+                $Request = Invoke_httpRequest $Server $Port "/api/v1/status/solver" 5
                 If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.content | ConvertFrom-Json 
-                    $HashRate = 0
-                    $Data.miners | Get-Member -MemberType NoteProperty | ForEach-Object { 
-                        $HashRate += $Data.miners.($_.name).solver.solution_rate
+                    $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
+                        $HashRate += [Double]$Data.devices.$_.solvers[0].speed_info.hash_rate
+                        $HashRate += [Double]$Data.devices.$_.solvers[0].speed_info.solution_rate
+                        $HashRate_Dual += [Double]$Data.devices.$_.solvers[1].speed_info.hash_rate
+                        $HashRate_Dual += [Double]$Data.devices.$_.solvers[1].speed_info.solution_rate
                     }
                 }
             }
@@ -1035,7 +1038,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/status" 5
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
+                    $HashRate = [Double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
                 }
             }
 
@@ -1043,7 +1046,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double]$Data.miner.total_hashrate_raw
+                    $HashRate = [Double]$Data.miner.total_hashrate_raw
                 }
             }
 
@@ -1051,8 +1054,8 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double]$Data.miner.total_hashrate_raw
-                    $HashRate_Dual = [double]$Data.miner.total_hashrate2_raw
+                    $HashRate = [Double]$Data.miner.total_hashrate_raw
+                    $HashRate_Dual = [Double]$Data.miner.total_hashrate2_raw
                 }
             }
 
@@ -1073,7 +1076,7 @@ Function Get-HashRate {
             }
         } #end switch
 
-        @([double]$HashRate, [double]$HashRate_Dual)
+        @([Double]$HashRate, [Double]$HashRate_Dual)
     }
     Catch { }
 }

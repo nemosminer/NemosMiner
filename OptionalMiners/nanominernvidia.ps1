@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-nanominer180\nanominer.exe"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.8.0/nanominer-windows-1.8.0.zip"
 $Commands = [PSCustomObject]@{ 
-    #"Ethash" = "" #GPU Only
+    "Ethash" = "" #GPU Only
     "Ubqhash" = "" #GPU Only
     "Cuckaroo30" = "" #GPU Only
     #"RandomX" = "" #CPU only
@@ -12,11 +12,11 @@ $Commands = [PSCustomObject]@{
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     Switch ($_) { 
-        "Cuckaroo30" { $Fee = 0.05 } # substract devfee
+        "randomhash" { $Fee = 0.05 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
     }
 
-    $ConfigFileName = "$((@("Config") + @($Algo) + @("GPU$($Config.SelGPUDSTM)") + @($Algorithm_Norm) + @($Variables.NVIDIAMinerAPITCPPort) + @($Pools.$Algo.User) | Select-Object) -join '-').ini"
+    $ConfigFileName = "$((@("Config") + @($Algo) + @("GPU$($Config.SelGPUCC -replace ',', '')") + @($Algorithm_Norm) + @($Variables.NVIDIAMinerAPITCPPort) + @($Pools.$Algo.User) | Select-Object) -join '-').ini"
     $Arguments = [PSCustomObject]@{ 
         ConfigFile = [PSCustomObject]@{ 
         FileName = $ConfigFileName
@@ -30,7 +30,7 @@ watchdog=false
 webPort=$($Variables.NVIDIAMinerAPITCPPort)
 
 [$($_)]
-devices=$($Config.SelGPUDSTM)
+devices=$($Config.SelGPUCC)
 pool1=$($Pools.$Algo.Host):$($Pools.$Algo.Port)
 wallet=$($Pools.$Algo.User)"
         }

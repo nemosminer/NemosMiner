@@ -351,7 +351,7 @@ Function Global:TimerUITick {
                     Write-Host "Average mBTC/Day:" -NoNewline; Write-Host "           $(($_.BTCD * 1000).ToString('N6'))" -F Yellow
                     Write-Host "Balance mBTC:               $(($_.Balance).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold).ToString('N3')) BTC payment threshold)"
                     Write-Host "Balance $($Config.Currency):                $(($_.Balance * $Variables.Rates.($Config.Currency)).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold * $Variables.Rates.($Config.Currency)).ToString('n')) $($Config.Currency) payment threshold)"
-                    Write-Host "Estimated Pay Date:         $(Try { ($_.EstimatedPayDate).ToShortDateString() } Catch { $_.EstimatedPayDate })"
+                    Write-Host "Estimated Pay Date:         $(if ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString() } Else { "$($_.EstimatedPayDate)" })"
                 }
             }
 
@@ -1671,6 +1671,11 @@ $ButtonStart.Add_Click(
             }
             $TimerUI.Start()
 
+#$DebugLoop = $true # Enable for debug only!
+While ($DebugLoop) {
+    NPMCycle #Added temporary, set a trace point.
+}
+
             Start-Mining
 
             $Variables.Started = $True
@@ -1691,7 +1696,7 @@ $ConfigPage.Controls.AddRange($ConfigPageControls)
 $GroupMonitoringSettings.Controls.AddRange($MonitoringSettingsControls)
 $MonitoringPage.Controls.AddRange($MonitoringPageControls)
 
-$MainForm.Add_Load( { Form_Load })
+$MainForm.Add_Load( { Form_Load } )
 # $TimerUI.Add_Tick({ TimerUI_Tick})
 
 [void]$MainForm.ShowDialog()
