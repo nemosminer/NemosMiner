@@ -14,7 +14,8 @@
      "APIKey": "",
      "Algorithm": [
        "+binariumv1",
-       "+skein2"
+       "+skein2",
+       "+scryptn11"
      ]
    },
    "mph": {
