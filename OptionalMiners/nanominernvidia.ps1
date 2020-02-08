@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         default { $Fee = 0.01 } # substract devfee
     }
 
-    $ConfigFileName = "$((@("Config") + @($Algo) + @("GPU$($Config.SelGPUDSTM)") + @($Algorithm_Norm) + @($Variables.NVIDIAMinerAPITCPPort) + @($Pools.$Algo.User) | Select-Object) -join '-').ini"
+    $ConfigFileName = "$((@("Config") + @($Algo) + @("GPU$($Config.SelGPUCC -replace ',', '')") + @($Algorithm_Norm) + @($Variables.NVIDIAMinerAPITCPPort) + @($Pools.$Algo.User) | Select-Object) -join '-').ini"
     $Arguments = [PSCustomObject]@{ 
         ConfigFile = [PSCustomObject]@{ 
         FileName = $ConfigFileName
@@ -30,7 +30,7 @@ watchdog=false
 webPort=$($Variables.NVIDIAMinerAPITCPPort)
 
 [$($_)]
-devices=$($Config.SelGPUDSTM)
+devices=$($Config.SelGPUCC)
 pool1=$($Pools.$Algo.Host):$($Pools.$Algo.Port)
 wallet=$($Pools.$Algo.User)"
         }

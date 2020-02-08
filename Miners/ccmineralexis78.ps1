@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-Alexis78151\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.1/ccminerAlexis78cuda75x64.7z"
 $Commands = [PSCustomObject]@{ 
-    "skein2" = " -i 30 -d $($Config.SelGPUCC) --cuda-schedule 2" #Skein2
+    "skein2" = " -i 31.999 -d $($Config.SelGPUCC) --cuda-schedule 2" #Skein2
     #"neoscrypt" = " -i 16.250 -d $($Config.SelGPUCC) --cuda-schedule 2" #Neoscrypt (1070) rigs
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

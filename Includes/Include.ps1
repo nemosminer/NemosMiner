@@ -806,8 +806,6 @@ Function Get-HashRate {
         [Object]$Parameters = @{ }
     )
 
-    $Multiplier = 1000
-
     $Server = "localhost"
     $Timeout = 5 #Seconds
 
@@ -834,27 +832,20 @@ Function Get-HashRate {
                 }
             }
 
-<<<<<<< Updated upstream
-            "palgin" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" 5
-                $Data = $Request -split ";"
-                $HashRate = [double]($Data[5] -split '=')[1] * 1000
-=======
             "ccminer" { 
                 $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
                 If ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData
-                    $HashRate = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * $Multiplier }
+                    $HashRate = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * 1000 }
                 }
->>>>>>> Stashed changes
             }
 
             "claymore" { 
                 $Request = Invoke_httpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result[2].Split(";")[0] * $Multiplier
-                    $HashRate_Dual = [Double]$Data.result[4].Split(";")[0] * $Multiplier
+                    $HashRate = [Double]$Data.result[2].Split(";")[0] * 1000
+                    $HashRate_Dual = [Double]$Data.result[4].Split(";")[0] * 1000
                 }
             }
 
@@ -936,21 +927,12 @@ Function Get-HashRate {
                 }
             }
 
-<<<<<<< Updated upstream
-            "claymore" { 
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
-                    $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
-=======
             "miniz" { 
                 $Message = '{ "id":"0", "method":"getstat"}'
                 $Request = Invoke_TcpRequest $server $port $message $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
->>>>>>> Stashed changes
                 }
             }
 
@@ -980,20 +962,12 @@ Function Get-HashRate {
                 }
             }
 
-<<<<<<< Updated upstream
-            "ClaymoreV2" { 
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] 
-=======
             "nbminerdual" { 
                 $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [Double]$Data.miner.total_hashrate_raw
                     $HashRate_Dual = [Double]$Data.miner.total_hashrate2_raw
->>>>>>> Stashed changes
                 }
             }
 
@@ -1048,7 +1022,7 @@ Function Get-HashRate {
                 if ($Request) { 
                     $Data = $Request.Substring($Request.IndexOf("{ "), $Request.LastIndexOf("}") - $Request.IndexOf("{ ") + 1) -replace " ", "_" | ConvertFrom-Json
 
-                    $HashRate = If ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow($Multiplier, 0) }
+                    $HashRate = If ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow(1000, 0) }
                     ElseIf ($Data.SUMMARY.KHS_5s) { [Double]$Data.SUMMARY.KHS_5s * [Math]::Pow(1000, 1) }
                     ElseIf ($Data.SUMMARY.MHS_5s) { [Double]$Data.SUMMARY.MHS_5s * [Math]::Pow(1000, 2) }
                     ElseIf ($Data.SUMMARY.GHS_5s) { [Double]$Data.SUMMARY.GHS_5s * [Math]::Pow(1000, 3) }
@@ -1089,79 +1063,11 @@ Function Get-HashRate {
                 Else { $hashrate = 0 }
             }
 
-<<<<<<< Updated upstream
-            "castXMR" { 
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request | ConvertFrom-Json 
-                    $HashRate = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
-                }
-            }
-
-            "XMrig" { 
-                $Request = Invoke_httpRequest $Server $Port "/api.json" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request | ConvertFrom-Json 
-                    $HashRate = [Double]$Data.hashrate.total[0]
-                }
-            }
-
-            "bminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request.content | ConvertFrom-Json 
-                    $HashRate = 0
-                    $Data.miners | Get-Member -MemberType NoteProperty | ForEach-Object { 
-                        $HashRate += $Data.miners.($_.name).solver.solution_rate
-                    }
-                }
-            }
-
-            "GrinPro" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/status" 5
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
-                }
-            }
-
-            "NBMiner" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double]$Data.miner.total_hashrate_raw
-                }
-            }
-
-            "NBMinerdual" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" 5
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [double]$Data.miner.total_hashrate_raw
-                    $HashRate_Dual = [double]$Data.miner.total_hashrate2_raw
-                }
-            }
-
-            "LOL" { 
-                $Request = Invoke_httpRequest $Server $Port "/summary" 5
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$data.Session.Performance_Summary
-                }
-            }
-
-            "nheq" { 
-                $Request = Invoke_TcpRequest $Server $Port "status" 5
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result.speed_ips * 1000000
-=======
             "zjazz" { 
                 $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
                     $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
->>>>>>> Stashed changes
                 }
             }
         } #end Switch
