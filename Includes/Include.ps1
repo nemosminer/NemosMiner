@@ -806,26 +806,246 @@ Function Get-HashRate {
         [Object]$Parameters = @{ }
     )
 
-    $Server = "localhost"
-    
     $Multiplier = 1000
+
+    $Server = "localhost"
+    $Timeout = 5 #Seconds
 
     Try { 
         Switch ($API) { 
+            "bminer" { 
+                $Request = Invoke_httpRequest $Server $Port "/api/v1/status/solver" $Timeout
+                If ($Request) { 
+                    $Data = $Request.content | ConvertFrom-Json 
+                    $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
+                        $HashRate += [Double]$Data.devices.$_.solvers[0].speed_info.hash_rate
+                        $HashRate += [Double]$Data.devices.$_.solvers[0].speed_info.solution_rate
+                        $HashRate_Dual += [Double]$Data.devices.$_.solvers[1].speed_info.hash_rate
+                        $HashRate_Dual += [Double]$Data.devices.$_.solvers[1].speed_info.solution_rate
+                    }
+                }
+            }
 
-            "Dtsm" { 
-                $Request = Invoke_TcpRequest $server $port "empty" 5
+            "castxmr" { 
+                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json 
+                    $HashRate = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
+                }
+            }
+
+<<<<<<< Updated upstream
+            "palgin" { 
+                $Request = Invoke_TcpRequest $server $port  "summary" 5
+                $Data = $Request -split ";"
+                $HashRate = [double]($Data[5] -split '=')[1] * 1000
+=======
+            "ccminer" { 
+                $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
+                If ($Request) { 
+                    $Data = $Request -split ";" | ConvertFrom-StringData
+                    $HashRate = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * $Multiplier }
+                }
+>>>>>>> Stashed changes
+            }
+
+            "claymore" { 
+                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                If ($Request) { 
+                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
+                    $HashRate = [Double]$Data.result[2].Split(";")[0] * $Multiplier
+                    $HashRate_Dual = [Double]$Data.result[4].Split(";")[0] * $Multiplier
+                }
+            }
+
+            "claymorev2" { 
+                $Request = Invoke_httpRequest $Server $Port "" $Timeout
                 If ($Request -ne "" -and $Request -ne $null) { 
+                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
+                    $HashRate = [Double]$Data.result[2].Split(";")[0] 
+                }
+            }
+
+            "dtsm" { 
+                $Request = Invoke_TcpRequest $server $port "empty" $Timeout
+                If ($Request) { 
                     $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
                     $HashRate = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
                 }
             }
 
+            "ethminer" { 
+                $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
+                $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double](($Data.result[2] -split ';')[0]) * 1000
+                }
+            }
+
+            "ewbf" { 
+                $Message = @{ id = 1; method = "getstat" } | ConvertTo-Json -Compress
+                $Request = Invoke_TcpRequest $server $port $message $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
+                }
+            }
+
+            "fireice" { 
+                $Request = Invoke_httpRequest $Server $Port "/h" $Timeout
+                If ($Request) { 
+                    $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
+                    $HashRate = $Data[1]
+                    If (-not $HashRate) { $HashRate = $Data[2] }
+                    If (-not $HashRate) { $HashRate = $Data[3] }
+                }
+            }
+
+            "gminer" { 
+                $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+                    $HashRate_Dual = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+                }
+            }
+
+            "gminerdual" { 
+                $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+                    $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+                }
+            }
+
+            "grinpro" { 
+                $Request = Invoke_httpRequest $Server $Port "/api/status" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
+                }
+            }
+
+            "lol" { 
+                $Request = Invoke_httpRequest $Server $Port "/summary" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]$data.Session.Performance_Summary
+                }
+            }
+
+<<<<<<< Updated upstream
+            "claymore" { 
+                $Request = Invoke_httpRequest $Server $Port "" 5
+                If ($Request -ne "" -and $Request -ne $null) { 
+                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
+                    $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
+                    $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
+=======
+            "miniz" { 
+                $Message = '{ "id":"0", "method":"getstat"}'
+                $Request = Invoke_TcpRequest $server $port $message $Timeout
+                if ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
+>>>>>>> Stashed changes
+                }
+            }
+
+            "nanominer" { 
+                $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
+                if ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $Data.Statistics.Devices | ForEach-Object { 
+                        $DeviceData = $_
+                        Switch ($DeviceData.Hashrates[0].unit) { 
+                            "KH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
+                            "MH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
+                            "GH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
+                            "TH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
+                            "PH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
+                            default { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
+                        }
+                    }
+                }
+            }
+
+            "nbminer" { 
+                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]$Data.miner.total_hashrate_raw
+                }
+            }
+
+<<<<<<< Updated upstream
+            "ClaymoreV2" { 
+                $Request = Invoke_httpRequest $Server $Port "" 5
+                If ($Request -ne "" -and $Request -ne $null) { 
+                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
+                    $HashRate = [double]$Data.result[2].Split(";")[0] 
+=======
+            "nbminerdual" { 
+                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]$Data.miner.total_hashrate_raw
+                    $HashRate_Dual = [Double]$Data.miner.total_hashrate2_raw
+>>>>>>> Stashed changes
+                }
+            }
+
+            "nheq" { 
+                $Request = Invoke_TcpRequest $Server $Port "status" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]$Data.result.speed_ips * 1000000
+                }
+            }
+
+            "palgin" { 
+                $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
+                if ($Request) { 
+                    $Data = $Request -split ";"
+                    $HashRate = [Double]($Data[5] -split '=')[1] * 1000
+                }
+            }
+
+            "prospector" { 
+                $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" $Timeout
+                if ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double]($Data.rate | Measure-Object -Sum).sum
+                }
+            }
+
+            "srb" { 
+                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = @(
+                        [double]$Data.HashRate_total_now
+                        [double]$Data.HashRate_total_5min
+                    ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
+                }
+            }
+
+            "ttminer" { 
+                $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json  -Compress
+                $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
+                if ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = [Double](($Data.result[2] -split ';')[0]) #* 1000
+                }
+            }
+
             "xgminer" { 
                 $Message = @{ command = "summary"; parameter = "" } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $Message 5
+                $Request = Invoke_TcpRequest $server $port $Message $Timeout
 
-                If ($Request -ne "" -and $Request -ne $null) { 
+                if ($Request) { 
                     $Data = $Request.Substring($Request.IndexOf("{ "), $Request.LastIndexOf("}") - $Request.IndexOf("{ ") + 1) -replace " ", "_" | ConvertFrom-Json
 
                     $HashRate = If ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow($Multiplier, 0) }
@@ -849,147 +1069,12 @@ Function Get-HashRate {
                 }
             }
 
-            "palgin" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" 5
-                $Data = $Request -split ";"
-                $HashRate = [double]($Data[5] -split '=')[1] * 1000
-            }
-
-            "ccminer" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" 5
-                $Data = $Request -split ";" | ConvertFrom-StringData
-                $HashRate = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * $Multiplier }
-            }
-
-            "zjazz" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" 10
-                $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
-                $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
-            }
-
-            "excavator" { 
-                $Message = @{ id = 1; method = "algorithm.list"; params = @() } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $message 5
-
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = ($Request | ConvertFrom-Json).Algorithms
-                    $HashRate = [Double](($Data.workers.speed) | Measure-Object -Sum).Sum
+            "xmrig" { 
+                $Request = Invoke_httpRequest $Server $Port "/api.json" $Timeout
+                if ($Request) { 
+                    $Data = $Request | ConvertFrom-Json 
+                    $HashRate = [Double]$Data.hashrate.total[0]
                 }
-            }
-
-            "ewbf" { 
-                $Message = @{ id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $message 5
-                $Data = $Request | ConvertFrom-Json
-                $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
-            }
-
-            "gminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/stat" 5
-                $Data = $Request | ConvertFrom-Json
-                If (($Data.Algorithm -split '\+').Count -gt 1) { 
-                    $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
-                    $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
-                }
-                Else { 
-                    $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
-                }
-            }
-
-            "gminerdual" { 
-                $Request = Invoke_httpRequest $Server $Port "/stat" 5
-                $Data = $Request | ConvertFrom-Json
-                $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
-                $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
-            }
-
-            "claymore" { 
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] * $Multiplier
-                    $HashRate_Dual = [double]$Data.result[4].Split(";")[0] * $Multiplier
-                }
-            }
-
-            "nanominer" { 
-                $Request = Invoke_httpRequest $Server $Port "/stat" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $Data.Statistics.Devices | ForEach-Object { 
-                        $DeviceData = $_
-                        Switch ($DeviceData.Hashrates[0].unit) { 
-                            "KH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
-                            "MH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
-                            "GH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
-                            "TH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
-                            "PH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
-                            default { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
-                        }
-                    }
-                }
-            }
-
-            "ethminer" { 
-                $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) * 1000
-                }
-            }
-
-            "ClaymoreV2" { 
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [double]$Data.result[2].Split(";")[0] 
-                }
-            }
-
-            "TTminer" { 
-                $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json  -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [int](($Data.result[2] -split ';')[0]) #* 1000
-                }
-            }
-
-            "SRB" { 
-                $Request = Invoke_httpRequest $Server $Port "" 5
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = @(
-                        [double]$Data.HashRate_total_now
-                        [double]$Data.HashRate_total_5min
-                    ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
-                }
-            }
-
-            "prospector" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]($Data.rate | Measure-Object -Sum).sum
-                }
-            }
-
-            "fireice" { 
-                $Request = Invoke_httpRequest $Server $Port "/h" 5
-                If ($Request -ne "" -and $Request -ne $null) { 
-                    $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
-                    $HashRate = $Data[1]
-                    If ($HashRate -eq "") { $HashRate = $Data[2] }
-                    If ($HashRate -eq "") { $HashRate = $Data[3] }
-                }
-            }
-
-            "miniZ" { 
-                $Message = '{ "id":"0", "method":"getstat"}'
-                $Request = Invoke_TcpRequest $server $port $message 5
-                $Data = $Request | ConvertFrom-Json
-                $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
             }
 
             "wrapper" { 
@@ -1004,6 +1089,7 @@ Function Get-HashRate {
                 Else { $hashrate = 0 }
             }
 
+<<<<<<< Updated upstream
             "castXMR" { 
                 $Request = Invoke_httpRequest $Server $Port "" 5
                 If ($Request -ne "" -and $Request -ne $null) { 
@@ -1069,9 +1155,16 @@ Function Get-HashRate {
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = [Double]$Data.result.speed_ips * 1000000
+=======
+            "zjazz" { 
+                $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
+                if ($Request) { 
+                    $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
+                    $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
+>>>>>>> Stashed changes
                 }
             }
-        } #end switch
+        } #end Switch
 
         @([double]$HashRate, [double]$HashRate_Dual)
     }
