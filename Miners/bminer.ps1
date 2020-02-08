@@ -5,7 +5,7 @@ $Commands = [PSCustomObject]@{
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
     #"zhash"            = "-pers auto -uri equihash1445://" #Zhash
-    #"ethash"           = "-uri ethstratum://" #Ethash
+    "ethash"           = "-uri ethstratum://" #Ethash
     #"cuckoocycle"      = "-uri aeternity://" #aeternity
     #"beamv2"           = "-uri beamhash2://" #beam
     #"grincuckarood29"  = "-uri cuckaroo29d://" #grincuckaroo29 
@@ -40,7 +40,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Name      = $Name
         Path      = $Path
-        Arguments = "$($Commands.$_)$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.Pass))@$($Pools.$Algo.Host):$($Pools.$Algo.Port) -intensity 12 --fast -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port$Algo2Parameter"
+        Arguments = "$($Commands.$_)$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.Pass))@$($Pools.$Algo.Host):$($Pools.$Algo.Port) -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port$Algo2Parameter"
         HashRates = $HashRates
         API       = "bminer"
         Port      = $Port
