@@ -1,19 +1,8 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-XMRigcc250\xmrigDaemon.exe"
+$Path = ".\Bin\CPU-XMRigUPX250\xmrigDaemon.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.5.0/xmrigcc.zip"
 $Commands = [PSCustomObject]@{ 
-    "randomxmonero"       = " -a rx/0 --nicehash" #RandomX
-    "randomx"             = " -a rx/0 --nicehash" #RandomX
-    "randomsfx"           = " -a rx/sfx --nicehash" #RandomX
-    "cryptonightv7"       = " -a cn/1 --nicehash" #cryptonightv7
-    "cryptonight_conceal" = " -a cn/conceal --nicehash" #cryptonight_conceal
-    "cryptonight_heavy"   = " -a cn-heavy/0 --nicehash" #cryptonight_heavyx
-    "cryptonight_heavyx"  = " -a cn/double --nicehash" #cryptonight_heavyx
-    "cryptonight_saber"   = " -a cn-heavy/0 --nicehash" #cryptonightGPU
-    "cryptonight_fast"    = " -a cn/half --nicehash" #cryptonightFast
-    "cryptonight_haven"   = " -a cn-heavy/xhv --nicehash" #cryptonightFast
     "cryptonight_upx"     = " -a cryptonight-extremelite --nicehash" #cryptonightupx
-    "chukwa"              = " -a argon2/chukwa --nicehash" #chukwa
 }
 $ThreadCount = $Variables.ProcessorCount - 1
 $Port = $Variables.CPUMinerAPITCPPort
