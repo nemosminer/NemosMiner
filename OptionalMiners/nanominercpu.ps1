@@ -5,7 +5,7 @@ $Commands = [PSCustomObject]@{
     #"Ethash" = "" #GPU Only
     #"Ubqhash" = "" #GPU Only
     #"Cuckaroo30" = "" #GPU Only
-    "RandomX" = "" #CPU only
+    #"RandomX" = "" #CPU only
     "RandomHash2" = "" #CPU only
 }
 
