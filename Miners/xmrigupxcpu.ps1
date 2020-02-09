@@ -1,8 +1,8 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-XMRigUPX250\xmrigDaemon.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.5.0/xmrigcc.zip"
+$Path = ".\Bin\CPU-XMRigUPX20\xmrig.exe"
+$Uri = "https://github.com/uPlexa/xmrig-upx/releases/download/v0.2.0/xmrig-upx-v0.2.0-win64.zip"
 $Commands = [PSCustomObject]@{ 
-    "cryptonight_upx"     = " -a cryptonight-extremelite --nicehash" #cryptonightupx
+    "cryptonight_upx" = " -a cryptonight-upx/2 --nicehash" #cryptonightupx
 }
 $ThreadCount = $Variables.ProcessorCount - 1
 $Port = $Variables.CPUMinerAPITCPPort
@@ -11,8 +11,8 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{ 
         Type      = "CPU"
         Path      = $Path
-        Arguments = "-t $($ThreadCount) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --keepalive --http-enabled --http-port=$($Variables.CPUMinerAPITCPPort) --donate-level 0"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #Recompiled 0% fee
+        Arguments = "-t $($ThreadCount) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --keepalive --api-port=$($Variables.CPUMinerAPITCPPort) --donate-level 1"
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .99 } #1% fee
         API       = "XMRig"
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
