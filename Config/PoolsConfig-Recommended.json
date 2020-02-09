@@ -15,6 +15,7 @@
      "Algorithm": [
        "+binariumv1",
        "+skein2",
+       "+decred",
        "+scryptn11"
      ]
    },
