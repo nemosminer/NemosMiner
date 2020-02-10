@@ -958,7 +958,13 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.miner.total_hashrate_raw
+                    If ($Algorithms.Count -eq 2) { 
+                        $HashRate = [Double]$Data.miner.total_hashrate2_raw
+                        $HashRate_Dual = [Double]$Data.miner.total_hashrate_raw
+                    }
+                    else { 
+                        $HashRate = [Double]$Data.miner.total_hashrate_raw
+                    }
                 }
             }
 
