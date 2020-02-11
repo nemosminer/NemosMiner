@@ -93,7 +93,7 @@ While ($true) {
             }
             "mph" { 
                 Try { 
-                    $TempBalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where { $_.coin -eq "bitcoin" }) }
+                    $TempBalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) }
                 Catch { } #.confirmed
             }
             default { 
@@ -117,7 +117,6 @@ While ($true) {
             }
 
             $BalanceObjects = @($AllBalanceObjects | Where-Object { $_.Pool -eq $Pool } | Sort-Object Date)
-#            $BalanceObjects | ForEach-Object { $_.Date = ([DateTime]($_.Date)).ToUniversalTime() }
             $BalanceObject = $BalanceObjects | Select-Object -Last 1
 
             If ((($CurDate - ($BalanceObjects[0].Date)).TotalMinutes) -eq 0) { $CurDate = $CurDate.AddMinutes(1) }
@@ -174,7 +173,7 @@ While ($true) {
             If ($DailyEarnings.PrePaimentDayValue | Select-Object) { 
                 $DailyEarnings = $DailyEarnings | ForEach-Object  { 
                     [PSCustomObject]@{
-                        Date               = [datetime]::parseexact($_.Date, "MM/dd/yyyy", $null).ToShortDateString()
+                        Date               = [DateTime]::parseexact($_.Date, "MM/dd/yyyy", $null).ToShortDateString()
                         Pool               = $_.Pool
                         DailyEarnings      = $_.DailyEarnings
                         StartTime          = ([DateTime]($_.FirstDayDate)).ToLongTimeString()
@@ -189,7 +188,7 @@ While ($true) {
                 $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
             }
 
-            if ($DailyEarning = $DailyEarnings | Where-Object { $_.Date -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }) {
+            if ($DailyEarning = $DailyEarnings | Where-Object { [DateTime]$_.Date -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }) {
                 # pool may have reduced estimated balance, use new balance as start value to avoid negative values
                 $DailyEarning.StartValue = ($DailyEarning.StartValue, $BalanceObject.total_earned | Measure-Object -Minimum).Minimum
                 $DailyEarning.DailyEarnings = $BalanceObject.total_earned - $DailyEarning.StartValue

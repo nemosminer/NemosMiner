@@ -66,8 +66,8 @@ $scriptpath = Split-Path -parent $MyInvocation.MyCommand.Definition
 
 Switch ($Chart) {
    "Front7DaysEarnings" {
-      $datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]$_.date -ge (Get-Date).AddDays(-7) } }
-      $datasource = $datasource | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.date; (($datasource | Where-Object { $_.date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
+      $datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) -gt (Get-Date).AddDays(-7) } }
+      $datasource = $datasource | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
          
       $chart1 = New-object System.Windows.Forms.DataVisualization.Charting.Chart
       $chart1.Width = $Width
