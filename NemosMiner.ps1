@@ -115,6 +115,7 @@ $Branding = [PSCustomObject]@{
 #Initialize variables
 New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
+New-Variable Stats ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 
 $Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $This._StatusText = @() } -SecondValue { If (!$this._StatusText) { $this._StatusText = @() } ; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $True } }
 
@@ -142,7 +143,7 @@ Function Global:TimerUITick {
     }
 
     If ($Variables.RefreshNeeded -and $Variables.Started -and -not $Variables.Paused) { 
-        If (!$Variables.EndLoop) { Update-Status($Variables.StatusText) }
+        If (-not $Variables.EndLoop) { Update-Status($Variables.StatusText) }
         # $TimerUI.Interval = 1
 
         $LabelBTCD.ForeColor = "Green"
@@ -266,7 +267,7 @@ Function Global:TimerUITick {
             If ($Variables.ActiveMinerPrograms) { 
                 # $MinerHosts = $_.Algorithm | ForEach-Object {
                 #     $Pools.$_
-                #     "$($_)@$($Miner.PoolName | Select-Object -Index ([array]::indexof($Miner.Algorithm, $_)))" }) -join "; ")}). "
+                #     "$($_)@$($Miner.PoolName | Select-Object -Index ([Array]::indexof($Miner.Algorithm, $_)))" }) -join "; ")}). "
 
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | Select-Object Type, @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.HashRates | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.TotalActive } }, @{ Name = "Host(s)"; Expression = { $($_.Host | Select-Object) -join '; '} }  | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
@@ -382,8 +383,8 @@ Function Global:TimerUITick {
             }
 
             If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.ActiveMinerPrograms | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
-                Write-Host "Previously Executed: $($ProcessesIdle.Count)"
-                $ProcessesIdle | Sort-Object { $_.Process.StartTime } | Format-Table -Wrap (
+                Write-Host "Previously Executed:"
+                $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($Config.Type.Count * 3) | Format-Table -Wrap (
                     @{ Label = "Speed"; Expression = { (($_.HashRates | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '  ', ' ' } ; Align = 'right' }, 
                     @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { (Get-Date) - $_.Process.ExitTime }) } },
                     @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalActive } }, 
@@ -575,8 +576,8 @@ $MainForm.Add_FormClosing(
 
         If ($Variables.ActiveMinerPrograms) { 
             $Variables.ActiveMinerPrograms | ForEach-Object { 
-                [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
-                If ($filtered.Count -eq 0) { 
+                [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
+                If ($Filtered.Count -eq 0) { 
                     If ($_.Process -eq $null) { 
                         $_.Status = "Failed"
                     }
@@ -599,7 +600,7 @@ $MainForm.Add_FormClosing(
         If ($powershell) { $powershell.Dispose() }
 
         If ($IdleRunspace) { $IdleRunspace.Close() }
-        If ($idlePowershell) { $idlePowershell.Dispose() }
+        If ($IdlePowershell) { $IdlePowershell.Dispose() }
     }
 )
 
@@ -771,22 +772,14 @@ $LabelStatus.Font = 'Microsoft Sans Serif, 10'
 $RunPageControls += $LabelStatus
 
 If (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
-    $LabelEarnings = New-Object System.Windows.Forms.Label
-    $LabelEarnings.text = "Earnings Tracker (mBTC)    [past 7 days earnings / per pool earnings today]"
-    $LabelEarnings.AutoSize = $false
-    $LabelEarnings.width = 600
-    $LabelEarnings.height = 20
-    $LabelEarnings.location = New-Object System.Drawing.Point(2, 54)
-    $LabelEarnings.Font = 'Microsoft Sans Serif, 10'
-    $RunPageControls += $LabelEarnings
 
-    $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 85"
-    $Chart1.top = 74
+    $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 105"
+    $Chart1.top = 54
     $Chart1.left = 2
     $RunPageControls += $Chart1
 
-    $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 85"
-    $Chart2.top = 74
+    $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 105"
+    $Chart2.top = 54
     $Chart2.left = 500
     $RunPageControls += $Chart2
 }
@@ -1476,7 +1469,7 @@ $CheckedListBoxPools.BackColor = [System.Drawing.SystemColors]::Control
 $CheckedListBoxPools.Items.Clear()
 $CheckedListBoxPools.Items.AddRange(((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique))
 $CheckedListBoxPools.Add_SelectedIndexChanged( { CheckedListBoxPools_Click($This) })
-$Config.PoolName | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $True) }
+$Config.PoolName | Where-Object { $_ -in $CheckedListBoxPools.Items } | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $True) }
 
 $ConfigPageControls += $CheckedListBoxPools
 
@@ -1602,7 +1595,7 @@ $TimerUI.Enabled = $false
 
 $ButtonPause.Add_Click(
     { 
-        If (!$Variables.Paused) { 
+        If (-not $Variables.Paused) { 
             Update-Status("Stopping miners")
             $Variables.Paused = $True
 
@@ -1643,7 +1636,7 @@ $ButtonStart.Add_Click(
 
             # Stop idle tracking
             If ($IdleRunspace) { $IdleRunspace.Close() }
-            If ($idlePowershell) { $idlePowershell.Dispose() }
+            If ($IdlePowershell) { $IdlePowershell.Dispose() }
 
             $LabelBTCD.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             Update-Status("Idle")
@@ -1699,4 +1692,4 @@ $MonitoringPage.Controls.AddRange($MonitoringPageControls)
 $MainForm.Add_Load( { Form_Load } )
 # $TimerUI.Add_Tick({ TimerUI_Tick})
 
-[void]$MainForm.ShowDialog()
+[Void]$MainForm.ShowDialog()
