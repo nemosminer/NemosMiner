@@ -113,7 +113,6 @@ Function GetNVIDIADriverVersion {
 
 Function Global:RegisterLoaded ($File) { 
     New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value { $true } -ErrorAction SilentlyContinue | Add-Member @{ "File" = (Resolve-Path $File).Path } -ErrorAction SilentlyContinue
-    $Variables.StatusText = "File loaded - $($file) - $((Get-PSCallStack).Command[1])"
 }
 
 Function Global:IsLoaded ($File) { 
@@ -184,7 +183,7 @@ namespace PInvoke.Win32 {
             While ($True) { 
                 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
                 If (-not (IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
-                $IdleSeconds = [math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
+                $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
                 # Only do anything If Mine only when idle is turned on
                 If ($Config.MineWhenIdle) { 
@@ -305,6 +304,7 @@ Function Start-Mining {
     $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
     $CycleRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
     $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
+    $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $LabelStatus)
     $CycleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
     $Powershell = [powershell]::Create()
     $Powershell.Runspace = $CycleRunspace
@@ -346,7 +346,11 @@ Function Start-Mining {
                 Else { 
                     NPMCycle
                     Update-Monitoring
-                    Start-Sleep $Variables.TimeToSleep
+                    $EndLoop = (Get-Date).AddSeconds($Variables.TimeToSleep)
+                    # On crashed miner start next loop immediately
+                    While ((Get-Date) -lt $EndLoop -and ($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } )) {
+                        Start-Sleep 2
+                    }
                 }
             }
         }
@@ -387,7 +391,6 @@ Function Stop-Mining {
 
 Function Update-Status ($Text) { 
     $Text | Out-Host
-    # $Variables.StatusText = $Text 
     $LabelStatus.Lines += $Text
     If ($LabelStatus.Lines.Count -gt 20) { $LabelStatus.Lines = $LabelStatus.Lines[($LabelStatus.Lines.count - 10)..$LabelStatus.Lines.Count] }
     $LabelStatus.SelectionStart = $LabelStatus.TextLength;
@@ -472,19 +475,25 @@ Function Set-Stat {
         [Parameter(Mandatory = $false)]
         [DateTime]$Updated = (Get-Date), 
         [Parameter(Mandatory = $false)]
+        [TimeSpan]$Duration, 
+        [Parameter(Mandatory = $false)]
         [Bool]$FaultDetection = $false, 
         [Parameter(Mandatory = $false)]
         [Bool]$ChangeDetection = $false
     )
 
-    $Updated = $Updated.ToUniversalTime()
+    $Timer = $Updated = $Updated.ToUniversalTime()
 
     $Path = "Stats\$Name.txt"
     $SmallestValue = 1E-20
 
     $Stat = Get-Stat $Name
 
-    If ($Stat) { 
+    If ($Stat -is [Hashtable] -and $Stat.IsSynchronized) { 
+        If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
+        If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
+        If ($Duration -le 0) { return $Stat }
+
         $ToleranceMin = $Value
         $ToleranceMax = $Value
 
@@ -498,94 +507,105 @@ Function Set-Stat {
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt 3) { #Update immediately If stat value is 0
-            # If ($Name -match ".+_HashRate$") { 
-            #     Write-Log -Level Warn "Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update]. "
-            # }
-            # Else { 
-            #     Write-Log -Level Warn "Stat file ($Name) was not updated because the value ($($Value.ToString("N2"))W) is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [$($Stat.ToleranceExceeded) of 3 until enforced update]. "
-            # }
+        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt 3) { #Update immediately if stat value is 0
+            If ($Name -match ".+_HashRate$") { 
+                Update-Status("Warning: Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update].")
+            }
+            else { 
+                Update-Status("Warning: Stat file ($Name) was not updated because the value ($($Value.ToString("N2"))W) is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [$($Stat.ToleranceExceeded) of 3 until enforced update].")
+            }
         }
         Else { 
-            If ($Value -eq 0 -or $Stat.ToleranceExceeded -gt 2) { #Update immediately If stat value is 0
-                # If ($Value) { 
-                #     If ($Name -match ".+_HashRate$") { 
-                #         Write-Log -Level Warn "Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row. "
-                #     }
-                #     Else { 
-                #         Write-Log -Level Warn "Stat file ($Name) was forcefully updated with value ($($Value.ToString("N2"))W) because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row. "
-                #     }
-                # }
-                $Stat = [PSCustomObject]@{ 
-                    Name                  = [String]$Name
-                    Live                  = [Double]$Value
-                    Minute                = [Double]$Value
-                    Minute_Fluctuation    = [Double]0
-                    Minute_5              = [Double]$Value
-                    Minute_5_Fluctuation  = [Double]0
-                    Minute_10             = [Double]$Value
-                    Minute_10_Fluctuation = [Double]0
-                    Hour                  = [Double]$Value
-                    Hour_Fluctuation      = [Double]0
-                    Day                   = [Double]$Value
-                    Day_Fluctuation       = [Double]0
-                    Week                  = [Double]$Value
-                    Week_Fluctuation      = [Double]0
-                    Updated               = [DateTime]$Updated
-                    ToleranceExceeded     = [UInt16]0
+            If ($Value -eq 0 -or $Stat.ToleranceExceeded -gt 2) { #Update immediately if stat value is 0
+                If ($Value) { 
+                    If ($Name -match ".+_HashRate$") { 
+                        Update-Status("Warning: Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row.")
+                    }
+                    Else { 
+                        Update-Status("Warning: Stat file ($Name) was forcefully updated with value ($($Value.ToString("N2"))W) because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row.")
+                    }
                 }
+
+                $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
+                    @{ 
+                        Name                  = [String]$Name
+                        Live                  = [Double]$Value
+                        Minute                = [Double]$Value
+                        Minute_Fluctuation    = [Double]0
+                        Minute_5              = [Double]$Value
+                        Minute_5_Fluctuation  = [Double]0
+                        Minute_10             = [Double]$Value
+                        Minute_10_Fluctuation = [Double]0
+                        Hour                  = [Double]$Value
+                        Hour_Fluctuation      = [Double]0
+                        Day                   = [Double]$Value
+                        Day_Fluctuation       = [Double]0
+                        Week                  = [Double]$Value
+                        Week_Fluctuation      = [Double]0
+                        Duration              = [TimeSpan]::FromMinutes(1)
+                        Updated               = [DateTime]$Updated
+                        ToleranceExceeded     = [UInt16]0
+                        Timer                 = [DateTime]$Timer
+                    }
+                )
             }
             Else { 
-                $Span_Minute = [Math]::Min(($Updated - $Stat.Updated).TotalMinutes, 1)
-                $Span_Minute_5 = [Math]::Min((($Updated - $Stat.Updated).TotalMinutes / 5), 1)
-                $Span_Minute_10 = [Math]::Min((($Updated - $Stat.Updated).TotalMinutes / 10), 1)
-                $Span_Hour = [Math]::Min(($Updated - $Stat.Updated).TotalHours, 1)
-                $Span_Day = [Math]::Min(($Updated - $Stat.Updated).TotalDays, 1)
-                $Span_Week = [Math]::Min((($Updated - $Stat.Updated).TotalDays / 7), 1)
-    
-                $Stat = [PSCustomObject]@{ 
-                    Name                  = $Name
-                    Live                  = $Value
-                    Minute                = ((1 - $Span_Minute) * $Stat.Minute) + ($Span_Minute * $Value)
-                    Minute_Fluctuation    = ((1 - $Span_Minute) * $Stat.Minute_Fluctuation) + ($Span_Minute * ([Math]::Abs($Value - $Stat.Minute) / [Math]::Max([Math]::Abs($Stat.Minute), $SmallestValue)))
-                    Minute_5              = ((1 - $Span_Minute_5) * $Stat.Minute_5) + ($Span_Minute_5 * $Value)
-                    Minute_5_Fluctuation  = ((1 - $Span_Minute_5) * $Stat.Minute_5_Fluctuation) + ($Span_Minute_5 * ([Math]::Abs($Value - $Stat.Minute_5) / [Math]::Max([Math]::Abs($Stat.Minute_5), $SmallestValue)))
-                    Minute_10             = ((1 - $Span_Minute_10) * $Stat.Minute_10) + ($Span_Minute_10 * $Value)
-                    Minute_10_Fluctuation = ((1 - $Span_Minute_10) * $Stat.Minute_10_Fluctuation) + ($Span_Minute_10 * ([Math]::Abs($Value - $Stat.Minute_10) / [Math]::Max([Math]::Abs($Stat.Minute_10), $SmallestValue)))
-                    Hour                  = ((1 - $Span_Hour) * $Stat.Hour) + ($Span_Hour * $Value)
-                    Hour_Fluctuation      = ((1 - $Span_Hour) * $Stat.Hour_Fluctuation) + ($Span_Hour * ([Math]::Abs($Value - $Stat.Hour) / [Math]::Max([Math]::Abs($Stat.Hour), $SmallestValue)))
-                    Day                   = ((1 - $Span_Day) * $Stat.Day) + ($Span_Day * $Value)
-                    Day_Fluctuation       = ((1 - $Span_Day) * $Stat.Day_Fluctuation) + ($Span_Day * ([Math]::Abs($Value - $Stat.Day) / [Math]::Max([Math]::Abs($Stat.Day), $SmallestValue)))
-                    Week                  = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
-                    Week_Fluctuation      = ((1 - $Span_Week) * $Stat.Week_Fluctuation) + ($Span_Week * ([Math]::Abs($Value - $Stat.Week) / [Math]::Max([Math]::Abs($Stat.Week), $SmallestValue)))
-                    Updated               = $Updated
-                    ToleranceExceeded     = [UInt16]0
-                }
+                $Span_Minute = [Math]::Min($Duration.TotalMinutes / [Math]::Min($Stat.Duration.TotalMinutes, 1), 1)
+                $Span_Minute_5 = [Math]::Min(($Duration.TotalMinutes / 5) / [Math]::Min(($Stat.Duration.TotalMinutes / 5), 1), 1)
+                $Span_Minute_10 = [Math]::Min(($Duration.TotalMinutes / 10) / [Math]::Min(($Stat.Duration.TotalMinutes / 10), 1), 1)
+                $Span_Hour = [Math]::Min($Duration.TotalHours / [Math]::Min($Stat.Duration.TotalHours, 1), 1)
+                $Span_Day = [Math]::Min($Duration.TotalDays / [Math]::Min($Stat.Duration.TotalDays, 1), 1)
+                $Span_Week = [Math]::Min(($Duration.TotalDays / 7) / [Math]::Min(($Stat.Duration.TotalDays / 7), 1), 1)
+
+                $Stat.Name = $Name
+                $Stat.Live = $Value
+                $Stat.Minute_Fluctuation = ((1 - $Span_Minute) * $Stat.Minute_Fluctuation) + ($Span_Minute * ([Math]::Abs($Value - $Stat.Minute) / [Math]::Max([Math]::Abs($Stat.Minute), $SmallestValue)))
+                $Stat.Minute = ((1 - $Span_Minute) * $Stat.Minute) + ($Span_Minute * $Value)
+                $Stat.Minute_5_Fluctuation = ((1 - $Span_Minute_5) * $Stat.Minute_5_Fluctuation) + ($Span_Minute_5 * ([Math]::Abs($Value - $Stat.Minute_5) / [Math]::Max([Math]::Abs($Stat.Minute_5), $SmallestValue)))
+                $Stat.Minute_5 = ((1 - $Span_Minute_5) * $Stat.Minute_5) + ($Span_Minute_5 * $Value)
+                $Stat.Minute_10_Fluctuation = ((1 - $Span_Minute_10) * $Stat.Minute_10_Fluctuation) + ($Span_Minute_10 * ([Math]::Abs($Value - $Stat.Minute_10) / [Math]::Max([Math]::Abs($Stat.Minute_10), $SmallestValue)))
+                $Stat.Minute_10 = ((1 - $Span_Minute_10) * $Stat.Minute_10) + ($Span_Minute_10 * $Value)
+                $Stat.Hour_Fluctuation = ((1 - $Span_Hour) * $Stat.Hour_Fluctuation) + ($Span_Hour * ([Math]::Abs($Value - $Stat.Hour) / [Math]::Max([Math]::Abs($Stat.Hour), $SmallestValue)))
+                $Stat.Hour = ((1 - $Span_Hour) * $Stat.Hour) + ($Span_Hour * $Value)
+                $Stat.Day_Fluctuation = ((1 - $Span_Day) * $Stat.Day_Fluctuation) + ($Span_Day * ([Math]::Abs($Value - $Stat.Day) / [Math]::Max([Math]::Abs($Stat.Day), $SmallestValue)))
+                $Stat.Day = ((1 - $Span_Day) * $Stat.Day) + ($Span_Day * $Value)
+                $Stat.Week_Fluctuation = ((1 - $Span_Week) * $Stat.Week_Fluctuation) + ($Span_Week * ([Math]::Abs($Value - $Stat.Week) / [Math]::Max([Math]::Abs($Stat.Week), $SmallestValue)))
+                $Stat.Week = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
+                $Stat.Duration = $Stat.Duration + $Duration
+                $Stat.Updated = $Updated
+                $Stat.Timer = $Timer
+                $Stat.ToleranceExceeded = [UInt16]0
             }
         }
     }
     Else { 
-        $Stat = [PSCustomObject]@{ 
-            Name                  = [String]$Name
-            Live                  = [Double]$Value
-            Minute                = [Double]$Value
-            Minute_Fluctuation    = [Double]0
-            Minute_5              = [Double]$Value
-            Minute_5_Fluctuation  = [Double]0
-            Minute_10             = [Double]$Value
-            Minute_10_Fluctuation = [Double]0
-            Hour                  = [Double]$Value
-            Hour_Fluctuation      = [Double]0
-            Day                   = [Double]$Value
-            Day_Fluctuation       = [Double]0
-            Week                  = [Double]$Value
-            Week_Fluctuation      = [Double]0
-            Updated               = [DateTime]$Updated
-            ToleranceExceeded     = [UInt16]0
-        }
+        If (-not $Duration) { $Duration = [TimeSpan]::FromMinutes(1) }
+
+        $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
+            @{ 
+                Name                  = [String]$Name
+                Live                  = [Double]$Value
+                Minute                = [Double]$Value
+                Minute_Fluctuation    = [Double]0
+                Minute_5              = [Double]$Value
+                Minute_5_Fluctuation  = [Double]0
+                Minute_10             = [Double]$Value
+                Minute_10_Fluctuation = [Double]0
+                Hour                  = [Double]$Value
+                Hour_Fluctuation      = [Double]0
+                Day                   = [Double]$Value
+                Day_Fluctuation       = [Double]0
+                Week                  = [Double]$Value
+                Week_Fluctuation      = [Double]0
+                Duration              = [TimeSpan]$Duration
+                Updated               = [DateTime]$Updated
+                ToleranceExceeded     = [UInt16]0
+                Timer                 = [DateTime]$Timer
+            }
+        )
     }
 
-    [PSCustomObject]@{ 
+    @{ 
         Live                  = [Decimal]$Stat.Live
         Minute                = [Decimal]$Stat.Minute
         Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
@@ -599,36 +619,35 @@ Function Set-Stat {
         Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
         Week                  = [Decimal]$Stat.Week
         Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+        Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
     } | ConvertTo-Json | Set-Content $Path
 
-    $Global:Stats | Add-Member $Name $Stat -Force
-
     $Stat
-}
-
-Function Get-AllStat { 
-    [String[]]$Name = (Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
-    $Global:Stats | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin $Name } | ForEach-Object { $Global:Stats.PSObject.Properties.Remove($_) }
-    $Name
 }
 
 Function Get-Stat { 
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]
-        [String[]]$Name = (Get-AllStat)
+        [String[]]$Name = (
+            &{
+                [String[]]$StatFiles = (Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+                ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
+                $StatFiles
+            }
+        )
     )
 
     $Name | Sort-Object -Unique | ForEach-Object { 
         $Stat_Name = $_
-        If (-not $Global:Stats.$Stat_Name) { 
-            If ($Global:Stats -isnot [PSCustomObject]) { 
-                $Global:Stats = [PSCustomObject]@{ }
+        If ($Global:Stats.$Stat_Name -isnot [Hashtable] -or -not $Global:Stats.$Stat_Name.IsSynchronized) { 
+            If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
+                $Global:Stats = [Hashtable]::Synchronized(@{ })
             }
 
             #Reduce number of errors
-            If (-not (Test-Path "Stats\$Stat_Name.txt")) { 
+            If (-not (Test-Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
                 If (-not (Test-Path "Stats" -PathType Container)) { 
                     New-Item "Stats" -ItemType "directory" -Force | Out-Null
                 }
@@ -637,8 +656,8 @@ Function Get-Stat {
 
             Try { 
                 $Stat = Get-Content "Stats\$Stat_Name.txt" -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-                $Global:Stats | Add-Member @{ 
-                    $Stat_Name = [PSCustomObject]@{ 
+                $Global:Stats.$Stat_Name = [Hashtable]::Synchronized(
+                    @{ 
                         Name                  = [String]$Stat_Name
                         Live                  = [Double]$Stat.Live
                         Minute                = [Double]$Stat.Minute
@@ -653,10 +672,11 @@ Function Get-Stat {
                         Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
                         Week                  = [Double]$Stat.Week
                         Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+                        Duration              = [TimeSpan]$Stat.Duration
                         Updated               = [DateTime]$Stat.Updated
                         ToleranceExceeded     = [UInt16]0
                     }
-                } -Force
+                )
             }
             Catch { 
                 Write-Log -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset. "
@@ -801,9 +821,7 @@ Function Get-HashRate {
         [Parameter(Mandatory = $true)]
         [Int]$Port, 
         [Parameter(Mandatory = $true)]
-        [String[]]$Algorithms, 
-        [Parameter(Mandatory = $false)]
-        [Object]$Parameters = @{ }
+        [String[]]$Algorithms
     )
 
     $Server = "localhost"
@@ -972,8 +990,13 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.miner.total_hashrate_raw
-                    $HashRate_Dual = [Double]$Data.miner.total_hashrate2_raw
+                    If ($Algorithms.Count -eq 2) { 
+                        $HashRate = [Double]$Data.miner.total_hashrate2_raw
+                        $HashRate_Dual = [Double]$Data.miner.total_hashrate_raw
+                    }
+                    else { 
+                        $HashRate = [Double]$Data.miner.total_hashrate2_raw
+                    }
                 }
             }
 
@@ -1006,8 +1029,8 @@ Function Get-HashRate {
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate = @(
-                        [double]$Data.HashRate_total_now
-                        [double]$Data.HashRate_total_5min
+                        [Double]$Data.HashRate_total_now
+                        [Double]$Data.HashRate_total_5min
                     ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
                 }
             }
@@ -1078,7 +1101,7 @@ Function Get-HashRate {
             }
         } #end Switch
 
-        @([double]$HashRate, [double]$HashRate_Dual)
+        @([Double]$HashRate, [Double]$HashRate_Dual)
     }
     Catch { }
 }

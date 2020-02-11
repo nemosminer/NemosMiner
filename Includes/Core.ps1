@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 version:        3.8.1.3
-version date:   12 November 2019
+version date:   11 February 2020
 #>
 
 Function InitApplication { 
@@ -71,6 +71,7 @@ Function InitApplication {
         Get-ChildItem ".\Logs\miner-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
     }
     #Update stats with missing data and set to today's date/time
+    $Variables.StatusText = "Preparing stats data..."
     Get-Stat; $Now = (Get-Date).ToUniversalTime(); if ($Stats ) { $Stats | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Stats.$_.Updated = $Now } }
     #Set donation parameters
     $Variables | Add-Member -Force @{ DonateRandom = [PSCustomObject]@{ } }
@@ -110,7 +111,7 @@ Function Start-ChildJobs {
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
             $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
             If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.StatusText = "Starting Brains for $($_)..."
+                Update-Status("Starting Brains for $($_)...")
                 $BrainJob = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
                 $BrainJob | Add-Member -Force @{ PoolName = $_ }
                 $Variables.BrainJobs += $BrainJob
@@ -121,8 +122,8 @@ Function Start-ChildJobs {
     # Starts Earnings Tracker Job if necessary
     $StartDelay = 0
     # If ($Config.TrackEarnings -and (($EarningTrackerConfig.Pools | sort) -ne ($Config.PoolName | sort))) { 
-    # $Variables.StatusText = "Updating Earnings Tracker Configuration"
-    # $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
+    # Update-Status("Updating Earnings Tracker Configuration")
+    # $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-Json
     # $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Config.PoolName) }
     # $EarningTrackerConfig | ConvertTo-Json | Out-File ".\Config\EarningTrackerConfig.json"
     # }
@@ -134,7 +135,7 @@ Function Start-ChildJobs {
         }
         $EarningsJob = Start-Job -FilePath ".\Includes\EarningsTrackerJob.ps1" -ArgumentList $Params
         If ($EarningsJob) { 
-            $Variables.StatusText = "Starting Earnings Tracker"
+            Update-Status("Starting Earnings Tracker")
             $Variables.EarningsTrackerJobs += $EarningsJob
             Remove-Variable EarningsJob
             # Delay Start when several instances to avoid conflicts.
@@ -148,11 +149,8 @@ Function NPMCycle {
 
         $Variables | Add-Member -Force @{ EndLoop = $False }
 
-        $Variables.StatusText = "Starting Cycle"
-        $DecayExponent = [int](((Get-Date) - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
-
-        # Read stats
-        Get-Stat
+        Update-Status("Starting Cycle")
+        $DecayExponent = [Int](((Get-Date) - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
 
         # Ensure we get the hashrate for running miners prior looking for best miner
         $Variables.ActiveMinerPrograms | ForEach-Object { 
@@ -165,18 +163,19 @@ Function NPMCycle {
                 $Miner_HashRates = Get-HashRate $Miner.API $Miner.Port $Miner.Algorithms
                 $Miner.HashRates = @($Miner_HashRates | Select-Object -First $Miner.Algorithms.Count)
                 # we don't want to store hashrates if we run less than $Config.StatsInterval sec
-                $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
+                $WasActive = [Math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
                 If ($WasActive -ge $Config.StatsInterval) { 
                     If ($Miner.New) { $Miner.Benchmarked++ }
                     If ($Miner_HashRates.Count -ge $_.Algorithms.Count) { 
                         $Miner.Algorithms | ForEach-Object {
-                            $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value ($Miner.HashRates | Select-Object -Index ([array]::indexof($Miner.Algorithms, $_)))
+                            $HashRate = $Miner.HashRates | Select-Object -Index ([Array]::indexof($Miner.Algorithms, $_))
+                            Update-Status("Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($HashRate | ConvertTo-Hash) -replace ' '))$(If (-not (Get-Stat -Name "$($Miner.Name)_$($_)_HashRate")) { " [Benchmark done]" })")
+                            $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $HashRate
                         }
                         $Miner.New = $false
                         $Miner.Hashrate_Gathered = $true
                     }
                 }
-                $Variables.StatusText = ("Hashrates after $($WasActive) seconds: $(($Miner.Algorithms | ForEach-Object { "$($_): $($Miner.HashRates | Select-Object -Index ([array]::indexof($Miner.Algorithms, $_)) | ConvertTo-Hash)" }) -join ' & ')" -replace "\s+", " ")
             }
         }
         #Activate or deactivate donation
@@ -215,31 +214,28 @@ Function NPMCycle {
             $Variables.DonateRandom = [PSCustomObject]@{ }
         }
 
-        # $Variables.StatusText = "Loading BTC rate from 'api.coinbase.com'..."
-        # $Rates = Invoke-RestMethod "https://api.coinbase.com/v2/exchange-rates?currency=BTC" -TimeoutSec 15 -UseBasicParsing | Select-Object -ExpandProperty data | Select-Object -ExpandProperty rates
-        # $Config.Currency | Where-Object { $Rates.$_ } | ForEach-Object { $Rates | Add-Member $_ ([Double]$Rates.$_) -Force }
-        # $Variables | Add-Member -Force @{ Rates = $Rates }
-        $Variables.StatusText = "Loading BTC rate from 'min-api.cryptocompare.com'..."
+        # Update-Status("Loading BTC rate from 'api.coinbase.com'...")
+        Update-Status("Loading BTC rate from 'min-api.cryptocompare.com'...")
         Get-Rates
 
-        #Load information about the Pools
-        $Variables.StatusText = "Loading pool stats..."
         $PoolFilter = @()
         $Config.PoolName | ForEach-Object { $PoolFilter += ($_ += ".*") }
+        Update-Status("Loading stats for pool$(If ($PoolFilter.Count -ne 1) { "s" }) $(($Config.PoolName | ForEach-Object { (Get-Culture).TextInfo.ToTitleCase($_) }) -join ', ')...")
         Do {
             $AllPools = If (Test-Path "Pools" -PathType Container) {
-               Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | Where-Object { 
+                Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | Where-Object { 
                     $_.SSL -EQ $Config.SSL -and 
                     ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and 
                     (-not $Config.Algorithm -or ((-not ($Config.Algorithm | Where-Object { $_ -like "+*" }) -or $_.Algorithm -in ($Config.Algorithm | Where-Object { $_ -like "+*" }).Replace("+", "")) -and (-not ($Config.Algorithm | Where-Object { $_ -like "-*" }) -or $_.Algorithm -notin ($Config.Algorithm | Where-Object { $_ -like "-*" }).Replace("-", ""))) )
                 }
             }
             If ($AllPools.Count -eq 0) {
-                $Variables.StatusText = "! Error contacting pool retrying in 30 seconds.."
+                Update-Status("! Error contacting pool retrying in 30 seconds..")
                 Start-Sleep 30
             }
         } While ($AllPools.Count -eq 0)
-        $Variables.StatusText = "Computing pool stats..."
+
+        Update-Status("Computing pool stats...")
         # Use location as preference and not the only one
         $LocPools = @($AllPools | Where-Object { $_.Location -eq $Config.Location })
         $AllPools = $LocPools + @($AllPools | Where-Object { $_.name -notin $LocPools.name })
@@ -248,7 +244,7 @@ Function NPMCycle {
         $PoolsConf = $Config.PoolsConfig
         $AllPools = $AllPools | Where-Object { $_.Name -notin ($PoolsConf | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) -or ($_.Name -in ($PoolsConf | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) -and ((-not ( $PoolsConf.($_.Name).Algorithm | Where-Object { $_ -like "+*" }) -or ("+$($_.Algorithm)" -in $PoolsConf.($_.Name).Algorithm)) -and ("-$($_.Algorithm)" -notin $PoolsConf.($_.Name).Algorithm))) }
         $Variables.AllPools = $AllPools
-        # if($AllPools.Count -eq 0){ $Variables.StatusText = "Error contacting pool, retrying..."; $timerCycle.Interval = 15000 ; $timerCycle.Start() ; return}
+        # If ($AllPools.Count -eq 0) { $Update-Status("Error contacting pool, retrying..."); $timerCycle.Interval = 15000; $timerCycle.Start(); return }
         $Pools = [PSCustomObject]@{ }
         $Pools_Comparison = [PSCustomObject]@{ }
         $AllPools.Algorithm | Sort-Object -Unique | ForEach-Object { 
@@ -257,13 +253,13 @@ Function NPMCycle {
         }
 
         If ((Test-Path ".\Config\MinersHash.json" -PathType Leaf) -and (Test-Path .\Miners -PathType Container)) { 
-            $Variables.StatusText = "Looking for Miners file changes..."
+            Update-Status("Looking for miner files changes...")
             $MinersHash = Get-Content ".\Config\MinersHash.json" | ConvertFrom-Json
             Compare-Object @($MinersHash | Select-Object) @(Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash | Select-Object) -Property "Hash", "Path" | Sort-Object "Path" -Unique | ForEach-Object { 
-                $Variables.StatusText = "Miner Updated: $($_.Path)"
-                $NewMiner = &$_.path
-                $NewMiner | Add-Member -Force @{ Name = (Get-Item $_.Path).BaseName }
-                If (Test-Path (Split-Path $NewMiner.Path) -PathType Container) { 
+                If (Test-Path $_.Path -PathType Leaf) { 
+                    Update-Status("Miner Updated: $($_.Path)")
+                    $NewMiner = &$_.path
+                    $NewMiner | Add-Member -Force @{ Name = (Get-Item $_.Path).BaseName }
                     $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $NewMiner.Path) } | ForEach-Object { 
                         [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
                         If ($Filtered.Count -eq 0) { 
@@ -271,11 +267,11 @@ Function NPMCycle {
                                 $_.Status = "Failed"
                             }
                             ElseIf ($_.Process.HasExited -eq $false) { 
+                                Update-Status("Closing miner ($($Miner.Name) {$(($Miner.Algorithm | ForEach-Object { "$($_)@$($Miner.PoolNames | Select-Object -Index ([Array]::indexof($Miner.Algorithm, $_)))" }) -join "; ")}) for update.")
                                 $_.Process.CloseMainWindow() | Out-Null
                                 Start-Sleep 1
                                 # simply "Kill with power"
                                 Stop-Process $_.Process -Force | Out-Null
-                                $Variables.StatusText = "closing current miner for Update"
                                 Start-Sleep 1
                                 $_.Status = "Idle"
                             }
@@ -283,7 +279,7 @@ Function NPMCycle {
                             $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit_Bias_Orig }
                         }
                     }
-                    Get-ChildItem -path ".\stats\" -filter "$($NewMiner.Name)_*.txt" | Remove-Item -Force -Recurse
+                    Get-ChildItem -path ".\Stats\" -filter "$($NewMiner.Name)_*.txt" | Remove-Item -Force -Recurse
                     Remove-Item -Force -Recurse (Split-Path $NewMiner.Path)
                 }
                 $MinersHash = Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash
@@ -291,9 +287,8 @@ Function NPMCycle {
             }
         }
 
-        $Variables.StatusText = "Loading miners..."
+        Update-Status("Loading miners...")
         $Variables | Add-Member -Force @{ Miners = @() }
-        $StartPort = 4068
         $Variables.Miners = @(
             If ($Config.IncludeRegularMiners -and (Test-Path "Miners" -PathType Container)) { Get-ChildItemContent "Miners" }
             If ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners" -PathType Container)) { Get-ChildItemContent "OptionalMiners" }
@@ -306,7 +301,7 @@ Function NPMCycle {
         $Variables.Miners = $Variables.Miners | Select-Object | ForEach-Object { 
             $Miner = $_
             If (-not (Test-Path $Miner.Path -Type Leaf)) { 
-                $Variables.StatusText = "Downloading $($Miner.Name)..."
+                Update-Status("Downloading $($Miner.Name)...")
                 If ((Split-Path $Miner.URI -Leaf) -eq (Split-Path $Miner.Path -Leaf)) { 
                     New-Item (Split-Path $Miner.Path) -ItemType "Directory" | Out-Null
                     Invoke-WebRequest $Miner.URI -TimeoutSec 15 -OutFile $_.Path -UseBasicParsing
@@ -320,7 +315,7 @@ Function NPMCycle {
                         (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
                     }
                     Else { 
-                        $Variables.StatusText = "Cannot find $($Miner.Path) distributed at $($Miner.URI). "
+                        Update-Status("Cannot find $($Miner.Path) distributed at $($Miner.URI). ")
                     }
                 }
                 Else { 
@@ -336,8 +331,8 @@ Function NPMCycle {
             }
         }
 
-        $Variables.StatusText = "Comparing miners and pools..."
-        If ($Variables.Miners.Count -eq 0) { $Variables.StatusText = "No Miners!" } #; Start-Sleep $Config.Interval; continue}
+        Update-Status("Comparing miners and pools...")
+        If ($Variables.Miners.Count -eq 0) { Update-Status("No Miners!") } #; Start-Sleep $Config.Interval; continue}
 
         $Variables.Miners | ForEach-Object { 
             $Miner = $_
@@ -401,10 +396,6 @@ Function NPMCycle {
         # Remove miners when no estimation info from pools or 0BTC. Avoids mining when algo down at pool or benchmarking for ever
         $Variables.Miners = $Variables.Miners | Where-Object { ($_.Pools.PSObject.Properties.Value.Price -ne $null) -and ($_.Pools.PSObject.Properties.Value.Price -gt 0) }
 
-        #Use only use the most profitable miner per algo and device. E.g. if there are several miners available to mine the same algo, only the most profitable of them will ever be used in the further calculations, all other will also be hidden in the summary screen
-        #$Variables.Miners = @($Variables.Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName -and ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -notcontains $_.DeviceName } | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object { $_ -split "-" | Select-Object -Index 0}) -join '')" }, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, Profit_Bias, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count } | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object { $_ -split "-" | Select-Object -Index 0}) -join '')" } | ForEach-Object { $_.Group[0] }) + @($Miners | Where-Object { ($MinersNeedingBenchmark.DeviceName | Select-Object -Unique) -contains $_.DeviceName -or ($MinersNeedingPowerUsageMeasurement.DeviceName | Select-Object -Unique) -contains $_.DeviceName })
-        #$Variables.Miners = @($Variables.Miners | Sort-Object -Descending { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | Foreach-Object { $_ -split "-" | Select-Object -Index 0}) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })" }, { ($_ | Where-Object Profit -EQ $null | Measure-Object).Count }, { ([Double]($_ | Measure-Object Profit_Bias -Sum).Sum) }, { ($_ | Where-Object Profit -NE 0 | Measure-Object).Count } | Group-Object { "$($_.DeviceName -join '')$(($_.HashRates.PSObject.Properties.Name | ForEach-Object { $_ -split "-" | Select-Object -Index 0 }) -join '')$(if($_.HashRates.PSObject.Properties.Value -eq $null) { $_.Name })" } | ForEach-Object { $_.Group[0] })
-
         #Don't penalize active miners. Miner could switch a little bit later and we will restore his bias in this case
         $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | ForEach-Object { $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Profit_Bias = $_.Profit * (1 + $Config.ActiveMinerGainPct / 100) } }
         #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
@@ -425,7 +416,7 @@ Function NPMCycle {
         # No CPU mining if GPU miner prevents it
         If ($BestMiners_Combo.PreventCPUMining -contains $true) { 
             $BestMiners_Combo = $BestMiners_Combo | Where-Object { $_.type -ne "CPU" }
-            $Variables.StatusText = "Miner prevents CPU mining"
+            Update-Status("Miner prevents CPU mining")
         }
 
         # Ban miners if too many failures as defined by MaxMinerFailure
@@ -437,7 +428,7 @@ Function NPMCycle {
         If ($Config.MaxMinerFailure -gt 0) { 
             $Config | Add-Member -Force @{ MaxMinerFailure = If ($Config.MaxMinerFailure) { $Config.MaxMinerFailure } Else { 3 } }
             $BannedMiners = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Failed" -and $_.FailedCount -ge $Config.MaxMinerFailure }
-            # $BannedMiners | foreach { $Variables.StatusText = "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." }
+            # $BannedMiners | ForEach { Update-Status("BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config.") }
             $BannedMiners | ForEach-Object { "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." | Out-Host }
             $Variables.Miners = $Variables.Miners | Where-Object { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
         }
@@ -454,13 +445,14 @@ Function NPMCycle {
                     Process           = $null
                     API               = $_.API
                     Port              = $_.Port
-                    Algorithms        = $_.HashRates.PSObject.Properties.Name
+                    Algorithms        = @($_.HashRates.PSObject.Properties.Name)
                     New               = $false
                     Active            = [TimeSpan]0
                     TotalActive       = [TimeSpan]0
                     Activated         = 0
                     Status            = "Idle"
                     HashRates         = @()
+                    PoolNames         = @($_.HashRates.PSObject.Properties.Name | ForEach-Object { $Pools.$_.Name })
                     Benchmarked       = 0
                     Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
                     User              = $_.User
@@ -478,14 +470,15 @@ Function NPMCycle {
                     $_.Status = "Failed"
                 }
                 ElseIf ($_.Process.HasExited -eq $false) { 
-                    Write-Host -ForegroundColor Yellow "Closing miner"
+                    $Miner = $_
+                    Update-Status("Closing miner ($($Miner.Name) {$(($Miner.Algorithms | ForEach-Object { "$($_)@$($Miner.PoolNames | Select-Object -Index ([Array]::indexof($Miner.Algorithms, $_)))" }) -join "; ")}).")
                     $_.Process.CloseMainWindow() | Out-Null
                     Start-Sleep 1
                     # simply "Kill with power"
                     Stop-Process $_.Process -Force | Out-Null
                     # try to kill any process with the same path, in case it is still running but the process handle is incorrect
                     $KillPath = $_.Path
-                    If (Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force ( {} )) { 
+                    If (Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force) { 
                         Start-Sleep 1
                     }
                     $_.Status = "Idle"
@@ -518,19 +511,20 @@ Function NPMCycle {
                         $PrerunName = ".\Utils\Prerun\" + $_.Algorithms + ".bat"
                         $DefaultPrerunName = ".\Utils\Prerun\default.bat"
                         If (Test-Path $PrerunName -PathType Leaf) { 
-                            $Variables.StatusText = "Launching Prerun: $PrerunName"
+                            Update-Status("Launching Prerun: $PrerunName")
                             Start-Process $PrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                             Start-Sleep 2
                         }
                         ElseIf (Test-Path $DefaultPrerunName -PathType Leaf) { 
-                            $Variables.StatusText = "Launching Prerun: $DefaultPrerunName"
+                            Update-Status("Launching Prerun: $DefaultPrerunName")
                             Start-Process $DefaultPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                             Start-Sleep 2
                         }
                     }
 
                     Start-Sleep $Config.Delay #Wait to prevent BSOD
-                    $Variables.StatusText = "Starting miner"
+                    $Miner = $_
+                    Update-Status("$(If ($Miner.Hashrates) { "Starting" } Else { "Benchmarking" } ) miner ($($Miner.Name) {$(($Miner.Algorithms | ForEach-Object { "$($_)@$($Miner.PoolNames | Select-Object -Index ([Array]::indexof($Miner.Algorithms, $_)))" }) -join "; ")}).")
                     $Variables.DecayStart = Get-Date
                     $_.New = $true
                     $_.Activated++
@@ -561,8 +555,8 @@ Function NPMCycle {
             }
         }
         #Set idle duration a few seconds as to not overload the APIs
-        If ($NewMiner) { 
-            $Variables.TimeToSleep = ( $Config.FirstInterval, $Config.StatsInterval | Measure-Object -Minimum).Minimum
+        If ($NewMiner -or -not $CurrentMinerHashrate_Gathered) { 
+            $Variables.TimeToSleep = $Config.StatsInterval
 
             # If ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
             # ElseIf ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
@@ -584,18 +578,19 @@ Function NPMCycle {
                 $Miner_HashRates = Get-HashRate $Miner.API $Miner.Port $Miner.Algorithms
                 $Miner.HashRates = @($Miner_HashRates | Select-Object -First $Miner.Algorithms.Count)
                 # we don't want to store hashrates if we run less than $Config.StatsInterval sec
-                $WasActive = [math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
+                $WasActive = [Math]::Round(((Get-Date) - $_.Process.StartTime).TotalSeconds)
                 If ($WasActive -ge $Config.StatsInterval) { 
                     If ($Miner.New) { $Miner.Benchmarked++ }
                     If ($Miner_HashRates.Count -ge $_.Algorithms.Count) { 
                         $Miner.Algorithms | ForEach-Object {
-                            $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value ($Miner.HashRates | Select-Object -Index ([array]::indexof($Miner.Algorithms, $_)))
+                            $HashRate = $Miner.HashRates | Select-Object -Index ([Array]::indexof($Miner.Algorithms, $_))
+                            Update-Status("Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($HashRate | ConvertTo-Hash) -replace ' '))$(If (-not (Get-Stat -Name "$($Miner.Name)_$($_)_HashRate")) { " [Benchmark done]" })")
+                            $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $HashRate
                         }
                         $Miner.New = $false
                         $Miner.Hashrate_Gathered = $true
                     }
                 }
-                $Variables.StatusText = ("Hashrates after $($WasActive) seconds: $(($Miner.Algorithms | ForEach-Object { "$($_): $($Miner.HashRates | Select-Object -Index ([array]::indexof($Miner.Algorithms, $_)) | ConvertTo-Hash)" }) -join ' & ')" -replace "\s+", " ")
             }
             #Benchmark timeout
             #        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
@@ -637,6 +632,10 @@ Function NPMCycle {
             $Variables.EarningsTrackerJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Progress.Clear() } }
             $Variables.EarningsTrackerJobs.ChildJobs | ForEach-Object { $_.Output.Clear() }
         }
+
+        # Re-Read stats
+        Update-Status("Updating stats data...")
+        Get-Stat
 
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }
