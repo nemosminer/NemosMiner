@@ -188,7 +188,13 @@ While ($true) {
                 $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
             }
 
-            if ($DailyEarning = $DailyEarnings | Where-Object { [DateTime]$_.Date -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }) {
+            If (@($DailyEarnings | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }).Count -gt 1) {
+                # Must not be an array, remove todays data
+                $DailyEarnings = $DailyEarnings | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -lt $CurDate.ToShortDateString() }
+                $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
+            }
+
+            If ($DailyEarning = ($DailyEarnings | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }) | Select-Object -First 1) {
                 # pool may have reduced estimated balance, use new balance as start value to avoid negative values
                 $DailyEarning.StartValue = ($DailyEarning.StartValue, $BalanceObject.total_earned | Measure-Object -Minimum).Minimum
                 $DailyEarning.DailyEarnings = $BalanceObject.total_earned - $DailyEarning.StartValue
