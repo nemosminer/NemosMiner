@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\cpu-SRBMiner-Multi-0-3-2/SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.3.2/SRBMiner-Multi-0-3-2-win64.zip"
+$Path = ".\Bin\cpu-SRBMiner-Multi-0-3-3/SRBMiner-MULTI.exe"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.3.3/SRBMiner-Multi-0-3-3-win64.zip"
 $Commands = [PSCustomObject]@{ 
     "randomx"      = " --algorithm randomx --randomx-use-1gb-pages" #randomx 
     "randomarq"    = " --algorithm randomarq --randomx-use-1gb-pages" #randomarq  
