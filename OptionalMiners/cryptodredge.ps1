@@ -24,7 +24,7 @@ $Commands = [PSCustomObject]@{
     "cryptonight_fast"    = " --intensity 8 -a cnfast2" # cnfast2
     "cryptonight_haven"   = " --intensity 8 -a cnhaven" # cnhaven
     "cryptonight_heavy"   = " --intensity 8 -a cnheavy" # cnhaven
-    "cryptonight_upx"     = " --intensity 8 -a cnupx" # cnhaven
+    "cryptonight_upx"     = " --intensity 8 -a cnupx2" # cnhaven
     "mtp"                 = " --intensity 8 -a mtp" # mtp
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
