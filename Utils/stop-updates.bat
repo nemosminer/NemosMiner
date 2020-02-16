@@ -6,5 +6,3 @@ net stop bits
 
 sc config dosvc start= disabled
 net stop dosvc
-
-pause
