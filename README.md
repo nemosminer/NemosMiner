@@ -226,9 +226,9 @@ recommended/optimal Windows Nvidia driver Windows 10 = 442.37 (From alanfox2000)
 
 [Standard:](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/442.37/nvidia-geforce-graphics-driver-lite-442.37-win10-64bit-standard-16-02-2020.exe)
 
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 442.19
 
-[Windows7, 8, 8.1](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.60/nvidia-geforce-graphics-driver-lite-431.60-win8-win7-64bit-standard-03-08-2019.exe)
+[Windows7, 8, 8.1](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/442.19/nvidia-geforce-graphics-driver-lite-442.19-win8-win7-64bit-standard-15-02-2020.exe)
 
    NemosMiner is Currently Tested on the following Rigs: 
       
