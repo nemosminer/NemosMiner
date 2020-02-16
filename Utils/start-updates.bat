@@ -6,5 +6,3 @@ net start bits
 
 sc config dosvc start= auto
 net start dosvc
-
-pause
