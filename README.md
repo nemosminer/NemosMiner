@@ -222,9 +222,9 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 recommended/optimal Windows Nvidia driver Windows 10 = 431.68 (From alanfox2000)
 
-DCH: https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.68/nvidia-geforce-graphics-driver-lite-431.68-win10-64bit-dch-03-08-2019.exe
+[DCH:](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.68/nvidia-geforce-graphics-driver-lite-431.68-win10-64bit-dch-03-08-2019.exe)
 
-Standard:https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.68/nvidia-geforce-graphics-driver-lite-431.68-win10-64bit-standard-03-08-2019.exe
+[Standard:](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.68/nvidia-geforce-graphics-driver-lite-431.68-win10-64bit-standard-03-08-2019.exe)
 
 recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
 
