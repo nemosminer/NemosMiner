@@ -226,7 +226,7 @@ recommended/optimal Windows Nvidia driver Windows 10 = 441.41 (From alanfox2000)
 
 [Standard:](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/441.41/nvidia-geforce-graphics-driver-lite-441.41-win10-64bit-standard-27-11-2019.exe)
 
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 442.19
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 441.41
 
 [Windows7, 8, 8.1](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/441.41/nvidia-geforce-graphics-driver-lite-441.41-win8-win7-64bit-standard-27-11-2019.exe)
 
