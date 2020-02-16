@@ -3,10 +3,10 @@ $Path = ".\Bin\NVIDIA-TTMiner3.2.3b1\TT-Miner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.2.3b1/TT-Miner-3.2.3-beta1.zip"
 $Commands = [PSCustomObject]@{ 
     "mtp"       = " -a MTP" #mtp  
-    "ethash"    = " -a ETHASH" #ethash
-    "progpow"   = " -a PROGPOW" #progpow
-    "eaglesong" = " -a EAGLESONG  " #eaglesong
-    "lyra2v3"   = " -a LYRA2V3" #lyra2v3
+    #"ethash"    = " -a ETHASH" #ethash
+    #"progpow"   = " -a PROGPOW" #progpow
+    #"eaglesong" = " -a EAGLESONG  " #eaglesong
+    #"lyra2v3"   = " -a LYRA2V3" #lyra2v3
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
