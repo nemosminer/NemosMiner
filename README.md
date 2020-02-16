@@ -220,21 +220,15 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 10 = 432.00 (From Microsoft/Windows Update)
+recommended/optimal Windows Nvidia driver Windows 10 = 431.68 (From alanfox2000)
 
-uninstall any previous drivers with DDU
+DCH: https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.68/nvidia-geforce-graphics-driver-lite-431.68-win10-64bit-dch-03-08-2019.exe
 
-download run DDU (CLEAN AND RESTART NVIDIA) https://www.guru3d.com/files-get/display-driver-uninstaller-download,1.html
-
-reboot and run windows update (will auto install 432.00) 
-
-All Nvidia drivers higher than 432 is giving stability problems in alot of miners
-Any driver lower than 432 is auto updated eventually by windows update even if its disabled
-432 should remain default for 8-12months, will continue to test latest drivers for fixes.  
+Standard:https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.68/nvidia-geforce-graphics-driver-lite-431.68-win10-64bit-standard-03-08-2019.exe
 
 recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 431.60
 
-[Windows7, 8, 8.1](http://us.download.nvidia.com/Windows/431.60/431.60-desktop-win8-win7-64bit-international-whql.exe)
+[Windows7, 8, 8.1](https://github.com/alanfox2000/repack_NVIDIAGeforceGraphicsDriver/releases/download/431.60/nvidia-geforce-graphics-driver-lite-431.60-win8-win7-64bit-standard-03-08-2019.exe)
 
    NemosMiner is Currently Tested on the following Rigs: 
       
