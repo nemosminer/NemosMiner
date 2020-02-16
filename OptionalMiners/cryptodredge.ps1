@@ -25,7 +25,7 @@ $Commands = [PSCustomObject]@{
     "cryptonight_haven"   = " --intensity 8 -a cnhaven" # cnhaven
     "cryptonight_heavy"   = " --intensity 8 -a cnheavy" # cnhaven
     "cryptonight_upx"     = " --intensity 8 -a cnupx2" # cnhaven
-    "mtp"                 = " --intensity 8 -a mtp" # mtp
+    #"mtp"                 = " --intensity 8 -a mtp" # mtp
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
