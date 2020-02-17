@@ -1,3 +1,5 @@
+# needs to run as Administrator or with Administrator Privileges
+
 sc config wuauserv start= auto
 net start wuauserv
 
