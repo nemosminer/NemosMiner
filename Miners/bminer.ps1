@@ -1,21 +1,21 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-Bminer1605\bminer.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/16.0.5/bminer-v16.0.5-21104ec.zip"
+$Path = ".\Bin\NVIDIA-Bminer1606\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.0.6-137dbe6-amd64.zip"
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
     #"zhash"            = "-pers auto -uri equihash1445://" #Zhash
-    "ethash"           = "-uri ethstratum://" #Ethash
+    #"ethash"           = "-uri ethstratum://" #Ethash
     #"cuckoocycle"      = "-uri aeternity://" #aeternity
     #"beamv2"           = "-uri beamhash2://" #beam
     #"grincuckarood29"  = "-uri cuckaroo29d://" #grincuckaroo29 
     #"grincuckatoo31"   = "-uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram) 
-    "cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m
-    "ethash+blake14r"  = "-uri ethstratum://" #Ethash & Blake14r dual mining
-    "ethash+blake2s"   = "-uri ethstratum://" #Ethash & Blake2s dual mining
-    "ethash+tensority" = "-uri ethstratum://" #Ethash & Bytom dual mining
-    "ethash+vbk"       = "-uri ethstratum://" #Ethash & VBK & Bytom dual mining
-    "tensority"        = "-uri ethstratum://" #Tensority
+    #"cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m
+    #"ethash+blake14r"  = "-uri ethstratum://" #Ethash & Blake14r dual mining
+    #"ethash+blake2s"   = "-uri ethstratum://" #Ethash & Blake2s dual mining
+    #"ethash+tensority" = "-uri ethstratum://" #Ethash & Bytom dual mining
+    #"ethash+vbk"       = "-uri ethstratum://" #Ethash & VBK & Bytom dual mining
+    #"tensority"        = "-uri ethstratum://" #Tensority
 
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
