@@ -26,7 +26,7 @@
      "WorkerName": "NM3813",
      "APIKey": "",
      "Algorithm": [
-       ""
+       "+ethash"
      ]
    },
    "nicehashV2": {
