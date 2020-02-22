@@ -2,16 +2,17 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\CPU-XMRig553\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v5.5.3/xmrig-5.5.3cuda10.1.zip"
 $Commands = [PSCustomObject]@{ 
-    "randomxmonero"       = " -a rx/0 --nicehash" #RandomX
-    "randomx"             = " -a rx/0 --nicehash" #RandomX
-    "randomsfx"           = " -a rx/sfx --nicehash" #RandomX
-    "cryptonightv7"       = " -a cn/1 --nicehash" #cryptonightv7
-    "cryptonight_heavy"   = " -a cn-heavy/0 --nicehash" #cryptonight_heavyx
-    "cryptonight_heavyx"  = " -a cn/double --nicehash" #cryptonight_heavyx
-    "cryptonight_saber"   = " -a cn-heavy/0 --nicehash" #cryptonightGPU
-    "cryptonight_fast"    = " -a cn/half --nicehash" #cryptonightFast
-    "cryptonight_haven"   = " -a cn-heavy/xhv --nicehash" #cryptonightFast
-    "chukwa"              = " -a argon2/chukwa --nicehash" #chukwa
+    "randomxmonero"      = " -a rx/0 --nicehash" #RandomX
+    "randomx"            = " -a rx/0 --nicehash" #RandomX 
+    "cryptonight-monero" = " -a rx/0 --nicehash" #Cryptonight-Monero
+    "randomsfx"          = " -a rx/sfx --nicehash" #RandomX
+    "cryptonightv7"      = " -a cn/1 --nicehash" #cryptonightv7
+    "cryptonight_heavy"  = " -a cn-heavy/0 --nicehash" #cryptonight_heavyx
+    "cryptonight_heavyx" = " -a cn/double --nicehash" #cryptonight_heavyx
+    "cryptonight_saber"  = " -a cn-heavy/0 --nicehash" #cryptonightGPU
+    "cryptonight_fast"   = " -a cn/half --nicehash" #cryptonightFast
+    "cryptonight_haven"  = " -a cn-heavy/xhv --nicehash" #cryptonightFast
+    "chukwa"             = " -a argon2/chukwa --nicehash" #chukwa
 }
 $ThreadCount = $Variables.ProcessorCount - 1
 $Port = $Variables.CPUMinerAPITCPPort
