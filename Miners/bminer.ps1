@@ -20,8 +20,8 @@ $Commands = [PSCustomObject]@{
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
 
     If ($Pools.$Algo.SSL) { $_ = $_ -replace '\://$', '+ssl://' }
 
