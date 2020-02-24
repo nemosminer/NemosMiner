@@ -11,7 +11,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--tls 0 --digits 2 --longstats 60 --shortstats 5 --connectattempts 3 --devices $($Config.SelGPUCC) --apiport $($Variables.NVIDIAMinerAPITCPPort) --pool $($Pools.$Algo.Host) --port $($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * .99 } # substract 2% devfee
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .99 } # substract 2% devfee
         API       = "lol"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
