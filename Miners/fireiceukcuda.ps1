@@ -51,7 +51,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-C $($Pools.$Algo.Name)_$($Algo)_$($Pools.$Algo.User)_Nvidia.txt --noAMD --noCPU -i $($Variables.NVIDIAMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #Recompiled 0% fee
+        HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Week } #Recompiled 0% fee
         API       = "fireice"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         URI       = $Uri
