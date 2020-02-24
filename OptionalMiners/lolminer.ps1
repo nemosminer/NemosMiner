@@ -3,7 +3,7 @@ $Path = ".\Bin\NVIDIA-lolminer098\lolMiner.exe"
 $Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.98/lolMiner_v098_Win64.zip"
 $Commands = [PSCustomObject]@{ 
     "grincuckatoo31" = " --coin GRIN-AT31" #grincuckatoo31
-    "grincuckatoo32" = " --coin GRIN-AT32" #grincuckatoo32
+    #"grincuckatoo32" = " --coin GRIN-AT32" #grincuckatoo32
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
