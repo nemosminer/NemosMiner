@@ -42,7 +42,7 @@ wallet=$($Pools.$Algo.User)"
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = $Arguments
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee) } # substract devfee
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee) } # substract devfee
         API       = "nanominer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
