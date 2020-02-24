@@ -45,7 +45,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-C $($Pools.$Algo.Name)_$($Pools.$Algo)_$($Pools.$Algo.User)_CPU.txt --noAMD --noNVIDIA -i $($Variables.CPUMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day } #recompiled 0% Dev fee
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week } #recompiled 0% Dev fee
         API       = "fireice"
         Port      = $Variables.CPUMinerAPITCPPort #4068
         Wrap      = $false
