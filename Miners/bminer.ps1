@@ -27,12 +27,12 @@ If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
 
     If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo2"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day; $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Day }
+        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week; $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Week }
         $Algo2Parameter = " -uri2 $($_ -split '\+' | Select-Object -Index 1)$(If ($Pools.$Algo2.SSL) { '+ssl' })://$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo2.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo2.Pass))@$($Pools.$Algo2.Host):$($Pools.$Algo2.Port)"
     }
     Else { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day }
+        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
         $Algo2Parameter = ""
     }
 
