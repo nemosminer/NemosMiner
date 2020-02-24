@@ -12,7 +12,7 @@ $Commands = [PSCustomObject]@{
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-    If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*nicehashV2*" -or $Pool.Host -like "*mph*") { return }
+    If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*nicehash*" -or $Pools.$Algo.Host -like "*miningpoolhub*") { return }
     switch ($_) { 
         "ethash" { $Fee = 0.0065 }
         "eaglesong_ethash" { $Fee = 0.03 }
