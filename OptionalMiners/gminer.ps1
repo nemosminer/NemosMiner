@@ -30,7 +30,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
 
     If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo2"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Day * (1 - $Fee); $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Day * (1 - $Fee) } # substract devfee
+        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee); $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Week * (1 - $Fee) } # substract devfee
         $Algo2Parameter = " --dserver $($Pools.$Algo2.Host) --dport $($Pools.$Algo2.Port) --duser $($Pools.$Algo2.User) --dpass $($Pools.$Algo2.Pass)"
     }
     Else { 
