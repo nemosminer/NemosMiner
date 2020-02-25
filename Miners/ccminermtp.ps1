@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-ccminermtp128\ccminer.exe"
 $Uri = "https://github.com/tecracoin/ccminer/releases/download/1.2.8/ccminer.exe"
 $Commands = [PSCustomObject]@{ 
-     #"mtp" = " -d $($Config.SelGPUCC) -a mtp-classic -i 21" #mtp -i 19 -i 20 -i 21 -i 22
+     #"mtp" = " -d $($Config.SelGPUCC) -a mtp-classic -i 21" #mtp tested does not run on rigs with more than 6 gpus, will not run on Octominer 9xgpu rigs
      #"mtptrc" = " -d $($Config.SelGPUCC) -a mtp-tcr -i 21" #mtptrc -i 19 -i 20 -i 21 -i 22
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
