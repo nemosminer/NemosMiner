@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-Bminer1606\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-v16.0.6-137dbe6-amd64.zip"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.0.6-137dbe6-amd64.zip" # new version's are not working on windows no point updating
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
