@@ -87,7 +87,7 @@ Easy configuration, easy start:
   list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
      
     Donation Fee = 0.9%
-    There is 14 minute per day default donation (0.9%),
+    There is 13 minute per day default donation (0.9%),
     which can be increased or decreased in the config tab, 
     please help support the great team behind NemosMiner by leaving mining donations turned on
     We want to stay completely transparent on the way fees are managed in the product.
@@ -95,7 +95,7 @@ Easy configuration, easy start:
     The first donation sequence occurs 1 hour after miners are started.
     If Interval is set higher than the donation time, the interval will prime.
     Example for default parameters:
-    Miners started at 10, First donation cycle runs at 11 until 11:14, Next donation cycle occurs 24 hours after.
+    Miners started at 10, First donation cycle runs at 11 until 11:13, Next donation cycle occurs 24 hours after.
     All donation time and addresses are recorded in the logs folder.
    
 NemosMiner Monitoring Server : https://nemosminer.com
