@@ -12,8 +12,6 @@ $HostSuffix = ".mine.zpool.ca"
 $PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
-
 # Placed here for Perf (Disk reads)
 $ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
@@ -23,7 +21,11 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
 
-    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+    $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
+
+    switch ($PoolAlgorithm) { 
+        "verus" { $Divisor /= 1000 } #temp fix
+    }
 
     $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))
 
