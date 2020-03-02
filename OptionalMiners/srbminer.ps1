@@ -1,16 +1,17 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\cpu-SRBMiner-Multi-0-3-8/SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.3.8/SRBMiner-Multi-0-3-8-win64.zip"
+$Path = ".\Bin\cpu-SRBMiner-Multi-0-3-7/SRBMiner-MULTI.exe"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.3.7/SRBMiner-Multi-0-3-7-win64.zip"
 $Commands = [PSCustomObject]@{ 
-    "randomx"      = " --algorithm randomx --randomx-use-1gb-pages" #randomx 
-    "randomarq"    = " --algorithm randomarq --randomx-use-1gb-pages" #randomarq  
-    "randomsfx"    = " --algorithm randomsfx --randomx-use-1gb-pages" #randomsfx  
-    "eaglesong"    = " --algorithm eaglesong" #eaglesong  
-    "yescrypt"     = " --algorithm yescrypt" #yescrypt    
-    "yescryptR16"  = " --algorithm yescryptR16" #yescryptR16  
-    "yescryptR32"  = " --algorithm yescryptR32" #yescryptR32   
-    "yespower"     = " --algorithm yespower" #yespower 
-    "yespowerr16"  = " --algorithm yespowerr16" #yespowerr16 
+    "randomx"            = " --algorithm randomx --randomx-use-1gb-pages" #randomx 
+    "randomarq"          = " --algorithm randomarq --randomx-use-1gb-pages" #randomarq  
+    "randomsfx"          = " --algorithm randomsfx --randomx-use-1gb-pages" #randomsfx  
+    "eaglesong"          = " --algorithm eaglesong" #eaglesong  
+    "yescrypt"           = " --algorithm yescrypt" #yescrypt    
+    "yescryptR16"        = " --algorithm yescryptR16" #yescryptR16  
+    "yescryptR32"        = " --algorithm yescryptR32" #yescryptR32   
+    "yespower"           = " --algorithm yespower" #yespower 
+    "yespowerr16"        = " --algorithm yespowerr16" #yespowerr16 
+    "cryptonight-monero" = " --algorithm randomx --randomx-use-1gb-pages" #randomx
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
