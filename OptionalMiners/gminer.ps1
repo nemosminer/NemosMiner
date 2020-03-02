@@ -20,7 +20,7 @@ $Commands = [PSCustomObject]@{
    #"grincuckatoo32"   = " --devices $($Config.SelGPUDSTM) --algo grin32 --pers auto" #Grincuckatoo31
 }
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-    If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
+    If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*" -or $Pools.$Algo.Host -like "*nicehash*") { return }
     Switch ($_) { 
         "ethash" { $Fee = 0.0065 }
         "cuckaroom" { $Fee = 0.03 }
