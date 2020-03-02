@@ -2,11 +2,11 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-XMRig570\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.7.0/xmrig5.7.0.zip"
 $Commands = [PSCustomObject]@{ 
-    "randomxmonero" = " -a rx/0 --nicehash" #RandomX
-    "randomarq"     = " -a rx/arq --nicehash" #Randomarq
-    "randomx"       = " -a rx/0 --nicehash" #RandomX
-    "randomsfx"     = " -a rx/sfx --nicehash" #RandomX
-    "cryptonightv7" = " -a cn/1 --nicehash" #cryptonightv7
+    #"randomxmonero" = " -a rx/0 --nicehash" #RandomX
+    #"randomarq"     = " -a rx/arq --nicehash" #Randomarq
+    #"randomx"       = " -a rx/0 --nicehash" #RandomX
+    #"randomsfx"     = " -a rx/sfx --nicehash" #RandomX
+    #"cryptonightv7" = " -a cn/1 --nicehash" #cryptonightv7
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
