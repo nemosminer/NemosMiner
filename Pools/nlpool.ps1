@@ -30,7 +30,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         "equihash125" { $Divisor *= 2 } #temp fix
         "equihash144" { $Divisor *= 2 } #temp fix
         "equihash192" { $Divisor *= 2 } #temp fix
-        "verushash" { $Divisor *= 2 } #temp fix
+        "verushash" { $Divisor *= 4 } #temp fix
     }
 
     $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))
