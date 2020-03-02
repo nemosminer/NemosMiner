@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckaroo29"   = "-a cuckaroo -o nicehash+tcp://" #grincuckaroo29
     #"cuckoocycle"      = "-a cuckoo_ae --cuckoo-intensity 0 -o nicehash+tcp://" #cuckoocycle
     "eaglesong+ethash" = "-a eaglesong_ethash -di 24 -o stratum+tcp://" #eaglesong + ethash
-    "ethash"           = "-a ethash -o stratum+tcp://" #ethash (ZergPool Yiimp Auto Exchange) 
+    #"ethash"           = "-a ethash -o stratum+tcp://" #ethash (ZergPool Yiimp Auto Exchange) 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
