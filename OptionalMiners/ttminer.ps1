@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-TTMiner3.2.3b1\TT-Miner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.2.3b1/TT-Miner-3.2.3-beta1.zip"
 $Commands = [PSCustomObject]@{ 
-    "mtp"       = " -a MTP" #mtp  
+    "mtp"        = " -a MTP -i 21" #mtp  
     #"ethash"    = " -a ETHASH" #ethash
     #"progpow"   = " -a PROGPOW" #progpow
     #"eaglesong" = " -a EAGLESONG  " #eaglesong
