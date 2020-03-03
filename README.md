@@ -241,7 +241,7 @@ recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 441.41
       
       windows8.1-9xGTX-1660ti/Octominer (test Rig 1)
       windows10-6xRTX-2060/RYZEN-3700x  (test Rig 2)
-      windows7-6xRTX-2080/RYZEN-3700x   (test Rig 3)
+      windows8.1-6xRTX-2080/RYZEN-3700x   (test Rig 3)
       (users have reported up to 12cards working have not tested myself)
       Some miners do not support more that 9 cards
 
