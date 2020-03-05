@@ -26,7 +26,6 @@
      "WorkerName": "NM3813",
      "APIKey": "",
      "Algorithm": [
-       "+ethash",
        "+cryptonightmonero" 
      ]
    },
