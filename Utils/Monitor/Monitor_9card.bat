@@ -28,7 +28,7 @@ echo Average Usage of *9 GPUs usage is %gpu_average%%%
 if %gpu_average% GTR 40 (
    echo [92;1mMining is working[0m
    echo [102;92;1mMining is working[0m
-   timeout /t 10 >nul
+   timeout /t 120 >nul
    goto :start
 )
 
@@ -37,8 +37,8 @@ set ping_time=900
 FOR /F "skip=8 tokens=10" %%G in ('ping -n 3 google.com') DO set ping_time=%%G
 if %ping_time% GTR 0 (
    
-   echo Control checking of GPUs usage, timeout 30 sec...
-   timeout /t 30 >nul
+   echo Control checking of GPUs usage, timeout 120 sec...
+   timeout /t 120 >nul
    goto:recheck
    :endrecheck
    if %gpu_average% GTR 40 (
@@ -50,14 +50,14 @@ if %ping_time% GTR 0 (
    echo.
    
    echo ping is [92m%ping_time%[0m - OK, not internet problem
-   timeout /t 5 >nul
+   timeout /t 120 >nul
    goto :endif
 )
 :else
    cls
    echo      %date% %time% No internet connection>> %log_file%
    echo No internet connection, keep working...
-   timeout /t 5 >nul
+   timeout /t 120 >nul
    goto :begin
 :endif
 
@@ -78,7 +78,7 @@ echo ---------------------------------------------------------------------------
 echo.>> %log_file%
 
 echo [101;93mMining is NOT working, rebooting in 10 seconds...[0m
-timeout /t 10 >nul
+timeout /t 30 >nul
 shutdown.exe /r /t 00
 goto :end
 
