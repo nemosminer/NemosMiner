@@ -108,7 +108,7 @@ Function Write-Log {
 }
 
 Function GetNVIDIADriverVersion { 
-    ((Get-CimInstance CIM_VideoController) | Select-Object name, description, @{ Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{ 6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } }  | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
+    ((Get-CimInstance CIM_VideoController) | Select-Object name, description, @{ Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{ 6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
 }
 
 Function Global:RegisterLoaded ($File) { 
@@ -432,7 +432,7 @@ Function Load-Config {
     If (Test-Path $ConfigFile -PathType Leaf) { 
         $ConfigLoad = Get-Content $ConfigFile | ConvertFrom-json
         $ConfigLoad | ForEach-Object { $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-            $Config | Add-Member -Force @{$_.Name = $_.Value } }
+                $Config | Add-Member -Force @{$_.Name = $_.Value } }
         }
     }
 }
@@ -445,10 +445,10 @@ Function Write-Config {
     If ($Config.ManualConfig) { Update-Status("Manual config mode - Not saving config"); return }
     If ($Config -is [Hashtable]) { 
         If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
-        $OrderedConfig = [PSCustomObject]@{ } ; ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig) | ForEach-Object { $_.PSObject.Properties | Sort-Object Name | ForEach-Object { $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } }  }
+        $OrderedConfig = [PSCustomObject]@{ } ; ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig) | ForEach-Object { $_.PSObject.Properties | Sort-Object Name | ForEach-Object { $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } } }
         $OrderedConfig | ConvertTo-Json | out-file $ConfigFile
         $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-        $OrderedPoolsConfig = [PSCustomObject]@{ } ; $PoolsConfig | ForEach-Object { $_.PSObject.Properties | Sort-Object  Name | ForEach-Object { $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value } }  }
+        $OrderedPoolsConfig = [PSCustomObject]@{ } ; $PoolsConfig | ForEach-Object { $_.PSObject.Properties | Sort-Object  Name | ForEach-Object { $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value } } }
         $OrderedPoolsConfig.default | Add-Member -Force @{ Wallet = $Config.Wallet }
         $OrderedPoolsConfig.default | Add-Member -Force @{ UserName = $Config.UserName }
         $OrderedPoolsConfig.default | Add-Member -Force @{ WorkerName = $Config.WorkerName }
@@ -507,7 +507,8 @@ Function Set-Stat {
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt 3) { #Update immediately if stat value is 0
+        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt 3) {
+            #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
                 Update-Status("Warning: Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update].")
             }
@@ -516,7 +517,8 @@ Function Set-Stat {
             }
         }
         Else { 
-            If ($Value -eq 0 -or $Stat.ToleranceExceeded -gt 2) { #Update immediately if stat value is 0
+            If ($Value -eq 0 -or $Stat.ToleranceExceeded -gt 2) {
+                #Update immediately if stat value is 0
                 If ($Value) { 
                     If ($Name -match ".+_HashRate$") { 
                         Update-Status("Warning: Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row.")
@@ -631,7 +633,7 @@ Function Get-Stat {
     param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
-            &{
+            & {
                 [String[]]$StatFiles = (Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
@@ -758,7 +760,7 @@ Function Invoke_TcpRequest {
         [Parameter(Mandatory = $true)]
         [String]$Request, 
         [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 10 #seconds
+        [Int]$Timeout = 30 #seconds
     )
 
     Try { 
@@ -798,7 +800,7 @@ Function Invoke_httpRequest {
         [Parameter(Mandatory = $false)]
         [String]$Request, 
         [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 10 #seconds
+        [Int]$Timeout = 30 #seconds
     )
 
     Try { 
@@ -825,7 +827,7 @@ Function Get-HashRate {
     )
 
     $Server = "localhost"
-    $Timeout = 5 #Seconds
+    $Timeout = 45 #Seconds
 
     Try { 
         Switch ($API) { 
@@ -961,11 +963,11 @@ Function Get-HashRate {
                     $Data.Statistics.Devices | ForEach-Object { 
                         $DeviceData = $_
                         Switch ($DeviceData.Hashrates[0].unit) { 
-                            "KH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
-                            "MH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
-                            "GH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
-                            "TH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
-                            "PH/s"  { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
+                            "KH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
+                            "MH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
+                            "GH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
+                            "TH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
+                            "PH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
                             default { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
                         }
                     }
