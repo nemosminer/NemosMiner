@@ -4,7 +4,7 @@ $Uri = "https://github.com/tpruvot/ccminer/releases/download/2.3.1-tpruvot/ccmin
 $Commands = [PSCustomObject]@{ 
     #"blake2b" = " --cpu-priority 4 -a blake2b" #blake2b
     "x12"       = " --cpu-priority 4 -a x12 -i 20" #X12
-    "scryptn11" = " --cpu-priority 1 -a scrypt:10" #scryptn11
+    "scryptn11" = " --cpu-priority 1 -a scrypt:10 --lookup-gap=2" #scryptn11
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
