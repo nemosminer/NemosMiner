@@ -6,10 +6,9 @@ $Commands = [PSCustomObject]@{
     #"grincuckarood29"  = "-a cuckarood --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"grincuckaroo29"   = "-a cuckaroo --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"cuckoocycle"      = "-a cuckoo_ae --fee 1 --cuckoo-intensity 0 -o nicehash+tcp://" #cuckoocycle
-     "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24 -o stratum+tcp://" #eaglesong + ethash
-     "handshake+ethash" = "-a hns_ethash --fee 1 -di 4 -o stratum+tcp://" #handshake + ethash
-     "handshake"        = "-a hns -o stratum+tcp://" #handshake
-    #"ethash"           = "-a ethash -o stratum+tcp://" #ethash (ZergPool Yiimp Auto Exchange) 
+    "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24 -o stratum+tcp://" #eaglesong + ethash
+    "handshake+ethash" = "-a hns_ethash --fee 1 -di 4 -o stratum+tcp://" #handshake + ethash
+    "handshake"        = "-a hns -o stratum+tcp://" #handshake
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
@@ -23,7 +22,16 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo"
         $HashRates = [PSCustomObject]@{ $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Week * (1 - $Fee); $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee) }
-        $Algo2Parameter = " -do nicehash+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
+        # Ethash: use ethproxy for all non-nicehash pools (nicehash+tcp on zergpool does not produce any shares)
+        If ($Pools.$($Algo2).Name -eq "NiceHash") { 
+            $Algo2Parameter = " -do nicehash+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
+        }
+        If ($Pools.$($Algo2).Name -eq "MPH") { 
+            $Algo2Parameter = " -do nicehash+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
+        }
+        Else { 
+            $Algo2Parameter = " -do ethproxy+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
+        }
         If ($Pools.$Algo2.SSL) { $Algo2Parameter = $Algo2Parameter -replace '\+tcp\://$', '+ssl://' }
     }
     Else { 
