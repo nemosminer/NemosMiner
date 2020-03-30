@@ -15,16 +15,19 @@ $Commands = [PSCustomObject]@{
     #"grincuckatoo31"   = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"ethash"           = " --devices $($Config.SelGPUDSTM) --algo ethash --proto stratum" #Ethash
     "eaglesong"        = " --devices $($Config.SelGPUDSTM) --algo eaglesong" #Eaglesong 
+    "handshake"        = " --devices $($Config.SelGPUDSTM) --algo handshake" #Handshake 
     "cuckaroom"        = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
     "ethash+eaglesong" = " --devices $($Config.SelGPUDSTM) --algo eth+ckb --proto stratum --dproto stratum --dual_intensity 0" #Ethash + Eaglesong
-   #"grincuckatoo32"   = " --devices $($Config.SelGPUDSTM) --algo grin32 --pers auto" #Grincuckatoo31
-   #"kawpow"           = " --devices $($Config.SelGPUDSTM) --algo kawpow --pers auto" #KAWPOW (RVN fork in a week or so)
+    "ethash+handshake" = " --devices $($Config.SelGPUDSTM) --algo eth+hns --proto stratum --dproto stratum --dual_intensity 0" #Ethash + Handshake
+    #"grincuckatoo32"   = " --devices $($Config.SelGPUDSTM) --algo grin32 --pers auto" #Grincuckatoo31
+    #"kawpow"           = " --devices $($Config.SelGPUDSTM) --algo kawpow --pers auto" #KAWPOW (RVN fork in a week or so)
 }
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     Switch ($_) { 
         "ethash" { $Fee = 0.0065 }
         "cuckaroom" { $Fee = 0.03 }
         "ethash+eaglesong" { $Fee = 0.03 }
+        "ethash+handshake" { $Fee = 0.03 }
         default { $Fee = 0.02 }
     }
 
