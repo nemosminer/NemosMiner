@@ -23,13 +23,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo"
         $HashRates = [PSCustomObject]@{ $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Week * (1 - $Fee); $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee) }
-        # Ethash: use ethproxy for all non-nicehash pools (nicehash+tcp on zergpool does not produce any shares)
-        If ($Pools.$($Algo2).Name -eq "NiceHash") { 
-            $Algo2Parameter = " -do nicehash+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
-        }
-        Else { 
-            $Algo2Parameter = " -do ethproxy+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
-        }
+        $Algo2Parameter = " -do nicehash+tcp://$($Pools.$($Algo2).Host):$($Pools.$($Algo2).Port) -du $($Pools.$($Algo2).User)"
         If ($Pools.$Algo2.SSL) { $Algo2Parameter = $Algo2Parameter -replace '\+tcp\://$', '+ssl://' }
     }
     Else { 
