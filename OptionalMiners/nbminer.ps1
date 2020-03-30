@@ -1,12 +1,14 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nbminer280\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v28.0/NBMiner_28.0_Win.zip"
+$Path = ".\Bin\NVIDIA-nbminer281\nbminer.exe"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v28.1/NBMiner_28.1_Win.zip"
 $Commands = [PSCustomObject]@{ 
     #"grincuckatoo31"   = "-a cuckatoo --fee 1 -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"grincuckarood29"  = "-a cuckarood --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"grincuckaroo29"   = "-a cuckaroo --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"cuckoocycle"      = "-a cuckoo_ae --fee 1 --cuckoo-intensity 0 -o nicehash+tcp://" #cuckoocycle
-    "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24 -o stratum+tcp://" #eaglesong + ethash
+     "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24 -o stratum+tcp://" #eaglesong + ethash
+     "handshake+ethash" = "-a hns_ethash --fee 1 -di 24 -o stratum+tcp://" #handshake + ethash
+     "handshake"        = "-a hns -o stratum+tcp://" #handshake
     #"ethash"           = "-a ethash -o stratum+tcp://" #ethash (ZergPool Yiimp Auto Exchange) 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
