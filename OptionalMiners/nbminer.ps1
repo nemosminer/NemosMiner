@@ -9,13 +9,15 @@ $Commands = [PSCustomObject]@{
     "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24 -o stratum+tcp://" #eaglesong + ethash
     "handshake+ethash" = "-a hns_ethash --fee 1 -di 4 -o stratum+tcp://" #handshake + ethash
     "handshake"        = "-a hns -o stratum+tcp://" #handshake
+    "tellor+ethash"    = "-a trb_ethash --fee 1 -di 4 -o stratum+tcp://" #tellor + ethash
+    "tellor"           = "-a trb --fee 1 -o stratum+tcp://" #tellor
+    #"ethash"           = "-a ethash -o stratum+tcp://" #ethash (ZergPool Yiimp Auto Exchange) 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     switch ($_) { 
         "ethash" { $Fee = 0.0065 }
-        "eaglesong_ethash" { $Fee = 0.01 }
         default { $Fee = 0.01 }
     }
 
