@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-Phoenix49c\PhoenixMiner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.9c/PhoenixMiner_4.9c_Windows.7z"
 $Commands = [PSCustomObject]@{ 
-    "ethash"  = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash
+   #"ethash"  = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash
    #"progpow" = " -coin bci -di $($($Config.SelGPUCC).Replace(',',''))" #Progpow 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
