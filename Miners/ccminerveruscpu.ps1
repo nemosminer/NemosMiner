@@ -3,7 +3,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\CPU-ccminerverushash37\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccminer-Verus/releases/download/3.7/ccminer3_7.7z"
 $Commands = [PSCustomObject]@{ 
-   #"verus"     = "" #Verus
+    "verus"     = "" #Verus
     "verushash" = "" #Verushash
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
