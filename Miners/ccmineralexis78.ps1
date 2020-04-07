@@ -2,15 +2,14 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-Alexis78152\ccminer.exe"
 $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.2/ccmineralexis78.7z"
 $Commands = [PSCustomObject]@{ 
-    "skein2" = " -d $($Config.SelGPUCC) --cuda-schedule 2" #Skein2
-    #"neoscrypt" = " -i 16.250 -d $($Config.SelGPUCC) --cuda-schedule 2" #Neoscrypt (1070) rigs
+    "skein2" = "" #Skein2 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)" #--cuda-schedule 2 --cuda-schedule 3
+        Arguments = "--cuda-schedule 2 -d $($Config.SelGPUCC) -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
