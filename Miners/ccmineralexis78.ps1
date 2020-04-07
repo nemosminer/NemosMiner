@@ -10,7 +10,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments = "-N 1 -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)" #--cuda-schedule 2 --cuda-schedule 3
+        Arguments = "-R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -a $_ -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)" #--cuda-schedule 2 --cuda-schedule 3
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
