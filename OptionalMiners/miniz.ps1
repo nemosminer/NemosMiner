@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "equihash192"  = " --par=192,7 --pers auto" #Equihash192
     #"equihash96"   = " --par=96,5 --pers auto" #equihash96
     "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
-    "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
+    #"equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
