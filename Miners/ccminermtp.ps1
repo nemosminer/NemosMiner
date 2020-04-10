@@ -1,8 +1,8 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-ccminermtp129b\ccminer.exe"
-$Uri = "https://github.com/tecracoin/ccminer/releases/download/1.2.9-beta/ccminer.exe"
+$Path = ".\Bin\NVIDIA-ccminermtp129\ccminer.exe"
+$Uri = "https://github.com/tecracoin/ccminer/releases/download/1.2.9/ccminer.exe"
 $Commands = [PSCustomObject]@{ 
-     #"mtp" = " -d $($Config.SelGPUCC) -a mtp-classic -i 21" #memeroy allocation error when running 7 or more GPU's work well with upto 6 GPU's 
+     #"mtp" = " -d $($Config.SelGPUCC) -a mtp-classic -i 21" # memeroy allocation error when running 7 or more GPU's work well with upto 6 GPU's 
      #"mtptrc" = " -d $($Config.SelGPUCC) -a mtp-tcr -i 21" #mtptrc -i 19 -i 20 -i 21 -i 22
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
