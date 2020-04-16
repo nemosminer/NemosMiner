@@ -4,7 +4,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.2.3b1/T
 $Commands = [PSCustomObject]@{ 
     "mtp"        = " -a MTP -i 21" #mtp  
     #"ethash"    = " -a ETHASH" #ethash
-    #"progpow"   = " -a PROGPOW" #progpow
+    "progpow"    = " -a PROGPOW" #progpow
     #"eaglesong" = " -a EAGLESONG  " #eaglesong
     #"lyra2v3"   = " -a LYRA2V3" #lyra2v3
 }
