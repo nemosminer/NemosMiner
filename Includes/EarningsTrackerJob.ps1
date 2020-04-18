@@ -84,7 +84,7 @@ While ($true) {
         Switch ($Pool) { 
             "nicehashV2" { 
                 Try { 
-                    $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs2") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
                 }
                 Catch { }
                 [Double]$NHTotalBalance = [Double]($TempBalanceData.unpaidAmount) + [Double]($TempBalanceData.externalBalance)
@@ -93,7 +93,8 @@ While ($true) {
             }
             "mph" { 
                 Try { 
-                    $TempBalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) }
+                    $TempBalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) 
+                }
                 Catch { } #.confirmed
             }
             default { 
@@ -171,7 +172,7 @@ While ($true) {
 
             #Fix typo in field name, convert date format
             If ($DailyEarnings.PrePaimentDayValue | Select-Object) { 
-                $DailyEarnings = $DailyEarnings | ForEach-Object  { 
+                $DailyEarnings = $DailyEarnings | ForEach-Object { 
                     [PSCustomObject]@{
                         Date               = [DateTime]::parseexact($_.Date, "MM/dd/yyyy", $null).ToShortDateString()
                         Pool               = $_.Pool
