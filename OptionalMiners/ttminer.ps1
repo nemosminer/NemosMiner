@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-TTMiner40\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner.zip"
 $Commands = [PSCustomObject]@{ 
-    "mtp"        = " -a MTP" #mtp  
+    "mtp"        = " -a MTP -i 21" #mtp  
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
