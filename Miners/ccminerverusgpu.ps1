@@ -3,6 +3,7 @@ $Path = ".\Bin\NVIDIA-Ccminerverus375\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.7.5/ccminerverus375.7z"
 $Commands = [PSCustomObject]@{ 
     "verushash" = " -a verus -i 21 -d $($Config.SelGPUCC)" #verus
+    "verus" = " -a verus -i 21 -d $($Config.SelGPUCC)" #verus
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
