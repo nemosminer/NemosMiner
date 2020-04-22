@@ -1,5 +1,5 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-TTMiner40\TT-Miner.exe"
+$Path = ".\Bin\NVIDIA-TTMiner401\TT-Miner.exe"
 $Uri = "https://tradeproject.de/download/Miner/TT-Miner.zip"
 $Commands = [PSCustomObject]@{ 
     "mtp"        = " -a MTP -i 21" #mtp  
