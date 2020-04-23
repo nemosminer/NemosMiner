@@ -1,8 +1,8 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-TTMiner401\TT-Miner.exe"
-$Uri = "https://tradeproject.de/download/Miner/TT-Miner.zip"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.0.1/TT-Miner401.zip"
 $Commands = [PSCustomObject]@{ 
-    "mtp"        = " -a MTP -i 21" #mtp  
+    "mtp"        = " -a MTP" #mtp  
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
