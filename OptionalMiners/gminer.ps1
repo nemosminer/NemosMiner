@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-Gminer206\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.06/gminer_2_06_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.07/gminer_2_07_windows64.zip"
 $Commands = [PSCustomObject]@{ 
     #"beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"      = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     "cuckaroom"        = " --devices $($Config.SelGPUDSTM) --algo grin29" #Cuckaroom 
     "ethash+eaglesong" = " --devices $($Config.SelGPUDSTM) --algo eth+ckb --proto stratum --dproto stratum --dual_intensity 0" #Ethash + Eaglesong
     #"ethash+handshake" = " --devices $($Config.SelGPUDSTM) --algo eth+hns --proto stratum --dproto stratum --dual_intensity 0" #Ethash + Handshake
-    #"grincuckatoo32"   = " --devices $($Config.SelGPUDSTM) --algo grin32 --pers auto" #Grincuckatoo31
+    #"grincuckatoo32"   = " --devices $($Config.SelGPUDSTM) --algo grin32 --pers auto" #grincuckatoo32 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"kawpow"           = " --devices $($Config.SelGPUDSTM) --algo kawpow --pers auto" #KAWPOW (RVN fork in a week or so)
 }
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
