@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-trex0146\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.14.6/t-rex-0.14.6-win-cuda10.0.zip"
+$Path = ".\Bin\NVIDIA-trex0150t\t-rex.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v15.0-test/t-rex-0.15.0-win-cuda10.0.zip"
 $Commands = [PSCustomObject]@{ 
     "balloon"    = " -a balloon -i 23" #Balloon
    #"astralhash" = " -a astralhash -i 23" #Astralhash
@@ -27,6 +27,8 @@ $Commands = [PSCustomObject]@{
    #"tribus"     = " -a tribus -i 23" #Tribus
    #"veil"       = " -a x16rt -i 24" #Veil
     "mtp"        = " -a mtp -i 21" #MTP 
+    "kawpow"     = " -a kawpow -i 21" #kawpow 
+    "progpow"    = " -a progpow -i 21" #progpow 
     "x25x"       = " -a x25x -i 21" #x25x
    #"honeycomb"  = " -a honeycomb -i 26" #Honeycomb
 }
