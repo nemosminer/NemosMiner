@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-trex0150t\t-rex.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v15.0-test/t-rex-0.15.0-win-cuda10.0.zip"
+$Path = ".\Bin\NVIDIA-trex0151t\t-rex.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/0.15.1/t-rex-0.15.1-win-cuda10.0.zip"
 $Commands = [PSCustomObject]@{ 
     "balloon"    = " -a balloon -i 23" #Balloon
    #"astralhash" = " -a astralhash -i 23" #Astralhash
