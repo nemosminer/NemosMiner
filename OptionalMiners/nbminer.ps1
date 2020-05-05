@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nbminer301\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v30.1/NBMiner_30.1_Win.zip"
+$Path = ".\Bin\NVIDIA-nbminer302\nbminer.exe"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v30.2/NBMiner_30.2_Win.zip"
 $Commands = [PSCustomObject]@{ 
     #"grincuckatoo31"   = "-a cuckatoo --fee 1 -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"grincuckarood29"  = "-a cuckarood --fee 1 -o nicehash+tcp://" #grincuckaroo29
@@ -9,7 +9,7 @@ $Commands = [PSCustomObject]@{
     "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24,24,24,24,24,24,24,24,24 -o stratum+tcp://" #eaglesong + ethash
     "handshake+ethash" = "-a hns_ethash --fee 1 -di 4,4,4,4,4,4,4,4,4 -o stratum+tcp://" #handshake + ethash
     "handshake"        = "-a hns -o stratum+tcp://" #handshake
-    "kawpow"           = "-a kawpow -o stratum+tcp://" #kawpow
+   #"kawpow"           = "-a kawpow -o stratum+tcp://" #kawpow
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
