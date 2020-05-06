@@ -5,7 +5,7 @@ $Commands = [PSCustomObject]@{
     "aergo"  = " -i 23" #AeriumX
     "xevan"  = " -i 22" #Xevan 
     "hex"    = " -i 24" #Hex 
-    "kawpow" = "" #Kawpow 
+    "kawpow" = " -i 23" #Kawpow 
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
