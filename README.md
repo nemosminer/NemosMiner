@@ -225,15 +225,15 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 10 = 441.41
+recommended/optimal Windows Nvidia driver Windows 10 = 441.34
 
-[DCH:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,2.html)
+[DCH:](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win10-64bit-international-dch.hf.exe)
 
-[Standard:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,1.html)
+[Standard:](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win10-64bit-international.hf.exe)
 
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 441.41
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 441.34
 
-[Windows7, 8, 8.1](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,3.html)
+[Windows7, 8, 8.1](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win8-win7-64bit-international.hf.exe)
 
    NemosMiner is Currently Tested on the following Rigs: 
       
