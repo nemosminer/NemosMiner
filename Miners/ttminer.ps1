@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-TTMiner500\TT-Miner.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.0/TT-Miner.zip"
+$Path = ".\Bin\NVIDIA-TTMiner501\TT-Miner.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.1/TT-Miner.zip"
 $Commands = [PSCustomObject]@{ 
     "mtp"    = " -a MTP -i 21" #Mtp  
     "ethash" = " -a ETHASH" #Ethash
