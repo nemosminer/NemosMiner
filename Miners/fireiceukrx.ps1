@@ -1,13 +1,13 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\cpu-FireIce104\xmr-stak-rx.exe"
-$Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.4-rx/xmr-stak-rx-win64-1.0.4.7z"
+$Path = ".\Bin\cpu-FireIce105\xmr-stak-rx.exe"
+$Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.5-rx/xmr-stak-rx-win64-1.0.5.7z"
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $Commands = [PSCustomObject]@{ 
-    #"randomxmonero"      = "monero" #cryptonight_haven 
-    #"randomx"            = "monero" #Cryptonight_gpu
-    #"cryptonight-monero" = "monero" #cryptonightFast
+    #"randomxmonero"      = "monero" #randomxmonero 
+    #"randomx"            = "monero" #randomxmonero
+    #"cryptonight-monero" = "monero" #randomxmonero
     #"cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
-    #"cryptonight_heavyx" = "cryptonight_v8_double" #cryptonight_heavy 
+    #"cryptonight_heavyx" = "cryptonight_v8_double" #cryptonight_heavyx 
     #"cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
     #"cryptonight-saber"   = "cryptonight_bittube2" #cryptonight-saber
     #"cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
