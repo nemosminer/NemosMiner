@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-miniZ15t2\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.5t2/miniZ_v1.5t2_cuda10_win-x64.zip"
+$Path = ".\Bin\NVIDIA-miniZ15t3\miniZ.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.5t3/miniZ_v1.5t3_cuda10_win-x64.zip"
 $Commands = [PSCustomObject]@{ 
     "equihash144"  = " --par=144,5 --pers auto" #Equihash144
     "equihash125"  = " --par=125,4 --pers auto" #Equihash125
@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "equihash192"  = " --par=192,7 --pers auto" #Equihash192
     #"equihash96"   = " --par=96,5 --pers auto" #equihash96
     "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
-    #"equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
+    "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
