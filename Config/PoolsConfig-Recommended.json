@@ -39,7 +39,8 @@
      "APIKey": "",
      "Algorithm": [
        "+cryptonightmonero",
-       "+ethash"
+       "+ethash",
+       "+kawpow"
      ]
    },
    "nicehashV2": {
