@@ -6,9 +6,10 @@ $Commands = [PSCustomObject]@{
     "ethash" = " -a ETHASH" #Ethash
     "kawpow" = " -a KAWPOW" #Kawpow
 }
+
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-    If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
+     If ($Algo -eq "kawpow" -and $Pools.$Algo.Host -like "*miningpoolhub*") { return }
     [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
