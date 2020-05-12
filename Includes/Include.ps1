@@ -26,13 +26,185 @@ version date:   29 January 2020
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
 # Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
 
-Function Get-CommandLineParameters ($Arguments) { 
-    if ($Arguments -match "^{.+}$") { 
+Function Start-PowerUsageReader {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [String[]]$DeviceNames,
+        [Parameter(Mandatory = $false)]
+        [Int]$Interval = 2, #Seconds
+        [String]$HwINFO64_RegKey = "HKCU:\Software\HWiNFO64\VSB"
+    )
+
+    $Parameters = @{ 
+        DeviceNames     = $DeviceNames
+        HwINFO64_RegKey = $HwINFO64_RegKey
+        Interval        = $Interval
+    }
+
+    $Variables | Add-Member -Force @{ 
+        MeasurePowerUsageJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList $Parameters -ScriptBlock { 
+            [CmdletBinding()]
+            param(
+                [Parameter(Mandatory = $true)]
+                [Hashtable]$Parameters
+            )
+
+            $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
+
+            Try { 
+                While ((Test-Path $HwINFO64_RegKey) -and $DeviceNames) { 
+
+                    Start-Sleep -Seconds $Interval
+
+                    $RegistryValue = Get-ItemProperty $HwINFO64_RegKey
+                    $RegistryValue.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceNames | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
+                        [PSCustomObject]@{ 
+                            "Date"       = (Get-Date).ToUniversalTime()
+                            "DeviceName" = $(($_.Value -split ' ') | Select-Object -Last 1)
+                            "Power"      = $($RegistryValue.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                        }
+                    }
+                }
+            }
+            Catch {}
+
+            Exit
+        }
+    }
+}
+
+Function Get-CommandLineParameters { 
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [String]$Arguments
+    )
+
+    If ($Arguments -match "^{.+}$") { 
         return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
     }
-    else { 
+    Else { 
         return $Arguments
     }
+}
+
+Function Start-ChildJobs { 
+    # Starts Brains if necessary
+    $Config.PoolName | ForEach-Object { 
+        If ($_ -notin $Variables.BrainJobs.PoolName) { 
+            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
+            $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
+            If (Test-Path $BrainName -PathType Leaf) { 
+                Write-Message "Starting Brains for $($_)..."
+                $BrainJob = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
+                $BrainJob | Add-Member -Force @{ PoolName = $_ }
+                $Variables.BrainJobs += $BrainJob
+                Remove-Variable BrainJob
+            }
+        }
+    }
+    # Starts Earnings Tracker Job if necessary
+    $StartDelay = 0
+
+    If ((Test-Path -PathType Leaf ".\Includes\EarningsTrackerJob.ps1") -and ($Config.TrackEarnings) -and (-not ($Variables.EarningsTrackerJobs))) { 
+        $Params = @{ 
+            WorkingDirectory = $Variables.MainPath
+            PoolsConfig      = $Config.PoolsConfig
+        }
+        $EarningsJob = Start-Job -FilePath ".\Includes\EarningsTrackerJob.ps1" -ArgumentList $Params
+        If ($EarningsJob) { 
+            Write-Message "Starting Earnings Tracker..."
+            $Variables.EarningsTrackerJobs += $EarningsJob
+            Remove-Variable EarningsJob
+        }
+    }
+}
+
+Function InitApplication { 
+    $Variables | Add-Member -Force @{ SourcesHash = @() }
+    $Variables | Add-Member -Force @{ ProcessorCount = (Get-CimInstance -class win32_processor).NumberOfLogicalProcessors }
+
+    If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
+
+    $Variables | Add-Member -Force @{ ScriptStartDate = (Get-Date).ToUniversalTime() }
+    If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
+        [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+    }
+
+    If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
+    If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
+    If ($env:GPU_MAX_HEAP_SIZE -ne 100) { $env:GPU_MAX_HEAP_SIZE = 100 }                   # For AMD
+    If ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }                 # For AMD
+    If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }           # For AMD
+    If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
+    If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
+
+    #Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
+
+    Import-Module NetSecurity -ErrorAction SilentlyContinue
+    Import-Module Defender -ErrorAction SilentlyContinue
+    Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
+    Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
+    If ($PSEdition -eq 'core') { Import-Module -SkipEditionCheck NetTCPIP -ErrorAction SilentlyContinue }
+
+    If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
+    If ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
+        Start-Process (@{ desktop = "powershell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
+    }
+
+    If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
+    Else { $PSDefaultParameterValues["*:Proxy"] = $Proxy }
+    Write-Message "Initializing Variables..."
+    $Variables | Add-Member -Force @{ DecayStart = (Get-Date).ToUniversalTime() }
+    $Variables | Add-Member -Force @{ DecayPeriod = 120 } #seconds
+    $Variables | Add-Member -Force @{ DecayBase = 1 - 0.1 } #decimal percentage
+    $Variables | Add-Member -Force @{ ActiveMiners = @() }
+    $Variables | Add-Member -Force @{ Miners = @() }
+    #Start the log
+    Start-Transcript -Path ".\Logs\miner-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
+    # Purge Logs more than 10 days
+    If ((Get-ChildItem ".\Logs\miner-*.log").Count -gt 10) { 
+        Get-ChildItem ".\Logs\miner-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
+    }
+    #Update stats with missing data and set to today's date/time
+    $Variables.StatusText = "Preparing stats data..."
+    Get-Stat; $Now = (Get-Date).ToUniversalTime(); if ($Stats ) { $Stats | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Stats.$_.Updated = $Now } }
+    #Set donation parameters
+    $Variables | Add-Member -Force @{ DonateRandom = [PSCustomObject]@{ } }
+    $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
+    If ($Config.Donate -lt 1) { $Config.Donate = (0, (0..0)) | Get-Random }
+    $Variables | Add-Member -Force @{ WalletBackup = $Config.Wallet }
+    $Variables | Add-Member -Force @{ UserNameBackup = $Config.UserName }
+    $Variables | Add-Member -Force @{ WorkerNameBackup = $Config.WorkerName }
+    $Variables | Add-Member -Force @{ EarningsPool = "" }
+    $Variables | Add-Member -Force @{ BrainJobs = @() }
+    $Variables | Add-Member -Force @{ EarningsTrackerJobs = @() }
+    $Variables | Add-Member -Force @{ Earnings = @{ } }
+
+    $Variables | Add-Member -Force @{ StartPaused = $False }
+    $Variables | Add-Member -Force @{ Started = $False }
+    $Variables | Add-Member -Force @{ Paused = $False }
+    $Variables | Add-Member -Force @{ RestartCycle = $False }
+
+    $Location = $Config.Location
+ 
+    
+    #Load information about the devices
+    $Variables | Add-Member -Force Devices @(Get-Device | Select-Object)
+
+    # Find available TCP Ports
+    $StartPort = 4068
+    $Config.Type | Sort-Object | ForEach-Object { 
+        Write-Message "Finding available TCP Port for $($_)"
+        $Port = Get-FreeTcpPort($StartPort)
+        $Variables | Add-Member -Force @{ "$($_)MinerAPITCPPort" = $Port }
+        Write-Message "Miners API Port: $($Port)"
+        $StartPort = $Port + 1
+    }
+    Start-Sleep 2
 }
 
 Function Get-Rates {
@@ -44,7 +216,7 @@ Function Get-Rates {
     }
 }
 
-Function Write-Log { 
+Function Write-Message { 
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -58,50 +230,62 @@ Function Write-Log {
 
     Begin { }
     Process { 
-        # Inherit the same verbosity settings as the script importing this
-        If (-not $PSBoundParameters.ContainsKey('InformationPreference')) { $InformationPreference = $PSCmdlet.GetVariableValue('InformationPreference') }
-        If (-not $PSBoundParameters.ContainsKey('Verbose')) { $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') }
-        If (-not $PSBoundParameters.ContainsKey('Debug')) { $DebugPreference = $PSCmdlet.GetVariableValue('DebugPreference') }
 
-        # Get mutex named MPMWriteLog. Mutexes are shared across all threads and processes. 
-        # This lets us ensure only one thread is trying to write to the file at a time. 
-        $Mutex = New-Object System.Threading.Mutex($false, "MPMWriteLog")
-
-        $FileName = ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").txt"
-        $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-
-        If (-not (Test-Path "Stats" -PathType Container)) { New-Item "Stats" -ItemType "directory" | Out-Null }
-
-        Switch ($Level) { 
-            'Error' { 
-                $LevelText = 'ERROR:'
-                Write-Warning -Message $Message
-            }
-            'Warn' { 
-                $LevelText = 'WARNING:'
-                Write-Warning -Message $Message
-            }
-            'Info' { 
-                $LevelText = 'INFO:'
-                Write-Information -MessageData $Message
-            }
-            'Verbose' { 
-                $LevelText = 'VERBOSE:'
-                Write-Verbose -Message $Message
-            }
-            'Debug' { 
-                $LevelText = 'DEBUG:'
-                Write-Debug -Message $Message
-            }
+        #Update status text box in GUI
+        If ($Variables.LabelStatus) { 
+            $Variables.LabelStatus.Lines += $Message
+            $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
+            $Variables.LabelStatus.ScrollToCaret()
+            $Variables.LabelStatus.Refresh()
         }
 
-        # Attempt to aquire mutex, waiting up to 1 second If necessary.  If aquired, write to the log file and release mutex.  Otherwise, display an error. 
-        If ($mutex.WaitOne(1000)) { 
-            "$Date $LevelText $Message" | Out-File -FilePath $FileName -Append -Encoding utf8
-            $Mutex.ReleaseMutex()
-        }
-        Else { 
-            Write-Error -Message "Log file is locked, unable to write message to $FileName."
+        If ((-not $Config) -or $Level -in $Config.LogLevel) { 
+
+            # Inherit the same verbosity settings as the script importing this
+            If (-not $PSBoundParameters.ContainsKey('InformationPreference')) { $InformationPreference = $PSCmdlet.GetVariableValue('InformationPreference') }
+            If (-not $PSBoundParameters.ContainsKey('Verbose')) { $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') }
+            If (-not $PSBoundParameters.ContainsKey('Debug')) { $DebugPreference = $PSCmdlet.GetVariableValue('DebugPreference') }
+
+            Switch ($Level) { 
+                'Error' { 
+                    $LevelText = 'ERROR:'
+                    Write-Warning -Message $Message
+                }
+                'Warn' { 
+                    $LevelText = 'WARNING:'
+                    Write-Warning -Message $Message
+                }
+                'Info' { 
+                    $LevelText = 'INFO:'
+                    Write-Information -MessageData $Message
+                }
+                'Verbose' { 
+                    $LevelText = 'VERBOSE:'
+                    Write-Verbose -Message $Message
+                }
+                'Debug' { 
+                    $LevelText = 'DEBUG:'
+                    Write-Debug -Message $Message
+                }
+            }
+
+            If ($Variables.LogFile) { 
+                # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
+                # This lets us ensure only one thread is trying to write to the file at a time. 
+                $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteLog")
+
+                $Filename = $Variables.LogFile
+                $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+                # Attempt to aquire mutex, waiting up to 1 second If necessary.  If aquired, write to the log file and release mutex.  Otherwise, display an error. 
+                If ($Mutex.WaitOne(1000)) { 
+                    "$Date $LevelText $Message" | Out-File -FilePath $FileName -Append -Encoding UTF8
+                    $Mutex.ReleaseMutex()
+                }
+                Else { 
+                    Write-Error -Message "Log file is locked, unable to write message to $FileName."
+                }
+            }
         }
     }
     End { }
@@ -215,13 +399,13 @@ Function Update-Monitoring {
     # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
 
     # Skip If server and user aren't filled out
-    If (!$Config.MonitoringServer) { return }
-    If (!$Config.MonitoringUser) { return }
+    If (-not $Config.MonitoringServer) { return }
+    If (-not $Config.MonitoringUser) { return }
 
     If ($Config.ReportToServer) { 
         $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
         $Status = If ($Variables.Paused) { "Paused" } Else { "Running" }
-        $RunningMiners = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" }
+        $RunningMiners = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" }
         # Add the associated object from $Variables.Miners since we need data from that too
         $RunningMiners | Foreach-Object { 
             $RunningMiner = $_
@@ -304,7 +488,7 @@ Function Start-Mining {
     $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
     $CycleRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
     $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-    $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $LabelStatus)
+    $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
     $CycleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
     $Powershell = [powershell]::Create()
     $Powershell.Runspace = $CycleRunspace
@@ -348,7 +532,7 @@ Function Start-Mining {
                     Update-Monitoring
                     $EndLoop = (Get-Date).AddSeconds($Variables.TimeToSleep)
                     # On crashed miner start next loop immediately
-                    While ((Get-Date) -lt $EndLoop -and ($Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } )) {
+                    While ((Get-Date) -lt $EndLoop -and ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } )) {
                         Start-Sleep 2
                     }
                 }
@@ -361,8 +545,8 @@ Function Start-Mining {
 
 Function Stop-Mining { 
   
-    If ($Variables.ActiveMinerPrograms) { 
-        $Variables.ActiveMinerPrograms | ForEach-Object { 
+    If ($Variables.ActiveMiners) { 
+        $Variables.ActiveMiners | ForEach-Object { 
             [Array]$filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($filtered.Count -eq 0) { 
                 If ($_.Process -eq $null) { 
@@ -389,38 +573,29 @@ Function Stop-Mining {
     If ($Powershell) { $Powershell.Dispose() }
 }
 
-Function Update-Status ($Text) { 
-    $Text | Out-Host
-    $LabelStatus.Lines += $Text
-    If ($LabelStatus.Lines.Count -gt 20) { $LabelStatus.Lines = $LabelStatus.Lines[($LabelStatus.Lines.count - 10)..$LabelStatus.Lines.Count] }
-    $LabelStatus.SelectionStart = $LabelStatus.TextLength;
-    $LabelStatus.ScrollToCaret();
-    $LabelStatus.Refresh | Out-Null
-}
-
 Function Update-Notifications ($Text) { 
     $LabelNotifications.Lines += $Text
     If ($LabelNotifications.Lines.Count -gt 20) { $LabelNotifications.Lines = $LabelNotifications.Lines[($LabelNotifications.Lines.count - 10)..$LabelNotifications.Lines.Count] }
-    $LabelNotifications.SelectionStart = $LabelStatus.TextLength;
+    $LabelNotifications.SelectionStart = $Variables.LabelStatus.TextLength;
     $LabelNotifications.ScrollToCaret();
-    $LabelStatus.Refresh | Out-Null
+    $Variables.LabelStatus.Refresh | Out-Null
 }
 
 Function DetectGPUCount { 
-    Update-Status("Fetching GPU Count")
+    Write-Message "Fetching GPU Count"
     $DetectedGPU = @()
     Try { 
         $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
     }
-    Catch { Update-Status("NVIDIA Detection failed") }
+    Catch { Write-Message "NVIDIA Detection failed" }
     Try { 
         $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
     }
-    Catch { Update-Status("AMD Detection failed") }
+    Catch { Write-Message "AMD Detection failed" }
     $DetectedGPUCount = $DetectedGPU.Count
     $i = 0
-    $DetectedGPU | ForEach-Object { Update-Status("$($i): $($_.Name)") | Out-Null; $i++ }
-    Update-Status("Found $($DetectedGPUCount) GPU(s)")
+    $DetectedGPU | ForEach-Object { Write-Message "$($i): $($_.Name)" | Out-Null; $i++ }
+    Write-Message "Found $($DetectedGPUCount) GPU(s)"
     $DetectedGPUCount
 }
 
@@ -429,10 +604,14 @@ Function Load-Config {
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
     )
+    If ($Global:Config -isnot [Hashtable]) { 
+        New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
+    }
     If (Test-Path $ConfigFile -PathType Leaf) { 
-        $ConfigLoad = Get-Content $ConfigFile | ConvertFrom-json
-        $ConfigLoad | ForEach-Object { $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-                $Config | Add-Member -Force @{$_.Name = $_.Value } }
+        Get-Content $ConfigFile | ConvertFrom-Json | ForEach-Object { 
+            $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
+                $Global:Config | Add-Member -Force @{ $_.Name = $_.Value }
+            }
         }
     }
 }
@@ -442,18 +621,23 @@ Function Write-Config {
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
     )
-    If ($Config.ManualConfig) { Update-Status("Manual config mode - Not saving config"); return }
-    If ($Config -is [Hashtable]) { 
+    If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; return }
+    If ($Global:Config -is [Hashtable]) { 
         If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
-        $OrderedConfig = [PSCustomObject]@{ } ; ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig) | ForEach-Object { $_.PSObject.Properties | Sort-Object Name | ForEach-Object { $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } } }
-        $OrderedConfig | ConvertTo-Json | out-file $ConfigFile
+        $OrderedConfig = [PSCustomObject]@{ }
+        $Global:Config |ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
+            $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
+                $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
+            } 
+        }
+        $OrderedConfig | ConvertTo-Json | Out-File $ConfigFile
         $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
         $OrderedPoolsConfig = [PSCustomObject]@{ } ; $PoolsConfig | ForEach-Object { $_.PSObject.Properties | Sort-Object  Name | ForEach-Object { $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value } } }
         $OrderedPoolsConfig.default | Add-Member -Force @{ Wallet = $Config.Wallet }
         $OrderedPoolsConfig.default | Add-Member -Force @{ UserName = $Config.UserName }
         $OrderedPoolsConfig.default | Add-Member -Force @{ WorkerName = $Config.WorkerName }
         $OrderedPoolsConfig.default | Add-Member -Force @{ APIKey = $Config.APIKey }
-        $OrderedPoolsConfig | ConvertTo-Json | out-file ".\Config\PoolsConfig.json"
+        $OrderedPoolsConfig | ConvertTo-Json | Out-File ".\Config\PoolsConfig.json"
     }
 }
 
@@ -479,7 +663,9 @@ Function Set-Stat {
         [Parameter(Mandatory = $false)]
         [Bool]$FaultDetection = $false, 
         [Parameter(Mandatory = $false)]
-        [Bool]$ChangeDetection = $false
+        [Bool]$ChangeDetection = $false,
+        [Parameter(Mandatory = $false)]
+        [Int]$ToleranceExceeded = 3
     )
 
     $Timer = $Updated = $Updated.ToUniversalTime()
@@ -492,7 +678,7 @@ Function Set-Stat {
     If ($Stat -is [Hashtable] -and $Stat.IsSynchronized) { 
         If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
-        If ($Duration -le 0) { return $Stat }
+        If ($Duration -le 0) { Return $Stat }
 
         $ToleranceMin = $Value
         $ToleranceMax = $Value
@@ -507,24 +693,24 @@ Function Set-Stat {
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt 3) {
+        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
             #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
-                Update-Status("Warning: Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update].")
+                Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
             else { 
-                Update-Status("Warning: Stat file ($Name) was not updated because the value ($($Value.ToString("N2"))W) is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [$($Stat.ToleranceExceeded) of 3 until enforced update].")
+                Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($($Value.ToString("N2"))W) is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
         }
         Else { 
-            If ($Value -eq 0 -or $Stat.ToleranceExceeded -gt 2) {
+            If ($Value -eq 0 -or $Stat.ToleranceExceeded -eq $ToleranceExceeded) { 
                 #Update immediately if stat value is 0
                 If ($Value) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Update-Status("Warning: Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row.")
+                        Write-Message -Level Warn "Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row."
                     }
                     Else { 
-                        Update-Status("Warning: Stat file ($Name) was forcefully updated with value ($($Value.ToString("N2"))W) because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row.")
+                        Write-Message -Level Warn "Stat file ($Name) was forcefully updated with value ($($Value.ToString("N2"))W) because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
                     }
                 }
 
@@ -653,7 +839,7 @@ Function Get-Stat {
                 If (-not (Test-Path "Stats" -PathType Container)) { 
                     New-Item "Stats" -ItemType "directory" -Force | Out-Null
                 }
-                return
+                Return
             }
 
             Try { 
@@ -681,7 +867,7 @@ Function Get-Stat {
                 )
             }
             Catch { 
-                Write-Log -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset. "
+                Write-Message -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset. "
                 Remove-Stat $Stat_Name
             }
         }
@@ -816,30 +1002,30 @@ Function Invoke_httpRequest {
 #************************************************************************************************************************************************************************************
 #************************************************************************************************************************************************************************************
 
-Function Get-HashRate { 
+Function Get-MinerData { 
     param(
         [Parameter(Mandatory = $true)]
-        [String]$API, 
-        [Parameter(Mandatory = $true)]
-        [Int]$Port, 
-        [Parameter(Mandatory = $true)]
-        [String[]]$Algorithms
+        [PSCustomObject]$Miner
     )
 
+    $API = $Miner.API
+    $Port = $Miner.Port
     $Server = "localhost"
     $Timeout = 45 #Seconds
+    $Algorithms = @($Miner.Pools.PSObject.Properties.Name)
+    
 
     Try { 
-        Switch ($API) { 
+        Switch ($Miner.API) { 
             "bminer" { 
                 $Request = Invoke_httpRequest $Server $Port "/api/v1/status/solver" $Timeout
                 If ($Request) { 
                     $Data = $Request.content | ConvertFrom-Json 
-                    $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
-                        $HashRate += [Double]$Data.devices.$_.solvers[0].speed_info.hash_rate
-                        $HashRate += [Double]$Data.devices.$_.solvers[0].speed_info.solution_rate
-                        $HashRate_Dual += [Double]$Data.devices.$_.solvers[1].speed_info.hash_rate
-                        $HashRate_Dual += [Double]$Data.devices.$_.solvers[1].speed_info.solution_rate
+                    $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
+                        if ($Data.devices.$_.solvers[0].speed_info.hash_rate) { $HashRate_Value += [Double]$Data.devices.$_.solvers[0].speed_info.hash_rate }
+                        else { $HashRate_Value += [Double]$Data.devices.$_.solvers[0].speed_info.solution_rate }
+                        if ($Data.devices.$_.solvers[1].speed_info.hash_rate) { $HashRateDual_Value += [Double]$Data.devices.$_.solvers[1].speed_info.hash_rate }
+                        else { $HashRateDual_Value += [Double]$Data.devices.$_.solvers[1].speed_info.solution_rate }
                     }
                 }
             }
@@ -848,7 +1034,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json 
-                    $HashRate = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
+                    $HashRate_Value = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
                 }
             }
 
@@ -856,7 +1042,7 @@ Function Get-HashRate {
                 $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
                 If ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData
-                    $HashRate = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * 1000 }
+                    $HashRate_Value = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * 1000 }
                 }
             }
 
@@ -864,8 +1050,8 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result[2].Split(";")[0] * 1000
-                    $HashRate_Dual = [Double]$Data.result[4].Split(";")[0] * 1000
+                    $HashRate_Value = [Double]$Data.result[2].Split(";")[0] * 1000
+                    $HashRateDual_Value = [Double]$Data.result[4].Split(";")[0] * 1000
                 }
             }
 
@@ -873,7 +1059,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "" $Timeout
                 If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result[2].Split(";")[0] 
+                    $HashRate_Value = [Double]$Data.result[2].Split(";")[0] 
                 }
             }
 
@@ -881,7 +1067,7 @@ Function Get-HashRate {
                 $Request = Invoke_TcpRequest $server $port "empty" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
-                    $HashRate = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
+                    $HashRate_Value = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
                 }
             }
 
@@ -890,7 +1076,7 @@ Function Get-HashRate {
                 $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double](($Data.result[2] -split ';')[0]) * 1000
+                    $HashRate_Value = [Double](($Data.result[2] -split ';')[0]) * 1000
                 }
             }
 
@@ -899,7 +1085,7 @@ Function Get-HashRate {
                 $Request = Invoke_TcpRequest $server $port $message $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
+                    $HashRate_Value = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
                 }
             }
 
@@ -907,9 +1093,9 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/h" $Timeout
                 If ($Request) { 
                     $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
-                    $HashRate = $Data[1]
-                    If (-not $HashRate) { $HashRate = $Data[2] }
-                    If (-not $HashRate) { $HashRate = $Data[3] }
+                    $HashRate_Value = $Data[1]
+                    If (-not $HashRate_Value) { $HashRate_Value = $Data[2] }
+                    If (-not $HashRate_Value) { $HashRate_Value = $Data[3] }
                 }
             }
 
@@ -917,8 +1103,8 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
-                    $HashRate_Dual = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+                    $HashRate_Value = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+                    $HashRateDual_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
                 }
             }
 
@@ -926,8 +1112,8 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
-                    $HashRate_Dual = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+                    $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+                    $HashRateDual_Value = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
                 }
             }
 
@@ -935,7 +1121,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
+                    $HashRate_Value = [Double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
                 }
             }
 
@@ -943,7 +1129,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/summary" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$data.Session.Performance_Summary
+                    $HashRate_Value = [Double]$data.Session.Performance_Summary
                 }
             }
 
@@ -952,7 +1138,7 @@ Function Get-HashRate {
                 $Request = Invoke_TcpRequest $server $port $message $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
+                    $HashRate_Value = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
                 }
             }
 
@@ -963,12 +1149,12 @@ Function Get-HashRate {
                     $Data.Statistics.Devices | ForEach-Object { 
                         $DeviceData = $_
                         Switch ($DeviceData.Hashrates[0].unit) { 
-                            "KH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
-                            "MH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
-                            "GH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
-                            "TH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
-                            "PH/s" { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
-                            default { $HashRate += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
+                            "KH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
+                            "MH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
+                            "GH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
+                            "TH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
+                            "PH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
+                            default { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
                         }
                     }
                 }
@@ -979,11 +1165,11 @@ Function Get-HashRate {
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     If ($Algorithms.Count -eq 2) { 
-                        $HashRate = [Double]$Data.miner.total_hashrate2_raw
-                        $HashRate_Dual = [Double]$Data.miner.total_hashrate_raw
+                        $HashRate_Value = [Double]$Data.miner.total_hashrate2_raw
+                        $HashRateDual_Value = [Double]$Data.miner.total_hashrate_raw
                     }
                     else { 
-                        $HashRate = [Double]$Data.miner.total_hashrate_raw
+                        $HashRate_Value = [Double]$Data.miner.total_hashrate_raw
                     }
                 }
             }
@@ -993,11 +1179,11 @@ Function Get-HashRate {
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     If ($Algorithms.Count -eq 2) { 
-                        $HashRate = [Double]$Data.miner.total_hashrate2_raw
-                        $HashRate_Dual = [Double]$Data.miner.total_hashrate_raw
+                        $HashRate_Value = [Double]$Data.miner.total_hashrate2_raw
+                        $HashRateDual_Value = [Double]$Data.miner.total_hashrate_raw
                     }
                     else { 
-                        $HashRate = [Double]$Data.miner.total_hashrate2_raw
+                        $HashRate_Value = [Double]$Data.miner.total_hashrate2_raw
                     }
                 }
             }
@@ -1006,7 +1192,7 @@ Function Get-HashRate {
                 $Request = Invoke_TcpRequest $Server $Port "status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]$Data.result.speed_ips * 1000000
+                    $HashRate_Value = [Double]$Data.result.speed_ips * 1000000
                 }
             }
 
@@ -1014,7 +1200,7 @@ Function Get-HashRate {
                 $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";"
-                    $HashRate = [Double]($Data[5] -split '=')[1] * 1000
+                    $HashRate_Value = [Double]($Data[5] -split '=')[1] * 1000
                 }
             }
 
@@ -1022,7 +1208,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double]($Data.rate | Measure-Object -Sum).sum
+                    $HashRate_Value = [Double]($Data.rate | Measure-Object -Sum).sum
                 }
             }
 
@@ -1030,7 +1216,7 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = @(
+                    $HashRate_Value = @(
                         [Double]$Data.HashRate_total_now
                         [Double]$Data.HashRate_total_5min
                     ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
@@ -1042,7 +1228,7 @@ Function Get-HashRate {
                 $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
-                    $HashRate = [Double](($Data.result[2] -split ';')[0]) #* 1000
+                    $HashRate_Value = [Double](($Data.result[2] -split ';')[0]) #* 1000
                 }
             }
 
@@ -1053,7 +1239,7 @@ Function Get-HashRate {
                 if ($Request) { 
                     $Data = $Request.Substring($Request.IndexOf("{ "), $Request.LastIndexOf("}") - $Request.IndexOf("{ ") + 1) -replace " ", "_" | ConvertFrom-Json
 
-                    $HashRate = If ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow(1000, 0) }
+                    $HashRate_Value = If ($Data.SUMMARY.HS_5s -ne $null) { [Double]$Data.SUMMARY.HS_5s * [math]::Pow(1000, 0) }
                     ElseIf ($Data.SUMMARY.KHS_5s) { [Double]$Data.SUMMARY.KHS_5s * [Math]::Pow(1000, 1) }
                     ElseIf ($Data.SUMMARY.MHS_5s) { [Double]$Data.SUMMARY.MHS_5s * [Math]::Pow(1000, 2) }
                     ElseIf ($Data.SUMMARY.GHS_5s) { [Double]$Data.SUMMARY.GHS_5s * [Math]::Pow(1000, 3) }
@@ -1078,34 +1264,470 @@ Function Get-HashRate {
                 $Request = Invoke_httpRequest $Server $Port "/api.json" $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json 
-                    $HashRate = [Double]$Data.hashrate.total[0]
+                    $HashRate_Value = [Double]$Data.hashrate.total[0]
                 }
             }
 
             "wrapper" { 
-                $HashRate = ""
+                $HashRate_Value = ""
                 $wrpath = ".\Logs\energi.txt"
-                $HashRate = If (Test-Path -Path $wrpath -PathType Leaf ) { 
-                    Get-Content  $wrpath
-                    $HashRate = ($HashRate -split ',')[0]
-                    $HashRate = ($HashRate -split '.')[0]
+                $HashRate_Value = If (Test-Path -Path $wrpath -PathType Leaf ) { 
+                    Get-Content $wrpath
+                    $HashRate_Value = ($HashRate_Value-split ',')[0]
+                    If (-not $HashRate_Value) { $HashRate_Value = ($HashRate_Value-split '.')[0] }
 
                 }
-                Else { $hashrate = 0 }
+                Else { $HashRate_Value = 0 }
             }
 
             "zjazz" { 
                 $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
-                    $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
+                    $HashRate_Value = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
                 }
             }
         } #end Switch
 
-        @([Double]$HashRate, [Double]$HashRate_Dual)
+        $HashRate = [PSCustomObject]@{}
+        $HashRate | Add-Member @{ $Algorithms[0] = $HashRate_Value }
+        If ($Algorithms.Count -eq 2) { 
+            $HashRate | Add-Member @{ $Algorithms[1] = $HashRateDual_Value }
+        }
+
+        [PSCustomObject]@{
+            Date       = (Get-Date).ToUniversalTime()
+            Raw        = $Data
+            HashRate   = $HashRate
+            #Shares     = $Shares
+        }
     }
     Catch { }
+}
+
+Function Get-CpuId { 
+
+    # Brief : gets CPUID (CPU name and registers)
+
+    #OS Features
+    $OS_x64 = "" #not implemented
+    $OS_AVX = "" #not implemented
+    $OS_AVX512 = "" #not implemented
+
+    #Vendor
+    $vendor = "" #not implemented
+
+    If ($vendor -eq "GenuineIntel") { 
+        $Vendor_Intel = $true;
+    }
+    ElseIf ($vendor -eq "AuthenticAMD") { 
+        $Vendor_AMD = $true;
+    }
+
+    $info = [CpuID]::Invoke(0)
+    #convert 16 bytes to 4 ints for compatibility with existing code
+    $info = [int[]]@(
+        [BitConverter]::ToInt32($info, 0 * 4)
+        [BitConverter]::ToInt32($info, 1 * 4)
+        [BitConverter]::ToInt32($info, 2 * 4)
+        [BitConverter]::ToInt32($info, 3 * 4)
+    )
+
+    $nIds = $info[0]
+
+    $info = [CpuID]::Invoke(0x80000000)
+    $nExIds = [BitConverter]::ToUInt32($info, 0 * 4) #not sure as to why 'nExIds' is unsigned; may not be necessary
+    #convert 16 bytes to 4 ints for compatibility with existing code
+    $info = [int[]]@(
+        [BitConverter]::ToInt32($info, 0 * 4)
+        [BitConverter]::ToInt32($info, 1 * 4)
+        [BitConverter]::ToInt32($info, 2 * 4)
+        [BitConverter]::ToInt32($info, 3 * 4)
+    )
+
+    #Detect Features
+    $features = @{ }
+    If ($nIds -ge 0x00000001) { 
+
+        $info = [CpuID]::Invoke(0x00000001)
+        #convert 16 bytes to 4 ints for compatibility with existing code
+        $info = [int[]]@(
+            [BitConverter]::ToInt32($info, 0 * 4)
+            [BitConverter]::ToInt32($info, 1 * 4)
+            [BitConverter]::ToInt32($info, 2 * 4)
+            [BitConverter]::ToInt32($info, 3 * 4)
+        )
+
+        $features.MMX = ($info[3] -band ([int]1 -shl 23)) -ne 0
+        $features.SSE = ($info[3] -band ([int]1 -shl 25)) -ne 0
+        $features.SSE2 = ($info[3] -band ([int]1 -shl 26)) -ne 0
+        $features.SSE3 = ($info[2] -band ([int]1 -shl 00)) -ne 0
+
+        $features.SSSE3 = ($info[2] -band ([int]1 -shl 09)) -ne 0
+        $features.SSE41 = ($info[2] -band ([int]1 -shl 19)) -ne 0
+        $features.SSE42 = ($info[2] -band ([int]1 -shl 20)) -ne 0
+        $features.AES = ($info[2] -band ([int]1 -shl 25)) -ne 0
+
+        $features.AVX = ($info[2] -band ([int]1 -shl 28)) -ne 0
+        $features.FMA3 = ($info[2] -band ([int]1 -shl 12)) -ne 0
+
+        $features.RDRAND = ($info[2] -band ([int]1 -shl 30)) -ne 0
+    }
+
+    If ($nIds -ge 0x00000007) { 
+
+        $info = [CpuID]::Invoke(0x00000007)
+        #convert 16 bytes to 4 ints for compatibility with existing code
+        $info = [int[]]@(
+            [BitConverter]::ToInt32($info, 0 * 4)
+            [BitConverter]::ToInt32($info, 1 * 4)
+            [BitConverter]::ToInt32($info, 2 * 4)
+            [BitConverter]::ToInt32($info, 3 * 4)
+        )
+
+        $features.AVX2 = ($info[1] -band ([int]1 -shl 05)) -ne 0
+
+        $features.BMI1 = ($info[1] -band ([int]1 -shl 03)) -ne 0
+        $features.BMI2 = ($info[1] -band ([int]1 -shl 08)) -ne 0
+        $features.ADX = ($info[1] -band ([int]1 -shl 19)) -ne 0
+        $features.MPX = ($info[1] -band ([int]1 -shl 14)) -ne 0
+        $features.SHA = ($info[1] -band ([int]1 -shl 29)) -ne 0
+        $features.PREFETCHWT1 = ($info[2] -band ([int]1 -shl 00)) -ne 0
+
+        $features.AVX512_F = ($info[1] -band ([int]1 -shl 16)) -ne 0
+        $features.AVX512_CD = ($info[1] -band ([int]1 -shl 28)) -ne 0
+        $features.AVX512_PF = ($info[1] -band ([int]1 -shl 26)) -ne 0
+        $features.AVX512_ER = ($info[1] -band ([int]1 -shl 27)) -ne 0
+        $features.AVX512_VL = ($info[1] -band ([int]1 -shl 31)) -ne 0
+        $features.AVX512_BW = ($info[1] -band ([int]1 -shl 30)) -ne 0
+        $features.AVX512_DQ = ($info[1] -band ([int]1 -shl 17)) -ne 0
+        $features.AVX512_IFMA = ($info[1] -band ([int]1 -shl 21)) -ne 0
+        $features.AVX512_VBMI = ($info[2] -band ([int]1 -shl 01)) -ne 0
+    }
+
+    if ($nExIds -ge 0x80000001) { 
+
+        $info = [CpuID]::Invoke(0x80000001)
+        #convert 16 bytes to 4 ints for compatibility with existing code
+        $info = [int[]]@(
+            [BitConverter]::ToInt32($info, 0 * 4)
+            [BitConverter]::ToInt32($info, 1 * 4)
+            [BitConverter]::ToInt32($info, 2 * 4)
+            [BitConverter]::ToInt32($info, 3 * 4)
+        )
+
+        $features.x64 = ($info[3] -band ([int]1 -shl 29)) -ne 0
+        $features.ABM = ($info[2] -band ([int]1 -shl 05)) -ne 0
+        $features.SSE4a = ($info[2] -band ([int]1 -shl 06)) -ne 0
+        $features.FMA4 = ($info[2] -band ([int]1 -shl 16)) -ne 0
+        $features.XOP = ($info[2] -band ([int]1 -shl 11)) -ne 0
+    }
+
+    # wrap data into PSObject
+    [PSCustomObject]@{ 
+        Vendor   = $vendor
+        Name     = $name
+        Features = $features.Keys.ForEach{ if ($features.$_) { $_ } }
+    }
+}
+Function Get-Device { 
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false)]
+        [String[]]$Name = @(), 
+        [Parameter(Mandatory = $false)]
+        [String[]]$ExcludeName = @(), 
+        [Parameter(Mandatory = $false)]
+        [Switch]$Refresh = $false
+    )
+
+    If ($Name) { 
+        $DeviceList = Get-Content ".\Includes\Devices.txt" | ConvertFrom-Json
+        $Name_Devices = $Name | ForEach-Object { 
+            $Name_Split = $_ -split '#'
+            $Name_Split = @($Name_Split | Select-Object -Index 0) + @($Name_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
+            $Name_Split += @("*") * (100 - $Name_Split.Count)
+
+            $Name_Device = $DeviceList.("{0}" -f $Name_Split) | Select-Object *
+            $Name_Device | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Name_Device.$_ = $Name_Device.$_ -f $Name_Split }
+
+            $Name_Device
+        }
+    }
+
+    If ($ExcludeName) { 
+        If (-not $DeviceList) { $DeviceList = Get-Content ".\Includes\Devices.txt" | ConvertFrom-Json }
+        $ExcludeName_Devices = $ExcludeName | ForEach-Object { 
+            $ExcludeName_Split = $_ -split '#'
+            $ExcludeName_Split = @($ExcludeName_Split | Select-Object -Index 0) + @($ExcludeName_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
+            $ExcludeName_Split += @("*") * (100 - $ExcludeName_Split.Count)
+
+            $ExcludeName_Device = $DeviceList.("{0}" -f $ExcludeName_Split) | Select-Object *
+            $ExcludeName_Device | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $ExcludeName_Device.$_ = $ExcludeName_Device.$_ -f $ExcludeName_Split }
+
+            $ExcludeName_Device
+        }
+    }
+
+    If ($Variables.Devices -isnot [Array] -or $Refresh) { 
+        $Variables | Add-Member -Force @{ Devices = @() }
+
+        $Id = 0
+        $Type_Id = @{ }
+        $Vendor_Id = @{ }
+        $Type_Vendor_Id = @{ }
+
+        $Slot = 0
+        $Type_Slot = @{ }
+        $Vendor_Slot = @{ }
+        $Type_Vendor_Slot = @{ }
+
+        $Index = 0
+        $Type_Index = @{ }
+        $Vendor_Index = @{ }
+        $Type_Vendor_Index = @{ }
+        $PlatformId = 0
+        $PlatformId_Index = @{ }
+        $Type_PlatformId_Index = @{ }
+
+        #Get WDDM data
+        Try { 
+            Get-CimInstance CIM_Processor | ForEach-Object { 
+                $Device_CIM = $_ | ConvertTo-Json | ConvertFrom-Json
+
+                #Add normalised values
+                $Variables.Devices += $Device = [PSCustomObject]@{ 
+                    Name   = $null
+                    Model  = $Device_CIM.Name
+                    Type   = "CPU"
+                    Bus    = $null
+                    Vendor = $(
+                        Switch -Regex ($Device_CIM.Manufacturer) { 
+                            "Advanced Micro Devices" { "AMD" }
+                            "Intel" { "INTEL" }
+                            "NVIDIA" { "NVIDIA" }
+                            "AMD" { "AMD" }
+                            default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]' }
+                        }
+                    )
+                    Memory = $null
+                }
+
+                $Device | Add-Member @{ 
+                    Id             = [Int]$Id
+                    Type_Id        = [Int]$Type_Id.($Device.Type)
+                    Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
+                    Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
+                }
+
+                $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+                $Device.Model = (($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]'
+
+                If (-not $Type_Vendor_Id.($Device.Type)) { 
+                    $Type_Vendor_Id.($Device.Type) = @{ }
+                }
+
+                $Id++
+                $Vendor_Id.($Device.Vendor)++
+                $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
+                $Type_Id.($Device.Type)++
+
+                #Read CPU features
+#                $Device | Add-member CpuFeatures ((Get-CpuId).Features | Sort-Object)
+
+                # #Add raw data
+                # $Device | Add-Member @{ 
+                #     CIM = $Device_CIM
+                # }
+            }
+
+            Get-CimInstance CIM_VideoController | ForEach-Object { 
+                $Device_CIM = $_ | ConvertTo-Json | ConvertFrom-Json
+
+                $Device_PNP = [PSCustomObject]@{ }
+                Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
+                $Device_PNP = $Device_PNP | ConvertTo-Json | ConvertFrom-Json
+
+                $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json | ConvertFrom-Json
+
+                #Add normalised values
+                $Variables.Devices += $Device = [PSCustomObject]@{ 
+                    Name   = $null
+                    Model  = $Device_CIM.Name
+                    Type   = "GPU"
+                    Bus    = $(
+                        If ($Device_PNP.DEVPKEY_Device_BusNumber -is [Int64] -or $Device_PNP.DEVPKEY_Device_BusNumber -is [Int32]) { 
+                            [Int64]$Device_PNP.DEVPKEY_Device_BusNumber
+                        }
+                    )
+                    Vendor = $(
+                        Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
+                            "Advanced Micro Devices" { "AMD" }
+                            "Intel" { "INTEL" }
+                            "NVIDIA" { "NVIDIA" }
+                            "AMD" { "AMD" }
+                            default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]' }
+                        }
+                    )
+                    Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                }
+
+                $Device | Add-Member @{ 
+                    Id             = [Int]$Id
+                    Type_Id        = [Int]$Type_Id.($Device.Type)
+                    Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
+                    Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
+                }
+
+                $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]'
+
+                If (-not $Type_Vendor_Id.($Device.Type)) { 
+                    $Type_Vendor_Id.($Device.Type) = @{ }
+                }
+
+                $Id++
+                $Vendor_Id.($Device.Vendor)++
+                $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
+                $Type_Id.($Device.Type)++
+
+                # #Add raw data
+                # $Device | Add-Member @{ 
+                #      CIM = $Device_CIM
+                #      PNP = $Device_PNP
+                #      Reg = $Device_Reg
+                #  }
+            }
+        }
+        Catch { 
+            Write-Message -Level Warn "WDDM device detection has failed. "
+        }
+
+        # #Get OpenCL data
+        # Try { 
+        #     [OpenCl.Platform]::GetPlatformIDs() | ForEach-Object { 
+        #         [OpenCl.Device]::GetDeviceIDs($_, [OpenCl.DeviceType]::All) | ForEach-Object { 
+        #             $Device_OpenCL = $_ | ConvertTo-Json | ConvertFrom-Json
+
+        #             #Add normalised values
+        #             $Device = [PSCustomObject]@{ 
+        #                 Name   = $null
+        #                 Model  = $Device_OpenCL.Name
+        #                 Type   = $(
+        #                     Switch -Regex ([String]$Device_OpenCL.Type) { 
+        #                         "CPU" { "CPU" }
+        #                         "GPU" { "GPU" }
+        #                         default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]' }
+        #                     }
+        #                 )
+        #                 Bus    = $(
+        #                     If ($Device_OpenCL.PCIBus -is [Int64] -or $Device_OpenCL.PCIBus -is [Int32]) { 
+        #                         [Int64]$Device_OpenCL.PCIBus
+        #                     }
+        #                 )
+        #                 Vendor = $(
+        #                     Switch -Regex ([String]$Device_OpenCL.Vendor) { 
+        #                         "Advanced Micro Devices" { "AMD" }
+        #                         "Intel" { "INTEL" }
+        #                         "NVIDIA" { "NVIDIA" }
+        #                         "AMD" { "AMD" }
+        #                         default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]' }
+        #                     }
+        #                 )
+        #                 Memory = [UInt64]$Device_OpenCL.GlobalMemSize
+        #             }
+
+        #             $Device | Add-Member @{ 
+        #                 Id             = [Int]$Id
+        #                 Type_Id        = [Int]$Type_Id.($Device.Type)
+        #                 Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
+        #                 Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
+        #             }
+
+        #             $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+        #             $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)' -replace '[^A-Z0-9]'
+
+        #             If ($Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus) { 
+        #                 $Device = $Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus
+        #             }
+        #             ElseIf ($Device.Type -eq "GPU" -and ($Device.Vendor -eq "AMD" -or $Device.Vendor -eq "NVIDIA")) { 
+        #                 $Variables.Devices += $Device
+
+        #                 If (-not $Type_Vendor_Id.($Device.Type)) { 
+        #                     $Type_Vendor_Id.($Device.Type) = @{ }
+        #                 }
+        
+        #                 $Id++
+        #                 $Vendor_Id.($Device.Vendor)++
+        #                 $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
+        #                 $Type_Id.($Device.Type)++
+        #             }
+
+        #             #Add OpenCL specific data
+        #             $Device | Add-Member @{ 
+        #                 Index                 = [Int]$Index
+        #                 Type_Index            = [Int]$Type_Index.($Device.Type)
+        #                 Vendor_Index          = [Int]$Vendor_Index.($Device.Vendor)
+        #                 Type_Vendor_Index     = [Int]$Type_Vendor_Index.($Device.Type).($Device.Vendor)
+        #                 PlatformId            = [Int]$PlatformId
+        #                 PlatformId_Index      = [Int]$PlatformId_Index.($PlatformId)
+        #                 Type_PlatformId_Index = [Int]$Type_PlatformId_Index.($Device.Type).($PlatformId)
+        #             }
+
+        #             #Add raw data
+        #             $Device | Add-Member @{ 
+        #                 OpenCL = $Device_OpenCL
+        #             }
+
+        #             If (-not $Type_Vendor_Index.($Device.Type)) { 
+        #                 $Type_Vendor_Index.($Device.Type) = @{ }
+        #             }
+        #             If (-not $Type_PlatformId_Index.($Device.Type)) { 
+        #                 $Type_PlatformId_Index.($Device.Type) = @{ }
+        #             }
+
+        #             $Index++
+        #             $Type_Index.($Device.Type)++
+        #             $Vendor_Index.($Device.Vendor)++
+        #             $Type_Vendor_Index.($Device.Type).($Device.Vendor)++
+        #             $PlatformId_Index.($PlatformId)++
+        #             $Type_PlatformId_Index.($Device.Type).($PlatformId)++
+        #         }
+
+        #         $PlatformId++
+        #     }
+
+        #     $Variables.Devices | Where-Object Bus -Is [Int64] | Sort-Object Bus | ForEach-Object { 
+        #         $_ | Add-Member @{ 
+        #             Slot             = [Int]$Slot
+        #             Type_Slot        = [Int]$Type_Slot.($_.Type)
+        #             Vendor_Slot      = [Int]$Vendor_Slot.($_.Vendor)
+        #             Type_Vendor_Slot = [Int]$Type_Vendor_Slot.($_.Type).($_.Vendor)
+        #         }
+
+        #         If (-not $Type_Vendor_Slot.($_.Type)) { 
+        #             $Type_Vendor_Slot.($_.Type) = @{ }
+        #         }
+
+        #         $Slot++
+        #         $Type_Slot.($_.Type)++
+        #         $Vendor_Slot.($_.Vendor)++
+        #         $Type_Vendor_Slot.($_.Type).($_.Vendor)++
+        #     }
+        # }
+        # Catch { 
+        #     Write-Message -Level Warn "OpenCL device detection has failed. "
+        # }
+    }
+
+    $Variables.Devices | ForEach-Object { 
+        $Device = $_
+        If (-not $Name -or ($Name_Devices | Where-Object { ($Device | Select-Object ($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name)) -like ($_ | Select-Object ($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name)) })) { 
+            If (-not $ExcludeName -or -not ($ExcludeName_Devices | Where-Object { ($Device | Select-Object ($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name)) -like ($_ | Select-Object ($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name)) })) { 
+                $Device
+            }
+        }
+    }
 }
 
 Filter ConvertTo-Hash { 
@@ -1114,6 +1736,28 @@ Filter ConvertTo-Hash {
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs($_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
     "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
+}
+
+Function ConvertTo-LocalCurrency { 
+
+    # To get same numbering scheme regardless of value BTC value (size) to determine formatting
+    # Use $Offset to add/remove decimal places
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Value, 
+        [Parameter(Mandatory = $true)]
+        [Double]$BTCRate, 
+        [Parameter(Mandatory = $false)]
+        [Int]$Offset
+    )
+
+    $Digits = ([math]::truncate(10 - $Offset - [math]::log($BTCRate, 10)))
+    If ($Digits -lt 0) { $Digits = 0 }
+    If ($Digits -gt 10) { $Digits = 10 }
+
+    ($Value * $BTCRate).ToString("N$($Digits)")
 }
 
 Function Get-Combination { 
@@ -1345,33 +1989,50 @@ Function Start-SubProcess {
     $Process
 }
 
-
 Function Expand-WebRequest { 
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [String]$Uri, 
-        [Parameter(Mandatory = $true)]
-        [String]$Path
+        [Parameter(Mandatory = $false)]
+        [String]$Path = ""
     )
 
-    $FolderName_Old = ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName
-    $FolderName_New = Split-Path $Path -Leaf
-    $FileName = "$FolderName_New$(([IO.FileInfo](Split-Path $Uri -Leaf)).Extension)"
+    # Set current path used by .net methods to the same as the script's path
+    [Environment]::CurrentDirectory = $ExecutionContext.SessionState.Path.CurrentFileSystemLocation
+
+    If (-not $Path) { $Path = Join-Path ".\Downloads" ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName }
+    If (-not (Test-Path ".\Downloads" -PathType Container)) { New-Item "Downloads" -ItemType "directory" | Out-Null }
+    $FileName = Join-Path ".\Downloads" (Split-Path $Uri -Leaf)
 
     If (Test-Path $FileName -PathType Leaf) { Remove-Item $FileName }
-    If (Test-Path "$(Split-Path $Path)\$FolderName_New" -PathType Container) { Remove-Item "$(Split-Path $Path)\$FolderName_New" -Recurse -Force }
-    If (Test-Path "$(Split-Path $Path)\$FolderName_Old" -PathType Container) { Remove-Item "$(Split-Path $Path)\$FolderName_Old" -Recurse -Force }
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest $Uri -OutFile $FileName -UseBasicParsing
 
-    Invoke-WebRequest $Uri -OutFile $FileName -TimeoutSec 15 -UseBasicParsing
-    Start-Process ".\Utils\7z" "x $FileName -o$(Split-Path $Path)\$FolderName_Old -y -spe" -Wait
-    If (Get-ChildItem "$(Split-Path $Path)\$FolderName_Old" | Where-Object PSIsContainer -EQ $false) { 
-        Rename-Item "$(Split-Path $Path)\$FolderName_Old" "$FolderName_New"
+    If (".msi", ".exe" -contains ([IO.FileInfo](Split-Path $Uri -Leaf)).Extension) { 
+        Start-Process $FileName "-qb" -Wait
     }
     Else { 
-        Get-ChildItem "$(Split-Path $Path)\$FolderName_Old" | Where-Object PSIsContainer -EQ $true | ForEach-Object { Move-Item "$(Split-Path $Path)\$FolderName_Old\$_" "$(Split-Path $Path)\$FolderName_New" }
-        Remove-Item "$(Split-Path $Path)\$FolderName_Old"
+        $Path_Old = (Join-Path (Split-Path (Split-Path $Path)) ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName)
+        $Path_New = Split-Path $Path
+
+        If (Test-Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
+        Start-Process ".\Utils\7z" "x `"$([IO.Path]::GetFullPath($FileName))`" -o`"$([IO.Path]::GetFullPath($Path_Old))`" -y -spe" -Wait -WindowStyle Hidden
+
+        If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
+
+        #use first (topmost) directory in case, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
+        $Path_Old = (Get-ChildItem $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -Index 0
+
+        If ($Path_Old) { 
+            Move-Item $Path_Old $Path_New -PassThru | ForEach-Object -Process { $_.LastWriteTime = Get-Date }
+            $Path_Old = (Join-Path (Split-Path (Split-Path $Path)) ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName)
+            If (Test-Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
+        }
+        Else { 
+            Throw "Error: Cannot find $($Path). "
+        }
     }
-    Remove-item $FileName
 }
 
 Function Get-Algorithm { 
@@ -1412,7 +2073,7 @@ Function Autoupdate {
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     Write-host (Split-Path $script:MyInvocation.MyCommand.Path)
-    Update-Status("Checking AutoUpdate")
+    Write-Message "Checking AutoUpdate"
     Update-Notifications("Checking AutoUpdate")
     # write-host "Checking autoupdate"
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
@@ -1422,8 +2083,7 @@ Function Autoupdate {
     Catch { $AutoUpdateVersion = Get-content ".\Config\AutoUpdateVersion.json" | Convertfrom-json }
     If ($AutoUpdateVersion -ne $null) { $AutoUpdateVersion | ConvertTo-Json | Out-File ".\Config\AutoUpdateVersion.json" }
     If ($AutoUpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoUpdateVersion.Version -gt $Variables.CurrentVersion -and $AutoUpdateVersion.AutoUpdate) { 
-        Update-Status("Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))")
-        # Write-host "Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
+        Write-Message "Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
         $LabelNotifications.ForeColor = "Green"
         $LabelNotifications.Lines += "Version $([Version]$AutoUpdateVersion.Version) available"
 
@@ -1431,29 +2091,37 @@ Function Autoupdate {
             $LabelNotifications.Lines += "Starting Auto Update"
             # Setting autostart to true
             If ($Variables.Started) { $Config.autostart = $true }
-            Write-Config -ConfigFile $ConfigFile -Config $Config
+            Write-Config -ConfigFile $ConfigFile
             
             # Download update file
             $UpdateFileName = ".\$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version)"
-            Update-Status("Downloading version $($AutoUpdateVersion.Version)")
+            Write-Message "Downloading version $($AutoUpdateVersion.Version)"
             Update-Notifications("Downloading version $($AutoUpdateVersion.Version)")
             Try { 
                 Invoke-WebRequest $AutoUpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
             }
-            Catch { Update-Status("Update download failed"); Update-Notifications("Update download failed"); $LabelNotifications.ForeColor = "Red"; return }
+            Catch { 
+                Write-Message "Update download failed"
+                Update-Notifications("Update download failed")
+                $LabelNotifications.ForeColor = "Red"
+                Return
+            }
             If (-not (Test-Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
-                Update-Status("Cannot find update file")
+                Write-Message "Cannot find update file"
                 Update-Notifications("Cannot find update file")
                 $LabelNotifications.ForeColor = "Red"
                 return
             }
 
             # Backup current version folder in zip file
-            Update-Status("Backing up current version...")
+            Write-Message "Backing up current version..."
             Update-Notifications("Backing up current version...")
             $BackupFileName = ("AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
             Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
-            If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { Update-Status("Backup failed"); return }
+            If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
+                Write-Message "Backup failed"
+                Return
+            }
 
             # Pre update specific actions If any
             # Use PreUpdateActions.ps1 in new release to place code
@@ -1465,11 +2133,11 @@ Function Autoupdate {
             Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
             # unzip in child folder excluding config
-            Update-Status("Unzipping update...")
+            Write-Message "Unzipping update..."
             Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
 
             # copy files 
-            Update-Status("Copying files...")
+            Write-Message "Copying files..."
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
 
             # Remove any obsolete Optional miner file (ie. Not in new version OptionalMiners)
@@ -1488,7 +2156,7 @@ Function Autoupdate {
             }
 
             #Remove temp files
-            Update-Status("Removing temporary files...")
+            Write-Message "Removing temporary files..."
             Remove-Item .\$UpdateFileName -Force -Recurse
             Remove-Item ".\$($UpdateFileName).zip" -Force
             If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
@@ -1498,7 +2166,7 @@ Function Autoupdate {
             # Start new instance (Wait and confirm start)
             # Kill old instance
             If ($AutoUpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
-                Update-Status("Starting my brother")
+                Write-Message "Starting my brother"
                 $StartCommand = ((Get-CimInstance win32_process -filter "ProcessID=$PID" | Select-Object commandline).CommandLine)
                 $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
                 # Giving 10 seconds for process to start
@@ -1506,7 +2174,7 @@ Function Autoupdate {
                 Start-Sleep 10
                 While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
                 If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
-                    Update-Status("Failed to start new instance of $($Variables.CurrentProduct)")
+                    Write-Message "Failed to start new instance of $($Variables.CurrentProduct)"
                     Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
                     $LabelNotifications.ForeColor = "Red"
                     return
@@ -1516,10 +2184,10 @@ Function Autoupdate {
                 $TempVerObject | Add-Member -Force @{ AutoUpdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
                 
-                Update-Status("$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)")
+                Write-Message "$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)"
                 Update-Notifications("$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)")
 
-                Update-Status("Killing myself")
+                Write-Message "Killing myself"
                 If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
             }
             Else { 
@@ -1527,7 +2195,7 @@ Function Autoupdate {
                 $TempVerObject | Add-Member -Force @{ AutoUpdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
                 
-                Update-Status("Successfully updated to version $($AutoUpdateVersion.Version)")
+                Write-Message "Successfully updated to version $($AutoUpdateVersion.Version)"
                 Update-Notifications("Successfully updated to version $($AutoUpdateVersion.Version)")
                 $LabelNotifications.ForeColor = "Green"
             }
@@ -1544,7 +2212,7 @@ Function Autoupdate {
         }
     }
     Else { 
-        Update-Status("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
+        Write-Message "$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate"
         Update-Notifications("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
         $LabelNotifications.ForeColor = "Green"
     }

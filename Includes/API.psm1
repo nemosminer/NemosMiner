@@ -28,7 +28,7 @@ Function Start-APIServer {
         [Int]$Port = 3990
     )
 
-    $Variables | Add-Member APIVersion 0.1.1
+    $Variables | Add-Member APIVersion 0.1.2
 
     # Setup flags for controlling script execution
     # $Variables.Stop = $false
@@ -97,8 +97,16 @@ Function Start-APIServer {
 
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path -Split '\.' | Select-Object -Index 0) { 
-                    "/activeminerprograms" { 
-                        $Data = $Variables.ActiveMinerPrograms | ConvertTo-Json -Depth 10
+                    "/activeminerss" { 
+                        $Data = @($Variables.ActiveMiners | ConvertTo-Json -Depth 10)
+                        Break
+                    }
+                    "/alldevices" { 
+                        $Data = @($Variables.AllDevices | ConvertTo-Json -Depth 10)
+                        Break
+                    }
+                    "/configureddevices" { 
+                        $Data = @($Variables.ConfiguredDevices | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/apiversion" { 
@@ -106,39 +114,56 @@ Function Start-APIServer {
                         Break
                     }
                     "/brainjobs" { 
-                        $Data = $Variables.BrainJobs | ConvertTo-Json -Depth 10
+                        $Data = @($Variables.BrainJobs | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/config" { 
-                        $Data = $Config | ConvertTo-Json -Depth 10
+                        if ($Path -match "^.+\..+$") {
+                            $Data = $Config.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | ConvertTo-Json -Depth 10
+                        }
+                        else { 
+                            $Data = $Config | ConvertTo-Json -Depth 10
+                        }
+                        break
+                    }
+                    "/configureddevices" { 
+                        $Data = @($Variables.ConfiguredDevices | ConvertTo-Json -Depth 10)
+                        Break
+                    }
+                    "/devices" { 
+                        $Data = @($Variables.Devices | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/earnings" { 
-                        $Data = $Variables.earnings | ConvertTo-Json -Depth 10
+                        $Data = @($Variables.Earnings | ConvertTo-Json -Depth 10)
+                        Break
+                    }
+                    "/earningspool" { 
+                        $Data = @($Variables.Earningspool | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/earningstrackerjobs" { 
-                        $Data = $Variables.EarningsTrackerJobs | ConvertTo-Json -Depth 10
+                        $Data = @($Variables.EarningsTrackerJobs | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/miners" { 
-                        $Data = $Variables.miners | ConvertTo-Json -Depth 10
+                        $Data = @($Variables.Miners | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/poolsconfig" { 
-                        $Data = $Config.PoolsConfig | ConvertTo-Json -Depth 10
+                        $Data = @($Config.PoolsConfig | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/stats" { 
-                        $Data = $Stats | ConvertTo-Json -Depth 10
+                        $Data = @($Stats | ConvertTo-Json -Depth 10)
                         Break
                     }
                     "/variables" { 
                         if ($Path -match "^.+\..+$") {
-                            $Data = $Variables.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | ConvertTo-Json -Depth 10
+                            $Data = @($Variables.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | ConvertTo-Json -Depth 10)
                         }
                         else {
-                            $Data = $Variables | ConvertTo-Json -Depth 10
+                            $Data = @($Variables | ConvertTo-Json -Depth 10)
                         }
                         break
                     }

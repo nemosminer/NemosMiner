@@ -28,7 +28,13 @@ version date:   12 November 2019
 # Remove progress info from job.childjobs.Progress to avoid memory leak
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-$args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
+Try { 
+    $args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
+}
+Catch { 
+    cd "c:\Users\Stephan\Desktop\NemosMiner\"
+    $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
+}
 
 If ($WorkingDirectory) { Set-Location $WorkingDirectory }
 
@@ -37,27 +43,50 @@ Start-Transcript -Path ".\Logs\EarningTracker-$((Get-Date).ToString('yyyyMMdd'))
 
 If (Test-Path ".\Logs\EarningTrackerData.json") { $AllBalanceObjects = (Get-Content ".\logs\EarningTrackerData.json" | ConvertFrom-Json) } Else { $AllBalanceObjects = @() }
 
-$BalanceObjects = @()
 $TrustLevel = 0
-$StartTime = $LastAPIUpdateTime = Get-Date
+$StartTime = $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
+
+#To be removed: Fix typo in field name, convert date format
+If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+    $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue)
+
+    If ($DailyEarnings.PrePaimentDayValue | Select-Object) { 
+        $DailyEarnings = $DailyEarnings | ForEach-Object  { 
+            [PSCustomObject]@{
+                Date               = [DateTime]::parseexact($_.Date, "MM/dd/yyyy", $null).ToShortDateString()
+                Pool               = $_.Pool
+                DailyEarnings      = $_.DailyEarnings
+                StartTime          = ([DateTime]($_.FirstDayDate)).ToLongTimeString()
+                StartValue         = $_.FirstDayValue
+                EndTime            = ([DateTime]($_.LastDayDate)).ToLongTimeString()
+                EndValue           = $_.LastDayValue
+                PrePaymentDayValue = $_.PrePaimentDayValue
+                Balance            = $_.Balance
+                BTCD               = $_.BTCD
+            }
+        }
+        $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
+    }
+    Remove-Variable DailyEarnings
+}
 
 While ($true) { 
 
     #Read Config (ie. Pools to track)
-    $EarningsTrackerConfig = Get-content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
+    $EarningsTrackerConfig = Get-content ".\Config\EarningTrackerConfig.json" | ConvertFrom-Json
     $Interval = $EarningsTrackerConfig.PollInterval
     
     #Filter pools variants
     $TrackPools = @(($EarningsTrackerConfig.pools) -replace "24hr" -replace "coins") | Sort-Object -Unique
 
     # Get pools api ref
-    If (-not $PoolAPI -or ($LastAPIUpdateTime -le (Get-Date).AddDays(-1))) { 
+    If (-not $PoolAPI -or ($LastAPIUpdateTime -le (Get-Date).ToUniversalTime().AddDays(-1))) { 
         Try { 
             $PoolAPI = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/poolapiref.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-            $PoolAPI | ConvertTo-json | Out-File ".\Config\poolapiref.json" -Force
+            $PoolAPI | ConvertTo-Json | Out-File ".\Config\poolapiref.json" -Force
             $LastAPIUpdateTime = Get-Date
         }
-        Catch { $PoolAPI = Get-content ".\Config\poolapiref.json" | Convertfrom-Json }
+        Catch { $PoolAPI = Get-Content ".\Config\poolapiref.json" | ConvertFrom-Json }
     }
 
     #For each pool in config
@@ -66,6 +95,7 @@ While ($true) {
         $Pool = $_.Name -replace "24hr" -replace "coins"
         $APIUri = $_.WalletUri
         $PaymentThreshold = $_.PaymentThreshold
+        $BalanceData = [PSCustomObject]@{}
         $BalanceJson = $_.Balance
         $TotalJson = $_.Total
 
@@ -79,36 +109,34 @@ While ($true) {
             $Wallet = $PoolConf.Wallet
         }
 
-        $CurDate = Get-Date
+        $CurDate = (Get-Date).ToUniversalTime()
 
         Switch ($Pool) { 
             "nicehashV2" { 
                 Try { 
-                    $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs2") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    [Double]$NHTotalBalance = [Double]($BalanceData.unpaidAmount) + [Double]($BalanceData.externalBalance)
+                    $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
+                    $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
                 }
                 Catch { }
-                [Double]$NHTotalBalance = [Double]($TempBalanceData.unpaidAmount) + [Double]($TempBalanceData.externalBalance)
-                $TempBalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
-                $TempBalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
             }
             "mph" { 
                 Try { 
-                    $TempBalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) 
-                }
+                    $BalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) }
                 Catch { } #.confirmed
             }
             default { 
                 Try { 
-                    $TempBalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
                 }
                 Catch { }
             }
         }
-        If ($TempBalanceData.$TotalJson -gt 0) { 
-            $BalanceData = $TempBalanceData
-            $AllBalanceObjects += [PSCustomObject]@{ 
+        If ($BalanceData.$TotalJson -gt 0) { 
+            $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
                 Pool         = $Pool
-                Date         = $CurDate.ToLocalTime()
+                Date         = $CurDate
                 balance      = $BalanceData.$BalanceJson
                 unsold       = $BalanceData.unsold
                 total_unpaid = $BalanceData.total_unpaid
@@ -118,7 +146,6 @@ While ($true) {
             }
 
             $BalanceObjects = @($AllBalanceObjects | Where-Object { $_.Pool -eq $Pool } | Sort-Object Date)
-            $BalanceObject = $BalanceObjects | Select-Object -Last 1
 
             If ((($CurDate - ($BalanceObjects[0].Date)).TotalMinutes) -eq 0) { $CurDate = $CurDate.AddMinutes(1) }
             If ((($CurDate - ($BalanceObjects[0].Date)).TotalDays) -ge 1) { 
@@ -143,8 +170,8 @@ While ($true) {
             $EarningsObject = [PSCustomObject]@{ 
                 Pool                  = $pool
                 Wallet                = $Wallet
-                Date                  = $CurDate
-                StartTime             = $BalanceObjects[0].Date
+                Date                  = $CurDate.ToShortDateString()
+                StartTime             = ($BalanceObjects[0].Date).ToLongTimeString()
                 balance               = $BalanceObject.balance
                 unsold                = $BalanceObject.unsold
                 total_unpaid          = $BalanceObject.total_unpaid
@@ -170,36 +197,17 @@ While ($true) {
             $DailyEarnings = @()
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue) }
 
-            #Fix typo in field name, convert date format
-            If ($DailyEarnings.PrePaimentDayValue | Select-Object) { 
-                $DailyEarnings = $DailyEarnings | ForEach-Object { 
-                    [PSCustomObject]@{
-                        Date               = [DateTime]::parseexact($_.Date, "MM/dd/yyyy", $null).ToShortDateString()
-                        Pool               = $_.Pool
-                        DailyEarnings      = $_.DailyEarnings
-                        StartTime          = ([DateTime]($_.FirstDayDate)).ToLongTimeString()
-                        StartValue         = $_.FirstDayValue
-                        EndTime            = ([DateTime]($_.LastDayDate)).ToLongTimeString()
-                        EndValue           = $_.LastDayValue
-                        PrePaymentDayValue = $_.PrePaimentDayValue
-                        Balance            = $_.Balance
-                        BTCD               = $_.BTCD
-                    }
-                }
-                $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
-            }
-
             If (@($DailyEarnings | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }).Count -gt 1) {
                 # Must not be an array, remove todays data
                 $DailyEarnings = $DailyEarnings | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -lt $CurDate.ToShortDateString() }
                 $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
             }
 
-            If ($DailyEarning = ($DailyEarnings | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -match $CurDate.ToShortDateString() -and $_.Pool -eq $Pool }) | Select-Object -First 1) {
+            If ($DailyEarning = ($DailyEarnings | Where-Object { $_.Pool -eq $Pool -and [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null).ToShortDateString() -match $CurDate.ToShortDateString() }) | Select-Object -First 1) {
                 # pool may have reduced estimated balance, use new balance as start value to avoid negative values
                 $DailyEarning.StartValue = ($DailyEarning.StartValue, $BalanceObject.total_earned | Measure-Object -Minimum).Minimum
                 $DailyEarning.DailyEarnings = $BalanceObject.total_earned - $DailyEarning.StartValue
-                $DailyEarning.EndTime = $BalanceObject.Date.ToLongTimeString()
+                $DailyEarning.EndTime = ($BalanceObject.Date).ToLongTimeString()
                 $DailyEarning.EndValue = $BalanceObject.total_earned
                 If ($BalanceObject.total_earned -lt ($BalanceObjects[$BalanceObjects.Count - 2].total_earned / 2)) { 
                     $DailyEarning.PrePaymentDayValue = $BalanceObjects[$BalanceObjects.Count - 2].total_earned
@@ -217,9 +225,9 @@ While ($true) {
                     Date               = $CurDate.ToShortDateString()
                     Pool               = $Pool
                     DailyEarnings      = 0
-                    StartTime          = $BalanceObject.Date.ToLongTimeString()
+                    StartTime          = ($BalanceObject.Date).ToLongTimeString()
                     StartValue         = $BalanceObject.total_earned
-                    EndTime            = $BalanceObject.Date.ToLongTimeString()
+                    EndTime            = ($BalanceObject.Date).ToLongTimeString()
                     EndValue           = $BalanceObject.total_earned
                     PrePaymentDayValue = 0
                     Balance            = $BalanceObject.Balance
@@ -231,7 +239,7 @@ While ($true) {
             # Results in showing bad negative earnings
             # Detecting if current is more than 50% less than previous and reset history if so
             If ($BalanceObject.total_earned -lt ($BalanceObjects[$BalanceObjects.Count - 2].total_earned / 2)) { $AllBalanceObjects = $AllBalanceObjects | Where-Object { $_.Pool -ne $Pool }; $AllBalanceObjects += $BalanceObject }
-            Remove-Variable TempBalanceData
+            Remove-Variable BalanceData
         }
     }
 
@@ -240,12 +248,11 @@ While ($true) {
     # Save data only at defined interval. Limit disk access
     If ((Get-Date) -gt $WriteAt) { 
         $WriteAt = (Get-Date).AddMinutes($EarningsTrackerConfig.WriteEvery)
-        If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects | ConvertTo-JSON | Out-File ".\Logs\EarningTrackerData.json" }
+        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\EarningTrackerData.json" }
     }
 
     # Sleep until next update based on $Interval. Modulo $Interval.
-    # Sleep (60*($Interval-((get-date).minute%$Interval))) # Changed to avoid pool API load.
-    If (($EarningsObject.Date - $EarningsObject.StartTime).TotalMinutes -le 20) { 
+    If (($CurDate - $BalanceObject.Date).TotalMinutes -le 20) { 
         $Sleep = [Int](60 * ($Interval / 2))
     }
     Else { 
