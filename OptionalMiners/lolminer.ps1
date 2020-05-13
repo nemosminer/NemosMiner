@@ -1,33 +1,20 @@
-if (!(IsLoaded(".\Include.ps1"))) {. .\Include.ps1; RegisterLoaded(".\Include.ps1")}
- 
-$Path = ".\Bin\NVIDIA-AMD-lolMiner081\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.8.1/lolMiner_v081_Win64.zip"
-
-$Commands = [PSCustomObject]@{
-    #"equihash96" = " --coin MNX" #Equihash 96,5
-    #"equihash144" = " --coin AUTO144_5" #Equihash 144,5
-    #"equihash192" = " --coin AUTO192_7" #Equihash 192,7
-    #"beam" = " --coin BEAM" #Equihash 150,5
+If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+$Path = ".\Bin\NVIDIA-lolminer098\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.98/lolMiner_v098_Win64.zip"
+$Commands = [PSCustomObject]@{ 
     "grincuckatoo31" = " --coin GRIN-AT31" #grincuckatoo31
-    }
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-
-$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
-
-	$Algo = Get-Algorithm($_)
-    [PSCustomObject]@{
+    "grincuckatoo32" = " --coin GRIN-AT32" #grincuckatoo32
+}
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+    [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
-        Arguments =  "--user $($Pools.($Algo).User) --pool $($Pools.($Algo).Host) --port $($Pools.($Algo).Port) --devices $($Config.SelGPUCC) --apiport $($Variables.NVIDIAMinerAPITCPPort) --tls 0 --digits 2 --longstats 60 --shortstats 5 --connectattempts 3 --pass $($Pools.($Algo).Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Day * .99} # substract 1% devfee
-        API       = "LOL"
+        Arguments = "--tls 0 --digits 2 --longstats 60 --shortstats 5 --connectattempts 3 --devices $($Config.SelGPUCC) --apiport $($Variables.NVIDIAMinerAPITCPPort) --pool $($Pools.$Algo.Host) --port $($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
+        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .99 } # substract 2% devfee
+        API       = "lol"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
-        URI       = $Uri    
-        User = $Pools.($Algo).User
-        Host = $Pools.($Algo).Host
-        Coin = $Pools.($Algo).Coin
+        URI       = $Uri
     }
 }
-
-
