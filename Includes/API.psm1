@@ -28,7 +28,7 @@ Function Start-APIServer {
         [Int]$Port = 3990
     )
 
-    $Variables | Add-Member APIVersion 0.1.2
+    $Variables | Add-Member -Force @{ APIVersion  = "0.1.2"}
 
     # Setup flags for controlling script execution
     # $Variables.Stop = $false
@@ -98,23 +98,23 @@ Function Start-APIServer {
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path -Split '\.' | Select-Object -Index 0) { 
                     "/activeminerss" { 
-                        $Data = @($Variables.ActiveMiners | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.ActiveMiners | Select-Object)
                         Break
                     }
                     "/alldevices" { 
-                        $Data = @($Variables.AllDevices | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.AllDevices | Select-Object)
                         Break
                     }
-                    "/configureddevices" { 
-                        $Data = @($Variables.ConfiguredDevices | ConvertTo-Json -Depth 10)
+                    "/allpools" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.AllPools | Select-Object)
                         Break
                     }
                     "/apiversion" { 
-                        $Data = $Variables.APIVersion | ConvertTo-Json -Depth 10
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.APIVersion | Select-Object)
                         Break
                     }
                     "/brainjobs" { 
-                        $Data = @($Variables.BrainJobs | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BrainJobs | Select-Object)
                         Break
                     }
                     "/config" { 
@@ -127,44 +127,48 @@ Function Start-APIServer {
                         break
                     }
                     "/configureddevices" { 
-                        $Data = @($Variables.ConfiguredDevices | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.ConfiguredDevices | Select-Object)
                         Break
                     }
                     "/devices" { 
-                        $Data = @($Variables.Devices | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.Devices | Select-Object)
                         Break
                     }
                     "/earnings" { 
-                        $Data = @($Variables.Earnings | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Earnings | Select-Object)
                         Break
                     }
                     "/earningspool" { 
-                        $Data = @($Variables.Earningspool | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Earningspool | Select-Object)
                         Break
                     }
                     "/earningstrackerjobs" { 
-                        $Data = @($Variables.EarningsTrackerJobs | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJobs | Select-Object)
                         Break
                     }
                     "/miners" { 
-                        $Data = @($Variables.Miners | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.Miners | Select-Object)
                         Break
                     }
                     "/poolsconfig" { 
-                        $Data = @($Config.PoolsConfig | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 @($Config.PoolsConfig | Select-Object)
                         Break
                     }
                     "/stats" { 
-                        $Data = @($Stats | ConvertTo-Json -Depth 10)
+                        $Data = ConvertTo-Json -Depth 10 @($Stats | Select-Object)
                         Break
                     }
                     "/variables" { 
                         if ($Path -match "^.+\..+$") {
-                            $Data = @($Variables.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | ConvertTo-Json -Depth 10)
+                            $Data = ConvertTo-Json -Depth 10 @($Variables.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | Select-Object)
                         }
                         else {
-                            $Data = @($Variables | ConvertTo-Json -Depth 10)
+                            $Data = ConvertTo-Json -Depth 10 @($Variables | Select-Object)
                         }
+                        break
+                    }
+                    "/version" { 
+                        $Data = @("NemosMiner Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)") | ConvertTo-Json
                         break
                     }
                     default { 

@@ -82,7 +82,7 @@ Function NPMCycle {
         Get-Rates
 
         #Power cost preparations
-        $Variables | Add-Member -Force @{ MeasurePowerUsage = $Config.MeasurePowerUsage } #$MeasurePowerUsage is an operational variable and not identical to $Config.MeasurePowerUsage
+        $Variables | Add-Member -Force @{ MeasurePowerUsage = $false } #$MeasurePowerUsage is an operational variable and not identical to $Config.MeasurePowerUsage
         If (($Variables.ConfiguredDevices).Count -and $Config.MeasurePowerUsage) { 
             #HWiNFO64 verification
             $RegKey = "HKCU:\Software\HWiNFO64\VSB"
@@ -93,6 +93,7 @@ Function NPMCycle {
                     $Variables.MeasurePowerUsage = $false
                 }
                 Else { 
+                    $Variables.MeasurePowerUsage = $true
                     $Hashtable = @{ }
                     $Device = ""
                     $RegistryValue.PsObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @(($Variables.ConfiguredDevices).Name | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
@@ -101,12 +102,12 @@ Function NPMCycle {
                             $Hashtable.Add($Device, $RegistryValue.($_.Name -replace "Label", "Value"))
                         }
                         Catch { 
-                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $Device] - disabling power usage calculations. "
+                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $Device] - disabling power usage calculations."
                             $Variables.MeasurePowerUsage = $false
                         }
                     }
                     If (($Variables.ConfiguredDevices).Name | Where-Object { $Hashtable.$_ -eq $null }) { 
-                        Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.AllDevices).Name | Where-Object { $Hashtable.$_ -eq $null }) -join ', ')] - disabling power usage calculations. "
+                        Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.AllDevices).Name | Where-Object { $Hashtable.$_ -eq $null }) -join ', ')] - disabling power usage calculations."
                         $Variables.MeasurePowerUsage = $false
                     }
                     Remove-Variable Device
@@ -114,9 +115,12 @@ Function NPMCycle {
                 }
             }
             Else { 
-                Write-Message -Level Warn "Cannot read power usage info from registry [Key '$($RegKey)' does not exist - HWiNFO64 not running???] - power cost calculation is not available. "
+                Write-Message -Level Warn "Cannot read power usage info from registry [Key '$($RegKey)' does not exist - HWiNFO64 not running???] - disabling power usage calculations."
                 $Variables.MeasurePowerUsage = $false
             }
+        }
+        If ($Config.MeasurePowerUsage -and -not ($Variables.MeasurePowerUsage)) { 
+            Write-Message -Level Warn "Realtime power usage cannot be read from system. Will use static values where available."
         }
 
         #Power price
@@ -128,8 +132,8 @@ Function NPMCycle {
             $Config.PowerPricekWh | Add-Member "00:00" ($Config.PowerPricekWh.($Config.PowerPricekWh | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Sort-Object | Select-Object -Last 1))
         }
         $Variables | Add-Member -Force @{ PowerPricekWh = [Double]($Config.PowerPricekWh.($Config.PowerPricekWh | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Sort-Object | Where-Object { $_ -lt (Get-Date -Format HH:mm).ToString() } | Select-Object -Last 1)) }
-        $Variables | Add-Member -Force @{ PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates.($Config.Currency)) }
-        $Variables | Add-Member -Force @{ BasePowerCostBTC = [Double]($Config.IdlePowerUsageW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates.($Config.Currency)) }
+        $Variables | Add-Member -Force @{ PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) }
+        $Variables | Add-Member -Force @{ BasePowerCost = [Double]($Config.IdlePowerUsageW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) }
 
         #Get pool data
         $PoolFilter = @()
@@ -196,7 +200,7 @@ Function NPMCycle {
                     If ($Miner.New) { $Miner.Benchmarked++ }
                     $Miner.Hashrates.PSObject.Properties.Name | ForEach-Object { 
                         Write-Message "Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($Miner.HashRates.$_ | ConvertTo-Hash) -replace ' '))$(If (-not (Get-Stat -Name "$($Miner.Name)_$($_)_HashRate")) { " [Benchmark done]" })."
-                        $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $Miner.HashRates.$_ -Duration ($Variables.StatEnd - $Variables.StatStart) -ChangeDetection $true
+                        $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $Miner.HashRates.$_ -Duration ($Variables.StatEnd - $Variables.StatStart) # -FaultDetection $true
                     }
 
                     If ($Variables.MeasurePowerUsageJob.State -eq "Running") { 
@@ -205,7 +209,7 @@ Function NPMCycle {
                         $Miner | Add-Member -Force PowerUsage ([Double](($Variables.PowerUsageData | Where-Object { $_.DeviceName -in @($Miner.DeviceNames) -and $_.Date -ge $Variables.StatStart }).Power | Measure-Object -Average).Average)
                         If ($Miner.PowerUsage) { 
                             Write-Message "Saving power usage ($($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage: $($Miner.PowerUsage.ToString("N2"))W)$(If (-not (Get-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage")) { " [PowerUsage measurement done]" })."
-                            $Stat = Set-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage" -Value $Miner.PowerUsage -Duration ($Variables.StatEnd - $Variables.StatStart)
+                            $Stat = Set-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage" -Value $Miner.PowerUsage -Duration ($Variables.StatEnd - $Variables.StatStart) # -FaultDetection $true
                         }
                     }
                     $Miner.New = $false
@@ -284,7 +288,7 @@ Function NPMCycle {
             continue
         }
 
-        If ($Variables.Miners) { Write-Message "Calculating earning$(If ($Variables.PowerPricekWh) { " and profit" }) for each miner$(If ($Variables.PowerPricekWh) { " (power cost $($Config.Currency) $($Variables.PowerPricekWh)/kW⋅h)"})..." }
+        If ($Variables.Miners) { Write-Message "Calculating earning$(If ($Variables.PowerPricekWh) { " and profit" }) for each miner$(If ($Variables.PowerPricekWh) { " (power cost $($Config.Currency | Select-Object -Index 0) $($Variables.PowerPricekWh)/kW⋅h)"})..." }
 
         $Variables.Miners | ForEach-Object { 
             $Miner = $_
@@ -373,12 +377,12 @@ Function NPMCycle {
         #temp fix, needs removing from loop as it requires admin rights
         $ProgressPreferenceBackup = $ProgressPreference
         $ProgressPreference = "SilentlyContinue"
-        if ($Config.OpenFirewallPorts -and (Get-Command "Get-MpPreference" -ErrorAction Ignore)) { 
-            if ((Get-Command "Get-MpComputerStatus" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore)) { 
-                if (Get-Command "Get-NetFirewallRule" -ErrorAction Ignore) { 
+        If ($Config.OpenFirewallPorts -and (Get-Command "Get-MpPreference" -ErrorAction Ignore)) { 
+            If ((Get-Command "Get-MpComputerStatus" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore)) { 
+                If (Get-Command "Get-NetFirewallRule" -ErrorAction Ignore) { 
                     $MinerFirewalls = Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program
-                    if (@($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ "=>") { 
-                        Start-Process (@{desktop = "powershell"; core = "pwsh" }.$PSEdition) ("-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1'; ('$(@($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object {New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by MultiPoolMiner $Version on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner'}" -replace '"', '\"') -Verb runAs
+                    If (@($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ "=>") { 
+                        Start-Process (@{desktop = "powershell"; core = "pwsh" }.$PSEdition) ("-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1'; ('$(@($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object {New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by NemosMiner $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner'}" -replace '"', '\"') -Verb runAs
                         Remove-Variable MinerFirewalls
                     }
                 }
@@ -389,6 +393,7 @@ Function NPMCycle {
         #Detect miners with unreal earning (> 5x higher than the next best 10% miners, error in data provided by pool?)
         $ReasonableEarning = [Double]($Variables.Miners | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($Variables.Miners.Count / 10 )) | Measure-Object Earning -Average).Average * 5
         $Variables.Miners = @($Variables.Miners | Where-Object { $_.Earning -le $ReasonableEarning -or $_.HashRates.PSObject.Properties.Value -contains $null -or ($Variables.MeasurePowerUsage -and $_.PowerUsage -le 0) })
+        Remove-Variable ReasonableEarning
 
         #Profit calculation
         $Variables.Miners | ForEach-Object { 
@@ -398,6 +403,9 @@ Function NPMCycle {
             $_ | Add-Member -Force Profit_Bias ([Double]$_.Earning_Bias - $_.PowerCost)
             $_ | Add-Member -Force Profit_Bias_Orig $_.Profit_Bias
         }
+
+        $Variables | Add-Member -Force @{ MinersNeedingBenchmark = @($Variables.Miners | Where-Object { $_.HashRates.PSObject.Properties.Value -contains $null }) }
+        $Variables | Add-Member -Force @{ MinersNeedingPowerUsageMeasurement = @($(if ($Config.MeasurePowerUsage) { $Variables.Miners | Where-Object PowerUsage -eq $null })) }
 
         #Don't penalize active miners. Miner could switch a little bit later and we will restore its bias in this case
         $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | ForEach-Object { $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100) - $_.PowerCost } }
@@ -456,18 +464,21 @@ Function NPMCycle {
             Remove-Variable Miner_Device_Combo
             Remove-Variable Miners_Device_Combos
             Remove-Variable BestMiners
+            Remove-Variable BestMiners_Comparison
         }
         #ProfitabilityThreshold check
-        $MiningEarning = (($BestMiners_Combo | Measure-Object Earning -Sum).Sum) * $Variables.Rates.($Config.Currency)
-        $MiningProfit = (($BestMiners_Combo | Measure-Object Profit -Sum).Sum) * $Variables.Rates.($Config.Currency)
-        $MiningCost = (($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum + $Variables.BasePowerCostBTC) * $Variables.Rates.($Config.Currency)
+        $Variables | Add-Member -Force @{ MiningEarning = ($BestMiners_Combo | Measure-Object Earning -Sum).Sum }
+        $Variables | Add-Member -Force @{ MiningCost = ($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum + $Variables.BasePowerCost }
 
         #OK to run miners?
-        If (($MiningEarning - $MiningCost) -ge $Config.ProfitabilityThreshold -or ($Variables.Miners | Where-Object { $_.HashRates.PSObject.Properties.Value -contains $null }) -or ($Variables.Miners | Where-Object PowerUsage -le 0)) { 
-            $BestMiners_Combo | ForEach-Object { $_.Best = $true }
-            $BestMiners_Combo_Comparison | ForEach-Object { $_.Best_Comparison = $true }
+        If (($Variables.MiningEarning - $Variables.MiningCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+#            $BestMiners_Combo | ForEach-Object { $_.Best = $true }
+#            $BestMiners_Combo_Comparison | ForEach-Object { $_.Best_Comparison = $true }
         }
-        Remove-Variable BestMiners_Comparison
+        Else { 
+            $BestMiners_Combo = $null
+            $BestMiners_Combo_Comparison = $null
+        }
 
         #Hack part 2: reverse temporarily forced positive earnings & Earnings
         $Variables.Miners | Where-Object { $_.Earning_Bias -ne $null } | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Earning_Comparison -= $SmallestEarningComparison; $_.Profit_Bias -= $SmallestProfitBias; $_.Profit_Comparison -= $SmallestProfitComparison }
@@ -498,7 +509,7 @@ Function NPMCycle {
 
         #Add the most profitable miners to the active list
         $BestMiners_Combo | ForEach-Object { 
-            If (($Variables.ActiveMiners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments).Count -eq 0) { 
+            If (($Variables.ActiveMiners | Select-Object | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments).Count -eq 0) { 
                 $Variables.ActiveMiners += [PSCustomObject]@{ 
                     Type              = $_.Type
                     Name              = $_.Name
@@ -525,7 +536,7 @@ Function NPMCycle {
         }
         #Stop or start miners in the active list depending on if they are the most profitable
         # We have to stop processes first or the port would be busy
-        $Variables.ActiveMiners | ForEach-Object { 
+        $Variables.ActiveMiners | Select-Object | ForEach-Object { 
             $Miner = $_
             $Filtered = @($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -eq 0) { 
@@ -560,8 +571,8 @@ Function NPMCycle {
 
         $NewMiner = $false
         $CurrentMinerHashrate_Gathered = $false 
-        $Variables.ActiveMiners | ForEach-Object { 
-            $Filtered = @($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
+        $Variables.ActiveMiners | Select-Object | ForEach-Object { 
+            $Filtered = @($BestMiners_Combo | Select-Object | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -gt 0) { 
                 If ($_.Process -eq $null -or $_.Process.HasExited -ne $false) { 
                     # Log switching information to .\Logs\switching.log

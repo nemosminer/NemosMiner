@@ -58,7 +58,7 @@ $scriptpath = Split-Path -parent $MyInvocation.MyCommand.Definition
 Switch ($ChartType) {
     "Front7DaysEarnings" {
         $Datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) -le (Get-Date).AddDays(-1) } }
-        $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -First 7
+        $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -Last 7
         $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
 
         $Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
@@ -98,8 +98,9 @@ Switch ($ChartType) {
         $Chart.Series | ForEach-Object { $_.CustomProperties = "DrawSideBySide=True" }
     }
     "Front7DaysEarningsWithPoolSplit" {
-        $Datasource = If (Test-Path ".\logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]$_.Date -ge (Get-Date).AddDays(-7) } }
-        $Datasource = $Datasource | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
+        $Datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) -le (Get-Date).AddDays(-1) } }
+        $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -Last 7
+        $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
 
         $Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width

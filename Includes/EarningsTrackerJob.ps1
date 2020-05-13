@@ -34,6 +34,9 @@ Try {
 Catch { 
     cd "c:\Users\Stephan\Desktop\NemosMiner\"
     $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
+    $EarningsTrackerConfig = [PSCustomObject]@{ 
+        EnableLog = $true
+    }
 }
 
 If ($WorkingDirectory) { Set-Location $WorkingDirectory }

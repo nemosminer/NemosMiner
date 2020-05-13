@@ -210,6 +210,8 @@ Function InitApplication {
 Function Get-Rates {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
+    $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{Currency = "BTC"}) + @($Balances) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object {$_.ToUpper()}) -join ",")&tsyms=$(($Config.Currency | ForEach-Object {$_.ToUpper() -replace "mBTC", "BTC"}) -join ",")&extraParams=http://multipoolminer.io" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+
     $RatesBTC = (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($Config.Currency -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop).BTC
     If ($RatesBTC) {
         $Variables | Add-Member -Force @{ Rates = $RatesBTC }
@@ -625,7 +627,7 @@ Function Write-Config {
     If ($Global:Config -is [Hashtable]) { 
         If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
         $OrderedConfig = [PSCustomObject]@{ }
-        $Global:Config |ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
+        $Global:Config | ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
             $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
                 $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
             } 
@@ -661,7 +663,7 @@ Function Set-Stat {
         [Parameter(Mandatory = $false)]
         [TimeSpan]$Duration, 
         [Parameter(Mandatory = $false)]
-        [Bool]$FaultDetection = $false, 
+        [Bool]$FaultDetection = $true, 
         [Parameter(Mandatory = $false)]
         [Bool]$ChangeDetection = $false,
         [Parameter(Mandatory = $false)]
@@ -698,7 +700,7 @@ Function Set-Stat {
             If ($Name -match ".+_HashRate$") { 
                 Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
-            else { 
+            ElseIf ($Name -match ".+_PowerUsage") { 
                 Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($($Value.ToString("N2"))W) is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
         }
@@ -709,7 +711,7 @@ Function Set-Stat {
                     If ($Name -match ".+_HashRate$") { 
                         Write-Message -Level Warn "Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row."
                     }
-                    Else { 
+                    ElseIf ($Name -match ".+_PowerUage$") { 
                         Write-Message -Level Warn "Stat file ($Name) was forcefully updated with value ($($Value.ToString("N2"))W) because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
                     }
                 }
@@ -1736,6 +1738,30 @@ Filter ConvertTo-Hash {
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs($_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
     "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
+}
+
+Function Get-DigitsFromValue { 
+    # To get same numbering scheme regardless of value BTC value (size) to determine formatting
+
+    # Length is calculated as follows:
+    # Output will have as many digits as the integer value is to the power of 10
+    # e.g. Rate is between 100 -and 999, then Digits is 3
+    # The bigger the number, the more decimal digits
+    # Use $Offset to add/remove decimal places
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Value,
+        [Parameter(Mandatory = $false)]
+        [Int]$Offset = 0
+    )
+
+    $Digits = [math]::Floor($Value).ToString().Length
+    If ($Digits -lt 0) { $Digits = 0 }
+    If ($Digits -gt 10) { $Digits = 10 }
+
+    $Digits
 }
 
 Function ConvertTo-LocalCurrency { 
