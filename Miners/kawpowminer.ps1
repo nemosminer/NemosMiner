@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-kawpowminer122\kawpowminer.exe"
-$Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.2/kawpowminer-windows-1.2.2.zip"
+$Path = ".\Bin\NVIDIA-kawpowminer123\kawpowminer.exe"
+$Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/kawpowminer-windows-1.2.3.zip"
 $Commands = [PSCustomObject]@{ 
      "kawpow" = "" #kawpow
 }

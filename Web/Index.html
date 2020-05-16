@@ -23,7 +23,7 @@ version date:   12 November 2019
 <html>
 
 <body>
-    <h1>NemosMiner API (version 0.1)</h1>
+    <h1>NemosMiner API (version 0.1.2)</h1>
 
     API data is available at http://localhost:[API port]/&lt;resource&gt.
     (The default API port is 3999)
@@ -47,10 +47,34 @@ version date:   12 November 2019
     <a href="http://localhost:3999/apiversion">/apiversion</a>
     <p>Returns the version number of NemosMiner API.</p>
 
+    <h3>BrainJobs</h3>
+    <a href="http://localhost:3999/brainjobs">/brainjobs</a>
+    <p>Returns the brainjobs information.</p>
+
     <h3>Config</h3>
     <a href="http://localhost:3999/config">/config</a>
     <p>Shows the full configuration for the running script, after all variable substitution.
     </p>
+
+    <h3>ConfiguredDevices</h3>
+    <a href="http://localhost:3999/variables.configureddevices">/configureddevices</a>
+    <p>Dump of the $ConfiguredDevices variable, used only for debugging. Shows information about all configured mining devices, used for debugging.</p>
+
+    <h3>Devices</h3>
+    <a href="http://localhost:3999/variables.devices">/devices</a>
+    <p>Dump of the $Devices variable, used only for debugging. Shows information about all available mining devices, used for debugging.</p>
+
+    <h3>Earnings</h3>
+    <a href="http://localhost:3999/earnings">/earnings</a>
+    <p>Returns the earnings data.</p>
+
+    <h3>EarningsPool</h3>
+    <a href="http://localhost:3999/earningspool">/earningspool</a>
+    <p>Returns the earnings pool information.</p>
+
+    <h3>EarningsTrackerJobs</h3>
+    <a href="http://localhost:3999/earningstrackerjobs">/earningstrackerjobs</a>
+    <p>Returns the earningstrackerjobs information.</p>
 
     <h3>Miners</h3>
     <a href="http://localhost:3999/miners">/miners</a>
@@ -62,7 +86,7 @@ version date:   12 November 2019
     </p>
 
     <h3>Stats</h3>
-    <a href="http://localhost:3999/variables">/stats</a>
+    <a href="http://localhost:3999/stats">/stats</a>
     <p>Shows all stat data in the $Stats hashtable, use for debugging.</p>
 
     <h3>Variables</h3>

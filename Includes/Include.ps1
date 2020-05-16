@@ -210,8 +210,6 @@ Function InitApplication {
 Function Get-Rates {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
-    $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{Currency = "BTC"}) + @($Balances) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object {$_.ToUpper()}) -join ",")&tsyms=$(($Config.Currency | ForEach-Object {$_.ToUpper() -replace "mBTC", "BTC"}) -join ",")&extraParams=http://multipoolminer.io" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-
     $RatesBTC = (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($Config.Currency -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop).BTC
     If ($RatesBTC) {
         $Variables | Add-Member -Force @{ Rates = $RatesBTC }
@@ -907,13 +905,13 @@ Function Get-ChildItemContent {
         }
         Else { 
             Try { 
-                $Content = $_ | Get-Content | ConvertFrom-Json
+                $Content = $_ | Get-Content | Where-Object { $_ -notmatch "^#.+" } | ConvertFrom-Json -ErrorAction SilentlyContinue
             }
             Catch [ArgumentException] { 
                 $null
             }
         }
-        $Content | ForEach-Object { 
+        $Content | Select-Object | ForEach-Object { 
             [PSCustomObject]@{ Name = $Name; Content = $_ }
         }
     }

@@ -86,16 +86,24 @@ Switch ($ChartType) {
         $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * 1000 / 4, 3)
         $Chart.ChartAreas.Add($ChartArea)
 
-        [void]$Chart.Series.Add("Total")
-        $Chart.Series["Total"].ChartType = "Column"
-        $Chart.Series["Total"].BorderWidth = 3
-        $Chart.Series["Total"].ChartArea = "ChartArea1"
-        $Chart.Series["Total"].Color = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"FFFFFF"
-        $Chart.Series["Total"].label = "#VALY{N3}"
-        $Chart.Series["Total"].ToolTip = "#VALX: #VALY mBTC" # - Total: #TOTAL mBTC";
-        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series["Total"].Points.addxy( $_.Date , ("{0:N3}" -f ([Decimal]$_.DaySum * 1000))) | Out-Null }
+        [void]$Chart.Series.Add("TotalEarning")
+        $Chart.Series["TotalEarning"].ChartType = "Column"
+        $Chart.Series["TotalEarning"].BorderWidth = 3
+        $Chart.Series["TotalEarning"].ChartArea = "ChartArea1"
+        $Chart.Series["TotalEarning"].Color = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"FFFFFF"
+        $Chart.Series["TotalEarning"].label = "#VALY{N3}"
+        $Chart.Series["TotalEarning"].ToolTip = "#VALX: #VALY mBTC" # - Total: #TOTAL mBTC";
+        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series["TotalEarning"].Points.addxy( $_.Date , ("{0:N5}" -f ([Decimal]$_.DaySum * 1000))) | Out-Null }
 
-        $Chart.Series | ForEach-Object { $_.CustomProperties = "DrawSideBySide=True" }
+        # [void]$Chart.Series.Add("TotalProfit")
+        # $Chart.Series["TotalProfit"].ChartType = "Column"
+        # $Chart.Series["TotalProfit"].BorderWidth = 3
+        # $Chart.Series["TotalProfit"].ChartArea = "ChartArea1"
+        # $Chart.Series["TotalProfit"].Color = [System.Drawing.Color]::FromArgb(128, 255, 255, 255) #"FFFFFF"
+        # $Chart.Series["TotalProfit"].label = "#VALY{N3}"
+        # $Chart.Series["TotalProfit"].ToolTip = "#VALX: #VALY mBTC" # - Total: #TOTAL mBTC";
+        # $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series["TotalProfit"].Points.addxy( $_.Date , ("{0:N3}" -f ([Decimal]$_.DaySum * 500))) | Out-Null }
+        # $Chart.Series | ForEach-Object { $_.CustomProperties = "DrawSideBySide=True" }
     }
     "Front7DaysEarningsWithPoolSplit" {
         $Datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) -le (Get-Date).AddDays(-1) } }

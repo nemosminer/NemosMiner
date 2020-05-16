@@ -352,7 +352,7 @@ Function NPMCycle {
             $Miner | Add-Member Type $Miner_Types -Force
             $Miner | Add-Member Index $Miner_Indexes -Force
 
-            $Miner | Add-Member -Force PowerUsage ([Double]$Stats."$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage".Week)
+            $Miner | Add-Member -Force PowerUsage ($Stats."$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage".Week)
 
             if ($Miner.Arguments -isnot [String]) { $Miner.Arguments = $Miner.Arguments | ConvertTo-Json -Depth 10 -Compress }
 
@@ -392,16 +392,24 @@ Function NPMCycle {
 
         #Detect miners with unreal earning (> 5x higher than the next best 10% miners, error in data provided by pool?)
         $ReasonableEarning = [Double]($Variables.Miners | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($Variables.Miners.Count / 10 )) | Measure-Object Earning -Average).Average * 5
-        $Variables.Miners = @($Variables.Miners | Where-Object { $_.Earning -le $ReasonableEarning -or $_.HashRates.PSObject.Properties.Value -contains $null -or ($Variables.MeasurePowerUsage -and $_.PowerUsage -le 0) })
+        $Variables.Miners = @($Variables.Miners | Where-Object { $_.Earning -le $ReasonableEarning -or $_.HashRates.PSObject.Properties.Value -contains $null -or ($Variables.MeasurePowerUsage -and $_.PowerUsage -ne $null) })
         Remove-Variable ReasonableEarning
 
         #Profit calculation
         $Variables.Miners | ForEach-Object { 
-            $_ | Add-Member -Force PowerCost ([Double]$_.PowerUsage * $Variables.PowerCostBTCperW)
-            $_ | Add-Member -Force Profit ([Double]$_.Earning - $_.PowerCost)
-            $_ | Add-Member -Force Profit_Comparison ([Double]$_.Earning_Comparison - $_.PowerCost)
-            $_ | Add-Member -Force Profit_Bias ([Double]$_.Earning_Bias - $_.PowerCost)
-            $_ | Add-Member -Force Profit_Bias_Orig $_.Profit_Bias
+            $_ | Add-Member -Force PowerCost ($_.PowerUsage * $Variables.PowerCostBTCperW)
+            If ([String]$Miner.HashRates) { 
+                $_ | Add-Member -Force Profit ($_.Earning - $_.PowerCost)
+                $_ | Add-Member -Force Profit_Comparison ($_.Earning_Comparison - $_.PowerCost)
+                $_ | Add-Member -Force Profit_Bias ($_.Earning_Bias - $_.PowerCost)
+                $_ | Add-Member -Force Profit_Bias_Orig ($_.Earning_Bias - $_.PowerCost)
+            }
+            Else { 
+                $_ | Add-Member -Force Profit $null
+                $_ | Add-Member -Force Profit_Comparison $null
+                $_ | Add-Member -Force Profit_Bias $null
+                $_ | Add-Member -Force Profit_Bias_Orig $null
+            }
         }
 
         $Variables | Add-Member -Force @{ MinersNeedingBenchmark = @($Variables.Miners | Where-Object { $_.HashRates.PSObject.Properties.Value -contains $null }) }

@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+. .\Includes\Include.ps1
 
 Try { 
     $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\blazepool\blazepool.json") | ConvertFrom-Json 
