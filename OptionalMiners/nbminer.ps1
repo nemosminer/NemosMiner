@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-nbminer302\nbminer.exe"
 $Uri = "https://github.com/NebuTech/NBMiner/releases/download/v30.2/NBMiner_30.2_Win.zip"
 $Commands = [PSCustomObject]@{ 

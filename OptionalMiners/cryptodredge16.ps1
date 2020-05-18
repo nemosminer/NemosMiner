@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-CryptoDredge0160\CryptoDredge.exe"
 $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/CryptoDredge_0.16.0_cuda_10.0_windows.zip"
 $Commands = [PSCustomObject]@{ 

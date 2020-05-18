@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-TTMiner502\TT-Miner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.2/TT-Miner.zip"
 $Commands = [PSCustomObject]@{ 

@@ -1,6 +1,6 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-zealotenemy261\z-enemy.exe"
-$Uri = "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow261/z-enemy-2.6.1-win-cuda10.1.zip"
+using module ..\Includes\Include.psm1
+$Path = ".\Bin\NVIDIA-zealotenemy262\z-enemy.exe"
+$Uri = "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enemy-2.6.2-win-cuda10.1.zip"
 $Commands = [PSCustomObject]@{ 
     "aergo"  = " -i 23" #AeriumX
     "xevan"  = " -i 22" #Xevan 

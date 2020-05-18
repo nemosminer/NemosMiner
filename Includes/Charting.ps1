@@ -61,7 +61,7 @@ Switch ($ChartType) {
         $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -Last 7
         $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
 
-        $Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
+        $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
         $Chart.Height = $Height
         $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
@@ -110,7 +110,7 @@ Switch ($ChartType) {
         $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -Last 7
         $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
 
-        $Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
+        $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
         $Chart.Height = $Height
         $Chart.BackColor = [System.Drawing.Color]::FromArgb(0, 240, 240, 240) #"#F0F0F0"
@@ -163,7 +163,7 @@ Switch ($ChartType) {
         $Datasource = If (Test-Path ".\logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { $_.Date -eq (Get-Date).ToShortDateString() } }
         $Datasource = $Datasource | Where-Object { $_.DailyEarnings -gt 0 } | Sort-Object DailyEarnings -Descending
 
-        $Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
+        $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
         $Chart.Height = $Height
         $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"

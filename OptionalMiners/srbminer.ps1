@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\cpu-SRBMiner-Multi-0-4-4/SRBMiner-MULTI.exe"
 $Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.4.4/SRBMiner-Multi-0-4-4-win64.zip"
 $Commands = [PSCustomObject]@{ 

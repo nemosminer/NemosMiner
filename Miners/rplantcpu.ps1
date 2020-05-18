@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\CPU-Opt455\cpuminer-sse42.exe" #Intel
 #$Path = ".\Bin\CPU-Opt455\cpuminer-ryzen.exe" #AMD
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.5.5/cpuminer-opt-win.zip"

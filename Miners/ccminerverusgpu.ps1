@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-Ccminerverus375\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.7.5/ccminerverus375.7z"
 $Commands = [PSCustomObject]@{ 

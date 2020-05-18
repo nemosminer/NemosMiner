@@ -22,13 +22,16 @@ version:        3.8.1.3
 version date:   11 February 2020
 #>
 
-Function NPMCycle { 
+
+
+Function Start-NPMCycle { 
     $CycleTime = Measure-Command -Expression { 
-        If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1"); "LoadedInclude" | Out-Host }
+
+        Set-Location $Variables.MainPath
 
         $Variables | Add-Member -Force @{ EndLoop = $False }
 
-        Load-Config $Variables.ConfigFile
+        Get-Config $Variables.ConfigFile
 
         Write-Message "Starting Cycle"
         $DecayExponent = [Int](((Get-Date).ToUniversalTime() - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
@@ -41,6 +44,9 @@ Function NPMCycle {
             $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
             $Variables.PowerUsageData = @($Variables.PowerUsageData | Where-Object { $_.DeviceName -in @(($Variables.ActiveMiners | Select-Object DeviceNames -Unique).DeviceNames) })
         }
+
+        # Read stats
+        Get-Stat
 
         #Activate or deactivate donation
         If ((Get-Date).AddDays(-1).AddMinutes($Config.Donate) -ge $Variables.LastDonated -and $Variables.DonateRandom.wallet -eq $Null) { 
@@ -140,8 +146,8 @@ Function NPMCycle {
         $Config.PoolName | ForEach-Object { $PoolFilter += ($_ += ".*") }
         Write-Message "Loading stats for pool$(If ($PoolFilter.Count -ne 1) { "s" }) $(($Config.PoolName | ForEach-Object { (Get-Culture).TextInfo.ToTitleCase($_) }) -join ', ')..."
         Do {
-            $AllPools = If (Test-Path "Pools" -PathType Container) { 
-                Get-ChildItemContent "Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | Where-Object { 
+            $AllPools = If (Test-Path ".\Pools" -PathType Container) { 
+                Get-ChildItemContent ".\Pools" -Include $PoolFilter | ForEach-Object { $_.Content | Add-Member @{Name = $_.Name } -PassThru } | Where-Object { 
                     $_.SSL -EQ $Config.SSL -and 
                     ($Config.PoolName.Count -eq 0 -or ($_.Name -in $Config.PoolName)) -and 
                     (-not $Config.Algorithm -or ((-not ($Config.Algorithm | Where-Object { $_ -like "+*" }) -or $_.Algorithm -in ($Config.Algorithm | Where-Object { $_ -like "+*" }).Replace("+", "")) -and (-not ($Config.Algorithm | Where-Object { $_ -like "-*" }) -or $_.Algorithm -notin ($Config.Algorithm | Where-Object { $_ -like "-*" }).Replace("-", ""))) )
@@ -170,8 +176,9 @@ Function NPMCycle {
 # }
 
         $Variables.AllPools = $AllPools
-        $Pools = [PSCustomObject]@{ }
-        $Pools_Comparison = [PSCustomObject]@{ }
+
+        $Global:Pools = [PSCustomObject]@{ }
+        $Global:Pools_Comparison = [PSCustomObject]@{ }
         $AllPools.Algorithm | Sort-Object -Unique | ForEach-Object { 
             $Pools | Add-Member $_ ($AllPools | Where-Object Algorithm -EQ $_ | Sort-Object Price -Descending | Select-Object -First 1)
             $Pools_Comparison | Add-Member $_ ($AllPools | Where-Object Algorithm -EQ $_ | Sort-Object StablePrice -Descending | Select-Object -First 1)
@@ -199,7 +206,7 @@ Function NPMCycle {
                 If ($WasActive.TotalSeconds -ge $Config.StatsInterval) { 
                     If ($Miner.New) { $Miner.Benchmarked++ }
                     $Miner.Hashrates.PSObject.Properties.Name | ForEach-Object { 
-                        Write-Message "Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($Miner.HashRates.$_ | ConvertTo-Hash) -replace ' '))$(If (-not (Get-Stat -Name "$($Miner.Name)_$($_)_HashRate")) { " [Benchmark done]" })."
+                        Write-Message "Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($Miner.HashRates.$_ | ConvertTo-Hash) -replace ' '))$(If (-not $Stats."$($Miner.Name)_$($_)_HashRate") { " [Benchmark done]" })."
                         $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $Miner.HashRates.$_ -Duration ($Variables.StatEnd - $Variables.StatStart) # -FaultDetection $true
                     }
 
@@ -208,7 +215,7 @@ Function NPMCycle {
 
                         $Miner | Add-Member -Force PowerUsage ([Double](($Variables.PowerUsageData | Where-Object { $_.DeviceName -in @($Miner.DeviceNames) -and $_.Date -ge $Variables.StatStart }).Power | Measure-Object -Average).Average)
                         If ($Miner.PowerUsage) { 
-                            Write-Message "Saving power usage ($($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage: $($Miner.PowerUsage.ToString("N2"))W)$(If (-not (Get-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage")) { " [PowerUsage measurement done]" })."
+                            Write-Message "Saving power usage ($($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage: $($Miner.PowerUsage.ToString("N2"))W)$(If (-not $Stats."$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage") { " [PowerUsage measurement done]" })."
                             $Stat = Set-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage" -Value $Miner.PowerUsage -Duration ($Variables.StatEnd - $Variables.StatStart) # -FaultDetection $true
                         }
                     }
@@ -265,9 +272,9 @@ Function NPMCycle {
         Write-Message "Loading miners..."
         $Variables | Add-Member -Force @{ Miners = @() }
         $Variables.Miners = @(
-            If ($Config.IncludeRegularMiners -and (Test-Path "Miners" -PathType Container)) { Get-ChildItemContent "Miners" }
-            If ($Config.IncludeOptionalMiners -and (Test-Path "OptionalMiners" -PathType Container)) { Get-ChildItemContent "OptionalMiners" }
-            If (Test-Path "CustomMiners" -PathType Container) { Get-ChildItemContent "CustomMiners" }
+            If ($Config.IncludeRegularMiners -and (Test-Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" }
+            If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" }
+            If (Test-Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" }
         ) | Select-Object | ForEach-Object { $_.Content | Add-Member @{ Name = $_.Name } -ErrorAction SilentlyContinue; $_.Content } | 
         Where-Object { $Config.Type.Count -eq 0 -or (Compare-Object $Config.Type $_.Type -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | 
         Where-Object { -not ($Config.Algorithm | Where-Object { $_.StartsWith("+") }) -or (Compare-Object (($Config.Algorithm | Where-Object { $_.StartsWith("+") }).Replace("+", "")) $_.HashRates.PSObject.Properties.Name -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | 
@@ -276,7 +283,7 @@ Function NPMCycle {
         #Download miner binaries
         If (($Variables.Miners | Where-Object {-not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) }) -and $Downloader.State -ne "Running") { 
             Write-Message -Level Warn "Some miners binaries are missing, starting downloader..."
-            $Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList (@($Variables.Miners | Where-Object { $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.Miners | Where-Object { -not (Test-Path $_.Path -PathType Leaf -ErrorAction Ignore) } | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) -and $_.URI -ne $Miner.URI }).Count -eq 0 } }) | Select-Object * -Unique) -FilePath .\Includes\Downloader.ps1
+            $Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList (@($Variables.Miners | Where-Object { $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.Miners | Where-Object { -not (Test-Path $_.Path -PathType Leaf -ErrorAction Ignore) } | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) -and $_.URI -ne $Miner.URI }).Count -eq 0 } }) | Select-Object * -Unique) -FilePath ".\Includes\Downloader.ps1"
         }
 
         #Only keep miners that are present in \Bin directory
@@ -668,58 +675,6 @@ Function NPMCycle {
             $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
         }
 
-        # $Variables | Add-Member -Force @{ StatEnd = (Get-Date).ToUniversalTime() }
-
-        # #Save current hash rates
-        # $Variables.ActiveMiners | ForEach-Object { 
-
-        #     If ($_.Process -eq $null -or $_.Process.HasExited) { 
-        #         If ($_.Status -eq "Running") { $_.Status = "Failed" }
-        #     }
-        #     Else { 
-        #         $Miner = $_
-        #         $MinerData = Get-MinerData $Miner
-        #         #Read hashrate from miner
-        #         $Miner.HashRates = $MinerData.HashRate
-        #         # we don't want to store hashrates if we run less than $Config.StatsInterval sec
-        #         $WasActive = (Get-Date) - $_.Process.StartTime
-        #         If ($WasActive.TotalSeconds -ge $Config.StatsInterval) { 
-        #             If ($Miner.New) { $Miner.Benchmarked++ }
-        #             $Miner.Hashrates.PSObject.Properties.Name | ForEach-Object { 
-        #                 Write-Message "Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($Miner.HashRates.$_ | ConvertTo-Hash) -replace ' '))$(If (-not (Get-Stat -Name "$($Miner.Name)_$($_)_HashRate")) { " [Benchmark done]" })"
-        #                 $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $Miner.HashRates.$_ -Duration ($Variables.StatEnd - $Variables.StatStart)
-        #             }
-
-        #             $Miner | Add-Member -Force PowerUsage  (($Variables.PowerUsageData | Where-Object { $_.DeviceName -in @($Miner.DeviceNames) -and $_.Date -ge $Variables.StatStart }).Power | Measure-Object -Average).Average
-        #             If ($Miner.PowerUsage) { 
-        #                 Write-Message "Saving power usage ($($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage: $($Miner.PowerUsage.ToString("N2"))W)"
-        #                 $Stat = Set-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage" -Value $Miner.PowerUsage -Duration ($Variables.StatEnd - $Variables.StatStart)
-        #             }
-
-        #             $Miner.New = $false
-        #             $Miner.Hashrate_Gathered = $true
-        #         }
-        #     }
-        #     #Benchmark timeout
-        #     #        if($_.Benchmarked -ge 6 -or ($_.Benchmarked -ge 2 -and $_.Activated -ge 2))
-        #     #        { 
-        #     #            for($i = 0; $i -lt $_.Algorithms.Count; $i++)
-        #     #            { 
-        #     #                if((Get-Stat "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate") -eq $null)
-        #     #                { 
-        #     #                    $Stat = Set-Stat -Name "$($_.Name)_$($_.Algorithms | Select-Object -Index $i)_HashRate" -Value 0
-        #     #                }
-        #     #            }
-        #     #        }
-        # }
-        # # }
-        # $Variables | Add-Member -Force @{ StatStart = (Get-Date).ToUniversalTime() }
-        <#
-        For some reason (need to investigate) $Variables.ActiveMiners.psobject.TypeNames
-        Inflates adding several lines at each loop and causing a memory leak after long runtime
-        Code below copies the object which results in a new version which avoid the problem.
-        Will need rework. 
-        #>
         $Variables.ActiveMiners | Where-Object { $_.Status -ne "Running" } | ForEach-Object { $_.process = $_.process | Select-Object HasExited, StartTime, ExitTime }
         $ActiveMinersCOPY = @()
         $Variables.ActiveMiners | ForEach-Object { $ActiveMinerCOPY = [PSCustomObject]@{ }; $_.PSObject.Properties | Sort-Object Name | ForEach-Object { $ActiveMinerCOPY | Add-Member -Force @{ $_.Name = $_.Value } }; $ActiveMinersCOPY += $ActiveMinerCOPY }
@@ -741,9 +696,7 @@ Function NPMCycle {
             $Variables.EarningsTrackerJobs.ChildJobs | ForEach-Object { $_.Output.Clear() }
         }
 
-        # Re-Read stats
-        Write-Message "Updating stats data..."
-        Get-Stat
+        Write-Message "Waiting for next cycle..."
 
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }

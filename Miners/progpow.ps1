@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-progpowminer016\progpowminer-cuda.exe"
 $Uri = "https://nemosminer.com/data/optional/progpowminer0.16-FinalCuda10.7z"
 $Commands = [PSCustomObject]@{ 

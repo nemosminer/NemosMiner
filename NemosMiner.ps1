@@ -1,3 +1,6 @@
+using module .\Includes\Include.psm1
+using module .\Includes\Core.psm1
+
 <#
 Copyright (c) 2018-2020 Nemo
 
@@ -74,9 +77,9 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
-    [Bool]$TrackEarnings = $True, # Display earnings information
+    [Bool]$TrackEarnings = $true, # Display earnings information
     [Parameter(Mandatory = $false)]
-    [Bool]$Autoupdate = $True, # Autoupdate
+    [Bool]$Autoupdate = $true, # Autoupdate
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\config.json",
     [Parameter(Mandatory = $false)]
@@ -99,9 +102,6 @@ Write-Host -F Yellow "Copyright and license notices must be preserved."
 @"
 "@
 
-. .\Includes\include.ps1
-. .\Includes\Core.ps1
-
 # Load Branding
 $Branding = [PSCustomObject]@{ 
     LogoPath     = "https://raw.githubusercontent.com/Minerx117/UpDateData/master/NM.png"
@@ -115,7 +115,7 @@ New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -Er
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 
-Load-Config -ConfigFile $ConfigFile
+Get-Config -ConfigFile $ConfigFile
 
 $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value { 
     If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
@@ -134,7 +134,7 @@ $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Valu
 
 $Variables | Add-Member -Force @{ ConfigFile = $ConfigFile }
 $Variables | Add-Member -Force @{ LogFile = ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").txt" }
-$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $this._StatusText = @() } -SecondValue { If (-not $this._StatusText) { $this._StatusText = @() } ; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $True } }
+$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $This._StatusText; $This._StatusText = @() } -SecondValue { If (-not $This._StatusText) { $This._StatusText = @() } ; $This._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $true } }
 
 Write-Message "Starting $($Branding.ProductLabel)® v$((Get-Content ".\Config\version.json" | ConvertFrom-Json).Version) © 2017-$((Get-Date).Year) Nemo and MrPlus"
 Write-Message "Using configuration file ($([IO.Path]::GetFullPath($ConfigFile)))."
@@ -144,9 +144,10 @@ If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) {
     Import-Module .\Includes\API.psm1
     Start-APIServer -Port $APIPort
 }
-
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $False
+
+    Set-Location $Variables.MainPath
 
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
@@ -187,15 +188,16 @@ Function Global:TimerUITick {
         $host.UI.RawUI.WindowTitle = $MainForm.Text
 
         If ($Variables.EndLoop) { 
-            $SwitchingDisplayTypes = @()
-            $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-            If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1), (Get-Content ".\Logs\switching.log" -Last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13 | Sort-Object Date -Descending) }
-            $SwitchingDGV.DataSource = $SwitchingArray
+            CheckBoxSwitching_Click
+            # $SwitchingDisplayTypes = @()
+            # $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
+            # If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1), (Get-Content ".\Logs\switching.log" -Last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13 | Sort-Object Date -Descending) }
+            # $SwitchingDGV.DataSource = $SwitchingArray
 
             # Fixed memory leak to chart object not being properly disposed in 5.3.0
             # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
 
-            If (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+            If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
                 $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 105"
                 $Chart1.top = 54
                 $Chart1.left = 0
@@ -325,11 +327,11 @@ Function Global:TimerUITick {
 
             $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
             $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
-            $Variables | Add-Member -Force @{ CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value }
-            If ((Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoUpdated)") { 
+            $Variables | Add-Member -Force @{ Autoupdated = (Get-Content .\Version.json | ConvertFrom-Json).Autoupdated.Value }
+            If ((Get-Content .\Version.json | ConvertFrom-Json).Autoupdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoupdated)") { 
                 $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
                 Update-Notifications("Running $($Variables.CurrentProduct) Version $([Version]$Variables.CurrentVersion)")
-                Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoUpdated)")
+                Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoupdated)")
             }
 
             #Display mining information
@@ -535,7 +537,7 @@ Function Global:TimerUITick {
             Write-Host -ForegroundColor Yellow "Last refresh: $((Get-Date).ToString('g'))   |   Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
             #Write-Message $Variables.StatusText
         }
-        If (Test-Path ".\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndUIRefresh.ps1" -Raw) }
+        If (Test-Path "..\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content "..\EndUIRefresh.ps1" -Raw) }
 
         $Variables.RefreshNeeded = $False
     }
@@ -615,7 +617,7 @@ Function PrepareWriteConfig {
     $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Text } }
 
     Write-Config -ConfigFile $ConfigFile
-    Load-Config -ConfigFile $ConfigFile
+    Get-Config -ConfigFile $ConfigFile
 
     $MainForm.Refresh
     # [System.Windows.Forms.Messagebox]::show("Please restart NPlusMiner",'Config saved','ok','Information') | Out-Null
@@ -623,8 +625,6 @@ Function PrepareWriteConfig {
 
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
-
-If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1), (Get-Content ".\Logs\switching.log" -Last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13 | Sort-Object Date -Descending) }
 
 $MainForm = New-Object System.Windows.Forms.Form
 $NMIcon = New-Object system.drawing.icon ("$($PWD)\Includes\NM.ICO")
@@ -638,57 +638,23 @@ $MainForm.MaximizeBox = $false
 $MainForm.Add_Shown(
     { 
         # Check if new version is available
-        Write-Message "Checking version..."
-        Try { 
-            $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        }
-        Catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json }
-        If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
-        If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
-            Write-Message "Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))"
-            # If ([Version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
-            $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
-            $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
-            $LabelNotifications.Lines += $Version.Message
-            If ($Config.Autoupdate -and ! $Config.ManualConfig) { Autoupdate }
-            # } Else { 
-            # Write-Message "Version $($Version.Version available. Please update NVIDIA driver. Will not AutoUpdate"
-            # $LabelNotifications.ForeColor = "Red"
-            # $LabelNotifications.Lines += "Driver update required. Version $([Version]$Version.Version) available"
-            # }
-        }
+        Get-NMVersion
 
         # TimerCheckVersion
         $TimerCheckVersion = New-Object System.Windows.Forms.Timer
         $TimerCheckVersion.Enabled = $true
         $TimerCheckVersion.Interval = 700 * 60 * 1000
-        $TimerCheckVersion.Add_Tick( { 
-                Write-Message "Checking version..."
-                Try { 
-                    $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-                }
-                Catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json }
-                If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
-                If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
-                    Write-Message "Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))"
-                    # If ([Version](GetNVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
-                    $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
-                    $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
-                    $LabelNotifications.Lines += $Version.Message
-                    If ($Config.Autoupdate -and ! $Config.ManualConfig) { Autoupdate }
-                    # } Else { 
-                    # Write-Message "Version $($Version.Version) available. Please update NVIDIA driver. Will not AutoUpdate"
-                    # $LabelNotifications.ForeColor = "Red"
-                    # $LabelNotifications.Lines += "Driver update required. Version $([Version]$Version.Version) available"
-                    # }
-                }
-            })
+        $TimerCheckVersion.Add_Tick(
+            { 
+                Get-NMVersion
+            }
+        )
         # Detects GPU count If 0 or Null in config
         If ($Config.GPUCount -eq $null -or $Config.GPUCount -lt 1) { 
             If ($Config -eq $null) {
                 $Config = [Hashtable]::Synchronized(@{ })
             }
-            $Config | Add-Member -Force @{ GPUCount = DetectGPUCount }
+            $Config | Add-Member -Force @{ GPUCount = Get-GPUCount }
             $TBGPUCount.Text = $Config.GPUCount
             PrepareWriteConfig
         }
@@ -744,9 +710,8 @@ $MainForm | Add-Member -Name "Variables" -Value $Variables -MemberType NotePrope
 
 $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
 $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
-$Variables | Add-Member -Force @{ CurrentVersionAutoUpdated = (Get-Content .\Version.json | ConvertFrom-Json).AutoUpdated.Value }
+$Variables | Add-Member -Force @{ CurrentVersionAutoupdated = (Get-Content .\Version.json | ConvertFrom-Json).Autoupdated.Value }
 $Variables.StatusText = "Idle"
-$TabControl = New-object System.Windows.Forms.TabControl
 $RunPage = New-Object System.Windows.Forms.TabPage
 $RunPage.Text = "Run"
 $SwitchingPage = New-Object System.Windows.Forms.TabPage
@@ -758,13 +723,22 @@ $MonitoringPage.Text = "Monitoring"
 $EstimationsPage = New-Object System.Windows.Forms.TabPage
 $EstimationsPage.Text = "Benchmarks"
 
-$tabControl.DataBindings.DefaultDataSourceUpdateMode = 0
-$tabControl.Location = [System.Drawing.Point]::new(10, 91)
-$tabControl.Name = "tabControl"
-$tabControl.width = 720
-$tabControl.height = 359
-$MainForm.Controls.Add($tabControl)
+$TabControl = New-object System.Windows.Forms.TabControl
+$TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
+$TabControl.Location = [System.Drawing.Point]::new(10, 91)
+$TabControl.Name = "TabControl"
+$TabControl.width = 720
+$TabControl.height = 359
 $TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
+
+$TabControl_SelectedIndexChanged = {
+    Switch ($TabControl.SelectedTab.Text) { 
+        "Switching"  { CheckBoxSwitching_Click }
+    }
+}
+$TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
+
+$MainForm.Controls.Add($TabControl)
 
 # Form Controls
 $MainFormControls = @()
@@ -790,7 +764,7 @@ $LabelEarningsDetails.Font = [System.Drawing.Font]::new("Lucida Console", 10)
 $LabelEarningsDetails.BorderStyle = 'None'
 $LabelEarningsDetails.BackColor = [System.Drawing.SystemColors]::Control
 $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green
-$LabelEarningsDetails.Visible = $True
+$LabelEarningsDetails.Visible = $true
 # $TBNotifications.TextAlign                = "Right"
 $MainFormControls += $LabelEarningsDetails
 
@@ -846,7 +820,7 @@ $LabelNotifications.location = [System.Drawing.Point]::new(10, 49)
 $LabelNotifications.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelNotifications.BorderStyle = 'None'
 $LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
-$LabelNotifications.Visible = $True
+$LabelNotifications.Visible = $true
 # $TBNotifications.TextAlign                = "Right"
 $MainFormControls += $LabelNotifications
 
@@ -884,21 +858,10 @@ $Variables.LabelStatus.width = 712
 $Variables.LabelStatus.height = 50
 $Variables.LabelStatus.location = [System.Drawing.Point]::new(2, 2)
 $Variables.LabelStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-# $LabelStatusTimer = New-Object Windows.Forms.Timer
-# $LabelStatusTimer.Interval = 500
-
-# $LabelStatusTimer.Add_Tick({
-#     $LastLines = Get-Content $Variables.LogFile -Tail 50 -ErrorAction SilentlyContinue
-#     $Variables.LabelStatus.Lines = $LastLines | ForEach-Object { $_ -replace "^.+\s.+\s.+:\s" }  | Out-String
-#     $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
-#     $Variables.LabelStatus.ScrollToCaret()
-#     $Variables.LabelStatus.Refresh()
-# })
-# $LabelStatusTimer.Start()
 
 $RunPageControls += $Variables.LabelStatus
 
-If (Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
 
     $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 105"
     $Chart1.top = 54
@@ -971,7 +934,6 @@ $CheckShowSwitchingCPU.location = [System.Drawing.Point]::new(2, 2)
 $CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingCPU.Checked = ("CPU" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingCPU
-
 $CheckShowSwitchingCPU | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
 
 $CheckShowSwitchingNVIDIA = New-Object System.Windows.Forms.CheckBox
@@ -984,6 +946,7 @@ $CheckShowSwitchingNVIDIA.location = [System.Drawing.Point]::new(62, 2)
 $CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingNVIDIA.Checked = ("NVIDIA" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
+$CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
 
 $CheckShowSwitchingAMD = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingAMD.Tag = "AMD"
@@ -995,17 +958,14 @@ $CheckShowSwitchingAMD.location = [System.Drawing.Point]::new(137, 2)
 $CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingAMD.Checked = ("AMD" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingAMD
-
 $CheckShowSwitchingAMD | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
-$CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
 
 Function CheckBoxSwitching_Click { 
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-    If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1), (Get-Content ".\Logs\switching.log" -Last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13 | Sort-Object Date -Descending) }
-    $SwitchingDGV.DataSource = $SwitchingArray
+    If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Where-Object { $_.Date -gt (Get-Date).AddDays(-1).ToString() }) }
+    $SwitchingDGV.DataSource = [System.Collections.ArrayList]($SwitchingArray | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Sort-Object Date -Descending)
 }
-
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
 $SwitchingDGV.width = 712
@@ -1025,6 +985,8 @@ $EstimationsDGV.location = [System.Drawing.Point]::new(2, 2)
 $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EstimationsDGV.AutoSizeColumnsMode = "Fill"
 $EstimationsDGV.RowHeadersVisible = $False
+$EstimationsDGV.ColumnHeadersVisible = $true
+#$EstimationsDGV.DataGridViewColumnHeaderCell()
 
 # Config Page Controls
 $ConfigPageControls = @()
@@ -1153,7 +1115,7 @@ $ButtonDetectGPU.location = [System.Drawing.Point]::new(320, 90)
 $ButtonDetectGPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $ButtonDetectGPU
 
-$ButtonDetectGPU.Add_Click( { $TBGPUCount.text = DetectGPUCount })
+$ButtonDetectGPU.Add_Click( { $TBGPUCount.text = Get-GPUCount })
 
 $LabelAlgos = New-Object System.Windows.Forms.Label
 $LabelAlgos.text = "Algorithm"
@@ -1413,9 +1375,9 @@ $CheckBoxAutoStart.Add_Click(
     { 
         # Disable CheckBoxStartPaused and mine when idle when Auto Start is unchecked
         If ($CheckBoxAutoStart.Checked) { 
-            $CheckBoxStartPaused.Enabled = $True
-            $CheckBoxMineWhenIdle.Enabled = $True
-            $TBIdleSec.Enabled = $True
+            $CheckBoxStartPaused.Enabled = $true
+            $CheckBoxMineWhenIdle.Enabled = $true
+            $TBIdleSec.Enabled = $true
         }
         Else { 
             $CheckBoxStartPaused.Checked = $False
@@ -1494,17 +1456,17 @@ $CheckBoxGUIMinimized.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 
 $CheckBoxGUIMinimized.Checked = $Config.StartGUIMinimized
 $ConfigPageControls += $CheckBoxGUIMinimized
 
-$CheckBoxAutoUpdate = New-Object System.Windows.Forms.CheckBox
-$CheckBoxAutoUpdate.Tag = "AutoUpdate"
-$CheckBoxAutoUpdate.text = "Auto Update"
-$CheckBoxAutoUpdate.AutoSize = $true
-$CheckBoxAutoUpdate.width = 100
-$CheckBoxAutoUpdate.height = 20
-$CheckBoxAutoUpdate.location = [System.Drawing.Point]::new(560, 134)
-$CheckBoxAutoUpdate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxAutoUpdate.Checked = $Config.AutoUpdate
-# $CheckBoxAutoUpdate.Enabled               =   $False
-$ConfigPageControls += $CheckBoxAutoUpdate
+$CheckBoxAutoupdate = New-Object System.Windows.Forms.CheckBox
+$CheckBoxAutoupdate.Tag = "Autoupdate"
+$CheckBoxAutoupdate.text = "Auto Update"
+$CheckBoxAutoupdate.AutoSize = $true
+$CheckBoxAutoupdate.width = 100
+$CheckBoxAutoupdate.height = 20
+$CheckBoxAutoupdate.location = [System.Drawing.Point]::new(560, 134)
+$CheckBoxAutoupdate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CheckBoxAutoupdate.Checked = $Config.Autoupdate
+# $CheckBoxAutoupdate.Enabled               =   $False
+$ConfigPageControls += $CheckBoxAutoupdate
 
 $CheckBoxIncludeRegularMiners = New-Object System.Windows.Forms.CheckBox
 $CheckBoxIncludeRegularMiners.Tag = "IncludeRegularMiners"
@@ -1588,12 +1550,12 @@ $CheckedListBoxPools.height = 240
 $CheckedListBoxPools.width = 130
 $CheckedListBoxPools.text = "Pools"
 $CheckedListBoxPools.location = [System.Drawing.Point]::new(427, 54)
-$CheckedListBoxPools.CheckOnClick = $True
+$CheckedListBoxPools.CheckOnClick = $true
 $CheckedListBoxPools.BackColor = [System.Drawing.SystemColors]::Control
 $CheckedListBoxPools.Items.Clear()
 $CheckedListBoxPools.Items.AddRange(((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique))
 $CheckedListBoxPools.Add_SelectedIndexChanged( { CheckedListBoxPools_Click($This) })
-$Config.PoolName | Where-Object { $_ -in $CheckedListBoxPools.Items } | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $True) }
+$Config.PoolName | Where-Object { $_ -in $CheckedListBoxPools.Items } | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $true) }
 
 $ConfigPageControls += $CheckedListBoxPools
 
@@ -1721,10 +1683,10 @@ $ButtonPause.Add_Click(
     { 
         If (-not $Variables.Paused) { 
             Write-Message "Stopping miners"
-            $Variables.Paused = $True
+            $Variables.Paused = $true
 
             # Stop and start mining to immediately switch to paused state without waiting for current NMCycle to finish
-            $Variables.RestartCycle = $True
+            $Variables.RestartCycle = $true
 
             $ButtonPause.Text = "Mine"
             Write-Message "Mining paused. BrainPlus and Earning tracker running."
@@ -1738,7 +1700,7 @@ $ButtonPause.Add_Click(
             $TimerUI.Start()
 
             # Stop and start mining to immediately switch to unpaused state without waiting for current sleep to finish
-            $Variables.RestartCycle = $True
+            $Variables.RestartCycle = $true
         }
     }
 )
@@ -1771,29 +1733,29 @@ $ButtonStart.Add_Click(
         Else { 
             PrepareWriteConfig
             $ButtonStart.Text = "Stop"
-            InitApplication
+            Initialize-Application
             $Variables | Add-Member -Force @{ MainPath = (Split-Path $script:MyInvocation.MyCommand.Path) }
 
             Start-IdleTracking
 
             If ($Config.MineWhenIdle) { 
                 # Disable the pause button - pausing controlled by idle timer
-                $Variables.Paused = $True
+                $Variables.Paused = $true
                 $ButtonPause.Visible = $False
             }
             Else { 
-                $ButtonPause.Visible = $True
+                $ButtonPause.Visible = $true
             }
             $TimerUI.Start()
 
 While ($DebugLoop) {
     Start-Transcript -Path ".\Logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
-    NPMCycle #Added temporary, set a trace point.
+    Start-NPMCycle #Added temporary, set a trace point.
 }
 
             Start-Mining
 
-            $Variables.Started = $True
+            $Variables.Started = $true
         }
     }
 )
@@ -1811,7 +1773,11 @@ $ConfigPage.Controls.AddRange($ConfigPageControls)
 $GroupMonitoringSettings.Controls.AddRange($MonitoringSettingsControls)
 $MonitoringPage.Controls.AddRange($MonitoringPageControls)
 
-$MainForm.Add_Load( { Form_Load } )
+$MainForm.Add_Load(
+    { 
+        Form_Load
+    }
+)
 # $TimerUI.Add_Tick({ TimerUI_Tick})
 
 [Void]$MainForm.ShowDialog()

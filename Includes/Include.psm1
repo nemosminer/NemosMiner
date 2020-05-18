@@ -26,6 +26,29 @@ version date:   29 January 2020
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
 # Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
 
+Function Get-NMVersion { 
+    # Check if new version is available
+    Write-Message "Checking version..."
+    Try { 
+        $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+    }
+    Catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json }
+    If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
+    If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
+        Write-Message "Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))"
+        # If ([Version](Get-NVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
+        $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
+        $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
+        $LabelNotifications.Lines += $Version.Message
+        If ($Config.Autoupdate -and ! $Config.ManualConfig) { Initialize-Autoupdate }
+        # } Else { 
+        # Write-Message "Version $($Version.Version available. Please update NVIDIA driver. Will not Autoupdate"
+        # $LabelNotifications.ForeColor = "Red"
+        # $LabelNotifications.Lines += "Driver update required. Version $([Version]$Version.Version) available"
+        # }
+    }
+}
+
 Function Start-PowerUsageReader {
     [CmdletBinding()]
     param(
@@ -43,7 +66,7 @@ Function Start-PowerUsageReader {
     }
 
     $Variables | Add-Member -Force @{ 
-        MeasurePowerUsageJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList $Parameters -ScriptBlock { 
+        MeasurePowerUsageJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location $($Variables.MainPath)")) -ArgumentList $Parameters -ScriptBlock { 
             [CmdletBinding()]
             param(
                 [Parameter(Mandatory = $true)]
@@ -74,6 +97,53 @@ Function Start-PowerUsageReader {
     }
 }
 
+Function Start-HashRateReader {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [String[]]$DeviceNames,
+        [Parameter(Mandatory = $false)]
+        [Int]$Interval = 2, #Seconds
+        [String]$HwINFO64_RegKey = "HKCU:\Software\HWiNFO64\VSB"
+    )
+
+    $Parameters = @{ 
+        DeviceNames     = $DeviceNames
+        HwINFO64_RegKey = $HwINFO64_RegKey
+        Interval        = $Interval
+    }
+
+    $Variables | Add-Member -Force @{ 
+        HashRateReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location $Variables.MainPath")) -ArgumentList $Parameters -ScriptBlock { 
+            [CmdletBinding()]
+            param(
+                [Parameter(Mandatory = $true)]
+                [Hashtable]$Parameters
+            )
+
+            $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
+
+            Try { 
+                While ((Test-Path $HwINFO64_RegKey) -and $DeviceNames) { 
+
+                    Start-Sleep -Seconds $Interval
+
+                    $RegistryValue = Get-ItemProperty $HwINFO64_RegKey
+                    $RegistryValue.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceNames | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
+                        [PSCustomObject]@{ 
+                            "Date"       = (Get-Date).ToUniversalTime()
+                            "DeviceName" = $(($_.Value -split ' ') | Select-Object -Last 1)
+                            "Power"      = $($RegistryValue.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                        }
+                    }
+                }
+            }
+            Catch {}
+
+            Exit
+        }
+    }
+}
 Function Get-CommandLineParameters { 
     [CmdletBinding()]
     param(
@@ -121,12 +191,11 @@ Function Start-ChildJobs {
     }
 }
 
-Function InitApplication { 
+Function Initialize-Application { 
     $Variables | Add-Member -Force @{ SourcesHash = @() }
     $Variables | Add-Member -Force @{ ProcessorCount = (Get-CimInstance -class win32_processor).NumberOfLogicalProcessors }
 
-    If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
+    Set-Location $Variables.MainPath
 
     $Variables | Add-Member -Force @{ ScriptStartDate = (Get-Date).ToUniversalTime() }
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -291,24 +360,24 @@ Function Write-Message {
     End { }
 }
 
-Function GetNVIDIADriverVersion { 
+Function Get-NVIDIADriverVersion { 
     ((Get-CimInstance CIM_VideoController) | Select-Object name, description, @{ Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{ 6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
 }
 
-Function Global:RegisterLoaded ($File) { 
-    New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value { $true } -ErrorAction SilentlyContinue | Add-Member @{ "File" = (Resolve-Path $File).Path } -ErrorAction SilentlyContinue
-}
+# Function Global:RegisterLoaded ($File) { 
+#     New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value { $true } -ErrorAction SilentlyContinue | Add-Member @{ "File" = (Resolve-Path $File).Path } -ErrorAction SilentlyContinue
+# }
 
-Function Global:IsLoaded ($File) { 
-    $Hash = (Get-FileHash (Resolve-Path $File).Path).hash
-    If (Test-Path function::$Hash) { 
-        $True
-    }
-    Else { 
-        Get-ChildItem function: | Where-Object { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
-        $false
-    }
-}
+# Function Global:IsLoaded ($File) { 
+#     $Hash = (Get-FileHash (Resolve-Path $File).Path).hash
+#     If (Test-Path function::$Hash) { 
+#         $True
+#     }
+#     Else { 
+#         Get-ChildItem function: | Where-Object { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
+#         $false
+#     }
+# }
 
 Function Start-IdleTracking { 
     # Function tracks how long the system has been idle and controls the paused state
@@ -363,10 +432,11 @@ namespace PInvoke.Win32 {
 '@
             # Start-Transcript ".\Logs\IdleTracking.log" -Append -Force
             $ProgressPreference = "SilentlyContinue"
-            . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
+
+            . .\Includes\Include.ps1;
+            . .\Includes\Core.ps1;
+
             While ($True) { 
-                If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-                If (-not (IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
                 # Only do anything If Mine only when idle is turned on
@@ -494,6 +564,11 @@ Function Start-Mining {
     $Powershell.Runspace = $CycleRunspace
     $Powershell.AddScript(
         { 
+            Set-Location $Variables.MainPath
+
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+            $ScriptBody = "using module .\Includes\Core.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+
             #Start the log
             Start-Transcript -Path ".\Logs\CoreCyle-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force
             # Purge Logs more than 10 days
@@ -501,11 +576,9 @@ Function Start-Mining {
                 Get-ChildItem ".\Logs\CoreCyle-*.log" | Where-Object { $_.name -notin (Get-ChildItem ".\Logs\CoreCyle-*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 10).FullName } | Remove-Item -Force -Recurse
             }
             $ProgressPreference = "SilentlyContinue"
-            . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")
+
             Update-Monitoring
             While ($true) { 
-                If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-                If (-not (IsLoaded(".\Includes\Core.ps1"))) { . .\Includes\Core.ps1; RegisterLoaded(".\Includes\Core.ps1") }
                 $Variables.Paused | Out-Host
                 If ($Variables.Paused) { 
                     # Run a dummy cycle to keep the UI updating.
@@ -528,7 +601,7 @@ Function Start-Mining {
                     }
                 }
                 Else { 
-                    NPMCycle
+                    Start-NPMCycle
                     Update-Monitoring
                     $EndLoop = (Get-Date).AddSeconds($Variables.TimeToSleep)
                     # On crashed miner start next loop immediately
@@ -581,7 +654,7 @@ Function Update-Notifications ($Text) {
     $Variables.LabelStatus.Refresh | Out-Null
 }
 
-Function DetectGPUCount { 
+Function Get-GPUCount { 
     Write-Message "Fetching GPU Count"
     $DetectedGPU = @()
     Try { 
@@ -599,7 +672,7 @@ Function DetectGPUCount {
     $DetectedGPUCount
 }
 
-Function Load-Config { 
+Function Get-Config { 
     param(
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
@@ -936,7 +1009,7 @@ Function Get-ChildItemContent {
     }
     $ChildItems
 }
-Function Invoke_TcpRequest { 
+Function Invoke-TcpRequest { 
      
     param(
         [Parameter(Mandatory = $true)]
@@ -972,11 +1045,7 @@ Function Invoke_TcpRequest {
     $response
 }
 
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-
-Function Invoke_httpRequest { 
+Function Invoke-HttpRequest { 
      
     param(
         [Parameter(Mandatory = $true)]
@@ -997,11 +1066,6 @@ Function Invoke_httpRequest {
     $response
 }
 
-
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-#************************************************************************************************************************************************************************************
-
 Function Get-MinerData { 
     param(
         [Parameter(Mandatory = $true)]
@@ -1018,7 +1082,7 @@ Function Get-MinerData {
     Try { 
         Switch ($Miner.API) { 
             "bminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status/solver" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/api/v1/status/solver" $Timeout
                 If ($Request) { 
                     $Data = $Request.content | ConvertFrom-Json 
                     $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
@@ -1031,7 +1095,7 @@ Function Get-MinerData {
             }
 
             "castxmr" { 
-                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json 
                     $HashRate_Value = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
@@ -1039,7 +1103,7 @@ Function Get-MinerData {
             }
 
             "ccminer" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
+                $Request = Invoke-TcpRequest $server $port  "summary" $Timeout
                 If ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData
                     $HashRate_Value = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * 1000 }
@@ -1047,7 +1111,7 @@ Function Get-MinerData {
             }
 
             "claymore" { 
-                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
                     $HashRate_Value = [Double]$Data.result[2].Split(";")[0] * 1000
@@ -1056,7 +1120,7 @@ Function Get-MinerData {
             }
 
             "claymorev2" { 
-                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "" $Timeout
                 If ($Request -ne "" -and $Request -ne $null) { 
                     $Data = $Request.Content.Substring($Request.Content.IndexOf("{ "), $Request.Content.LastIndexOf("}") - $Request.Content.IndexOf("{ ") + 1) | ConvertFrom-Json
                     $HashRate_Value = [Double]$Data.result[2].Split(";")[0] 
@@ -1064,7 +1128,7 @@ Function Get-MinerData {
             }
 
             "dtsm" { 
-                $Request = Invoke_TcpRequest $server $port "empty" $Timeout
+                $Request = Invoke-TcpRequest $server $port "empty" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
                     $HashRate_Value = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
@@ -1073,7 +1137,7 @@ Function Get-MinerData {
 
             "ethminer" { 
                 $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
+                $Request = Invoke-TcpRequest $Server $Port $Parameters $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.result[2] -split ';')[0]) * 1000
@@ -1082,7 +1146,7 @@ Function Get-MinerData {
 
             "ewbf" { 
                 $Message = @{ id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $message $Timeout
+                $Request = Invoke-TcpRequest $server $port $message $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
@@ -1090,7 +1154,7 @@ Function Get-MinerData {
             }
 
             "fireice" { 
-                $Request = Invoke_httpRequest $Server $Port "/h" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/h" $Timeout
                 If ($Request) { 
                     $Data = $Request.Content -split "</tr>" -match "total*" -split "<td>" -replace "<[^>]*>", ""
                     $HashRate_Value = $Data[1]
@@ -1100,7 +1164,7 @@ Function Get-MinerData {
             }
 
             "gminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/stat" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
@@ -1109,7 +1173,7 @@ Function Get-MinerData {
             }
 
             "gminerdual" { 
-                $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/stat" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
@@ -1118,7 +1182,7 @@ Function Get-MinerData {
             }
 
             "grinpro" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/status" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/api/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.workers.graphsPerSecond) | Measure-Object -Sum).Sum
@@ -1126,7 +1190,7 @@ Function Get-MinerData {
             }
 
             "lol" { 
-                $Request = Invoke_httpRequest $Server $Port "/summary" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/summary" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double]$data.Session.Performance_Summary
@@ -1135,7 +1199,7 @@ Function Get-MinerData {
 
             "miniz" { 
                 $Message = '{ "id":"0", "method":"getstat"}'
-                $Request = Invoke_TcpRequest $server $port $message $Timeout
+                $Request = Invoke-TcpRequest $server $port $message $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
@@ -1143,7 +1207,7 @@ Function Get-MinerData {
             }
 
             "nanominer" { 
-                $Request = Invoke_httpRequest $Server $Port "/stat" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/stat" $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $Data.Statistics.Devices | ForEach-Object { 
@@ -1161,7 +1225,7 @@ Function Get-MinerData {
             }
 
             "nbminer" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/api/v1/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     If ($Algorithms.Count -eq 2) { 
@@ -1175,7 +1239,7 @@ Function Get-MinerData {
             }
 
             "nbminerdual" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v1/status" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/api/v1/status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     If ($Algorithms.Count -eq 2) { 
@@ -1189,7 +1253,7 @@ Function Get-MinerData {
             }
 
             "nheq" { 
-                $Request = Invoke_TcpRequest $Server $Port "status" $Timeout
+                $Request = Invoke-TcpRequest $Server $Port "status" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double]$Data.result.speed_ips * 1000000
@@ -1197,7 +1261,7 @@ Function Get-MinerData {
             }
 
             "palgin" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
+                $Request = Invoke-TcpRequest $server $port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";"
                     $HashRate_Value = [Double]($Data[5] -split '=')[1] * 1000
@@ -1205,7 +1269,7 @@ Function Get-MinerData {
             }
 
             "prospector" { 
-                $Request = Invoke_httpRequest $Server $Port "/api/v0/hashrates" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/api/v0/hashrates" $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double]($Data.rate | Measure-Object -Sum).sum
@@ -1213,7 +1277,7 @@ Function Get-MinerData {
             }
 
             "srb" { 
-                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = @(
@@ -1225,7 +1289,7 @@ Function Get-MinerData {
 
             "ttminer" { 
                 $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json  -Compress
-                $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
+                $Request = Invoke-TcpRequest $Server $Port $Parameters $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.result[2] -split ';')[0]) #* 1000
@@ -1234,7 +1298,7 @@ Function Get-MinerData {
 
             "xgminer" { 
                 $Message = @{ command = "summary"; parameter = "" } | ConvertTo-Json -Compress
-                $Request = Invoke_TcpRequest $server $port $Message $Timeout
+                $Request = Invoke-TcpRequest $server $port $Message $Timeout
 
                 if ($Request) { 
                     $Data = $Request.Substring($Request.IndexOf("{ "), $Request.LastIndexOf("}") - $Request.IndexOf("{ ") + 1) -replace " ", "_" | ConvertFrom-Json
@@ -1261,7 +1325,7 @@ Function Get-MinerData {
             }
 
             "xmrig" { 
-                $Request = Invoke_httpRequest $Server $Port "/api.json" $Timeout
+                $Request = Invoke-HttpRequest $Server $Port "/api.json" $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json 
                     $HashRate_Value = [Double]$Data.hashrate.total[0]
@@ -1281,7 +1345,7 @@ Function Get-MinerData {
             }
 
             "zjazz" { 
-                $Request = Invoke_TcpRequest $server $port  "summary" $Timeout
+                $Request = Invoke-TcpRequest $server $port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
                     $HashRate_Value = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
@@ -1430,6 +1494,7 @@ Function Get-CpuId {
         Features = $features.Keys.ForEach{ if ($features.$_) { $_ } }
     }
 }
+
 Function Get-Device { 
     [CmdletBinding()]
     param(
@@ -2092,37 +2157,37 @@ Function Get-Region {
     Else { $Region }
 }
 
-Function Autoupdate { 
+Function Initialize-Autoupdate { 
     # GitHub Supporting only TLSv1.2 on feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
     Write-host (Split-Path $script:MyInvocation.MyCommand.Path)
-    Write-Message "Checking AutoUpdate"
-    Update-Notifications("Checking AutoUpdate")
-    # write-host "Checking autoupdate"
+    Write-Message "Checking Autoupdate"
+    Update-Notifications("Checking Auto Update")
+    # write-host "Checking Autoupdate"
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
     Try { 
-        $AutoUpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $AutoupdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
-    Catch { $AutoUpdateVersion = Get-content ".\Config\AutoUpdateVersion.json" | Convertfrom-json }
-    If ($AutoUpdateVersion -ne $null) { $AutoUpdateVersion | ConvertTo-Json | Out-File ".\Config\AutoUpdateVersion.json" }
-    If ($AutoUpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoUpdateVersion.Version -gt $Variables.CurrentVersion -and $AutoUpdateVersion.AutoUpdate) { 
-        Write-Message "Version $($AutoUpdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
+    Catch { $AutoupdateVersion = Get-content ".\Config\Initialize-AutoupdateVersion.json" | Convertfrom-json }
+    If ($AutoupdateVersion -ne $null) { $AutoupdateVersion | ConvertTo-Json | Out-File ".\Config\Initialize-AutoupdateVersion.json" }
+    If ($AutoupdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoupdateVersion.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Autoupdate) { 
+        Write-Message "Version $($AutoupdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
         $LabelNotifications.ForeColor = "Green"
-        $LabelNotifications.Lines += "Version $([Version]$AutoUpdateVersion.Version) available"
+        $LabelNotifications.Lines += "Version $([Version]$AutoupdateVersion.Version) available"
 
-        If ($AutoUpdateVersion.Autoupdate) { 
+        If ($AutoupdateVersion.Autoupdate) { 
             $LabelNotifications.Lines += "Starting Auto Update"
             # Setting autostart to true
             If ($Variables.Started) { $Config.autostart = $true }
             Write-Config -ConfigFile $ConfigFile
             
             # Download update file
-            $UpdateFileName = ".\$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version)"
-            Write-Message "Downloading version $($AutoUpdateVersion.Version)"
-            Update-Notifications("Downloading version $($AutoUpdateVersion.Version)")
+            $UpdateFileName = ".\$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version)"
+            Write-Message "Downloading version $($AutoupdateVersion.Version)"
+            Update-Notifications("Downloading version $($AutoupdateVersion.Version)")
             Try { 
-                Invoke-WebRequest $AutoUpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+                Invoke-WebRequest $AutoupdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
             }
             Catch { 
                 Write-Message "Update download failed"
@@ -2140,7 +2205,7 @@ Function Autoupdate {
             # Backup current version folder in zip file
             Write-Message "Backing up current version..."
             Update-Notifications("Backing up current version...")
-            $BackupFileName = ("AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
+            $BackupFileName = ("Initialize-AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
             Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
             If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
                 Write-Message "Backup failed"
@@ -2185,11 +2250,11 @@ Function Autoupdate {
             Remove-Item ".\$($UpdateFileName).zip" -Force
             If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
             If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
-            Get-ChildItem "AutoupdateBackup-*.zip" | Where-Object { $_.name -notin (Get-ChildItem "AutoupdateBackup-*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
+            Get-ChildItem "Initialize-AutoupdateBackup-*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup-*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
             
             # Start new instance (Wait and confirm start)
             # Kill old instance
-            If ($AutoUpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
+            If ($AutoupdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
                 Write-Message "Starting my brother"
                 $StartCommand = ((Get-CimInstance win32_process -filter "ProcessID=$PID" | Select-Object commandline).CommandLine)
                 $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
@@ -2199,45 +2264,45 @@ Function Autoupdate {
                 While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
                 If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
                     Write-Message "Failed to start new instance of $($Variables.CurrentProduct)"
-                    Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoUpdateVersion.Version) but failed to restart.")
+                    Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoupdateVersion.Version) but failed to restart.")
                     $LabelNotifications.ForeColor = "Red"
                     return
                 }
 
                 $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-                $TempVerObject | Add-Member -Force @{ AutoUpdated = (Get-Date) }
+                $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
                 
-                Write-Message "$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)"
-                Update-Notifications("$($Variables.CurrentProduct) successfully updated to version $($AutoUpdateVersion.Version)")
+                Write-Message "$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)"
+                Update-Notifications("$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)")
 
                 Write-Message "Killing myself"
                 If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
             }
             Else { 
                 $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-                $TempVerObject | Add-Member -Force @{ AutoUpdated = (Get-Date) }
+                $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
                 
-                Write-Message "Successfully updated to version $($AutoUpdateVersion.Version)"
-                Update-Notifications("Successfully updated to version $($AutoUpdateVersion.Version)")
+                Write-Message "Successfully updated to version $($AutoupdateVersion.Version)"
+                Update-Notifications("Successfully updated to version $($AutoupdateVersion.Version)")
                 $LabelNotifications.ForeColor = "Green"
             }
         }
         ElseIf (-not ($Config.Autostart)) { 
-            UpdateStatus("Cannot autoupdate as autostart not selected")
-            Update-Notifications("Cannot autoupdate as autostart not selected")
+            UpdateStatus("Cannot Auto Update as autostart not selected")
+            Update-Notifications("Cannot Auto Update as autostart not selected")
             $LabelNotifications.ForeColor = "Red"
         }
         Else { 
-            UpdateStatus("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
-            Update-Notifications("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
+            UpdateStatus("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
+            Update-Notifications("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
             $LabelNotifications.ForeColor = "Red"
         }
     }
     Else { 
-        Write-Message "$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate"
-        Update-Notifications("$($AutoUpdateVersion.Product)-$($AutoUpdateVersion.Version). Not candidate for Autoupdate")
+        Write-Message "$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update"
+        Update-Notifications("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
         $LabelNotifications.ForeColor = "Green"
     }
 }

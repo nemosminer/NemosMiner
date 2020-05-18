@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-Gminer209\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.09/gminer_2_09_windows64.zip"
 $Commands = [PSCustomObject]@{ 

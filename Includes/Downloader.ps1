@@ -1,8 +1,8 @@
-﻿$DownloadList = $args
+﻿using module .\Includes\Include.psm1
+
+$DownloadList = $args
 
 If ($script:MyInvocation.MyCommand.Path) {Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)}
-
-. .\Includes\Include.ps1
 
 $ProgressPreferenceBackup = $ProgressPreference
 $ProgressPreference = "SilentlyContinue"

@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-nanominer193\nanominer.exe"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.9.3/nanominer-windows-1.9.3.zip"
 $Commands = [PSCustomObject]@{ 

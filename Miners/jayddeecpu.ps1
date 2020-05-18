@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 #$Path = ".\Bin\CPU-JayDDe31301\cpuminer-zen.exe" #AMD
 $Path = ".\Bin\CPU-JayDDee31301\cpuminer-aes-sse42.exe" #Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.13.0.1/cpuminer-opt-3.13.0.1-windows.zip"

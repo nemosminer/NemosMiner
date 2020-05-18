@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-Bminer1621\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.1-ae15079-amd64.zip" #working on win10 only not 8.1, may require nvml.dll to be added
 $Commands = [PSCustomObject]@{ 
@@ -14,7 +14,6 @@ $Commands = [PSCustomObject]@{
     #"cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m 
     #"tensority"        = "-uri ethstratum://" #Tensority
     #"kawpow"           = "-uri raven://" #Kawpow
-
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

@@ -1,4 +1,4 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-miniZ15t3\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.5t3/miniZ_v1.5t3_cuda10_win-x64.zip"
 $Commands = [PSCustomObject]@{ 
