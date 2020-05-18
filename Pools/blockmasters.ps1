@@ -47,18 +47,20 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
         If ($PoolConf.Wallet) { 
             [PSCustomObject]@{ 
-                Algorithm     = $PoolAlgorithm
-                Info          = ""
-                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
-                StablePrice   = $Stat.Week
-                MarginOfError = $Stat.Week_Fluctuation
+                Algorithm     = [String]$PoolAlgorithm
+                Coin          = [String]$TopCoin.Symbol
+                Info          = [String]$TopCoin.Name
+                Price         = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
+                StablePrice   = [Double]$Stat.Week
+                MarginOfError = [Double]$Stat.Week_Fluctuation
                 Protocol      = "stratum+tcp"
-                Host          = $PoolHost
-                Port          = $PoolPort
+                Host          = [String]$PoolHost
+                Port          = [Int]$PoolPort
                 User          = $PoolConf.Wallet
                 Pass          = "$($WorkerName),c=$($PwdCurr)"
-                Location      = $Location
-                SSL           = $false
+                Location      = [String]$Location
+                SSL           = [Bool]$false
+                Fee           = [Decimal]($Request.$_.Fees / 100)
             }
         }
     }
