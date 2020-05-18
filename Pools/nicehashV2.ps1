@@ -41,7 +41,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
                 Price         = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
                 StablePrice   = [Double]$Stat.Week
                 MarginOfError = [Double]$Stat.Week_Fluctuation
-                Protocol      = "stratum+ssl"
+                Protocol      = "stratum+tcp"
                 Host          = [String]$NiceHash_Host
                 Port          = [Int]$NiceHash_Port
                 User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
