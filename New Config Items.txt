@@ -1,0 +1,82 @@
+{
+#Powerusage of idle system in Watt. Part of profit calculation
+  "IdlePowerUsageW": 60,
+
+#Will replace old device selection (t.b.d.)
+  "DeviceName": [
+    "GPU#01"
+  ],
+
+#Will replace old device selection (t.b.d.)
+  "DeviceName": [
+    "GPU#01"
+  ],
+  "ExcludeDeviceName": [
+    "CPU#00",
+    "GPU#02"
+  ],
+
+#If true, NM will ignore miner fee for earning & profit calculation
+  "IgnoreMinerFee": false,
+
+#If true NM will ignore pool fee for earning & profit calculation
+  "IgnorePoolFee": false,
+
+#If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
+  "IgnorePowerCost": false,
+
+#Log level detail, see Write-Message function
+  "LogLevel": [
+    "Info",
+    "Warning",
+    "Error",
+    "Verbose",
+    "Debug"
+  ],
+
+#If true, power usage will be read from miners, required for true profit calculation
+  "MeasurePowerUsage": true,
+
+#If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
+  "OpenFirewallPorts": true,
+
+#Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
+  "PowerPricekWh": {
+    "00:00": 0.26,
+    "12:00": 0.3
+  },
+
+#Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+   "ProfitabilityThreshold": 0,
+
+#Show pool data accuracy column in miner overview
+  "ShowAccuracy": true,
+
+#Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+  "ShowAllMiners": false,
+
+#Show miner earning column in miner overview
+  "ShowEarning": true,
+
+#Show miner earning bias column in miner overview
+  "ShowEarningBias": true,
+
+#Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
+  "ShowMinerFee": true,
+
+#Show pool fee column in miner overview (if fees are available, t.b.d. in pool files, Property '[Double]Fee')
+  "ShowPoolFee": true,
+
+#Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
+  "ShowPowerCost": true,
+
+#Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
+  "ShowProfit": true,
+
+#Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
+  "ShowProfitBias": true,
+
+#Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
+  "ShowPowerUsage": true,
+
+
