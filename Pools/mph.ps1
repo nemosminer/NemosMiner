@@ -28,31 +28,31 @@ $Request.return | ForEach-Object {
         $Location = $_
 
         [PSCustomObject]@{ 
-            Algorithm   = [String]$Algorithm
-            Info        = [String]$Coin
-            Price       = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
-            StablePrice = [Double]$Stat.Week
+            Algorithm   = $Algorithm
+            Info        = $Coin
+            Price       = $Stat.Live * $PoolConf.PricePenaltyFactor
+            StablePrice = $Stat.Week
             Protocol    = 'stratum+tcp'
-            Host        = [String]$Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
-            Port        = [Int]$Current.algo_switch_port
+            Host        = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
+            Port        = $Current.algo_switch_port
             User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
             Pass        = 'x'
-            Location    = [String]$Location
-            SSL         = [Bool]$false
+            Location    = $Location
+            SSL         = $false
         }
 
         [PSCustomObject]@{ 
-            Algorithm   = [String]$Algorithm
-            Info        = [String]$Coin
-            Price       = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
-            StablePrice = [Double]$Stat.Week
+            Algorithm   = $Algorithm
+            Info        = $Coin
+            Price       = $Stat.Live * $PoolConf.PricePenaltyFactor
+            StablePrice = $Stat.Week
             Protocol    = 'stratum+ssl'
-            Host        = [String]$Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
-            Port        = [Int]$Current.algo_switch_port
+            Host        = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
+            Port        = $Current.algo_switch_port
             User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
             Pass        = 'x'
-            Location    = [String]$Location
-            SSL         = [Bool]$true
+            Location    = $Location
+            SSL         = $true
         }
     }
 }

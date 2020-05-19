@@ -36,33 +36,33 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
         $NiceHash_Host = "$($Algo).$($NiceHash_Location).nicehash.com"
         If ($PoolConf.Wallet) { 
             [PSCustomObject]@{ 
-                Algorithm     = [String]$NiceHash_Algorithm
-                Info          = [String]$NiceHash_Coin
-                Price         = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
-                StablePrice   = [Double]$Stat.Week
-                MarginOfError = [Double]$Stat.Week_Fluctuation
-                Protocol      = "stratum+ssl"
-                Host          = [String]$NiceHash_Host
-                Port          = [Int]$NiceHash_Port
+                Algorithm     = $NiceHash_Algorithm
+                Info          = $NiceHash_Coin
+                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+                StablePrice   = $Stat.Week
+                MarginOfError = $Stat.Week_Fluctuation
+                Protocol      = "stratum+tcp"
+                Host          = $NiceHash_Host
+                Port          = $NiceHash_Port
                 User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
                 Pass          = "x"
-                Location      = [String]$Location
+                Location      = $Location
                 SSL           = $false
             }
 
             [PSCustomObject]@{ 
-                Algorithm     = [String]$NiceHash_Algorithm
-                Info          = [String]$NiceHash_Coin
-                Price         = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
-                StablePrice   = [Double]$Stat.Week
-                MarginOfError = [Double]$Stat.Week_Fluctuation
+                Algorithm     = $NiceHash_Algorithm
+                Info          = $NiceHash_Coin
+                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+                StablePrice   = $Stat.Week
+                MarginOfError = $Stat.Week_Fluctuation
                 Protocol      = "stratum+ssl"
-                Host          = [String]$NiceHash_Host
-                Port          = [Int]$NiceHash_Port
+                Host          = $NiceHash_Host
+                Port          = $NiceHash_Port
                 User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
                 Pass          = "x"
-                Location      = [String]$Location
-                SSL           = [Bool]$false
+                Location      = $Location
+                SSL           = $true
             }
         }
     }
