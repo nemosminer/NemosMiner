@@ -1,4 +1,4 @@
-. .\Includes\Include.ps1
+using module ..\Includes\Include.psm1
 
 Try { 
     $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
@@ -43,7 +43,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
             Algorithm     = [String]$PoolAlgorithm
             Coin          = [String]$TopCoin.Symbol
             Info          = [String]$TopCoin.Name
-            Price         = [Double]$Stat.Live * $PoolConf.PricePenaltyFactor
+            Price         = [Double]($Stat.Live * $PoolConf.PricePenaltyFactor)
             StablePrice   = [Double]$Stat.Week
             MarginOfError = [Double]$Stat.Week_Fluctuation
             Protocol      = "stratum+tcp"

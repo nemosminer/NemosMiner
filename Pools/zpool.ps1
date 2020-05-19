@@ -1,4 +1,4 @@
-. .\Includes\Include.ps1
+using module ..\Includes\Include.psm1
 
 Try { 
     $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zpool\zpool.json") | ConvertFrom-Json 
@@ -41,18 +41,18 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
         If ($PoolConf.Wallet) { 
             [PSCustomObject]@{ 
-                Algorithm     = $PoolAlgorithm
-                Info          = ""
-                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
-                StablePrice   = $Stat.Week
-                MarginOfError = $Stat.Week_Fluctuation
+                Algorithm     = [String]$PoolAlgorithm
+                Price         = [Double]($Stat.Live * $PoolConf.PricePenaltyFactor)
+                StablePrice   = [Double]$Stat.Week
+                MarginOfError = [Double]$Stat.Week_Fluctuation
                 Protocol      = "stratum+tcp"
-                Host          = $PoolHost
-                Port          = $PoolPort
+                Host          = [String]$PoolHost
+                Port          = [Int]$PoolPort
                 User          = $PoolConf.Wallet
                 Pass          = "$($WorkerName),c=$($PwdCurr)"
-                Location      = $Location
-                SSL           = $false
+                Location      = [String]$Location
+                SSL           = [Bool]$false
+                Fee           = [Decimal]($Request.$_.Fees / 100)
             }
         }
     }
