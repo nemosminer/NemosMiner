@@ -36,6 +36,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
         $NiceHash_Host = "$($Algo).$($NiceHash_Location).nicehash.com"
         If ($PoolConf.Wallet) { 
             [PSCustomObject]@{ 
+
                 Algorithm     = $NiceHash_Algorithm
                 Info          = $NiceHash_Coin
                 Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
@@ -44,6 +45,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
                 Protocol      = "stratum+tcp"
                 Host          = $NiceHash_Host
                 Port          = $NiceHash_Port
+
                 User          = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
                 Pass          = "x"
                 Location      = $Location
