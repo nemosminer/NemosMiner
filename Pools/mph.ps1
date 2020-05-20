@@ -39,6 +39,7 @@ $Request.return | ForEach-Object {
             Pass        = 'x'
             Location    = [String]$Location
             SSL         = [Bool]$false
+            Fee         = [Decimal](0.9 / 100)
         }
 
         [PSCustomObject]@{ 
@@ -53,6 +54,7 @@ $Request.return | ForEach-Object {
             Pass        = 'x'
             Location    = [String]$Location
             SSL         = [Bool]$true
+            Fee         = [Decimal](0.9 / 100)
         }
     }
 }

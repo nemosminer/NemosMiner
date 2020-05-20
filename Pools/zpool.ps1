@@ -20,6 +20,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $Algo = $_
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
+    $Fee = [Decimal]($Request.$_.Fees / 100)
 
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
@@ -52,7 +53,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                 Pass          = "$($WorkerName),c=$($PwdCurr)"
                 Location      = [String]$Location
                 SSL           = [Bool]$false
-                Fee           = [Decimal]($Request.$_.Fees / 100)
+                Fee           = $Fee
             }
         }
     }

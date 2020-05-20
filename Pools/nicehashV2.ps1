@@ -11,9 +11,15 @@ If (-not $Request) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 
-$Fee = 0.05 #5% FOR EXTERNAL WALLET CHANGE TO 2% If YOU USE INTERNAL
 $ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
+
+If ($Config.PoolsConfig.$ConfName.IsInternal) { 
+    $Fee = 0.01
+}
+Else { 
+    $Fee = 0.05
+}
 
 $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 fail stratum #> | ForEach-Object { 
     $Algo = $_.Algorithm
@@ -48,6 +54,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
                 Pass          = "x"
                 Location      = [String]$Location
                 SSL           = $false
+                Fee           = $Fee
             }
 
             [PSCustomObject]@{ 
@@ -63,6 +70,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
                 Pass          = "x"
                 Location      = [String]$Location
                 SSL           = [Bool]$false
+                Fee           = $Fee
             }
         }
     }
