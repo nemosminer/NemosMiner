@@ -308,10 +308,10 @@ Function Initialize-Application {
     $Variables | Add-Member -Force @{ EarningsTrackerJobs = @() }
     $Variables | Add-Member -Force @{ Earnings = @{ } }
 
-    $Variables | Add-Member -Force @{ StartPaused = $False }
-    $Variables | Add-Member -Force @{ Started = $False }
-    $Variables | Add-Member -Force @{ Paused = $False }
-    $Variables | Add-Member -Force @{ RestartCycle = $False }
+    $Variables | Add-Member -Force @{ StartPaused = $false }
+    $Variables | Add-Member -Force @{ Started = $false }
+    $Variables | Add-Member -Force @{ Paused = $false }
+    $Variables | Add-Member -Force @{ RestartCycle = $false }
 
     $Location = $Config.Location
  
@@ -426,7 +426,7 @@ Function Get-NVIDIADriverVersion {
 # Function Global:IsLoaded ($File) { 
 #     $Hash = (Get-FileHash (Resolve-Path $File).Path).hash
 #     If (Test-Path function::$Hash) { 
-#         $True
+#         $true
 #     }
 #     Else { 
 #         Get-ChildItem function: | Where-Object { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
@@ -491,7 +491,7 @@ namespace PInvoke.Win32 {
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
             $ScriptBody = "using module .\Includes\Core.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
 
-            While ($True) { 
+            While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
                 # Only do anything If Mine only when idle is turned on
@@ -499,16 +499,16 @@ namespace PInvoke.Win32 {
                     If ($Variables.Paused) { 
                         # Check If system has been idle long enough to unpause
                         If ($IdleSeconds -gt $Config.IdleSec) { 
-                            $Variables.Paused = $False
-                            $Variables.RestartCycle = $True
+                            $Variables.Paused = $false
+                            $Variables.RestartCycle = $true
                             $Variables.StatusText = "System idle for $IdleSeconds seconds, starting mining..."
                         }
                     }
                     Else { 
                         # Pause If system has become active
                         If ($IdleSeconds -lt $Config.IdleSec) { 
-                            $Variables.Paused = $True
-                            $Variables.RestartCycle = $True
+                            $Variables.Paused = $true
+                            $Variables.RestartCycle = $true
                             $Variables.StatusText = "System active, pausing mining..."
                         }
                     }
@@ -644,11 +644,11 @@ Function Start-Mining {
                     # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
                     For ($i = 0; $i -lt 4; $i++) { 
                         If ($i -eq 3) { 
-                            $Variables | Add-Member -Force @{ EndLoop = $True }
+                            $Variables | Add-Member -Force @{ EndLoop = $true }
                             Update-Monitoring
                         }
                         Else { 
-                            $Variables | Add-Member -Force @{ EndLoop = $False }
+                            $Variables | Add-Member -Force @{ EndLoop = $false }
                         }
 
                         $Variables.StatusText = "Mining paused"
@@ -658,13 +658,13 @@ Function Start-Mining {
                 Else { 
                     Start-NPMCycle
                     Update-Monitoring
-                    $EndLoop = (Get-Date).AddSeconds($Variables.TimeToSleep)
+                    $EndLoopTime = (Get-Date).AddSeconds($Variables.TimeToSleep)
                     # On crashed miner start next loop immediately
-                    While ((Get-Date) -lt $EndLoop -and ($RunningMiners = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } | Where-Object { $_.DataReaderJob.State -eq "Running" })) {
+                    While ((Get-Date) -lt $EndLoopTime -and ($RunningMiners = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } | Where-Object { $_.DataReaderJob.State -eq "Running" })) { 
                         Start-Sleep -Seconds 1
 
                         If ($BenchmarkingMiners = @($RunningMiners | Where-Object { (-not $_.Hashrate_Gathered) -or ($Variables.MeasurePowerUsage -and (-not $_.PowerUsage))})) {
-                            #Exit loop when enought samples
+                            #Exit loop when enough samples
                             While ($BenchmarkingMinersNeedingMoreSamples = @($BenchmarkingMiners | Where-Object { ($_.Data).Count -lt ($_.IntervalMultiplier * $Config.MinHashRateSamples) })) { 
                                 #Get more miner data
                                 $RunningMiners | Where-Object { $_.DataReaderJob.HasMoreData } | ForEach-Object { 
@@ -674,7 +674,6 @@ Function Start-Mining {
                                 }
                                 Start-Sleep -Seconds 1
                             }
-                            $EndLoop = (Get-Date)
                             Remove-Variable BenchmarkingMinersNeedingMoreSamples
                             Remove-variable BenchmarkingMiners
                         }
@@ -686,6 +685,9 @@ Function Start-Mining {
                             }
                         }
                     }
+                    Remove-Variable RunningMiners -ErrorAction Ignore
+                    Remove-Variable Samples -ErrorAction Ignore
+                    Remove-Variable Sample -ErrorAction Ignore
                 }
             }
         }
@@ -793,7 +795,7 @@ Function Write-Config {
 }
 
 Function Get-FreeTcpPort ($StartPort) { 
-    # While ($Port -le ($StartPort + 10) -and !$PortFound) { Try { $Null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} Catch { $Port;$PortFound=$True}}
+    # While ($Port -le ($StartPort + 10) -and !$PortFound) { Try { $null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} Catch { $Port;$PortFound=$true}}
     # $UsedPorts = (Get-NetTCPConnection | Where-Object { $_.state -eq "listen"}).LocalPort
     # While ($StartPort -in $UsedPorts) { 
     While (Get-NetTCPConnection -LocalPort $StartPort -ErrorAction SilentlyContinue) { $StartPort++ }

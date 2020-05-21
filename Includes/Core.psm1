@@ -29,11 +29,11 @@ Function Start-NPMCycle {
 
         Set-Location $Variables.MainPath
 
-        $Variables | Add-Member -Force @{ EndLoop = $False }
+        $Variables | Add-Member -Force @{ EndLoop = $false }
 
         Get-Config $Variables.ConfigFile
 
-        Write-Message "Starting Cycle"
+        Write-Message "Starting Cycle..."
         $DecayExponent = [Int](((Get-Date).ToUniversalTime() - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
 
         #Select configured devices
@@ -43,7 +43,7 @@ Function Start-NPMCycle {
         Get-Stat
 
         #Activate or deactivate donation
-        If ((Get-Date).AddDays(-1).AddMinutes($Config.Donate) -ge $Variables.LastDonated -and $Variables.DonateRandom.wallet -eq $Null) { 
+        If ((Get-Date).AddDays(-1).AddMinutes($Config.Donate) -ge $Variables.LastDonated -and $Variables.DonateRandom.wallet -eq $null) { 
             # Get donation addresses randomly from agreed developers list
             # This will fairly distribute donations to Developers
             # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
@@ -59,7 +59,7 @@ Function Start-NPMCycle {
                 $Config | Add-Member -Force @{ PoolsConfig = [PSCustomObject]@{ default = [PSCustomObject]@{ Wallet = $Variables.DonateRandom.Wallet; UserName = $Variables.DonateRandom.UserName; WorkerName = "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString().replace('.',''))"; PricePenaltyFactor = 1 } } }
             }
         }
-        If (((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $Null) -or (-not $Config.PoolsConfig)) { 
+        If (((Get-Date).AddDays(-1) -ge $Variables.LastDonated -and $Variables.DonateRandom.Wallet -ne $null) -or (-not $Config.PoolsConfig)) { 
             $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value { 
                 If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
                     Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
@@ -233,17 +233,17 @@ Function Start-NPMCycle {
                         $Miner = $_
                         [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $Miner.Path | Where-Object Arguments -EQ $Miner.Arguments)
                         If ($Filtered.Count -eq 0) { 
-                            If ($_.Process -eq $null) { 
-                                $_.Status = "Failed"
+                            If ($Miner.Process.HasExited) { 
+                                $Miner.Status = "Failed"
                             }
-                            ElseIf ($_.Process.HasExited -eq $false) { 
-                                Write-Message "Stopping miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')} for update."
-                                $_.Process.CloseMainWindow() | Out-Null
+                            ElseIf ($Miner.Process) { 
+                                Write-Message "Stopping miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')} for update..."
+                                $Miner.Process.CloseMainWindow() | Out-Null
                                 Start-Sleep 1
                                 # simply "Kill with power"
                                 Stop-Process $_.Process -Force | Out-Null
                                 Start-Sleep 1
-                                $_.Status = "Idle"
+                                $Miner.Status = "Idle"
                             }
                             #Restore Bias for non-active miners
                             $Variables.Miners | Where-Object Path -EQ $Miner.Path | Where-Object Arguments -EQ $Miner.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning_Bias_Orig; $_.Profit_Bias = $_.Profit_Bias_Orig }
@@ -251,6 +251,7 @@ Function Start-NPMCycle {
                             # Stop data reader 
                             $Miner.DataReaderJob | Stop-Job -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
                         }
+                        $Miner.Process = $null
                     }
                     Get-ChildItem -path ".\Stats\" -filter "$($UpdatedMiner.Name)_*.txt" | Remove-Item -Force -Recurse
                     Remove-Item -Force -Recurse (Split-Path $UpdatedMiner.Path)
@@ -419,14 +420,14 @@ Function Start-NPMCycle {
         $Variables | Add-Member -Force @{ MinersNeedingPowerUsageMeasurement = @($(if ($Config.MeasurePowerUsage) { $Variables.Miners | Where-Object PowerUsage -eq $null })) }
 
         #Don't penalize active miners. Miner could switch a little bit later and we will restore its bias in this case
-        $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | ForEach-Object { $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100) - $_.PowerCost } }
+        $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | ForEach-Object { $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning_Bias - $_.PowerCost } }
 
         #Hack: temporarily make all earnings & Earnings positive, BestMiners_Combos(_Comparison) produces wrong sort order when earnings or Earnings are negative
         $SmallestEarningBias = ([Double][Math]::Abs(($Variables.Miners | Sort-Object Earning_Bias | Select-Object -Index 0).Earning_Bias)) * 2
         $SmallestEarningComparison = ([Double][Math]::Abs(($Variables.Miners | Sort-Object Earning_Comparison | Select-Object -Index 0).Earning_Comparison)) * 2
         $SmallestProfitBias = ([Double][Math]::Abs(($Variables.Miners | Sort-Object Profit_Bias | Select-Object -Index 0).Profit_Bias)) * 2
         $SmallestProfitComparison = ([Double][Math]::Abs(($Variables.Miners | Sort-Object Profit_Comparison | Select-Object -Index 0).Profit_Comparison)) * 2
-        $Variables.Miners | Where-Object { $_.Earning_Bias -ne $null } | ForEach-Object { $_.Earning_Bias += $SmallestEarningBias; $_.Earning_Comparison += $SmallestEarningComparison; $_.Profit_Bias += $SmallestProfitBias; $_.Profit_Comparison += $SmallestProfitComparison }
+        $Variables.Miners | ForEach-Object { $_.Earning_Bias += $SmallestEarningBias; $_.Earning_Comparison += $SmallestEarningComparison; $_.Profit_Bias += $SmallestProfitBias; $_.Profit_Comparison += $SmallestProfitComparison }
 
         If ($Variables.Miners.Count -eq 1) { 
             $BestMiners_Combo_Comparison = $BestMiners_Combo = @($Variables.Miners)
@@ -464,14 +465,12 @@ Function Start-NPMCycle {
                     }
                 }
             )
-            If ($Variables.MeasurePowerUsage -and (-not $Config.IgnorePowerCost)) { 
-                $BestMiners_Combo = @($BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object Profit -EQ $null | Measure-Object).Count }, { ($_.Combination | Measure-Object Profit_Bias -Sum).Sum }, { ($_.Combination | Where-Object Profit -NE 0 | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
-                $BestMiners_Combo_Comparison = @($BestMiners_Combos_Comparison | Sort-Object -Descending { ($_.Combination | Where-Object Profit -EQ $null | Measure-Object).Count }, { ($_.Combination | Measure-Object Profit_Comparison -Sum).Sum }, { ($_.Combination | Where-Object Profit -NE 0 | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
-            }
-            Else { 
-                $BestMiners_Combo = @($BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object Earning -EQ $null | Measure-Object).Count }, { ($_.Combination | Measure-Object Earning_Bias -Sum).Sum }, { ($_.Combination | Where-Object Earning -NE 0 | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
-                $BestMiners_Combo_Comparison = @($BestMiners_Combos_Comparison | Sort-Object -Descending { ($_.Combination | Where-Object Earning -EQ $null | Measure-Object).Count }, { ($_.Combination | Measure-Object Earning_Comparison -Sum).Sum }, { ($_.Combination | Where-Object Earning -NE 0 | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
-            }
+
+            If ($Variables.MeasurePowerUsage -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
+            $BestMiners_Combo =            @($BestMiners_Combos            | Sort-Object -Descending { ($_.Combination | Where-Object { $Sortby -eq $null } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum },       { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
+            $BestMiners_Combo_Comparison = @($BestMiners_Combos_Comparison | Sort-Object -Descending { ($_.Combination | Where-Object { $Sortby -eq $null } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Comparison" -Sum).Sum }, { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
+            Remove-Variable SortBy
+
             Remove-Variable Miner_Device_Combo
             Remove-Variable Miners_Device_Combos
             Remove-Variable BestMiners
@@ -482,13 +481,15 @@ Function Start-NPMCycle {
         $Variables | Add-Member -Force @{ MiningCost = ($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum + $Variables.BasePowerCost }
 
         #OK to run miners?
-        If (-not (($Variables.MiningEarning - $Variables.MiningCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) -or  $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement)) { 
-#           $BestMiners_Combo = $null
+        If (-not (($Variables.MiningEarning - $Variables.MiningCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement)) { 
+            Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningEarning - $Variables.MiningCost) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+            $BestMiners_Combo = $null
             $BestMiners_Combo_Comparison = $null
+            Start-Sleep -Seconds $Variables.TimeToSleep
         }
 
         #Hack part 2: reverse temporarily forced positive earnings & Earnings
-        $Variables.Miners | Where-Object { $_.Earning_Bias -ne $null } | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Earning_Comparison -= $SmallestEarningComparison; $_.Profit_Bias -= $SmallestProfitBias; $_.Profit_Comparison -= $SmallestProfitComparison }
+        $Variables.Miners | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Earning_Comparison -= $SmallestEarningComparison; $_.Profit_Bias -= $SmallestProfitBias; $_.Profit_Comparison -= $SmallestProfitComparison }
         Remove-Variable SmallestEarningBias
         Remove-Variable SmallestEarningComparison
         Remove-Variable SmallestProfitBias
@@ -552,11 +553,11 @@ Function Start-NPMCycle {
             $Miner = $_
             $Filtered = @($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -eq 0) { 
-                If ($Miner.Process -eq $null) { 
+                If ($Miner.Process.HasExited) { 
                     $Miner.Status = "Failed"
                 }
-                ElseIf ($Miner.Process.HasExited -eq $false) { 
-                    Write-Message "Stopping miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')}."
+                ElseIf ($Miner.Process) { 
+                    Write-Message "Stopping miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')}..."
                     $Miner.Process.CloseMainWindow() | Out-Null
                     Start-Sleep 1
                     # simply "Kill with power"
@@ -569,6 +570,8 @@ Function Start-NPMCycle {
                     $Miner.Status = "Idle"
                     $Miner.TotalActive += (-$Miner.Active + ($Miner.Active = (Get-Date) - $Miner.Process.StartTime))
                 }
+                $Miner.Process = $null
+
                 #Restore Bias for non-active miners
                 $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning_Bias_Orig; $_.Profit_Bias = $_.Profit_Bias_Orig }
 
@@ -612,7 +615,7 @@ Function Start-NPMCycle {
                     }
 
                     Start-Sleep $Config.Delay #Wait to prevent BSOD
-                    Write-Message "$(If ($Miner.Hashrate_Gathered) { "Starting" } Else { "Benchmarking" } ) miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')}."
+                    Write-Message "$(If ($Miner.Hashrate_Gathered) { "Starting" } Else { "Benchmarking" } ) miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')}..."
  
                     $Variables.DecayStart = (Get-Date).ToUniversalTime()
                     $Miner.New = $true
@@ -636,7 +639,7 @@ Function Start-NPMCycle {
 
                         $NewMiner = $true
                         #Newly started miner should look better than others in the first run too
-                        $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100) - $Miner.PowerCost }
+                        $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning_Bias - $_.PowerCost }
 
                         #Starting Miner Data reader
                         Start-MinerDataReader -Miner $Miner -ReadPowerUsage $Variables.MeasurePowerUsage -Interval $(If ($Miner.Hashrate_Gathered) { 2 } Else { 0 } )
@@ -661,6 +664,7 @@ Function Start-NPMCycle {
         $Error.Clear()
     
         Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
+
         If ($Variables.BrainJobs.count -gt 0) { 
             $Variables.BrainJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Error.Clear() } }
             $Variables.BrainJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Progress.Clear() } }
@@ -672,7 +676,7 @@ Function Start-NPMCycle {
             $Variables.EarningsTrackerJobs.ChildJobs | ForEach-Object { $_.Output.Clear() }
         }
 
-        Write-Message "Waiting for next cycle..."
+        Write-Message "Collecting miner data while waiting for next cycle..."
 
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }
@@ -680,7 +684,8 @@ Function Start-NPMCycle {
 
     "Cycle Time (seconds): $($CycleTime.TotalSeconds)" | Out-Host
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
-    $Variables | Add-Member -Force @{ EndLoop = $True }
+    $Variables | Add-Member -Force @{ EndLoop = $true }
+    TimerUITick
 }
 #Stop the log
 # Stop-Transcript

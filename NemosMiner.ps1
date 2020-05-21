@@ -85,7 +85,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3}, #Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
-    [Double]$ProfitabilityThreshold = 0, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+    [Double]$ProfitabilityThreshold = -99, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory = $false)]
@@ -198,13 +198,13 @@ If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) {
 }
 
 Function Global:TimerUITick { 
-    $TimerUI.Enabled = $False
+    $TimerUI.Enabled = $false
 
     Set-Location $Variables.MainPath
 
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
-        $Variables.RestartCycle = $False
+        $Variables.RestartCycle = $false
         Stop-Mining
         Start-Mining
         If ($Variables.Paused) { 
@@ -230,9 +230,9 @@ Function Global:TimerUITick {
 
         If ((Compare-Object -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique) | Where-Object { $_.SideIndicator -eq "=>" }).InputObject -gt 0) { 
             (Compare-Object -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique) | Where-Object { $_.SideIndicator -eq "=>" }).InputObject | ForEach-Object { If ($_ -ne $null) { } $CheckedListBoxPools.Items.AddRange($_) }
-            $Config.PoolName | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $True) }
+            $Config.PoolName | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $true) }
         }
-        $Variables | Add-Member -Force @{ InCycle = $True }
+        $Variables | Add-Member -Force @{ InCycle = $true }
         # $MainForm.Number +=1 
         $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s} Path: $(Split-Path $script:MyInvocation.MyCommand.Path)" -f ([TimeSpan]((Get-Date) - $Variables.ScriptStartDate))
         $host.UI.RawUI.WindowTitle = $MainForm.Text
@@ -334,13 +334,13 @@ Function Global:TimerUITick {
             
                 [Array]$ProcessesRunning = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" }
                 If ($ProcessesRunning -eq $null) { 
-                    Write-Message "No miners running"
+                    Write-Message "No miners running."
                 }
             }
             $LabelBTCPrice.text = If ($Variables.Rates.$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 BTC = $(($Variables.Rates.($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
-            $Variables | Add-Member -Force @{ InCycle = $False }
+            $Variables | Add-Member -Force @{ InCycle = $false }
 
-            If ($Variables.Earnings.Values -ne $Null) { 
+            If ($Variables.Earnings.Values -ne $null) { 
                 $LabelBTCD.Text = "Avg: " + ("{0:N6}" -f ($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) + " $([char]0x20BF)/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)) + " m$([char]0x20BF)/D"
                 
                 $LabelEarningsDetails.Lines = @()
@@ -510,7 +510,7 @@ Function Global:TimerUITick {
                     $MinersDeviceGroupNeedingBenchmark.Count -or <#List all miners when benchmarking#>
                     $MinersDeviceGroupNeedingPowerUsageMeasurement.Count <#List all miners when measuring power consumption#>
 
-                } | Sort-Object DeviceNames, @{ Expression = $(If ($Config.IgnorePowerCost) { "Earning_Bias" } Else { "Profit_Bias" } ); Descending = $True }, @{ Expression = { $_.HashRates.PSObject.Properties.Name } } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(if (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ', ') [$(($Variables.ConfiguredDevices | Where-Object Name -eq $_.DeviceNames).Model -join ', ')]" } } | Out-Host
+                } | Sort-Object DeviceNames, @{ Expression = $(If ($Config.IgnorePowerCost) { "Earning_Bias" } Else { "Profit_Bias" } ); Descending = $true }, @{ Expression = { $_.HashRates.PSObject.Properties.Name } } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(if (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ', ') [$(($Variables.ConfiguredDevices | Where-Object Name -eq $_.DeviceNames).Model -join ', ')]" } } | Out-Host
 
                 #Display benchmarking progress
                 if ($MinersDeviceGroupNeedingBenchmark) { 
@@ -569,11 +569,11 @@ Function Global:TimerUITick {
             If ($Variables.MinersNeedingBenchmark.Count -eq 0 -and $Variables.MinersNeedingPowerUsageMeasurement.Count -eq 0) { 
                 If ($Variables.MiningEarning -lt $Variables.MiningCost) { 
                     #Mining causes a loss
-                    Write-Host "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningEarning - $Variables.MiningCost - $Variables.BasePowerCost) * $Variables.Rates.($Config.Currency | Select-Object -Index 0)).ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day."
+                    Write-Host "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningEarning - $Variables.MiningCost - $Variables.BasePowerCost) * $Variables.Rates.($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day."
                 }
                 If (($Variables.MiningEarning - $Variables.MiningCost) -lt $Config.ProfitabilityThreshold) { 
                     #Mining profit is below the configured threshold
-                    Write-Host "Mining profit is below the configured threshold of $($Config.Currency | Select-Object -Index 0))' $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+                    Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningEarning - $Variables.MiningCost) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
                 }
             }
         
@@ -583,7 +583,7 @@ Function Global:TimerUITick {
         }
         If (Test-Path "..\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content "..\EndUIRefresh.ps1" -Raw) }
 
-        $Variables.RefreshNeeded = $False
+        $Variables.RefreshNeeded = $false
     }
     $TimerUI.Start()
 }
@@ -814,7 +814,7 @@ $MainFormControls += $LabelEarningsDetails
 
 $LabelBTCD = New-Object System.Windows.Forms.Label
 $LabelBTCD.text = "BTC/D"
-$LabelBTCD.AutoSize = $False
+$LabelBTCD.AutoSize = $false
 $LabelBTCD.width = 473
 $LabelBTCD.height = 35
 $LabelBTCD.location = [System.Drawing.Point]::new(247, 2)
@@ -841,7 +841,7 @@ $ButtonPause.width = 60
 $ButtonPause.height = 30
 $ButtonPause.location = [System.Drawing.Point]::new(610, 62)
 $ButtonPause.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ButtonPause.Visible = $False
+$ButtonPause.Visible = $false
 $MainFormControls += $ButtonPause
 
 $ButtonStart = New-Object System.Windows.Forms.Button
@@ -879,7 +879,7 @@ $MainFormControls += $LabelAddress
 
 $TBAddress = New-Object System.Windows.Forms.TextBox
 $TBAddress.Tag = "Wallet"
-$TBAddress.MultiLine = $False
+$TBAddress.MultiLine = $false
 # $TBAddress.Scrollbars             = "Vertical" 
 $TBAddress.text = $Config.Wallet
 $TBAddress.AutoSize = $false
@@ -924,7 +924,7 @@ $EarningsDGV.height = 85
 $EarningsDGV.location = [System.Drawing.Point]::new(2, 159)
 $EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EarningsDGV.AutoSizeColumnsMode = "Fill"
-$EarningsDGV.RowHeadersVisible = $False
+$EarningsDGV.RowHeadersVisible = $false
 $RunPageControls += $EarningsDGV
 
 $LabelGitHub = New-Object System.Windows.Forms.LinkLabel
@@ -962,7 +962,7 @@ $RunningMinersDGV.height = 95
 $RunningMinersDGV.location = [System.Drawing.Point]::new(2, 266)
 $RunningMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
-$RunningMinersDGV.RowHeadersVisible = $False
+$RunningMinersDGV.RowHeadersVisible = $false
 $RunPageControls += $RunningMinersDGV
 
 # Switching Page Controls
@@ -1017,7 +1017,7 @@ $SwitchingDGV.height = 333
 $SwitchingDGV.location = [System.Drawing.Point]::new(2, 22)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $SwitchingDGV.AutoSizeColumnsMode = "Fill"
-$SwitchingDGV.RowHeadersVisible = $False
+$SwitchingDGV.RowHeadersVisible = $false
 $SwitchingDGV.DataSource = $SwitchingArray
 $SwitchingPageControls += $SwitchingDGV
 
@@ -1028,7 +1028,7 @@ $EstimationsDGV.height = 350
 $EstimationsDGV.location = [System.Drawing.Point]::new(2, 2)
 $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EstimationsDGV.AutoSizeColumnsMode = "Fill"
-$EstimationsDGV.RowHeadersVisible = $False
+$EstimationsDGV.RowHeadersVisible = $false
 $EstimationsDGV.ColumnHeadersVisible = $true
 #$EstimationsDGV.DataGridViewColumnHeaderCell()
 
@@ -1046,7 +1046,7 @@ $ConfigPageControls += $LabelWorkerName
 
 $TBWorkerName = New-Object System.Windows.Forms.TextBox
 $TBWorkerName.Tag = "WorkerName"
-$TBWorkerName.MultiLine = $False
+$TBWorkerName.MultiLine = $false
 # $TBWorkerName.Scrollbars              = "Vertical" 
 $TBWorkerName.text = $Config.WorkerName
 $TBWorkerName.AutoSize = $false
@@ -1067,7 +1067,7 @@ $ConfigPageControls += $LabelUserName
 
 $TBUserName = New-Object System.Windows.Forms.TextBox
 $TBUserName.Tag = "UserName"
-$TBUserName.MultiLine = $False
+$TBUserName.MultiLine = $false
 # $TBUserName.Scrollbars                = "Vertical" 
 $TBUserName.text = $Config.UserName
 $TBUserName.AutoSize = $false
@@ -1088,7 +1088,7 @@ $ConfigPageControls += $LabelInterval
 
 $TBInterval = New-Object System.Windows.Forms.TextBox
 $TBInterval.Tag = "Interval"
-$TBInterval.MultiLine = $False
+$TBInterval.MultiLine = $false
 # $TBWorkerName.Scrollbars              = "Vertical" 
 $TBInterval.text = $Config.Interval
 $TBInterval.AutoSize = $false
@@ -1109,7 +1109,7 @@ $ConfigPageControls += $LabelLocation
 
 $TBLocation = New-Object System.Windows.Forms.TextBox
 $TBLocation.Tag = "Location"
-$TBLocation.MultiLine = $False
+$TBLocation.MultiLine = $false
 # $TBLocation.Scrollbars                = "Vertical" 
 $TBLocation.text = $Config.Location
 $TBLocation.AutoSize = $false
@@ -1130,7 +1130,7 @@ $ConfigPageControls += $LabelGPUCount
 
 $TBGPUCount = New-Object System.Windows.Forms.TextBox
 $TBGPUCount.Tag = "GPUCount"
-$TBGPUCount.MultiLine = $False
+$TBGPUCount.MultiLine = $false
 # $TBGPUCount.Scrollbars                = "Vertical" 
 $TBGPUCount.text = $Config.GPUCount
 $TBGPUCount.AutoSize = $false
@@ -1172,7 +1172,7 @@ $ConfigPageControls += $LabelAlgos
 
 $TBAlgos = New-Object System.Windows.Forms.TextBox
 $TBAlgos.Tag = "Algorithm"
-$TBAlgos.MultiLine = $False
+$TBAlgos.MultiLine = $false
 # $TBAlgos.Scrollbars               = "Vertical" 
 $TBAlgos.text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
@@ -1193,7 +1193,7 @@ $ConfigPageControls += $LabelCurrency
 
 $TBCurrency = New-Object System.Windows.Forms.TextBox
 $TBCurrency.Tag = "Currency"
-$TBCurrency.MultiLine = $False
+$TBCurrency.MultiLine = $false
 # $TBCurrency.Scrollbars                = "Vertical" 
 $TBCurrency.text = $Config.Currency
 $TBCurrency.AutoSize = $false
@@ -1214,7 +1214,7 @@ $ConfigPageControls += $LabelPwdCurrency
 
 $TBPwdCurrency = New-Object System.Windows.Forms.TextBox
 $TBPwdCurrency.Tag = "Passwordcurrency"
-$TBPwdCurrency.MultiLine = $False
+$TBPwdCurrency.MultiLine = $false
 # $TBPwdCurrency.Scrollbars             = "Vertical" 
 $TBPwdCurrency.text = $Config.Passwordcurrency
 $TBPwdCurrency.AutoSize = $false
@@ -1235,7 +1235,7 @@ $ConfigPageControls += $LabelDonate
 
 $TBDonate = New-Object System.Windows.Forms.TextBox
 $TBDonate.Tag = "Donate"
-$TBDonate.MultiLine = $False
+$TBDonate.MultiLine = $false
 # $TBDonate.Scrollbars              = "Vertical" 
 $TBDonate.text = $Config.Donate
 $TBDonate.AutoSize = $false
@@ -1256,7 +1256,7 @@ $ConfigPageControls += $LabelProxy
 
 $TBProxy = New-Object System.Windows.Forms.TextBox
 $TBProxy.Tag = "Proxy"
-$TBProxy.MultiLine = $False
+$TBProxy.MultiLine = $false
 # $TBProxy.Scrollbars               = "Vertical" 
 $TBProxy.text = $Config.Proxy
 $TBProxy.AutoSize = $false
@@ -1277,7 +1277,7 @@ $ConfigPageControls += $LabelActiveMinerGainPct
 
 $TBActiveMinerGainPct = New-Object System.Windows.Forms.TextBox
 $TBActiveMinerGainPct.Tag = "ActiveMinerGainPct"
-$TBActiveMinerGainPct.MultiLine = $False
+$TBActiveMinerGainPct.MultiLine = $false
 # $TBActiveMinerGainPct.Scrollbars              = "Vertical" 
 $TBActiveMinerGainPct.text = $Config.ActiveMinerGainPct
 $TBActiveMinerGainPct.AutoSize = $false
@@ -1298,7 +1298,7 @@ $ConfigPageControls += $LabelMPHAPIKey
 
 $TBMPHAPIKey = New-Object System.Windows.Forms.TextBox
 $TBMPHAPIKey.Tag = "APIKEY"
-$TBMPHAPIKey.MultiLine = $False
+$TBMPHAPIKey.MultiLine = $false
 $TBMPHAPIKey.text = $Config.APIKEY
 $TBMPHAPIKey.AutoSize = $false
 $TBMPHAPIKey.width = 300
@@ -1331,8 +1331,8 @@ $CheckBoxMinerTypeCPU.Add_Click(
     { 
         If ($This.checked -and $This.Text -notin $Config.Type) { 
             [Array]$Config.Type += $This.Text
-            # If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null){ 
-            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null -or ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
+            # If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null){ 
+            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null -or ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
                 Write-Message "Finding available TCP Port for $($This.Text)"
@@ -1361,7 +1361,7 @@ $CheckBoxMinerTypeNVIDIA.Add_Click(
     { 
         If ($This.checked -and $This.Text -notin $Config.Type) { 
             [Array]$Config.Type += $This.Text
-            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null -or ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
+            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null -or ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
                 Write-Message "Finding available TCP Port for $($This.Text)"
@@ -1390,7 +1390,7 @@ $CheckBoxMinerTypeAMD.Add_Click(
     { 
         If ($This.checked -and $This.Text -notin $Config.Type) { 
             [Array]$Config.Type += $This.Text
-            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $Null -or ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
+            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null -or ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
                 Write-Message "Finding available TCP Port for $($This.Text)"
@@ -1424,11 +1424,11 @@ $CheckBoxAutoStart.Add_Click(
             $TBIdleSec.Enabled = $true
         }
         Else { 
-            $CheckBoxStartPaused.Checked = $False
-            $CheckBoxStartPaused.Enabled = $False
-            $CheckBoxMineWhenIdle.Checked = $False
-            $CheckBoxMineWhenIdle.Enabled = $False
-            $TBIdleSec.Enabled = $False
+            $CheckBoxStartPaused.Checked = $false
+            $CheckBoxStartPaused.Enabled = $false
+            $CheckBoxMineWhenIdle.Checked = $false
+            $CheckBoxMineWhenIdle.Enabled = $false
+            $TBIdleSec.Enabled = $false
         }
     }
 )
@@ -1459,7 +1459,7 @@ $ConfigPageControls += $CheckBoxMineWhenIdle
 
 $TBIdleSec = New-Object System.Windows.Forms.TextBox
 $TBIdleSec.Tag = "IdleSec"
-$TBIdleSec.MultiLine = $False
+$TBIdleSec.MultiLine = $false
 $TBIdleSec.text = If ($Config.IdleSec -gt 1) { $Config.IdleSec } Else { 120 }
 $TBIdleSec.AutoSize = $false
 $TBIdleSec.width = 50
@@ -1509,7 +1509,7 @@ $CheckBoxAutoupdate.height = 20
 $CheckBoxAutoupdate.location = [System.Drawing.Point]::new(560, 134)
 $CheckBoxAutoupdate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxAutoupdate.Checked = $Config.Autoupdate
-# $CheckBoxAutoupdate.Enabled               =   $False
+# $CheckBoxAutoupdate.Enabled               =   $false
 $ConfigPageControls += $CheckBoxAutoupdate
 
 $CheckBoxIncludeRegularMiners = New-Object System.Windows.Forms.CheckBox
@@ -1622,7 +1622,7 @@ $WorkersDGV.height = 244
 $WorkersDGV.location = [System.Drawing.Point]::new(2, 24)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $WorkersDGV.AutoSizeColumnsMode = "AllCells"
-$WorkersDGV.RowHeadersVisible = $False
+$WorkersDGV.RowHeadersVisible = $false
 $MonitoringPageControls += $WorkersDGV
 
 $GroupMonitoringSettings = New-Object System.Windows.Forms.GroupBox
@@ -1643,7 +1643,7 @@ $MonitoringSettingsControls += $LabelMonitoringServer
 
 $TBMonitoringServer = New-Object System.Windows.Forms.TextBox
 $TBMonitoringServer.Tag = "MonitoringServer"
-$TBMonitoringServer.MultiLine = $False
+$TBMonitoringServer.MultiLine = $false
 $TBMonitoringServer.text = $Config.MonitoringServer
 $TBMonitoringServer.AutoSize = $false
 $TBMonitoringServer.width = 260
@@ -1685,7 +1685,7 @@ $MonitoringSettingsControls += $LabelMonitoringUser
 
 $TBMonitoringUser = New-Object System.Windows.Forms.TextBox
 $TBMonitoringUser.Tag = "MonitoringUser"
-$TBMonitoringUser.MultiLine = $False
+$TBMonitoringUser.MultiLine = $false
 $TBMonitoringUser.text = $Config.MonitoringUser
 $TBMonitoringUser.AutoSize = $false
 $TBMonitoringUser.width = 260
@@ -1738,7 +1738,7 @@ $ButtonPause.Add_Click(
             # $TimerUI.Stop()
         }
         Else { 
-            $Variables.Paused = $False
+            $Variables.Paused = $false
             $ButtonPause.Text = "Pause"
             $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
             $TimerUI.Start()
@@ -1752,9 +1752,9 @@ $ButtonPause.Add_Click(
 $ButtonStart.Add_Click(
     { 
         If ($Variables.Started) { 
-            $ButtonPause.Visible = $False
+            $ButtonPause.Visible = $false
             Write-Message "Stopping cycle"
-            $Variables.Started = $False
+            $Variables.Started = $false
             Write-Message "Stopping jobs and miner"
 
             $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job }
@@ -1785,7 +1785,7 @@ $ButtonStart.Add_Click(
             If ($Config.MineWhenIdle) { 
                 # Disable the pause button - pausing controlled by idle timer
                 $Variables.Paused = $true
-                $ButtonPause.Visible = $False
+                $ButtonPause.Visible = $false
             }
             Else { 
                 $ButtonPause.Visible = $true
