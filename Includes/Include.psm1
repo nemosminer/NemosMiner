@@ -49,101 +49,156 @@ Function Get-NMVersion {
     }
 }
 
-Function Start-PowerUsageReader {
+Function Get-HashRate { 
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [String[]]$DeviceNames,
+        [PSCustomObject[]]$Data,
+        [Parameter(Mandatory = $true)]
+        [String]$Algorithm,
         [Parameter(Mandatory = $false)]
-        [Int]$Interval = 2, #Seconds
-        [String]$HwINFO64_RegKey = "HKCU:\Software\HWiNFO64\VSB"
+        [Boolean]$Safe = $Miner.New
+    )
+
+    $HashRates_Devices = @($Data | Where-Object Device | Select-Object -ExpandProperty Device -Unique)
+    If (-not $HashRates_Devices) { $HashRates_Devices = @("Device") }
+
+    $HashRates_Counts = @{ }
+    $HashRates_Averages = @{ }
+    $HashRates_Variances = @{ }
+
+    $Hashrates_Samples = @($Data | Where-Object { $_.HashRate.$Algorithm } | Sort-Object { $_.HashRate.$Algorithm }) #Do not use 0 valued samples
+
+    #During benchmarking strip some of the lowest and highest sample values
+    If ($Safe) { 
+        If ($Miner.IntervalMultiplier -le 1) { $SkipSamples = [math]::Round($HashRates_Samples.Count * 0.1) }
+        Else { $SkipSamples = [math]::Round($HashRates_Samples.Count * 0.2) }
+    }
+    Else { $SkipSamples = 0 }
+
+    $Hashrates_Samples | Select-Object -Skip $SkipSamples | Select-Object -SkipLast $SkipSamples | ForEach-Object { 
+        $Data_Devices = $_.Device
+        If (-not $Data_Devices) { $Data_Devices = $HashRates_Devices }
+
+        $Data_HashRates = [Double]($_.HashRate.$Algorithm)
+
+        $Data_Devices | ForEach-Object { $HashRates_Counts.$_++ }
+        $Data_Devices | ForEach-Object { $HashRates_Averages.$_ += @(($Data_HashRates | Measure-Object -Sum | Select-Object -ExpandProperty Sum) / $Data_Devices.Count) }
+        $HashRates_Variances."$($Data_Devices | ConvertTo-Json)" += @($Data_HashRates | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+    }
+
+    $HashRates_Count = $HashRates_Counts.Values | ForEach-Object { $_ } | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
+    $HashRates_Average = ($HashRates_Averages.Values | ForEach-Object { $_ } | Measure-Object -Average | Select-Object -ExpandProperty Average) * $HashRates_Averages.Keys.Count
+    $HashRates_Variance = $HashRates_Variances.Keys | ForEach-Object { $_ } | ForEach-Object { $HashRates_Variances.$_ | Measure-Object -Average -Minimum -Maximum } | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+
+    If ($Safe) { 
+        If ($HashRates_Count -lt 3 -or $HashRates_Variance -gt 0.05) { 
+            Return 0
+        }
+        Else { 
+            Return $HashRates_Average * (1 + ($HashRates_Variance / 2))
+        }
+    }
+    Else { 
+        Return $HashRates_Average
+    }
+}
+
+Function Get-PowerUsage { 
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject[]]$Data,
+        [Parameter(Mandatory = $false)]
+        [Boolean]$Safe = $Miner.New
+    )
+
+    $PowerUsages_Devices = @($Data | Where-Object Device | Select-Object -ExpandProperty Device -Unique)
+    If (-not $PowerUsages_Devices) { $PowerUsages_Devices = @("Device") }
+
+    $PowerUsages_Counts = @{ }
+    $PowerUsages_Averages = @{ }
+    $PowerUsages_Variances = @{ }
+
+    $PowerUsages_Samples = @($Data | Where-Object PowerUsage) #Do not use 0 valued samples
+
+    #During power measuring strip some of the lowest and highest sample values
+    If ($Safe) { 
+        If ($Miner.IntervalMultiplier -le 1) { $SkipSamples = [math]::Round($PowerUsages_Samples.Count * 0.1) }
+        Else { $SkipSamples = [math]::Round($PowerUsages_Samples.Count * 0.2) }
+    }
+    Else { $SkipSamples = 0 }
+
+    $PowerUsages_Samples | Sort-Object PowerUsage | Select-Object -Skip $SkipSamples | Select-Object -SkipLast $SkipSamples | ForEach-Object { 
+        $Data_Devices = $_.Device
+        If (-not $Data_Devices) { $Data_Devices = $PowerUsages_Devices }
+
+        $Data_PowerUsages = $_.PowerUsage
+
+        $Data_Devices | ForEach-Object { $PowerUsages_Counts.$_++ }
+        $Data_Devices | ForEach-Object { $PowerUsages_Averages.$_ += @(($Data_PowerUsages | Measure-Object -Sum | Select-Object -ExpandProperty Sum) / $Data_Devices.Count) }
+        $PowerUsages_Variances."$($Data_Devices | ConvertTo-Json)" += @($Data_PowerUsages | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+    }
+
+    $PowerUsages_Count = $PowerUsages_Counts.Values | ForEach-Object { $_ } | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
+    $PowerUsages_Average = ($PowerUsages_Averages.Values | ForEach-Object { $_ } | Measure-Object -Average | Select-Object -ExpandProperty Average) * $PowerUsages_Averages.Keys.Count
+    $PowerUsages_Variance = $PowerUsages_Variances.Keys | ForEach-Object { $_ } | ForEach-Object { $PowerUsages_Variances.$_ | Measure-Object -Average -Minimum -Maximum } | ForEach-Object { if ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+
+    If ($Safe) { 
+        If ($PowerUsages_Count -lt 3 -or $PowerUsages_Variance -gt 0.1) { 
+            Return 0
+        }
+        Else { 
+            Return $PowerUsages_Average * (1 + ($PowerUsages_Variance / 2))
+        }
+    }
+    Else { 
+        Return $PowerUsages_Average
+    }
+}
+
+Function Start-MinerDataReader {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$Miner,
+        [Parameter(Mandatory = $false)]
+        [Boolean]$ReadPowerUsage = $false,
+        [Parameter(Mandatory = $false)]
+        [Int]$Interval = 2 #Seconds
     )
 
     $Parameters = @{ 
-        DeviceNames     = $DeviceNames
-        HwINFO64_RegKey = $HwINFO64_RegKey
-        Interval        = $Interval
+        Miner          = $Miner
+        ReadPowerUsage = $ReadPowerUsage
+        Interval       = $Interval
     }
 
-    $Variables | Add-Member -Force @{ 
-        MeasurePowerUsageJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location $($Variables.MainPath)")) -ArgumentList $Parameters -ScriptBlock { 
+    $Miner | Add-Member -Force @{ 
+        DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList $Parameters -ScriptBlock { 
             [CmdletBinding()]
             param(
                 [Parameter(Mandatory = $true)]
                 [Hashtable]$Parameters
             )
 
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+
             $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
 
             Try { 
-                While ((Test-Path $HwINFO64_RegKey) -and $DeviceNames) { 
-
+                While ($Miner) { 
                     Start-Sleep -Seconds $Interval
-
-                    $RegistryValue = Get-ItemProperty $HwINFO64_RegKey
-                    $RegistryValue.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceNames | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                        [PSCustomObject]@{ 
-                            "Date"       = (Get-Date).ToUniversalTime()
-                            "DeviceName" = $(($_.Value -split ' ') | Select-Object -Last 1)
-                            "Power"      = $($RegistryValue.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
-                        }
-                    }
+                    Get-MinerData -Miner $Miner -ReadPowerUsage $ReadPowerUsage
                 }
             }
-            Catch {}
+            Catch { }
 
             Exit
         }
     }
 }
 
-Function Start-HashRateReader {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [String[]]$DeviceNames,
-        [Parameter(Mandatory = $false)]
-        [Int]$Interval = 2, #Seconds
-        [String]$HwINFO64_RegKey = "HKCU:\Software\HWiNFO64\VSB"
-    )
-
-    $Parameters = @{ 
-        DeviceNames     = $DeviceNames
-        HwINFO64_RegKey = $HwINFO64_RegKey
-        Interval        = $Interval
-    }
-
-    $Variables | Add-Member -Force @{ 
-        HashRateReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location $Variables.MainPath")) -ArgumentList $Parameters -ScriptBlock { 
-            [CmdletBinding()]
-            param(
-                [Parameter(Mandatory = $true)]
-                [Hashtable]$Parameters
-            )
-
-            $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-
-            Try { 
-                While ((Test-Path $HwINFO64_RegKey) -and $DeviceNames) { 
-
-                    Start-Sleep -Seconds $Interval
-
-                    $RegistryValue = Get-ItemProperty $HwINFO64_RegKey
-                    $RegistryValue.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceNames | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                        [PSCustomObject]@{ 
-                            "Date"       = (Get-Date).ToUniversalTime()
-                            "DeviceName" = $(($_.Value -split ' ') | Select-Object -Last 1)
-                            "Power"      = $($RegistryValue.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
-                        }
-                    }
-                }
-            }
-            Catch {}
-
-            Exit
-        }
-    }
-}
 Function Get-CommandLineParameters { 
     [CmdletBinding()]
     param(
@@ -152,10 +207,10 @@ Function Get-CommandLineParameters {
     )
 
     If ($Arguments -match "^{.+}$") { 
-        return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
+        Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
     }
     Else { 
-        return $Arguments
+        Return $Arguments
     }
 }
 
@@ -433,8 +488,8 @@ namespace PInvoke.Win32 {
             # Start-Transcript ".\Logs\IdleTracking.log" -Append -Force
             $ProgressPreference = "SilentlyContinue"
 
-            . .\Includes\Include.ps1;
-            . .\Includes\Core.ps1;
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+            $ScriptBody = "using module .\Includes\Core.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
 
             While ($True) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
@@ -605,8 +660,31 @@ Function Start-Mining {
                     Update-Monitoring
                     $EndLoop = (Get-Date).AddSeconds($Variables.TimeToSleep)
                     # On crashed miner start next loop immediately
-                    While ((Get-Date) -lt $EndLoop -and ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } )) {
-                        Start-Sleep 2
+                    While ((Get-Date) -lt $EndLoop -and ($RunningMiners = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } | Where-Object { $_.DataReaderJob.State -eq "Running" })) {
+                        Start-Sleep -Seconds 1
+
+                        If ($BenchmarkingMiners = @($RunningMiners | Where-Object { (-not $_.Hashrate_Gathered) -or ($Variables.MeasurePowerUsage -and (-not $_.PowerUsage))})) {
+                            #Exit loop when enought samples
+                            While ($BenchmarkingMinersNeedingMoreSamples = @($BenchmarkingMiners | Where-Object { ($_.Data).Count -lt ($_.IntervalMultiplier * $Config.MinHashRateSamples) })) { 
+                                #Get more miner data
+                                $RunningMiners | Where-Object { $_.DataReaderJob.HasMoreData } | ForEach-Object { 
+                                    $_.Data += $Samples = @($_.DataReaderJob | Receive-Job ) 
+                                    $Sample = @($Samples) | Select-Object -Last 1
+                                    If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join '; ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })]" }
+                                }
+                                Start-Sleep -Seconds 1
+                            }
+                            $EndLoop = (Get-Date)
+                            Remove-Variable BenchmarkingMinersNeedingMoreSamples
+                            Remove-variable BenchmarkingMiners
+                        }
+                        Else { 
+                            $RunningMiners | Where-Object { $_.DataReaderJob.HasMoreData } | ForEach-Object { 
+                                $_.Data += $Samples = @($_.DataReaderJob | Receive-Job ) 
+                                $Sample = @($Samples) | Select-Object -Last 1
+                                If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join '; ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })]" }
+                            }
+                        }
                     }
                 }
             }
@@ -635,7 +713,7 @@ Function Stop-Mining {
                     $KillPath = $_.Path
                     Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force
                     Write-Host -ForegroundColor Yellow "closing miner"
-                    Start-Sleep 1
+                    Start-Sleep -Seconds 1
                     $_.Status = "Idle"
                 }
             }
@@ -1069,17 +1147,32 @@ Function Invoke-HttpRequest {
 Function Get-MinerData { 
     param(
         [Parameter(Mandatory = $true)]
-        [PSCustomObject]$Miner
+        [PSCustomObject]$Miner,
+        [Parameter(Mandatory = $true)]
+        [Boolean]$ReadPowerUsage = $false
     )
 
-    $API = $Miner.API
-    $Port = $Miner.Port
+    $API = [String]$Miner.API
+    $Port = [Int16]$Miner.Port
     $Server = "localhost"
-    $Timeout = 45 #Seconds
-    $Algorithms = @($Miner.Pools.PSObject.Properties.Name)
-    
+    $Timeout = [Int16]45 #Seconds
+    $Algorithms = [String[]]$Miner.Pools.PSObject.Properties.Name
+    $DeviceNames = [String[]]$Miner.DeviceNames
+
+    $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
 
     Try { 
+        If ($ReadPowerUsage) {
+            #read power usage
+
+            If ((Test-Path $RegistryHive) -and $DeviceNames) { 
+                $RegistryData = Get-ItemProperty $RegistryHive
+                $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceNames | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
+                    $PowerUsage += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                }
+            }
+        }
+
         Switch ($Miner.API) { 
             "bminer" { 
                 $Request = Invoke-HttpRequest $Server $Port "/api/v1/status/solver" $Timeout
@@ -1103,7 +1196,7 @@ Function Get-MinerData {
             }
 
             "ccminer" { 
-                $Request = Invoke-TcpRequest $server $port  "summary" $Timeout
+                $Request = Invoke-TcpRequest $Server $Port "summary" $Timeout
                 If ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData
                     $HashRate_Value = If ([Double]$Data.KHS -ne 0 -or [Double]$Data.ACC -ne 0) { [Double]$Data.KHS * 1000 }
@@ -1128,7 +1221,7 @@ Function Get-MinerData {
             }
 
             "dtsm" { 
-                $Request = Invoke-TcpRequest $server $port "empty" $Timeout
+                $Request = Invoke-TcpRequest $Server $Port "empty" $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json | Select-Object  -ExpandProperty result 
                     $HashRate_Value = [Double](($Data.sol_ps) | Measure-Object -Sum).Sum 
@@ -1146,7 +1239,7 @@ Function Get-MinerData {
 
             "ewbf" { 
                 $Message = @{ id = 1; method = "getstat" } | ConvertTo-Json -Compress
-                $Request = Invoke-TcpRequest $server $port $message $Timeout
+                $Request = Invoke-TcpRequest $Server $Port $message $Timeout
                 If ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
@@ -1199,7 +1292,7 @@ Function Get-MinerData {
 
             "miniz" { 
                 $Message = '{ "id":"0", "method":"getstat"}'
-                $Request = Invoke-TcpRequest $server $port $message $Timeout
+                $Request = Invoke-TcpRequest $Server $Port $message $Timeout
                 if ($Request) { 
                     $Data = $Request | ConvertFrom-Json
                     $HashRate_Value = [Double](($Data.result.speed_sps) | Measure-Object -Sum).Sum
@@ -1261,7 +1354,7 @@ Function Get-MinerData {
             }
 
             "palgin" { 
-                $Request = Invoke-TcpRequest $server $port  "summary" $Timeout
+                $Request = Invoke-TcpRequest $Server $Port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";"
                     $HashRate_Value = [Double]($Data[5] -split '=')[1] * 1000
@@ -1298,7 +1391,7 @@ Function Get-MinerData {
 
             "xgminer" { 
                 $Message = @{ command = "summary"; parameter = "" } | ConvertTo-Json -Compress
-                $Request = Invoke-TcpRequest $server $port $Message $Timeout
+                $Request = Invoke-TcpRequest $Server $Port $Message $Timeout
 
                 if ($Request) { 
                     $Data = $Request.Substring($Request.IndexOf("{ "), $Request.LastIndexOf("}") - $Request.IndexOf("{ ") + 1) -replace " ", "_" | ConvertFrom-Json
@@ -1345,7 +1438,7 @@ Function Get-MinerData {
             }
 
             "zjazz" { 
-                $Request = Invoke-TcpRequest $server $port  "summary" $Timeout
+                $Request = Invoke-TcpRequest $Server $Port  "summary" $Timeout
                 if ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
                     $HashRate_Value = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
@@ -1353,17 +1446,29 @@ Function Get-MinerData {
             }
         } #end Switch
 
+        If ($ReadPowerUsage) {
+            #read power usage
+            If ((Test-Path $RegistryHive) -and $DeviceNames) { 
+                $RegistryData = Get-ItemProperty $RegistryHive
+                $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceNames | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
+                    $PowerUsage += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                }
+            }
+        }
+
         $HashRate = [PSCustomObject]@{}
         $HashRate | Add-Member @{ $Algorithms[0] = $HashRate_Value }
         If ($Algorithms.Count -eq 2) { 
             $HashRate | Add-Member @{ $Algorithms[1] = $HashRateDual_Value }
         }
 
-        [PSCustomObject]@{
-            Date       = (Get-Date).ToUniversalTime()
-            Raw        = $Data
-            HashRate   = $HashRate
-            #Shares     = $Shares
+        If ($HashRate.PSObject.Properties.Value -gt 0) { 
+            [PSCustomObject]@{
+                Date       = (Get-Date).ToUniversalTime()
+                HashRate   = $HashRate
+                #Shares     = $Shares
+                PowerUsage = $PowerUsage / 2
+            }
         }
     }
     Catch { }

@@ -27,63 +27,107 @@ version date:   07 February 2020
 
 param(
     [Parameter(Mandatory = $false)]
-    [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
+    [Double]$ActiveMinerGainPct = 21, # percent of advantage that active miner has over candidates in term of profit
     [Parameter(Mandatory = $false)]
-    [String]$UserName = "Nemo", 
-    [Parameter(Mandatory = $false)]
-    [String]$WorkerName = "ID=NemosMiner-v3.8.1.3", 
+    [String[]]$Algorithm = @(), #i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
     [Parameter(Mandatory = $false)]
     [String]$API_Key = "", 
     [Parameter(Mandatory = $false)]
-    [Int]$Interval = 240, #seconds before between cycles after the first has passed 
+    [Int]$APIPort = 3999,
     [Parameter(Mandatory = $false)]
-    [Int]$FirstInterval = 120, #seconds of the first cycle of activated or started first time miner
-    [Parameter(Mandatory = $false)]
-    [Int]$StatsInterval = 270, #seconds of current active to gather hashrate if not gathered yet
-    [Parameter(Mandatory = $false)]
-    [String]$Location = "US", #europe/us/asia
-    [Parameter(Mandatory = $false)]
-    [Switch]$SSL = $false, 
-    [Parameter(Mandatory = $false)]
-    [Array]$Type = "nvidia", #AMD/NVIDIA/CPU
-    [Parameter(Mandatory = $false)]
-    [String]$SelGPUDSTM = "0 1",
-    [Parameter(Mandatory = $false)]
-    [String]$SelGPUCC = "0,1",
-    [Parameter(Mandatory = $false)]
-    [Array]$Algorithm = $null, #i.e. Ethash,Equihash,Cryptonight ect.
-    [Parameter(Mandatory = $false)]
-    [Array]$MinerName = $null, 
-    [Parameter(Mandatory = $false)]
-    [Array]$PoolName = $null, 
-    [Parameter(Mandatory = $false)]
-    [Array]$Currency = ("USD"), #i.e. GBP,USD,AUD,NZD ect.
-    [Parameter(Mandatory = $false)]
-    [Array]$Passwordcurrency = ("BTC"), #i.e. BTC,LTC,ZEC,ETH ect.
-    [Parameter(Mandatory = $false)]
-    [Int]$Donate = 13, #Minutes per Day
-    [Parameter(Mandatory = $false)]
-    [String]$Proxy = "", #i.e http://192.0.0.1:8080 
-    [Parameter(Mandatory = $false)]
-    [Int]$Delay = 1, #seconds before opening each miner
-    [Parameter(Mandatory = $false)]
-    [Int]$GPUCount = 1, # Number of GPU on the system
-    [Parameter(Mandatory = $false)]
-    [Int]$ActiveMinerGainPct = 21, # percent of advantage that active miner has over candidates in term of profit
-    [Parameter(Mandatory = $false)]
-    [Float]$MarginOfError = 0, #0.4, # knowledge about the past wont help us to predict the future so don't pretend that Week_Fluctuation means something real
-    [Parameter(Mandatory = $false)]
-    [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
-    [Parameter(Mandatory = $false)]
-    [Bool]$TrackEarnings = $true, # Display earnings information
-    [Parameter(Mandatory = $false)]
-    [Bool]$Autoupdate = $true, # Autoupdate
+    [Boolean]$Autoupdate = $true, # Autoupdate
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\config.json",
     [Parameter(Mandatory = $false)]
-    [Int]$APIPort = 3999
+    [String[]]$Currency = @("USD"), #i.e. GBP,USD,AUD,NZD ect.
+    [Parameter(Mandatory = $false)]
+    [Int]$Delay = 1, #seconds before opening each miner
+    [Parameter(Mandatory = $false)]
+    [String[]]$DeviceName = @("GPU#01"), #Will replace old device selection, e.g. @("GPU#01") (t.b.d.)
+    [Parameter(Mandatory = $false)]
+    [Int]$Donate = 13, #Minutes per Day
+    [Parameter(Mandatory = $false)]
+    [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (t.b.d.)
+    [Parameter(Mandatory = $false)]
+    [Int]$FirstInterval = 120, #seconds of the first cycle of activated or started first time miner
+    [Parameter(Mandatory = $false)]
+    [Int]$GPUCount = 1, # Number of GPU on the system
+    [Parameter(Mandatory = $false)]
+    [Double]$IdlePowerUsageW = 60, #Powerusage of idle system in Watt. Part of profit calculation
+    [Parameter(Mandatory = $false)]
+    [Switch]$IgnoreMinerFee = $false, #If true, NM will ignore miner fee for earning & profit calculation
+    [Parameter(Mandatory = $false)]
+    [Switch]$IgnorePoolFee = $false, #If true NM will ignore pool fee for earning & profit calculation
+    [Parameter(Mandatory = $false)]
+    [Switch]$IgnorePowerCost = $false, #If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
+    [Parameter(Mandatory = $false)]
+    [Int]$Interval = 240, #seconds before between cycles after the first has passed 
+    [Parameter(Mandatory = $false)]
+    [String]$Location = "US", #europe/us/asia
+    [Parameter(Mandatory = $false)]
+    [String[]]$LogLevel = @("Info", "Warning", "Error", "Verbose", "Debug"), #Log level detail, see Write-Message function
+    [Parameter(Mandatory = $false)]
+    [Double]$MarginOfError = 0, #0.4, # knowledge about the past won't help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Parameter(Mandatory = $false)]
+    [String[]]$MinerName = @(), 
+    [Parameter(Mandatory = $false)]
+    [Switch]$MeasurePowerUsage = $true, #If true, power usage will be read from miners, required for true profit calculation
+    [Parameter(Mandatory = $false)]
+    [Int]$MinMinHashRateSamples = 20, #Minimum number of hash rate samples required to store hash rate
+    [Parameter(Mandatory = $false)]
+    [Switch]$OpenFirewallPorts = $true, #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
+    [Parameter(Mandatory = $false)]
+    [String]$Passwordcurrency = "BTC", #i.e. BTC,LTC,ZEC,ETH ect.
+    [Parameter(Mandatory = $false)]
+    [String[]]$PoolName = @(), 
+    [Parameter(Mandatory = $false)]
+    [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3}, #Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
+    [Parameter(Mandatory = $false)]
+    [Double]$ProfitabilityThreshold = 0, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+    [Parameter(Mandatory = $false)]
+    [String]$Proxy = "", #i.e http://192.0.0.1:8080 
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowAccuracy = $true, #Show pool data accuracy column in miner overview
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowAllMiners = $false, #Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowEarning = $true, #Show miner earning column in miner overview
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowEarningBias = $true, #Show miner earning bias column in miner overview
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowMinerFee = $true, #Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowPoolFee = $true, #Show pool fee column in miner overview
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowPowerCost = $true, #Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowProfit = $true, #Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowProfitBias = $true, #Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowPowerUsage = $true, #Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
+    [Parameter(Mandatory = $false)]
+    [String]$SelGPUCC = "0,1",
+    [Parameter(Mandatory = $false)]
+    [String]$SelGPUDSTM = "0 1",
+    [Parameter(Mandatory = $false)]
+    [Switch]$SSL = $false, 
+    [Parameter(Mandatory = $false)]
+    [Int]$StatsInterval = 270, #seconds of current active to gather hashrate if not gathered yet
+    [Parameter(Mandatory = $false)]
+    [Boolean]$TrackEarnings = $true, # Display earnings information
+    [Parameter(Mandatory = $false)]
+    [String[]]$Type = @("nvidia"), #AMD/NVIDIA/CPU
+    [Parameter(Mandatory = $false)]
+    [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
+    [Parameter(Mandatory = $false)]
+    [String]$UserName = "Nemo", 
+    [Parameter(Mandatory = $false)]
+    [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
+    [Parameter(Mandatory = $false)]
+    [String]$WorkerName = "ID=NemosMiner-v3.8.1.3"
 )
 
 # Enable for debug only!
@@ -132,6 +176,14 @@ $Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Valu
     }
 }
 
+#Add Default values if not in config file
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" -and (Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue) } | Sort-Object | ForEach-Object { 
+    $Config_Parameter = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+    If ($Config_Parameter -is [Switch]) { $Config_Parameter = [Boolean]$Config_Parameter }
+    $Config | Add-Member @{ $_ = $(Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue) } -ErrorAction SilentlyContinue
+#    $Config | Add-Member @{ $_ = "`$$_" } -ErrorAction Ignore
+}
+
 $Variables | Add-Member -Force @{ ConfigFile = $ConfigFile }
 $Variables | Add-Member -Force @{ LogFile = ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").txt" }
 $Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $This._StatusText; $This._StatusText = @() } -SecondValue { If (-not $This._StatusText) { $This._StatusText = @() } ; $This._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $true } }
@@ -144,6 +196,7 @@ If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) {
     Import-Module .\Includes\API.psm1
     Start-APIServer -Port $APIPort
 }
+
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $False
 
@@ -158,15 +211,12 @@ Function Global:TimerUITick {
             $EarningsDGV.DataSource = [System.Collections.ArrayList]@()
             $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@()
             $WorkersDGV.DataSource = [System.Collections.ArrayList]@()
-            $LabelBTCD.ForeColor = "Red"
+            $LabelBTCD.ForeColor = [System.Drawing.Color]::Red
             $TimerUI.Stop
         }
     }
 
     If ($Variables.RefreshNeeded -and $Variables.Started -and -not $Variables.Paused) { 
-#        If (-not $Variables.EndLoop) { Write-Message $Variables.StatusText }
-        # $TimerUI.Interval = 1
-
         $LabelBTCD.ForeColor = [System.Drawing.Color]::Green
         Start-ChildJobs
 
@@ -189,10 +239,6 @@ Function Global:TimerUITick {
 
         If ($Variables.EndLoop) { 
             CheckBoxSwitching_Click
-            # $SwitchingDisplayTypes = @()
-            # $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-            # If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = [System.Collections.ArrayList]@(@((Get-Content ".\Logs\switching.log" -First 1), (Get-Content ".\Logs\switching.log" -Last 50)) | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 13 | Sort-Object Date -Descending) }
-            # $SwitchingDGV.DataSource = $SwitchingArray
 
             # Fixed memory leak to chart object not being properly disposed in 5.3.0
             # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
@@ -235,7 +281,7 @@ Function Global:TimerUITick {
                     @{ Name = "Miner"; Expression = { $_.Name } },
                     @{ Name = "Algorithm(s)"; Expression = { $_.HashRates.PSObject.Properties.Name -join ' & ' } }, 
                     @{ Name = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" } }, 
-                    @{ Name = "Speed"; Expression = { $Miner = $_; ($Miner.HashRates.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { "$($_ | ConvertTo-Hash)/s" -replace '  ', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
+                    @{ Name = "Speed"; Expression = { ($_.HashRates.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
                     @{ Name = "mBTC/Day"; Expression = { ($_.Earnings.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { ($_ * 1000).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                     @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Earnings.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { ($_ * ($Variables.Rates.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                     @{ Name = "BTC/GH/Day"; Expression = { ($_.Pools.PSObject.Properties.Value.Price | ForEach-Object { ($_ * 1000000000).ToString("N5") }) -join ' + ' } }, 
@@ -286,8 +332,8 @@ Function Global:TimerUITick {
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Select-Object Type, @{ Name = "Algorithm(s)"; Expression = { $_.Pools.PSObject.Properties.Value.Algorithm -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.HashRates.PSObject.Properties.Value | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.TotalActive } }, @{ Name = "Host(s)"; Expression = { (($_.Pools.PSObject.Properties.Value.Host | Select-Object -Unique) -join ';')} } | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
             
-                [Array]$ProcessRunning = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" }
-                If ($ProcessRunning -eq $null) { 
+                [Array]$ProcessesRunning = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" }
+                If ($ProcessesRunning -eq $null) { 
                     Write-Message "No miners running"
                 }
             }
@@ -298,8 +344,6 @@ Function Global:TimerUITick {
                 $LabelBTCD.Text = "Avg: " + ("{0:N6}" -f ($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) + " $([char]0x20BF)/D   |   " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)) + " m$([char]0x20BF)/D"
                 
                 $LabelEarningsDetails.Lines = @()
-                # If ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum*1000*24) -lt ((($Variables.Earnings.Values | Measure-Object -Property BTCD -Sum).sum*1000)*0.999)) { 
-                # $LabelEarningsDetails.ForeColor = "Red" } Else { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green }
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3)) { 
                     { $_ -eq 0 } { "=" }
                     { $_ -gt 0 } { ">" }
@@ -380,7 +424,7 @@ Function Global:TimerUITick {
                 ))
             }
             $Miner_Table.AddRange(@(
-                    @{ Label = "Speed(s)"; Expression = { $Miner = $_; $_.HashRates.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { "$($_ | ConvertTo-Hash)/s" } Else { $(If ($Variables.ActiveMiners | Where-Object { $_.Path -eq $Miner.Path -and $_.Arguments -EQ $Miner.Arguments }) { "Benchmark in progress" } Else { "Benchmark pending" }) } } }; Align = 'right' }
+                    @{ Label = "Speed(s)"; Expression = { $Miner = $_; ($_.HashRates.PSObject.Properties.Value | ForEach-Object { If ($_ -ne $null) { "$($_ | ConvertTo-Hash)/s" } Else { $(If ($Variables.ActiveMiners | Where-Object { $_.Path -eq $Miner.Path -and $_.Arguments -EQ $Miner.Arguments }) { "Benchmark in progress" } Else { "Benchmark pending" }) } }) }; Align = 'right' }
             ))
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(@(
@@ -482,11 +526,11 @@ Function Global:TimerUITick {
             Remove-Variable MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction SilentlyContinue
             Remove-Variable Miner_Table -ErrorAction SilentlyContinue
 
-            If ($ProcessRunning = @($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" })) { 
-                Write-Host "Running: $($ProcessRunning.Count)" 
-                $ProcessRunning | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
-                    @{ Label = "Speed"; Expression = { $Miner =  $_; (($Miner.HashRates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { "$($Miner.Hashrates.$_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '  ', ' ' } ; Align = 'right' }, 
-                    @{ Label = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" } ; Align = 'right' }, 
+            If ($ProcessesRunning = @($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" })) { 
+                Write-Host "Running: $($ProcessesRunning.Count)" 
+                $ProcessesRunning | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
+                    @{ Label = "Speed"; Expression = { (($_.HashRates.Values | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
+                    @{ Label = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" }; Align = 'right' }, 
                     @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { ((Get-Date) - $_.Process.StartTime) }) } }, 
                     @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f ($_.TotalActive + ((Get-Date) - $_.Process.StartTime) - $_.Active) } }, 
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
@@ -498,8 +542,8 @@ Function Global:TimerUITick {
                 If ($ProcessesIdle = @($Variables.ActiveMiners | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
                     Write-Host "Previously Executed:"
                     $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($Config.Type.Count * 3) | Format-Table -Wrap (
-                        @{ Label = "Speed"; Expression = { $Miner =  $_; (($Miner.HashRates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { "$($Miner.Hashrates.$_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '  ', ' ' } ; Align = 'right' }, 
-                        @{ Label = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" } ; Align = 'right' }, 
+                        @{ Label = "Speed"; Expression = { (($_.HashRates.Values | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
+                        @{ Label = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" }; Align = 'right' }, 
                         @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { (Get-Date) - $_.Process.ExitTime }) } },
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalActive } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
@@ -510,8 +554,8 @@ Function Global:TimerUITick {
                 If ($ProcessesFailed = @($Variables.ActiveMiners | Where-Object { $_.Status -eq "Failed" })) { 
                     Write-Host -ForegroundColor Red "Failed: $($ProcessesFailed.Count)"
                     $ProcessesFailed | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
-                        @{ Label = "Speed"; Expression = { $Miner =  $_; (($Miner.HashRates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { "$($Miner.Hashrates.$_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '  ', ' ' } ; Align = 'right' }, 
-                        @{ Label = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" } ; Align = 'right' }, 
+                        @{ Label = "Speed"; Expression = { (($_.HashRates.Values | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
+                        @{ Label = "PowerUsage"; Expression = { "$($_.PowerUsage.ToString("N3")) W" }; Align = 'right' }, 
                         @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $(If ($_.Process -eq $null) { 0 } Else { (Get-Date) - $_.Process.ExitTime }) } },
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalActive } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 

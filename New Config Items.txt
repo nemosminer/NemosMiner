@@ -6,11 +6,6 @@
   "DeviceName": [
     "GPU#01"
   ],
-
-#Will replace old device selection (t.b.d.)
-  "DeviceName": [
-    "GPU#01"
-  ],
   "ExcludeDeviceName": [
     "CPU#00",
     "GPU#02"
@@ -36,6 +31,9 @@
 
 #If true, power usage will be read from miners, required for true profit calculation
   "MeasurePowerUsage": true,
+
+#Minimum number of hash rate samples required to store hash rate
+  "MinMinHashRateSamples": 10,
 
 #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
   "OpenFirewallPorts": true,

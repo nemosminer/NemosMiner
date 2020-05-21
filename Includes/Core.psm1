@@ -39,12 +39,6 @@ Function Start-NPMCycle {
         #Select configured devices
         $Variables | Add-Member -Force @{ ConfiguredDevices = @($Variables.Devices | Where-Object { $_.Type -in $Config.Type -or $_.Vendor -in $Config.Type }) }
 
-        #Reduce power usage data
-        If ($Variables.MeasurePowerUsageJob.State -eq "Running") { 
-            $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
-            $Variables.PowerUsageData = @($Variables.PowerUsageData | Where-Object { $_.DeviceName -in @(($Variables.ActiveMiners | Select-Object DeviceNames -Unique).DeviceNames) })
-        }
-
         # Read stats
         Get-Stat
 
@@ -191,41 +185,41 @@ Function Start-NPMCycle {
             $Miner = $_
             If ($_.Process -eq $null -or $_.Process.HasExited) { 
                 If ($_.Status -eq "Running") { $_.Status = "Failed" }
-                If ($Variables.MeasurePowerUsageJob.State -eq "Running") { 
-                    $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
-                    # #Reduce power usage data
-                    $Variables.PowerUsageData = @($Variables.PowerUsageData | Where-Object { $_.DeviceName -notin @($Miner.DeviceNames) })
-                }
             }
             Else { 
-                $MinerData = Get-MinerData $Miner
-                #Read hashrate from miner
-                $Miner.HashRates = $MinerData.HashRate
-                # we don't want to store hashrates if we run less than $Config.StatsInterval sec
-                $WasActive = (Get-Date) - $_.Process.StartTime
-                If ($WasActive.TotalSeconds -ge $Config.StatsInterval) { 
+                If ($Miner.DataReaderJob.HasMoreData) { 
+                    $Miner.Data += @($Miner.DataReaderJob | Receive-Job)
+                }
+                If (($Miner.Data).Count) { 
+                    #Read hashrate from miner
+                    $Miner.HashRates = @()
+                    $Miner.Pools.PSObject.Properties.Value.Algorithm | ForEach-Object { 
+                        $Miner.HashRates += @{ $_ = (Get-HashRate -Data $Miner.Data -Algorithm $_ -Safe ($Miner.New -and ($Miner.Data).Count -lt ($Config.MinHashRateSamples * $Miner.IntervalMultiplier))) }
+                    }
+                    #Read power usage from miner
+                    $Miner | Add-Member -Force PowerUsage (Get-PowerUsage -Data $Miner.Data -Safe ($Miner.New -and ($Miner.Data).Count -lt ($Config.MinHashRateSamples * $Miner.IntervalMultiplier)))
+                }
+                $Miner.Intervals ++
+
+                # we don't want to store hashrates if we have less than $MinHashRateSamples
+                If (($Miner.Data).Count -ge ($Config.MinHashRateSamples * $Miner.IntervalMultiplier) -or $Miner.DataReaderJob.State -ne "Running" -or $Miner.Intervals -ge $Miner.IntervalMultiplier) { 
                     If ($Miner.New) { $Miner.Benchmarked++ }
-                    $Miner.Hashrates.PSObject.Properties.Name | ForEach-Object { 
+                    $Miner.Pools.PSObject.Properties.Value.Algorithm | ForEach-Object { 
                         Write-Message "Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($Miner.HashRates.$_ | ConvertTo-Hash) -replace ' '))$(If (-not $Stats."$($Miner.Name)_$($_)_HashRate") { " [Benchmark done]" })."
-                        $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $Miner.HashRates.$_ -Duration ($Variables.StatEnd - $Variables.StatStart) # -FaultDetection $true
+                        $Stat = Set-Stat -Name "$($Miner.Name)_$($_)_HashRate" -Value $Miner.HashRates.$_ -Duration ((Get-Date).ToUniversalTime() - $Miner.StatStart) -FaultDetection $true
                     }
 
-                    If ($Variables.MeasurePowerUsageJob.State -eq "Running") { 
-                        $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
-
-                        $Miner | Add-Member -Force PowerUsage ([Double](($Variables.PowerUsageData | Where-Object { $_.DeviceName -in @($Miner.DeviceNames) -and $_.Date -ge $Variables.StatStart }).Power | Measure-Object -Average).Average)
-                        If ($Miner.PowerUsage) { 
-                            Write-Message "Saving power usage ($($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage: $($Miner.PowerUsage.ToString("N2"))W)$(If (-not $Stats."$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage") { " [PowerUsage measurement done]" })."
-                            $Stat = Set-Stat -Name "$($_.Name -split '-' | Select-Object -Index 0)_$($_.HashRates.PSObject.Properties.Name -join '-')_PowerUsage" -Value $Miner.PowerUsage -Duration ($Variables.StatEnd - $Variables.StatStart) # -FaultDetection $true
-                        }
+                    If ($Miner.PowerUsage) { 
+                        Write-Message "Saving power usage ($($Miner.Name -split '-' | Select-Object -Index 0)_$($Miner.Pools.PSObject.Properties.Value.Algorithm -join '-')_PowerUsage: $($Miner.PowerUsage.ToString("N2"))W)$(If (-not $Stats."$($_.Name -split '-' | Select-Object -Index 0)_$($Miner.Pools.PSObject.Properties.Value.Algorithm -join '-')_PowerUsage") { " [Power usage measurement done]" })."
+                        $Stat = Set-Stat -Name "$($Miner.Name -split '-' | Select-Object -Index 0)_$($Miner.Pools.PSObject.Properties.Value.Algorithm -join '-')_PowerUsage" -Value $Miner.PowerUsage -Duration ((Get-Date).ToUniversalTime() - $Miner.StatStart) -FaultDetection $true
                     }
+
                     $Miner.New = $false
+                    $Miner.StatStart = (Get-Date).ToUniversalTime()
                     $Miner.Hashrate_Gathered = $true
                 }
             }
         }
-
-        $Variables | Add-Member -Force @{ StatStart = (Get-Date).ToUniversalTime() }
 
         If ((Test-Path ".\Config\MinersHash.json" -PathType Leaf) -and (Test-Path .\Miners -PathType Container)) { 
             Write-Message "Looking for miner files changes..."
@@ -233,11 +227,11 @@ Function Start-NPMCycle {
             Compare-Object @($MinersHash | Select-Object) @(Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash | Select-Object) -Property "Hash", "Path" | Sort-Object "Path" -Unique | ForEach-Object { 
                 If (Test-Path $_.Path -PathType Leaf) { 
                     Write-Message "Miner Updated: $($_.Path)"
-                    $NewMiner = &$_.path
-                    $NewMiner | Add-Member -Force @{ Name = (Get-Item $_.Path).BaseName }
-                    $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $NewMiner.Path) } | ForEach-Object { 
+                    $UpdatedMiner = &$_.path
+                    $UpdatedMiner | Add-Member -Force @{ Name = (Get-Item $_.Path).BaseName }
+                    $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
                         $Miner = $_
-                        [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
+                        [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $Miner.Path | Where-Object Arguments -EQ $Miner.Arguments)
                         If ($Filtered.Count -eq 0) { 
                             If ($_.Process -eq $null) { 
                                 $_.Status = "Failed"
@@ -252,17 +246,14 @@ Function Start-NPMCycle {
                                 $_.Status = "Idle"
                             }
                             #Restore Bias for non-active miners
-                            $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning_Bias_Orig; $_.Profit_Bias = $_.Profit_Bias_Orig }
+                            $Variables.Miners | Where-Object Path -EQ $Miner.Path | Where-Object Arguments -EQ $Miner.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning_Bias_Orig; $_.Profit_Bias = $_.Profit_Bias_Orig }
 
-                            # #Reduce power usage data
-                            If ($Variables.MeasurePowerUsageJob.State -eq "Running") { 
-                                $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
-                                $Variables.PowerUsageData = @($Variables.PowerUsageData | Where-Object { $_.DeviceName -notin @($Miner.DeviceNames) })
-                            }
+                            # Stop data reader 
+                            $Miner.DataReaderJob | Stop-Job -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
                         }
                     }
-                    Get-ChildItem -path ".\Stats\" -filter "$($NewMiner.Name)_*.txt" | Remove-Item -Force -Recurse
-                    Remove-Item -Force -Recurse (Split-Path $NewMiner.Path)
+                    Get-ChildItem -path ".\Stats\" -filter "$($UpdatedMiner.Name)_*.txt" | Remove-Item -Force -Recurse
+                    Remove-Item -Force -Recurse (Split-Path $UpdatedMiner.Path)
                 }
                 $MinersHash = Get-ChildItem .\Miners\ -filter "*.ps1" | Get-FileHash
                 $MinersHash | ConvertTo-Json | Out-File ".\Config\MinersHash.json"
@@ -377,6 +368,11 @@ Function Start-NPMCycle {
             $Miner | Add-Member DeviceNames @($Miner_Devices) -Force
         }
 
+#Debug/dev only! Dual algo miners only
+#$Variables.Miners = $Variables.Miners | Where-Object { @($_.HashRates.PSObject.Properties.Name).Count -gt 1 }
+#Debug/dev only! Single algo miners only
+#$Variables.Miners = $Variables.Miners | Where-Object { @($_.HashRates.PSObject.Properties.Name).Count -eq 1 }
+
         # Remove miners when no estimation info from pools or 0BTC. Avoids mining when algo down at pool or benchmarking for ever
         $Variables.Miners = $Variables.Miners | Where-Object { ($_.Pools.PSObject.Properties.Value.Price -ne $null) -and ($_.Pools.PSObject.Properties.Value.Price -gt 0) }
 
@@ -486,12 +482,8 @@ Function Start-NPMCycle {
         $Variables | Add-Member -Force @{ MiningCost = ($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum + $Variables.BasePowerCost }
 
         #OK to run miners?
-        If (($Variables.MiningEarning - $Variables.MiningCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
-#            $BestMiners_Combo | ForEach-Object { $_.Best = $true }
-#            $BestMiners_Combo_Comparison | ForEach-Object { $_.Best_Comparison = $true }
-        }
-        Else { 
-            $BestMiners_Combo = $null
+        If (-not (($Variables.MiningEarning - $Variables.MiningCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) -or  $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement)) { 
+#           $BestMiners_Combo = $null
             $BestMiners_Combo_Comparison = $null
         }
 
@@ -526,26 +518,31 @@ Function Start-NPMCycle {
         $BestMiners_Combo | ForEach-Object { 
             If (($Variables.ActiveMiners | Select-Object | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments).Count -eq 0) { 
                 $Variables.ActiveMiners += [PSCustomObject]@{ 
-                    Type              = $_.Type
-                    Name              = $_.Name
-                    Path              = $_.Path
-                    Arguments         = $_.Arguments
-                    Wrap              = $_.Wrap
-                    Process           = $null
-                    API               = $_.API
-                    Port              = $_.Port
-                    New               = $false
-                    Active            = [TimeSpan]0
-                    TotalActive       = [TimeSpan]0
-                    Activated         = 0
-                    Status            = "Idle"
-                    HashRates         = @()
-                    Benchmarked       = 0
-                    Hashrate_Gathered = ($_.HashRates.PSObject.Properties.Value -ne $null)
-                    Pools             = $_.Pools
-                    DeviceNames       = $_.DeviceNames
-                    Fee               = $_.Fee
-                    PowerUsage        = $_.PowerUsage
+                    Type               = [String]($_.Type)
+                    Name               = [String]($_.Name)
+                    Path               = [String]($_.Path)
+                    Arguments          = [String]($_.Arguments)
+                    Wrap               = [Boolean]($_.Wrap)
+                    Process            = [System.Management.Automation.Job]$null
+                    API                = [String]($_.API)
+                    Port               = [Int16]($_.Port)
+                    New                = [Boolean]$false
+                    Active             = [TimeSpan]0
+                    TotalActive        = [TimeSpan]0
+                    Activated          = [Int]0
+                    Status             = [String]"Idle"
+                    HashRates          = [Hashtable[]]@()
+                    Benchmarked        = [Int]0
+                    Hashrate_Gathered  = [Boolean]($_.HashRates.PSObject.Properties.Value -ne $null)
+                    Pools              = [PSCustomObject]($_.Pools)
+                    DeviceNames        = [String[]]$_.DeviceNames
+                    Fee                = [Double]($_.Fee)
+                    PowerUsage         = [Double]0
+                    Data               = [Hashtable[]]@()
+                    IntervalMultiplier = [Int16]1
+                    StatStart          = [DateTime]0
+                    StatEnd            = [DateTime]0
+                    Intervals          = [Int]0
                 }
             }
         }
@@ -555,56 +552,52 @@ Function Start-NPMCycle {
             $Miner = $_
             $Filtered = @($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -eq 0) { 
-                If ($_.Process -eq $null) { 
-                    $_.Status = "Failed"
+                If ($Miner.Process -eq $null) { 
+                    $Miner.Status = "Failed"
                 }
-                ElseIf ($_.Process.HasExited -eq $false) { 
-                    $Miner = $_
+                ElseIf ($Miner.Process.HasExited -eq $false) { 
                     Write-Message "Stopping miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')}."
-                    $_.Process.CloseMainWindow() | Out-Null
+                    $Miner.Process.CloseMainWindow() | Out-Null
                     Start-Sleep 1
                     # simply "Kill with power"
-                    Stop-Process $_.Process -Force | Out-Null
+                    Stop-Process $Miner.Process -Force | Out-Null
                     # try to kill any process with the same path, in case it is still running but the process handle is incorrect
-                    $KillPath = $_.Path
+                    $KillPath = $Miner.Path
                     If (Get-Process | Where-Object { $_.Path -eq $KillPath } | Stop-Process -Force) { 
                         Start-Sleep 1
                     }
-                    $_.Status = "Idle"
-                    $_.TotalActive += (-$_.Active + ($_.Active = (Get-Date) - $_.Process.StartTime))
+                    $Miner.Status = "Idle"
+                    $Miner.TotalActive += (-$Miner.Active + ($Miner.Active = (Get-Date) - $Miner.Process.StartTime))
                 }
                 #Restore Bias for non-active miners
                 $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning_Bias_Orig; $_.Profit_Bias = $_.Profit_Bias_Orig }
 
-                #Reduce power usage data
-                If ($Variables.MeasurePowerUsageJob.State -eq "Running") { 
-                    $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
-                    $Variables.PowerUsageData = @($Variables.PowerUsageData | Where-Object { $_.DeviceName -notin @($Miner.DeviceNames) })
-                }
+                # Stop data reader 
+                $Miner.DataReaderJob | Stop-Job -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
             }
         }
 
         $NewMiner = $false
-        $CurrentMinerHashrate_Gathered = $false 
         $Variables.ActiveMiners | Select-Object | ForEach-Object { 
             $Filtered = @($BestMiners_Combo | Select-Object | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -gt 0) { 
-                If ($_.Process -eq $null -or $_.Process.HasExited -ne $false) { 
+                $Miner = $_
+                If ($Miner.Process -eq $null -or $Miner.Process.HasExited -ne $false) { 
                     # Log switching information to .\Logs\switching.log
-                    [PSCustomObject]@{ Date = (Get-Date); "Type" = $_.Type; "Algo(s)" = (($_.Pools.PSObject.Properties.Value.Algorithm | Select-Object -Unique) -join ';'); "Wallet(s)" = (($_.Pools.PSObject.Properties.Value.User | Select-Object -Unique) -join ';') ;  "Username" = $Config.UserName ; "Host(s)" = (($_.Pools.PSObject.Properties.Value.Host | Select-Object -Unique) -join ';') } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
+                    [PSCustomObject]@{ Date = (Get-Date); "Type" = $Miner.Type; "Algo(s)" = (($Miner.Pools.PSObject.Properties.Value.Algorithm | Select-Object -Unique) -join ';'); "Wallet(s)" = (($Miner.Pools.PSObject.Properties.Value.User | Select-Object -Unique) -join ';') ;  "Username" = $Config.UserName ; "Host(s)" = (($Miner.Pools.PSObject.Properties.Value.Host | Select-Object -Unique) -join ';') } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
 
                     # Launch prerun if exists
-                    If ($_.Type -ne "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
+                    If ($Miner.Type -ne "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
                         Start-Process ".\Utils\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                     }
-                    If ($_.Type -ne "NVIDIA" -and (Test-Path ".\Utils\Prerun\NVIDIAPrerun.bat" -PathType Leaf)) { 
+                    If ($Miner.Type -ne "NVIDIA" -and (Test-Path ".\Utils\Prerun\NVIDIAPrerun.bat" -PathType Leaf)) { 
                         Start-Process ".\Utils\Prerun\NVIDIAPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                     }
-                    If ($_.Type -ne "CPU" -and (Test-Path ".\Utils\Prerun\CPUPrerun.bat"-PathType Leaf)) { 
+                    If ($Miner.Type -ne "CPU" -and (Test-Path ".\Utils\Prerun\CPUPrerun.bat"-PathType Leaf)) { 
                         Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                     }
-                    If ($_.Type -ne "CPU") { 
-                        $PrerunName = ".\Utils\Prerun\" + $_.Algorithms + ".bat"
+                    If ($Miner.Type -ne "CPU") { 
+                        $PrerunName = ".\Utils\Prerun\" + $Miner.Algorithms + ".bat"
                         $DefaultPrerunName = ".\Utils\Prerun\default.bat"
                         If (Test-Path $PrerunName -PathType Leaf) { 
                             Write-Message "Launching Prerun: $PrerunName"
@@ -618,62 +611,45 @@ Function Start-NPMCycle {
                         }
                     }
 
-                    If ($Variables.MeasurePowerUsage -and (-not ($Variables.MeasurePowerUsageJob.State -eq "Running")) -and @(($Variables.ConfiguredDevices | Select-Object Name -Unique).Name)) { 
-                        Write-Message "Starting PowerUsage Reader..."
-                        Start-PowerUsageReader -DeviceNames @(($Variables.ConfiguredDevices | Select-Object Name -Unique).Name) | Out-Null
-                        Write-Message "PowerUsage Reader job status: $($Variables.MeasurePowerUsageJob.State)"
-                    }
-
                     Start-Sleep $Config.Delay #Wait to prevent BSOD
-                    $Miner = $_
                     Write-Message "$(If ($Miner.Hashrate_Gathered) { "Starting" } Else { "Benchmarking" } ) miner ($($Miner.Name)) {$(($Miner.Pools.PSObject.Properties.Value | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join '; ')}."
  
                     $Variables.DecayStart = (Get-Date).ToUniversalTime()
-                    $_.New = $true
-                    $_.Activated++
-                    $Arguments = $_.Arguments
+                    $Miner.New = $true
+                    $Miner.Activated++
+                    $Arguments = $Miner.Arguments
                     If ($Arguments -match "^{.+}$") { 
                         $Parameters = $Arguments | ConvertFrom-Json
 
                         #Write config files. Keep separate files, do not overwrite to preserve optional manual customization
-                        If (-not (Test-Path "$(Split-Path $_.Path)\$($Parameters.ConfigFile.FileName)" -PathType Leaf)) { $Parameters.ConfigFile.Content | Set-Content "$(Split-Path $_.Path)\$($Parameters.ConfigFile.FileName)" -ErrorAction Ignore }
+                        If (-not (Test-Path "$(Split-Path $Miner.Path)\$($Parameters.ConfigFile.FileName)" -PathType Leaf)) { $Parameters.ConfigFile.Content | Set-Content "$(Split-Path $Miner.Path)\$($Parameters.ConfigFile.FileName)" -ErrorAction Ignore }
                         $Arguments = $Parameters.Commands
                     }
 
-                    If ($_.Process -ne $null) { $_.Active = [TimeSpan]0 }
-                    If ($_.Wrap) { $_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Includes\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$Arguments' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru }
-                    Else { $_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $Arguments -WorkingDirectory (Split-Path $_.Path) }
-                    If ($_.Process -eq $null) { $_.Status = "Failed" }
+                    If ($Miner.Process -ne $null) { $Miner.Active = [TimeSpan]0 }
+                    If ($Miner.Wrap) { $Miner.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Includes\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($Miner.Port)' -FilePath '$($Miner.Path)' -ArgumentList '$Arguments' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru }
+                    Else { $Miner.Process = Start-SubProcess -FilePath $Miner.Path -ArgumentList $Arguments -WorkingDirectory (Split-Path $Miner.Path) }
+                    If ($Miner.Process -eq $null) { $_.Status = "Failed" }
                     Else { 
-                        $_.Status = "Running"
+                        $Miner.Status = "Running"
+                        $Miner.StatStart = (Get-Date).ToUniversalTime()
+
                         $NewMiner = $true
                         #Newly started miner should look better than others in the first run too
-                        $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100) - $_.PowerCost }
+                        $Variables.Miners | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100); $_.Profit_Bias = $_.Earning * (1 + $Config.ActiveMinerGainPct / 100) - $Miner.PowerCost }
+
+                        #Starting Miner Data reader
+                        Start-MinerDataReader -Miner $Miner -ReadPowerUsage $Variables.MeasurePowerUsage -Interval $(If ($Miner.Hashrate_Gathered) { 2 } Else { 0 } )
                     }
                 }
                 Else { 
-                    $_.TotalActive += (-$_.Active + ($_.Active = (Get-Date) - $_.Process.StartTime))
+                    $Miner.TotalActive += (-$Miner.Active + ($Miner.Active = (Get-Date) - $Miner.Process.StartTime))
                 }
-                $CurrentMinerHashrate_Gathered = $_.Hashrate_Gathered
             }
         }
         #Set idle duration a few seconds as to not overload the APIs
-        If ($NewMiner -or -not $CurrentMinerHashrate_Gathered) { 
-            $Variables.TimeToSleep = $Config.StatsInterval
-
-            # If ($Config.Interval -ge $Config.FirstInterval -and $Config.Interval -ge $Config.StatsInterval) { $Variables.TimeToSleep = $Config.Interval }
-            # ElseIf ($CurrentMinerHashrate_Gathered -eq $true) { $Variables.TimeToSleep = $Config.FirstInterval }
-            # Else { $Variables.TimeToSleep = $Config.StatsInterval }
-        }
-        Else { 
-            $Variables.TimeToSleep = $Config.Interval
-        }
+        $Variables.TimeToSleep = $Config.Interval
         "--------------------------------------------------------------------------------" | Out-Host
-
-        #Get PowerUsage data
-        If ($Variables.MeasurePowerUsage -and $Variables.MeasurePowerUsageJob.State -eq "Running") { 
-            $Variables.PowerUsageData += @($Variables.MeasurePowerUsageJob | Receive-Job)
-        }
 
         $Variables.ActiveMiners | Where-Object { $_.Status -ne "Running" } | ForEach-Object { $_.process = $_.process | Select-Object HasExited, StartTime, ExitTime }
         $ActiveMinersCOPY = @()

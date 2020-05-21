@@ -1,0 +1,32 @@
+Changelog Nemos Miner 21.05.2020
+
+Main improvements:
+- Better hash rate state stability
+- Power usage and true profit calculation
+- Shorter benchmark times
+
+Breaking changes:
+- None
+
+Added:
+- All new config parameters (see New Config Items.txt) as available as command line parameters
+- Automatically add missing config parameters to config file
+- Print message when hash rate was collected
+
+Changed:
+- Changed Core.ps1 & includes.ps1 to modules
+- Use jobs for reading data from miners (shrate & power usage), this gives more samples & and more reliable numbers
+- Changed 'IsLoaded' to 'using module'
+
+Fixed:
+- Property Fee in Pools.
+- Earnings Tracker working again
+- Various cosmetic fixes
+
+Removed:
+- Separate PowerUsage job
+
+Todo:
+- Extend Config dialog
+- Make a proper web interface to replace GUI
+- Convert code to use classes
