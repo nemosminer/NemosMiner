@@ -181,10 +181,11 @@ Function Start-NPMCycle {
         $Variables | Add-Member -Force @{ StatEnd = (Get-Date).ToUniversalTime() }
 
         # Ensure we get the hashrate for running miners prior looking for best miner
-        $Variables.ActiveMiners | ForEach-Object { 
+        $Variables.ActiveMiners | Where-Object { $_.Process } | ForEach-Object { 
             $Miner = $_
-            If ($_.Process -eq $null -or $_.Process.HasExited) { 
-                If ($_.Status -eq "Running") { $_.Status = "Failed" }
+            If ($_.Process.HasExited) { 
+                $_.Status = "Failed"
+                $_.Process = $null
             }
             Else { 
                 If ($Miner.DataReaderJob.HasMoreData) { 
@@ -202,7 +203,7 @@ Function Start-NPMCycle {
                 $Miner.Intervals ++
 
                 # we don't want to store hashrates if we have less than $MinHashRateSamples
-                If (($Miner.Data).Count -ge ($Config.MinHashRateSamples * $Miner.IntervalMultiplier) -or $Miner.DataReaderJob.State -ne "Running" -or $Miner.Intervals -ge $Miner.IntervalMultiplier) { 
+                If (($Miner.Data).Count -ge ($Config.MinHashRateSamples * $Miner.IntervalMultiplier) -or $Miner.DataReaderJob.State -ne "Running" -or ($Miner.Intervals -ge $Miner.IntervalMultiplier * 3)) { 
                     If ($Miner.New) { $Miner.Benchmarked++ }
                     $Miner.Pools.PSObject.Properties.Value.Algorithm | ForEach-Object { 
                         Write-Message "Saving hash rate ($($Miner.Name)_$($_)_HashRate: $(($Miner.HashRates.$_ | ConvertTo-Hash) -replace ' '))$(If (-not $Stats."$($Miner.Name)_$($_)_HashRate") { " [Benchmark done]" })."
@@ -229,7 +230,7 @@ Function Start-NPMCycle {
                     Write-Message "Miner Updated: $($_.Path)"
                     $UpdatedMiner = &$_.path
                     $UpdatedMiner | Add-Member -Force @{ Name = (Get-Item $_.Path).BaseName }
-                    $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
+                    $Variables.ActiveMiners | Where-Object { $_.Process -and $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
                         $Miner = $_
                         [Array]$Filtered = ($BestMiners_Combo | Where-Object Path -EQ $Miner.Path | Where-Object Arguments -EQ $Miner.Arguments)
                         If ($Filtered.Count -eq 0) { 
@@ -245,13 +246,14 @@ Function Start-NPMCycle {
                                 Start-Sleep 1
                                 $Miner.Status = "Idle"
                             }
+                            $Miner.Process = $null
+
                             #Restore Bias for non-active miners
                             $Variables.Miners | Where-Object Path -EQ $Miner.Path | Where-Object Arguments -EQ $Miner.Arguments | ForEach-Object { $_.Earning_Bias = $_.Earning_Bias_Orig; $_.Profit_Bias = $_.Profit_Bias_Orig }
 
                             # Stop data reader 
                             $Miner.DataReaderJob | Stop-Job -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
                         }
-                        $Miner.Process = $null
                     }
                     Get-ChildItem -path ".\Stats\" -filter "$($UpdatedMiner.Name)_*.txt" | Remove-Item -Force -Recurse
                     Remove-Item -Force -Recurse (Split-Path $UpdatedMiner.Path)
@@ -549,10 +551,10 @@ Function Start-NPMCycle {
         }
         #Stop or start miners in the active list depending on if they are the most profitable
         # We have to stop processes first or the port would be busy
-        $Variables.ActiveMiners | Select-Object | ForEach-Object { 
-            $Miner = $_
+        $Variables.ActiveMiners | Where-Object { $_.Process } | ForEach-Object { 
             $Filtered = @($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -eq 0) { 
+                $Miner = $_
                 If ($Miner.Process.HasExited) { 
                     $Miner.Status = "Failed"
                 }
@@ -581,8 +583,8 @@ Function Start-NPMCycle {
         }
 
         $NewMiner = $false
-        $Variables.ActiveMiners | Select-Object | ForEach-Object { 
-            $Filtered = @($BestMiners_Combo | Select-Object | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
+        $Variables.ActiveMiners | ForEach-Object { 
+            $Filtered = @($BestMiners_Combo | Where-Object Path -EQ $_.Path | Where-Object Arguments -EQ $_.Arguments)
             If ($Filtered.Count -gt 0) { 
                 $Miner = $_
                 If ($Miner.Process -eq $null -or $Miner.Process.HasExited -ne $false) { 
@@ -676,7 +678,7 @@ Function Start-NPMCycle {
             $Variables.EarningsTrackerJobs.ChildJobs | ForEach-Object { $_.Output.Clear() }
         }
 
-        Write-Message "Collecting miner data while waiting for next cycle..."
+        If ($Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } ) { Write-Message "Collecting miner data while waiting for next cycle..." }
 
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }

@@ -579,7 +579,6 @@ Function Global:TimerUITick {
         
             Write-Host "--------------------------------------------------------------------------------"
             Write-Host -ForegroundColor Yellow "Last refresh: $((Get-Date).ToString('g'))   |   Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
-            #Write-Message $Variables.StatusText
         }
         If (Test-Path "..\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content "..\EndUIRefresh.ps1" -Raw) }
 

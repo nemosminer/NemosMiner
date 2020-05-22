@@ -659,35 +659,30 @@ Function Start-Mining {
                     Start-NPMCycle
                     Update-Monitoring
                     $EndLoopTime = (Get-Date).AddSeconds($Variables.TimeToSleep)
+                    $EndLoopNow = $false
                     # On crashed miner start next loop immediately
-                    While ((Get-Date) -lt $EndLoopTime -and ($RunningMiners = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" } | Where-Object { -not $_.Process.HasExited } | Where-Object { $_.DataReaderJob.State -eq "Running" })) { 
-                        Start-Sleep -Seconds 1
-
-                        If ($BenchmarkingMiners = @($RunningMiners | Where-Object { (-not $_.Hashrate_Gathered) -or ($Variables.MeasurePowerUsage -and (-not $_.PowerUsage))})) {
-                            #Exit loop when enough samples
-                            While ($BenchmarkingMinersNeedingMoreSamples = @($BenchmarkingMiners | Where-Object { ($_.Data).Count -lt ($_.IntervalMultiplier * $Config.MinHashRateSamples) })) { 
-                                #Get more miner data
-                                $RunningMiners | Where-Object { $_.DataReaderJob.HasMoreData } | ForEach-Object { 
-                                    $_.Data += $Samples = @($_.DataReaderJob | Receive-Job ) 
-                                    $Sample = @($Samples) | Select-Object -Last 1
-                                    If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join '; ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })]" }
-                                }
-                                Start-Sleep -Seconds 1
-                            }
-                            Remove-Variable BenchmarkingMinersNeedingMoreSamples
-                            Remove-variable BenchmarkingMiners
+                    While (
+                            (-not $EndLoopNow) -and
+                            ($RunningMiners = $Variables.ActiveMiners | Where-Object { $_.Status -eq "Running" -and (-not $_.Process.HasExited) -and $_.DataReaderJob.State -eq "Running" }) -and
+                            (   
+                                ($BenchmarkingMiners = $RunningMiners | Where-Object { (-not $_.Hashrate_Gathered) -or ($Variables.MeasurePowerUsage -and (-not $_.PowerUsage)) }) -or
+                                ((Get-Date) -lt $EndLoopTime -and (-not $BenchmarkingMiners))
+                            )
+                    ) {
+                        $RunningMiners | Where-Object { $_.DataReaderJob.HasMoreData } | ForEach-Object { 
+                            $_.Data += $Samples = @($_.DataReaderJob | Receive-Job ) 
+                            $Sample = @($Samples) | Select-Object -Last 1
+                            If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join '; ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($_.Data).Count) sample$(If (($_.Data).Count -ne 1) { "s"} ))" }
                         }
-                        Else { 
-                            $RunningMiners | Where-Object { $_.DataReaderJob.HasMoreData } | ForEach-Object { 
-                                $_.Data += $Samples = @($_.DataReaderJob | Receive-Job ) 
-                                $Sample = @($Samples) | Select-Object -Last 1
-                                If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join '; ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })]" }
-                            }
+                        If ($BenchmarkingMiners -and (-not ($BenchmarkingMiners | Where-Object { ($_.Data).Count -lt ($_.IntervalMultiplier * $Config.MinHashRateSamples) }))) { 
+                            #Enough samples collected, exit loop immediately
+                            $EndLoopNow = $true
                         }
                     }
-                    Remove-Variable RunningMiners -ErrorAction Ignore
-                    Remove-Variable Samples -ErrorAction Ignore
-                    Remove-Variable Sample -ErrorAction Ignore
+                    Remove-variable BenchmarkingMiners
+                    Remove-variable RunningMiners
+                    Remove-Variable EndLoopTime
+                    Remove-Variable EndLoopNow
                 }
             }
         }
