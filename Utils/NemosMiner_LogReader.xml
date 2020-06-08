@@ -2,10 +2,10 @@
 <TailConfig>
   <TailFiles>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\NemosMiner_????-??-??.log</FilePath>
+      <FilePath>..\Logs\NemosMiner_????-??-??.log</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
-      <FileCheckInterval>600</FileCheckInterval>
+      <FileCheckInterval>10</FileCheckInterval>
       <FileChangeCheckInterval>500</FileChangeCheckInterval>
       <FileCheckPattern>true</FileCheckPattern>
       <TitleMatchFilename>true</TitleMatchFilename>
@@ -15,7 +15,7 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2020-06-08.log</Title>
+      <Title>NemosMiner_2020-06-09.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
         <Width>1522</Width>
@@ -175,10 +175,10 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\switching.log</FilePath>
+      <FilePath>..\Logs\switching.log</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
-      <FileCheckInterval>2</FileCheckInterval>
+      <FileCheckInterval>10</FileCheckInterval>
       <FileChangeCheckInterval>500</FileChangeCheckInterval>
       <FileCheckPattern>true</FileCheckPattern>
       <TitleMatchFilename>true</TitleMatchFilename>
@@ -348,10 +348,10 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\EarningTracker-????-??-??.log</FilePath>
+      <FilePath>..\Logs\EarningTracker-????-??-??.log</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
-      <FileCheckInterval>600</FileCheckInterval>
+      <FileCheckInterval>10</FileCheckInterval>
       <FileChangeCheckInterval>500</FileChangeCheckInterval>
       <FileCheckPattern>true</FileCheckPattern>
       <TitleMatchFilename>true</TitleMatchFilename>
@@ -521,10 +521,10 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\CoreCyle-????-??-??_??-??-??.log</FilePath>
+      <FilePath>..\Logs\CoreCyle-????-??-??_??-??-??.log</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
-      <FileCheckInterval>600</FileCheckInterval>
+      <FileCheckInterval>10</FileCheckInterval>
       <FileChangeCheckInterval>500</FileChangeCheckInterval>
       <FileCheckPattern>true</FileCheckPattern>
       <TitleMatchFilename>true</TitleMatchFilename>
@@ -693,10 +693,10 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\NemosMiner_????-??-??_??-??-??.log</FilePath>
+      <FilePath>..\Logs\NemosMiner_????-??-??_??-??-??.log</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
-      <FileCheckInterval>2</FileCheckInterval>
+      <FileCheckInterval>10</FileCheckInterval>
       <FileChangeCheckInterval>500</FileChangeCheckInterval>
       <FileCheckPattern>true</FileCheckPattern>
       <TitleMatchFilename>true</TitleMatchFilename>
@@ -865,10 +865,10 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\API.log</FilePath>
+      <FilePath>..\Logs\API.log</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
-      <FileCheckInterval>600</FileCheckInterval>
+      <FileCheckInterval>10</FileCheckInterval>
       <FileChangeCheckInterval>500</FileChangeCheckInterval>
       <FileCheckPattern>true</FileCheckPattern>
       <TitleMatchFilename>true</TitleMatchFilename>
@@ -1044,8 +1044,8 @@
     <Height>756</Height>
   </WindowSize>
   <WindowPosition>
-    <X>15</X>
-    <Y>26</Y>
+    <X>87</X>
+    <Y>134</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>
