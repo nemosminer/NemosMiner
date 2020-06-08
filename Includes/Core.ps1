@@ -209,7 +209,7 @@ Function Start-Cycle {
 
         # Filter Algo based on Per Pool Config
         $PoolsConfig = $Config.PoolsConfig #much faster
-        $Variables.Pools | Where-Object { $Config.SSL -NE "Preferred" -and $_.SSL -NE $Config.SSL } | ForEach-Object { $_.Enabled = $false; $_.Reason += "SSL: $($Config.SSL)" }
+        $Variables.Pools | Where-Object { $Config.SSL -NE "Preferred" -and $_.SSL -NE [Boolean]$Config.SSL } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Config item SSL=$([Boolean]$Config.SSL)" }
         $Variables.Pools | Where-Object { $_.Name -notin $Config.PoolName } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Pool not configured" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.($_.Name).Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in $($_.Name) pool config" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in default pool config)" }
@@ -755,7 +755,6 @@ While ($true) {
         Start-Cycle
         Update-Monitoring
 
-        $EndLoopNow = $false
         #End loop when
         # - a miner crashed
         # - all bechmarking miners have collectred enough samples
@@ -789,7 +788,10 @@ While ($true) {
                     }
                 }
                 If (($RunningMiners | Where-Object { $_.GetStatus() -ne "Running" }) -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { $_.GetStatus() -eq "Running" }))) { 
-                    #If a  miner crashed and we're not benchmarking, then end the loop now
+                    #If a  miner crashed and we're not benchmarking, then end the loop now, update miner statuus
+                    $Variables.EndLoop = $true
+                    $Variables.StatusText = "Starting new cycle."
+                    TimerUITick
                     Break
                 }
                 If ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
