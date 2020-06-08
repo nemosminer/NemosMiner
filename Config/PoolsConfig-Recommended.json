@@ -1,13 +1,13 @@
 {
    "default": {
-     "PricePenaltyFactor": 1,
+     "EstimateCorrection": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
      "WorkerName": "ID=NM3813",
      "APIKey": ""
    },
    "zpool": {
-     "PricePenaltyFactor": 1,
+     "EstimateCorrection": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
      "WorkerName": "ID=NM3813",
@@ -21,7 +21,7 @@
      ]
    },
       "zergpool": {
-     "PricePenaltyFactor": 1,
+     "EstimateCorrection": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
      "WorkerName": "ID=NM3813",
@@ -32,7 +32,7 @@
      ]
    },
    "mph": {
-     "PricePenaltyFactor": 1,
+     "EstimateCorrection": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
      "WorkerName": "NM3813",
@@ -44,7 +44,7 @@
      ]
    },
    "nicehashV2": {
-     "PricePenaltyFactor": 1,
+     "EstimateCorrection": 1,
      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
      "UserName": "nemo",
      "WorkerName": "NM3813",

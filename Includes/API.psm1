@@ -23,32 +23,28 @@ version date:   09 February 2020
 #>
 
 Function Start-APIServer { 
-    Param(
-        [Parameter(Mandatory = $false)]
-        [Int]$Port = 3990
-    )
 
-    $Variables | Add-Member -Force @{ APIVersion  = "0.1.2"}
-
-    # Setup flags for controlling script execution
-    # $Variables.Stop = $false
-    # $Variables.Pause = $false
-    # $Variables.Port = $Port
+    $APIVersion = "0.2.0.0"
 
     # Setup runspace to launch the API webserver in a separate thread
-    $newRunspace = [runspacefactory]::CreateRunspace()
-    $newRunspace.Open()
+    $APIRunspace = [runspacefactory]::CreateRunspace()
+    $APIRunspace.Open()
 
     Get-Variable -Scope Global | ForEach-Object { 
-        try { $newRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value) }
-        catch { }
+        Try { 
+            $APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+        }
+        Catch { }
     }
+    $APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
 
-    $APIserver = [PowerShell]::Create().AddScript(
+    $APIServer = [PowerShell]::Create().AddScript(
         { 
             # Set the starting directory
             Set-Location (Split-Path $MyInvocation.MyCommand.Path)
             $BasePath = "$PWD\web"
+
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
 
             # List of possible mime types for files
             $MIMETypes = @{ 
@@ -62,20 +58,32 @@ Function Start-APIServer {
                 ".ps1"  = "text/html" # ps1 files get executed, assume their response is html
             }
 
+            # Get-Variable -Scope Global | ForEach-Object { 
+            #     Try { 
+            #         $_.Name | ConvertTo-Json > ".\Debug\$($_.Name).dump"
+            #     }
+            #     Catch { }
+            # }
+        
             # Setup the listener
             $Server = New-Object System.Net.HttpListener
+
             # Listening on anything other than localhost requires admin privileges
-            $Server.Prefixes.Add("http://localhost:3999/")
+            $Server.Prefixes.Add("http://localhost:$($Config.APIPort)/")
             $Server.Start()
+
+            #Server is running. OK to add port to variables
+            $Variables.APIPort = $Config.APIPort
 
             While ($Server.IsListening) { 
                 $Context = $Server.GetContext()
                 $Request = $Context.Request
                 $URL = $Request.Url.OriginalString
 
+                "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" >> .\Logs\API.log
+
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
-                $Path >> .\Logs\API.log
 
                 # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                 $Parameters = @{ }
@@ -96,25 +104,164 @@ Function Start-APIServer {
                 $Data = ""
 
                 # Set the proper content type, status code and data for each resource
-                Switch ($Path -Split '\.' | Select-Object -Index 0) { 
-                    "/activeminerss" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.ActiveMiners | Select-Object)
+                Switch ($Path) { 
+                    "/functions/stat/get" { 
+                        If ($null -eq $Parameters.Value) {
+                            $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ })
+                        }
+                        Else {
+                            $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ })
+                        }
+                        $TempStats | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
+                        If ($Parameters.Value -eq 0) { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)$($Parameters.Unit) $($Parameters.Type)." }
+                        If ($Parameters.Value -eq -1) { $Data += "`n`n$($TempStats.Count) disabled miner$(if ($TempStats.Count -ne 1) { "s" })." }
+                        $Data = "<pre>$Data</pre>"
                         Break
                     }
-                    "/alldevices" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.AllDevices | Select-Object)
+                    "/functions/stat/remove" { 
+                        If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
+                            $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
+                                $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
+                                $Miners | ForEach-Object { 
+                                    $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                    $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
+                                    ForEach ($Algorithm in $_.Algorithm) { 
+                                        $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
+                                        Remove-Stat -Name $StatName
+                                    }
+                                }
+                            }
+                            $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -eq 1) { "s" }) will re-benchmark."
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
+                        If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
+                            $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
+                                $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
+                                $Miners | ForEach-Object { 
+                                    $_.PowerUsage = $_.PowerCost = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                    $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
+                                    $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
+                                    Remove-Stat -Name $StatName
+                                }
+                            }
+                            $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -ne 1) { "s" }) will re-measure power usage."
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
+                        If ($null -eq $Parameters.Value) {
+                            $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ })
+                        }
+                        Else {
+                            $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ })
+                        }
+                        $TempStats | ForEach-Object { 
+                            Remove-Stat -Name $_.Name
+                            $Stats.PSObject.Properties.Remove($_.Name)
+                            $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
+                        }
+                        $Data += "`n`nRemoved $($TempStats.Count) $($Parameters.Type) stat file$(if ($TempStats.Count -ne 1) { "s" })."
+                        $Data = "<pre>$Data</pre>"
                         Break
                     }
-                    "/allpools" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.AllPools | Select-Object)
+                    "/functions/stat/set" { 
+                        If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $Parameters.Value -ne $null) { 
+                            $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
+                                $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
+                                $Miners | ForEach-Object { 
+                                    $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                    $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
+                                    ForEach ($Algorithm in $_.Algorithm) { 
+                                        $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
+                                        #Set stat value
+                                        Set-Stat -Name $StatName -Value ($Parameters.Value) -Duration 0
+                                    }
+                                }
+                            }
+                            $Data += "`n`nThe listed $(if ($Miners.Count -eq 1) { "miner is"} else { "$($Miners.Count) miners are" }) $(if ($Parameters.Value -eq 0) { " marked as failed" } else { "disabled" } )." 
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
+                    }
+                    "/functions/config/device/disable" { 
+                        $Parameters.Keys | ForEach-Object {
+                            $Key = $_
+                            If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
+
+                                $Data = "`nDevice configuration changed`n`nOld values:"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Data += "`nDeviceName:        '[$($Config."DeviceName" -join ', ')]'"
+                    
+                                $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
+                                $Config.DeviceName = @($Config.DeviceName | Where-Object { $_ -notin $Config.ExcludeDeviceName } | Sort-Object -Unique)
+
+                                $Data += "`n`nNew values:"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Data += "`nDeviceName:        '[$($Config."DeviceName" -join ', ')]'"
+                                $Data += "`n`nConfigFile:`n$($Variables.ConfigFile)"
+
+                                Write-Config -ConfigFile $Variables.ConfigFile
+
+                                $Values | ForEach-Object { 
+                                    $DeviceName = $_
+                                    $Variables.Miners | Where-Object { $DeviceName -in $_.DeviceName } | ForEach-Object { 
+                                        If ($_.Status -EQ "Running") { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
+                                        $_.Devices | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')" }
+                                    }
+                                }
+                            }
+                            Else { 
+                                $Data = "No configuration change"
+                            }
+                        }
+                        $Data = "<pre>$Data</pre>"
+                        Break
+                    }
+                    "/functions/config/device/enable" { 
+                        $Parameters.Keys | ForEach-Object {
+                            $Key = $_
+                            If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.DeviceName })) { 
+                                $Data = "`nDevice configuration changed`n`nOld values:"
+                                $Data += "`nDeviceName:        '[$($Config."DeviceName" -join ', ')]'"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ',')]'"
+                    
+                                $Config.DeviceName = @(@($Config.DeviceName) + $Values | Sort-Object -Unique)
+                                $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Config.DeviceName } | Sort-Object -Unique)
+                    
+                                $Data += "`n`nNew values:"
+                                $Data += "`nDeviceName:        '[$($Config."DeviceName" -join ', ')]'"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Data += "`n`nConfigFile:`n$($Variables.ConfigFile)"
+    
+                                Write-Config -ConfigFile $Variables.ConfigFile
+    
+                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                            }
+                            Else {
+                                $Data = "No configuration change"
+                            }
+                        }
+                        $Data = "<pre>$Data</pre>"
                         Break
                     }
                     "/apiversion" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.APIVersion | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
+                        Break
+                    }
+                    "/btcratefirstcurrency" { 
+                        $Data = ConvertTo-Json @($Variables.Rates.($Config.Currency | Select-Object -Index 0) | Select-Object)
                         Break
                     }
                     "/brainjobs" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BrainJobs | Select-Object)
+                        Break
+                    }
+                    "/compareminers" { 
+                        $Data = ConvertTo-Json @($Variables.CompareMiners | Select-Object)
+                        Break
+                    }
+                    "/comparepools" { 
+                        $Data = ConvertTo-Json @($Variables.ComparePools | Select-Object)
                         Break
                     }
                     "/config" { 
@@ -126,32 +273,108 @@ Function Start-APIServer {
                         }
                         break
                     }
-                    "/configureddevices" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.ConfiguredDevices | Select-Object)
+                    "/devices" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Select-Object)
                         Break
                     }
-                    "/devices" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.Devices | Select-Object)
+                    "/devices/enabled" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object)
+                        Break
+                    }
+                    "/devices/disabled" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Disabled" | Select-Object)
+                        Break
+                    }
+                    "/devices/unsupported" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Unsupported" | Select-Object)
                         Break
                     }
                     "/earnings" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Earnings | Select-Object)
                         Break
                     }
-                    "/earningspool" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Earningspool | Select-Object)
-                        Break
-                    }
                     "/earningstrackerjobs" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJobs | Select-Object)
                         Break
                     }
+                    "/firstcurrency" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Config.Currency | Select-Object -Index 0)
+                        Break
+                    }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.Miners | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/best" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/enabled" { 
+                        $Data = ConvertTo-Json @($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/disabled" { 
+                        $Data = ConvertTo-Json @($Variables.Miners | Where-Object { -not $_.Enabled } | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/failed" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Failed" | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/fastest" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/idle" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Idle" | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miners/running" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Status -EQ "Running" | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        Break
+                    }
+                    "/miningcost" { 
+                        $Data = ConvertTo-Json @($Variables.MiningCost | Select-Object)
+                        Break
+                    }
+                    "/miningearning" { 
+                        $Data = ConvertTo-Json @($Variables.MiningEarning | Select-Object)
+                        Break
+                    }
+                    "/miningprofit" { 
+                        $Data = ConvertTo-Json @($Variables.MiningProfit | Select-Object)
+                        Break
+                    }
+                    "/newminers" { 
+                        $Data = ConvertTo-Json @($Variables.NewMiners | Select-Object)
+                        Break
+                    }
+                    "/newpools" { 
+                        $Data = ConvertTo-Json @($Variables.NewPools | Select-Object)
                         Break
                     }
                     "/poolsconfig" { 
                         $Data = ConvertTo-Json -Depth 10 @($Config.PoolsConfig | Select-Object)
+                        Break
+                    }
+                    "/pools" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object)
+                        Break
+                    }
+                    "/pools/best" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best | Select-Object)
+                        Break
+                    }
+                    "/pools/enabled" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Enabled | Select-Object)
+                        Break
+                    }
+                    "/pools/disabled" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object { -not $_.Enabled } | Select-Object)
+                        Break
+                    }
+                    "/rates" { 
+                        $Data = ConvertTo-Json @($Variables.Rates | Select-Object)
                         Break
                     }
                     "/stats" { 
@@ -178,11 +401,11 @@ Function Start-APIServer {
                         }
 
                         # Check if there is a file with the requested path
-                        $Filename = $BasePath + $Path
+                        $Filename = "$BasePath$Path"
                         if (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
                             # If the file is a powershell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
-                            $File = Get-ChildItem $Filename
+                            $File = Get-ChildItem $Filename -File
 
                             if ($File.Extension -eq ".ps1") { 
                                 $Data = & $File.FullName -Parameters $Parameters
@@ -240,8 +463,8 @@ Function Start-APIServer {
             $Server.Stop()
             $Server.Close()
         }
-    ) #end of $APIserver
+    ) #end of $APIServer
 
-    $APIserver.Runspace = $newRunspace
-    $APIhandle = $APIserver.BeginInvoke()
+    $APIServer.Runspace = $APIRunspace
+    $APIServer.BeginInvoke()
 }

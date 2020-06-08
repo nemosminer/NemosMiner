@@ -1,99 +1,232 @@
-<!-- Copyright (c) 2018-2019 Nemo & MrPlus
+<!--#include file="/parts/head.html" -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 id="title" data-navbaractive="navdashboard" class="h2">Dashboard</h1>
+</div>
 
-NemosMiner is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+<div id="toolbar">
+    <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
+    <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
+    <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
+    <!-- <button id="disable" class="btn btn-danger">Disable Miner</button> -->
+</div>
 
-NemosMiner is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+<h3>Running Miners</h3>
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>. -->
+<table id="miners" class="table mb-4"
+    data-icons="icons"
+    data-toolbar="#toolbar"
+    data-toggle="table"
+    data-url="/miners/running"
+    data-sort-order="desc"
+    data-sort-name="Profit"
+    data-remember-order="true"
+    data-cache="false"
+    data-show-button-text="true"
+    data-show-columns="true"
+    data-show-toggle="true"
+    data-show-refresh="true"
+    data-icons-prefix="fa"
+    data-icons="icons"
+    data-detail-view="true"
+    data-auto-refresh="true"
+    data-detail-formatter="detailFormatter"
+    data-response-handler="formatMiners"
+    >
 
+    <thead>
+        <tr>
+            <th data-field="state" data-checkbox="true"></th>
+            <th data-field="Name" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Name</th>
+            <th data-field="tDevices" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Devices</th>
+            <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
+            <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC">Profit</th>
+            <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC">Earning</th>
+            <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage</th>
+            <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC">Power Cost</th>
+            <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
+            <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Speed</th>
+            <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
+            <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
+            <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Speed</th>
+            <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
+            <th data-field="API" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API</th>
+            <th data-field="Port" data-sortable="true" data-filter-control="select" data-visible="false">API Port</th>
+            <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
+            <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
+            <th data-field="New" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">New</th>
+        </tr>
+    </thead>
+</table>
 
-<!-- Product:        NemosMiner
-File:           API.psm1
-version:        3.8.1.3
-version date:   12 November 2019
- -->
+<h3 class="mt-4">Balances</h3>
+<div id="balanceboxes" class="card-deck"></div>
 
-<html>
+<script id="poolbalance_template" type="text/x-handlebars-template">
+    <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}100%{{else}}200px{{/if}}";>
+        <div class="card-header text-center">
+            <h5>{{#if total}}{{name}}{{else}}<a href="{{url}}" target="_blank">{{name}}</a>{{/if}}</h5>
+            {{lastupdated}}
+        </div>
+        <div class="card-body text-center">
+            <p class="card-text currencies">
+                {{#each balances}}
+                <span class="currencyname font-weight-bold">{{@key}}:</span> <span>{{this}}</span><br/>
+                {{/each}}
+            </p>
+        </div>
+    </div>
+</script>
 
-<body>
-    <h1>NemosMiner API (version 0.1.2)</h1>
+<script type="text/javascript">
+    var $table = $('#miners')
+    var $querysize = 10000
 
-    API data is available at http://localhost:[API port]/&lt;resource&gt.
-    (The default API port is 3999)
+    $("#re-benchmark").click(function () {
+        var $data = $table.bootstrapTable('getSelections');
+        if ($data.length >= 1) {
+            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
+            if ($data.length >= $querysize) {
+                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            }
+            else {
+                $command = 'functions/stat/remove?Miner=' + encodeURIComponent($data) + '&Type=HashRate';
+                $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#re-benchmark').text());
+                    $('#myModal').modal({show:true});
+                });
+            }
+        }
+    });
 
-    <h2>File and Scripts</h2>
-    <p>Anything other than the resources listed below will be looked for in the web directory and sent if it exists.</p>
+    // $("#re-measure").click(function () {
+    //     var $data = $table.bootstrapTable('getSelections');
+    //     if ($data.length >= 1) {
+    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
+    //         if ($data.length >= $querysize) {
+    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+    //         }
+    //         else {
+    //             $command = "scripts/managestat.ps1?DataSet=RunningMiners&Action=RemoveStat&Type=PowerUsage&Data=" + encodeURIComponent($data);
+    //             $(".modal-body").load($command, function() {
+    //                 $(".modal-title").text($("#re-measure").text());
+    //                 $("#myModal").modal({show:true});
+    //             });
+    //         }
+    //     }
+    // });
 
-    <p>Any .ps1 files in the web/scripts directory will be run and their output sent. They get passed a $Parameters object with
-        keys and values from the URL string.
-        Test it with this demo: <a
-            href="http://localhost:3999/scripts/demo.ps1?message=Hello%20world!">/scripts/demo.ps1?message=Hello%20world!</a>
-        This feature can be used to gather data that the API doesn't expose directly.</p>
+    // $("#failed").click(function () {
+    //     var $data = $table.bootstrapTable('getSelections');
+    //     if ($data.length >= 1) {
+    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
+    //         if ($data.length >= $querysize) {
+    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+    //         }
+    //         else {
+    //             $command = "scripts/managestat.ps1?DataSet=RunningMiners&Action=SetStat&Type=HashRate&Value=0&Data=" + encodeURIComponent($data);
+    //             $(".modal-body").load($command, function() {
+    //                 $(".modal-title").text($("#failed").text());
+    //                 $("#myModal").modal({show:true});
+    //             });
+    //         }
+    //     }
+    // });
 
-    <h2>Resources</h2>
+    // $("#disable").click(function () {
+    //     var $data = $table.bootstrapTable('getSelections');
+    //     if ($data.length >= 1) {
+    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
+    //         if ($data.length >= $querysize) {
+    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+    //         }
+    //         else {
+    //             $command = "scripts/managestat.ps1?DataSet=RunningMiners&Action=SetStat&Type=HashRate&Value=-1&Data=" + encodeURIComponent($data);
+    //             $(".modal-body").load($command, function() {
+    //                 $(".modal-title").text($("#disable").text());
+    //                 $("#myModal").modal({show:true});
+    //             });
+    //         }
+    //     }
+    // });
 
-    <h3>ActiveMinerPrograms</h3>
-    <a href="http://localhost:3999/activeminerprograms">/activeminerprograms</a>
-    <p>Shows all data in $Variables.ActiveMinerPrograms, use for debugging.</p>
+    // $("#myModal").on('hidden.bs.modal', function () {
+    //     $table.bootstrapTable("refresh");
+    // });
 
-    <h3>APIVersion</h3>
-    <a href="http://localhost:3999/apiversion">/apiversion</a>
-    <p>Returns the version number of NemosMiner API.</p>
+    // $(function() {
+    //     function updatePoolBalances() {
+    //         var rates;
+    //         $.ajax({url: '/rates', success: function(result) {
+    //             console.log(result);
+    //             rates = result[0];
+    //         }});
+    //         var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
+    //         $.ajax({url: '/balances', success: function(result) {
+    //             console.log(result);
+    //             $("#balanceboxes").empty();
+    //             var template = Handlebars.compile($("#poolbalance_template").html());
+    //             var footer = new RegExp("-.+|=.+");
+    //             $.each(result, function(index, item) {
+    //                 if (!(footer.test(item.Name))) {
+    //                     var currencies = Object.keys(rates[item.Currency]);
+    //                     var data = {name: item.Name, lastupdated: formatDate(item.LastUpdated), url: item.Url, balances: {}};
+    //                     $.each(currencies, function(cindex, currency) {
+    //                         data["balances"][currency] = (item.Total * rates[item.Currency][currency]).toFixed(10);
+    //                         if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
+    //                         data_total["balances"][currency] = data_total["balances"][currency] + item.Total * rates[item.Currency][currency];
+    //                     });
+    //                     $("#balanceboxes").append(template(data));
+    //                 }
+    //             });
+    //             $("#balanceboxes").append(template(data_total));
+    //         }});
+    //     }
 
-    <h3>BrainJobs</h3>
-    <a href="http://localhost:3999/brainjobs">/brainjobs</a>
-    <p>Returns the brainjobs information.</p>
+    //     updatePoolBalances();
+    //     window.setInterval(function() { updatePoolBalances();}, 60000);
+    // });
 
-    <h3>Config</h3>
-    <a href="http://localhost:3999/config">/config</a>
-    <p>Shows the full configuration for the running script, after all variable substitution.
-    </p>
+    $("#myModal").on('hidden.bs.modal', function () {
+        $table.bootstrapTable("refresh");
+    });
 
-    <h3>ConfiguredDevices</h3>
-    <a href="http://localhost:3999/variables.configureddevices">/configureddevices</a>
-    <p>Dump of the $ConfiguredDevices variable, used only for debugging. Shows information about all configured mining devices, used for debugging.</p>
+    $(function() {
+        function updatePoolBalances() {
+            var rates;
+            $.ajax({url: '/rates', success: function(result) {
+                console.log(result);
+                rates = result[0];
+            }});
+            var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
+            $.ajax({url: '/earnings', success: function(result) {
+                console.log(result);
+                $("#balanceboxes").empty();
+                var template = Handlebars.compile($("#poolbalance_template").html());
+                var footer = new RegExp("-.+|=.+");
+                $.each(result, function(index, item) {
+                    if (!(footer.test(item.Name))) {
+                        var currencies = Object.keys(rates[item.Currency]);
+                        var data = {name: item.Name, lastupdated: formatDate(item.LastUpdated), url: item.Url, balances: {}};
+                        $.each(currencies, function(cindex, currency) {
+                            data["balances"][currency] = (item.Total * rates[item.Currency][currency]).toFixed(10);
+                            if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
+                            data_total["balances"][currency] = data_total["balances"][currency] + item.Total * rates[item.Currency][currency];
+                        });
+                        $("#balanceboxes").append(template(data));
+                    }
+                });
+                $("#balanceboxes").append(template(data_total));
+            }});
+        }
 
-    <h3>Devices</h3>
-    <a href="http://localhost:3999/variables.devices">/devices</a>
-    <p>Dump of the $Devices variable, used only for debugging. Shows information about all available mining devices, used for debugging.</p>
+        updatePoolBalances();
+        window.setInterval(function() { updatePoolBalances();}, 60000);
+    });
 
-    <h3>Earnings</h3>
-    <a href="http://localhost:3999/earnings">/earnings</a>
-    <p>Returns the earnings data.</p>
+    // function formatDate(data) {
+    //     return timeSince(new Date(data));
+    // };
+</script>
+<!-- End of page scripts -->
 
-    <h3>EarningsPool</h3>
-    <a href="http://localhost:3999/earningspool">/earningspool</a>
-    <p>Returns the earnings pool information.</p>
-
-    <h3>EarningsTrackerJobs</h3>
-    <a href="http://localhost:3999/earningstrackerjobs">/earningstrackerjobs</a>
-    <p>Returns the earningstrackerjobs information.</p>
-
-    <h3>Miners</h3>
-    <a href="http://localhost:3999/miners">/miners</a>
-    <p>Shows all data in $Variables.miners, use for debugging.</p>
-
-    <h3>PoolsConfig</h3>
-    <a href="http://localhost:3999/poolsconfig">/poolsconfig</a>
-    <p>Shows the pool configuration entries.
-    </p>
-
-    <h3>Stats</h3>
-    <a href="http://localhost:3999/stats">/stats</a>
-    <p>Shows all stat data in the $Stats hashtable, use for debugging.</p>
-
-    <h3>Variables</h3>
-    <a href="http://localhost:3999/variables">/variables</a>
-    <p>Shows all data in the $Variables hashtable, use for debugging.</p>
-
-    <a href="https://nemosminer.com">NemosMiner.com</a>
-</body>
-
-</html>
+<!--#include file="/parts/foot.html" -->

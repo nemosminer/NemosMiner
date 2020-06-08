@@ -1,32 +1,46 @@
-Changelog Nemos Miner 21.05.2020
+Changelog Nemos Miner 08.06.2020
 
 Main improvements:
 - Better hash rate state stability
-- Power usage and true profit calculation
+- Power usage measurement and true profit calculation
 - Shorter benchmark times
+- Changed code to use to use classes & methods
+
+What's broken:
+- Start / Pause / Stop from GUI
+- Idle detection
 
 Breaking changes:
-- None
+- Changed config item 'Location' to 'Region' -> requires manual change in config file
+- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Pool files are not backwards compatible
 
 Added:
-- All new config parameters (see New Config Items.txt) as available as command line parameters
+- Basic Web GUI
+- New config parameters (see New Config Items.txt)
+- All config parameters are available as command line parameters
 - Automatically add missing config parameters to config file
 - Print message when hash rate was collected
+- Detect miners with unreal earning (> 5x higher than the next best 10% miners, error in data provided by pool?
+- Support for external log viewer (Download Snaketail from https://github.com/snakefoot/snaketail-net/releases and put in '\Utils' folder)
 
 Changed:
-- Changed Core.ps1 & includes.ps1 to modules
-- Use jobs for reading data from miners (shrate & power usage), this gives more samples & and more reliable numbers
+- Changed Core.ps1 & Includes.ps1 to modules
+- Use jobs for reading data from miners (hashrate & power usage), this gives more samples & and more reliable numbers
 - Changed 'IsLoaded' to 'using module'
 
 Fixed:
 - Property Fee in Pools.
-- Earnings Tracker working again
+- Earnings tracker working again
 - Various cosmetic fixes
 
 Removed:
 - Separate PowerUsage job
+- Config parameter "FirstInterval"
+- Removed config Item 'FirstInterval'. (If in config file it will be ignored)
+- Removed config item 'StatsInterval'. (If in config file it will be ignored)
 
 Todo:
-- Extend Config dialog
+- Extend config dialog for new config options
 - Make a proper web interface to replace GUI
-- Convert code to use classes
+- Change devices selection from 'Type' to device names.

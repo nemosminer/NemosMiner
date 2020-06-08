@@ -1,13 +1,13 @@
 ﻿using module .\Includes\Include.psm1
 
-$DownloadList = $args
+$Config = $args
 
-If ($script:MyInvocation.MyCommand.Path) {Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)}
+If ($Config.WorkingDirectory) { Set-Location $Config.WorkingDirectory }
 
 $ProgressPreferenceBackup = $ProgressPreference
 $ProgressPreference = "SilentlyContinue"
 
-$DownloadList | ForEach-Object { 
+$Config.DownloadList | ForEach-Object { 
     $URI = $_.URI
     $Path = $_.Path
     $Searchable = $_.Searchable
@@ -26,10 +26,10 @@ $DownloadList | ForEach-Object {
             Write-Message "Downloader: Installed miner binary ($($Path))."
         }
         Catch { 
-            Write-Message "Downloader: Acquiring $Path Offline (Computer)"
+            Write-Message "Downloader: Acquiring $Path Offline (Computer)..."
 
-            If ($URI) { Write-Message -Level Warn  "Downloader: Cannot download $(Split-Path $Path -Leaf) distributed at $($URI). " }
-            Else { Write-Message -Level Warn  "Downloader: Cannot download $(Split-Path $Path -Leaf). " }
+            If ($URI) { Write-Message -Level Warn  "Downloader: Cannot download $(Split-Path $Path -Leaf) distributed at $($URI)." }
+            Else { Write-Message -Level Warn  "Downloader: Cannot download $(Split-Path $Path -Leaf)." }
                         
             If ($Searchable) { 
                 Write-Message "Downloader: Searching for $(Split-Path $Path -Leaf)."
@@ -53,6 +53,5 @@ $DownloadList | ForEach-Object {
 $ProgressPreference = $ProgressPreferenceBackup
 
 Write-Message "Downloader: Completed."
-#Write-Progress -Activity "Downloader" -Status "Completed" -Completed
 
 Return

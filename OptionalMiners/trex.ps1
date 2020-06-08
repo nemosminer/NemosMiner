@@ -1,6 +1,7 @@
 using module ..\Includes\Include.psm1
-$Path = ".\Bin\NVIDIA-trex0156\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.15.6/t-rex-0.15.6-win-cuda10.0.zip"
+
+$Path = ".\Bin\NVIDIA-trex0157\t-rex.exe"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.15.7/t-rex-0.15.7-win-cuda10.0.zip"
 $Commands = [PSCustomObject]@{ 
     "balloon"    = " -a balloon -i 23" #Balloon
    #"astralhash" = " -a astralhash -i 23" #Astralhash

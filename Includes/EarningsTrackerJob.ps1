@@ -28,23 +28,14 @@ version date:   12 November 2019
 # Remove progress info from job.childjobs.Progress to avoid memory leak
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-Try { 
-    $args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
-}
-Catch { 
-    cd "c:\Users\Stephan\Desktop\NemosMiner\"
-    $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-    $EarningsTrackerConfig = [PSCustomObject]@{ 
-        EnableLog = $true
-    }
-}
+$args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
 
 If ($WorkingDirectory) { Set-Location $WorkingDirectory }
 
 #Start the log
-Start-Transcript -Path ".\Logs\EarningTracker-$((Get-Date).ToString('yyyyMMdd')).log" -Append -Force | Out-Null
+If ($Transcript) { Start-Transcript -Path ".\Logs\EarningTracker-$(Get-Date -Format "yyyy-MM-dd").log" -Append -Force | Out-Null }
 
-If (Test-Path ".\Logs\EarningTrackerData.json") { $AllBalanceObjects = (Get-Content ".\logs\EarningTrackerData.json" | ConvertFrom-Json) } Else { $AllBalanceObjects = @() }
+If (Test-Path ".\Logs\EarningTrackerData.json") { $AllBalanceObjects = @(Get-Content ".\logs\EarningTrackerData.json" | ConvertFrom-Json) } Else { $AllBalanceObjects = @() }
 
 $TrustLevel = 0
 $StartTime = $LastAPIUpdateTime = (Get-Date).ToUniversalTime()

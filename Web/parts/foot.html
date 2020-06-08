@@ -1,0 +1,43 @@
+                </main>
+            </div>
+        </div>
+    </body>
+<script type="text/javascript">
+
+//get BTC rate of first currency
+var rate;
+$.ajax({url: '/btcratefirstcurrency', success: function(result) {
+    rate = result;
+}});
+  
+// Set the active sidebar item
+$(function() {
+    $('#'+$('#title').data('navbaractive')).addClass('active');
+});
+
+// set the values in the header
+$(function() {
+    $.ajax({url: '/firstcurrency', success: function(result) {
+        firstcurrency = result;
+    }});
+    $.ajax({url: '/miningcost', success: function(result) {
+        miningcost = result * rate;
+    }});
+    $.ajax({url: '/miningcost', success: function(result) {
+        miningcost = result * rate;
+    }});
+    $.ajax({url: '/miningearning', success: function(result) {
+        earning = result * rate;
+    }});
+    $.ajax({url: '/miningprofit', success: function(result) {
+        profit = result * rate;
+    }});
+    $.ajax({url: '/rates', success: function(result) {
+        exchangerates = result;
+        $("#profit").append("<h6>Estimated Profit/day: " + firstcurrency + " " + profit + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspEarning/day: " + firstcurrency + " " + earning + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp1 BTC" + "=" + rate + " " + firstcurrency + "</h6>");
+    }});
+});
+
+
+</script>
+</html>

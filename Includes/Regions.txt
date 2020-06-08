@@ -1,0 +1,14 @@
+{
+    "asia":  "Asia",
+    "br":  "Asia",
+    "eu":  "Europe",
+    "europe":  "Europe",
+    "hk":  "Asia",
+    "in":  "Asia",
+    "jp":  "Asia",
+    "na":  "US",
+    "sea":  "Asia",
+    "us":  "US",
+    "useast":  "US",
+    "usa":  "US"
+}
