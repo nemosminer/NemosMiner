@@ -355,6 +355,7 @@ Function Start-Cycle {
 
         $Pools = [PSCustomObject]@{ }
         #For leagacy miners
+        Get-Stat | Out-Null
         $Variables.Pools | Where-Object Enabled -EQ $true | Select-Object -ExpandProperty Algorithm -Unique | ForEach-Object { $_.ToLower() } | Select-Object -Unique | ForEach-Object { 
             $BestAlgoPool = $Variables.Pools | Where-Object Enabled -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1
             $Pools | Add-Member $_ $BestAlgoPool
