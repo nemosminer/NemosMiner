@@ -33,7 +33,7 @@ $Request.return | ForEach-Object {
         [PSCustomObject]@{ 
             Algorithm          = [String]$Algorithm_Norm
             CoinName           = [String]$Coin
-            Price              = [Double]$PoolConf.EstimateCorrection
+            Price              = [Double]$Stat.Live
             StablePrice        = [Double]$Stat.Week
             EstimateCorrection = [Double]$PoolConf.EstimateCorrection
             Protocol           = "stratum+tcp"
