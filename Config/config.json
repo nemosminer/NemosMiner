@@ -9,7 +9,7 @@
   "APIPort": 3999,
   "Autostart": true,
   "Autoupdate": false,
-  "Currency": "CHF",
+  "Currency": "USD",
   "Delay": 0,
   "DeviceName": [
   ],
@@ -21,7 +21,7 @@
   "FirstInterval": 120,
   "GPUCount": 1,
   "HideConsole": false,
-  "IdlePowerUsageW": 60,
+  "IdlePowerUsageW": 20,
   "IdleSec": "5",
   "IgnoreMinerFee": false,
   "IgnorePoolFee": false,
@@ -82,7 +82,7 @@
   "ProfitabilityThreshold": -99,
   "Proxy": "",
   "ReadPowerUsage": true,
-  "Region": "Europe",
+  "Region": "US",
   "ReportToServer": true,
   "SelGPUCC": "0",
   "SelGPUDSTM": "0",
@@ -116,6 +116,6 @@
   "UserName": "Nemo",
   "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
   "WarmupTime": 45,
-  "WebGUI": true,
-  "WorkerName": "NM_3.9.9.0"
+  "Webgui":  false,
+  "WorkerName": "testing"
 }
