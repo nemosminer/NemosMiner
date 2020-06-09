@@ -1,121 +1,127 @@
 {
-  "ActiveMinerGainPct": 12,
-  "Algorithm": [
-    ""
-  ],
-  "API_ID": 0,
-  "API_Key": "",
-  "APIKEY": "373a71335e010d6928766a5cce6365b5e7f75ef798d0f6353ceca27f782d795b",
-  "APIPort": 3999,
-  "Autostart": true,
-  "Autoupdate": false,
-  "Currency": "USD",
-  "Delay": 0,
-  "DeviceName": [
-  ],
-  "DisableGPU0": false,
-  "Donate": 8,
-  "EnableEarningsTrackerLog": ,
-  "ExcludeDeviceName": [
-  ],
-  "FirstInterval": 120,
-  "GPUCount": 1,
-  "HideConsole": false,
-  "IdlePowerUsageW": 20,
-  "IdleSec": "5",
-  "IgnoreMinerFee": false,
-  "IgnorePoolFee": false,
-  "IgnorePowerCost": true,
-  "IncludeLegacyMiners": true,
-  "IncludeOptionalMiners": true,
-  "IncludeRegularMiners": true,
-  "Interval": 90,
-  "IsFixedSize": false,
-  "IsReadOnly": false,
-  "IsSynchronized": true,
-  "Keys": [],
-  "Location": "",
-  "LogLevel": [
-    "Info",
-    "Warn",
-    "Error",
-    "Verbose",
-    "Debug"
-  ],
-  "LogToFile": [
-    "Info",
-    "Warn",
-    "Error",
-    "Verbose",
-    "Debug"
-  ],
-  "LogToScreen": [
-    "Info",
-    "Warn",
-    "Error",
-    "Verbose",
-    "Debug"
-  ],
-  "ManualConfig": false,
-  "MarginOfError": 0,
-  "MinDataSamples": 20,
-  "MinDataSamplesAlgoMultiplier": {
-    "X25r": 3
-  },
-  "MinerName": null,
-  "MineWhenIdle": false,
-  "MonitoringServer": "https://nemosminer.com",
-  "MonitoringUser": "",
-  "OpenFirewallPorts": true,
-  "Passwordcurrency": "BTC",
-  "PoolName": [
-      "mph",
-      "nicehashV2",
-      "zergpool",
-      "zpool"
-  ],
-  "PoolTimeout": 30,
-  "PowerPricekWh": {
-    "12:00": 0.3,
-    "00:00": 0.26
-  },
-  "ProfitabilityThreshold": -99,
-  "Proxy": "",
-  "ReadPowerUsage": true,
-  "Region": "US",
-  "ReportToServer": true,
-  "SelGPUCC": "0",
-  "SelGPUDSTM": "0",
-  "ShowAccuracy": true,
-  "ShowAllMiners": false,
-  "ShowEarning": true,
-  "ShowEarningBias": true,
-  "ShowMinerFee": true,
-  "ShowMinerWindow": true,
-  "ShowPoolFee": true,
-  "ShowPowerCost": true,
-  "ShowPowerUsage": true,
-  "ShowProfit": true,
-  "ShowProfitBias": true,
-  "ShowWorkerStatus": true,
-  "SnakeTailExe": ".\\Utils\\SnakeTail.exe",
-  "SSL": false,
-  "StartGUIMinimized": false,
-  "StartPaused": false,
-  "SyncWindow": 5,
-  "TrackEarnings": true,
-  "Transcript": false,
-  "Type": [
-    "NVIDIA",
-    "CPU"
-  ],
-  "TypeAMD": false,
-  "TypeCPU": true,
-  "TypeNVIDIA": true,
-  "UIStyle": "Full",
-  "UserName": "Nemo",
-  "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-  "WarmupTime": 45,
-  "Webgui":  false,
-  "WorkerName": "testing"
+    "ActiveMinerGainPct":  12,
+    "Algorithm":  [
+                      ""
+                  ],
+    "APIKEY":  "",
+    "APIPort":  3999,
+    "Autostart":  false,
+    "Autoupdate":  false,
+    "Currency":  "USD",
+    "Delay":  1,
+    "DeviceName":  {
+                       "value":  [
+                                     "GPU#01"
+                                 ],
+                       "Count":  1
+                   },
+    "DisableGPU0":  false,
+    "Donate":  13,
+    "EnableEarningsTrackerLog":  false,
+    "GPUCount":  1,
+    "HideConsole":  false,
+    "IdlePowerUsageW":  60,
+    "IdleSec":  "120",
+    "IncludeOptionalMiners":  true,
+    "IncludeRegularMiners":  true,
+    "Interval":  240,
+    "LogToFile":  {
+                      "value":  [
+                                    "Info",
+                                    "Warn",
+                                    "Error",
+                                    "Verbose",
+                                    "Debug"
+                                ],
+                      "Count":  5
+                  },
+    "LogToScreen":  {
+                        "value":  [
+                                      "Info",
+                                      "Warn",
+                                      "Error",
+                                      "Verbose",
+                                      "Debug"
+                                  ],
+                        "Count":  5
+                    },
+    "MinDataSamples":  20,
+    "MinDataSamplesAlgoMultiplier":  {
+                                         "X25r":  3
+                                     },
+    "MineWhenIdle":  false,
+    "MonitoringServer":  "https://nemosminer.com",
+    "MonitoringUser":  "",
+    "OpenFirewallPorts":  {
+                              "IsPresent":  true
+                          },
+    "Passwordcurrency":  "BTC",
+    "PoolName":  [
+                     "mph",
+                     "nicehashV2",
+                     "zergpoolcoins",
+                     "zpool"
+                 ],
+    "PoolTimeout":  30,
+    "PowerPricekWh":  {
+                          "00:00":  0.26,
+                          "12:00":  0.3
+                      },
+    "ProfitabilityThreshold":  -99,
+    "Proxy":  "",
+    "ReadPowerUsage":  {
+                           "IsPresent":  true
+                       },
+    "Region":  "US",
+    "ReportToServer":  false,
+    "SelGPUCC":  "0",
+    "SelGPUDSTM":  "0",
+    "ShowAccuracy":  {
+                         "IsPresent":  true
+                     },
+    "ShowEarning":  {
+                        "IsPresent":  true
+                    },
+    "ShowEarningBias":  {
+                            "IsPresent":  true
+                        },
+    "ShowMinerFee":  {
+                         "IsPresent":  true
+                     },
+    "ShowMinerWindow":  {
+                            "IsPresent":  true
+                        },
+    "ShowPoolFee":  {
+                        "IsPresent":  true
+                    },
+    "ShowPowerCost":  {
+                          "IsPresent":  true
+                      },
+    "ShowPowerUsage":  {
+                           "IsPresent":  true
+                       },
+    "ShowProfit":  {
+                       "IsPresent":  true
+                   },
+    "ShowProfitBias":  {
+                           "IsPresent":  true
+                       },
+    "ShowWorkerStatus":  false,
+    "SnakeTailExe":  ".\\Utils\\SnakeTail.exe",
+    "StartGUIMinimized":  false,
+    "StartPaused":  false,
+    "SyncWindow":  5,
+    "TrackEarnings":  true,
+    "Type":  [
+                 "nvidia",
+                 "CPU"
+             ],
+    "TypeAMD":  false,
+    "TypeCPU":  true,
+    "TypeNVIDIA":  true,
+    "UIStyle":  "Light",
+    "UserName":  "Nemo",
+    "Wallet":  "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+    "WarmupTime":  45,
+    "WorkerName":  "ID=testing"
 }
