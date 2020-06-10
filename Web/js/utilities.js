@@ -37,6 +37,14 @@ function formatMiners(data) {
             item.tPrimarySpeedLive = item.Speed_Live;
         }
 
+        // Format the pool name(s)
+        if (Array.isArray(item.PoolName)) {
+            item.tPrimaryPool = item.PoolName[0];
+            item.tSecondaryPool = item.PoolName[1];
+        } else {
+            item.tPrimaryPool = item.PoolName
+        }
+
         // Get effective command line from argument json
         var arguments = new Object(item.Arguments);
         if (arguments.Commands) {
