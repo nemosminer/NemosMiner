@@ -1,7 +1,7 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-ccminerverushash370\ccminer.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.7.0/ccminer3.7cpu.7z"
+$Path = ".\Bin\CPU-ccminerverushash38\ccminer.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.8/ccminer3.8cpu.7z"
 $Commands = [PSCustomObject]@{ 
     "verus"     = "" #Verus
     "verushash" = "" #Verushash
