@@ -24,6 +24,7 @@ version:        4.0.0.beta1
 version date:   04 June 2020
 #>
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
     [Double]$ActiveMinerGainPct = 12, # percent of advantage that active miner has over candidates in term of profit
@@ -156,11 +157,6 @@ param(
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
-# Detect if running from Vistual Studio Code
-If ((Test-Path env:\VSCODE_PID) -or ($env:TERM_PROGRAM -eq 'vscode')) { 
-    # Enable for debug only!
-    #    $DebugLoop = [Boolean]$true
-}
 
 @"
 NemosMiner
@@ -190,9 +186,6 @@ Catch {
     Add-Type -Path .\Includes\~OpenCL.dll
 }
 
-#Create logs directory
-If (-not (Test-Path -Path .\Logs -PathType Container)) { New-Item  -Path . -Name "Logs" -ItemType "directory" | Out-Null }
-
 #Initialize variables
 New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
@@ -205,6 +198,7 @@ $Variables.Pools = [Pool[]]@()
 $Variables.Miners = [Miner[]]@()
 $Variables.Devices = [Device[]]@()
 $Variables.SupportedVendors = @("AMD", "Intel", "NVidia")
+$Variables.DonateTime = (Get-Date).AddHours(-23).TimeOfDay
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -214,30 +208,29 @@ If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }    
 If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
 If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
 
-Get-Config -ConfigFile $ConfigFile
+#Create logs directory
+If (-not (Test-Path -Path .\Logs -PathType Container)) { New-Item  -Path . -Name "Logs" -ItemType "directory" | Out-Null }
+$Variables.LogFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log")
 
-$Config | Add-Member -Force -MemberType ScriptProperty -Name "PoolsConfig" -Value { 
-    If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
-        Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-    }
-    Else { 
-        [PSCustomObject]@{ default = [PSCustomObject]@{ 
-                Wallet             = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-                UserName           = "nemo"
-                WorkerName         = "NemosMinerNoCfg"
-                PricePenaltyFactor = 1
-            }
-        }
-    }
+#Prepare config
+$Config_Temp = [PSCustomObject]@{ }
+[Hashtable]$Config_Parameters = @{ }
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
+    $Config_Parameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+    If ($Config_Parameters.$_ -is [Switch]) { $Config_Parameters.$_ = [Boolean]$Config_Parameters.$_ }
+    $Config_Temp | Add-Member @{$_ = "`$$_" }
 }
-#Add Default values if not in config file
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" -and (Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue) } | Sort-Object | ForEach-Object { 
-    $Config_Parameter = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
-    If ($Config_Parameter -is [Switch]) { $Config_Parameter = [Boolean]$Config_Parameter }
-    $Config | Add-Member @{ $_ = $(Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue) } -ErrorAction SilentlyContinue
-    #    $Config | Add-Member @{ $_ = "`$$_" } -ErrorAction Ignore
+
+If (-not (Test-Path $ConfigFile -PathType Leaf -ErrorAction Ignore)) { 
+    $Config_Temp | ConvertTo-Json -Depth 10 | Set-Content $ConfigFile
+    Write-Host "No valid config file found. A new config file '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))' using default values has been created."-F Yellow
+    Write-Host "Use the GUI to save the config, then start mining."-F Yellow
+    $FreshConfig = $true
 }
-$Config.LogFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log")
+Remove-Variable Config_Temp
+
+
+Get-Config -ConfigFile $ConfigFile -Parameters $Config_Parameters
 
 #Start transcript log
 If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
@@ -315,7 +308,8 @@ Function Global:TimerUITick {
             }
 
             If ($Variables.Earnings -and $Config.TrackEarnings) { 
-                $DisplayEarnings = [System.Collections.ArrayList]@($Variables.Earnings.Values | Select-Object @(
+                $DisplayEarnings = [System.Collections.ArrayList]@(
+                    $Variables.Earnings.Values | Select-Object @(
                         @{ Name = "Pool"; Expression = { $_.Pool } }, 
                         @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } }, 
                         @{ Name = "Balance"; Expression = { [decimal]$_.Balance } }, 
@@ -324,24 +318,26 @@ Function Global:TimerUITick {
                         @{ Name = "m$([char]0x20BF) in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * 1000 * 4) } }, 
                         @{ Name = "m$([char]0x20BF) in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * 1000) } }, 
                         @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is 'DateTime') { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } }, 
-                        @{ Name = "PaymentThreshold"; Expression = { "$($_.PaymentThreshold) ($('{0:P0} ' -f $($_.Balance / $_.PaymentThreshold)))" } }
-                    
-                    ) | Sort-Object "m$([char]0x20BF) in 1h", "m$([char]0x20BF) in 6h", "m$([char]0x20BF) in 24h" -Descending)
+                        @{ Name = "PaymentThreshold"; Expression = { "$($_.PaymentThreshold) ($('{0:P0} ' -f $($_.Balance / $_.PaymentThreshold)))" }
+                    }
+                ) | Sort-Object "m$([char]0x20BF) in 1h", "m$([char]0x20BF) in 6h", "m$([char]0x20BF) in 24h" -Descending)
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
                 $EarningsDGV.ClearSelection()
             }
 
             If ($Variables.Miners) { 
-                $DisplayEstimations = [System.Collections.ArrayList]@($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object @(
+                $DisplayEstimations = [System.Collections.ArrayList]@(
+                    $Variables.Miners | Where-Object Enabled -EQ $true | Select-Object @(
                         @{ Name = "Miner"; Expression = { $_.Name } },
                         @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join ' & ' } }, 
-                        @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N3")) W" } } }, 
+                        @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
                         @{ Name = "Speed(s)"; Expression = { ($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
                         @{ Name = "mBTC/day"; Expression = { ($_.Workers.Earning | ForEach-Object { If (-not [Double]::IsNaN($_)) { ($_ * 1000).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Workers.Earning | ForEach-Object { If (-not [Double]::IsNaN($_)) { ($_ * ($Variables.Rates.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "BTC/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000).ToString("N5") }) -join ' + ' } }, 
-                        @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }
-                    ) | Sort-Object "mBTC/day" -Descending)
+                        @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' }
+                    }
+                ) | Sort-Object "mBTC/day" -Descending)
                 $EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
             }
             $EstimationsDGV.ClearSelection()
@@ -349,21 +345,23 @@ Function Global:TimerUITick {
             $SwitchingDGV.ClearSelection()
 
             If ($Variables.Workers -and $Config.ShowWorkerStatus) { 
-                $DisplayWorkers = [System.Collections.ArrayList]@($Variables.Workers | Select-Object @(
+                $DisplayWorkers = [System.Collections.ArrayList]@(
+                    $Variables.Workers | Select-Object @(
                         @{ Name = "Worker"; Expression = { $_.worker } }, 
                         @{ Name = "Status"; Expression = { $_.status } }, 
                         @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport.SubString(1))" } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
                         # @{ Name = "Est. Earning mBTC/day"; Expression = { [decimal]($_.Earning * 1000)} }, 
                         # @{ Name = "Est. Earning $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Earning * ($Variables.Rates.($Config.Currency | Select-Object -Index 0))) } }, 
-                        @{ Name = "Est. Profit mBTC/day"; Expression = { [decimal]($_.Profit * 1000) } }, 
+                        @{ Name = "Est. Profit mBTC/day"; Expression = { [decimal]($_.Profit * 1000)} }, 
                         @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.($Config.Currency | Select-Object -Index 0))) } }, 
                         @{ Name = "Miner"; Expression = { $_.data.name -join ',' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.data.pool -join ',' } }, 
                         @{ Name = "Algo(s)"; Expression = { $_.data.algorithm -join ',' } }, 
                         @{ Name = "Speed(s)"; Expression = { If ($_.data.currentspeed) { ($_.data.currentspeed | ConvertTo-Hash) -join ',' } Else { "" } } }, 
-                        @{ Name = "Benchmark Speed(s)"; Expression = { If ($_.data.estimatedspeed) { ($_.data.estimatedspeed | ConvertTo-Hash) -join ',' } Else { "" } } }
-                    ) | Sort-Object "Worker Name")
+                        @{ Name = "Benchmark Speed(s)"; Expression = { If ($_.data.estimatedspeed) { ($_.data.estimatedspeed | ConvertTo-Hash) -join ',' } Else { "" } }
+                    }
+                ) | Sort-Object "Worker Name")
                 $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
 
                 # Set row color
@@ -387,7 +385,7 @@ Function Global:TimerUITick {
             }
 
             If ($Variables.Miners) { 
-                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @{ Name = "Type(s)"; Expression = { $_.Type -join " & " } }, @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.Workers.Pool.Speed | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } }, @{ Name = "Host(s)"; Expression = { (($_.Workers.Pool.Host | Select-Object -Unique) -join ';') } } | Sort-Object Type)
+                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @{ Name = "Type(s)"; Expression = { $_.Type -join " & " } }, @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.Workers.Pool.Speed | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } }, @{ Name = "Host(s)"; Expression = { (($_.Workers.Pool.Host | Select-Object -Unique) -join ';')} } | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
             
                 If (-not ($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
@@ -447,10 +445,7 @@ Function Global:TimerUITick {
                 }
             }
 
-            # Debug stuff. Detect if running from Vistual Studio Code
-            If (-not ((Test-Path env:\VSCODE_PID) -or ($env:TERM_PROGRAM -eq 'vscode'))) { 
-                Clear-Host
-            }
+            Clear-Host
             If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
                 Write-Host "Run Miners: " $ProcessesIdle.Count
                 $ProcessesIdle | Sort-Object { If ($_.Process -eq $null) { (Get-Date) } Else { $_.Process.ExitTime } } | Format-Table -Wrap (
@@ -481,65 +476,91 @@ Function Global:TimerUITick {
                 @{ Label = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm } }
             )
             If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { 
-                $Miner_Table.AddRange(@( <#Miner fees#>
+                $Miner_Table.AddRange(
+                    @( <#Miner fees#>
                         @{ Label = "Fee(s)"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -F [Double]$_ } } }
-                    ))
+                    )
+                )
             }
-            $Miner_Table.AddRange(@( <#Miner speed#>
+            $Miner_Table.AddRange(
+                @( <#Miner speed#>
                     @{ Label = "Speed(s)"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = 'right' }
-                ))
+                )
+            )
             If ($Config.ShowEarning) { 
-                $Miner_Table.AddRange(@( <#Miner Earning#>
-                        @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    ))
+                $Miner_Table.AddRange(
+                    @( <#Miner Earning#>
+                            @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                    )
+                )
             }
             If ($Config.ShowEarningBias) { 
-                $Miner_Table.AddRange(@( <#Miner EarningsBias#>
-                        @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    ))
+                $Miner_Table.AddRange(
+                    @( <#Miner EarningsBias#>
+                            @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                    )
+                )
             }
             If ($Config.ShowPowerUsage) { 
-                $Miner_Table.AddRange(@( <#Power Usage#>
+                $Miner_Table.AddRange(
+                    @( <#Power Usage#>
                         @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" }
-                    ))
+                    )
+                )
             }
             If ($Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
-                $Miner_Table.AddRange(@( <#PowerCost#>
+                $Miner_Table.AddRange(
+                    @( <#PowerCost#>
                         @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
-                    ))
+                    )
+                )
             }
             If ($Config.ShowProfit -and $Variables.PowerPricekWh) { 
-                $Miner_Table.AddRange(@( <#Mining Profit#>
+                $Miner_Table.AddRange(
+                    @( <#Mining Profit#>
                         @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    ))
+                    )
+                )
             }
             If ($Config.ShowProfitBias -and $Variables.PowerPricekWh) { 
-                $Miner_Table.AddRange(@( <#Mining ProfitBias#>
+                $Miner_Table.AddRange(
+                    @( <#Mining ProfitBias#>
                         @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    ))
+                    )
+                )
             }
             If ($Config.ShowAccuracy) { 
-                $Miner_Table.AddRange(@( <#Accuracy#>
+                $Miner_Table.AddRange(
+                    @( <#Accuracy#>
                         @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = 'right' }
-                    ))
+                    )
+                )
             }
-            $Miner_Table.AddRange(@( <#Pools#>
+            $Miner_Table.AddRange(
+                @( <#Pools#>
                     @{ Label = "Pool(s)"; Expression = { $_.Workers.Pool.Name | ForEach-Object { $_ } } }
-                ))
+                )
+            )
             If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { 
-                $Miner_Table.AddRange(@( <#Show pool fees#>
+                $Miner_Table.AddRange(
+                    @( <#Show pool fees#>
                         @{ Label = "Fee(s)"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -F [Double]$_ } } }
-                    ))
+                    )
+                )
             }
             If ($Variables.Miners.Workers.Pool.Coin) { 
-                $Miner_Table.AddRange(@( <#Coin#>
+                $Miner_Table.AddRange(
+                    @( <#Coin#>
                         @{ Label = "Coin(s)"; Expression = { $_.Workers.Pool.Coin | Foreach-Object { [String]$_ } } }
-                    ))
+                    )
+                )
             }
             If ($Variables.Miners.Workers.Pool.CoinName) { 
-                $Miner_Table.AddRange(@( <#CoinName#>
+                $Miner_Table.AddRange(
+                    @( <#CoinName#>
                         @{ Label = "CoinName(s)"; Expression = { $_.Workers.Pool.CoinName | Foreach-Object { [String]$_ } } }
-                    ))
+                    )
+                )
             }
             $Variables.Miners | Where-Object Enabled -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
@@ -676,43 +697,55 @@ Function Form_Load {
 }
 
 Function CheckedListBoxPools_Click ($Control) { 
-    $Config | Add-Member -Force @{ $Control.Tag = $Control.CheckedItems }
+    If ($Control.SelectedItem -in $Control.CheckedItems) { 
+        $Control.CheckedItems | Where-Object { $_ -ne $Control.SelectedItem -and ($_ -replace "24hr" -replace "Plus") -like "$($Control.SelectedItem -replace "24hr" -replace "Plus")" } | ForEach-Object { 
+            $Control.SetItemChecked($Control.Items.IndexOf($_), $false)
+        }
+    }
+
     $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
-    $EarningTrackerConfig | Add-Member -Force @{ "Pools" = (($Control.CheckedItems).Replace("24hr", "")).Replace("Plus", "") | Sort-Object -Unique }
+    If ($Control.CheckedItems) { 
+        $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Control.CheckedItems -replace "24hr" -replace "Plus") | Sort-Object -Unique }
+    }
+    Else { 
+        $EarningTrackerConfig | Add-Member -Force @{ "Pools" = $null }
+    }
     $EarningTrackerConfig | ConvertTo-Json | Out-File ".\Config\EarningTrackerConfig.json"
 }
 
 Function PrepareWriteConfig { 
     If ($Config.ManualConfig) {
-        Write-Message "Manual config mode - Not saving config."
+        Write-Message "Manual config mode - not saving config."
         Return
     }
     If ($Config -isnot [Hashtable]) { 
         New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
     }
-    $Config | Add-Member -Force @{ $TBAddress.Tag = $TBAddress.Text }
-    $Config | Add-Member -Force @{ $TBWorkerName.Tag = $TBWorkerName.Text }
-    $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "CheckBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Checked } }
-    $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Text } }
+    $Config.Wallet = $TBAddress.Text
+    $Config.WorkerName = $TBWorkerName.Text
+    $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "CheckBox") } | ForEach-Object { $Config.($_.Tag) = $_.Checked }
+    $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config.($_.Tag) = $_.Text }
     $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") -and ($_.Tag -eq "GPUCount") } | ForEach-Object { 
-        $Config | Add-Member -Force @{ $_.Tag = [Int]$_.Text }
+        $Config.($_.Tag) = [Int]$_.Text
         If ($CheckBoxDisableGPU0.checked -and [Int]$_.Text -gt 1) { $FirstGPU = 1 } Else { $FirstGPU = 0 }
-        $Config | Add-Member -Force @{ SelGPUCC = (($FirstGPU..($_.Text - 1)) -join ",") }
-        $Config | Add-Member -Force @{ SelGPUDSTM = (($FirstGPU..($_.Text - 1)) -join " ") }
+        $Config.SelGPUCC = (($FirstGPU..($_.Text - 1)) -join ",")
+        $Config.SelGPUDSTM = (($FirstGPU..($_.Text - 1)) -join " ")
     }
     $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") -and ($_.Tag -eq "Algorithm") } | ForEach-Object { 
-        $Config | Add-Member -Force @{ $_.Tag = @($_.Text -split ",") }
+        $Config.($_.Tag) = @($_.Text -split ",")
     }
     $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct")) } | ForEach-Object { 
-        $Config | Add-Member -Force @{ $_.Tag = [Int]$_.Text }
+        $Config.($_.Tag) = [Int]$_.Text
     }
-    $Config | Add-Member -Force @{ $CheckedListBoxPools.Tag = $CheckedListBoxPools.CheckedItems }
+    $Config.($CheckedListBoxPools.Tag) = $CheckedListBoxPools.CheckedItems
 
-    $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "CheckBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Checked } }
-    $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config | Add-Member -Force @{ $_.Tag = $_.Text } }
+    $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "CheckBox") } | ForEach-Object { $Config.($_.Tag) = $_.Checked }
+    $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config.($_.Tag) = $_.Text }
 
     Write-Config -ConfigFile $ConfigFile
     Get-Config -ConfigFile $ConfigFile
+
+    $FreshConfig = $false
 
     $MainForm.Refresh
     # [System.Windows.Forms.Messagebox]::show("Please restart NemosMiner",'Config saved','ok','Information') | Out-Null
@@ -808,10 +841,11 @@ $TabControl.Name = "TabControl"
 $TabControl.Width = 720
 $TabControl.Height = 359
 $TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
+If ($FreshConfig -EQ $true) { $TabControl.SelectedIndex = 2 } #Show config tab
 
 $TabControl_SelectedIndexChanged = {
     Switch ($TabControl.SelectedTab.Text) { 
-        "Switching" { CheckBoxSwitching_Click }
+        "Switching"  { CheckBoxSwitching_Click }
     }
 }
 $TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
@@ -820,6 +854,17 @@ $MainForm.Controls.Add($TabControl)
 
 # Form Controls
 $MainFormControls = @()
+
+#tooltip
+$ToolTip = New-Object System.Windows.Forms.ToolTip
+$ShowHelp = { 
+    #display popup help
+    #each value is the name of a control on the form. 
+    Switch ($this) {
+        $CheckedListBoxPools { $tip = "You cannot select multiple variants of the same pool" }
+    }
+    $ToolTip.SetToolTip($this, $tip)
+} #end ShowHelp
 
 # $Logo = [System.Drawing.Image]::Fromfile('.\config\logo.png')
 $PictureBoxLogo = new-object Windows.Forms.PictureBox
@@ -1608,10 +1653,11 @@ $ConfigPageControls += $ButtonWriteConfig
 $ButtonWriteConfig.Add_Click( { PrepareWriteConfig })
 
 $LabelPoolsSelect = New-Object System.Windows.Forms.Label
-$LabelPoolsSelect.Text = "Do not select multiple variants of the same pool"
+$LabelPoolsSelect.Text = "Poolnames"
 $LabelPoolsSelect.AutoSize = $false
 $LabelPoolsSelect.Width = 130
-$LabelPoolsSelect.Height = 50
+
+$LabelPoolsSelect.Height = 20
 $LabelPoolsSelect.Location = [System.Drawing.Point]::new(427, 2)
 $LabelPoolsSelect.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelPoolsSelect.TextAlign = 'MiddleCenter'
@@ -1620,15 +1666,16 @@ $ConfigPageControls += $LabelPoolsSelect
 
 $CheckedListBoxPools = New-Object System.Windows.Forms.CheckedListBox
 $CheckedListBoxPools.Tag = "PoolName"
-$CheckedListBoxPools.Height = 240
+$CheckedListBoxPools.Height = 220
 $CheckedListBoxPools.Width = 130
 $CheckedListBoxPools.Text = "Pools"
-$CheckedListBoxPools.Location = [System.Drawing.Point]::new(427, 54)
+$CheckedListBoxPools.Location = [System.Drawing.Point]::new(427, 25)
 $CheckedListBoxPools.CheckOnClick = $true
 $CheckedListBoxPools.BackColor = [System.Drawing.SystemColors]::Control
 $CheckedListBoxPools.Items.Clear()
 $CheckedListBoxPools.Items.AddRange(((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique))
-$CheckedListBoxPools.Add_SelectedIndexChanged( { CheckedListBoxPools_Click($This) })
+$CheckedListBoxPools.Add_MouseHover($ShowHelp)
+$CheckedListBoxPools.Add_SelectedIndexChanged({ CheckedListBoxPools_Click($this) })
 $Config.PoolName | Where-Object { $_ -in $CheckedListBoxPools.Items } | ForEach-Object { $CheckedListBoxPools.SetItemChecked((($CheckedListBoxPools.Items).ToUpper()).IndexOf($_.ToUpper()), $true) }
 
 $ConfigPageControls += $CheckedListBoxPools
@@ -1800,12 +1847,6 @@ $ButtonStart.Add_Click(
             $ButtonStart.Text = "Stop"
             $TimerUI.Start()
 
-            #Added temporary, set a trace point.
-            While ($DebugLoop) {
-                Start-ChildJob
-
-                . .\Includes\Core.ps1
-            }
             Start-Mining
         }
     }
