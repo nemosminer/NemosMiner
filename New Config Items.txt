@@ -38,6 +38,9 @@
     "Debug"
   ],
 
+#Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
+  "MinAccuracy": 0.5,
+
 #Minimum number of hash rate samples required to store hash rate
   "MinDataSamples": 20,
 
@@ -111,3 +114,6 @@
 
  #If true launch Web GUI (default: true, to disable add ' -Webgui:false' to your NemosMiner start file)
   "WebGUI" = $true,
+
+NiceHash pool Config:
+- Added 'IsInternal' flag (lower fee of 1% instad of 5%), see .\Config.PoolsConfig-NHV2Internal.json for an example
