@@ -130,6 +130,12 @@ Class Miner {
     [String]$URI
     [String]$Arguments
     [UInt16]$Port
+    [String[]]$DeviceName = @() #@derived from devices
+
+    [Double[]]$Speed = @() #derived from stats
+    [Double[]]$Speed_Live = @()
+    [Boolean]$Benchmark = $false #derived from stats
+    [Boolean]$CachedBenchmark = $false
 
     [Double]$PowerUsage
     [Double]$PowerUsage_Live
@@ -138,11 +144,6 @@ Class Miner {
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
 
-    [String[]]$DeviceName = @() #@derived from devices
-    [Double[]]$Speed = @() #derived from stats
-    [Double[]]$Speed_Live = @()
-    [Boolean]$Benchmark = $false #derived from stats
-    [Boolean]$CachedBenchmark = $false
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
     [Boolean]$Best_Comparison = $false
@@ -156,6 +157,7 @@ Class Miner {
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
     hidden [Int]$Activated = 0
     [MinerStatus]$Status = [MinerStatus]::Idle
+    [String]$StatusMessage
     [DateTime]$StatStart
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
@@ -164,7 +166,6 @@ Class Miner {
     [Boolean]$CachedShowMinerWindow = $true
     [String[]]$Environment = @()
     [Int]$MinDataSamples #for safe hashrate values
-    [String]$StatusMessage
     [Int]$WarmupTime
 
     [Double]$Earning #derived from pool and stats
@@ -258,7 +259,7 @@ Class Miner {
 
             #Starting Miner Data reader
             $this | Add-Member -Force @{ 
-                DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList $this, @($this.Workers.Pool.Algorithm)
+                DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList $this, @($this.Algorithm)
             }
             $this.Devices | ForEach-Object { $_.Status = "$(If ($this.Benchmarking -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}" }
         }
@@ -532,7 +533,6 @@ Class Miner {
             $_.Earning_Accuracy = ([Double]1 - $_.Pool.MarginOfError)
         }
 
-        $this.Algorithm = $this.Workers.Pool | Select-Object -ExpandProperty Algorithm
         #$this.Algorithm_Base = $this.Algorithm -replace '-.+'
         $this.PoolName = $this.Workers.Pool | Select-Object -ExpandProperty Name
         #$this.PoolName_Base = $this.PoolName -replace '-.+'
@@ -572,7 +572,7 @@ Class Miner {
         $this.Profit_Unbias = [Double]::NaN
 
         If ($this.ReadPowerUsage) { 
-            $Stat_Name = "$($this.Name)$(If ($this.Workers.Pool.Algorithm.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
+            $Stat_Name = "$($this.Name)$(If ($this.Algorithm.Count -eq 1) { "_$($this.Algorithm | Select-Object -Index 0)" })_PowerUsage"
             If ($Stats.$Stat_Name) { 
 
                 $this.PowerUsage = $Stats.$Stat_Name.Week
@@ -624,7 +624,7 @@ Function Start-MinerDataReader {
     $Parameters = @{ 
         Miner          = [Miner]$Miner
         Interval       = [Int]$Interval
-        Algorithms     = [String[]]@($Miner.Workers.Pool.Algorithm)
+        Algorithms     = [String[]]@($Miner.Algorithm)
     }
 
     $Miner | Add-Member -Force @{ 
@@ -818,11 +818,10 @@ Function Write-Message {
     Param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
-        [Alias("LogContent")]
-        [string]$Message, 
+        [String]$Message, 
         [Parameter(Mandatory = $false)]
         [ValidateSet("Error", "Warn", "Info", "Verbose", "Debug")]
-        [string]$Level = "Info"
+        [String]$Level = "Info"
     )
 
     Begin { }
@@ -866,22 +865,21 @@ Function Write-Message {
                 }
             }
         }
-        If ($Config.LogFile) { 
+        If ($Variables.LogFile) { 
             If ((-not $Config.LogToFile) -or $Level -in $Config.LogToFile) { 
                 # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
                 # This lets us ensure only one thread is trying to write to the file at a time. 
                 $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteLog")
 
-                $Filename = $Config.LogFile
                 $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
                 # Attempt to aquire mutex, waiting up to 1 second If necessary.  If aquired, write to the log file and release mutex.  Otherwise, display an error. 
                 If ($Mutex.WaitOne(1000)) { 
-                    "$Date $LevelText $Message" | Out-File -FilePath $FileName -Append -Encoding UTF8
+                    "$Date $LevelText $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
                     $Mutex.ReleaseMutex()
                 }
                 Else { 
-                    Write-Error -Message "Log file is locked, unable to write message to $FileName."
+                    Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
                 }
             }
         }
@@ -1021,7 +1019,7 @@ Function Update-Monitoring {
                 Name           = $RunningMiner.Name
                 Path           = Resolve-Path -Relative $RunningMiner.Path
                 Type           = $RunningMiner.Type -join ','
-                Algorithm      = $RunningMiner.Workers.Pool.Algorithm -join ','
+                Algorithm      = $RunningMiner.Algorithm -join ','
                 Pool           = $RunningMiner.Workers.Pool.Name -join ','
                 CurrentSpeed   = $RunningMiner.Speed_Live -join ','
                 EstimatedSpeed = $RunningMiner.Workers.Speed -join ','
@@ -1159,16 +1157,26 @@ Function Get-GPUCount {
 Function Get-Config { 
     param(
         [Parameter(Mandatory = $true)]
-        [String]$ConfigFile
+        [String]$ConfigFile,
+        [Parameter(Mandatory = $false)]
+        [Hashtable]$Parameters = @{ }
     )
+
     If ($Global:Config -isnot [Hashtable]) { 
         New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
     }
-    If (Test-Path $ConfigFile -PathType Leaf) { 
-        Get-Content $ConfigFile | ConvertFrom-Json | ForEach-Object { 
-            $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-                $Global:Config | Add-Member -Force @{ $_.Name = $_.Value }
-            }
+
+    #Load the configuration
+    $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashTable
+    $Config_Temp = Get-ChildItemContent $ConfigFile -Parameters $Parameters | Select-Object -ExpandProperty Content
+    if ($Config_Temp -isnot [PSCustomObject]) { 
+        Write-Message -Level WARN "Config file '$ConfigFile' is corrupt. Loading defaults."
+        $Config_Temp = [PSCustomObject]@{ }
+    }
+ 
+    $Config_Temp | ForEach-Object { 
+        $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
+            $Global:Config.($_.Name) = $_.Value
         }
     }
 }
@@ -1182,18 +1190,25 @@ Function Write-Config {
     If ($Global:Config -is [Hashtable]) { 
         If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
         $OrderedConfig = [PSCustomObject]@{ }
-        $Global:Config | ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
+        $Global:Config | ConvertTo-Json | ConvertFrom-Json -AsHashTable | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
             $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
                 $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
             } 
         }
         $OrderedConfig | ConvertTo-Json | Out-File $ConfigFile
-        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-Json
-        $OrderedPoolsConfig = [PSCustomObject]@{ } ; $PoolsConfig | ForEach-Object { $_.PSObject.Properties | Sort-Object  Name | ForEach-Object { $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value } } }
-        $OrderedPoolsConfig.default | Add-Member -Force @{ Wallet = $Config.Wallet }
-        $OrderedPoolsConfig.default | Add-Member -Force @{ UserName = $Config.UserName }
-        $OrderedPoolsConfig.default | Add-Member -Force @{ WorkerName = $Config.WorkerName }
-        $OrderedPoolsConfig.default | Add-Member -Force @{ APIKey = $Config.APIKey }
+        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" -ErrorAction Ignore | ConvertFrom-Json
+        $OrderedPoolsConfig = [PSCustomObject]@{ }
+        $PoolsConfig | ForEach-Object { 
+            $_.PSObject.Properties | Sort-Object  Name | ForEach-Object { 
+                $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value }
+            }
+        }
+        $OrderedPoolsConfig | Add-Member -Force "default" @{ 
+            APIKey = $Config.APIKey
+            UserName = $Config.UserName
+            Wallet = $Config.Wallet
+            WorkerName = $Config.WorkerName
+        }
         $OrderedPoolsConfig | ConvertTo-Json | Out-File ".\Config\PoolsConfig.json"
     }
 }
@@ -1599,7 +1614,7 @@ Function Get-ChildItemContentJob {
     ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $DefaultPriority
 }
 
-Function Get-ChildItemContent2 { 
+Function Get-ChildItemContent { 
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1613,9 +1628,6 @@ Function Get-ChildItemContent2 {
     )
 
     Function Invoke-ExpressionRecursive ($Expression) { 
-        If ($_ -match '[Pre|Post][Start|Stop|Failure]Command') { #Do not resolve expression
-            Return $Expression
-        }
         If ($Expression -is [String]) { 
             If ($Expression -match '\$') { 
                 Try {$Expression = Invoke-Expression $Expression}
@@ -1660,54 +1672,6 @@ Function Get-ChildItemContent2 {
             [PSCustomObject]@{ Name = $Name; Content = $_ }
         }
     }
-}
-
-Function Get-ChildItemContent { 
-    param(
-        [Parameter(Mandatory = $true)]
-        [String]$Path,
-        [Parameter(Mandatory = $false)]
-        [Array]$Include = @()
-    )
-
-    $ChildItems = Get-ChildItem -Path $Path -Recurse -Include $Include | ForEach-Object { 
-        $Name = $_.BaseName
-        $Content = @()
-        If ($_.Extension -eq ".ps1") { 
-            $Content = &$_.FullName
-        }
-        Else { 
-            Try { 
-                $Content = $_ | Get-Content | Where-Object { $_ -notmatch "^#.+" } | ConvertFrom-Json -ErrorAction SilentlyContinue
-            }
-            Catch [ArgumentException] { 
-                $null
-            }
-        }
-        $Content | Select-Object | ForEach-Object { 
-            [PSCustomObject]@{ Name = $Name; Content = $_ }
-        }
-    }
-
-    $ChildItems | Select-Object | ForEach-Object { 
-        $Item = $_
-        $ItemKeys = $Item.Content.PSObject.Properties.Name.Clone()
-        $ItemKeys | ForEach-Object { 
-            If ($Item.Content.$_ -is [String]) { 
-                $Item.Content.$_ = Invoke-Expression "`"$($Item.Content.$_)`""
-            }
-            ElseIf ($Item.Content.$_ -is [PSCustomObject]) { 
-                $Property = $Item.Content.$_
-                $PropertyKeys = $Property.PSObject.Properties.Name
-                $PropertyKeys | ForEach-Object { 
-                    If ($Property.$_ -is [String]) { 
-                        $Property.$_ = Invoke-Expression "`"$($Property.$_)`""
-                    }
-                }
-            }
-        }
-    }
-    $ChildItems
 }
 
 Function Invoke-TcpRequest { 
