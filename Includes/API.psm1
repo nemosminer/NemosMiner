@@ -150,14 +150,13 @@ Function Start-APIServer {
                             Break
                         }
                         If ($null -eq $Parameters.Value) {
-                            $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ })
+                            $TempStats = $Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ }
                         }
                         Else {
-                            $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ })
+                            $TempStats = $Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }
                         }
                         $TempStats | ForEach-Object { 
                             Remove-Stat -Name $_.Name
-                            $Stats.PSObject.Properties.Remove($_.Name)
                             $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
                         }
                         $Data += "`n`nRemoved $($TempStats.Count) $($Parameters.Type) stat file$(if ($TempStats.Count -ne 1) { "s" })."
