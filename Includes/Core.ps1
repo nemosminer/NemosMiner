@@ -4,10 +4,8 @@ Function Start-Cycle {
     $CycleTime = Measure-Command -Expression {
         Write-Message "Started Cycle."
 
+        #Always get the latest config
         Get-Config $Variables.ConfigFile
-
-        # $Variables.Pools = $Variables.Pools
-        # [Miner[]]$Variables.Miners = $Variables.Miners
 
         $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
 
@@ -89,8 +87,8 @@ Function Start-Cycle {
                                 $Variables.ReadPowerUsage = $false
                             }
                         }
-                        If (($Variables.Devices).Name | Where-Object { $Hashtable.$_ -eq $null }) { 
-                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.AllDevices).Name | Where-Object { $Hashtable.$_ -eq $null }) -join ', ')] - disabling power usage calculations."
+                        If (($Variables.Devices).Name | Where-Object State -EQ "Enabled" | Where-Object { $Hashtable.$_ -eq $null }) { 
+                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.Devices).Name | Where-Object { $Hashtable.$_ -eq $null }) -join ', ')] - disabling power usage calculations."
                             $Variables.ReadPowerUsage = $false
                         }
                         Remove-Variable Device
@@ -141,8 +139,6 @@ Function Start-Cycle {
                 Continue
             }
         }
-
-
 
         # #Add new pools
         $ComparePools = Compare-Object -PassThru  @($Variables.Pools | Select-Object Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme -Unique) @($NewPools | Select-Object Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme -Unique) -Property Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
@@ -210,13 +206,17 @@ Function Start-Cycle {
         # Filter Algo based on Per Pool Config
         $PoolsConfig = $Config.PoolsConfig #much faster
         $Variables.Pools | Where-Object { $Config.SSL -NE "Preferred" -and $_.SSL -NE [Boolean]$Config.SSL } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Config item SSL=$([Boolean]$Config.SSL)" }
+        $Variables.Pools | Where-Object MarginOfError -gt (1 -$Config.MinAccuracy) | ForEach-Object { $_.Enabled = $false; $_.Reason += "MinAccuracy > $($Config.MinAccuracy)" }
         $Variables.Pools | Where-Object { $_.Name -notin $Config.PoolName } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Pool not configured" }
+
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in generic config" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.($_.Name).Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in $($_.Name) pool config" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in default pool config)" }
+        $Variables.Pools | Where-Object { $Config.Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $Config.Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm not enabled in generic config" }
         $Variables.Pools | Where-Object { $PoolsConfig.($_.Name).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.($_.Name).Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm not enabled in $($_.Name) pool config" }
         $Variables.Pools | Where-Object { $PoolsConfig.Default.Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Algorithm not enabled in default pool config" }
-        $Variables.Pools | Where-Object { $Config.Pools.$($_.Name).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name).ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Region excluded in $($_.Name) pool config" } 
 
+        $Variables.Pools | Where-Object { $Config.Pools.$($_.Name).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name).ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Region excluded in $($_.Name) pool config" } 
 
         # Where-Object { -not $Config.PoolName -or (Compare-Object @($Config.PoolName | Select-Object) @($(for ($i = ($_.Name -split "-").Length; $i -ge 1; $i--) { ($_.Name -split "-" | Select-Object -First $i) -join "-" }) | Select-Object) -IncludeEqual -ExcludeDifferent) } | 
         # Where-Object { -not $Config.ExcludePoolName -or -not (Compare-Object @($Config.ExcludePoolName | Select-Object) @($(for ($i = ($_.Name -split "-").Length; $i -ge 1; $i--) { ($_.Name -split "-" | Select-Object -First $i) -join "-" }) | Select-Object) -IncludeEqual -ExcludeDifferent) } | 
@@ -456,8 +456,6 @@ Function Start-Cycle {
         }
 
         Write-Message -Level VERBOSE "Had $($Variables.MinersCount) miner$(If ($Variables.MinersCount -ne 1) { "s" }), found $($CompareMiners.Count) new miner$( If ($CompareMiners.Count -ne 1) { "s" }). After filtering $(($Variables.Miners | Where-Object Enabled -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Enabled -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
-
-        $Variables.Miners = @($Variables.Miners)
 
         If (-not ($Variables.Miners | Where-Object Enabled -EQ $true)) { 
             Write-Message -Level Warn "No miners available."
@@ -714,6 +712,9 @@ Function Start-Cycle {
         }
 
         If ($Variables.Miners | Where-Object Status -EQ "Running") { Write-Message "Collecting miner data while waiting for next cycle..." }
+
+        #Cache pools config for next cycle
+        $Variables.PoolsConfigCached = $Config.PoolsConfig
 
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }
