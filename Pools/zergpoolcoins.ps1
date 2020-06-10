@@ -39,7 +39,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         If ((Get-Stat -Name $Stat_Name) -eq $null) { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]($Request.$_.$PriceField / $Divisor)) }
         Else { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]($Request.$_.$PriceField / $Divisor)) }
 
-        $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Passwordcurrency }
+        $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
         $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
 
         $PoolRegions | ForEach-Object { 
