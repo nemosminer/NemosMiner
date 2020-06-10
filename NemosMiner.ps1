@@ -62,9 +62,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$IgnorePowerCost = $false, #If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
     [Parameter(Mandatory = $false)]
-    [Boolean]$IncludeOptionalMiners = $true, #If true, use the miners in the 'OptionalMiners' directory
+    [Switch]$IncludeOptionalMiners = $true, #If true, use the miners in the 'OptionalMiners' directory
     [Parameter(Mandatory = $false)]
-    [Boolean]$IncludeRegularMiners = $true, #If true, use the miners in the 'Miners' directory
+    [Switch]$IncludeRegularMiners = $true, #If true, use the miners in the 'Miners' directory
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 240, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
@@ -77,6 +77,9 @@ param(
     [Double]$MarginOfError = 0, #0.4, # knowledge about the past won't help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
     [String[]]$MinerName = @(), 
+    [Parameter(Mandatory = $false)]
+    [ValidateRange(0, 1)]
+    [Double]$MinAccuracy = 0.5, #Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
     [Parameter(Mandatory = $false)]
     [Int]$MinDataSamples = 20, #Minimum number of hash rate samples required to store hash rate
     [Parameter(Mandatory = $false)]
@@ -132,9 +135,9 @@ param(
     [Parameter(Mandatory = $false)] 
     [Int]$SyncWindow = 5, #Minutes. Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used instead of the biased value and a warning will be shown
     [Parameter(Mandatory = $false)]
-    [Boolean]$Transcript = $false, # Enable to write powershell transcript files (for debugging)
+    [Switch]$Transcript = $false, # Enable to write powershell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
-    [Boolean]$TrackEarnings = $true, # Display    [Boolean]$TrackEarnings = $true, # Display earnings information
+    [Switch]$TrackEarnings = $true, # Display    [Boolean]$TrackEarnings = $true, # Display earnings information
     [Parameter(Mandatory = $false)]
     [String[]]$Type = @("nvidia"), #AMD/NVIDIA/CPU
     [Parameter(Mandatory = $false)]
@@ -286,7 +289,7 @@ Function Global:TimerUITick {
             $Config.PoolName | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $true) }
         }
         $Variables | Add-Member -Force @{ InCycle = $true }
-        $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s} Path: $(Split-Path $script:MyInvocation.MyCommand.Path)" -f ([TimeSpan]((Get-Date) - $Variables.ScriptStartDate))
+        $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s} Path: $(Split-Path $script:MyInvocation.MyCommand.Path)" -f ([TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartDate))
         $host.UI.RawUI.WindowTitle = $MainForm.Text
 
         If ($Variables.EndLoop) { 
