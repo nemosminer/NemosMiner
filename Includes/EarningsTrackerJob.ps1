@@ -26,6 +26,7 @@ version date:   12 November 2019
 # To start the job one could use the following
 # $job = Start-Job -FilePath .\EarningTrackerJob.ps1 -ArgumentList $params
 # Remove progress info from job.childjobs.Progress to avoid memory leak
+
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
 $args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
@@ -39,6 +40,7 @@ If (Test-Path ".\Logs\EarningTrackerData.json") { $AllBalanceObjects = @(Get-Con
 
 $TrustLevel = 0
 $StartTime = $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
+$BalanceObject = [PSCustomObject]@{ }
 
 #To be removed: Fix typo in field name, convert date format
 If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
@@ -66,6 +68,8 @@ If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) {
 
 While ($true) { 
 
+    $CurDate = (Get-Date).ToUniversalTime()
+
     #Read Config (ie. Pools to track)
     $EarningsTrackerConfig = Get-content ".\Config\EarningTrackerConfig.json" | ConvertFrom-Json
     $Interval = $EarningsTrackerConfig.PollInterval
@@ -80,7 +84,9 @@ While ($true) {
             $PoolAPI | ConvertTo-Json | Out-File ".\Config\poolapiref.json" -Force
             $LastAPIUpdateTime = Get-Date
         }
-        Catch { $PoolAPI = Get-Content ".\Config\poolapiref.json" | ConvertFrom-Json }
+        Catch { 
+            $PoolAPI = Get-Content ".\Config\poolapiref.json" | ConvertFrom-Json
+        }
     }
 
     #For each pool in config
@@ -103,12 +109,10 @@ While ($true) {
             $Wallet = $PoolConf.Wallet
         }
 
-        $CurDate = (Get-Date).ToUniversalTime()
-
         Switch ($Pool) { 
             "nicehashV2" { 
                 Try { 
-                    $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs2") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
                     [Double]$NHTotalBalance = [Double]($BalanceData.unpaidAmount) + [Double]($BalanceData.externalBalance)
                     $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
                     $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
@@ -118,7 +122,7 @@ While ($true) {
             "mph" { 
                 Try { 
                     $BalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) }
-                Catch { } #.confirmed
+                Catch { }
             }
             default { 
                 Try { 
@@ -245,8 +249,8 @@ While ($true) {
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\EarningTrackerData.json" }
     }
 
-    # Sleep until next update based on $Interval. Modulo $Interval.
-    If (($CurDate - $BalanceObject.Date).TotalMinutes -le 20) { 
+    # Sleep until next update based on $Interval
+    If ($BalanceObject.Date -and ($CurDate - $BalanceObject.Date).TotalMinutes -le 20) { 
         $Sleep = [Int](60 * ($Interval / 2))
     }
     Else { 
@@ -254,6 +258,6 @@ While ($true) {
     }
 
     #Sleep at least 30 seconds
-    Start-Sleep (30, $Sleep | Measure-Object -Maximum).Maximum
+    Start-Sleep -Seconds (30, $Sleep | Measure-Object -Maximum).Maximum
     Remove-Variable Sleep
 }
