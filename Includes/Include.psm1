@@ -150,7 +150,7 @@ Class Miner {
     [Boolean]$New = $false
     [Boolean]$Enabled = $false
     [String[]]$Reason
-    [Boolean]$Bump = $false #stop and start miner even if best
+    [Boolean]$Restart = $false #stop and start miner even if best
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
@@ -518,7 +518,6 @@ Class Miner {
 
     Refresh([Hashtable]$Stats, [Double]$PowerCostBTCperW = $Variables.PowerCostBTCperW) { 
         $this.Enabled = $true
-        $this.Bump = $false
         $this.Best = $false
         $this.Best_Comparison = $false
         $this.Reason = [String[]]@()
@@ -1167,9 +1166,9 @@ Function Get-Config {
     }
 
     #Load the configuration
-    $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashTable
+    $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json
     $Config_Temp = Get-ChildItemContent $ConfigFile -Parameters $Parameters | Select-Object -ExpandProperty Content
-    if ($Config_Temp -isnot [PSCustomObject]) { 
+    If ($Config_Temp -isnot [PSCustomObject]) { 
         Write-Message -Level WARN "Config file '$ConfigFile' is corrupt. Loading defaults."
         $Config_Temp = [PSCustomObject]@{ }
     }
@@ -1179,6 +1178,19 @@ Function Get-Config {
             $Global:Config.($_.Name) = $_.Value
         }
     }
+    If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
+        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-json
+    }
+    Else { 
+        $PoolsConfig = [PSCustomObject]@{ default = [PSCustomObject]@{ 
+                Wallet             = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+                UserName           = "nemo"
+                WorkerName         = "NemosMinerNoCfg"
+                PricePenaltyFactor = 1
+            }
+        }
+    }
+    $Config.PoolsConfig = $PoolsConfig
 }
 
 Function Write-Config { 
@@ -1190,7 +1202,7 @@ Function Write-Config {
     If ($Global:Config -is [Hashtable]) { 
         If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
         $OrderedConfig = [PSCustomObject]@{ }
-        $Global:Config | ConvertTo-Json | ConvertFrom-Json -AsHashTable | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
+        $Global:Config | ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
             $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
                 $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
             } 

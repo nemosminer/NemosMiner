@@ -178,12 +178,12 @@ $Branding = [PSCustomObject]@{
 }
 
 Try { 
-    Add-Type -Path .\Includes\~OpenCL.dll -ErrorAction Stop
+    Add-Type -Path ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
 }
 Catch { 
-    Remove-Item .\Includes\~OpenCL.dll -Force -ErrorAction Ignore
-    Add-Type -Path .\Includes\OpenCL\*.cs -OutputAssembly .\Includes\~OpenCL.dll
-    Add-Type -Path .\Includes\~OpenCL.dll
+    Remove-Item ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\OpenCL\*.cs" -OutputAssembly ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
+    Add-Type -Path ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
 #Initialize variables
@@ -229,14 +229,13 @@ If (-not (Test-Path $ConfigFile -PathType Leaf -ErrorAction Ignore)) {
 }
 Remove-Variable Config_Temp
 
-
 Get-Config -ConfigFile $ConfigFile -Parameters $Config_Parameters
 
 #Start transcript log
 If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 #Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-If (Test-Path $Config.SnakeTailExe -ErrorAction Ignore) { 
+If ($Config.SnakeTailExe -and (Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore)) { 
     $Variables.SnakeTail = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
     If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTail)) { 
         & "$($Variables.SnakeTail)" $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Utils\NemosMiner_LogReader.xml")
@@ -329,11 +328,11 @@ Function Global:TimerUITick {
                 $DisplayEstimations = [System.Collections.ArrayList]@(
                     $Variables.Miners | Where-Object Enabled -EQ $true | Select-Object @(
                         @{ Name = "Miner"; Expression = { $_.Name } },
-                        @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join ' & ' } }, 
+                        @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
-                        @{ Name = "Speed(s)"; Expression = { ($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
-                        @{ Name = "mBTC/day"; Expression = { ($_.Workers.Earning | ForEach-Object { If (-not [Double]::IsNaN($_)) { ($_ * 1000).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
-                        @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Workers.Earning | ForEach-Object { If (-not [Double]::IsNaN($_)) { ($_ * ($Variables.Rates.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
+                        @{ Name = "Speed(s)"; Expression = { ($_.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
+                        @{ Name = "mBTC/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * 1000).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
+                        @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * ($Variables.Rates.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "BTC/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000).ToString("N5") }) -join ' + ' } }, 
                         @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' }
                     }
@@ -782,7 +781,7 @@ $MainForm.Add_Shown(
             If ($Config -eq $null) {
                 $Config = [Hashtable]::Synchronized(@{ })
             }
-            $Config | Add-Member -Force @{ GPUCount = Get-GPUCount }
+            $Config.GPUCount = Get-GPUCount
             $TBGPUCount.Text = $Config.GPUCount
             PrepareWriteConfig
         }
@@ -1842,7 +1841,7 @@ $ButtonStart.Add_Click(
             }
             Else { 
                 $ButtonPause.Visible = $true
-                $ButtonPause = "Pause"
+                $ButtonPause.Text = "Pause"
             }
             $ButtonStart.Text = "Stop"
             $TimerUI.Start()
