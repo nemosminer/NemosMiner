@@ -24,7 +24,7 @@ version date:   09 February 2020
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.2.0.0"
+    $APIVersion = "0.2.1.0"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -264,12 +264,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" { 
-                        if ($Path -match "^.+\..+$") {
-                            $Data = $Config.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | ConvertTo-Json -Depth 10
-                        }
-                        else { 
-                            $Data = $Config | ConvertTo-Json -Depth 10
-                        }
+                        $Data = $Config | ConvertTo-Json -Depth 10
                         break
                     }
                     "/devices" { 
@@ -301,35 +296,35 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/enabled" { 
-                        $Data = ConvertTo-Json @($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/disabled" { 
-                        $Data = ConvertTo-Json @($Variables.Miners | Where-Object { -not $_.Enabled } | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object { -not $_.Enabled } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Failed" | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Failed" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/idle" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Idle" | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Idle" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miners/running" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Status -EQ "Running" | Select-Object -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
                         Break
                     }
                     "/miningcost" { 
@@ -381,12 +376,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/variables" { 
-                        if ($Path -match "^.+\..+$") {
-                            $Data = ConvertTo-Json -Depth 10 @($Variables.(($Path -split '\.' | Select-Object -Skip 1) -join '.') | Select-Object)
-                        }
-                        else {
-                            $Data = ConvertTo-Json -Depth 10 @($Variables | Select-Object)
-                        }
+                        $Data = ConvertTo-Json -Depth 5 $Variables | Select-Object
                         break
                     }
                     "/version" { 
