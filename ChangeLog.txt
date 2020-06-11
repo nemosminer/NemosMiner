@@ -1,4 +1,26 @@
-Changelog Nemos Miner 08.06.2020
+Changelog NemosMiner 11.06.2020
+===============================
+
+Main improvements:
+- No doubling of miners after donation
+- Less switching while donating
+
+What's still broken:
+- Idle detection
+
+Fixes:
+- algo selection does not seem to be working
+- running time starts at 12hour not 0
+- donation mining is not passing the c=BTC
+- Typos
+- Error '-AsHashtable'
+- Start / Pause / Stop from GUI
+
+Changed:
+- Donation is randomized to a different time every day.
+
+Changelog NemosMiner 08.06.2020
+===============================
 
 Main improvements:
 - Better hash rate state stability
