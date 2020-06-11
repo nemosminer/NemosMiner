@@ -1,75 +1,74 @@
 {
-   "default": {
-     "PricePenaltyFactor": 1,
-     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-     "UserName": "nemo",
-     "WorkerName": "ID=NM3813",
-     "APIKey": ""
+   "default":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"ID=NM3813",
+      "APIKey":""
    },
-      "blockmasters": {
-     "PricePenaltyFactor": 1,
-     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-     "UserName": "nemo",
-     "WorkerName": "ID=NM3813",
-     "APIKey": "",
-     "Algorithm": [
-       "+m7m"
-     ]
+   "blockmasters":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"ID=NM3813",
+      "APIKey":"",
+      "Algorithm":[
+         "+m7m"
+      ]
    },
-   "zpool": {
-     "PricePenaltyFactor": 1,
-     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-     "UserName": "nemo",
-     "WorkerName": "ID=NM3813",
-     "APIKey": "",
-     "Algorithm": [
-       "+binariumv1",
-       "+skein2",
-       "+decred",
-       "+arctichash",
-       "+scryptn11"
-     ]
+   "zpool":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"ID=NM3813",
+      "APIKey":""
    },
-      "zergpool": {
-     "PricePenaltyFactor": 1,
-     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-     "UserName": "nemo",
-     "WorkerName": "ID=NM3813",
-     "APIKey": "",
-     "Algorithm": [
-       "-ethash",
-       "-randomx"
-     ]
+   "zergpool":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"ID=NM3813",
+      "APIKey":"",
+      "Algorithm":[
+         "+randomsfx",
+         "+cryptonightconceal",
+         "+cryptonightupx",
+         "+cryptonighthaven",
+         "+cryptonightheavyx",
+         "+cryptonightheavy",
+         "+yescrytr8g",
+         "+mtp"
+      ]
    },
-   "mph": {
-     "PricePenaltyFactor": 1,
-     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-     "UserName": "nemo",
-     "WorkerName": "NM3813",
-     "APIKey": "",
-     "Algorithm": [
-       "+cryptonightmonero",
-       "+ethash",
-       "+kawpow"
-     ]
+   "mph":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"NM3813",
+      "APIKey":"",
+      "Algorithm":[
+         "+cryptonightmonero",
+         "+ethash",
+         "+kawpow"
+      ]
    },
-   "nicehashV2": {
-     "PricePenaltyFactor": 1,
-     "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-     "UserName": "nemo",
-     "WorkerName": "NM3813",
-     "APIKey": "",
-     "Algorithm": [
-       "+beamv2",
-       "+grincuckaroo29",
-       "+grincuckatoo31",
-       "+grincuckarood29",
-       "+eaglesong",
-       "+cuckaroom",
-       "+handshake",
-       "+cuckoocycle", 
-       "+grincuckatoo32", 
-       "+cuckaroo29bfc"
-     ]
+   "nicehashV2":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"NM3813",
+      "APIKey":"",
+      "Algorithm":[
+         "+beamv2",
+         "+grincuckaroo29",
+         "+grincuckatoo31",
+         "+grincuckarood29",
+         "+eaglesong",
+         "+cuckaroom",
+         "+handshake",
+         "+cuckoocycle",
+         "+grincuckatoo32",
+         "+cuckaroo29bfc"
+      ]
    }
- }
+}
