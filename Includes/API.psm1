@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.8.1.3
-version date:   09 February 2020
+version:        3.9.9.0
+version date:   12 June 2020
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.2.1.0"
+    $APIVersion = "0.2.1.1"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -112,7 +112,7 @@ Function Start-APIServer {
                         Else {
                             $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ })
                         }
-                        $TempStats | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
+                        $TempStats | Sort-Object Name | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
                         If ($Parameters.Value -eq 0) { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)$($Parameters.Unit) $($Parameters.Type)." }
                         If ($Parameters.Value -eq -1) { $Data += "`n`n$($TempStats.Count) disabled miner$(if ($TempStats.Count -ne 1) { "s" })." }
                         $Data = "<pre>$Data</pre>"
@@ -122,7 +122,7 @@ Function Start-APIServer {
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
                                 $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
-                                $Miners | ForEach-Object { 
+                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                                     $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                     ForEach ($Algorithm in $_.Algorithm) { 
@@ -138,7 +138,7 @@ Function Start-APIServer {
                         If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
                             $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
                                 $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
-                                $Miners | ForEach-Object { 
+                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     $_.PowerUsage = $_.PowerCost = $_.Earning = $_.Earning_Bias = [Double]::NaN
                                     $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
                                     $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
@@ -155,7 +155,7 @@ Function Start-APIServer {
                         Else {
                             $TempStats = $Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }
                         }
-                        $TempStats | ForEach-Object { 
+                        $TempStats | Sort-Object Name | ForEach-Object { 
                             Remove-Stat -Name $_.Name
                             $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
                         }
@@ -167,7 +167,7 @@ Function Start-APIServer {
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $Parameters.Value -ne $null) { 
                             $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
                                 $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
-                                $Miners | ForEach-Object { 
+                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                                     $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                     ForEach ($Algorithm in $_.Algorithm) { 
@@ -381,30 +381,30 @@ Function Start-APIServer {
                     }
                     "/version" { 
                         $Data = @("NemosMiner Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)") | ConvertTo-Json
-                        break
+                        Break
                     }
-                    default { 
+                    Default { 
                         # Set index page
-                        if ($Path -eq "/") { 
+                        If ($Path -eq "/") { 
                             $Path = "/index.html"
                         }
 
                         # Check if there is a file with the requested path
                         $Filename = "$BasePath$Path"
-                        if (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
+                        If (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
                             # If the file is a powershell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
                             $File = Get-ChildItem $Filename -File
 
-                            if ($File.Extension -eq ".ps1") { 
+                            If ($File.Extension -eq ".ps1") { 
                                 $Data = & $File.FullName -Parameters $Parameters
                             }
-                            else { 
+                            Else { 
                                 $Data = Get-Content $Filename -Raw
 
                                 # Process server side includes for html files
                                 # Includes are in the traditional '<!-- #include file="/path/filename.html" -->' format used by many web servers
-                                if ($File.Extension -eq ".html") { 
+                                If ($File.Extension -eq ".html") { 
                                     $IncludeRegex = [regex]'<!-- *#include *file="(.*)" *-->'
                                     $IncludeRegex.Matches($Data) | Foreach-Object { 
                                         $IncludeFile = $BasePath + '/' + $_.Groups[1].Value
@@ -417,15 +417,15 @@ Function Start-APIServer {
                             }
 
                             # Set content type based on file extension
-                            if ($MIMETypes.ContainsKey($File.Extension)) { 
+                            If ($MIMETypes.ContainsKey($File.Extension)) { 
                                 $ContentType = $MIMETypes[$File.Extension]
                             }
-                            else { 
+                            Else { 
                                 # If it's an unrecognized file type, prompt for download
                                 $ContentType = "application/octet-stream"
                             }
                         }
-                        else { 
+                        Else { 
                             $StatusCode = 404
                             $ContentType = "text/html"
                             $Data = "URI '$Path' is not a valid resource."
@@ -435,7 +435,7 @@ Function Start-APIServer {
 
                 # If $Data is null, the API will just return whatever data was in the previous request.  Instead, show an error
                 # This happens if the script just started and hasn't filled all the properties in yet. 
-                if ($Data -eq $null) { 
+                If ($Data -eq $null) { 
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
 
