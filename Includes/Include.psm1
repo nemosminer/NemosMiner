@@ -81,7 +81,7 @@ Class Pool {
     [String]$Region
     [Boolean]$SSL
     [Double]$Fee
-    [String]$PayoutScheme
+    [String]$PayoutScheme = ""
     [Double]$EstimateCorrection = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Int]$Workers

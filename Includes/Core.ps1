@@ -133,6 +133,7 @@ Function Start-Cycle {
             #Retrieve collected pool data
             $Variables.NewPools_Jobs | Wait-Job -Timeout $Config.PoolTimeout | Out-Null
             $NewPools = [Pool[]]($Variables.NewPools_Jobs | Where-Object State -EQ "Completed" | Receive-Job | ForEach-Object { If (-not $_.Content.Name) { $_.Content | Add-Member Name $_.Name -Force }; $_.Content })
+            $Variables.NewPools = $NewPools
         }
         Else { 
             Write-Message -Level WARN "No configured pools - retrying in 30 seconds..."
@@ -141,32 +142,20 @@ Function Start-Cycle {
         }
 
         # #Add new pools
-        [Pool[]]$ComparePools = Compare-Object -PassThru  @($Variables.Pools | Select-Object Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme -Unique) @($NewPools | Select-Object Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme -Unique) -Property Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
-            $NewPools | 
-            Where-Object Name -eq $_.Name | 
-            Where-Object Algorithm -eq $_.Algorithm | 
-            Where-Object CoinName -eq $_.CoinName | 
-            Where-Object Currency -eq $_.Currency | 
-            Where-Object Protocol -eq $_.Protocol | 
-            Where-Object Host -eq $_.Host | 
-            Where-Object Port -eq $_.Port | 
-            Where-Object User -eq $_.User | 
-            Where-Object Pass -eq $_.Pass | 
-            Where-Object SSL -eq $_.SSL | 
-            Where-Object PayoutScheme -eq $_.PayoutScheme | 
-            Select-Object -Index 0
-        }
-        $Variables.CommparePools = $ComparedPools
-
+        [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools) @($NewPools) -Property Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
+        
+        $Variables.CommparePools = $ComparePools
         $Variables.PoolsCount = $Variables.Pools.Count
+
+        #Add new pools
         If ($ComparePools) { 
-            $Variables.Pools += $ComparePools
+            [Pool[]]$Variables.Pools += $ComparePools
         }
 
         #Update existing pools
         $Variables.Pools | ForEach-Object { 
             [Pool]$Pool = $null
-    
+
             $_.Enabled = $true
             $_.Best = $false
             $_.Reason = $null
@@ -184,7 +173,7 @@ Function Start-Cycle {
             Where-Object SSL -eq $_.SSL | 
             Where-Object PayoutScheme -eq $_.PayoutScheme | 
             Select-Object -First 1
-    
+
             If ($Pool) { 
                 If ($Pool.EstimateCorrection -gt 0 -and $Pool.EstimateCorrection -lt 1) { $_.EstimateCorrection = $Pool.EstimateCorrection } Else { $_.EstimateCorrection = 1 } 
                 If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $Fee = 0 } Else { $_.Fee = $Pool.Fee }
@@ -356,17 +345,17 @@ Function Start-Cycle {
             $BestAlgoPool.Best = $true
         }
 
+        #Load information about the pools
         $NewMiners = @()
         If ($Config.IncludeRegularMiners -and (Test-Path ".\Miners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $Pools; Stats = $Stats; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $Pools; Stats = $Stats; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+        If (Test-Path ".\CustomMiners" -PathType Container) { $NewMiners +=  Get-ChildItemContent ".\CustomMiners" -Parameters @{Pools = $Pools; Stats = $Stats; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
 
         #If ($Config.IncludeLegacyMiners -and (Test-Path ".\LegacyMiners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\LegacyMiners" -Parameters @{Pools = $Pools; Stats = $Stats; Config = $Config; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(if ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
-        If (Test-Path ".\CustomMiners" -PathType Container) { $NewMiners +=  Get-ChildItemContent ".\CustomMiners" -Parameters @{Pools = $Pools; Stats = $Stats; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
 
         $NewMiners = $NewMiners | Select-Object | Where-Object { $_.Content.HashRates } | ForEach-Object { 
             $Miner_Name = $(If ($_.Content.Name -isnot [String]) { $_.Name } Else { $_.Content.Name })
             $Miner_Name = $Miner_Name -replace "^.", "$($Miner_Name[0])".ToUpper()
-            $Miner_HashRates = $_.Content.HashRates
             $Miner_Fees = [PSCustomObject]@{ }; $_.Content.HashRates.PSObject.Properties.Name | ForEach-Object { $Miner_Fees | Add-Member $_ $null }
             If ($Config.IgnoreMinerFee) { $Miner_Fees = @(0) * $_.Content.HashRates.Count }
 
@@ -392,23 +381,16 @@ Function Start-Cycle {
         } 
         Remove-Variable Pools
 
-        $Variables.NewMiners = $NewMiners
+        $Variables.NewMiners = $NewMiners = [Miner[]]$NewMiners
 
         #Get new miners
-        [Miner[]]$CompareMiners = Compare-Object @($Variables.Miners | Select-Object Name, Path, Algorithm -Unique) @($NewMiners | Select-Object Name, Path, Algorithm -Unique) -Property Name, Path, Algorithm | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
-            $NewMiners | 
-            Where-Object Name -eq $_.Name | 
-            Where-Object Path -eq $_.Path | 
-            Where-Object Algorithm -eq $_.Algorithm | 
-            Select-Object -Index 0
-        }
+        [Miner[]]$CompareMiners = Compare-Object -PassThru @($Variables.Miners) @($NewMiners) -Property Name, Path, Algorithm | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
         $Variables.CompareMiners = $CompareMiners
-
-        #Add new miners
         $Variables.MinersCount = $Variables.Miners.Count
 
+        #Add new miners
         If ($CompareMiners) { 
-            $Variables.Miners += $CompareMiners
+            $Variables.Miners += $Variables.CompareMiners
         }
 
 # #Debug/dev only! Dual algo miners only
@@ -418,27 +400,22 @@ Function Start-Cycle {
 
         #Update existing miners
         $Variables.Miners | ForEach-Object { 
-            [Miner]$Miner = $null
 
-            $Miner = $NewMiners |
-            Where-Object Name -eq $_.Name | 
-            Where-Object Path -eq $_.Path | 
-            Where-Object Algorithm -eq $_.Algorithm | 
-            Select-Object -First 1
+# #Debug/dev only!
+# # $AllPools | Foreach-Object { 
+# #     $_.Fee = (Get-Random  -Minimum 0 -Maximum 0.07)
+# #     $_.Coin = "BlaCoin"
+# # }
+            $_.Enabled = $false
 
-
-            $_.ReadPowerUsage = $Variables.ReadPowerUsage
-            $_.Refresh($Stats, $Variables.PowerCostBTCperW)
-            $_.MinDataSamples = $Config.MinDataSamples * (1, @($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).maximum
-            $_.MeasurePowerUsage = [Boolean]($Variables.ReadPowerUsage -eq $true -and [Double]::IsNaN($_.PowerUsage))
-
-            If ($Miner) { 
+            If ($Miner = Compare-Object -PassThru @($_) @($NewMiners) -Property Name, Path, Algorithm -ExcludeDifferent) { 
                 $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.PoolName -ne $Miner.PoolName -or $_.Port -ne $Miner.Port -or $_.ShowMinerWindow -ne $Miner.ShowMinerWindow)
                 $_.Arguments = $Miner.Arguments
                 $_.PoolName = $Miner.PoolName
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
                 $_.ShowMinerWindow = $Miner.ShowMinerWindow
+                $_.Enabled = $true
             }
 
             $_.ReadPowerUsage = $Variables.ReadPowerUsage
