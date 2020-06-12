@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-nheqVerus080\nheqminer.exe"
-$Uri = "https://github.com/VerusCoin/nheqminer/releases/download/v0.8.0/nheqminer-Windows-v0.8.0.zip"
+$Path = ".\Bin\CPU-nheqVerus081\nheqminer.exe"
+$Uri = "https://github.com/VerusCoin/nheqminer/releases/download/v0.8.1/nheqminer-Windows-v0.8.1.zip"
 $Commands = [PSCustomObject]@{ 
     "verus"     = "" #Verus
     "verushash" = "" #Verushash
