@@ -7,6 +7,10 @@ If ($Config.WorkingDirectory) { Set-Location $Config.WorkingDirectory }
 $ProgressPreferenceBackup = $ProgressPreference
 $ProgressPreference = "SilentlyContinue"
 
+#Make log filename available
+$Variables = @{}
+$Variables.LogFile = $Config.LogFile
+
 $Config.DownloadList | ForEach-Object { 
     $URI = $_.URI
     $Path = $_.Path
@@ -52,6 +56,6 @@ $Config.DownloadList | ForEach-Object {
 }
 $ProgressPreference = $ProgressPreferenceBackup
 
-Write-Message "Downloader: Completed."
+Write-Message "Downloader: All tasks complete."
 
 Return
