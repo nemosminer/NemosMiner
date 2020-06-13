@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
-$Path = ".\Bin\NVIDIA-Ccminerverus375\ccminer.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.7.5/ccminerverus375.7z"
+$Path = ".\Bin\NVIDIA-Ccminerverus380\ccminer.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.8/ccminerGPU38.7z"
 $Commands = [PSCustomObject]@{ 
     #"verushash" = " -a verus -i 21 -d $($Config.SelGPUCC)" #verus
     #"verus" = " -a verus -i 21 -d $($Config.SelGPUCC)" #verus

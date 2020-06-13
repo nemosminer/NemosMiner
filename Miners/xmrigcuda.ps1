@@ -1,12 +1,8 @@
 using module ..\Includes\Include.psm1
-$Path = ".\Bin\NVIDIA-XMRigv5111\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v5.11.1/XMRig5111.zip"
+$Path = ".\Bin\NVIDIA-XMRigv620b\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.2.0-beta/xmrigv620b.7z"
 $Commands = [PSCustomObject]@{ 
-    #"randomxmonero" = " -a rx/0 --nicehash" #RandomX
-    #"randomarq"     = " -a rx/arq --nicehash" #Randomarq
-    #"randomx"       = " -a rx/0 --nicehash" #RandomX
-    #"randomsfx"     = " -a rx/sfx --nicehash" #RandomX
-    #"cryptonightv7" = " -a cn/1 --nicehash" #cryptonightv7
+     "kawpow" = " -a kawpow --nicehash" #kawpow
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
