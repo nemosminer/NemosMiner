@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\CPU-ccminerverushash37\ccminer.exe"
-$Uri = "https://github.com/Minerx117/ccminer-Verus/releases/download/3.7/ccminer3_7.7z"
+$Path = ".\Bin\CPU-ccminerverushash38\ccminer.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/3.8/ccminer3.8cpu.7z"
 $Commands = [PSCustomObject]@{ 
     "verus"     = "" #Verus
     "verushash" = "" #Verushash
