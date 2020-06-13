@@ -120,15 +120,13 @@ Function Start-APIServer {
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
-                            $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
-                                $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
-                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                    $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
-                                    $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
-                                    ForEach ($Algorithm in $_.Algorithm) { 
-                                        $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
-                                        Remove-Stat -Name $StatName
-                                    }
+                            $Miners = Compare-Object -PassThru -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
+                            $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
+                                $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
+                                ForEach ($Algorithm in $_.Algorithm) { 
+                                    $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
+                                    Remove-Stat -Name $StatName
                                 }
                             }
                             $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -eq 1) { "s" }) will re-benchmark."
@@ -136,14 +134,12 @@ Function Start-APIServer {
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
-                            $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
-                                $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
-                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                    $_.PowerUsage = $_.PowerCost = $_.Earning = $_.Earning_Bias = [Double]::NaN
-                                    $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
-                                    $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
-                                    Remove-Stat -Name $StatName
-                                }
+                            $Miners = Compare-Object -PassThru -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
+                            $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
+                                $_.PowerUsage = $_.PowerCost = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
+                                $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
+                                Remove-Stat -Name $StatName
                             }
                             $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -ne 1) { "s" }) will re-measure power usage."
                             $Data = "<pre>$Data</pre>"
