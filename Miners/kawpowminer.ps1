@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 $Path = ".\Bin\NVIDIA-kawpowminer123\kawpowminer.exe"
 $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/kawpowminer-windows-1.2.3.zip"
 $Commands = [PSCustomObject]@{ 
-     "kawpow" = "" #kawpow
+     #"kawpow" = "" #kawpow
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
