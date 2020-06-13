@@ -1,17 +1,13 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-XMRigv5112\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.11.2/XMRig5112.zip"
+$Path = ".\Bin\CPU-XMRigv620b\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.2.0-beta/xmrigv620b.zip"
 $Commands = [PSCustomObject]@{ 
-    #"randomxmonero" = " -a rx/0 --nicehash" #RandomX
-    #"randomarq"     = " -a rx/arq --nicehash" #Randomarq
-    #"randomx"       = " -a rx/0 --nicehash" #RandomX
-    #"randomsfx"     = " -a rx/sfx --nicehash" #RandomX
-    #"cryptonightv7" = " -a cn/1 --nicehash" #cryptonightv7
+    #"kawpow" = " -a kawpow --nicehash" #kawpow
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-    [PSCustomObject]@{ 
+   [PSCustomObject]@{ 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-R 1 --cuda-devices=$($Config.SelGPUCC) --no-cpu --cuda --cuda-loader=xmrig-cuda.dll --no-nvml -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --keepalive --http-port=$($Variables.NVIDIAMinerAPITCPPort) --donate-level 0"
