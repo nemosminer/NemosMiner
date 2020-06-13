@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
-$Path = ".\Bin\NVIDIA-Phoenix49c\PhoenixMiner.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/4.9c/PhoenixMiner_4.9c_Windows.7z"
+$Path = ".\Bin\NVIDIA-Phoenix50d\PhoenixMiner.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0d/PhoenixMiner_5.0d_Windows.zip"
 $Commands = [PSCustomObject]@{ 
    #"ethash"  = " -di $($($Config.SelGPUCC).Replace(',',''))" #Ethash
    #"progpow" = " -coin bci -di $($($Config.SelGPUCC).Replace(',',''))" #Progpow 
