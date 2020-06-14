@@ -9,7 +9,7 @@ Catch { return }
 If ((-not $Request) -or (-not $CoinsRequest)) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "mine.zergpool.com"
+$HostSuffix = "103.249.70.7"
 
 $PriceField = "Plus_Price"
 #$PriceField = "actual_last24h"
@@ -25,7 +25,7 @@ $AllMiningCoins = @()
 
 #Uses BrainPlus calculated price
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-    $PoolHost = "$($_).$($HostSuffix)"
+    $PoolHost = "$($HostSuffix)"
     $PoolPort = $Request.$_.port
     $Algorithm_Norm = Get-Algorithm $Request.$_.name
     # Find best coin for algo
