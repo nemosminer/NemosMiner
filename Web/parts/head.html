@@ -20,7 +20,7 @@
             <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js" integrity="sha384-xymdQtn1n3lH2wcu0qhcdaOpQwyoarkgLVxC/wZ5q7h9gHtxICrpcaSUfygqZGOe" crossorigin="anonymous"></script>
             <script src="/js/utilities.js"></script>
             <script src="/js/bootstrap-table-contextmenu.js"></script>
-            <title>NemosMiner Dashboard</title>
+            <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
         </head>
         <body>
         <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -41,22 +41,13 @@
                                 </a>
                             </li>
                         </ul>
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Devices</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a id="navdevices" class="nav-link" href="devices.html">
-                                    <i class="fas fa-microchip"></i>Devices
-                                </a>
-                        </ul>
 
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                             <span>Pools</span>
                         </h6>
                         <ul class="nav flex-column mb-2">
                             <li class="nav-item">
-                                <a id="navbestpools" class="nav-link" href="poolsbest.html">
+                                <a id="navpoolsbest" class="nav-link" href="poolsbest.html">
                                     <i class="fas fa-folder-open"></i>Best Pools
                                 </a>
                             </li>
@@ -66,7 +57,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a id="navinactivepools" class="nav-link" href="poolsinactive.html">
+                                <a id="navpoolsinactive" class="nav-link" href="poolsinactive.html">
                                     <i class="fas fa-folder-open"></i>Inactive Pools
                                 </a>
                             </li>
@@ -77,29 +68,21 @@
                         </h6>
                         <ul class="nav flex-column mb-2">
                             <li class="nav-item">
-                                <a id="navactiveminers" class="nav-link" href="minersactive.html">
-                                    <i class="fas fa-folder-open"></i>Active Miners
+                                <a id="navminersenabled" class="nav-link" href="minersenabled.html">
+                                    <i class="fas fa-folder-open"></i>Enabled Miners
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a id="navallminers" class="nav-link" href="miners.html">
+                                <a id="navminers" class="nav-link" href="miners.html">
                                     <i class="fas fa-folder-open"></i>All Miners
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a id="navinactiveminers" class="nav-link" href="minersinactive.html">
-                                    <i class="fas fa-folder-open"></i>Inactive Miners
+                                <a id="navminersdisabled" class="nav-link" href="minersdisabled.html">
+                                    <i class="fas fa-folder-open"></i>Disabled Miners
                                 </a>
                             </li>
 
-                            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                                <span>Stats</span>
-                            </h6>
-                                <li class="nav-item">
-                                <a id="navminerstats" class="nav-link" href="stats.html">
-                                    <i class="fas fa-folder-open"></i>Manage Stats
-                                </a>
-                            </li>
                             <!-- <li class="nav-item">
                                 <a id="navwatchdog" class="nav-link" href="watchdog.html">
                                     <i class="fas fa-folder-open"></i>Watchdog
@@ -111,13 +94,23 @@
                         </h6>
                         <ul class="nav flex-column mb-2">
                             <li class="nav-item">
-                                <a id="navrunningconfig" class="nav-link" href="runningconfig.html">
+                                <a id="navdevices" class="nav-link" href="devices.html">
+                                    <i class="fas fa-microchip"></i>Devices
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a id="navminerstats" class="nav-link" href="stats.html">
+                                    <i class="fas fa-folder-open"></i>Manage Stats
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a id="navrunningconfig" class="nav-link" href="configrunning.html">
                                     <i class="fas fa-folder-open"></i>Running Config
                                 </a>
                             </li>
                             <!-- <li class="nav flex-column mb-2">
-                                <a id="navsavedconfig" class="nav-link" href="savedconfig.html">
-                                    <i class="fas fa-folder-open"></i>Saved Config
+                                <a id="naveditconfig" class="nav-link" href="configedit.html">
+                                    <i class="fas fa-folder-open"></i>Edit Config
                                 </a>
                             </li> -->
                             <!-- <li class="nav flex-column mb-2">

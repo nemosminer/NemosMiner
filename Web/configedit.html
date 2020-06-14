@@ -1,0 +1,37 @@
+<!--#include file="/parts/head.html" -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 id="title" data-navbaractive="naveditconfig" class="h2">Edit Configuration</h1>
+</div>
+
+<div class="alert alert-warning" role="alert">Editing configuration is not implemented yet.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+<script src="simple-image.js"></script>
+<link href="simple-image.css" rel="stylesheet"/>
+
+<div id="editorjs"></div>
+
+<button id="save-button">Save</button>
+<pre id="output"></pre>
+
+<script>
+    const editor = new EditorJS({
+      autofocus: true,
+      tools: {
+        image: SimpleImage
+      }
+    });
+
+    const saveButton = document.getElementById('save-button');
+    const output = document.getElementById('output');
+
+    saveButton.addEventListener('click', () => {
+      editor.save().then( savedData => {
+        output.innerHTML = JSON.stringify(savedData, null, 4);
+      })
+    })
+</script>
+
+<!-- End of page scripts -->
+
+<!--#include file="/parts/foot.html" -->
