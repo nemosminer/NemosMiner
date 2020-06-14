@@ -129,7 +129,7 @@ Function Start-APIServer {
                                     Remove-Stat -Name $StatName
                                 }
                             }
-                            $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -eq 1) { "s" }) will re-benchmark."
+                            $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -ne 1) { "s" }) will re-benchmark."
                             $Data = "<pre>$Data</pre>"
                             Break
                         }
@@ -292,35 +292,35 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/enabled" { 
-                        $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/disabled" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object { -not $_.Enabled } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object { -not $_.Enabled } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Failed" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Failed" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/idle" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Idle" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Idle" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/running" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miningcost" { 
