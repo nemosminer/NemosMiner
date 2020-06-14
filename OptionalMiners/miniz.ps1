@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-miniZ15t3\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.5t3/miniZ_v1.5t3_cuda10_win-x64.zip"
 $Commands = [PSCustomObject]@{ 
@@ -18,10 +19,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--cleanjobs --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --nonvml --latency --nocolor --extra --tempunits C -cd $($Config.SelGPUDSTM) --telemetry $($Variables.NVIDIAMinerAPITCPPort) --url $($Pools.$Algo.User)@$($Pools.$Algo.Host):$($Pools.$Algo.Port) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #--oc1 --oc2 --f11=0
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .98 } # substract 2% devfee
+        Algorithm = $Algo
         API       = "miniZ"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
+        Fee       = 0.02 #Dev fee
     }
 }

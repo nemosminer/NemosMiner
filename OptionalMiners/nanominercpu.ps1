@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\CPU-nanominer194\nanominer.exe"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.9.4/nanominer-windows-1.9.4.zip"
 $Commands = [PSCustomObject]@{ 
@@ -40,10 +41,11 @@ wallet=$($Pools.$Algo.User)"
         Type      = "CPU"
         Path      = $Path
         Arguments = $Arguments
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee) } # substract devfee
+        Algorithm = $Algo
         API       = "nanominer"
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
+        Fee       = $Fee
     }
 }

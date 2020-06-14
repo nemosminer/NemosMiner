@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-Phoenix50d\PhoenixMiner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0d/PhoenixMiner_5.0d_Windows.zip"
 $Commands = [PSCustomObject]@{ 
@@ -11,10 +12,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-gbase 0 -nvdo 1 -esm 3 -allpools 1 -allcoins 1 -platform 2 -mport -$($Variables.NVIDIAMinerAPITCPPort) -epool $($Pools.$Algo.Host):$($Pools.$Algo.Port) -ewal $($Pools.$Algo.User) -epsw $($Pools.$Algo.Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .9935 } # substract 0.65% devfee
+        Algorithm = $Algo
         API       = "ethminer"
-        Port      = $Variables.NVIDIAMinerAPITCPPort #3333
+        Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
+        Fee       = 0.0065 # Dev fee
     }
 }

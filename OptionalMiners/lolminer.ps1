@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-lolminer098\lolMiner.exe"
 $Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.98/lolMiner_v098_Win64.zip"
 $Commands = [PSCustomObject]@{ 
@@ -11,10 +12,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--tls 0 --digits 2 --longstats 60 --shortstats 5 --connectattempts 3 --devices $($Config.SelGPUCC) --apiport $($Variables.NVIDIAMinerAPITCPPort) --pool $($Pools.$Algo.Host) --port $($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .99 } # substract 2% devfee
+        Algorithm = $Algo
         API       = "lol"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
+        Fee       = 0.02 #Dev fee
     }
 }

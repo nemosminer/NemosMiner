@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-Gminer210\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.10/gminer_2_10_windows64.zip"
 $Commands = [PSCustomObject]@{ 
@@ -27,20 +28,19 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     Switch ($_) { 
         "ethash" { $Fee = 0.0065 }
         "cuckaroom" { $Fee = 0.03 }
-        "ethash+eaglesong" { $Fee = 0.03 }
-        "ethash+handshake" { $Fee = 0.03 }
+        "ethash+eaglesong" { $Fee = 0.0065, 0.03 }
+        "ethash+handshake" { $Fee = 0.0065, 0.03 }
         default { $Fee = 0.02 }
     }
 
     If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo2"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee); $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Week * (1 - $Fee) } # substract devfee
         $Algo2Parameter = " --dserver $($Pools.$Algo2.Host) --dport $($Pools.$Algo2.Port) --duser $($Pools.$Algo2.User) --dpass $($Pools.$Algo2.Pass)"
     }
     Else { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee) } # substract devfee
         $Algo2Parameter = ""
+        $Algo2 = $null
     }
 
     [PSCustomObject]@{ 
@@ -48,10 +48,11 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Name      = $Name
         Path      = $Path
         Arguments = "--watchdog 0 --pec 0 --nvml 0 --api $($Variables.NVIDIAMinerAPITCPPort) --server $($Pools.$Algo.Host) --port $($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$Algo2Parameter$($Commands.$_)"
-        HashRates = $HashRates
+        Algorithm = ($Algo, $Algo2) | Select-Object
         API       = "gminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
+        Fee       = $Fee #Dev fee
     }
 }
