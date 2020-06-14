@@ -8,6 +8,8 @@ param(
     [String[]]$Algorithms
 )
 
+$ProgressPreference = "SilentlyContinue"
+
 $API = [String]$Miner.API
 $Port = [UInt16]$Miner.Port
 $Server = "localhost"
@@ -21,6 +23,8 @@ Try {
 
         If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { Start-Sleep -Seconds 0 } Else { Start-Sleep -Seconds 2 }
 
+        $HashRate_Value = [Double]0
+        $HashRateDual_Value = [Double]0
         $PowerUsage = [Double[]]0
 
         If ($Miner.ReadPowerUsage) {
@@ -187,20 +191,6 @@ Try {
                     }
                     Else { 
                         $HashRate_Value = [Double]$Data.miner.total_hashrate_raw
-                    }
-                }
-            }
-
-            "nbminerdual" { 
-                $Request = Invoke-HTTPRequest $Server $Port "/api/v1/status" $Timeout
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    If ($Algorithms.Count -eq 2) { 
-                        $HashRate_Value = [Double]$Data.miner.total_hashrate2_raw
-                        $HashRateDual_Value = [Double]$Data.miner.total_hashrate_raw
-                    }
-                    Else { 
-                        $HashRate_Value = [Double]$Data.miner.total_hashrate2_raw
                     }
                 }
             }
