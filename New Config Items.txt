@@ -49,6 +49,12 @@
     "X25r" = 3
   }
 
+#NoDialAlgoMining, if true NemosMiner will not use any dual algo miners
+  "NoDualAlgoMining": false,
+
+#NoSingleAlgoMining, if true NemosMiner will not use any single algo miners
+  "NoSingleAlgoMining": false,
+
 #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
   "OpenFirewallPorts": true,
 
