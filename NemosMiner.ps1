@@ -86,9 +86,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Hashtable]$MinDataSamplesAlgoMultiplier = [Hashtable]@{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
+    [Switch]$NoDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
+    [Parameter(Mandatory = $false)]
+    [Switch]$NoSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
+    [Parameter(Mandatory = $false)]
     [Switch]$OpenFirewallPorts = $true, #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
-    [String]$Passwordcurrency = "BTC", #i.e. BTC,LTC,ZEC,ETH ect.
+    [String]$Passwordcurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH ect.
     [Parameter(Mandatory = $false)]
     [String[]]$PoolName = @(), 
     [Parameter(Mandatory = $false)]
