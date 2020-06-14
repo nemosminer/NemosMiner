@@ -1,11 +1,12 @@
 using module ..\Includes\Include.psm1
-#$Path = ".\Bin\CPU-JayDDe31311\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee31311\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.13.1.1/cpuminer-opt-3.13.1.1-windows.zip"
+#$Path = ".\Bin\CPU-JayDDe3142\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3142\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.14.2/cpuminer-opt-3.14.2-windows.zip"
 $Commands = [PSCustomObject]@{ 
     "lyra2z330" = " -a lyra2z330" #Lyra2z330
     "sha3d"     = " -a sha3d" #sha3d
     "scryptn11" = " -a scrypt:2048" #scryptn11 
+    "m7m"       = " -a m7m" #m7m
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
