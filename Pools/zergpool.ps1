@@ -8,7 +8,7 @@ Catch { return }
 If (-not $Request) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "mine.zergpool.com"
+$HostSuffix = "103.249.70.7"
 $PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
@@ -21,7 +21,7 @@ $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $PoolsConfig.$ConfName
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-    $PoolHost = "$($_).$($HostSuffix)"
+    $PoolHost = "$($HostSuffix)"
     $PoolPort = $Request.$_.port
     $Pool = $Request.$_.port
     $Algorithm_Norm = Get-Algorithm $Request.$_.name
