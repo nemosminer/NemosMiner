@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-kawpowminer123\kawpowminer.exe"
 $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/kawpowminer-windows-1.2.3.zip"
 $Commands = [PSCustomObject]@{ 
@@ -12,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
             Type      = "NVIDIA"
             Path      = $Path
             Arguments = "--farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --cuda-devices $($Config.SelGPUDSTM) --api-port -$($Variables.NVIDIAMinerAPITCPPort) -U $AlgoParameter$($Commands.$_)"
-            HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
+            Algorithm = $Algo
             API       = "ethminer"
             Port      = $Variables.NVIDIAMinerAPITCPPort #4068
             Wrap      = $false

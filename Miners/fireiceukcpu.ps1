@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\Cpu-FireIce2108\xmr-stak.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10.8/xmr-stak-win64-2.10.8-cuda10.0.7z"
 $Commands = [PSCustomObject]@{ 
@@ -45,7 +46,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-C $($Pools.$Algo.Name)_$($Pools.$Algo)_$($Pools.$Algo.User)_CPU.txt --noAMD --noNVIDIA -i $($Variables.CPUMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week } #recompiled 0% Dev fee
+        Algorithm = $Algo
         API       = "fireice"
         Port      = $Variables.CPUMinerAPITCPPort #4068
         Wrap      = $false

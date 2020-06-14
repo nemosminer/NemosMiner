@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-ccminertpruvot231x64\ccminer-x64.exe"
 $Uri = "https://github.com/Minerx117/ccminertpruvot/releases/download/v2.3.1-x64/ccminertpruvot231x64.7z"
 $Commands = [PSCustomObject]@{ 
@@ -12,7 +13,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-T 50000 -R 1 -b $($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
+        Algorithm = $Algo
         API       = "ccminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         Wrap      = $false

@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-Bminer1621\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.1-ae15079-amd64.zip" #working on win10 only not 8.1, may require nvml.dll to be added
 $Commands = [PSCustomObject]@{ 
@@ -24,13 +25,12 @@ If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
 
     If ($Algo2) { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)-$Algo2"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week; $Algo2 = $Stats."$($Name)_$($Algo2)_HashRate".Week }
         $Algo2Parameter = " -uri2 $($_ -split '\+' | Select-Object -Index 1)$(If ($Pools.$Algo2.SSL) { '+ssl' })://$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo2.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo2.Pass))@$($Pools.$Algo2.Host):$($Pools.$Algo2.Port)"
     }
     Else { 
         $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-        $HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
         $Algo2Parameter = ""
+        $Algo2 = $null
     }
 
     [PSCustomObject]@{ 
@@ -38,7 +38,7 @@ If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
         Name      = $Name
         Path      = $Path
         Arguments = "$($Commands.$_)$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.Pass))@$($Pools.$Algo.Host):$($Pools.$Algo.Port) -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port$Algo2Parameter"
-        HashRates = $HashRates
+        Algorithm = ($Algo2, $Algo) | Select-Object
         API       = "bminer"
         Port      = $Port
         Wrap      = $false

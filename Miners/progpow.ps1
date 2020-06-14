@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\NVIDIA-progpowminer016\progpowminer-cuda.exe"
 $Uri = "https://nemosminer.com/data/optional/progpowminer0.16-FinalCuda10.7z"
 $Commands = [PSCustomObject]@{ 
@@ -10,7 +11,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "--cuda-devices $($Config.SelGPUDSTM) --api-port -$($Variables.NVIDIAMinerAPITCPPort) -U -P stratum+tcp://$($Pools.$Algo.User):$($Pools.$Algo.Pass)@$($Pools.$Algo.Host):$($Pools.$Algo.Port)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
+        Algorithm = $Algo
         API       = "ethminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         Wrap      = $false

@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\Nvidia-FireIce2108\xmr-stak.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10.8/xmr-stak-win64-2.10.8-cuda10.0.7z"
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
@@ -51,7 +52,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Path      = $Path
         Arguments = "-C $($Pools.$Algo.Name)_$($Algo)_$($Pools.$Algo.User)_Nvidia.txt --noAMD --noCPU -i $($Variables.NVIDIAMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Week } #Recompiled 0% fee
+        Algorithm = $Algo
         API       = "fireice"
         Port      = $Variables.NVIDIAMinerAPITCPPort #4068
         URI       = $Uri

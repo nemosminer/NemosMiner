@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\cpu-FireIce105\xmr-stak-rx.exe"
 $Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/1.0.5-rx/xmr-stak-rx-win64-1.0.5.7z"
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
@@ -53,7 +54,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-C $($Pools.$Algo.Name)_$($Algo)_$($Pools.$Algo.User)_CPU.txt --noNVIDIA --noAMD --noTest --noUAC -i $($Variables.CPUMinerAPITCPPort)"
-        HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Week } #Recompiled 0% fee
+        Algorithm = $Algo
         API       = "fireice"
         Port      = $Variables.CPUMinerAPITCPPort #4068
         URI       = $Uri

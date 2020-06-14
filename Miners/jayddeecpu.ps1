@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 #$Path = ".\Bin\CPU-JayDDe3142\cpuminer-zen.exe" #AMD
 $Path = ".\Bin\CPU-JayDDee3142\cpuminer-aes-sse42.exe" #Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.14.2/cpuminer-opt-3.14.2-windows.zip"
@@ -15,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "CPU"
         Path      = $Path
         Arguments = "--hash-meter -q -t $($ThreadCount) --api-bind=$($Variables.CPUMinerAPITCPPort) -o $($Pools.$Algo.Protocol)://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
+        Algorithm = $Algo
         API       = "ccminer"
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false

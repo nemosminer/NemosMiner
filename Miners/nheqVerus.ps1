@@ -1,4 +1,5 @@
 using module ..\Includes\Include.psm1
+
 $Path = ".\Bin\CPU-nheqVerus081\nheqminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v0.8.1/nheqminer081.7z"
 $Commands = [PSCustomObject]@{ 
@@ -15,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "CPU"
         Path      = $Path
         Arguments = "-t $($ThreadCount) -a $($Variables.CPUMinerAPITCPPort) -v -l $($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
+        Algorithm = $Algo
         API       = "nheq"
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
