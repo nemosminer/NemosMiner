@@ -6,6 +6,8 @@ $Commands = [PSCustomObject]@{
     "yespoweriots" = " -a yespoweriots" #yespoweriots
     "yescryptr8"   = " -a yescryptr8" #YescryptR8 
     "yescryptr8g"  = " -a yescryptr8g" #YescryptR8g  
+    "yescrypt"     = " -a yescrypt" #Yescrypt
+    "yescryptr32"  = " -a yescryptr32" #YescryptR32
     "yespoweritc"  = " -a yespoweritc" #Yespoweritc  
     "lyra2z330"    = " -a lyra2z330" #lyra2z330
 }
