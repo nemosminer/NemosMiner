@@ -21,7 +21,10 @@
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
       "WorkerName":"ID=NM3813",
-      "APIKey":""
+      "APIKey":"",
+       "Algorithm":[
+         "-verus"
+      ]
    },
    "zergpool":{
       "PricePenaltyFactor":1,
@@ -37,6 +40,7 @@
          "+cryptonightheavyx",
          "+cryptonightheavy",
          "+yescryptr8g",
+         "+verushash",
          "+yespoweriots",
          "+mtp"
       ]
