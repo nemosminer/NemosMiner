@@ -31,39 +31,37 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     # Find best coin for algo
     $TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ($_.hashrate -gt 0) -and ((Get-Algorithm $_.algo) -eq $Algorithm_Norm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | select -first 1
 
-    If ($TopCoin.Symbol) { 
-        $Fee = [Decimal]($Request.$_.Fees / 100)
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+    $Fee = [Decimal]($Request.$_.Fees / 100)
+    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat_Name = "$($Name)_$($Algorithm_Norm, $TopCoin.Symbol -join '-')_Profit"
-        If ((Get-Stat -Name $Stat_Name) -eq $null) { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]($Request.$_.$PriceField / $Divisor)) }
-        Else { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]($Request.$_.$PriceField / $Divisor)) }
+    $Stat_Name = "$($Name)_$($Algorithm_Norm, $TopCoin.Symbol -join '-')_Profit"
+    If ((Get-Stat -Name $Stat_Name) -eq $null) { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]($Request.$_.$PriceField / $Divisor)) }
+    Else { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]($Request.$_.$PriceField / $Divisor)) }
 
-        $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
-        $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
+    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
 
-        $PoolRegions | ForEach-Object { 
-            $Region = $_
-            $Region_Norm = Get-Region $Region
+    $PoolRegions | ForEach-Object { 
+        $Region = $_
+        $Region_Norm = Get-Region $Region
 
-            If ($PoolConf.Wallet) { 
-                [PSCustomObject]@{ 
-                    Algorithm          = [String]$Algorithm_Norm
-                    CoinName           = [String]$TopCoin.Name
-                    Currency           = [String]$TopCoin.Symbol
-                    Price              = [Double]$Stat.Live
-                    StablePrice        = [Double]$Stat.Week
-                    MarginOfError      = [Double]$Stat.Week_Fluctuation
-                    EstimateCorrection = [Double]$PoolConf.EstimateCorrection
-                    Protocol           = "stratum+tcp"
-                    Host               = [String]$PoolHost
-                    Port               = [UInt16]$PoolPort
-                    User               = $PoolConf.Wallet
-                    Pass               = If ($TopCoin.Symbol) { "$($WorkerName),c=$($PwdCurr),mc=$($TopCoin.Symbol)" } Else { "$($WorkerName),c=$($PwdCurr)" }
-                    Region             = [String]$Region_Norm
-                    SSL                = [Bool]$false
-                    Fee                = $Fee
-                }
+        If ($PoolConf.Wallet) { 
+            [PSCustomObject]@{ 
+                Algorithm          = [String]$Algorithm_Norm
+                CoinName           = [String]$TopCoin.Name
+                Currency           = [String]$TopCoin.Symbol
+                Price              = [Double]$Stat.Live
+                StablePrice        = [Double]$Stat.Week
+                MarginOfError      = [Double]$Stat.Week_Fluctuation
+                EstimateCorrection = [Double]$PoolConf.EstimateCorrection
+                Protocol           = "stratum+tcp"
+                Host               = [String]$PoolHost
+                Port               = [UInt16]$PoolPort
+                User               = $PoolConf.Wallet
+                Pass               = If ($TopCoin.Symbol) { "$($WorkerName),c=$($PasswordCurrency),mc=$($TopCoin.Symbol)" } Else { "$($WorkerName),c=$($PasswordCurrency)" }
+                Region             = [String]$Region_Norm
+                SSL                = [Bool]$false
+                Fee                = $Fee
             }
         }
     }

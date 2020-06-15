@@ -30,7 +30,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     If ((Get-Stat -Name $Stat_Name) -eq $null) { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) }
     Else { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) }
 
-    $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
+    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
 
     $PoolRegions | ForEach-Object { 
@@ -48,7 +48,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                 Host               = [String]"$(if ($Region -eq "eu") { "eu." })$HostSuffix"
                 Port               = [UInt16]$PoolPort
                 User               = $PoolConf.Wallet
-                Pass               = "$($WorkerName),c=$($PwdCurr)"
+                Pass               = "$($WorkerName),c=$($PasswordCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee
