@@ -24,15 +24,15 @@ Function Start-Cycle {
                 Write-Message "Donation run: Mining to donation address for the next $($Config.Donate - ((Get-Date) - $Variables.DonateTime).Minutes) minute$(If (($Config.Donate - ((Get-Date) - $Variables.DonateTime).Minutes) -ne "1") { "s" })."
 
                 Try { 
-                    $Donation = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+                    $Donation = Invoke-WebRequest "_https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
                 }
                 Catch { 
                     $Donation = @(
-                        [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus" },
-                        [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo" },
-                        [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace" },
-                        [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru" }
+                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PasswordCurrency = "BTC" },
+                        [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PasswordCurrency = "BTC" },
+                        [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PasswordCurrency = "BTC" },
+                        [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PasswordCurrency = "BTC" },
+                        [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PasswordCurrency = "BTC" }
                     )
                 }
 
@@ -368,9 +368,6 @@ Function Start-Cycle {
                 }
             }
 
-# Debug/dev only, simulate miner fees per algo!
-#$Miner_Fees = [PSCustomObject]@{ }; $_.Content.HashRates | ForEach-Object { $Miner_Fees | Add-Member $_ (Get-Random -Minimum 0 -Maximum 0.08) }
-
             [PSCustomObject]@{ 
                 Name             = [String]$Miner_Name
                 BaseName         = [String]($Miner_Name -split '-' | Select-Object -Index 0)
@@ -388,14 +385,27 @@ Function Start-Cycle {
                 URI              = [String]$_.Content.URI
                 PrerequisitePath = [String]$_.Content.PrerequisitePath
                 WarmupTime       = $(If ($_.Content.WarmupTime -lt $Config.WarmupTime) { [Int]$Config.WarmupTime } Else { [Int]$_.Content.WarmupTime })
-            }
+            } | Where-Object { ($Workers.Pool -notcontains $null) }
         } 
         Remove-Variable Pools
+
+        If (-not ($NewMiners)) { 
+            Write-Message -Level Warn "No miners found."
+            $Variables.EndLoop = $true
+            Start-Sleep -Seconds 10
+            Continue
+        }
 
         $Variables.NewMiners = $NewMiners = [Miner[]]$NewMiners
 
         [Miner[]]$Variables.CompareMiners = Compare-Object -PassThru @($Variables.Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Path, Algorithm -IncludeEqual
-        
+
+        #Stop runing miners where miner file is gone
+        $Variables.Miners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq "Running" } | ForEach-Object { 
+            Write-Message "Stopped miner '$($_.Info)'."
+            $_.SetStatus("Idle")
+        }
+
         #Remove gone miners
         [Miner[]]$Variables.Miners = $Variables.Miners | Where-Object SideIndicator -EQ "=="
 
@@ -405,14 +415,13 @@ Function Start-Cycle {
         #Update existing miners
         $Variables.Miners | ForEach-Object { 
             $_.Enabled = $false
-
             If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Path, Algorithm -ExcludeDifferent) { 
+                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.ShowMinerWindow -ne $Miner.ShowMinerWindow)
                 $_.Arguments = $Miner.Arguments
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
                 $_.ShowMinerWindow = $Miner.ShowMinerWindow
                 $_.Enabled = $true
-                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.ShowMinerWindow -ne $Miner.ShowMinerWindow)
             }
 
             $_.ReadPowerUsage = $Variables.ReadPowerUsage
@@ -445,37 +454,31 @@ Function Start-Cycle {
             Remove-Variable ReasonableEarning -ErrorAction Ignore
         }
 
-        If (-not ($Variables.Miners | Where-Object Enabled -EQ $true)) { 
-            Write-Message -Level Warn "No miners available."
-            $Variables.EndLoop = $true
-            Start-Sleep -Seconds 10
-            Continue
+        $Variables.MinersMissingBinary = ($Variables.Miners | Where-Object { $_.Enabled -eq $true -and -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Binary missing"; $_ })
+        $Variables.MinersMissingPreRequisite = ($Variables.Miners | Where-Object { $_.Enabled -eq $true -and $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "PreRequisite missing"; $_ })
+        Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
+        If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
+            #Download miner binaries
+            If ($Variables.Downloader.State -ne "Running") { 
+                Write-Message -Level Warn "Some miners binaries are missing, starting downloader..."
+                $Downloader_Parameters = @{
+                    Logfile = $Variables.Logfile
+                    DownloadList = @($Variables.MinersMissingPreRequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
+                    WorkingDirectory = $Variables.MainPath
+                }
+                $Variables.Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
+                Remove-Variable Downloader_Parameters
+            }
         }
 
-        $Variables.MinersMissingBinary = ($Variables.Miners | Where-Object {-not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Binary missing"; $_ })
-        $Variables.MinersMissingPreRequisite = ($Variables.Miners | Where-Object { $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "PreRequisite missing"; $_ })
-        #Stop downloader to pass new arguments
-        Get-Job | Where-Object Name -EQ Downloader | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
-        #Download miner binaries
-        If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
-            Write-Message -Level Warn "Some miners binaries are missing, starting downloader..."
-            $Downloader_Parameters = @{
-                Logfile = $Variables.Logfile
-                DownloadList = @($Variables.MinersMissingPreRequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
-                WorkingDirectory = $Variables.MainPath
-            }
-            $Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
-            Remove-Variable Downloader_Parameters
+        If (-not ($Variables.Miners | Where-Object Enabled -EQ $true)) { 
+            Write-Message -Level Warn "No miners available$(If ($Variables.Downloader.State -eq "Running") { "waiting 30 seconds for downloader to install binaries.." })."
+            $Variables.EndLoop = $true
+            Start-Sleep -Seconds 30
+            Continue
         }
 
         Write-Message -Level VERBOSE "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Enabled -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) after filtering (filtered out $(($Variables.Miners | Where-Object Enabled -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
-
-        If (-not ($Variables.Miners | Where-Object Enabled)) { 
-            Write-Message "No Miners - waiting for downloader to install binaries..."
-            $Variables.EndLoop = $true
-            Start-Sleep -Seconds 10
-            Continue
-        }
 
         If ($Config.OpenFirewallPorts) { 
             #Open firewall ports for all miners
@@ -523,7 +526,7 @@ Function Start-Cycle {
             $BestMiners_Comparison = $FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName) } | Sort-Object -Descending $_."$($SortBy)_Comparison" | Select-Object -First 1) }
             Remove-Variable SortBy
 
-            $Miners_Device_Combos = Get-Combination ($Variables.Miners | Where-Object Enabled -EQ $true| Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 }
+            $Miners_Device_Combos = Get-Combination ($Variables.Miners | Where-Object Enabled -EQ $true | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 }
 
             $BestMiners_Combos = @(
                 $Miners_Device_Combos | ForEach-Object { 
@@ -604,16 +607,14 @@ Function Start-Cycle {
         #Stop miners in the active list 
         $Variables.Miners | Where-Object Status -eq "Running" | Where-Object { $_.Best -eq $false -or $_.Restart -eq $true } | ForEach-Object { 
             $Miner = $_
-            $Miner_Info = "$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             If ($Miner.Status -eq "Running" -and $Miner.GetStatus() -ne "Running") { 
-                Write-Message -Level ERROR "Miner '$Miner_Info' exited unexpectedly." 
+                Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
                 $Miner.SetStatus("Failed")
             }
             Else { 
+                Write-Message "Stopped miner '$($Miner.Info)'."
                 $Miner.SetStatus("Idle")
-                $Miner.StatusMessage = " stopped gracefully"
                 If ($Miner.ProcessId -and -not ($Variables.Miners | Where-Object { $_.Best -and $_.API -EQ $Miner.API })) { Stop-Process -Id $Miner.ProcessId -Force -ErrorAction Ignore } #temp fix
-                Write-Message "Stopped miner '$Miner_Info'."
 
                 # #Remove watchdog timer
                 # $Miner.Algorithm | ForEach-Object { 
@@ -638,7 +639,6 @@ Function Start-Cycle {
 
         $Variables.Miners | Where-Object Best | ForEach-Object { 
             $Miner = $_
-            $Miner_Info = "$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             If ($_.GetStatus() -ne "Running") { 
                 # Log switching information to .\Logs\switching.log
                 [PSCustomObject]@{ Date = (Get-Date); "Type" = $($Miner.Type -join " & "); "Algo(s)" = (($Miner.Algorithm | Select-Object -Unique) -join '; '); "Wallet(s)" = (($Miner.Workers.Pool.User | Select-Object -Unique) -join '; ') ; "Username" = $Config.UserName; "Host(s)" = (($Miner.Workers.Pool.Host | Select-Object -Unique) -join '; ') } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
@@ -667,9 +667,9 @@ Function Start-Cycle {
                         Start-Sleep -Seconds 2
                     }
                 }
-                Write-Message "Started miner '$Miner_Info'."
-                Write-Message -Level Verbose $Miner.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
                 $Miner.SetStatus("Running")
+                Write-Message "Started miner '$($Miner.Info)'."
+                Write-Message -Level Verbose $Miner.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
             }
         }
 
@@ -684,7 +684,7 @@ Function Start-Cycle {
         "--------------------------------------------------------------------------------" | Out-Host
 
         $Error.Clear()
-    
+
         Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
 
         If ($Variables.BrainJobs.count -gt 0) { 
@@ -761,18 +761,21 @@ While ($true) {
                     }
                     If ($_.GetStatus() -ne "Running") { 
                         #Miner crashed or enough samples collected, exit loop immediately
-                        Write-Message -Level ERROR "Miner ($($_.Name)) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} exited unexpectedly." 
+                        Write-Message -Level ERROR "Miner $($_.Info) exited unexpectedly." 
                         $_.SetStatus("Failed")
+                        $_.StatusMessage = "Exited unexpectedly."
                     }
                     ElseIf ($_.DataReaderJob.State -ne "Running") { 
                         #Miner data reader process failed, exit loop immediately
-                        Write-Message -Level ERROR "Miner data reader ($($_.Name)) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} exited unexpectedly." 
+                        Write-Message -Level ERROR "Miner data reader $($_.Info) exited unexpectedly." 
                         $_.SetStatus("Failed")
+                        $_.StatusMessage = "Miner data reader exited unexpectedly."
                     }
                     ElseIf (((Get-Date) - $_.Process.PSBeginTime).TotalSeconds -gt $_.WarmupTime -and ($_.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds(-$_.WarmupTime).ToUniversalTime()) { 
                         #Miner is stuck - no data for > 30 seconds
-                        Write-Message -Level ERROR "Miner ($($_.Name)) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} has not updated data for $($_.WarmupTime) seconds and got stopped."
+                        Write-Message -Level ERROR "Miner $($_.Info) has not updated data for $($_.WarmupTime) seconds and got stopped."
                         $_.SetStatus("Failed")
+                        $_.StatusMessage = "Has not updated data for $($_.WarmupTime) seconds"
                     }
                 }
                 If (($RunningMiners | Where-Object { $_.GetStatus() -ne "Running" }) -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { $_.GetStatus() -eq "Running" }))) { 
