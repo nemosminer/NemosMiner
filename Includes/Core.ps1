@@ -392,7 +392,7 @@ Function Start-Cycle {
         If (-not ($NewMiners)) { 
             Write-Message -Level Warn "No miners found."
             $Variables.EndLoop = $true
-            Start-Sleep -Seconds 60
+            Start-Sleep -Seconds 10
             Continue
         }
 
@@ -472,9 +472,9 @@ Function Start-Cycle {
         }
 
         If (-not ($Variables.Miners | Where-Object Enabled -EQ $true)) { 
-            Write-Message -Level Warn "No miners available$(If ($Variables.Downloader.State -eq "Running") { " waiting 5 minutes for downloader to install binaries.." })."
+            Write-Message -Level Warn "No miners available$(If ($Variables.Downloader.State -eq "Running") { " waiting 10 minutes for downloader to install binaries.." })."
             $Variables.EndLoop = $true
-            Start-Sleep -Seconds 300
+            Start-Sleep -Seconds 600
             Continue
         }
 
