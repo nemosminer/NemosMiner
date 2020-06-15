@@ -151,6 +151,7 @@ Class Miner {
     [Boolean]$Enabled = $false
     [String[]]$Reason
     [Boolean]$Restart = $false #stop and start miner even if best
+
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
@@ -158,6 +159,7 @@ Class Miner {
     hidden [Int]$Activated = 0
     [MinerStatus]$Status = [MinerStatus]::Idle
     [String]$StatusMessage
+    [String]$Info
     [DateTime]$StatStart
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
@@ -185,7 +187,7 @@ Class Miner {
     #[String[]]$PoolName_Base = @() #derived from pool
     [Double[]]$PoolFee = @() #derived from pool
     [Double[]]$PoolPrice = @() #derived from pool
-    [Double[]]$Fee = @()
+    [Double[]]$Fee = @() #derived from miner
 
     #Under review
     [Int]$AllowedBadShareRatio
@@ -261,7 +263,10 @@ Class Miner {
             $this | Add-Member -Force @{ 
                 DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList $this, @($this.Algorithm)
             }
-            $this.Devices | ForEach-Object { $_.Status = "$(If ($this.Benchmarking -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}" }
+            $this.StatusMessage = "$(If ($this.Benchmarking -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+
         }
     }
 
@@ -289,7 +294,9 @@ Class Miner {
         }
         #Stop Miner data reader
         Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
-        $this.Devices | ForEach-Object { $_.Status = "Idle" }
+        $this.StatusMessage = "Idle"
+        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+        $this.Info = ""
     }
 
     [DateTime]GetActiveLast() { 
@@ -774,23 +781,14 @@ Function Initialize-Application {
     $Variables.DecayPeriod = 60 #seconds
     $Variables.DecayBase = 1 - 0.1 #decimal percentage
 
-    # Purge Logs more than 10 days
-    Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-
-    # #Update stats with missing data and set to today's date/time
-    # Write-Message -Level VERBOSE "Preparing stats data..."
-    # Get-Stat; $Now = (Get-Date).ToUniversalTime(); If ($Stats) { $Stats | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Stats.$_.Updated = $Now } }
-
-    #Set donation parameters
-    $Variables.DonateRandom = [PSCustomObject]@{ }
-    If ($Config.Donate -lt 1) { $Config.Donate = (0, (0..0)) | Get-Random }
-    $Variables.WalletBackup = $Config.Wallet
-    $Variables.UserNameBackup = $Config.UserName
-    $Variables.WorkerNameBackup = $Config.WorkerName
     $Variables.EarningsPool = ""
     $Variables.BrainJobs = @()
     $Variables.EarningsTrackerJobs = @()
     $Variables.Earnings = @{ }
+
+    # Purge Logs more than 10 days
+    Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+
 
     # Find available TCP Ports
     $StartPort = 4068
@@ -1180,6 +1178,10 @@ Function Get-Config {
     }
     If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
         $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-json
+        #Default PasswordCurrency is BTC
+        $Config.PasswordCurrency = $Config.PasswordCurrency.TrimStart().TrimEnd().ToUpper()
+        If ($Config.PasswordCurrency -notmatch "[A-Z0-9]{3,}") { $Config.PasswordCurrency = "BTC" }
+        $PoolsConfig."Default" | Add-Member -Force "PasswordCurrency" $Config.PasswordCurrency
     }
     Else { 
         $PoolsConfig = [PSCustomObject]@{ default = [PSCustomObject]@{ 
@@ -1187,6 +1189,7 @@ Function Get-Config {
                 UserName           = "nemo"
                 WorkerName         = "NemosMinerNoCfg"
                 PricePenaltyFactor = 1
+                PasswordCurrency   = "BTC"
             }
         }
     }
