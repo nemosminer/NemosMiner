@@ -701,14 +701,14 @@ Function Form_Load {
 
 Function CheckedListBoxPools_Click ($Control) { 
     If ($Control.SelectedItem -in $Control.CheckedItems) { 
-        $Control.CheckedItems | Where-Object { $_ -ne $Control.SelectedItem -and ($_ -replace "24hr" -replace "Plus") -like "$($Control.SelectedItem -replace "24hr" -replace "Plus")" } | ForEach-Object { 
+        $Control.CheckedItems | Where-Object { $_ -ne $Control.SelectedItem -and ($_ -replace "24hr" -replace "Coins") -like "$($Control.SelectedItem -replace "24hr" -replace "Coins")" } | ForEach-Object { 
             $Control.SetItemChecked($Control.Items.IndexOf($_), $false)
         }
     }
 
     $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
     If ($Control.CheckedItems) { 
-        $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Control.CheckedItems -replace "24hr" -replace "Plus") | Sort-Object -Unique }
+        $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Control.CheckedItems -replace "24hr" -replace "Coins") | Sort-Object -Unique }
     }
     Else { 
         $EarningTrackerConfig | Add-Member -Force @{ "Pools" = $null }
