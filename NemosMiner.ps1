@@ -92,7 +92,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$OpenFirewallPorts = $true, #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
-    [String]$Passwordcurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH ect.
+    [String]$PasswordCurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH etc.
     [Parameter(Mandatory = $false)]
     [String[]]$PoolName = @(), 
     [Parameter(Mandatory = $false)]
@@ -1292,10 +1292,10 @@ $LabelPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelPwdCurrency
 
 $TBPwdCurrency = New-Object System.Windows.Forms.TextBox
-$TBPwdCurrency.Tag = "Passwordcurrency"
+$TBPwdCurrency.Tag = "PasswordCurrency"
 $TBPwdCurrency.MultiLine = $false
 # $TBPwdCurrency.Scrollbars             = "Vertical" 
-$TBPwdCurrency.Text = $Config.Passwordcurrency
+$TBPwdCurrency.Text = $Config.PasswordCurrency
 $TBPwdCurrency.AutoSize = $false
 $TBPwdCurrency.Width = 300
 $TBPwdCurrency.Height = 20
