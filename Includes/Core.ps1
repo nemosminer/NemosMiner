@@ -459,8 +459,8 @@ Function Start-Cycle {
         $Variables.Miners | Where-Object { $_.Enabled -eq $true -and -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Binary missing" }
         $Variables.Miners | Where-Object { $_.Enabled -eq $true -and $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "PreRequisite missing" }
 
-        $Variables.MinersMissingBinary = $Variables.Miners | Where-Object "Binary missing" -in Reason
-        $Variables.MinersMissingPreRequisite = $Variables.Miners | Where-Object "PreRequisite missing" -in Reason
+        $Variables.MinersMissingBinary = $Variables.Miners | Where-Object Reason -contains "Binary missing"
+        $Variables.MinersMissingPreRequisite = $Variables.Miners | Where-Object Reason -contains "PreRequisite missing"
 
         Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
         If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
