@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-Gminer210\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.10/gminer_2_10_windows64.zip"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10/gminer_2_10_windows64.7z"
 $Commands = [PSCustomObject]@{ 
     #"beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"equihash125"      = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
