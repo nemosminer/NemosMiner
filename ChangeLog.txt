@@ -5,6 +5,7 @@ Fixed:
 - Downloader only downloading required miners
 - Stop miner gracefully when miner file gets removed while NemosMiner is running
 - Mining to correct address at start or end of donation
+- Do not switch miners while donating
 
 What's still broken:
 - Idle detection
