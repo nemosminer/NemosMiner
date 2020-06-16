@@ -1,7 +1,7 @@
 using module .\Include.psm1
 
 Function Start-Cycle { 
-    $CycleTime = Measure-Command -Expression {
+    $Variables.CycleTime = Measure-Command -Expression {
         Write-Message "Started new cycle."
 
         #Always get the latest config
@@ -11,32 +11,36 @@ Function Start-Cycle {
         $DecayExponent = [Int](((Get-Date).ToUniversalTime() - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
 
         #Activate or deactivate donation
-        If ($Config.Donate -gt 0) { 
+        If ((-not ($Config.PoolsConfig)) -or $Config.Donate -gt 0) { 
             If (($Variables.DonateTime).DayOfYear -ne (Get-Date).DayOfYear) { 
                 #Re-Randomize donation start once per day
                 $Variables.DonateTime = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donate -Maximum (1440 - $Config.Donate - (Get-Date).TimeOfDay.TotalMinutes)))
             }
             If ((-not ($Config.PoolsConfig)) -or ((Get-Date) -gt $Variables.DonateTime -and ((Get-Date).AddMinutes(-$Config.Donate) -lt $Variables.DonateTime))) {
+
+                If (-not $Variables.DonateRandom) { $Variables.DonateStart = (Get-Date) }
+                $Variables.EndLoopTime = ($Variables.DonateStart).AddMinutes($Config.Donate).AddSeconds(-$Variables.CycleTime.Seconds)
+                Write-Message "EndLoopTime: $($Variables.EndLoopTime)"
+
+                Write-Message "Donation run: Mining to donation address for the next $((($Variables.EndLoopTime).AddSeconds($Variables.CycleTime.Seconds + 30) - (Get-Date)).Minutes) minute$(If (((($Variables.EndLoopTime).AddSeconds($Variables.CycleTime.Seconds + 30) - (Get-Date)).Minutes) -ne 1) { "s" })."
+
                 # Get donation addresses randomly from agreed developers list
                 # This will fairly distribute donations to Developers
                 # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
-
-                Write-Message "Donation run: Mining to donation address for the next $($Config.Donate - ((Get-Date) - $Variables.DonateTime).Minutes) minute$(If (($Config.Donate - ((Get-Date) - $Variables.DonateTime).Minutes) -ne "1") { "s" })."
-
                 Try { 
                     $Donation = Invoke-WebRequest "_https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
                 }
                 Catch { 
                     $Donation = @(
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PasswordCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PasswordCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PasswordCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PasswordCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PasswordCurrency = "BTC" }
+                        # [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PasswordCurrency = "BTC" },
+                        # [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PasswordCurrency = "BTC" },
+                        # [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PasswordCurrency = "BTC" },
+                        # [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PasswordCurrency = "BTC" },
+                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PasswordCurrency = "BTC" }
                     )
                 }
 
-                If (-not $Variables.DonateRandom ) { $Variables.DonateRandom = $Donation | Get-Random } #Use same donation data for the entire donation period to reduce switching
+                If (-not $Variables.DonateRandom) { $Variables.DonateRandom = $Donation | Get-Random } #Use same donation data for the entire donation period to reduce switching
                 $Config.PoolsConfig = [PSCustomObject]@{ 
                     default = [PSCustomObject]@{ 
                         Wallet = $Variables.DonateRandom.Wallet
@@ -386,17 +390,16 @@ Function Start-Cycle {
                 PrerequisitePath = [String]$_.Content.PrerequisitePath
                 WarmupTime       = $(If ($_.Content.WarmupTime -lt $Config.WarmupTime) { [Int]$Config.WarmupTime } Else { [Int]$_.Content.WarmupTime })
             } | Where-Object { ($Workers.Pool -notcontains $null) }
-        } 
+        }
         Remove-Variable Pools
 
+        $Variables.NewMiners = $NewMiners = [Miner[]]$NewMiners
         If (-not ($NewMiners)) { 
             Write-Message -Level Warn "No miners found."
             $Variables.EndLoop = $true
             Start-Sleep -Seconds 10
             Continue
         }
-
-        $Variables.NewMiners = $NewMiners = [Miner[]]$NewMiners
 
         [Miner[]]$Variables.CompareMiners = Compare-Object -PassThru @($Variables.Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Path, Algorithm -IncludeEqual
 
@@ -423,7 +426,6 @@ Function Start-Cycle {
                 $_.ShowMinerWindow = $Miner.ShowMinerWindow
                 $_.Enabled = $true
             }
-
             $_.ReadPowerUsage = $Variables.ReadPowerUsage
             $_.Refresh($Stats, $Variables.PowerCostBTCperW)
             $_.MinDataSamples = $Config.MinDataSamples * (1, @($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).maximum
@@ -454,8 +456,12 @@ Function Start-Cycle {
             Remove-Variable ReasonableEarning -ErrorAction Ignore
         }
 
-        $Variables.MinersMissingBinary = ($Variables.Miners | Where-Object { $_.Enabled -eq $true -and -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Binary missing"; $_ })
-        $Variables.MinersMissingPreRequisite = ($Variables.Miners | Where-Object { $_.Enabled -eq $true -and $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "PreRequisite missing"; $_ })
+        $Variables.Miners | Where-Object { $_.Enabled -eq $true -and -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "Binary missing" }
+        $Variables.Miners | Where-Object { $_.Enabled -eq $true -and $_.PrerequisitePath -and -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Enabled = $false; $_.Reason += "PreRequisite missing" }
+
+        $Variables.MinersMissingBinary = $Variables.Miners | Where-Object "Binary missing" -in Reason
+        $Variables.MinersMissingPreRequisite = $Variables.Miners | Where-Object "PreRequisite missing" -in Reason
+
         Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
         If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
             #Download miner binaries
@@ -472,7 +478,7 @@ Function Start-Cycle {
         }
 
         If (-not ($Variables.Miners | Where-Object Enabled -EQ $true)) { 
-            Write-Message -Level Warn "No miners available$(If ($Variables.Downloader.State -eq "Running") { " waiting 30 seconds for downloader to install binaries.." })."
+            Write-Message -Level Warn "No miners available$(If ($Variables.Downloader.State -eq "Running") { "waiting 30 seconds for downloader to install binaries.." })."
             $Variables.EndLoop = $true
             Start-Sleep -Seconds 30
             Continue
@@ -706,7 +712,6 @@ Function Start-Cycle {
         # Mostly used for debug. Will execute code found in .\EndLoopCode.ps1 if exists.
         If (Test-Path ".\EndLoopCode.ps1" -PathType Leaf) { Invoke-Expression (Get-Content ".\EndLoopCode.ps1" -Raw) }
     }
-
 
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
     $Variables.EndLoop = $true
