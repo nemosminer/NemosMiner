@@ -361,8 +361,6 @@ Function Start-Cycle {
         If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $Pools; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If (Test-Path ".\CustomMiners" -PathType Container) { $NewMiners +=  Get-ChildItemContent ".\CustomMiners" -Parameters @{Pools = $Pools; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
 
-        #If ($Config.IncludeLegacyMiners -and (Test-Path ".\LegacyMiners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\LegacyMiners" -Parameters @{Pools = $Pools; Stats = $Stats; Config = $Config; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(if ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
-
         $NewMiners = $NewMiners | Select-Object  | Where-Object { $_.Content.Arguments } | ForEach-Object { 
             $Miner_Name = $(If ($_.Content.Name) { $_.Content.Name } Else { $_.Name })
             $Miner_Name = $Miner_Name -replace "^.", "$($Miner_Name[0])".ToUpper()
@@ -383,9 +381,9 @@ Function Start-Cycle {
                 Path             = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
                 Algorithm        = [String[]]$_.Content.Algorithm
                 Workers          = [Worker[]]$Workers
-                Arguments        = $(If ($_.Content.Arguments -isnot [String]) { [String]$_.Content.Arguments | ConvertTo-Json -Depth 10 -Compress } Else { [String]$_.Content.Arguments })
+                Arguments        = $(If ($_.Content.Arguments -isnot [String]) { [String]($_.Content.Arguments | ConvertTo-Json -Depth 10 -Compress) } Else { [String]$_.Content.Arguments })
                 DeviceName       = $(If ($_.Content.DeviceName) { [String[]]$_.Content.DeviceName } Else { [String[]]($_.Content.Type | ForEach-Object { Switch ($_) { "CPU" { ($Variables.Devices | Where-Object Type -EQ $_).Name } "AMD" { ($Variables.Devices | Where-Object Vendor -EQ $_).Name } "NVIDIA" { ($Variables.Devices | Where-Object Vendor -EQ $_).Name } } }) })
-                Devices          = $(If ($_.Content.DeviceName) { [Device[]]($Variables.Device | Where-Object Name -in $.Content.DeviceName) } Else { [Device[]]($_.Content.Type | ForEach-Object { Switch ($_) { "CPU" { $Variables.Devices | Where-Object Type -EQ $_} "AMD" { $Variables.Devices | Where-Object Vendor -EQ $_ } "NVIDIA" { $Variables.Devices | Where-Object Vendor -EQ $_ } } }) })
+                Devices          = $(If ($_.Content.DeviceName) { [Device[]]($Variables.Devices | Where-Object Name -in $_.Content.DeviceName) } Else { [Device[]]($_.Content.Type | ForEach-Object { Switch ($_) { "CPU" { $Variables.Devices | Where-Object Type -EQ $_} "AMD" { $Variables.Devices | Where-Object Vendor -EQ $_ } "NVIDIA" { $Variables.Devices | Where-Object Vendor -EQ $_ } } }) })
                 Port             = [UInt16]$_.Content.Port
                 ShowMinerWindow  = [Boolean]($_.Content.API -ne "Wrapper" -and $Config.ShowMinerWindow) #Miner can be forced to be hidden, but not to be shown (wrapper)  
                 Type             = $(If ($_.Content.Type) { [String[]]($_.Content.Type | Select-Object -Unique) } Else { ($_.Content.DeviceName | ForEach-Object { If ($_ -like "CPU*") { "CPU" } Else { ($Variables.Devices | Where-Object Name -eq $_).Vendor } }) })
@@ -758,52 +756,64 @@ While ($true) {
         # - warmuptime is up
         # - timeout is reached (no readout from miner)
         
-        If ($RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true)) { 
-            $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
-            While (($Variables.Miners | Where-Object { $_.GetStatus() -eq "Running" }) -and ($BenchmarkingOrMeasuringMiners -or ((Get-Date) -lt $Variables.EndLoopTime -and (-not $BenchmarkingOrMeasuringMiners)))) {
-                $RunningMiners | ForEach-Object { 
-                    If ($_.DataReaderJob.HasMoreData) { 
-                        $_.Data += $Samples = @($_.DataReaderJob | Receive-Job) 
-                        $Sample = @($Samples) | Select-Object -Last 1
-                        If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($_.Data).Count) sample$(If (($_.Data).Count -ne 1) { "s"} ))" }
-                    }
-                    If ($_.GetStatus() -ne "Running") { 
-                        #Miner crashed or enough samples collected, exit loop immediately
-                        Write-Message -Level ERROR "Miner $($_.Info) exited unexpectedly." 
-                        $_.SetStatus("Failed")
-                        $_.StatusMessage = "Exited unexpectedly."
-                    }
-                    ElseIf ($_.DataReaderJob.State -ne "Running") { 
-                        #Miner data reader process failed, exit loop immediately
-                        Write-Message -Level ERROR "Miner data reader $($_.Info) exited unexpectedly." 
-                        $_.SetStatus("Failed")
-                        $_.StatusMessage = "Miner data reader exited unexpectedly."
-                    }
-                    ElseIf (((Get-Date) - $_.Process.PSBeginTime).TotalSeconds -gt $_.WarmupTime -and ($_.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds(-$_.WarmupTime).ToUniversalTime()) { 
-                        #Miner is stuck - no data for > 30 seconds
-                        Write-Message -Level ERROR "Miner $($_.Info) has not updated data for $($_.WarmupTime) seconds and got stopped."
-                        $_.SetStatus("Failed")
-                        $_.StatusMessage = "Has not updated data for $($_.WarmupTime) seconds"
-                    }
-                }
-                If (($RunningMiners | Where-Object { $_.GetStatus() -ne "Running" }) -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { $_.GetStatus() -eq "Running" }))) { 
-                    #If a  miner crashed and we're not benchmarking, then end the loop now, update miner statuus
-                    $Variables.EndLoop = $true
-                    $Variables.StatusText = "Starting new cycle."
-                    TimerUITick
-                    Break
-                }
-                If ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
-                    #enough samples collected for this loop, exit loop immediately
-                    Write-Message -Level VERBOSE "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. Ending cyle now."
-                    Break
-                }
+        $RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.GetStatus() -eq "Running" })
+        $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
-                If ($BenchmarkingOrMeasuringMiners) { Start-Sleep -Seconds 1 } Else { Start-Sleep -Seconds 2 }
+        While ((Get-Date) -lt $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners) {
+            $RunningMiners | ForEach-Object { 
+                If ($_.DataReaderJob.HasMoreData) { 
+                    $_.Data += $Samples = @($_.DataReaderJob | Receive-Job | Select-Object) 
+                    $Sample = @($Samples) | Select-Object -Last 1
+                    If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($_.Data).Count) sample$(If (($_.Data).Count -ne 1) { "s"} ))" }
+                }
+                If ($_.GetStatus() -ne "Running") { 
+                    #Miner crashed or enough samples collected, exit loop immediately
+                    Write-Message -Level ERROR "Miner '$($_.Info)' exited unexpectedly." 
+                    $_.SetStatus("Failed")
+                    $_.StatusMessage = "Exited unexpectedly."
+                }
+                ElseIf ($_.DataReaderJob.State -ne "Running") { 
+                    #Miner data reader process failed, exit loop immediately
+                    Write-Message -Level ERROR "Miner data reader '$($_.Info)' exited unexpectedly." 
+                    $_.SetStatus("Failed")
+                    $_.StatusMessage = "Miner data reader exited unexpectedly."
+                }
+                ElseIf (((Get-Date) - $_.Process.PSBeginTime).TotalSeconds -gt $_.WarmupTime -and ($_.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds(-$_.WarmupTime).ToUniversalTime()) { 
+                    #Miner is stuck - no data for > 30 seconds
+                    Write-Message -Level ERROR "Miner '$($_.Info)' has not updated data for $($_.WarmupTime) seconds and got stopped."
+                    $_.SetStatus("Failed")
+                    $_.StatusMessage = "Has not updated data for $($_.WarmupTime) seconds"
+                }
             }
-            Remove-Variable BenchmarkingMiners -ErrorAction Ignore
+
+            $FailedMiners = $RunningMiners | Where-Object { $_.GetStatus() -ne "Running" }
+            $RunningMiners = $RunningMiners | Where-Object { $_.GetStatus() -eq "Running" }
+            $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
+
+            TimerUITick
+
+            If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
+                #A miner crashed and we're not benchmarking, end the loop now
+                $Variables.EndLoop = $true
+                Write-Message -Level VERBOSE "Miner failed - starting new cycle."
+                Break
+            }
+            If (-not $RunningMiners) { 
+                #No running miners, end the loop now
+                $Variables.EndLoop = $true
+                Write-Message -Level VERBOSE "No running miner - starting new cycle."
+                Break
+            }
+            If ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
+                #enough samples collected for this loop, exit loop immediately
+                Write-Message -Level VERBOSE "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. Starting new cyle."
+                Break
+            }
+            If ($BenchmarkingOrMeasuringMiners) { Start-Sleep -Seconds 1 } Else { Start-Sleep -Seconds 2 }
         }
+        Remove-Variable BenchmarkingMiners -ErrorAction Ignore
         Remove-Variable RunningMiners -ErrorAction Ignore
+        Remove-Variable failedMiners -ErrorAction Ignore
         Update-Monitoring
     }
 }
