@@ -89,8 +89,8 @@ Function Start-Cycle {
                                 $Variables.ReadPowerUsage = $false
                             }
                         }
-                        If (($Variables.Devices).Name | Where-Object State -EQ "Enabled" | Where-Object { $Hashtable.$_ -eq $null }) { 
-                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.Devices).Name | Where-Object { $Hashtable.$_ -eq $null }) -join ', ')] - disabling power usage calculations."
+                        If (($Variables.Devices).Name | Where-Object State -EQ "Enabled" | Where-Object { $null -eq $Hashtable.$_ }) { 
+                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.Devices).Name | Where-Object { $null -eq $Hashtable.$_ }) -join ', ')] - disabling power usage calculations."
                             $Variables.ReadPowerUsage = $false
                         }
                         Remove-Variable Device
@@ -148,6 +148,11 @@ Function Start-Cycle {
 
 
         # #Find new pools
+
+        #Remove de-configured pools
+        [Pool[]]$Variables.Pools = $Variables.Pools | Where-Object Name -in $Config.PoolName
+
+        #Find new pools
         [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL, PayoutScheme | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
         
         $Variables.CommparePools = $ComparePools
@@ -243,7 +248,6 @@ Function Start-Cycle {
         # Ensure we get the hashrate for running miners prior looking for best miner
         $Variables.Miners | Where-Object Best | ForEach-Object { 
             $Miner = $_
-            $Miner_Name = $Miner.Name
             If ($Miner.DataReaderJob.HasMoreData) { 
                 $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object Date, HashRate, Shares, PowerUsage)
             }
@@ -684,7 +688,7 @@ Function Start-Cycle {
             If ($_.Benchmark -eq $true) { $Message = "Benchmark " }
             If ($_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true) { $Message = "$($Message)and "}
             If ($_.MeasurePowerUsage -eq $true) { $Message = "$($Message)Power usage measurement " }
-            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner ($($_.Name)) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} in progress..." }
+            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($_.Name) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}' in progress..." }
         }
 
         "--------------------------------------------------------------------------------" | Out-Host
@@ -756,8 +760,7 @@ While ($true) {
         
         If ($RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true)) { 
             $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
-            $LoopStart = Get-Date
-            While ($BenchmarkingOrMeasuringMiners -or ((Get-Date) -lt $Variables.EndLoopTime -and (-not $BenchmarkingOrMeasuringMiners))) {
+            While (($Variables.Miners | Where-Object { $_.GetStatus() -eq "Running" }) -and ($BenchmarkingOrMeasuringMiners -or ((Get-Date) -lt $Variables.EndLoopTime -and (-not $BenchmarkingOrMeasuringMiners)))) {
                 $RunningMiners | ForEach-Object { 
                     If ($_.DataReaderJob.HasMoreData) { 
                         $_.Data += $Samples = @($_.DataReaderJob | Receive-Job) 
