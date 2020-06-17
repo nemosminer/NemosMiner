@@ -89,7 +89,7 @@ Function Start-Cycle {
                                 $Variables.ReadPowerUsage = $false
                             }
                         }
-                        If (($Variables.Devices).Name | Where-Object State -EQ "Enabled" | Where-Object { $null -eq $Hashtable.$_ }) { 
+                        If ($Variables.Devices | Where-Object State -EQ "Enabled" | Where-Object { $null -eq $Hashtable.($_.Name) }) { 
                             Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.Devices).Name | Where-Object { $null -eq $Hashtable.$_ }) -join ', ')] - disabling power usage calculations."
                             $Variables.ReadPowerUsage = $false
                         }
