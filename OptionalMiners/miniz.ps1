@@ -1,17 +1,17 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-miniZ15t3\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.5t3/miniZ_v1.5t3_cuda10_win-x64.zip"
+$Path = ".\Bin\NVIDIA-miniZ15u2\miniZ.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.5u2/miniZ_v1.5u2_cuda10_win-x64.7z"
 $Commands = [PSCustomObject]@{ 
-    "equihash144"  = " --par=144,5 --pers auto" #Equihash144
-    "equihash125"  = " --par=125,4 --pers auto" #Equihash125
-    "zhash"        = " --par=144,5 --pers auto" #Zhash
-    "beamv2"       = " --par=beam --pers auto" #Beamv2
-    "beam"         = " --par=150,5 --pers auto" #Beam
-    "equihash192"  = " --par=192,7 --pers auto" #Equihash192
+    "equihash144"  = " --par=144,5 --pers auto --ocX" #Equihash144
+    "equihash125"  = " --par=125,4 --pers auto --ocX" #Equihash125
+    "zhash"        = " --par=144,5 --pers auto --ocX" #Zhash
+    "beamv2"       = " --par=beam --pers auto --ocX" #Beamv2
+    "beam"         = " --par=150,5 --pers auto --ocX" #Beam
+    "equihash192"  = " --par=192,7 --pers auto --ocX" #Equihash192
     #"equihash96"   = " --par=96,5 --pers auto" #equihash96
-    "equihash-btg" = " --par=144,5 --pers BgoldPoW" # Equihash-btg MPH
-    "equihash-zcl" = " --par=192,7 --pers ZcashPoW" # Equihash-ZCL MPH
+    "equihash-btg" = " --par=144,5 --pers BgoldPoW --ocX" # Equihash-btg MPH
+    "equihash-zcl" = " --par=192,7 --pers ZcashPoW --ocX" # Equihash-ZCL MPH
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
