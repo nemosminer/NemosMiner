@@ -295,19 +295,19 @@ Function Global:TimerUITick {
             # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
 
             If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
-                $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 105"
-                $Chart1.top = 54
+                $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
+                $Chart1.top = 2
                 $Chart1.left = 0
-                $RunPage.Controls.Add($Chart1)
+                $EarningsPage.Controls.Add($Chart1)
                 $Chart1.BringToFront()
 
-                $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 105"
-                $Chart2.top = 54
+                $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 150"
+                $Chart2.top = 2
                 $Chart2.left = 500
-                $RunPage.Controls.Add($Chart2)
+                $EarningsPage.Controls.Add($Chart2)
                 $Chart2.BringToFront()
 
-                $RunPage.Controls | Where-Object { ($_.GetType()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | ForEach-Object { $RunPage.Controls[$RunPage.Controls.IndexOf($_)].Dispose(); $RunPage.Controls.Remove($_) }
+                $EarningsPage.Controls | Where-Object { ($_.GetType()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | ForEach-Object { $EarningsPage.Controls[$EarningsPage.Controls.IndexOf($_)].Dispose(); $EarningsPage.Controls.Remove($_) }
             }
 
             If ($Variables.Earnings -and $Config.TrackEarnings) { 
@@ -828,6 +828,8 @@ $Variables | Add-Member -Force @{ CurrentVersionAutoupdated = (Get-Content .\Ver
 $Variables.StatusText = "Idle"
 $RunPage = New-Object System.Windows.Forms.TabPage
 $RunPage.Text = "Run"
+$EarningsPage = New-Object System.Windows.Forms.TabPage
+$EarningsPage.Text = "Earnings"
 $SwitchingPage = New-Object System.Windows.Forms.TabPage
 $SwitchingPage.Text = "Switching"
 $ConfigPage = New-Object System.Windows.Forms.TabPage
@@ -841,10 +843,10 @@ $TabControl = New-Object System.Windows.Forms.TabControl
 $TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
 $TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Name = "TabControl"
-$TabControl.Width = 720
+$TabControl.Width = 722
 $TabControl.Height = 363
-$TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
-If ($FreshConfig -EQ $true) { $TabControl.SelectedIndex = 2 } #Show config tab
+$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
+If ($FreshConfig -EQ $true) { $TabControl.SelectedIndex = 3 } #Show config tab
 
 $TabControl_SelectedIndexChanged = {
     Switch ($TabControl.SelectedTab.Text) { 
@@ -973,44 +975,15 @@ $Variables.LabelStatus.MultiLine = $true
 $Variables.LabelStatus.Scrollbars = "Vertical" 
 $Variables.LabelStatus.Text = ""
 $Variables.LabelStatus.AutoSize = $true
-$Variables.LabelStatus.Width = 707
-$Variables.LabelStatus.Height = 50
+$Variables.LabelStatus.Width = 708
+$Variables.LabelStatus.Height = 202
 $Variables.LabelStatus.Location = [System.Drawing.Point]::new(2, 2)
 $Variables.LabelStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 
 $RunPageControls += $Variables.LabelStatus
 
-If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
-
-    $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 105"
-    $Chart1.top = 54
-    $Chart1.left = 2
-    $RunPageControls += $Chart1
-
-    $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 105"
-    $Chart2.top = 54
-    $Chart2.left = 500
-    $RunPageControls += $Chart2
-}
-
-$EarningsDGV = New-Object System.Windows.Forms.DataGridView
-$EarningsDGV.Width = 707
-$EarningsDGV.Height = 85
-$EarningsDGV.Location = [System.Drawing.Point]::new(2, 159)
-$EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$EarningsDGV.AutoSizeColumnsMode = "Fill"
-$EarningsDGV.RowHeadersVisible = $false
-$RunPageControls += $EarningsDGV
-
-# $LabelGitHub = New-Object System.Windows.Forms.LinkLabel
-# $LabelGitHub.Location = New-Object System.Drawing.Size(600, 246)
-# $LabelGitHub.Size = New-Object System.Drawing.Size(160, 20)
-# $LabelGitHub.LinkColor = [System.Drawing.Color]::Blue
-# $LabelGitHub.ActiveLinkColor = [System.Drawing.Color]::Blue
-# $RunPageControls += $LabelGitHub
-
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
-$LabelCopyright.Location = New-Object System.Drawing.Size(220, 246)
+$LabelCopyright.Location = New-Object System.Drawing.Size(220, 214)
 $LabelCopyright.Size = New-Object System.Drawing.Size(490, 16)
 $LabelCopyright.LinkColor = [System.Drawing.Color]::Blue
 $LabelCopyright.ActiveLinkColor = [System.Drawing.Color]::Blue
@@ -1022,20 +995,56 @@ $RunPageControls += $LabelCopyright
 $LabelRunningMiners = New-Object System.Windows.Forms.Label
 $LabelRunningMiners.Text = "Running Miners"
 $LabelRunningMiners.AutoSize = $false
-$LabelRunningMiners.Width = 200
-$LabelRunningMiners.Height = 20
-$LabelRunningMiners.Location = [System.Drawing.Point]::new(2, 246)
+$LabelRunningMiners.Width = 202
+$LabelRunningMiners.Height = 16
+$LabelRunningMiners.Location = [System.Drawing.Point]::new(2, 213)
 $LabelRunningMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $RunPageControls += $LabelRunningMiners
 
 $RunningMinersDGV = New-Object System.Windows.Forms.DataGridView
-$RunningMinersDGV.Width = 707
-$RunningMinersDGV.Height = 92
-$RunningMinersDGV.Location = [System.Drawing.Point]::new(2, 266)
+$RunningMinersDGV.Width = 708
+$RunningMinersDGV.Height = 100
+$RunningMinersDGV.Location = [System.Drawing.Point]::new(2, 232)
 $RunningMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
 $RunningMinersDGV.RowHeadersVisible = $false
 $RunPageControls += $RunningMinersDGV
+
+
+# Earnings Page Controls
+$EarningsPageControls = @()
+
+If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
+
+    $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
+    $Chart1.top = 2
+    $Chart1.left = 2
+    $EarningsPageControls += $Chart1
+
+    $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 150"
+    $Chart2.top = 2
+    $Chart2.left = 500
+    $EarningsPageControls += $Chart2
+}
+
+
+$LabelEarnings = New-Object System.Windows.Forms.Label
+$LabelEarnings.Text = "Earning statistics per pool"
+$LabelEarnings.AutoSize = $false
+$LabelEarnings.Width = 202
+$LabelEarnings.Height = 16
+$LabelEarnings.Location = [System.Drawing.Point]::new(2, 149)
+$LabelEarnings.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$EarningsPageControls += $LabelEarnings
+
+$EarningsDGV = New-Object System.Windows.Forms.DataGridView
+$EarningsDGV.Width = 708
+$EarningsDGV.Height = 165
+$EarningsDGV.Location = [System.Drawing.Point]::new(2, 167)
+$EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$EarningsDGV.AutoSizeColumnsMode = "Fill"
+$EarningsDGV.RowHeadersVisible = $false
+$EarningsPageControls += $EarningsDGV
 
 # Switching Page Controls
 $SwitchingPageControls = @()
@@ -1084,7 +1093,7 @@ Function CheckBoxSwitching_Click {
 }
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
-$SwitchingDGV.Width = 707
+$SwitchingDGV.Width = 708
 $SwitchingDGV.Height = 310
 $SwitchingDGV.Location = [System.Drawing.Point]::new(2, 22)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1095,7 +1104,7 @@ $SwitchingPageControls += $SwitchingDGV
 
 # Estimations Page Controls
 $EstimationsDGV = New-Object System.Windows.Forms.DataGridView
-$EstimationsDGV.Width = 707
+$EstimationsDGV.Width = 708
 $EstimationsDGV.Height = 330
 $EstimationsDGV.Location = [System.Drawing.Point]::new(2, 2)
 $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1676,26 +1685,27 @@ $MonitoringSettingsControls = @()
 $LabelMonitoringWorkers = New-Object System.Windows.Forms.Label
 $LabelMonitoringWorkers.Text = "Worker Status"
 $LabelMonitoringWorkers.AutoSize = $false
-$LabelMonitoringWorkers.Width = 710
-$LabelMonitoringWorkers.Height = 20
+$LabelMonitoringWorkers.Width = 708
+$LabelMonitoringWorkers.Height = 18
 $LabelMonitoringWorkers.Location = [System.Drawing.Point]::new(2, 4)
 $LabelMonitoringWorkers.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringPageControls += $LabelMonitoringWorkers
 
 $WorkersDGV = New-Object System.Windows.Forms.DataGridView
-$WorkersDGV.Width = 707
-$WorkersDGV.Height = 244
-$WorkersDGV.Location = [System.Drawing.Point]::new(2, 24)
+$WorkersDGV.Width = 708
+$WorkersDGV.Height = 236
+$WorkersDGV.Location = [System.Drawing.Point]::new(2, 22)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $WorkersDGV.AutoSizeColumnsMode = "AllCells"
 $WorkersDGV.RowHeadersVisible = $false
 $MonitoringPageControls += $WorkersDGV
 
 $GroupMonitoringSettings = New-Object System.Windows.Forms.GroupBox
-$GroupMonitoringSettings.Height = 60
-$GroupMonitoringSettings.Width = 707
+$GroupMonitoringSettings.Height = 70
+$GroupMonitoringSettings.Width = 708
 $GroupMonitoringSettings.Text = "Monitoring Settings"
-$GroupMonitoringSettings.Location = [System.Drawing.Point]::new(1, 272)
+$GroupMonitoringSettings.Location = [System.Drawing.Point]::new(1, 264)
+$GroupMonitoringSettings.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringPageControls += $GroupMonitoringSettings
 
 $LabelMonitoringServer = New-Object System.Windows.Forms.Label
@@ -1703,7 +1713,7 @@ $LabelMonitoringServer.Text = "Server"
 $LabelMonitoringServer.AutoSize = $false
 $LabelMonitoringServer.Width = 60
 $LabelMonitoringServer.Height = 20
-$LabelMonitoringServer.Location = [System.Drawing.Point]::new(2, 15)
+$LabelMonitoringServer.Location = [System.Drawing.Point]::new(2, 21)
 $LabelMonitoringServer.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $LabelMonitoringServer
 
@@ -1714,7 +1724,7 @@ $TBMonitoringServer.Text = $Config.MonitoringServer
 $TBMonitoringServer.AutoSize = $false
 $TBMonitoringServer.Width = 260
 $TBMonitoringServer.Height = 20
-$TBMonitoringServer.Location = [System.Drawing.Point]::new(62, 15)
+$TBMonitoringServer.Location = [System.Drawing.Point]::new(62, 21)
 $TBMonitoringServer.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $TBMonitoringServer
 
@@ -1724,7 +1734,7 @@ $CheckBoxReportToServer.Text = "Report to server"
 $CheckBoxReportToServer.AutoSize = $false
 $CheckBoxReportToServer.Width = 130
 $CheckBoxReportToServer.Height = 20
-$CheckBoxReportToServer.Location = [System.Drawing.Point]::new(324, 15)
+$CheckBoxReportToServer.Location = [System.Drawing.Point]::new(324, 21)
 $CheckBoxReportToServer.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxReportToServer.Checked = $Config.ReportToServer
 $MonitoringSettingsControls += $CheckBoxReportToServer
@@ -1735,7 +1745,7 @@ $CheckBoxShowWorkerStatus.Text = "Show other workers"
 $CheckBoxShowWorkerStatus.AutoSize = $false
 $CheckBoxShowWorkerStatus.Width = 145
 $CheckBoxShowWorkerStatus.Height = 20
-$CheckBoxShowWorkerStatus.Location = [System.Drawing.Point]::new(456, 15)
+$CheckBoxShowWorkerStatus.Location = [System.Drawing.Point]::new(456, 21)
 $CheckBoxShowWorkerStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxShowWorkerStatus.Checked = $Config.ShowWorkerStatus
 $MonitoringSettingsControls += $CheckBoxShowWorkerStatus
@@ -1745,7 +1755,7 @@ $LabelMonitoringUser.Text = "User ID"
 $LabelMonitoringUser.AutoSize = $false
 $LabelMonitoringUser.Width = 60
 $LabelMonitoringUser.Height = 20
-$LabelMonitoringUser.Location = [System.Drawing.Point]::new(2, 37)
+$LabelMonitoringUser.Location = [System.Drawing.Point]::new(2, 44)
 $LabelMonitoringUser.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $LabelMonitoringUser
 
@@ -1756,7 +1766,7 @@ $TBMonitoringUser.Text = $Config.MonitoringUser
 $TBMonitoringUser.AutoSize = $false
 $TBMonitoringUser.Width = 260
 $TBMonitoringUser.Height = 20
-$TBMonitoringUser.Location = [System.Drawing.Point]::new(62, 37)
+$TBMonitoringUser.Location = [System.Drawing.Point]::new(62, 44)
 $TBMonitoringUser.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $TBMonitoringUser
 
@@ -1764,7 +1774,7 @@ $ButtonGenerateMonitoringUser = New-Object System.Windows.Forms.Button
 $ButtonGenerateMonitoringUser.Text = "Generate New User ID"
 $ButtonGenerateMonitoringUser.Width = 160
 $ButtonGenerateMonitoringUser.Height = 20
-$ButtonGenerateMonitoringUser.Location = [System.Drawing.Point]::new(324, 37)
+$ButtonGenerateMonitoringUser.Location = [System.Drawing.Point]::new(324, 44)
 $ButtonGenerateMonitoringUser.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonGenerateMonitoringUser.Enabled = ($TBMonitoringUser.Text -eq "")
 $MonitoringSettingsControls += $ButtonGenerateMonitoringUser
@@ -1777,7 +1787,7 @@ $ButtonMonitoringWriteConfig = New-Object System.Windows.Forms.Button
 $ButtonMonitoringWriteConfig.Text = "Save Config"
 $ButtonMonitoringWriteConfig.Width = 100
 $ButtonMonitoringWriteConfig.Height = 30
-$ButtonMonitoringWriteConfig.Location = [System.Drawing.Point]::new(600, 15)
+$ButtonMonitoringWriteConfig.Location = [System.Drawing.Point]::new(600, 21)
 $ButtonMonitoringWriteConfig.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $ButtonMonitoringWriteConfig
 $ButtonMonitoringWriteConfig.Add_Click( { PrepareWriteConfig })
@@ -1848,6 +1858,7 @@ $ConsoleHandle = (Get-Process -Id $pid).MainWindowHandle
 
 $MainForm.Controls.AddRange($MainFormControls)
 $RunPage.Controls.AddRange(@($RunPageControls))
+$EarningsPage.Controls.AddRange(@($EarningsPageControls))
 $SwitchingPage.Controls.AddRange(@($SwitchingPageControls))
 $EstimationsPage.Controls.AddRange(@($EstimationsDGV))
 $ConfigPage.Controls.AddRange($ConfigPageControls)
