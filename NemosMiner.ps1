@@ -142,7 +142,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write powershell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
-    [Switch]$TrackEarnings = $true, # Display    [Boolean]$TrackEarnings = $true, # Display earnings information
+    [Switch]$TrackEarnings = $true, # Display earnings information
     [Parameter(Mandatory = $false)]
     [String[]]$Type = @("nvidia"), #AMD/NVIDIA/CPU
     [Parameter(Mandatory = $false)]
@@ -247,7 +247,7 @@ If ($Config.SnakeTailExe -and (Test-Path $Config.SnakeTailExe -PathType Leaf -Er
 }
 
 $Variables.ConfigFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile)
-$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $This._StatusText; $This._StatusText = @() } -SecondValue { If (-not $This._StatusText) { $This._StatusText = @() } ; $This._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $true } }
+$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $this._StatusText = @() } -SecondValue { If (-not $this._StatusText) { $this._StatusText = @() } ; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $true } }
 
 Write-Message "Starting $($Branding.ProductLabel)® v$((Get-Content ".\Config\version.json" | ConvertFrom-Json).Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 Write-Message "Using configuration file '$($Variables.ConfigFile)'."
@@ -275,7 +275,7 @@ Function Global:TimerUITick {
         $Variables.EarningsTrackerJobs | Where-Object { $_.State -eq "Running" } | ForEach-Object { 
             $EarnTrack = $_ | Receive-Job
             If ($EarnTrack) { 
-                $EarnTrack | Where-Object { $_.Pool -ne "" } | Sort-Object date, pool | Select-Object -Last ($EarnTrack.Pool | Sort-Object -Unique).Count | ForEach-Object { $Variables.Earnings.($_.Pool) = $_ }
+                $EarnTrack | Where-Object { $_.Pool -ne "" } | Sort-Object Date, Pool | Select-Object -Last ($EarnTrack.Pool | Sort-Object -Unique).Count | ForEach-Object { $Variables.Earnings.($_.Pool) = $_ }
                 Remove-Variable EarnTrack
             }
         }
@@ -465,7 +465,7 @@ Function Global:TimerUITick {
                     Write-Host "Trust Level:                $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F darkgray " (based on data from $(([DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
                     Write-Host "Average mBTC/Hour:          $(($_.AvgHourlyGrowth * 1000).ToString('N6'))"
                     Write-Host "Average mBTC/Day:" -NoNewline; Write-Host "           $(($_.BTCD * 1000).ToString('N6'))" -F Yellow
-                    Write-Host "Balance:                    BTC $(($_.Balance).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold).ToString('N3')) BTC payment threshold)"
+                    Write-Host "Balance BTC:                $(($_.Balance).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold).ToString('N3')) BTC payment threshold)"
                     Write-Host "Balance $($Config.Currency | Select-Object -Index 0):                $(($_.Balance * $Variables.Rates.($Config.Currency | Select-Object -Index 0)).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold * $Variables.Rates.($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0) payment threshold)"
                     Write-Host "Estimated Pay Date:         $(if ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString() } Else { "$($_.EstimatedPayDate)" })"
                 }
@@ -760,7 +760,7 @@ Add-Type -AssemblyName System.Windows.Forms
 $MainForm = New-Object System.Windows.Forms.Form
 $NMIcon = New-Object system.drawing.icon ("$($PWD)\Includes\NM.ICO")
 $MainForm.Icon = $NMIcon
-$MainForm.ClientSize = [System.Drawing.Size]::new(740, 450) # best to keep under 800,600
+$MainForm.ClientSize = [System.Drawing.Size]::new(740, 463) # best to keep under 800,600
 $MainForm.Text = "Form"
 $MainForm.TopMost = $false
 $MainForm.FormBorderStyle = 'Fixed3D'
@@ -842,7 +842,7 @@ $TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
 $TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Name = "TabControl"
 $TabControl.Width = 720
-$TabControl.Height = 359
+$TabControl.Height = 363
 $TabControl.Controls.AddRange(@($RunPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
 If ($FreshConfig -EQ $true) { $TabControl.SelectedIndex = 2 } #Show config tab
 
@@ -965,9 +965,9 @@ $TBAddress.MultiLine = $false
 # $TBAddress.Scrollbars             = "Vertical" 
 $TBAddress.Text = $Config.Wallet
 $TBAddress.AutoSize = $false
-$TBAddress.Width = 280
+$TBAddress.Width = 290
 $TBAddress.Height = 20
-$TBAddress.Location = [System.Drawing.Point]::new(112, 68)
+$TBAddress.Location = [System.Drawing.Point]::new(115, 68)
 $TBAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 # $TBAddress.TextAlign                = "Right"
 $MainFormControls += $TBAddress
@@ -980,7 +980,7 @@ $Variables.LabelStatus.MultiLine = $true
 $Variables.LabelStatus.Scrollbars = "Vertical" 
 $Variables.LabelStatus.Text = ""
 $Variables.LabelStatus.AutoSize = $true
-$Variables.LabelStatus.Width = 712
+$Variables.LabelStatus.Width = 707
 $Variables.LabelStatus.Height = 50
 $Variables.LabelStatus.Location = [System.Drawing.Point]::new(2, 2)
 $Variables.LabelStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1001,7 +1001,7 @@ If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Inc
 }
 
 $EarningsDGV = New-Object System.Windows.Forms.DataGridView
-$EarningsDGV.Width = 712
+$EarningsDGV.Width = 707
 $EarningsDGV.Height = 85
 $EarningsDGV.Location = [System.Drawing.Point]::new(2, 159)
 $EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1036,8 +1036,8 @@ $LabelRunningMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10
 $RunPageControls += $LabelRunningMiners
 
 $RunningMinersDGV = New-Object System.Windows.Forms.DataGridView
-$RunningMinersDGV.Width = 712
-$RunningMinersDGV.Height = 95
+$RunningMinersDGV.Width = 707
+$RunningMinersDGV.Height = 92
 $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, 266)
 $RunningMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
@@ -1091,8 +1091,8 @@ Function CheckBoxSwitching_Click {
 }
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
-$SwitchingDGV.Width = 712
-$SwitchingDGV.Height = 333
+$SwitchingDGV.Width = 707
+$SwitchingDGV.Height = 310
 $SwitchingDGV.Location = [System.Drawing.Point]::new(2, 22)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $SwitchingDGV.AutoSizeColumnsMode = "Fill"
@@ -1102,8 +1102,8 @@ $SwitchingPageControls += $SwitchingDGV
 
 # Estimations Page Controls
 $EstimationsDGV = New-Object System.Windows.Forms.DataGridView
-$EstimationsDGV.Width = 712
-$EstimationsDGV.Height = 350
+$EstimationsDGV.Width = 707
+$EstimationsDGV.Height = 330
 $EstimationsDGV.Location = [System.Drawing.Point]::new(2, 2)
 $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EstimationsDGV.AutoSizeColumnsMode = "Fill"
@@ -1210,7 +1210,6 @@ $ConfigPageControls += $LabelGPUCount
 $TBGPUCount = New-Object System.Windows.Forms.TextBox
 $TBGPUCount.Tag = "GPUCount"
 $TBGPUCount.MultiLine = $false
-# $TBGPUCount.Scrollbars                = "Vertical" 
 $TBGPUCount.Text = $Config.GPUCount
 $TBGPUCount.AutoSize = $false
 $TBGPUCount.Width = 50
@@ -1252,7 +1251,6 @@ $ConfigPageControls += $LabelAlgos
 $TBAlgos = New-Object System.Windows.Forms.TextBox
 $TBAlgos.Tag = "Algorithm"
 $TBAlgos.MultiLine = $false
-# $TBAlgos.Scrollbars               = "Vertical" 
 $TBAlgos.Text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
 $TBAlgos.Width = 300
@@ -1273,7 +1271,6 @@ $ConfigPageControls += $LabelCurrency
 $TBCurrency = New-Object System.Windows.Forms.TextBox
 $TBCurrency.Tag = "Currency"
 $TBCurrency.MultiLine = $false
-# $TBCurrency.Scrollbars                = "Vertical" 
 $TBCurrency.Text = $Config.Currency
 $TBCurrency.AutoSize = $false
 $TBCurrency.Width = 300
@@ -1294,7 +1291,6 @@ $ConfigPageControls += $LabelPwdCurrency
 $TBPwdCurrency = New-Object System.Windows.Forms.TextBox
 $TBPwdCurrency.Tag = "PasswordCurrency"
 $TBPwdCurrency.MultiLine = $false
-# $TBPwdCurrency.Scrollbars             = "Vertical" 
 $TBPwdCurrency.Text = $Config.PasswordCurrency
 $TBPwdCurrency.AutoSize = $false
 $TBPwdCurrency.Width = 300
@@ -1315,7 +1311,6 @@ $ConfigPageControls += $LabelDonate
 $TBDonate = New-Object System.Windows.Forms.TextBox
 $TBDonate.Tag = "Donate"
 $TBDonate.MultiLine = $false
-# $TBDonate.Scrollbars              = "Vertical" 
 $TBDonate.Text = $Config.Donate
 $TBDonate.AutoSize = $false
 $TBDonate.Width = 300
@@ -1336,7 +1331,6 @@ $ConfigPageControls += $LabelProxy
 $TBProxy = New-Object System.Windows.Forms.TextBox
 $TBProxy.Tag = "Proxy"
 $TBProxy.MultiLine = $false
-# $TBProxy.Scrollbars               = "Vertical" 
 $TBProxy.Text = $Config.Proxy
 $TBProxy.AutoSize = $false
 $TBProxy.Width = 300
@@ -1357,7 +1351,6 @@ $ConfigPageControls += $LabelActiveMinerGainPct
 $TBActiveMinerGainPct = New-Object System.Windows.Forms.TextBox
 $TBActiveMinerGainPct.Tag = "ActiveMinerGainPct"
 $TBActiveMinerGainPct.MultiLine = $false
-# $TBActiveMinerGainPct.Scrollbars              = "Vertical" 
 $TBActiveMinerGainPct.Text = $Config.ActiveMinerGainPct
 $TBActiveMinerGainPct.AutoSize = $false
 $TBActiveMinerGainPct.Width = 300
@@ -1408,20 +1401,20 @@ $ConfigPageControls += $CheckBoxMinerTypeCPU
 
 $CheckBoxMinerTypeCPU.Add_Click(
     { 
-        If ($This.checked -and $This.Text -notin $Config.Type) { 
-            [Array]$Config.Type += $This.Text
-            # If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null){ 
-            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null -or ($Variables.Miners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
+        If ($this.checked -and $this.Text -notin $Config.Type) { 
+            [Array]$Config.Type += $this.Text
+            # If ($Variables."$($this.Text)MinerAPITCPPort" -eq $null){ 
+            If ($Variables."$($this.Text)MinerAPITCPPort" -eq $null -or ($Variables.Miners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $this.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
-                Write-Message "Finding available TCP Port for $($This.Text)"
+                Write-Message "Finding available TCP Port for $($this.Text)"
                 $Port = Get-FreeTcpPort($StartPort)
-                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port }
+                $Variables | Add-Member -Force @{ "$($this.Text)MinerAPITCPPort" = $Port }
                 Write-Message "Miners API Port: $($Port)"
                 $StartPort = $Port + 1
             }
         }
-        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $This.Text }) }
+        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
     }
 )
 
@@ -1438,19 +1431,19 @@ $ConfigPageControls += $CheckBoxMinerTypeNVIDIA
 
 $CheckBoxMinerTypeNVIDIA.Add_Click(
     { 
-        If ($This.checked -and $This.Text -notin $Config.Type) { 
-            [Array]$Config.Type += $This.Text
-            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null -or ($Variables.Miners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
+        If ($this.checked -and $this.Text -notin $Config.Type) { 
+            [Array]$Config.Type += $this.Text
+            If ($Variables."$($this.Text)MinerAPITCPPort" -eq $null -or ($Variables.Miners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $this.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
-                Write-Message "Finding available TCP Port for $($This.Text)"
+                Write-Message "Finding available TCP Port for $($this.Text)"
                 $Port = Get-FreeTcpPort($StartPort)
-                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port }
+                $Variables | Add-Member -Force @{ "$($this.Text)MinerAPITCPPort" = $Port }
                 Write-Message "Miners API Port: $($Port)"
                 $StartPort = $Port + 1
             }
         }
-        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $This.Text }) }
+        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
     }
 )
 
@@ -1467,19 +1460,19 @@ $ConfigPageControls += $CheckBoxMinerTypeAMD
 
 $CheckBoxMinerTypeAMD.Add_Click( 
     { 
-        If ($This.checked -and $This.Text -notin $Config.Type) { 
-            [Array]$Config.Type += $This.Text
-            If ($Variables."$($This.Text)MinerAPITCPPort" -eq $null -or ($Variables.Miners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $This.Text }) -eq $null) { 
+        If ($this.checked -and $this.Text -notin $Config.Type) { 
+            [Array]$Config.Type += $this.Text
+            If ($Variables."$($this.Text)MinerAPITCPPort" -eq $null -or ($Variables.Miners | Where-Object { $_.Status -eq "Running" -and $_.Type -eq $this.Text }) -eq $null) { 
                 # Find available TCP Ports
                 $StartPort = 4068
-                Write-Message "Finding available TCP Port for $($This.Text)"
+                Write-Message "Finding available TCP Port for $($this.Text)"
                 $Port = Get-FreeTcpPort($StartPort)
-                $Variables | Add-Member -Force @{ "$($This.Text)MinerAPITCPPort" = $Port }
+                $Variables | Add-Member -Force @{ "$($this.Text)MinerAPITCPPort" = $Port }
                 Write-Message "Miners API Port: $($Port)"
                 $StartPort = $Port + 1
             }
         }
-        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $This.Text }) }
+        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
     }
 )
 
@@ -1697,7 +1690,7 @@ $LabelMonitoringWorkers.Font = [System.Drawing.Font]::new("Microsoft Sans Serif"
 $MonitoringPageControls += $LabelMonitoringWorkers
 
 $WorkersDGV = New-Object System.Windows.Forms.DataGridView
-$WorkersDGV.Width = 710
+$WorkersDGV.Width = 707
 $WorkersDGV.Height = 244
 $WorkersDGV.Location = [System.Drawing.Point]::new(2, 24)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1707,7 +1700,7 @@ $MonitoringPageControls += $WorkersDGV
 
 $GroupMonitoringSettings = New-Object System.Windows.Forms.GroupBox
 $GroupMonitoringSettings.Height = 60
-$GroupMonitoringSettings.Width = 710
+$GroupMonitoringSettings.Width = 707
 $GroupMonitoringSettings.Text = "Monitoring Settings"
 $GroupMonitoringSettings.Location = [System.Drawing.Point]::new(1, 272)
 $MonitoringPageControls += $GroupMonitoringSettings
