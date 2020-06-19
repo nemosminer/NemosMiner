@@ -230,7 +230,7 @@ Function Start-Cycle {
         $Variables.Pools = $ThisRegionPools + ($Variables.Pools | Where-Object { $_ -notin $ThisRegionPools })
         Remove-Variable ThisRegionPools
 
-        Write-Message -Level VERBOSE "Had $($Variables.PoolsCount) pool$( If ($Variables.PoolsCount -ne 1) { "s" }), found $($ComparePools.Count) new pool$( If ($ComparePools.Count -ne 1) { "s" }). $(@($Variables.Pools | Where-Object Enabled -EQ $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) after filtering (filtered out $(@($Variables.Pools | Where-Object Enabled -NE $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
+        Write-Message -Level VERBOSE "Had $($Variables.PoolsCount) pool$( If ($Variables.PoolsCount -ne 1) { "s" }), found $($ComparePools.Count) new pool$( If ($ComparePools.Count -ne 1) { "s" }). $(@($Variables.Pools | Where-Object Enabled -EQ $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) enabled after filtering (filtered out $(@($Variables.Pools | Where-Object Enabled -NE $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
 
         #If not all the live pool prices represent the same period of time then use historic pricing for the same period
         If (($Variables.Pools | Where-Object Enabled -EQ $true | Where-Object Price_Bias | Select-Object -ExpandProperty Name -Unique | ForEach-Object { $Variables.Pools | Where-Object Name -EQ $_ | Measure-Object Updated -Maximum | Select-Object -ExpandProperty Maximum } | Select-Object -Unique | Measure-Object -Minimum -Maximum | ForEach-Object { $_.Maximum - $_.Minimum }).TotalMinutes -gt $Config.SyncWindow) { 
@@ -249,10 +249,12 @@ Function Start-Cycle {
         $Variables.Miners | Where-Object Best | ForEach-Object { 
             $Miner = $_
             If ($Miner.DataReaderJob.HasMoreData) { 
-                $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object Date, HashRate, Shares, PowerUsage)
+                $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
             }
             If ($Miner.Best -eq $true -and $Miner.GetStatus() -ne "Running") { 
+                Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
                 $Miner.SetStatus("Failed")
+                $Miner.StatusMessage = "Exited unexpectedly."
             }
             If (($Miner.Data).Count) { 
                 $Miner.Speed_Live = [Double[]]@()
@@ -426,6 +428,7 @@ Function Start-Cycle {
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
                 $_.ShowMinerWindow = $Miner.ShowMinerWindow
+                $_.WarmupTime = $Miner.WarmupTime
                 $_.Enabled = $true
             }
             $_.ReadPowerUsage = $Variables.ReadPowerUsage
@@ -486,7 +489,7 @@ Function Start-Cycle {
             Continue
         }
 
-        Write-Message -Level VERBOSE "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Enabled -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) after filtering (filtered out $(($Variables.Miners | Where-Object Enabled -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
+        Write-Message -Level VERBOSE "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Enabled -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) enabed after filtering (filtered out $(($Variables.Miners | Where-Object Enabled -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
 
         If ($Config.OpenFirewallPorts) { 
             #Open firewall ports for all miners
@@ -756,7 +759,7 @@ While ($true) {
         # - warmuptime is up
         # - timeout is reached (no readout from miner)
         
-        $RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.GetStatus() -eq "Running" })
+        $RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true)
         $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
         While ((Get-Date) -lt $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners) {
@@ -805,7 +808,7 @@ While ($true) {
                 Break
             }
             If ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
-                #enough samples collected for this loop, exit loop immediately
+                #Enough samples collected for this loop, exit loop immediately
                 Write-Message -Level VERBOSE "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. Starting new cyle."
                 Break
             }
