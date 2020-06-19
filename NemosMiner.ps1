@@ -837,7 +837,7 @@ $MonitoringPage.Text = "Monitoring"
 $EstimationsPage = New-Object System.Windows.Forms.TabPage
 $EstimationsPage.Text = "Benchmarks"
 
-$TabControl = New-object System.Windows.Forms.TabControl
+$TabControl = New-Object System.Windows.Forms.TabControl
 $TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
 $TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Name = "TabControl"
@@ -864,13 +864,13 @@ $ShowHelp = {
     #display popup help
     #each value is the name of a control on the form. 
     Switch ($this) {
-        $CheckedListBoxPools { $tip = "You cannot select multiple variants of the same pool" }
+        $CheckedListBoxPools { $Tip = "You cannot select multiple variants of the same pool" }
     }
-    $ToolTip.SetToolTip($this, $tip)
+    $ToolTip.SetToolTip($this, $Tip)
 } #end ShowHelp
 
 # $Logo = [System.Drawing.Image]::Fromfile('.\config\logo.png')
-$PictureBoxLogo = new-object Windows.Forms.PictureBox
+$PictureBoxLogo = New-Object Windows.Forms.PictureBox
 $PictureBoxLogo.Width = 47 #$img.Size.Width
 $PictureBoxLogo.Height = 47 #$img.Size.Height
 # $PictureBoxLogo.Image = $Logo
@@ -891,7 +891,6 @@ $LabelEarningsDetails.BorderStyle = 'None'
 $LabelEarningsDetails.BackColor = [System.Drawing.SystemColors]::Control
 $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green
 $LabelEarningsDetails.Visible = $true
-# $TBNotifications.TextAlign                = "Right"
 $MainFormControls += $LabelEarningsDetails
 
 $LabelBTCD = New-Object System.Windows.Forms.Label
@@ -904,7 +903,6 @@ $LabelBTCD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 14)
 $LabelBTCD.TextAlign = "MiddleRight"
 $LabelBTCD.ForeColor = [System.Drawing.Color]::Green
 $LabelBTCD.BackColor = [System.Drawing.Color]::Transparent
-# $LabelBTCD.BorderStyle              = 'FixedSingle'
 $MainFormControls += $LabelBTCD
 
 $LabelBTCPrice = New-Object System.Windows.Forms.Label
@@ -914,7 +912,6 @@ $LabelBTCPrice.Width = 400
 $LabelBTCPrice.Height = 20
 $LabelBTCPrice.Location = [System.Drawing.Point]::new(510, 39)
 $LabelBTCPrice.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
-# $LabelBTCPrice.ForeColor              = "Gray"
 $MainFormControls += $LabelBTCPrice
 
 $ButtonPause = New-Object System.Windows.Forms.Button
@@ -937,7 +934,6 @@ $MainFormControls += $ButtonStart
 $LabelNotifications = New-Object System.Windows.Forms.TextBox
 $LabelNotifications.Tag = ""
 $LabelNotifications.MultiLine = $true
-# $TBNotifications.Scrollbars             = "Vertical" 
 $LabelNotifications.Text = ""
 $LabelNotifications.AutoSize = $false
 $LabelNotifications.Width = 280
@@ -947,7 +943,6 @@ $LabelNotifications.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10
 $LabelNotifications.BorderStyle = 'None'
 $LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
 $LabelNotifications.Visible = $true
-# $TBNotifications.TextAlign                = "Right"
 $MainFormControls += $LabelNotifications
 
 $LabelAddress = New-Object System.Windows.Forms.Label
@@ -962,14 +957,12 @@ $MainFormControls += $LabelAddress
 $TBAddress = New-Object System.Windows.Forms.TextBox
 $TBAddress.Tag = "Wallet"
 $TBAddress.MultiLine = $false
-# $TBAddress.Scrollbars             = "Vertical" 
 $TBAddress.Text = $Config.Wallet
 $TBAddress.AutoSize = $false
 $TBAddress.Width = 290
 $TBAddress.Height = 20
 $TBAddress.Location = [System.Drawing.Point]::new(115, 68)
 $TBAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-# $TBAddress.TextAlign                = "Right"
 $MainFormControls += $TBAddress
 
 # Run Page Controls
