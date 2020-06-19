@@ -1,8 +1,8 @@
 using module ..\Includes\Include.psm1
 
-#$Path = ".\Bin\CPU-JayDDe3142\cpuminer-zen.exe" #AMD
-$Path = ".\Bin\CPU-JayDDee3142\cpuminer-aes-sse42.exe" #Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.14.2/cpuminer-opt-3.14.2-windows.zip"
+#$Path = ".\Bin\CPU-JayDDe3143\cpuminer-zen.exe" #AMD
+$Path = ".\Bin\CPU-JayDDee3143\cpuminer-aes-sse42.exe" #Intel
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.14.3/cpuminer-opt-3.14.3-windows.zip"
 $Commands = [PSCustomObject]@{ 
     "lyra2z330" = " -a lyra2z330" #Lyra2z330
     "sha3d"     = " -a sha3d" #sha3d
