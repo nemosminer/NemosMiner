@@ -43,7 +43,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\config.json",
     [Parameter(Mandatory = $false)]
-    [String[]]$Currency = @("USD"), #i.e. GBP,USD,AUD,NZD ect.
+    [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (mill BTC) is also valid
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory = $false)]
@@ -140,7 +140,7 @@ param(
     [Parameter(Mandatory = $false)] 
     [Int]$SyncWindow = 5, #Minutes. Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used instead of the biased value and a warning will be shown
     [Parameter(Mandatory = $false)]
-    [Switch]$Transcript = $false, # Enable to write powershell transcript files (for debugging)
+    [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
     [Switch]$TrackEarnings = $true, # Display earnings information
     [Parameter(Mandatory = $false)]
@@ -195,7 +195,7 @@ New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -Er
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 
-$Variables.MainPath = (Get-Location)
+$Variables.MainPath = (Get-Location).Path
 $Variables.SourcesHash = @()
 $Variables.ProcessorCount = (Get-CimInstance -class win32_processor).NumberOfLogicalProcessors
 $Variables.Pools = [Pool[]]@()
@@ -399,7 +399,7 @@ Function Global:TimerUITick {
             $Variables | Add-Member -Force @{ InCycle = $false }
 
             If ($Variables.Earnings.Values -ne $null) { 
-                $LabelBTCD.Text = "Avg: $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 3) $($Config.Currency | Select-Object -Index 0)/D  /  " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)) + " m$([char]0x20BF)/D"
+                $LabelBTCD.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 3) = m$([char]0x20BF) {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)
                 
                 $LabelEarningsDetails.Lines = @()
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3)) { 
@@ -408,19 +408,19 @@ Function Global:TimerUITick {
                     { $_ -lt 0 } { "<" }
                 }
                
-                $LabelEarningsDetails.Lines += "Last  1h: $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) $($Config.Currency | Select-Object -Index 0) / " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24)) + " m$([char]0x20BF)/D " + $TrendSign
+                $LabelEarningsDetails.Lines += "Last  1h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) = m$([char]0x20BF) {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24)
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000), 3)) { 
                     { $_ -eq 0 } { "=" }
                     { $_ -gt 0 } { ">" }
                     { $_ -lt 0 } { "<" }
                 }
-                $LabelEarningsDetails.Lines += "Last  6h: $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) $($Config.Currency | Select-Object -Index 0) / " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 4)) + " m$([char]0x20BF)/D " + $TrendSign
+                $LabelEarningsDetails.Lines += "Last  6h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) = m$([char]0x20BF) {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 4)
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property BTCD -Sum).sum * 1000 * 0.96), 3)) { 
                     { $_ -eq 0 } { "=" }
                     { $_ -gt 0 } { ">" }
                     { $_ -lt 0 } { "<" }
                 }
-                $LabelEarningsDetails.Lines += "Last 24h: $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) $($Config.Currency | Select-Object -Index 0) / " + ("{0:N3}" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000)) + " m$([char]0x20BF)/D " + $TrendSign
+                $LabelEarningsDetails.Lines += "Last 24h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) = m$([char]0x20BF) {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000)
                 Remove-Variable TrendSign
             }
             Else { 
@@ -642,22 +642,25 @@ Function Global:TimerUITick {
                 }
             }
 
-            Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
+            If (-not $Variables.Paused) { 
+                Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
 
-            If ($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
-                If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
-                    #Mining causes a loss
-                    Write-Host  -ForegroundColor Red "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningProfit - $Variables.BasePowerCost) * $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day (including Base Power Cost)."
-                }
-                If (($Variables.MiningEarning - $Variables.MiningPowerCost) -lt $Config.ProfitabilityThreshold) { 
-                    #Mining profit is below the configured threshold
-                    Write-host  -ForegroundColor Blue "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningProfit - $Variables.BasePowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+                If ($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
+                    If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
+                        #Mining causes a loss
+                        Write-Host -ForegroundColor Red "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningProfit - $Variables.BasePowerCost) * $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day (including Base Power Cost)."
+                    }
+                    If (($Variables.MiningEarning - $Variables.MiningPowerCost) -lt $Config.ProfitabilityThreshold) { 
+                        #Mining profit is below the configured threshold
+                        Write-host -ForegroundColor Blue "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningProfit - $Variables.BasePowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+                    }
                 }
             }
-        
+
             Write-Host "--------------------------------------------------------------------------------"
             Write-Host -ForegroundColor Yellow "Last refresh: $((Get-Date).ToString('G'))   |   Next refresh: $(($Variables.EndLoopTime).ToString('G'))"
         }
+
         If (Test-Path "..\EndUIRefresh.ps1" -PathType Leaf) { Invoke-Expression (Get-Content "..\EndUIRefresh.ps1" -Raw) }
 
         $Variables.RefreshNeeded = $false
@@ -677,7 +680,6 @@ Function Form_Load {
             TimerUITick
             If ($MainForm.Number -gt 6000) { 
                 $MainForm.Number = 0
-                # $TimerUI.Stop()
                 $TimerUI.Remove_Tick( { TimerUITick })
                 $TimerUI.Dispose()
                 $TimerUI = New-Object System.Windows.Forms.Timer
@@ -741,6 +743,8 @@ Function PrepareWriteConfig {
         $Config.($_.Tag) = [Int]$_.Text
     }
     $Config.($CheckedListBoxPools.Tag) = $CheckedListBoxPools.CheckedItems
+    $Config.Currency = @($Config.Currency -replace ' ' -split ',')
+    $Config.Region = $LBRegion.Text
 
     $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "CheckBox") } | ForEach-Object { $Config.($_.Tag) = $_.Checked }
     $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config.($_.Tag) = $_.Text }
@@ -812,11 +816,10 @@ $MainForm.Add_FormClosing(
         Stop-ChildJob
 
         If ($IdleRunspace) { $IdleRunspace.Close() }
-        If ($IdlePowershell) { $IdlePowershell.Dispose() }
+        If ($IdlePowerShell) { $IdlePowerShell.Dispose() }
     }
 )
 
-$MainForm | Add-Member -Name "Config" -Value $Config -MemberType NoteProperty -Force
 
 $SelGPUDSTM = $Config.SelGPUDSTM
 $SelGPUCC = $Config.SelGPUCC
@@ -866,9 +869,13 @@ $ShowHelp = {
     #display popup help
     #each value is the name of a control on the form. 
     Switch ($this) {
-        $CheckedListBoxPools { $Tip = "You cannot select multiple variants of the same pool" }
+        $CheckedListBoxPools { $Hint = "You cannot select multiple variants of the same pool" }
+        $LabelCurrency { $Hint = "You can define multiple currencies, if so separate values with commas." }
+        $TBCurrency { $Hint = "You can define multiple currencies, if so separate values with commas." }
+        $TBDonate { $Hint = "Donation duration in minutes per day. Donation start time is randomized.`nLeaving donation on helps to the developers to further support this project." }
+        $LabelDonate { $Hint = "Donation duration in minutes per day. Donation start time is randomized.`nLeaving donation on helps to the developers to further support this project." }
     }
-    $ToolTip.SetToolTip($this, $Tip)
+    $ToolTip.SetToolTip($this, $Hint)
 } #end ShowHelp
 
 # $Logo = [System.Drawing.Image]::Fromfile('.\config\logo.png')
@@ -896,7 +903,7 @@ $LabelEarningsDetails.Visible = $true
 $MainFormControls += $LabelEarningsDetails
 
 $LabelBTCD = New-Object System.Windows.Forms.Label
-$LabelBTCD.Text = "BTC/D"
+$LabelBTCD.Text = "BTC/day"
 $LabelBTCD.AutoSize = $false
 $LabelBTCD.Width = 473
 $LabelBTCD.Height = 35
@@ -1010,7 +1017,6 @@ $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
 $RunningMinersDGV.RowHeadersVisible = $false
 $RunPageControls += $RunningMinersDGV
 
-
 # Earnings Page Controls
 $EarningsPageControls = @()
 
@@ -1026,7 +1032,6 @@ If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Inc
     $Chart2.left = 500
     $EarningsPageControls += $Chart2
 }
-
 
 $LabelEarnings = New-Object System.Windows.Forms.Label
 $LabelEarnings.Text = "Earning statistics per pool"
@@ -1111,7 +1116,6 @@ $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EstimationsDGV.AutoSizeColumnsMode = "Fill"
 $EstimationsDGV.RowHeadersVisible = $false
 $EstimationsDGV.ColumnHeadersVisible = $true
-#$EstimationsDGV.DataGridViewColumnHeaderCell()
 
 # Config Page Controls
 $ConfigPageControls = @()
@@ -1128,7 +1132,6 @@ $ConfigPageControls += $LabelWorkerName
 $TBWorkerName = New-Object System.Windows.Forms.TextBox
 $TBWorkerName.Tag = "WorkerName"
 $TBWorkerName.MultiLine = $false
-# $TBWorkerName.Scrollbars              = "Vertical" 
 $TBWorkerName.Text = $Config.WorkerName
 $TBWorkerName.AutoSize = $false
 $TBWorkerName.Width = 300
@@ -1149,7 +1152,6 @@ $ConfigPageControls += $LabelUserName
 $TBUserName = New-Object System.Windows.Forms.TextBox
 $TBUserName.Tag = "UserName"
 $TBUserName.MultiLine = $false
-# $TBUserName.Scrollbars                = "Vertical" 
 $TBUserName.Text = $Config.UserName
 $TBUserName.AutoSize = $false
 $TBUserName.Width = 300
@@ -1170,7 +1172,6 @@ $ConfigPageControls += $LabelInterval
 $TBInterval = New-Object System.Windows.Forms.TextBox
 $TBInterval.Tag = "Interval"
 $TBInterval.MultiLine = $false
-# $TBWorkerName.Scrollbars              = "Vertical" 
 $TBInterval.Text = $Config.Interval
 $TBInterval.AutoSize = $false
 $TBInterval.Width = 300
@@ -1188,17 +1189,20 @@ $LabelLocation.Location = [System.Drawing.Point]::new(2, 68)
 $LabelLocation.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelLocation
 
-$TBRegion = New-Object System.Windows.Forms.TextBox
-$TBRegion.Tag = "Region"
-$TBRegion.MultiLine = $false
-# $TBRegion.Scrollbars                = "Vertical" 
-$TBRegion.Text = $Config.Region
-$TBRegion.AutoSize = $false
-$TBRegion.Width = 300
-$TBRegion.Height = 20
-$TBRegion.Location = [System.Drawing.Point]::new(122, 68)
-$TBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $TBRegion
+$LBRegion = New-Object System.Windows.Forms.ListBox
+$LBRegion.Tag = "Region"
+$Regions = (Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json).PSObject.Properties.Value | Sort-Object -Unique 
+$Regions | ForEach-Object { 
+    [void] $LBRegion.Items.Add($_)
+}
+$LBRegion.SelectedItem = $Config.Region
+$LBRegion.AutoSize = $false
+$LBRegion.Sorted = $true
+$LBRegion.Width = 300
+$LBRegion.Height = 20
+$LBRegion.Location = [System.Drawing.Point]::new(122, 66)
+$LBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $LBRegion
 
 $LabelGPUCount = New-Object System.Windows.Forms.Label
 $LabelGPUCount.Text = "GPU Count"
@@ -1262,23 +1266,25 @@ $TBAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBAlgos
 
 $LabelCurrency = New-Object System.Windows.Forms.Label
-$LabelCurrency.Text = "Currency"
+$LabelCurrency.Text = "Currencies"
 $LabelCurrency.AutoSize = $false
 $LabelCurrency.Width = 120
 $LabelCurrency.Height = 20
 $LabelCurrency.Location = [System.Drawing.Point]::new(2, 134)
 $LabelCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$LabelCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelCurrency
 
 $TBCurrency = New-Object System.Windows.Forms.TextBox
 $TBCurrency.Tag = "Currency"
 $TBCurrency.MultiLine = $false
-$TBCurrency.Text = $Config.Currency
+$TBCurrency.Text = @($Config.Currency -join ', ')
 $TBCurrency.AutoSize = $false
 $TBCurrency.Width = 300
 $TBCurrency.Height = 20
 $TBCurrency.Location = [System.Drawing.Point]::new(122, 134)
 $TBCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$TBCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBCurrency
 
 $LabelPwdCurrency = New-Object System.Windows.Forms.Label
@@ -1308,6 +1314,7 @@ $LabelDonate.Width = 120
 $LabelDonate.Height = 20
 $LabelDonate.Location = [System.Drawing.Point]::new(2, 178)
 $LabelDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$LabelDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelDonate
 
 $TBDonate = New-Object System.Windows.Forms.TextBox
@@ -1319,6 +1326,7 @@ $TBDonate.Width = 300
 $TBDonate.Height = 20
 $TBDonate.Location = [System.Drawing.Point]::new(122, 178)
 $TBDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$TBDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBDonate
 
 $LabelProxy = New-Object System.Windows.Forms.Label
@@ -1795,8 +1803,6 @@ $ButtonMonitoringWriteConfig.Add_Click( { PrepareWriteConfig })
 $MainForm | Add-Member -Name Number -Value 0 -MemberType NoteProperty
 
 $TimerUI = New-Object System.Windows.Forms.Timer
-# $TimerUI.Add_Tick({ TimerUI_Tick})
-
 $TimerUI.Enabled = $false
 
 $ButtonPause.Add_Click(
@@ -1824,7 +1830,7 @@ $ButtonStart.Add_Click(
             Stop-ChildJob
 
             $LabelBTCD.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
-            Write-Message "NemosMiner is idle."
+            Write-Message "$($Branding.ProductLabel) is idle."
 
             $ButtonStart.Text = "Start"
             $TimerUI.Stop()
@@ -1833,11 +1839,11 @@ $ButtonStart.Add_Click(
             PrepareWriteConfig
             Initialize-Application
             Start-ChildJob
-            Start-IdleTracking
 
             If ($Config.MineWhenIdle) { 
                 # Disable the pause button - pausing controlled by idle timer
                 $ButtonPause.Visible = $false
+                Start-IdleTracking
             }
             Else { 
                 $ButtonPause.Visible = $true
