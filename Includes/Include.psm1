@@ -245,7 +245,7 @@ Class Miner {
                 }
                 Else { 
                     $EnvCmd = ($this.Environment | Select-Object | ForEach-Object { "```$env:$($_)" }) -join "; "
-                    $this.Process = Start-Job ([ScriptBlock]::Create("Start-Process $(@{desktop = "powershell"; core = "pwsh"}.$Global:PSEdition) `"-command $EnvCmd```$Process = (Start-Process '$($this.Path)' '$($this.GetCommandLineParameters())' -WorkingDirectory '$(Split-Path $this.Path)' -WindowStyle Minimized -PassThru).Id; Wait-Process -Id `$PID; Stop-Process -Id ```$Process`" -WindowStyle Hidden -Wait"))
+                    $this.Process = Start-Job ([ScriptBlock]::Create("Start-Process $(@{desktop = "PowerShell"; core = "pwsh"}.$Global:PSEdition) `"-command $EnvCmd```$Process = (Start-Process '$($this.Path)' '$($this.GetCommandLineParameters())' -WorkingDirectory '$(Split-Path $this.Path)' -WindowStyle Minimized -PassThru).Id; Wait-Process -Id `$PID; Stop-Process -Id ```$Process`" -WindowStyle Hidden -Wait"))
                 }
             }
             Else { 
@@ -720,7 +720,7 @@ Function Initialize-Application {
     $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
     $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
-    #Read the stats sp that thei are availabe in the API
+    #Read the stats sp that they are available in the API
     Get-Stat | Out-Null
 
     #Initialize API & Web GUI
@@ -776,7 +776,7 @@ Function Initialize-Application {
 
     If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
         If ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
-        Start-Process (@{ desktop = "powershell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
+        Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
     }
 
     If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
@@ -792,7 +792,6 @@ Function Initialize-Application {
 
     # Purge Logs more than 10 days
     Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-
 
     # Find available TCP Ports
     $StartPort = 4068
@@ -830,7 +829,7 @@ Function Get-Rates {
             If ($Config.Currency -notcontains "BTC") { $Rates.BTC.PSObject.Properties.Remove("BTC") }
         }
     }
-    $Variables | Add-Member -Force @{ Rates = $Rates }
+    $Variables.Rates = $Rates
 }
 
 Function Write-Message { 
@@ -930,67 +929,80 @@ Function Start-IdleTracking {
     # Function tracks how long the system has been idle and controls the paused state
     $IdleRunspace = [runspacefactory]::CreateRunspace()
     $IdleRunspace.Open()
-    $IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-    $IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-    $IdleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-    $IdleRunspace.SessionStateProxy.Path.SetLocation((Split-Path $script:MyInvocation.MyCommand.Path))
-    $idlepowershell = [powershell]::Create()
-    $idlePowershell.Runspace = $IdleRunspace
-    $idlePowershell.AddScript(
+    Get-Variable -Scope Global | ForEach-Object { 
+        Try { 
+            $IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+        }
+        Catch { }
+    }
+    $IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $PowerShell = [PowerShell]::Create()
+    $PowerShell.Runspace = $IdleRunspace
+    $PowerShell.AddScript(
         { 
-            # No native way to check how long the system has been idle in powershell. Have to use .NET code.
+            # Set the starting directory
+            Set-Location (Split-Path $MyInvocation.MyCommand.Path)
+            
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+
+            # No native way to check how long the system has been idle in PowerShell. Have to use .NET code.
             Add-Type -TypeDefinition @'
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-namespace PInvoke.Win32 { 
-    public static class UserInput { 
+
+namespace PInvoke.Win32 {
+
+    public static class UserInput {
+
         [DllImport("user32.dll", SetLastError=false)]
         private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct LASTINPUTINFO { 
+        private struct LASTINPUTINFO {
             public uint cbSize;
             public int dwTime;
         }
 
-        public static DateTime LastInput { 
-            get { 
+        public static DateTime LastInput {
+            get {
                 DateTime bootTime = DateTime.UtcNow.AddMilliseconds(-Environment.TickCount);
                 DateTime lastInput = bootTime.AddMilliseconds(LastInputTicks);
-                Return lastInput;
+                return lastInput;
             }
         }
-        public static TimeSpan IdleTime { 
-            get { 
-                Return DateTime.UtcNow.Subtract(LastInput);
+
+        public static TimeSpan IdleTime {
+            get {
+                return DateTime.UtcNow.Subtract(LastInput);
             }
         }
-        public static int LastInputTicks { 
-            get { 
+
+        public static int LastInputTicks {
+            get {
                 LASTINPUTINFO lii = new LASTINPUTINFO();
                 lii.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
                 GetLastInputInfo(ref lii);
-                Return lii.dwTime;
+                return lii.dwTime;
             }
         }
     }
 }
 '@
+
             #Start transcript log
-            If ($Config.Transcript -EQ $true) { Start-Transcript "..\Logs\IdleTracking.log" -Append -Force }
+            If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\IdleTracking.log" -Append -Force }
 
             $ProgressPreference = "SilentlyContinue"
-
-            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+            Write-Log "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) seconds..."
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
-                # Only do anything if Mine only when idle is turned on
+                #Only do something if 'Mine only when idle' is turned on
                 If ($Config.MineWhenIdle) { 
                     If ($Variables.Paused) { 
-                        # Check If system has been idle long enough to unpause
+                        #Check if system has been idle long enough to unpause
                         If ($IdleSeconds -gt $Config.IdleSec) { 
                             $Variables.Paused = $false
                             $Variables.RestartCycle = $true
@@ -998,7 +1010,7 @@ namespace PInvoke.Win32 {
                         }
                     }
                     Else { 
-                        # Pause If system has become active
+                        #Pause if system has become active
                         If ($IdleSeconds -lt $Config.IdleSec) { 
                             $Variables.Paused = $true
                             $Variables.RestartCycle = $true
@@ -1006,11 +1018,15 @@ namespace PInvoke.Win32 {
                         }
                     }
                 }
-                Start-Sleep  1
+                Start-Sleep -Seconds 1
             }
         }
     ) | Out-Null
-    $Variables | Add-Member -Force @{ IdleRunspaceHandle = $idlePowershell.BeginInvoke() }
+    # $Variables | Add-Member -Force @{ IdleRunspaceHandle = $idlePowerShell.BeginInvoke() }
+    $PowerShell.BeginInvoke()
+
+    $Variables.IdleRunspaceHandle = $IdleRunspace
+    $Variables.IdleRunspaceHandle | Add-Member -Force @{ PowerShell = $PowerShell }
 }
 
 Function Update-Monitoring { 
@@ -1109,13 +1125,13 @@ Function Start-Mining {
     $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
     $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
     $CycleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-    $Powershell = [powershell]::Create()
-    $Powershell.Runspace = $CycleRunspace
-    $Powershell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-    $Powershell.BeginInvoke()
+    $PowerShell = [PowerShell]::Create()
+    $PowerShell.Runspace = $CycleRunspace
+    $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
+    $PowerShell.BeginInvoke()
 
-    $Variables | Add-Member -Force @{ CycleRunspace = $CycleRunspace }
-    $Variables.CycleRunspace | Add-Member -Force @{ Powershell = $PowerShell }
+    $Variables.CycleRunspace = $CycleRunspace
+    $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 
     $Variables.Started = $true
     $Variables.Suspended = $false
@@ -1123,9 +1139,9 @@ Function Start-Mining {
 
 Function Stop-ChildJob { 
 
-    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job }
+    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job -ErrorAction Ignore }
     $Variables.EarningsTrackerJobs = @()
-    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job }
+    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job -ErrorAction Ignore }
     $Variables.BrainJobs = @()
 
     Write-Message "Stopped Earnings tracker and Brain jobs."
@@ -1135,15 +1151,21 @@ Function Stop-Mining {
 
     If ($Variables.CycleRunspace) { 
         $Variables.CycleRunspace.Close()
-        If ($Variables.CycleRunspace.Powershell) { $Variables.CycleRunspace.Powershell.Dispose() }
+        If ($Variables.CycleRunspace.PowerShell) { $Variables.CycleRunspace.PowerShell.Dispose() }
         $Variables.Remove("CycleRunspace")
         Write-Message "Stopped cycle."
     }
-    
+    If ($Variables.IdleRunspace) { 
+        $Variables.IdleRunspace.Close()
+        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
+        $Variables.Remove("IdleRunspace")
+        Write-Message "Stopped idle detection."
+    }
+
     $Variables.Miners | Where-Object { $_.Status -EQ "Running" } | ForEach-Object { 
         Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
         $_.Status = "Idle"
-        Write-Message "Stopped miner ($($_.Name)) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}."
+        Write-Message "Stopped miner '$($_.Info)'."
     }
 
     $Variables.Suspended = $true
