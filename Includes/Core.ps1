@@ -60,6 +60,7 @@ Function Start-Cycle {
         Get-Rates
 
         #Power cost preparations
+        $Variables.OldReadPowerUsage = $Variables.ReadPowerUsage #To trigger an eventual miner restart
         If ($Config.ReadPowerUsage) { 
             If (($Variables.Devices).Count -lt 1) { 
                 Write-Message -Level Warn "No configured miner devices. Cannot read power usage info - disabling power usage calculations."
@@ -104,7 +105,7 @@ Function Start-Cycle {
                 }
             }
             If ($Config.ReadPowerUsage -and -not ($Variables.ReadPowerUsage)) { 
-                Write-Message -Level Warn "Realtime power usage cannot be read from system. Will use static values where available."
+                Write-Message -Level Warn "Realtime power usage cannot be read from system. Will display static values where available."
             }
         }
 
@@ -251,7 +252,7 @@ Function Start-Cycle {
             If ($Miner.DataReaderJob.HasMoreData) { 
                 $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
             }
-            If ($Miner.Best -eq $true -and $Miner.GetStatus() -ne "Running") { 
+            If ($Miner.Best -eq $true -and $Miner.GetStatus() -ne "Running" -and $Miner.GetStatus() -ne $Miner.Status) { 
                 Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
                 $Miner.SetStatus("Failed")
                 $Miner.StatusMessage = "Exited unexpectedly."
@@ -298,7 +299,7 @@ Function Start-Cycle {
                     # }
                 }
 
-                If ($Variables.ReadPowerUsage) {
+                If ($Variables.ReadPowerUsage -and $Variables.OldReadPowerUsage -eq $Variables.ReadPowerUsage) {
                     $Stat_Name = "$($Miner.Name)$(If ($Miner.Algorithm.Count -eq 1) { "_$($Miner.Algorithm | Select-Object -Index 0)" })_PowerUsage"
                     Write-Message "Saving power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If (-not $Stats.$Stat_Name) { " [Power usage measurement done]" })."
                     $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration ($Miner.StatEnd - $Miner.StatStart) -FaultDetection (($Miner.Data).Count -lt $Miner.MinDataSamples)
@@ -425,7 +426,7 @@ Function Start-Cycle {
         $Variables.Miners | ForEach-Object { 
             $_.Enabled = $false
             If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Path, Algorithm -ExcludeDifferent) { 
-                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.ShowMinerWindow -ne $Miner.ShowMinerWindow)
+                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.ShowMinerWindow -ne $Miner.ShowMinerWindow -or $Variables.OldReadPowerUsage -ne $Variables.ReadPowerUsage)
                 $_.Arguments = $Miner.Arguments
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
@@ -594,7 +595,7 @@ Function Start-Cycle {
         }
 
         #ProfitabilityThreshold check - OK to run miners?
-        If (($Variables.MiningEarning - $Variables.MiningPowerCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+        If ([Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             $BestMiners_Combo | ForEach-Object { $_.Best = $true }
             $BestMiners_Combo_Comparison | ForEach-Object { $_.Best_Comparison = $true }
         }
@@ -730,6 +731,7 @@ $ProgressPreference = "SilentlyContinue"
 While ($true) { 
     If ($Variables.Paused) { 
         # Run a dummy cycle to keep the UI updating.
+        $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
 
         # Keep updating exchange rate
         Get-Rates
