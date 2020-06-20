@@ -26,11 +26,9 @@
     data-show-button-text="true"
     data-show-columns="true"
     data-show-toggle="true"
-    data-show-refresh="true"
     data-icons-prefix="fa"
     data-icons="icons"
     data-detail-view="true"
-    data-auto-refresh="true"
     data-detail-formatter="detailFormatter"
     data-response-handler="formatMiners"
     >
@@ -84,15 +82,15 @@
     var $table = $('#miners')
     var $querysize = 10000
 
-    $("#re-benchmark").click(function () {
+    $('#re-benchmark').click(function () {
         var $data = $table.bootstrapTable('getSelections');
         if ($data.length >= 1) {
-            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
+            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
             if ($data.length >= $querysize) {
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
             }
             else {
-                $command = 'functions/stat/remove?Miner=' + encodeURIComponent($data) + '&Type=HashRate';
+                $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=HashRate";
                 $('.modal-body').load($command, function() {
                     $('.modal-title').text($('#re-benchmark').text());
                     $('#myModal').modal({show:true});
@@ -101,96 +99,21 @@
         }
     });
 
-    // $("#re-measure").click(function () {
-    //     var $data = $table.bootstrapTable('getSelections');
-    //     if ($data.length >= 1) {
-    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
-    //         if ($data.length >= $querysize) {
-    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-    //         }
-    //         else {
-    //             $command = "scripts/managestat.ps1?DataSet=RunningMiners&Action=RemoveStat&Type=PowerUsage&Data=" + encodeURIComponent($data);
-    //             $(".modal-body").load($command, function() {
-    //                 $(".modal-title").text($("#re-measure").text());
-    //                 $("#myModal").modal({show:true});
-    //             });
-    //         }
-    //     }
-    // });
-
-    // $("#failed").click(function () {
-    //     var $data = $table.bootstrapTable('getSelections');
-    //     if ($data.length >= 1) {
-    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
-    //         if ($data.length >= $querysize) {
-    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-    //         }
-    //         else {
-    //             $command = "scripts/managestat.ps1?DataSet=RunningMiners&Action=SetStat&Type=HashRate&Value=0&Data=" + encodeURIComponent($data);
-    //             $(".modal-body").load($command, function() {
-    //                 $(".modal-title").text($("#failed").text());
-    //                 $("#myModal").modal({show:true});
-    //             });
-    //         }
-    //     }
-    // });
-
-    // $("#disable").click(function () {
-    //     var $data = $table.bootstrapTable('getSelections');
-    //     if ($data.length >= 1) {
-    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: Object.values($element.Algorithm)})));
-    //         if ($data.length >= $querysize) {
-    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-    //         }
-    //         else {
-    //             $command = "scripts/managestat.ps1?DataSet=RunningMiners&Action=SetStat&Type=HashRate&Value=-1&Data=" + encodeURIComponent($data);
-    //             $(".modal-body").load($command, function() {
-    //                 $(".modal-title").text($("#disable").text());
-    //                 $("#myModal").modal({show:true});
-    //             });
-    //         }
-    //     }
-    // });
-
-    // $("#myModal").on('hidden.bs.modal', function () {
-    //     $table.bootstrapTable("refresh");
-    // });
-
-    // $(function() {
-    //     function updatePoolBalances() {
-    //         var rates;
-    //         $.ajax({url: '/rates', success: function(result) {
-    //             console.log(result);
-    //             rates = result[0];
-    //         }});
-    //         var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
-    //         $.ajax({url: '/balances', success: function(result) {
-    //             console.log(result);
-    //             $("#balanceboxes").empty();
-    //             var template = Handlebars.compile($("#poolbalance_template").html());
-    //             var footer = new RegExp("-.+|=.+");
-    //             $.each(result, function(index, item) {
-    //                 if (!(footer.test(item.Name))) {
-    //                     var currencies = Object.keys(rates[item.Currency]);
-    //                     var data = {name: item.Name, lastupdated: formatDate(item.LastUpdated), url: item.Url, balances: {}};
-    //                     $.each(currencies, function(cindex, currency) {
-    //                         data["balances"][currency] = (item.Total * rates[item.Currency][currency]).toFixed(10);
-    //                         if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
-    //                         data_total["balances"][currency] = data_total["balances"][currency] + item.Total * rates[item.Currency][currency];
-    //                     });
-    //                     $("#balanceboxes").append(template(data));
-    //                 }
-    //             });
-    //             $("#balanceboxes").append(template(data_total));
-    //         }});
-    //     }
-
-    //     updatePoolBalances();
-    //     window.setInterval(function() { updatePoolBalances();}, 60000);
-    // });
-
-    $("#myModal").on('hidden.bs.modal', function () {
-        $table.bootstrapTable("refresh");
+    $('#re-measure').click(function () {
+        var $data = $table.bootstrapTable('getSelections');
+        if ($data.length >= 1) {
+            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+            if ($data.length >= $querysize) {
+                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            }
+            else {
+                $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=PowerUsage";
+                $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#re-measure').text());
+                    $('#myModal').modal({show:true});
+                });
+            }
+        }
     });
 
     $(function() {
@@ -207,13 +130,13 @@
                 var template = Handlebars.compile($("#poolbalance_template").html());
                 var footer = new RegExp("-.+|=.+");
                 $.each(result, function(index, item) {
-                    if (!(footer.test(item.Name))) {
+                    if (!(footer.test(item.Pool))) {
                         var currencies = Object.keys(rates[item.Currency]);
-                        var data = {name: item.Name, lastupdated: formatDate(item.LastUpdated), url: item.Url, balances: {}};
+                        var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), url: item.Url, balances: {}};
                         $.each(currencies, function(cindex, currency) {
-                            data["balances"][currency] = (item.Total * rates[item.Currency][currency]).toFixed(10);
+                            data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(10);
                             if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
-                            data_total["balances"][currency] = data_total["balances"][currency] + item.Total * rates[item.Currency][currency];
+                            data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
                         });
                         $("#balanceboxes").append(template(data));
                     }
@@ -221,14 +144,13 @@
                 $("#balanceboxes").append(template(data_total));
             }});
         }
-
         updatePoolBalances();
-        window.setInterval(function() { updatePoolBalances();}, 60000);
+        window.setInterval(function() { 
+            updatePoolBalances();
+            $table.bootstrapTable("refresh");
+        }, 30000);
     });
 
-    // function formatDate(data) {
-    //     return timeSince(new Date(data));
-    // };
 </script>
 <!-- End of page scripts -->
 
