@@ -24,7 +24,7 @@ version date:   12 June 2020
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.2.1.1"
+    $APIVersion = "0.2.2.1"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -58,12 +58,6 @@ Function Start-APIServer {
                 ".ps1"  = "text/html" # ps1 files get executed, assume their response is html
             }
 
-            # Get-Variable -Scope Global | ForEach-Object { 
-            #     Try { 
-            #         $_.Name | ConvertTo-Json > ".\Debug\$($_.Name).dump"
-            #     }
-            #     Catch { }
-            # }
         
             # Setup the listener
             $Server = New-Object System.Net.HttpListener
@@ -79,8 +73,6 @@ Function Start-APIServer {
                 $Context = $Server.GetContext()
                 $Request = $Context.Request
                 $URL = $Request.Url.OriginalString
-
-                "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" >> .\Logs\API.log
 
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
@@ -129,7 +121,7 @@ Function Start-APIServer {
                                     Remove-Stat -Name $StatName
                                 }
                             }
-                            $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -ne 1) { "s" }) will re-benchmark."
+                            $Data += "`n`nThe listed $(if ($Miners.Count -eq 1) { "miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
                             $Data = "<pre>$Data</pre>"
                             Break
                         }
@@ -141,7 +133,7 @@ Function Start-APIServer {
                                 $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
                                 Remove-Stat -Name $StatName
                             }
-                            $Data += "`n`nThe listed $($Miners.Count) miner$(if ($Miners.Count -ne 1) { "s" }) will re-measure power usage."
+                            $Data += "`n`nThe listed $(if ($Miners.Count -eq 1) { "miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
                             $Data = "<pre>$Data</pre>"
                             Break
                         }
@@ -244,7 +236,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/btcratefirstcurrency" { 
-                        $Data = ConvertTo-Json @($Variables.Rates.($Config.Currency | Select-Object -Index 0) | Select-Object)
+                        $Data = ConvertTo-Json @($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) | Select-Object)
                         Break
                     }
                     "/brainjobs" { 
@@ -280,11 +272,11 @@ Function Start-APIServer {
                         Break
                     }
                     "/earnings" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Earnings | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.Earnings | Select-Object)
                         Break
                     }
                     "/earningstrackerjobs" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJobs | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJobs | Select-Object -Property * -ExcludeProperty ChildJobs, Command, Process)
                         Break
                     }
                     "/firstcurrency" { 
@@ -388,7 +380,7 @@ Function Start-APIServer {
                         # Check if there is a file with the requested path
                         $Filename = "$BasePath$Path"
                         If (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
-                            # If the file is a powershell script, execute it and return the output. A $Parameters parameter is sent built from the query string
+                            # If the file is a PowerShell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
                             $File = Get-ChildItem $Filename -File
 
