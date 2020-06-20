@@ -202,7 +202,12 @@ Class Miner {
     }
 
     [String]GetCommandLineParameters() { 
-        Return $this.Arguments
+        If ($this.Arguments -match "^{.+}$") { 
+            Return ($this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
+        }
+        Else { 
+            Return $this.Arguments
+        }
     }
 
     [String]GetCommandLine() { 
@@ -248,6 +253,9 @@ Class Miner {
                 $this.Process = Start-SubProcess -FilePath $this.Path -ArgumentList $this.GetCommandLineParameters() -LogPath $this.LogFile -WorkingDirectory (Split-Path $this.Path) -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
             }
 
+            #Starting Miner Data reader
+            $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] } -ArgumentList $this }
+
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
                     If ($this.ProcessId = ((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
@@ -259,10 +267,6 @@ Class Miner {
                 }
             }
 
-            #Starting Miner Data reader
-            $this | Add-Member -Force @{ 
-                DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList $this, @($this.Algorithm)
-            }
             $this.StatusMessage = "$(If ($this.Benchmarking -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
@@ -804,10 +808,29 @@ Function Initialize-Application {
 Function Get-Rates {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
-    $RatesBTC = (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($Config.Currency -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop).BTC
-    If ($RatesBTC) {
-        $Variables | Add-Member -Force @{ Rates = $RatesBTC }
+    Try { 
+        $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{Currency = "BTC"}) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object {$_.ToUpper()}) -join ",")&tsyms=$(($Config.Currency | ForEach-Object {$_.ToUpper() -replace "mBTC", "BTC"}) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
     }
+    Catch { 
+        Write-Log -Level Warn "CryptoCompare is down. "
+    }
+
+    If ($NewRates) { 
+            $Rates = $NewRates
+            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates.($_) | Add-Member $_ ([Double]1) -Force }
+        If ($Rates.BTC.BTC -ne 1) { 
+            $Rates = [PSCustomObject]@{BTC = [PSCustomObject]@{BTC = [Double]1 } }
+        }
+        #Convert values to milli BTC
+        If ($Config.Currency -contains "mBTC" -and $Rates.BTC) { 
+            $Rates | Add-Member mBTC ($Rates.BTC | ConvertTo-Json -Depth 10 | ConvertFrom-Json) -Force
+            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "BTC" } | ForEach-Object { $Rates.$_ | Add-Member mBTC ([Double]($Rates.$_.BTC * 1000)) -ErrorAction SilentlyContinue; if ($Config.Currency -notcontains "BTC") { $Rates.$_.PSObject.Properties.Remove("BTC") } }
+            $Rates.mBTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates.mBTC.$_ /= 1000 }
+            $Rates.BTC | Add-Member mBTC 1000 -Force
+            If ($Config.Currency -notcontains "BTC") { $Rates.BTC.PSObject.Properties.Remove("BTC") }
+        }
+    }
+    $Variables | Add-Member -Force @{ Rates = $Rates }
 }
 
 Function Write-Message { 
