@@ -23,9 +23,6 @@ $(function() {
     $.ajax({url: '/miningcost', success: function(result) {
         miningcost = result * rate;
     }});
-    $.ajax({url: '/miningcost', success: function(result) {
-        miningcost = result * rate;
-    }});
     $.ajax({url: '/miningearning', success: function(result) {
         earning = result * rate;
     }});

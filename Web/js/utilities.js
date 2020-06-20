@@ -11,7 +11,12 @@ function formatMiners(data) {
     // that is easier to display and manipulate in a table
     $.each(data, function(index, item) {
         // Format the device(s)
-        item.tDevices = item.DeviceName.toString();
+        if (item.tDevices) {
+            item.tDevices = item.DeviceName.toString();
+        }
+        else{
+            item.tDevices = "";
+        }
 
         // Format the algorithm(s)
         if (Array.isArray(item.Speed)) {
@@ -45,6 +50,14 @@ function formatMiners(data) {
             item.tPrimaryPool = item.PoolName
         }
 
+        // Format the fee(s)
+        if (Array.isArray(item.Fee)) {
+            item.tPrimaryFee = item.Fee[0];
+            item.tSecondaryFee = item.Fee[1];
+        } else {
+            item.tPrimaryFee = item.Fee;
+        }
+
         // Get effective command line from argument json
         var arguments = new Object(item.Arguments);
         if (arguments.Commands) {
@@ -52,7 +65,12 @@ function formatMiners(data) {
         }
 
         // Format the reason(s)
-        item.tReason = item.Reason.toString();
+        if (item.tReason) {
+            item.tReason = item.Reason.toString();
+        }
+        else{
+            item.Reason = "";
+        }
 
         // Format margin of error
         if (Array.isArray(item.Earning_Accuracy)) {
