@@ -117,8 +117,8 @@ Function Start-Cycle {
             $Config.PowerPricekWh | Add-Member "00:00" ($Config.PowerPricekWh.($Config.PowerPricekWh | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Sort-Object | Select-Object -Last 1))
         }
         $Variables.PowerPricekWh = [Double]($Config.PowerPricekWh.($Config.PowerPricekWh | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Sort-Object | Where-Object { $_ -lt (Get-Date -Format HH:mm).ToString() } | Select-Object -Last 1))
-        $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates.($Config.Currency | Select-Object -Index 0))
-        $Variables.BasePowerCost = [Double]($Config.IdlePowerUsageW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates.($Config.Currency | Select-Object -Index 0))
+        $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))
+        $Variables.BasePowerCost = [Double]($Config.IdlePowerUsageW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))
 
         #Clear pools if pools config has changed to avoid double pools with different wallets/usernames
         If (($Config.PoolsConfig | ConvertTo-Json -Compress) -ne ($Variables.PoolsConfigCached | ConvertTo-Json -Compress)) { 
@@ -230,7 +230,7 @@ Function Start-Cycle {
         $Variables.Pools = $ThisRegionPools + ($Variables.Pools | Where-Object { $_ -notin $ThisRegionPools })
         Remove-Variable ThisRegionPools
 
-        Write-Message -Level VERBOSE "Had $($Variables.PoolsCount) pool$( If ($Variables.PoolsCount -ne 1) { "s" }), found $($ComparePools.Count) new pool$( If ($ComparePools.Count -ne 1) { "s" }). $(@($Variables.Pools | Where-Object Enabled -EQ $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) enabled after filtering (filtered out $(@($Variables.Pools | Where-Object Enabled -NE $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
+        Write-Message -Level VERBOSE "Had $($Variables.PoolsCount) pool$( If ($Variables.PoolsCount -ne 1) { "s" }), found $($ComparePools.Count) new pool$( If ($ComparePools.Count -ne 1) { "s" }). $(@($Variables.Pools | Where-Object Enabled -EQ $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Variables.Pools | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) enabled (filtered out $(@($Variables.Pools | Where-Object Enabled -NE $true).Count) pool$(If (@($Variables.Pools | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
 
         #If not all the live pool prices represent the same period of time then use historic pricing for the same period
         If (($Variables.Pools | Where-Object Enabled -EQ $true | Where-Object Price_Bias | Select-Object -ExpandProperty Name -Unique | ForEach-Object { $Variables.Pools | Where-Object Name -EQ $_ | Measure-Object Updated -Maximum | Select-Object -ExpandProperty Maximum } | Select-Object -Unique | Measure-Object -Minimum -Maximum | ForEach-Object { $_.Maximum - $_.Minimum }).TotalMinutes -gt $Config.SyncWindow) { 
@@ -363,6 +363,8 @@ Function Start-Cycle {
         If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $Pools; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If (Test-Path ".\CustomMiners" -PathType Container) { $NewMiners +=  Get-ChildItemContent ".\CustomMiners" -Parameters @{Pools = $Pools; Config = $Config; Variables = $Variables; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
 
+        If ($Config.IncludeLegacyMiners -and (Test-Path ".\LegacyMiners" -PathType Container)) { $NewMiners += Get-ChildItemContent ".\LegacyMiners" -Parameters @{Pools = $Pools; Stats = $Stats; Config = $Config; Devices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled }) } -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+
         $NewMiners = $NewMiners | Select-Object  | Where-Object { $_.Content.Arguments } | ForEach-Object { 
             $Miner_Name = $(If ($_.Content.Name) { $_.Content.Name } Else { $_.Name })
             $Miner_Name = $Miner_Name -replace "^.", "$($Miner_Name[0])".ToUpper()
@@ -489,7 +491,7 @@ Function Start-Cycle {
             Continue
         }
 
-        Write-Message -Level VERBOSE "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Enabled -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) enabed after filtering (filtered out $(($Variables.Miners | Where-Object Enabled -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
+        Write-Message -Level VERBOSE "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Enabled -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Enabled -EQ $true).Count -eq 1) { "s" }) enabed (filtered out $(($Variables.Miners | Where-Object Enabled -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Enabled -NE $true).Count -ne 1) { "s" }))."
 
         If ($Config.OpenFirewallPorts) { 
             #Open firewall ports for all miners
@@ -531,7 +533,7 @@ Function Start-Cycle {
         Else { 
             #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
             If ($Variables.ReadPowerUsage -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-            $SortedMiners = $Variables.Miners | Where-Object { $_.Enabled -eq $true -or $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $True } | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
+            $SortedMiners = $Variables.Miners | Where-Object Enabled -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
             $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } #use a smaller subset of miners
             $BestMiners = $FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName) } | Select-Object -First 1) }
             $BestMiners_Comparison = $FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName) } | Sort-Object -Descending $_."$($SortBy)_Comparison" | Select-Object -First 1) }
@@ -592,12 +594,12 @@ Function Start-Cycle {
         }
 
         #ProfitabilityThreshold check - OK to run miners?
-        If (($Variables.MiningEarning - $Variables.MiningPowerCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+        If (($Variables.MiningEarning - $Variables.MiningPowerCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             $BestMiners_Combo | ForEach-Object { $_.Best = $true }
             $BestMiners_Combo_Comparison | ForEach-Object { $_.Best_Comparison = $true }
         }
         Else { 
-            Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates.($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+            Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
             Start-Sleep -Seconds 30
             $Variables.EndLoop = $true
             Continue
