@@ -3,9 +3,7 @@ using module .\Include.psm1
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [PSCustomObject]$Miner,
-    [Parameter(Mandatory = $false)]
-    [String[]]$Algorithms
+    [PSCustomObject]$Miner
 )
 
 $ProgressPreference = "SilentlyContinue"
@@ -15,6 +13,7 @@ $Port = [UInt16]$Miner.Port
 $Server = "localhost"
 $Timeout = [Int16]45 #Seconds
 $DeviceName = [String[]]$Miner.DeviceName
+$Algorithms = [String[]]$Miner.Algorithm
 
 $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
 
@@ -25,6 +24,7 @@ Try {
 
         $HashRate_Value = [Double]0
         $HashRateDual_Value = [Double]0
+        $PowerUsage_Value = [Double]0
         $PowerUsage = [Double[]]0
 
         If ($Miner.ReadPowerUsage) {
@@ -32,7 +32,8 @@ Try {
             If ((Test-Path $RegistryHive) -and $DeviceName) { 
                 $RegistryData = Get-ItemProperty $RegistryHive
                 $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                    $PowerUsage += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                    $PowerUsage_Value = [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                    If ($PowerUsage_Value -gt 0) { $PowerUsage += $PowerUsage_Value }
                 }
             }
         }
@@ -301,7 +302,8 @@ Try {
             If ((Test-Path $RegistryHive) -and $DeviceName) { 
                 $RegistryData = Get-ItemProperty $RegistryHive
                 $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                    $PowerUsage += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                    $PowerUsage_Value = [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                    If ($PowerUsage_Value -gt 0) { $PowerUsage += $PowerUsage_Value }
                 }
             }
         }
@@ -312,7 +314,7 @@ Try {
             $HashRate | Add-Member @{ $Algorithms[1] = $HashRateDual_Value }
         }
 
-        If (($HashRate.PSObject.Properties.Value | Measure-Object -Minimum).Minimum -gt 0) { 
+        If (($HashRate.PSObject.Properties.Value | Measure-Object -Sum).Sum -gt 0) { 
             [PSCustomObject]@{
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate
