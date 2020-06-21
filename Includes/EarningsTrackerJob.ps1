@@ -91,13 +91,14 @@ While ($true) {
 
     #For each pool in config
     #Go loop
-    $PoolAPI | Where-Object { $_.EarnTrackSupport -eq "yes" } | Where-Object { $_.Name -in $TrackPools } | ForEach-Object { 
+    $PoolAPI | Where-Object { $_.EarnTrackSupport -eq "yes" } | Where-Object { $_.Name -in $TrackPools } | Sort-Object Name | ForEach-Object { 
         $Pool = $_.Name -replace "24hr" -replace "coins"
         $APIUri = $_.WalletUri
         $PaymentThreshold = $_.PaymentThreshold
-        $BalanceData = [PSCustomObject]@{}
+        $BalanceData = [PSCustomObject]@{ }
         $BalanceJson = $_.Balance
         $TotalJson = $_.Total
+        $PoolAccountUri = $_.AccountUri
 
         $ConfName = If ($PoolsConfig.$Pool -ne $null) { $Pool } Else { "default" }
         $PoolConf = $PoolsConfig.$ConfName
@@ -116,17 +117,21 @@ While ($true) {
                     [Double]$NHTotalBalance = [Double]($BalanceData.unpaidAmount) + [Double]($BalanceData.externalBalance)
                     $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
                     $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
+                    $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
                 }
                 Catch { }
             }
             "mph" { 
                 Try { 
-                    $BalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" }) }
+                    $BalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
+                    $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
+                }
                 Catch { }
             }
             default { 
                 Try { 
                     $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    $PoolAccountUri = "$($PoolAccountUri -replace '\[currency\]', $PoolConf.PasswordCurrency)$Wallet"
                 }
                 Catch { }
             }
@@ -135,12 +140,12 @@ While ($true) {
             $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
                 Pool         = $Pool
                 Date         = $CurDate
-                balance      = $BalanceData.$BalanceJson
-                unsold       = $BalanceData.unsold
-                total_unpaid = $BalanceData.total_unpaid
-                total_paid   = $BalanceData.total_paid
-                total_earned = ($BalanceData.$BalanceJson, $BalanceData.$TotalJson | Measure-Object -Minimum).Minimum # Pool reduced earnings!
-                currency     = $BalanceData.currency
+                Balance      = $BalanceData.$BalanceJson
+                Unsold       = $BalanceData.unsold
+                Total_unpaid = $BalanceData.total_unpaid
+                Total_paid   = $BalanceData.total_paid
+                Total_earned = ($BalanceData.$BalanceJson, $BalanceData.$TotalJson | Measure-Object -Minimum).Minimum # Pool reduced earnings!
+                Currency     = $BalanceData.currency
             }
 
             $BalanceObjects = @($AllBalanceObjects | Where-Object { $_.Pool -eq $Pool } | Sort-Object Date)
@@ -166,16 +171,17 @@ While ($true) {
 
             $AvgBTCHour = If ((($CurDate - ($BalanceObjects[0].Date)).TotalHours) -ge 1) { (($BalanceObject.total_earned - $BalanceObjects[0].total_earned) / ($CurDate - ($BalanceObjects[0].Date)).TotalHours) } Else { $Growth1 }
             $EarningsObject = [PSCustomObject]@{ 
-                Pool                  = $pool
+                Pool                  = $Pool
                 Wallet                = $Wallet
+                Uri                   = $PoolAccountUri
                 Date                  = $CurDate.ToShortDateString()
                 StartTime             = ($BalanceObjects[0].Date).ToLongTimeString()
-                balance               = $BalanceObject.balance
-                unsold                = $BalanceObject.unsold
-                total_unpaid          = $BalanceObject.total_unpaid
-                total_paid            = $BalanceObject.total_paid
-                total_earned          = $BalanceObject.total_earned
-                currency              = $BalanceObject.currency
+                Balance               = $BalanceObject.balance
+                Unsold                = $BalanceObject.unsold
+                Total_unpaid          = $BalanceObject.total_unpaid
+                Total_paid            = $BalanceObject.total_paid
+                Total_earned          = $BalanceObject.total_earned
+                Currency              = $BalanceObject.currency
                 GrowthSinceStart      = $BalanceObject.total_earned - $BalanceObjects[0].total_earned
                 Growth1               = $Growth1
                 Growth6               = $Growth6
@@ -187,6 +193,7 @@ While ($true) {
                 TrustLevel            = $((($CurDate - ($BalanceObjects[0].Date)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum
                 PaymentThreshold      = $PaymentThreshold
                 TotalHours            = ($CurDate - ($BalanceObjects[0].Date)).TotalHours
+                LastUpdated           = $CurDate
             }
             $EarningsObject
             If ($EarningsTrackerConfig.EnableLog) { $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\EarningTrackerLog.csv" }

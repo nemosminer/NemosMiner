@@ -275,7 +275,10 @@ Function Global:TimerUITick {
         $Variables.EarningsTrackerJobs | Where-Object { $_.State -eq "Running" } | ForEach-Object { 
             $EarnTrack = $_ | Receive-Job
             If ($EarnTrack) { 
-                $EarnTrack | Where-Object { $_.Pool -ne "" } | Sort-Object Date, Pool | Select-Object -Last ($EarnTrack.Pool | Sort-Object -Unique).Count | ForEach-Object { $Variables.Earnings.($_.Pool) = $_ }
+                $Earnings = [Ordered]@{ }
+                $EarnTrack | Where-Object { $_.Pool -ne "" } | Sort-Object Date, Pool | Select-Object -Last ($EarnTrack.Pool | Sort-Object -Unique).Count | Sort-Object Pool | ForEach-Object { $Earnings.($_.Pool) = $_ }
+                $Variables.Earnings = $Earnings
+                Remove-Variable Earnings
                 Remove-Variable EarnTrack
             }
         }

@@ -63,9 +63,9 @@
 <div id="balanceboxes" class="card-deck"></div>
 
 <script id="poolbalance_template" type="text/x-handlebars-template">
-    <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}100%{{else}}200px{{/if}}";>
+    <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}";>
         <div class="card-header text-center">
-            <h5>{{#if total}}{{name}}{{else}}<a href="{{url}}" target="_blank">{{name}}</a>{{/if}}</h5>
+            <h5>{{#if total}}{{name}}{{else}}<a href="{{uri}}" target="_blank">{{name}}</a>{{/if}}</h5>
             {{lastupdated}}
         </div>
         <div class="card-body text-center">
@@ -74,6 +74,13 @@
                 <span class="currencyname font-weight-bold">{{@key}}:</span> <span>{{this}}</span><br/>
                 {{/each}}
             </p>
+            {{#if total}}{{else}}
+            <p class="payment">
+                Payment Threshold:<br/><span class="paymentthreshold font-weight-bold">{{paymentthreshold}} mBTC</span><br/>
+                <br/>
+                Estimated Paydate:<br/><span class="paydate font-weight-bold">{{paydate}}</span><br/>
+            </p>
+            {{/if}}
         </div>
     </div>
 </script>
@@ -132,7 +139,7 @@
                 $.each(result, function(index, item) {
                     if (!(footer.test(item.Pool))) {
                         var currencies = Object.keys(rates[item.Currency]);
-                        var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), url: item.Url, balances: {}};
+                        var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), paymentthreshold: (item.PaymentThreshold * 1000)};
                         $.each(currencies, function(cindex, currency) {
                             data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(10);
                             if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
@@ -145,11 +152,20 @@
             }});
         }
         updatePoolBalances();
+
         window.setInterval(function() { 
             updatePoolBalances();
             $table.bootstrapTable("refresh");
         }, 30000);
     });
+
+    function formatPaydate(value) {
+        if (value == "Unknown") {
+            return "N/A"
+        } else {
+            return (new Date(value).toLocaleString());
+        }
+    };
 
 </script>
 <!-- End of page scripts -->
