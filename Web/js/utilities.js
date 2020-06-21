@@ -11,7 +11,7 @@ function formatMiners(data) {
     // that is easier to display and manipulate in a table
     $.each(data, function(index, item) {
         // Format the device(s)
-        if (item.tDevices) {
+        if (item.DeviceName) {
             item.tDevices = item.DeviceName.toString();
         }
         else{
