@@ -245,7 +245,7 @@ GTX 1650 Super Driver
 
    NemosMiner is Currently Tested on the following Rigs: 
       
-      windows10-1xGTX-1660Super/RYZEN-3700x (Test Pc) 
+      windows10-1xGTX-1660Super/1xAMD-RX5600XT/1xAMD-RYZEN-3700x (Test Pc) 
       
       windows10-9xGTX-1660ti/Octominer (test Rig 1)
       windows10-6xRTX-2060/RYZEN-3700x  (test Rig 2)
