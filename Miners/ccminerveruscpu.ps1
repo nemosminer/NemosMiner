@@ -3,7 +3,6 @@ using module ..\Includes\Include.psm1
 $Path = ".\Bin\CPU-ccminerverushash370\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.7.0/ccminer_CPU_3.7.7z"
 $Commands = [PSCustomObject]@{ 
-    "verus"     = "" #Verus
     "verushash" = "" #Verushash
 }
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
