@@ -65,7 +65,7 @@ function formatMiners(data) {
         }
 
         // Format the reason(s)
-        if (item.tReason) {
+        if (item.Reason) {
             item.tReason = item.Reason.toString();
         }
         else{
