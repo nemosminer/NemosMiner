@@ -401,7 +401,7 @@ Function Global:TimerUITick {
             $LabelBTCPrice.Text = If ($Variables.Rates."BTC"."BTC".$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 BTC = $(($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
             $Variables | Add-Member -Force @{ InCycle = $false }
 
-            If ($Variables.Earnings.Values -ne $null) { 
+            If ($null -ne$Variables.Earnings.Values) { 
                 $LabelBTCD.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 3) = m$([char]0x20BF) {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)
                 
                 $LabelEarningsDetails.Lines = @()
@@ -454,7 +454,7 @@ Function Global:TimerUITick {
             Clear-Host
             If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
                 Write-Host "Run Miners: " $ProcessesIdle.Count
-                $ProcessesIdle | Sort-Object { If ($_.Process -eq $null) { (Get-Date) } Else { $_.Process.ExitTime } } | Format-Table -Wrap (
+                $ProcessesIdle | Sort-Object { If ($null -eq $_.Process) { (Get-Date) } Else { $_.Process.ExitTime } } | Format-Table -Wrap (
                     @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } },
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } }  
                 ) | Out-Host
@@ -609,7 +609,7 @@ Function Global:TimerUITick {
 
             If ($ProcessesRunning = @($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
                 Write-Host "Running miner$(If ($ProcessesRunning.Count -ne 1) { "s"}): $($ProcessesRunning.Count)" 
-                $ProcessesRunning | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
+                $ProcessesRunning | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                     @{ Label = "Speed(s)"; Expression = { If ($_.Speed_Live) { (($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '\s+', ' ' } Else { "n/a" } }; Align = 'right' }, 
                     @{ Label = "PowerUsage"; Expression = { If ($_.PowerUsage_Live) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
                     @{ Label = "Active (this run)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f ($_.Active) } }, 
@@ -634,7 +634,7 @@ Function Global:TimerUITick {
 
                 If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" })) { 
                     Write-Host -ForegroundColor Red "Failed miner$(If ($ProcessesFailed.Count -ne 1) { "s"}): $($ProcessesFailed.Count)"
-                    $ProcessesFailed | Sort-Object { If ($_.Process -eq $null) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
+                    $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
                         @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } },
@@ -1203,7 +1203,7 @@ $LBRegion.AutoSize = $false
 $LBRegion.Sorted = $true
 $LBRegion.Width = 300
 $LBRegion.Height = 20
-$LBRegion.Location = [System.Drawing.Point]::new(122, 66)
+$LBRegion.Location = [System.Drawing.Point]::new(122, 68)
 $LBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LBRegion
 
@@ -1212,7 +1212,7 @@ $LabelGPUCount.Text = "GPU Count"
 $LabelGPUCount.AutoSize = $false
 $LabelGPUCount.Width = 120
 $LabelGPUCount.Height = 20
-$LabelGPUCount.Location = [System.Drawing.Point]::new(2, 90)
+$LabelGPUCount.Location = [System.Drawing.Point]::new(2, 91)
 $LabelGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelGPUCount
 
@@ -1223,7 +1223,7 @@ $TBGPUCount.Text = $Config.GPUCount
 $TBGPUCount.AutoSize = $false
 $TBGPUCount.Width = 50
 $TBGPUCount.Height = 20
-$TBGPUCount.Location = [System.Drawing.Point]::new(122, 90)
+$TBGPUCount.Location = [System.Drawing.Point]::new(122, 91)
 $TBGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBGPUCount
 
@@ -1233,7 +1233,7 @@ $CheckBoxDisableGPU0.Text = "Disable GPU0"
 $CheckBoxDisableGPU0.AutoSize = $false
 $CheckBoxDisableGPU0.Width = 140
 $CheckBoxDisableGPU0.Height = 20
-$CheckBoxDisableGPU0.Location = [System.Drawing.Point]::new(177, 90)
+$CheckBoxDisableGPU0.Location = [System.Drawing.Point]::new(177, 91)
 $CheckBoxDisableGPU0.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxDisableGPU0.Checked = $Config.DisableGPU0
 $ConfigPageControls += $CheckBoxDisableGPU0
@@ -1242,7 +1242,7 @@ $ButtonDetectGPU = New-Object System.Windows.Forms.Button
 $ButtonDetectGPU.Text = "Detect GPU"
 $ButtonDetectGPU.Width = 100
 $ButtonDetectGPU.Height = 20
-$ButtonDetectGPU.Location = [System.Drawing.Point]::new(320, 90)
+$ButtonDetectGPU.Location = [System.Drawing.Point]::new(320, 91)
 $ButtonDetectGPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $ButtonDetectGPU
 
@@ -1253,7 +1253,7 @@ $LabelAlgos.Text = "Algorithm"
 $LabelAlgos.AutoSize = $false
 $LabelAlgos.Width = 120
 $LabelAlgos.Height = 20
-$LabelAlgos.Location = [System.Drawing.Point]::new(2, 112)
+$LabelAlgos.Location = [System.Drawing.Point]::new(2, 114)
 $LabelAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelAlgos
 
@@ -1264,7 +1264,7 @@ $TBAlgos.Text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
 $TBAlgos.Width = 300
 $TBAlgos.Height = 20
-$TBAlgos.Location = [System.Drawing.Point]::new(122, 112)
+$TBAlgos.Location = [System.Drawing.Point]::new(122, 114)
 $TBAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBAlgos
 
@@ -1285,7 +1285,7 @@ $TBCurrency.Text = @($Config.Currency -join ', ')
 $TBCurrency.AutoSize = $false
 $TBCurrency.Width = 300
 $TBCurrency.Height = 20
-$TBCurrency.Location = [System.Drawing.Point]::new(122, 134)
+$TBCurrency.Location = [System.Drawing.Point]::new(122, 136)
 $TBCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBCurrency
@@ -1295,7 +1295,7 @@ $LabelPwdCurrency.Text = "Pwd Currency"
 $LabelPwdCurrency.AutoSize = $false
 $LabelPwdCurrency.Width = 120
 $LabelPwdCurrency.Height = 20
-$LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 156)
+$LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 158)
 $LabelPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelPwdCurrency
 
@@ -1306,7 +1306,7 @@ $TBPwdCurrency.Text = $Config.PasswordCurrency
 $TBPwdCurrency.AutoSize = $false
 $TBPwdCurrency.Width = 300
 $TBPwdCurrency.Height = 20
-$TBPwdCurrency.Location = [System.Drawing.Point]::new(122, 156)
+$TBPwdCurrency.Location = [System.Drawing.Point]::new(122, 158)
 $TBPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBPwdCurrency
 
@@ -1315,7 +1315,7 @@ $LabelDonate.Text = "Donate"
 $LabelDonate.AutoSize = $false
 $LabelDonate.Width = 120
 $LabelDonate.Height = 20
-$LabelDonate.Location = [System.Drawing.Point]::new(2, 178)
+$LabelDonate.Location = [System.Drawing.Point]::new(2, 180)
 $LabelDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelDonate
@@ -1327,30 +1327,30 @@ $TBDonate.Text = $Config.Donate
 $TBDonate.AutoSize = $false
 $TBDonate.Width = 300
 $TBDonate.Height = 20
-$TBDonate.Location = [System.Drawing.Point]::new(122, 178)
+$TBDonate.Location = [System.Drawing.Point]::new(122, 180)
 $TBDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBDonate
 
-$LabelProxy = New-Object System.Windows.Forms.Label
-$LabelProxy.Text = "Proxy"
-$LabelProxy.AutoSize = $false
-$LabelProxy.Width = 120
-$LabelProxy.Height = 20
-$LabelProxy.Location = [System.Drawing.Point]::new(2, 178)
-$LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $LabelProxy
+# $LabelProxy = New-Object System.Windows.Forms.Label
+# $LabelProxy.Text = "Proxy"
+# $LabelProxy.AutoSize = $false
+# $LabelProxy.Width = 120
+# $LabelProxy.Height = 20
+# $LabelProxy.Location = [System.Drawing.Point]::new(2, 178)
+# $LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+# $ConfigPageControls += $LabelProxy
 
-$TBProxy = New-Object System.Windows.Forms.TextBox
-$TBProxy.Tag = "Proxy"
-$TBProxy.MultiLine = $false
-$TBProxy.Text = $Config.Proxy
-$TBProxy.AutoSize = $false
-$TBProxy.Width = 300
-$TBProxy.Height = 20
-$TBProxy.Location = [System.Drawing.Point]::new(122, 178)    
-$TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $TBProxy
+# $TBProxy = New-Object System.Windows.Forms.TextBox
+# $TBProxy.Tag = "Proxy"
+# $TBProxy.MultiLine = $false
+# $TBProxy.Text = $Config.Proxy
+# $TBProxy.AutoSize = $false
+# $TBProxy.Width = 300
+# $TBProxy.Height = 20
+# $TBProxy.Location = [System.Drawing.Point]::new(122, 178)    
+# $TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+# $ConfigPageControls += $TBProxy
 
 $LabelActiveMinerGainPct = New-Object System.Windows.Forms.Label
 $LabelActiveMinerGainPct.Text = "ActiveMinerGain%"
