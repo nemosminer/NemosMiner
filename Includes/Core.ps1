@@ -188,7 +188,7 @@ Function Start-Cycle {
 
             If ($Pool) { 
                 If ($Pool.EstimateCorrection -gt 0 -and $Pool.EstimateCorrection -lt 1) { $_.EstimateCorrection = $Pool.EstimateCorrection } Else { $_.EstimateCorrection = 1 } 
-                If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $Fee = 0 } Else { $_.Fee = $Pool.Fee }
+                If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $_.Fee = 0 } Else { $_.Fee = $Pool.Fee }
                 $_.Price = $Pool.Price * $_.EstimateCorrection
                 $_.Price_Bias = $Pool.Price * (1 - ($Pool.MarginOfError * $(If ($_.PayoutScheme -eq "PPLNS") { 1 } Else { 1 + $Config.ActiveMinerGainPct }) * (1 - $Pool.Fee) * [Math]::Pow($Variables.DecayBase, $DecayExponent)))
                 $_.Price_Unbias = $Pool.Price * (1 - $Pool.Fee)
@@ -692,7 +692,7 @@ Function Start-Cycle {
             If ($_.Benchmark -eq $true) { $Message = "Benchmark " }
             If ($_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true) { $Message = "$($Message)and "}
             If ($_.MeasurePowerUsage -eq $true) { $Message = "$($Message)Power usage measurement " }
-            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($_.Name) {$(($_.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}' in progress..." }
+            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($Miner.Info)' in progress..." }
         }
 
         "--------------------------------------------------------------------------------" | Out-Host
