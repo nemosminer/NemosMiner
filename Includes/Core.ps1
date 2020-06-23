@@ -653,9 +653,6 @@ Function Start-Cycle {
         $Variables.Miners | Where-Object Best | ForEach-Object { 
             $Miner = $_
             If ($_.GetStatus() -ne "Running") { 
-                # Log switching information to .\Logs\switching.log
-                [PSCustomObject]@{ Date = (Get-Date); "Type" = $($Miner.Type -join " & "); "Algo(s)" = (($Miner.Algorithm | Select-Object -Unique) -join '; '); "Wallet(s)" = (($Miner.Workers.Pool.User | Select-Object -Unique) -join '; ') ; "Username" = $Config.UserName; "Host(s)" = (($Miner.Workers.Pool.Host | Select-Object -Unique) -join '; ') } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
-
                 # Launch prerun if exists
                 If ($Miner.Type -eq "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
                     Start-Process ".\Utils\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
@@ -683,8 +680,14 @@ Function Start-Cycle {
                 $Miner.SetStatus("Running")
                 Write-Message "Started miner '$($Miner.Info)'."
                 Write-Message -Level Verbose $Miner.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
+
+                # Log switching information to .\Logs\switching.log
+                [PSCustomObject]@{ Date = (Get-Date); "Type" = $($Miner.Type -join " & "); "Miner" = $Miner.Info; "Account" = (($Miner.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '); "CommandLine" = $Miner.GetCommandLine() } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
+
             }
         }
+
+        $Variables.SwitchingLog = @(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Select-Object -Last 1000); [Array]::Reverse($Variables.SwitchingLog)
 
         $Variables.Miners | Where-Object { $_.Best -eq $true } | ForEach-Object { 
             $Message = ""
@@ -801,18 +804,18 @@ While ($true) {
             If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
                 #A miner crashed and we're not benchmarking, end the loop now
                 $Variables.EndLoop = $true
-                Write-Message -Level VERBOSE "Miner failed - starting new cycle."
+                Write-Message -Level VERBOSE "Miner failed. Ending cycle."
                 Break
             }
             If (-not $RunningMiners) { 
                 #No running miners, end the loop now
                 $Variables.EndLoop = $true
-                Write-Message -Level VERBOSE "No running miner - starting new cycle."
+                Write-Message -Level VERBOSE "No running miner. Ending cycle."
                 Break
             }
             If ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
                 #Enough samples collected for this loop, exit loop immediately
-                Write-Message -Level VERBOSE "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. Starting new cyle."
+                Write-Message -Level VERBOSE "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. Ending cyle."
                 Break
             }
             If ($BenchmarkingOrMeasuringMiners) { Start-Sleep -Seconds 1 } Else { Start-Sleep -Seconds 2 }
