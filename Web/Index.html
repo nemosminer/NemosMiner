@@ -71,14 +71,13 @@
         <div class="card-body text-center">
             <p class="card-text currencies">
                 {{#each balances}}
-                <span class="currencyname font-weight-bold">{{@key}}:</span> <span>{{this}}</span><br/>
+                <b>{{@key}}: {{this}}</b><br/>
                 {{/each}}
             </p>
             {{#if total}}{{else}}
             <p class="payment">
-                Payment Threshold:<br/><span class="paymentthreshold font-weight-bold">{{paymentthreshold}} mBTC</span><br/>
-                <br/>
-                Estimated Paydate:<br/><span class="paydate font-weight-bold">{{paydate}}</span><br/>
+                <b>{{percentage}}%</b> of <b>{{paymentthreshold}} mBTC</b><br/>payment threshold<br/>
+                <br/>Estimated Paydate: <b>{{paydate}}</b><br/>
             </p>
             {{/if}}
         </div>
@@ -139,7 +138,7 @@
                 $.each(result, function(index, item) {
                     if (!(footer.test(item.Pool))) {
                         var currencies = Object.keys(rates[item.Currency]);
-                        var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), paymentthreshold: (item.PaymentThreshold * 1000)};
+                        var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), paymentthreshold: (item.PaymentThreshold * 1000)};
                         $.each(currencies, function(cindex, currency) {
                             data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(10);
                             if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
