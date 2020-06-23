@@ -321,13 +321,12 @@ Function Start-Cycle {
                     $UpdatedMiner.Name = (Get-Item $_.Path).BaseName
                     $Variables.Miners | Where-Object { $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
                         $Miner = $_
-                        $Miner_Info = "$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                         If ($Miner.Status -eq "Running" -and $Miner.GetStatus() -ne "Running") { 
-                            Write-Message -Level ERROR "Miner '$Miner_Info' exited unexpectedly." 
+                            Write-Message -Level ERROR "Miner '$Miner.Info' exited unexpectedly." 
                             $Miner.SetStatus("Failed")
                         }
                         Else { 
-                            Write-Message "Stopping miner '$Miner_Info' for update..."
+                            Write-Message "Stopping miner '$Miner.Info' for update..."
                             $Miner.SetStatus("Idle")
                         }
                     }
@@ -692,7 +691,7 @@ Function Start-Cycle {
             If ($_.Benchmark -eq $true) { $Message = "Benchmark " }
             If ($_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true) { $Message = "$($Message)and "}
             If ($_.MeasurePowerUsage -eq $true) { $Message = "$($Message)Power usage measurement " }
-            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($Miner.Info)' in progress..." }
+            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($_.Info)' in progress..." }
         }
 
         "--------------------------------------------------------------------------------" | Out-Host
