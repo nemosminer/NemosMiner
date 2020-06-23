@@ -338,6 +338,8 @@ Class Miner {
         }
         ElseIf ($this.Status -eq "Running") { 
             $this.ProcessId = $null
+            #Stop Miner data reader
+            Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
             $this.Status = [MinerStatus]::Failed
             Return $this.Status
         }
@@ -794,12 +796,12 @@ Function Initialize-Application {
     Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 
     # Find available TCP Ports
-    $StartPort = 4068
+    $StartPort = If ([UInt16]$Config.APIPort) { $Config.APIPort + 1 } Else { 4068 }
     $Config.Type | Sort-Object | ForEach-Object { 
-        Write-Message "Finding available TCP Port for $_..."
+        Write-Message "Finding available TCP Port for $_ miners..."
         $Port = Get-FreeTcpPort($StartPort)
         $Variables | Add-Member -Force @{ "$($_)MinerAPITCPPort" = $Port }
-        Write-Message "$_ Miners API Port: $($Port)"
+        Write-Message "$_ miners API Port: $($Port)"
         $StartPort = $Port + 1
     }
 }
@@ -1065,7 +1067,7 @@ Function Update-Monitoring {
         }
         $DataJSON = ConvertTo-Json @($Data)
         # Calculate total estimated profit
-        $Profit = [string]([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8))
+        $Profit = [String]([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8))
 
         # Send the request
         $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON }
