@@ -1018,6 +1018,7 @@ $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, 232)
 $RunningMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
 $RunningMinersDGV.RowHeadersVisible = $false
+$RunningMinersDGV.AutoSizeColumnsMode = "AllCells"
 $RunPageControls += $RunningMinersDGV
 
 # Earnings Page Controls
@@ -1067,7 +1068,7 @@ $CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(2, 2)
 $CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingCPU.Checked = ("CPU" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingCPU
-$CheckShowSwitchingCPU | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
+$CheckShowSwitchingCPU | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($this) }) }
 
 $CheckShowSwitchingNVIDIA = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingNVIDIA.Tag = "NVIDIA"
@@ -1079,7 +1080,7 @@ $CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(62, 2)
 $CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingNVIDIA.Checked = ("NVIDIA" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
-$CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
+$CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($this) }) }
 
 $CheckShowSwitchingAMD = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingAMD.Tag = "AMD"
@@ -1091,13 +1092,13 @@ $CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(137, 2)
 $CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingAMD.Checked = ("AMD" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingAMD
-$CheckShowSwitchingAMD | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($This) }) }
+$CheckShowSwitchingAMD | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($this) }) }
 
 Function CheckBoxSwitching_Click { 
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-    If (Test-Path ".\Logs\switching.log" -PathType Leaf) { $SwitchingArray = @(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Select-Object -Last 1000); [Array]::Reverse($SwitchingArray) }
-    $SwitchingDGV.DataSource = [System.Collections.ArrayList]($SwitchingArray | Where-Object { $_.Type -in $SwitchingDisplayTypes })
+    If (Test-Path ".\Logs\switching.log") { $Variables.SwitchingLog = @(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Select-Object -Last 1000); [Array]::Reverse($Variables.SwitchingLog) }
+    $SwitchingDGV.DataSource = [System.Collections.ArrayList]($Variables.SwitchingLog | Where-Object { $_.Type -in $SwitchingDisplayTypes })
 }
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
@@ -1107,7 +1108,7 @@ $SwitchingDGV.Location = [System.Drawing.Point]::new(2, 22)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $SwitchingDGV.AutoSizeColumnsMode = "Fill"
 $SwitchingDGV.RowHeadersVisible = $false
-$SwitchingDGV.DataSource = $SwitchingArray
+$SwitchingDGV.AutoSizeColumnsMode = "DisplayedCells"
 $SwitchingPageControls += $SwitchingDGV
 
 # Estimations Page Controls
@@ -1119,6 +1120,7 @@ $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EstimationsDGV.AutoSizeColumnsMode = "Fill"
 $EstimationsDGV.RowHeadersVisible = $false
 $EstimationsDGV.ColumnHeadersVisible = $true
+$EstimationsDGV.AutoSizeColumnsMode = "DisplayedCells"
 
 # Config Page Controls
 $ConfigPageControls = @()
@@ -1148,7 +1150,7 @@ $LabelUserName.Text = "MPH UserName"
 $LabelUserName.AutoSize = $false
 $LabelUserName.Width = 120
 $LabelUserName.Height = 20
-$LabelUserName.Location = [System.Drawing.Point]::new(2, 24)
+$LabelUserName.Location = [System.Drawing.Point]::new(2, 25)
 $LabelUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelUserName
 
@@ -1159,7 +1161,7 @@ $TBUserName.Text = $Config.UserName
 $TBUserName.AutoSize = $false
 $TBUserName.Width = 300
 $TBUserName.Height = 20
-$TBUserName.Location = [System.Drawing.Point]::new(122, 24)
+$TBUserName.Location = [System.Drawing.Point]::new(122, 25)
 $TBUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBUserName
 
@@ -1168,7 +1170,7 @@ $LabelInterval.Text = "Interval"
 $LabelInterval.AutoSize = $false
 $LabelInterval.Width = 120
 $LabelInterval.Height = 20
-$LabelInterval.Location = [System.Drawing.Point]::new(2, 46)
+$LabelInterval.Location = [System.Drawing.Point]::new(2, 48)
 $LabelInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelInterval
 
@@ -1179,7 +1181,7 @@ $TBInterval.Text = $Config.Interval
 $TBInterval.AutoSize = $false
 $TBInterval.Width = 300
 $TBInterval.Height = 20
-$TBInterval.Location = [System.Drawing.Point]::new(122, 46)
+$TBInterval.Location = [System.Drawing.Point]::new(122, 48)
 $TBInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBInterval
 
@@ -1188,7 +1190,7 @@ $LabelLocation.Text = "Region"
 $LabelLocation.AutoSize = $false
 $LabelLocation.Width = 120
 $LabelLocation.Height = 20
-$LabelLocation.Location = [System.Drawing.Point]::new(2, 68)
+$LabelLocation.Location = [System.Drawing.Point]::new(2, 71)
 $LabelLocation.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelLocation
 
@@ -1203,57 +1205,57 @@ $LBRegion.AutoSize = $false
 $LBRegion.Sorted = $true
 $LBRegion.Width = 300
 $LBRegion.Height = 20
-$LBRegion.Location = [System.Drawing.Point]::new(122, 68)
+$LBRegion.Location = [System.Drawing.Point]::new(122, 71)
 $LBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LBRegion
 
-$LabelGPUCount = New-Object System.Windows.Forms.Label
-$LabelGPUCount.Text = "GPU Count"
-$LabelGPUCount.AutoSize = $false
-$LabelGPUCount.Width = 120
-$LabelGPUCount.Height = 20
-$LabelGPUCount.Location = [System.Drawing.Point]::new(2, 91)
-$LabelGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $LabelGPUCount
+# $LabelGPUCount = New-Object System.Windows.Forms.Label
+# $LabelGPUCount.Text = "GPU Count"
+# $LabelGPUCount.AutoSize = $false
+# $LabelGPUCount.Width = 120
+# $LabelGPUCount.Height = 20
+# $LabelGPUCount.Location = [System.Drawing.Point]::new(2, 91)
+# $LabelGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+# $ConfigPageControls += $LabelGPUCount
 
-$TBGPUCount = New-Object System.Windows.Forms.TextBox
-$TBGPUCount.Tag = "GPUCount"
-$TBGPUCount.MultiLine = $false
-$TBGPUCount.Text = $Config.GPUCount
-$TBGPUCount.AutoSize = $false
-$TBGPUCount.Width = 50
-$TBGPUCount.Height = 20
-$TBGPUCount.Location = [System.Drawing.Point]::new(122, 91)
-$TBGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $TBGPUCount
+# $TBGPUCount = New-Object System.Windows.Forms.TextBox
+# $TBGPUCount.Tag = "GPUCount"
+# $TBGPUCount.MultiLine = $false
+# $TBGPUCount.Text = $Config.GPUCount
+# $TBGPUCount.AutoSize = $false
+# $TBGPUCount.Width = 50
+# $TBGPUCount.Height = 20
+# $TBGPUCount.Location = [System.Drawing.Point]::new(122, 91)
+# $TBGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+# $ConfigPageControls += $TBGPUCount
 
-$CheckBoxDisableGPU0 = New-Object System.Windows.Forms.CheckBox
-$CheckBoxDisableGPU0.Tag = "DisableGPU0"
-$CheckBoxDisableGPU0.Text = "Disable GPU0"
-$CheckBoxDisableGPU0.AutoSize = $false
-$CheckBoxDisableGPU0.Width = 140
-$CheckBoxDisableGPU0.Height = 20
-$CheckBoxDisableGPU0.Location = [System.Drawing.Point]::new(177, 91)
-$CheckBoxDisableGPU0.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxDisableGPU0.Checked = $Config.DisableGPU0
-$ConfigPageControls += $CheckBoxDisableGPU0
-    
-$ButtonDetectGPU = New-Object System.Windows.Forms.Button
-$ButtonDetectGPU.Text = "Detect GPU"
-$ButtonDetectGPU.Width = 100
-$ButtonDetectGPU.Height = 20
-$ButtonDetectGPU.Location = [System.Drawing.Point]::new(320, 91)
-$ButtonDetectGPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $ButtonDetectGPU
+# $CheckBoxDisableGPU0 = New-Object System.Windows.Forms.CheckBox
+# $CheckBoxDisableGPU0.Tag = "DisableGPU0"
+# $CheckBoxDisableGPU0.Text = "Disable GPU0"
+# $CheckBoxDisableGPU0.AutoSize = $false
+# $CheckBoxDisableGPU0.Width = 140
+# $CheckBoxDisableGPU0.Height = 20
+# $CheckBoxDisableGPU0.Location = [System.Drawing.Point]::new(177, 91)
+# $CheckBoxDisableGPU0.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+# $CheckBoxDisableGPU0.Checked = $Config.DisableGPU0
+# $ConfigPageControls += $CheckBoxDisableGPU0
 
-$ButtonDetectGPU.Add_Click( { $TBGPUCount.Text = Get-GPUCount })
+# $ButtonDetectGPU = New-Object System.Windows.Forms.Button
+# $ButtonDetectGPU.Text = "Detect GPU"
+# $ButtonDetectGPU.Width = 100
+# $ButtonDetectGPU.Height = 20
+# $ButtonDetectGPU.Location = [System.Drawing.Point]::new(320, 91)
+# $ButtonDetectGPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+# $ConfigPageControls += $ButtonDetectGPU
+
+# $ButtonDetectGPU.Add_Click( { $TBGPUCount.Text = Get-GPUCount })
 
 $LabelAlgos = New-Object System.Windows.Forms.Label
 $LabelAlgos.Text = "Algorithm"
 $LabelAlgos.AutoSize = $false
 $LabelAlgos.Width = 120
 $LabelAlgos.Height = 20
-$LabelAlgos.Location = [System.Drawing.Point]::new(2, 114)
+$LabelAlgos.Location = [System.Drawing.Point]::new(2, 94)
 $LabelAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelAlgos
 
@@ -1264,7 +1266,7 @@ $TBAlgos.Text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
 $TBAlgos.Width = 300
 $TBAlgos.Height = 20
-$TBAlgos.Location = [System.Drawing.Point]::new(122, 114)
+$TBAlgos.Location = [System.Drawing.Point]::new(122, 94)
 $TBAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBAlgos
 
@@ -1273,7 +1275,7 @@ $LabelCurrency.Text = "Currencies"
 $LabelCurrency.AutoSize = $false
 $LabelCurrency.Width = 120
 $LabelCurrency.Height = 20
-$LabelCurrency.Location = [System.Drawing.Point]::new(2, 134)
+$LabelCurrency.Location = [System.Drawing.Point]::new(2, 117)
 $LabelCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelCurrency
@@ -1285,7 +1287,7 @@ $TBCurrency.Text = @($Config.Currency -join ', ')
 $TBCurrency.AutoSize = $false
 $TBCurrency.Width = 300
 $TBCurrency.Height = 20
-$TBCurrency.Location = [System.Drawing.Point]::new(122, 136)
+$TBCurrency.Location = [System.Drawing.Point]::new(122, 117)
 $TBCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBCurrency
@@ -1295,7 +1297,7 @@ $LabelPwdCurrency.Text = "Pwd Currency"
 $LabelPwdCurrency.AutoSize = $false
 $LabelPwdCurrency.Width = 120
 $LabelPwdCurrency.Height = 20
-$LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 158)
+$LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 140)
 $LabelPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelPwdCurrency
 
@@ -1306,7 +1308,7 @@ $TBPwdCurrency.Text = $Config.PasswordCurrency
 $TBPwdCurrency.AutoSize = $false
 $TBPwdCurrency.Width = 300
 $TBPwdCurrency.Height = 20
-$TBPwdCurrency.Location = [System.Drawing.Point]::new(122, 158)
+$TBPwdCurrency.Location = [System.Drawing.Point]::new(122, 140)
 $TBPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBPwdCurrency
 
@@ -1315,7 +1317,7 @@ $LabelDonate.Text = "Donate"
 $LabelDonate.AutoSize = $false
 $LabelDonate.Width = 120
 $LabelDonate.Height = 20
-$LabelDonate.Location = [System.Drawing.Point]::new(2, 180)
+$LabelDonate.Location = [System.Drawing.Point]::new(2, 163)
 $LabelDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelDonate
@@ -1327,37 +1329,37 @@ $TBDonate.Text = $Config.Donate
 $TBDonate.AutoSize = $false
 $TBDonate.Width = 300
 $TBDonate.Height = 20
-$TBDonate.Location = [System.Drawing.Point]::new(122, 180)
+$TBDonate.Location = [System.Drawing.Point]::new(122, 163)
 $TBDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBDonate
 
-# $LabelProxy = New-Object System.Windows.Forms.Label
-# $LabelProxy.Text = "Proxy"
-# $LabelProxy.AutoSize = $false
-# $LabelProxy.Width = 120
-# $LabelProxy.Height = 20
-# $LabelProxy.Location = [System.Drawing.Point]::new(2, 178)
-# $LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-# $ConfigPageControls += $LabelProxy
+$LabelProxy = New-Object System.Windows.Forms.Label
+$LabelProxy.Text = "Proxy"
+$LabelProxy.AutoSize = $false
+$LabelProxy.Width = 120
+$LabelProxy.Height = 20
+$LabelProxy.Location = [System.Drawing.Point]::new(2, 186)
+$LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $LabelProxy
 
-# $TBProxy = New-Object System.Windows.Forms.TextBox
-# $TBProxy.Tag = "Proxy"
-# $TBProxy.MultiLine = $false
-# $TBProxy.Text = $Config.Proxy
-# $TBProxy.AutoSize = $false
-# $TBProxy.Width = 300
-# $TBProxy.Height = 20
-# $TBProxy.Location = [System.Drawing.Point]::new(122, 178)    
-# $TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-# $ConfigPageControls += $TBProxy
+$TBProxy = New-Object System.Windows.Forms.TextBox
+$TBProxy.Tag = "Proxy"
+$TBProxy.MultiLine = $false
+$TBProxy.Text = $Config.Proxy
+$TBProxy.AutoSize = $false
+$TBProxy.Width = 300
+$TBProxy.Height = 20
+$TBProxy.Location = [System.Drawing.Point]::new(122, 186)    
+$TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $TBProxy
 
 $LabelActiveMinerGainPct = New-Object System.Windows.Forms.Label
 $LabelActiveMinerGainPct.Text = "ActiveMinerGain%"
 $LabelActiveMinerGainPct.AutoSize = $false
 $LabelActiveMinerGainPct.Width = 120
 $LabelActiveMinerGainPct.Height = 20
-$LabelActiveMinerGainPct.Location = [System.Drawing.Point]::new(2, 202)
+$LabelActiveMinerGainPct.Location = [System.Drawing.Point]::new(2, 209)
 $LabelActiveMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelActiveMinerGainPct
 
@@ -1368,7 +1370,7 @@ $TBActiveMinerGainPct.Text = $Config.ActiveMinerGainPct
 $TBActiveMinerGainPct.AutoSize = $false
 $TBActiveMinerGainPct.Width = 300
 $TBActiveMinerGainPct.Height = 20
-$TBActiveMinerGainPct.Location = [System.Drawing.Point]::new(122, 202)
+$TBActiveMinerGainPct.Location = [System.Drawing.Point]::new(122, 209)
 $TBActiveMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBActiveMinerGainPct
 
@@ -1377,7 +1379,7 @@ $LabelMPHAPIKey.Text = "MPH API Key"
 $LabelMPHAPIKey.AutoSize = $false
 $LabelMPHAPIKey.Width = 120
 $LabelMPHAPIKey.Height = 20
-$LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 224)
+$LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 232)
 $LabelMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMPHAPIKey
 
@@ -1388,16 +1390,16 @@ $TBMPHAPIKey.Text = $Config.APIKEY
 $TBMPHAPIKey.AutoSize = $false
 $TBMPHAPIKey.Width = 300
 $TBMPHAPIKey.Height = 20
-$TBMPHAPIKey.Location = [System.Drawing.Point]::new(122, 224)
+$TBMPHAPIKey.Location = [System.Drawing.Point]::new(122, 232)
 $TBMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBMPHAPIKey
 
 $LabelMinersTypes = New-Object System.Windows.Forms.Label
-$LabelMinersTypes.Text = "Miners Types"
+$LabelMinersTypes.Text = "Miner Devices"
 $LabelMinersTypes.AutoSize = $false
 $LabelMinersTypes.Width = 120
 $LabelMinersTypes.Height = 20
-$LabelMinersTypes.Location = [System.Drawing.Point]::new(2, 246)
+$LabelMinersTypes.Location = [System.Drawing.Point]::new(2, 258)
 $LabelMinersTypes.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMinersTypes
 
@@ -1407,7 +1409,7 @@ $CheckBoxMinerTypeCPU.Text = "CPU"
 $CheckBoxMinerTypeCPU.AutoSize = $false
 $CheckBoxMinerTypeCPU.Width = 60
 $CheckBoxMinerTypeCPU.Height = 20
-$CheckBoxMinerTypeCPU.Location = [System.Drawing.Point]::new(124, 246)
+$CheckBoxMinerTypeCPU.Location = [System.Drawing.Point]::new(124, 258)
 $CheckBoxMinerTypeCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxMinerTypeCPU.Checked = ($CheckBoxMinerTypeCPU.Text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeCPU
@@ -1437,7 +1439,7 @@ $CheckBoxMinerTypeNVIDIA.Text = "NVIDIA"
 $CheckBoxMinerTypeNVIDIA.AutoSize = $false
 $CheckBoxMinerTypeNVIDIA.Width = 70
 $CheckBoxMinerTypeNVIDIA.Height = 20
-$CheckBoxMinerTypeNVIDIA.Location = [System.Drawing.Point]::new(186, 246)
+$CheckBoxMinerTypeNVIDIA.Location = [System.Drawing.Point]::new(186, 258)
 $CheckBoxMinerTypeNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxMinerTypeNVIDIA.Checked = ($CheckBoxMinerTypeNVIDIA.Text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeNVIDIA
@@ -1466,7 +1468,7 @@ $CheckBoxMinerTypeAMD.Text = "AMD"
 $CheckBoxMinerTypeAMD.AutoSize = $false
 $CheckBoxMinerTypeAMD.Width = 60
 $CheckBoxMinerTypeAMD.Height = 20
-$CheckBoxMinerTypeAMD.Location = [System.Drawing.Point]::new(261, 246)
+$CheckBoxMinerTypeAMD.Location = [System.Drawing.Point]::new(261, 258)
 $CheckBoxMinerTypeAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxMinerTypeAMD.Checked = ($CheckBoxMinerTypeAMD.Text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeAMD
@@ -1488,6 +1490,17 @@ $CheckBoxMinerTypeAMD.Add_Click(
         Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
     }
 )
+
+$LabelGuiDevices = New-Object System.Windows.Forms.LinkLabel
+$LabelGuiDevices.Location = New-Object System.Drawing.Size(2, 281)
+$LabelGuiDevices.Size = New-Object System.Drawing.Size(370, 20)
+$LabelGuiDevices.LinkColor = [System.Drawing.Color]::Blue
+$LabelGuiDevices.ActiveLinkColor = [System.Drawing.Color]::Blue
+$LabelGuiDevices.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$LabelGuiDevices.TextAlign = "MiddleLeft"
+$LabelGuiDevices.Text = "Use the web GUI to enable / disable individual devices"
+$LabelGuiDevices.Add_Click( { Start-Process "http://localhost:$($Variables.APIPort)/devices.html" })
+$ConfigPageControls += $LabelGuiDevices
 
 $CheckBoxAutostart = New-Object System.Windows.Forms.CheckBox
 $CheckBoxAutostart.Tag = "Autostart"
