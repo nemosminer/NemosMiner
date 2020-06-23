@@ -22,10 +22,10 @@ Try {
 
         If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { Start-Sleep -Seconds 0 } Else { Start-Sleep -Seconds 2 }
 
-        $HashRate_Value = [Double]0
-        $HashRateDual_Value = [Double]0
-        $PowerUsage_Value = [Double]0
-        $PowerUsage = [Double[]]0
+        [Double]$HashRate_Value = 0
+        [Double]$HashRateDual_Value = 0
+        [Double]$PowerUsage_Value = 0
+        [Double[]]$PowerUsage = @()
 
         If ($Miner.ReadPowerUsage) {
             #read power usage
@@ -171,12 +171,12 @@ Try {
                     $Data.Statistics.Devices | ForEach-Object { 
                         $DeviceData = $_
                         Switch ($DeviceData.Hashrates[0].unit) { 
-                            "KH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
-                            "MH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
-                            "GH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
-                            "TH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
-                            "PH/s" { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
-                            default { $HashRate_Value += ($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
+                            "KH/s"  { $HashRate_Value += [Double]($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 1)) }
+                            "MH/s"  { $HashRate_Value += [Double]($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 2)) }
+                            "GH/s"  { $HashRate_Value += [Double]($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 3)) }
+                            "TH/s"  { $HashRate_Value += [Double]($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 4)) }
+                            "PH/s"  { $HashRate_Value += [Double]($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 5)) }
+                            default { $HashRate_Value += [Double]($DeviceData.Hashrates[0].Hashrate * [Math]::Pow(1000, 0)) }
                         }
                     }
                 }
