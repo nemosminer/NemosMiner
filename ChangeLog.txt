@@ -1,3 +1,24 @@
+Changelog NemosMiner 23.06.2020
+===============================
+
+Changed:
+- New data format of SwitchingLog.txt -> need to delete old file manually
+- Icons in web GUI
+- Removed some device config from GUI (WIP!)
+
+Added:
+- SwitchingLog info now available in web GUI
+
+Fixed:
+- Power readout was 33% too small (-> Power usage data needs to be re-measured for all miners)
+
+Breaking changes (from main code base):
+- Changed config item 'Location' to 'Region' -> requires manual change in config file
+- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Pool files are not backwards compatible
+- New data format of SwitchingLog.txt -> need to delete old file manually
+
+
 Changelog NemosMiner 21.06.2020
 ===============================
 
