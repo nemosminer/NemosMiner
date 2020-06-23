@@ -34,6 +34,7 @@
       "APIKey":"",
       "Algorithm":[
          "+randomsfx",
+         "+randomwow",
          "+cryptonightconceal",
          "+cryptonightupx",
          "+cryptonighthaven",
