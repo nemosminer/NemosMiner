@@ -24,7 +24,7 @@ version date:   12 June 2020
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.2.2.1"
+    $APIVersion = "0.2.2.2"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -58,7 +58,6 @@ Function Start-APIServer {
                 ".ps1"  = "text/html" # ps1 files get executed, assume their response is html
             }
 
-        
             # Setup the listener
             $Server = New-Object System.Net.HttpListener
 
@@ -361,6 +360,10 @@ Function Start-APIServer {
                     }
                     "/stats" { 
                         $Data = ConvertTo-Json -Depth 10 @($Stats | Select-Object)
+                        Break
+                    }
+                    "/switchinglog" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.SwitchingLog | Select-Object)
                         Break
                     }
                     "/variables" { 
