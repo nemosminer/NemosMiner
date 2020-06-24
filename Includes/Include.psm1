@@ -557,6 +557,7 @@ Class Miner {
         $this.Earning = 0
         $this.Earning_Bias = 0
         $this.Earning_Unbias = 0
+        $this.Earning_Accuracy = 0
 
         $this.Workers | ForEach-Object { 
             $this.Earning += $_.Earning
