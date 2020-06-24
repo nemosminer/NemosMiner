@@ -554,6 +554,10 @@ Class Miner {
         $this.Benchmark = $this.Workers | Where-Object { [Double]::IsNaN($_.Speed) }
         $this.Disabled = $this.Workers | Where-Object Disabled -EQ $true
 
+        $this.Earning = 0
+        $this.Earning_Bias = 0
+        $this.Earning_Unbias = 0
+
         $this.Workers | ForEach-Object { 
             $this.Earning += $_.Earning
             $this.Earning_Bias += $_.Earning_Bias
