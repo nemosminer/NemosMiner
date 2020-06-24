@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.8.1.3
-version date:   29 January 2020
+version:        3.9.9.0
+version date:   29 June 2020
 #>
  
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
@@ -85,7 +85,8 @@ Class Pool {
     [Double]$EstimateCorrection = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Int]$Workers
-    [Boolean]$Enabled
+    [Boolean]$Available = $true
+    [Boolean]$Disabled = $false
     [String[]]$Reason = @("")
     [Boolean]$Best
 
@@ -102,10 +103,11 @@ Class Worker {
     [Double]$Fee
     [Double]$Speed
     [Double]$Earning
-    [Double]$Earning_Comparison
     [Double]$Earning_Accuracy
     [Double]$Earning_Bias
     [Double]$Earning_Unbias
+    [Boolean]$Disabled = $false
+
 }
 
 enum MinerStatus { 
@@ -130,25 +132,25 @@ Class Miner {
     [String]$URI
     [String]$Arguments
     [UInt16]$Port
-    [String[]]$DeviceName = @() #@derived from devices
+    [String[]]$DeviceName = @() #derived from devices
 
     [Double[]]$Speed = @() #derived from stats
     [Double[]]$Speed_Live = @()
     [Boolean]$Benchmark = $false #derived from stats
     [Boolean]$CachedBenchmark = $false
 
-    [Double]$PowerUsage = [Double]::NaN
-    [Double]$PowerUsage_Live = [Double]::NaN
-    [Double]$PowerCost = [Double]::NaN
-    [Boolean]$ReadPowerUsage = [Double]::NaN
+    [Double]$PowerUsage
+    [Double]$PowerUsage_Live
+    [Double]$PowerCost
+    [Boolean]$ReadPowerUsage
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
 
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
-    [Boolean]$Best_Comparison = $false
     [Boolean]$New = $false
-    [Boolean]$Enabled = $false
+    [Boolean]$Available = $true
+    [Boolean]$Disabled = $false
     [String[]]$Reason
     [Boolean]$Restart = $false #stop and start miner even if best
 
@@ -170,16 +172,14 @@ Class Miner {
     [Int]$MinDataSamples #for safe hashrate values
     [Int]$WarmupTime
 
-    [Double]$Earning #derived from pool and stats
-    [Double]$Earning_Comparison #derived from pool and stats
+    [Double]$Earning#derived from pool and stats
     [Double]$Earning_Bias #derived from pool and stats
     [Double]$Earning_Unbias #derived from pool and stats
     [Double]$Earning_Accuracy #derived from pool and stats
 
-    [Double]$Profit = [Double]::NaN #derived from pool and stats
-    [Double]$Profit_Comparison = [Double]::NaN #derived from pool and stats
-    [Double]$Profit_Bias = [Double]::NaN #derived from pool and stats
-    [Double]$Profit_Unbias = [Double]::NaN #derived from pool and stats
+    [Double]$Profit #derived from pool and stats
+    [Double]$Profit_Bias #derived from pool and stats
+    [Double]$Profit_Unbias #derived from pool and stats
 
     [String[]]$Algorithm = @() #derived from pool
     #[String[]]$Algorithm_Base = @() #derived from pool
@@ -530,16 +530,14 @@ Class Miner {
     }
 
     Refresh([Hashtable]$Stats, [Double]$PowerCostBTCperW = $Variables.PowerCostBTCperW) { 
-        $this.Enabled = $true
+        $this.Available = $true
         $this.Best = $false
-        $this.Best_Comparison = $false
         $this.Reason = [String[]]@()
 
         $this.Workers | ForEach-Object { 
             $Stat_Name = "$($this.Name)_$($_.Pool.Algorithm)_HashRate"
             $_.Speed = $(If ($Stats.$Stat_Name) { $Stats.$Stat_Name.Week } Else { [Double]::Nan })
             $_.Earning = $_.Pool.Price * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
-            $_.Earning_Comparison = $_.Pool.StablePrice * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
             $_.Earning_Bias = $_.Pool.Price_Bias * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
             $_.Earning_Unbias = $_.Pool.Price_Unbias * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
             $_.Earning_Accuracy = ([Double]1 - $_.Pool.MarginOfError)
@@ -554,16 +552,10 @@ Class Miner {
         $this.Speed = $this.Workers | Select-Object -ExpandProperty Speed
 
         $this.Benchmark = $this.Workers | Where-Object { [Double]::IsNaN($_.Speed) }
-
-        $this.Earning = 0
-        $this.Earning_Comparison = 0
-        $this.Earning_Bias = 0
-        $this.Earning_Unbias = 0
-        $this.Earning_Accuracy = 0
+        $this.Disabled = $this.Workers | Where-Object Disabled -EQ $true
 
         $this.Workers | ForEach-Object { 
             $this.Earning += $_.Earning
-            $this.Earning_Comparison += $_.Earning_Comparison
             $this.Earning_Bias += $_.Earning_Bias
             $this.Earning_Unbias += $_.Earning_Unbias
             $this.Earning_Accuracy += $_.Earning_Accuracy * $_.Earning
@@ -581,19 +573,15 @@ Class Miner {
             If ($Stats.$Stat_Name) { 
                 $this.PowerUsage = $Stats.$Stat_Name.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
-                If (-not [Double]::IsNaN($this.Earning)) { 
-                    $this.Profit = $this.Earning - $this.PowerCost
-                    $this.Profit_Comparison = $this.Earning_Comparison - $this.PowerCost
-                    $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
-                    $this.Profit_Unbias = $this.Earning_Unbias - $this.PowerCost
-                }
+                $this.Profit = $this.Earning - $this.PowerCost
+                $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
+                $this.Profit_Unbias = $this.Earning_Unbias - $this.PowerCost
             }
             Else { 
                 $this.MeasurePowerUsage = $true
                 $this.PowerUsage = [Double]::NaN
                 $this.PowerCost = [Double]::NaN
                 $this.Profit = [Double]::NaN
-                $this.Profit_Comparison = [Double]::NaN
                 $this.Profit_Bias = [Double]::NaN
                 $this.Profit_Unbias = [Double]::NaN
             }
@@ -707,23 +695,14 @@ Function Start-ChildJob {
             PoolsConfig      = $Config.PoolsConfig
             Transcript       = $Config.Transcript
         }
-        $Variables | Add-Member -Force @{ EarningsTrackerJobs = Start-Job -FilePath ".\Includes\EarningsTrackerJob.ps1" -ArgumentList $Params }
+        $Variables.EarningsTrackerJobs = (Start-Job -FilePath ".\Includes\EarningsTrackerJob.ps1" -ArgumentList $Params)
         If ($Variables.EarningsTrackerJobs.State -eq "Running") { 
             Write-Message "Started Earnings Tracker."
         }
     }
 }
 
-Function Initialize-Application { 
-    Write-Message "Initializing mining environment..."
-
-    #Load information about the devices, devices might have been enabled since last start
-    $Variables.Devices = [Device[]](Get-Device -Refresh)
-    $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
-    $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
-
-    #Read the stats sp that they are available in the API
-    Get-Stat | Out-Null
+Function Initialize-API { 
 
     #Initialize API & Web GUI
     If ($Config.APIPort -and (-not $Variables.APIPort)) { 
@@ -761,6 +740,20 @@ Function Initialize-Application {
             Remove-Variable TCPClient
         }
     }
+}
+
+Function Initialize-Application { 
+    Write-Message "Initializing mining environment..."
+
+    #Load information about the devices, devices might have been enabled since last start
+    $Variables.Devices = [Device[]](Get-Device -Refresh)
+    $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
+    $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
+
+    #Read the stats sp that they are available in the API
+    Get-Stat | Out-Null
+
+    Initialize-API
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -1172,6 +1165,7 @@ Function Stop-Mining {
 
     $Variables.Suspended = $true
 }
+
 Function Update-Notifications ($Text) { 
     $LabelNotifications.Lines += $Text
     If ($LabelNotifications.Lines.Count -gt 20) { $LabelNotifications.Lines = $LabelNotifications.Lines[($LabelNotifications.Lines.count - 10)..$LabelNotifications.Lines.Count] }

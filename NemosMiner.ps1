@@ -47,11 +47,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory = $false)]
-    [String[]]$DeviceName = @("GPU#01"), #Will replace old device selection, e.g. @("GPU#01") (t.b.d.)
-    [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
-    [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (t.b.d.)
+    [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
     [Parameter(Mandatory = $false)]
     [Int]$GPUCount = 1, # Number of GPU on the system
     [Parameter(Mandatory = $false)]
@@ -476,7 +474,7 @@ Function Global:TimerUITick {
 
             If ($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { $Config.UIStyle = "Full" }
 
-            #Display active miners list
+            #Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Miner"; Expression = { $_.Name } }, 
                 @{ Label = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm } }
