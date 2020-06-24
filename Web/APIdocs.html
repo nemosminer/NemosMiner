@@ -23,7 +23,7 @@ version date:   09.06.2020
 <html>
 
 <body>
-    <h1>NemosMiner API (version 0.2.2.2)</h1>
+    <h1>NemosMiner API (version 0.2.3.2)</h1>
 
     API data is available at http://localhost:[API port]/&lt;resource&gt.
     (The default API port is 3999)
@@ -165,6 +165,14 @@ version date:   09.06.2020
     <h3>SwitchingLog</h3>
     <a href="http://localhost:3999/stats">/switchinglog</a>
     <p>Shows the previously executed miners.</p>
+
+    <h3>WatchdogTimers</h3>
+    <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
+    <p>Dump of the $WatchdogTimers variable, used only for debugging. WatchdogTimers data is used for internal calculations.</p>
+
+    <h3>WatchdogTimersReset</h3>
+    <a href="http://localhost:3999/watchdogtimersreset">/watchdogtimersreset</a>
+    <p>Tells the script to reset all watchdog timers. Resetting watchdog timers will re-enable all bloked miner/algos on next run.</p>
 
     <a href="https://nemosminer.com">NemosMiner.com</a>
 </body>
