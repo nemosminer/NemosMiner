@@ -28,7 +28,7 @@
             <div class="text-white" id="profit"></div>
             <div class="text-white" id="exchangerates"></div>
         </nav>
-        
+
         <div class="container-fluid">
             <div class="row">
                 <nav class="d-none d-md-block bg-light sidebar nav-collapse" id="sidebar">
@@ -38,6 +38,27 @@
                                 <a id="navdashboard" class="nav-link" href="/">
                                     <span data-feather="home"></span>
                                     <i class="fas fa-tachometer-alt"></i>Dashboard
+                                </a>
+                            </li>
+                        </ul>
+
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                            <span>Miners</span>
+                        </h6>
+                        <ul class="nav flex-column mb-2">
+                            <li class="nav-item">
+                                <a id="navminersavailable" class="nav-link" href="minersavailable.html">
+                                    <i class="fa fa-check"></i>Best Miners
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a id="navminers" class="nav-link" href="miners.html">
+                                    <i class="fas fa-hammer"></i>All Miners
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a id="navminersunavailable" class="nav-link" href="minersunavailable.html">
+                                    <i class="fa fa-ban"></i>Unavailable Miners
                                 </a>
                             </li>
                         </ul>
@@ -57,63 +78,23 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a id="navpoolsinactive" class="nav-link" href="poolsinactive.html">
-                                    <i class="fa fa-ban"></i>Inactive Pools
+                                <a id="navpoolsunavailable" class="nav-link" href="poolsunavailable.html">
+                                    <i class="fa fa-ban"></i>Unavailable Pools
                                 </a>
                             </li>
                         </ul>
 
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Miners</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a id="navminersenabled" class="nav-link" href="minersenabled.html">
-                                    <i class="fa fa-check"></i>Enabled Miners
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navminers" class="nav-link" href="miners.html">
-                                    <i class="fas fa-hammer"></i>All Miners
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navminersdisabled" class="nav-link" href="minersdisabled.html">
-                                    <i class="fa fa-ban"></i>Disabled Miners
-                                </a>
-                            </li>
-
-                            <!-- <li class="nav-item">
-                                <a id="navwatchdog" class="nav-link" href="watchdog.html">
-                                    <i class="fas fa-folder-open"></i>Watchdog
-                                </a>
-                            </li> -->
-                        </ul>
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                             <span>Statistics</span>
                         </h6>
                         <ul class="nav flex-column mb-2">
                             <li class="nav-item">
-                                <a id="navdevices" class="nav-link" href="switchinglog.html">
+                                <a id="navswitchinglog" class="nav-link" href="switchinglog.html">
                                     <i class="fas fa-random"></i>Switching log
                                 </a>
                             </li>
-                            <!-- <li class="nav-item">
-                                <a id="navminerstats" class="nav-link" href="earnings.html">
-                                    <i class="fas fa-hand-holding-usd"></i>Earnings statistics per pool
-                                </a>
-                            </li> -->
-                            <!-- <li class="nav flex-column mb-2">
-                                <a id="naveditconfig" class="nav-link" href="configedit.html">
-                                    <i class="fa fa-folder-open"></i>Edit Config
-                                </a>
-                            </li> -->
-                            <!-- <li class="nav flex-column mb-2">
-                                <a id="navunprofitablealgorithms" class="nav-link" href="unprofitablealgorithms.html">
-                                    <i class="fa fa-folder-open"></i>Unprofitable Algorithms
-                                </a>
-                            </li> -->
                         </ul>
+
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                             <span>Config</span>
                         </h6>
@@ -133,17 +114,8 @@
                                     <i class="fas fa-file-code"></i>Running Config
                                 </a>
                             </li>
-                            <!-- <li class="nav flex-column mb-2">
-                                <a id="naveditconfig" class="nav-link" href="configedit.html">
-                                    <i class="fa fa-folder-open"></i>Edit Config
-                                </a>
-                            </li> -->
-                            <!-- <li class="nav flex-column mb-2">
-                                <a id="navunprofitablealgorithms" class="nav-link" href="unprofitablealgorithms.html">
-                                    <i class="fa fa-folder-open"></i>Unprofitable Algorithms
-                                </a>
-                            </li> -->
                         </ul>
+
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                             <span>Links</span>
                         </h6>

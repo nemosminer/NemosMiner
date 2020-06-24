@@ -1,25 +1,25 @@
 <!--#include file="/parts/head.html" -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 id="title" class="h2" data-navbaractive="navminersenabled">Enabled Miners</h1>
+    <h1 id="title" class="h2" data-navbaractive="navminersunavailable">Unavailable Miners</h1>
 </div>
-<div class="alert alert-info" role="alert">Shows the miner for each algorithm and device that was selected as the most profitable</div>
+<div class="alert alert-info" role="alert">Shows all unavailable miners. These are either filtered out or failed benchmarking. The column 'Reason' shows the filter criteria that made the miner unavailable.</div>
 
 <div id="toolbar">
     <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
     <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
     <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
-    <!-- <button id="disable" class="btn btn-danger">Disable Miner</button> -->
+    <button id="disable" class="btn btn-danger">Disable Miner</button>
 </div>
 
 <table id="miners" class="table"
     data-icons="icons"
     data-toolbar="#toolbar"
-    data-url="/miners/enabled"
+    data-url="/miners/unavailable"
     data-cache="false"
     data-toggle="table"
     data-show-search-clear-button="true"
-    data-sort-order="desc"
-    data-sort-name="Earning_Bias"
+    data-sort-order="asc"
+    data-sort-name="Name, tPrimaryAlgorithm"
     data-remember-order="true"
     data-filter-control="true"
     data-show-button-text="true"
@@ -40,7 +40,7 @@
             <th data-field="tDevices" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Devices</th>
             <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
             <th data-field="tStatus" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="true">Status</th>
-            <th data-field="tReason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Reason</th>
+            <th data-field="tReason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Reason</th>
             <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC">Profit</th>
             <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC">Profit Bias</th>
             <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC">Earning</th>
@@ -64,6 +64,7 @@
             <th data-field="ShowMinerWindow" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">ShowMinerWindow</th>
             <th data-field="New" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">New</th>
             <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
+            <th data-field="Disabled" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Disabled</th>
             <th data-field="Restart" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Restart</th>
         </tr>
     </thead>
@@ -107,22 +108,22 @@
         }
     });
 
-    $('#failed').click(function () {
-        var $data = $table.bootstrapTable('getSelections');
-        if ($data.length >= 1) {
-            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-            if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-            }
-            else {
-                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
-                $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#failed').text());
-                    $('#myModal').modal({show:true});
-                });
-            }
-        }
-    });
+    // $('#failed').click(function () {
+    //     var $data = $table.bootstrapTable('getSelections');
+    //     if ($data.length >= 1) {
+    //         $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+    //         if ($data.length >= $querysize) {
+    //             alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+    //         }
+    //         else {
+    //             $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
+    //             $('.modal-body').load($command, function() {
+    //                 $('.modal-title').text($('#failed').text());
+    //                 $('#myModal').modal({show:true});
+    //             });
+    //         }
+    //     }
+    // });
 
     $('#disable').click(function () {
         var $data = $table.bootstrapTable('getSelections');
@@ -132,7 +133,7 @@
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
             }
             else {
-                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=-1";
+                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
                 $('.modal-body').load($command, function() {
                     $('.modal-title').text($('#disable').text());
                     $('#myModal').modal({show:true});

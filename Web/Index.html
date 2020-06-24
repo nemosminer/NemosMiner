@@ -7,7 +7,7 @@
     <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
     <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
     <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
-    <!-- <button id="disable" class="btn btn-danger">Disable Miner</button> -->
+    <button id="disable" class="btn btn-danger">Disable Miner</button>
 </div>
 
 <h3>Running Miners</h3>
@@ -118,6 +118,23 @@
                 $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=PowerUsage";
                 $('.modal-body').load($command, function() {
                     $('.modal-title').text($('#re-measure').text());
+                    $('#myModal').modal({show:true});
+                });
+            }
+        }
+    });
+
+    $('#disable').click(function () {
+        var $data = $table.bootstrapTable('getSelections');
+        if ($data.length >= 1) {
+            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+            if ($data.length >= $querysize) {
+                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
+            }
+            else {
+                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
+                $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#disable').text());
                     $('#myModal').modal({show:true});
                 });
             }

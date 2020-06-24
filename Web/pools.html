@@ -4,9 +4,9 @@
 </div>
 <div class="alert alert-info" role="alert">Shows all available pools for each algorithm</div>
 
-<!-- <div id="toolbar">
+<div id="toolbar">
     <button id="reset-data" class="btn btn-primary">Reset stat data</button>
-</div> -->
+</div>
 
 <table id="pools" class="table"
     data-icons="icons"
@@ -33,7 +33,7 @@
             <th data-field="state" data-checkbox="true"></th>
             <th data-field="Name" data-sortable="true" data-filter-control="select">Name</th>
             <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
-            <th data-field="Reason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-formatter="formatArrayAsString" data-visible="false">Reason</th>
+            <th data-field="tReason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-formatter="formatArrayAsString" data-visible="false">Reason</th>
             <th data-field="CoinName" data-sortable="true" data-filter-control="select">CoinName</th>
             <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
             <th data-field="Price" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day</th>
@@ -48,6 +48,7 @@
             <th data-field="SSL" data-sortable="true" data-width=4>SSL</th>
             <th data-field="Fee" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1>Fee&nbsp&nbsp</th>
             <th data-field="Updated" data-sortable="true" data-formatter="formatDate">Last Updated</th>
+            <th data-field="Disabled" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Disabled</th>
         </tr>
     </thead>
 </table>
@@ -55,23 +56,29 @@
 <!-- Start of page scripts -->
 <script type='text/javascript'>
     var $table = $('#pools')
+    var $querysize = 10000
 
-    $(function () {
-        $("#reset-data").click(function () {
-            $data = JSON.stringify($table.bootstrapTable('getSelections'));
-            if ($data != "[]") {
-                $Command = "scripts/managestat.ps1?DataSet=AllPools&Action=RemoveStat&Type=Profit&Data=" + encodeURIComponent($data)
-                $(".modal-body").load($Command, function() {
-                    $(".modal-title").text($("#reset-data").text());
-                    $("#myModal").modal({show:true});
+    $('#reset-data').click(function () {
+        var $data = $table.bootstrapTable('getSelections');
+        if ($data.length >= 1) {
+            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+            if ($data.length >= $querysize) {
+                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            }
+            else {
+                $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
+                $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#reset-data').text());
+                    $('#myModal').modal({show:true});
                 });
-            };
-        });
+            }
+        }
     });
 
     $('#myModal').on('hidden.bs.modal', function () {
         $table.bootstrapTable('refresh');
     });
+
 </script>
 
 <!-- End of page scripts -->
