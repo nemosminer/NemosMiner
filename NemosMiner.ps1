@@ -331,7 +331,7 @@ Function Global:TimerUITick {
 
             If ($Variables.Miners) { 
                 $DisplayEstimations = [System.Collections.ArrayList]@(
-                    $Variables.Miners | Where-Object Enabled -EQ $true | Select-Object @(
+                    $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
                         @{ Name = "Miner"; Expression = { $_.Name } },
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
@@ -389,6 +389,7 @@ Function Global:TimerUITick {
             }
 
             If ($Variables.Miners) { 
+#                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @{ Name = "Type"; Expression = { $_.Type -join " & " } }, @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.Workers.Pool.Speed | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } }, @{ Name = "Host(s)"; Expression = { (($_.Workers.Pool.Host | Select-Object -Unique) -join ';')} } | Sort-Object Type)
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object  @{ Name = "Type"; Expression = { $_.Type -join " & " } }, @{ Name = "Miner"; Expression = { $_.Info } }, @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '} }, @{ Name = "HashRate(s)"; Expression = { If ($_.Speed_Live -contains $null) { "$($_.Speed_Live | ConvertTo-Hash)/s" -join ' & ' } Else { "$($_.Speed | ConvertTo-Hash)/s" -join ' & ' } } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } } | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
             
@@ -399,7 +400,7 @@ Function Global:TimerUITick {
             $LabelBTCPrice.Text = If ($Variables.Rates."BTC"."BTC".$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 BTC = $(($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
             $Variables | Add-Member -Force @{ InCycle = $false }
 
-            If ($null -ne$Variables.Earnings.Values) { 
+            If ($null -ne $Variables.Earnings.Values) { 
                 $LabelBTCD.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 3) = m$([char]0x20BF) {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)
                 
                 $LabelEarningsDetails.Lines = @()
@@ -472,7 +473,7 @@ Function Global:TimerUITick {
                 }
             }
 
-            If ($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { $Config.UIStyle = "Full" }
+            If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { $Config.UIStyle = "Full" }
 
             #Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
@@ -566,7 +567,7 @@ Function Global:TimerUITick {
                     )
                 )
             }
-            $Variables.Miners | Where-Object Enabled -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
+            $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object { $_.Benchmark })
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object { $_.MeasurePowerUsage })
@@ -646,7 +647,7 @@ Function Global:TimerUITick {
             If (-not $Variables.Paused) { 
                 Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
 
-                If ($Variables.Miners | Where-Object Enabled -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
+                If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
                     If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
                         #Mining causes a loss
                         Write-Host -ForegroundColor Red "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningProfit - $Variables.BasePowerCost) * $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day (including Base Power Cost)."
