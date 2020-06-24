@@ -1,12 +1,13 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\CPU-XMRigv620b\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.2.0-beta/xmrigv620b.7z"
+$Path = ".\Bin\CPU-XMRigv622\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.2.2/XMRigv622.7z"
 $Commands = [PSCustomObject]@{ 
     "randomxmonero"       = " -a rx/0 --nicehash" #RandomX
     "randomx"             = " -a rx/0 --nicehash" #RandomX 
     "cryptonight-monero"  = " -a rx/0 --nicehash" #Cryptonight-Monero
     "randomsfx"           = " -a rx/sfx --nicehash" #Randomsfx
+    "randomwow"           = " -a rx/wow --nicehash" #Randomwow
     "randomarq"           = " -a rx/arq --nicehash" #Randomarq
     "cryptonightv7"       = " -a cn/1 --nicehash" #cryptonightv7
     "cryptonight_heavy"   = " -a cn-heavy/0 --nicehash" #cryptonight_heavyx
