@@ -2,10 +2,7 @@
 #Powerusage of idle system in Watt. Part of profit calculation
   "IdlePowerUsageW": 60,
 
-#Will replace old device selection (t.b.d.)
-  "DeviceName": [
-    "GPU#01"
-  ],
+#Will replace old device selection (work in progress)
   "ExcludeDeviceName": [
     "CPU#00",
     "GPU#02"
@@ -19,6 +16,9 @@
 
 #If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
   "IgnorePowerCost": false,
+
+#If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
+  "IncludeLegacyMiners": true,
 
 #Log level detail to be written to log file, see Write-Message function
   "LogFile": [
