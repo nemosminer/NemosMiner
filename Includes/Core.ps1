@@ -268,8 +268,8 @@ Function Start-Cycle {
                 }
                 If ($Variables.ReadPowerUsage) {
                     #Read power usage from miner
-                    $PowerUsage = [Double]($Miner.GetPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
                     $Miner.PowerUsage_Live = ([Double]($Miner.GetPowerUsage($false)))
+                    $PowerUsage = [Double]($Miner.GetPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
                 }
                 #Reduce data to MinDataSamples * 5
                 If (($Miner.Data).Count -gt ($Miner.MinDataSamples * 5)) { 
@@ -280,32 +280,25 @@ Function Start-Cycle {
 
             #We don't want to store hashrates if we have less than $MinDataSamples
             If (($Miner.Data).Count -ge $Miner.MinDataSamples -or ($Miner.New -and $Miner.Activated -ge 3)) { 
-                
                 $Miner.StatEnd = (Get-Date).ToUniversalTime()
                 $Miner.Algorithm | ForEach-Object { 
                     $Miner_Algorithm = $_
                     $Stat_Name = "$($Miner.Name)_$($_)_HashRate"
-                    Write-Message "Saving hash rate ($($Stat_Name): $(($Miner_Speeds.$Miner_Algorithm | ConvertTo-Hash) -replace ' '))$(If (-not $Stats.$Stat_Name) { " [Benchmark done]" })."
-                    $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Miner_Algorithm -Duration ($Miner.StatEnd - $Miner.StatStart) -FaultDetection (($Miner.Data).Count -lt $Miner.MinDataSamples)
-
-                    # #Update watchdog timer
-                    # $WatchdogTimer = $WatchdogTimers | Where-Object { $_.MinerName -eq $Miner_Name -and $_.PoolName -eq $Variables.Pools.$Miner_Algorithm.Name -and $_.Algorithm -eq $Miner_Algorithm }
-                    # if ($Stat -and $WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
-                    #     $WatchdogTimer.Kicked = $Stat.Updated
-                    # }
-                    # #Always kick watchdog for running miners with at least one and less than MinDataSamples hash rate samples in current loop
-                    # elseif ($WatchdogTimer -and (($Miner.Speed -contains $null) -and ($Miner.Data | Where-Object Date -GE $StatStart).Count -and $Miner.Data | Where-Object Date -GE $StatStart).Count -lt $Config.MinDataSamples) { 
-                    #     $WatchdogTimer.Kicked = (Get-Date).ToUniversalTime()
-                    # }
+                    If ($Miner.Activated -gt 0 -or $Stats.$Stat_Name) { #Do not save data if stat just got removed
+                        Write-Message "Saving hash rate ($($Stat_Name): $(($Miner_Speeds.$Miner_Algorithm | ConvertTo-Hash) -replace ' '))$(If (-not $Stats.$Stat_Name) { " [Benchmark done]" })."
+                        $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Miner_Algorithm -Duration ($Miner.StatEnd - $Miner.StatStart) -FaultDetection (($Miner.Data).Count -lt $Miner.MinDataSamples)
+                    }
                 }
 
                 If ($Variables.ReadPowerUsage -and $Variables.OldReadPowerUsage -eq $Variables.ReadPowerUsage) {
                     $Stat_Name = "$($Miner.Name)$(If ($Miner.Algorithm.Count -eq 1) { "_$($Miner.Algorithm | Select-Object -Index 0)" })_PowerUsage"
-                    Write-Message "Saving power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If (-not $Stats.$Stat_Name) { " [Power usage measurement done]" })."
-                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration ($Miner.StatEnd - $Miner.StatStart) -FaultDetection (($Miner.Data).Count -lt $Miner.MinDataSamples)
+                    If ($Miner.Activated -gt 0 -or $Stats.$Stat_Name) { #Do not save data if stat just got removed
+                        Write-Message "Saving power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If (-not $Stats.$Stat_Name) { " [Power usage measurement done]" })."
+                        $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration ($Miner.StatEnd - $Miner.StatStart) -FaultDetection (($Miner.Data).Count -lt $Miner.MinDataSamples)
+                    }
                 }
                 Remove-Variable Stat_Name
-
+                $Miner.Intervals += [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
                 $Miner.New = $false
                 $Miner.StatStart = $Miner.StatEnd
             }
@@ -694,7 +687,7 @@ Function Start-Cycle {
             If ($_.Benchmark -eq $true) { $Message = "Benchmark " }
             If ($_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true) { $Message = "$($Message)and "}
             If ($_.MeasurePowerUsage -eq $true) { $Message = "$($Message)Power usage measurement " }
-            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($_.Info)' in progress..." }
+            If ($Message) { Write-Message -Level  Verbose "$($Message)for miner '$($_.Info)' in progress [Attempt $($Miner.Activated)/3]..." }
         }
 
         "--------------------------------------------------------------------------------" | Out-Host
@@ -804,25 +797,27 @@ While ($true) {
             If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
                 #A miner crashed and we're not benchmarking, end the loop now
                 $Variables.EndLoop = $true
-                Write-Message -Level VERBOSE "Miner failed. Ending cycle."
+                $Message = "Miner failed. "
                 Break
             }
             If (-not $RunningMiners) { 
                 #No running miners, end the loop now
                 $Variables.EndLoop = $true
-                Write-Message -Level VERBOSE "No running miner. Ending cycle."
+                $Message = "No running miner. "
                 Break
             }
             If ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
                 #Enough samples collected for this loop, exit loop immediately
-                Write-Message -Level VERBOSE "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. Ending cyle."
+                $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. "
                 Break
             }
             If ($BenchmarkingOrMeasuringMiners) { Start-Sleep -Seconds 1 } Else { Start-Sleep -Seconds 2 }
         }
+        Write-Message -Level VERBOSE "$($Message)Ending cycle."
+        Remove-Variable Message -ErrorAction Ignore
         Remove-Variable BenchmarkingMiners -ErrorAction Ignore
         Remove-Variable RunningMiners -ErrorAction Ignore
-        Remove-Variable failedMiners -ErrorAction Ignore
+        Remove-Variable FailedMiners -ErrorAction Ignore
         Update-Monitoring
     }
 }

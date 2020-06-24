@@ -137,10 +137,10 @@ Class Miner {
     [Boolean]$Benchmark = $false #derived from stats
     [Boolean]$CachedBenchmark = $false
 
-    [Double]$PowerUsage
-    [Double]$PowerUsage_Live
-    [Double]$PowerCost
-    [Boolean]$ReadPowerUsage
+    [Double]$PowerUsage = [Double]::NaN
+    [Double]$PowerUsage_Live = [Double]::NaN
+    [Double]$PowerCost = [Double]::NaN
+    [Boolean]$ReadPowerUsage = [Double]::NaN
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
 
@@ -176,10 +176,10 @@ Class Miner {
     [Double]$Earning_Unbias #derived from pool and stats
     [Double]$Earning_Accuracy #derived from pool and stats
 
-    [Double]$Profit #derived from pool and stats
-    [Double]$Profit_Comparison #derived from pool and stats
-    [Double]$Profit_Bias #derived from pool and stats
-    [Double]$Profit_Unbias #derived from pool and stats
+    [Double]$Profit = [Double]::NaN #derived from pool and stats
+    [Double]$Profit_Comparison = [Double]::NaN #derived from pool and stats
+    [Double]$Profit_Bias = [Double]::NaN #derived from pool and stats
+    [Double]$Profit_Unbias = [Double]::NaN #derived from pool and stats
 
     [String[]]$Algorithm = @() #derived from pool
     #[String[]]$Algorithm_Base = @() #derived from pool
@@ -220,12 +220,11 @@ Class Miner {
 
     hidden StartMining() { 
         $this.Status = [MinerStatus]::Failed
-        $this.Devices | ForEach-Object { $_.Status = "Launching..." }
-
+        $this.StatusMessage = "Launching..."
+        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.New = $true
-        $this.Activated++
+        $this.Activated ++
         $this.Intervals = @()
-        $this.StatusMessage = ""
 
         If ($this.Process) { 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -254,6 +253,7 @@ Class Miner {
             }
 
             #Starting Miner Data reader
+            If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } #When benchmarking clear data on each miner start
             $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] } -ArgumentList $this }
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -267,7 +267,7 @@ Class Miner {
                 }
             }
 
-            $this.StatusMessage = "$(If ($this.Benchmarking -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
 
@@ -576,26 +576,26 @@ Class Miner {
             $this.Earning_Accuracy /= $this.Earning
         }
 
-        $this.PowerUsage = [Double]::NaN
-        $this.PowerCost = [Double]::NaN
-        $this.Profit = [Double]::NaN
-        $this.Profit_Comparison = [Double]::NaN
-        $this.Profit_Bias = [Double]::NaN
-        $this.Profit_Unbias = [Double]::NaN
-
         If ($this.ReadPowerUsage) { 
             $Stat_Name = "$($this.Name)$(If ($this.Algorithm.Count -eq 1) { "_$($this.Algorithm | Select-Object -Index 0)" })_PowerUsage"
             If ($Stats.$Stat_Name) { 
-
                 $this.PowerUsage = $Stats.$Stat_Name.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
-                
                 If (-not [Double]::IsNaN($this.Earning)) { 
                     $this.Profit = $this.Earning - $this.PowerCost
                     $this.Profit_Comparison = $this.Earning_Comparison - $this.PowerCost
                     $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
                     $this.Profit_Unbias = $this.Earning_Unbias - $this.PowerCost
                 }
+            }
+            Else { 
+                $this.MeasurePowerUsage = $true
+                $this.PowerUsage = [Double]::NaN
+                $this.PowerCost = [Double]::NaN
+                $this.Profit = [Double]::NaN
+                $this.Profit_Comparison = [Double]::NaN
+                $this.Profit_Bias = [Double]::NaN
+                $this.Profit_Unbias = [Double]::NaN
             }
         }
     }
