@@ -391,7 +391,7 @@ Function Global:TimerUITick {
             }
 
             If ($Variables.Miners) { 
-                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @{ Name = "Type(s)"; Expression = { $_.Type -join " & " } }, @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.Workers.Pool.Speed | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } }, @{ Name = "Host(s)"; Expression = { (($_.Workers.Pool.Host | Select-Object -Unique) -join ';')} } | Sort-Object Type)
+                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object  @{ Name = "Type"; Expression = { $_.Type -join " & " } }, @{ Name = "Miner"; Expression = { $_.Info } }, @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '} }, @{ Name = "HashRate(s)"; Expression = { If ($_.Speed_Live -contains $null) { "$($_.Speed_Live | ConvertTo-Hash)/s" -join ' & ' } Else { "$($_.Speed | ConvertTo-Hash)/s" -join ' & ' } } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } } | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
             
                 If (-not ($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
