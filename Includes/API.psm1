@@ -96,6 +96,10 @@ Function Start-APIServer {
 
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path) { 
+                    "/functions/log/get" { 
+                        $Data = Get-Content -Path $Variables.LogFile -Tail 100 | ForEach-Object { "$($_)`n" }
+                        Break
+                    }
                     "/functions/stat/get" { 
                         If ($null -eq $Parameters.Value) {
                             $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ })
@@ -113,7 +117,8 @@ Function Start-APIServer {
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             $Miners = Compare-Object -PassThru -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                $_.Profit = $_.Profit_Comparison = $_.Profit_Bias = $_.Earning = $_.Earning_Comparison = $_.Earning_Bias = [Double]::NaN
+                                $_.Activated = 0
                                 $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                 ForEach ($Algorithm in $_.Algorithm) { 
                                     $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
@@ -127,7 +132,8 @@ Function Start-APIServer {
                         If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
                             $Miners = Compare-Object -PassThru -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                $_.PowerUsage = $_.PowerCost = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Comparison = $_.Profit_Bias = [Double]::NaN
+                                $_.Activated = 0
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
                                 $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
                                 Remove-Stat -Name $StatName
@@ -195,6 +201,7 @@ Function Start-APIServer {
                                         $_.Devices | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')" }
                                     }
                                 }
+                                Write-Message "Disabled device $($Values -join ';') in web GUI. Config file '$($Variables.ConfigFile)' updated."
                             }
                             Else { 
                                 $Data = "No configuration change"
@@ -210,23 +217,25 @@ Function Start-APIServer {
                                 $Data = "`nDevice configuration changed`n`nOld values:"
                                 $Data += "`nDeviceName:        '[$($Config."DeviceName" -join ', ')]'"
                                 $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ',')]'"
-                    
+
                                 $Config.DeviceName = @(@($Config.DeviceName) + $Values | Sort-Object -Unique)
                                 $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Config.DeviceName } | Sort-Object -Unique)
-                    
+
                                 $Data += "`n`nNew values:"
                                 $Data += "`nDeviceName:        '[$($Config."DeviceName" -join ', ')]'"
                                 $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                 $Data += "`n`nConfigFile:`n$($Variables.ConfigFile)"
-    
+
                                 Write-Config -ConfigFile $Variables.ConfigFile
-    
+
                                 $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                                Write-Message "Enabled device $($Values -join ';') in web GUI. Config file '$($Variables.ConfigFile)' updated."
                             }
                             Else {
                                 $Data = "No configuration change"
                             }
                         }
+
                         $Data = "<pre>$Data</pre>"
                         Break
                     }

@@ -60,6 +60,7 @@
 </table>
 
 <h3 class="mt-4">Balances</h3>
+
 <div id="balanceboxes" class="card-deck"></div>
 
 <script id="poolbalance_template" type="text/x-handlebars-template">
@@ -123,16 +124,18 @@
         }
     });
 
+    $('#myModal').on('hidden.bs.modal', function () {
+        $('#miners').bootstrapTable('refresh');
+    });
+
     $(function() {
         function updatePoolBalances() {
             var rates;
             $.ajax({url: '/rates', success: function(result) {
-                console.log(result);
                 rates = result[0];
             }});
             var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
             $.ajax({url: '/earnings', success: function(result) {
-                console.log(result);
                 $("#balanceboxes").empty();
                 var template = Handlebars.compile($("#poolbalance_template").html());
                 var footer = new RegExp("-.+|=.+");
