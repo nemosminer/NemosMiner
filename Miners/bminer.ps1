@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-Bminer1622\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.2-f4789e0-amd64.zip" #testing on windows 8.1 and 10
+$Path = ".\Bin\NVIDIA-Bminer1624\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.2.4-6b94c23-amd64.zip" #testing on windows 8.1 and 10
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
