@@ -2,56 +2,30 @@
             </div>
         </div>
     </body>
-<script type="text/javascript">
+    <script type="text/javascript">
 
-var rate;
-// get BTC rate of first currency
-$.ajax({url: '/btcratefirstcurrency', success: function(result) {
-    rate = result;
-}});
+    var rate;
+    // get BTC rate of first currency
+    $.ajax({url: '/btcratefirstcurrency', success: function(result) {
+        rate = result;
+    }});
 
-// Set the active sidebar item
-$(function() {
-    $('#'+$('#title').data('navbaractive')).addClass('active');
-});
+    // Set the active sidebar item
+    $(function() {
+        $('#'+$('#title').data('navbaractive')).addClass('active');
+    });
 
-// set the values in the header
-$(function() {
-    var firstcurrency = "";
-    var miningcost = "N/A";
-    var earning = "N/A";
-    var profit = "N/A";
+    // set the values in the header
+    $(function() {
 
-    try {
-        $.ajax({url: '/summary', success: function(result) {
-            summary = result;
-            $("#profit").append("<h5>" + result + "</h5>");
-        }});
+        try {
+            $.ajax({url: '/summary', success: function(result) {
+                summary = result;
+                $("#profit").append("<h5>" + result + "</h5>");
+            }});
+        }
+        catch (err) {}
+    });
 
-        // $.ajax({url: '/firstcurrency', success: function(result) {
-        //     firstcurrency = result;
-        // }});
-
-        // $.ajax({url: '/miningcost', success: function(result) {
-        //     miningcost = (result * rate).toFixed(8);
-        // }});
-
-        // $.ajax({url: '/miningearning', success: function(result) {
-        //     earning = (result * rate).toFixed(8);
-        // }});
-
-        // $.ajax({url: '/miningprofit', success: function(result) {
-        //     profit = (result * rate).toFixed(8);
-        // }});
-
-        // $.ajax({url: '/rates', success: function(result) {
-        //     exchangerates = result;
-        //     // $("#profit").append("<h5>Estimated Profit/day: " + firstcurrency + " " + profit + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspEarning/day: " + firstcurrency + " " + earning + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp1 BTC" + "=" + rate + " " + firstcurrency + "</h5>");
-
-        // }});
-    }
-    catch {};
-});
-
-</script>
+    </script>
 </html>
