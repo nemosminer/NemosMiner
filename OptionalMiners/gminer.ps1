@@ -1,15 +1,16 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-Gminer210\miner.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10/gminer_2_10_windows64.7z"
+$Path = ".\Bin\NVIDIA-Gminer211\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.11/gminer_2_11_windows64.zip"
 $Commands = [PSCustomObject]@{ 
     #"beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
+    #"beamv3"           = " --devices $($Config.SelGPUDSTM) -a BeamHash" #Equihash150,5,3 (NiceHash)
     #"equihash125"      = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
     #"equihash144"      = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
     "equihash96"       = " --devices $($Config.SelGPUDSTM) -a 96_5 --pers auto" #Equihash144
     #"zhash"            = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Zhash
     #"equihash192"      = " --devices $($Config.SelGPUDSTM) -a 192_7 --pers auto" #Equihash192
     #"equihash-btg"     = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers BgoldPoW " # Equihash-btg MPH
-    "grincuckaroo29"   = " --devices $($Config.SelGPUDSTM) --algo cuckaroo29 --pers auto" #Grincuckaroo29
+    #"grincuckaroo29"   = " --devices $($Config.SelGPUDSTM) --algo cuckaroo29 --pers auto" #Grincuckaroo29
     "grincuckarood29"  = " --devices $($Config.SelGPUDSTM) --algo cuckarood29 --pers auto" #Grincuckarood29
     "cuckoocycle"      = " --devices $($Config.SelGPUDSTM) --algo aeternity --pers auto" #Aeternity 
     #"grincuckatoo31"   = " --devices $($Config.SelGPUDSTM) --algo grin31 --pers auto" #Grincuckatoo31(8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
