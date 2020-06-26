@@ -1,12 +1,13 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-miniZ15u2\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.5u2/miniZ_v1.5u2_cuda10_win-x64.7z"
+$Path = ".\Bin\NVIDIA-miniZ16\miniZ.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6/miniZ_v1.6v_cuda10_win-x64.7z"
 $Commands = [PSCustomObject]@{ 
     "equihash144"  = " --par=144,5 --pers auto --ocX" #Equihash144
     "equihash125"  = " --par=125,4 --pers auto --ocX" #Equihash125
     "zhash"        = " --par=144,5 --pers auto --ocX" #Zhash
     "beamv2"       = " --par=beam --pers auto --ocX" #Beamv2
+    "beamv3"       = " --par=150,5,3 --pers auto --ocX" #Beamv2
     "beam"         = " --par=150,5 --pers auto --ocX" #Beam
     "equihash192"  = " --par=192,7 --pers auto --ocX" #Equihash192
     #"equihash96"   = " --par=96,5 --pers auto" #equihash96
