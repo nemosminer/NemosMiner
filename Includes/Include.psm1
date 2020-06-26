@@ -709,8 +709,12 @@ Function Start-ChildJob {
 
 Function Initialize-API { 
 
+    If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true) { 
+        $Variables.Remove("APIVersion")
+    }
+
     #Initialize API & Web GUI
-    If ($Config.APIPort -and (-not $Variables.APIPort)) { 
+    If ($Config.APIPort -and ($Config.APIPort -ne $Variables.APIRunspace.APIPort)) { 
         If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
             $TCPClient = New-Object System.Net.Sockets.TCPClient
             $AsyncResult = $TCPClient.BeginConnect("localhost", $Config.APIPort, $null, $null)
@@ -725,12 +729,12 @@ Function Initialize-API {
                 Start-APIServer -Port $Config.APIPort
                 #Wait for API to get ready
                 $RetryCount = 3
-                while (-not ($Variables.APIVersion -and $RetryCount -gt 0)) { 
+                While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
                     Start-Sleep -Seconds 1
                     Try {
-                        If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
-                            Write-Message "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIPort)."
-                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIPort)/" } # Start web dashboard
+                        If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
+                            Write-Message "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
+                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/" } # Start web dashboard
                             Break
                         }
                     }
@@ -738,7 +742,7 @@ Function Initialize-API {
                         $RetryCount--
                     }
                 }
-                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Variables.APIPort)." }
+                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." }
                 Remove-Variable RetryCount
             }
             Remove-Variable AsyncResult
@@ -1022,11 +1026,10 @@ namespace PInvoke.Win32 {
             }
         }
     ) | Out-Null
-    # $Variables | Add-Member -Force @{ IdleRunspaceHandle = $idlePowerShell.BeginInvoke() }
     $PowerShell.BeginInvoke()
 
-    $Variables.IdleRunspaceHandle = $IdleRunspace
-    $Variables.IdleRunspaceHandle | Add-Member -Force @{ PowerShell = $PowerShell }
+    $Variables.IdleRunspace = $IdleRunspace
+    $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 }
 
 Function Update-Monitoring { 

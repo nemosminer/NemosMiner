@@ -624,6 +624,9 @@ Function Start-Cycle {
         #Kill stray miners
         Get-CIMInstance CIM_Process | Where-Object ExecutablePath | Where-Object { [String[]]($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { ($Variables.Miners).ProcessID -notcontains $_.ProcessID } | Select-Object -ExpandProperty ProcessID | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction Ignore }
 
+        #Put here in case the pool range has changed
+        Initialize-API
+
         $Variables.Miners | Where-Object Best | ForEach-Object { 
             $Miner = $_
             If ($_.GetStatus() -ne "Running") { 
@@ -657,7 +660,7 @@ Function Start-Cycle {
 
                 # Log switching information to .\Logs\switching.log
                 [PSCustomObject]@{ Date = (Get-Date); "Type" = $($Miner.Type -join " & "); "Miner" = $Miner.Info; "Account" = (($Miner.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '); "CommandLine" = $Miner.GetCommandLine() } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
-
+                [PSCustomObject]@{ Date = (Get-Date); "Device" = $(($Miner.Devices.Name | Sort-Object)-join "; "); "Miner" = $Miner.Info; "Account" = (($Miner.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '); "CommandLine" = $Miner.GetCommandLine() } | Export-Csv .\Logs\switching2.log -Append -NoTypeInformation
             }
         }
 
@@ -730,8 +733,6 @@ While ($true) {
         # Purge logs more than 10 days
         Get-ChildItem ".\Logs\CoreCyle-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 
-        Initialize-API
-
         Start-Cycle
         Update-Monitoring
 
@@ -742,7 +743,6 @@ While ($true) {
         # - all benchmarking miners have collected enough samples
         # - warmuptime is up
         # - timeout is reached (no readout from miner)
-        
         $RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true)
         $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
