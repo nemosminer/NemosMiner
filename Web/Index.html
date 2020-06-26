@@ -12,7 +12,7 @@
 
 <h3>Running Miners</h3>
 
-<table id="miners" class="table mb-4"
+<table id="miners" class="table"
     data-icons="icons"
     data-toolbar="#toolbar"
     data-url="/miners/running"
@@ -161,7 +161,7 @@
                         var currencies = Object.keys(rates[item.Currency]);
                         var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
                         $.each(currencies, function(cindex, currency) {
-                            data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(10);
+                            data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
                             if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
                             data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
                         });

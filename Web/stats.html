@@ -2,7 +2,8 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 id="title" class="h2" data-navbaractive="navminerstats">Manage Miner Stats</h1>
 </div>
-<div class="alert alert-info" role="alert">Note: Stat file resets will not be reflected in GUI until the next NemosMiner cycle.</div>
+
+<div class="alert alert-info" role="alert">NemosMiner stores all profit, hashrate and power usage data in stat files.</div>
 
 <div class="card-group mb-4">
     <div class="card m-2">
@@ -11,7 +12,7 @@
         </div>
         <div class="card-body">
             <p>Clear the stats for miners that have a benchmarked hashrate of 0H/s.</p>
-            <p>These miners may have failed to benchmark properly, clearing their stats allows them to try benchmarking again. You should watch closely for failed miners after doing this. </p>
+            <p>These miners may have failed to benchmark properly, clearing their stats allows them to attempt benchmarking again.<br>You should watch closely for failed miners after doing this. </p>
             <a href="#" id="showzerohashrateminers" class="btn btn-info">Show 0H/s miner stats</a>
             <p></p>
             <a href="#" id="resetzerohashrateminers" class="btn btn-primary">Reset 0H/s miner stats</a>
@@ -23,24 +24,12 @@
         </div>
         <div class="card-body">
             <p>Clear the stats for miners that have a measured power usage of 0W.</p>
-            <p>These miners may have failed to measure power usage properly, clearing their recorded value allows them to try measuring again. </p>
+            <p>These miners may have failed to measure power usage properly, clearing their recorded value allows them to attempt measuring again. </p>
             <a href="#" id="showzeropowerusageminers" class="btn btn-info">Show 0W power usage data</a>
             <p></p>
             <a href="#" id="resetzeropowerusageminers" class="btn btn-primary">Reset 0W power usage data</a>
         </div>
     </div>
-    <!-- <div class="card m-2">
-        <div class="card-header">
-        <h5>Re-enable disabled miners</h5>
-        </div>
-        <div class="card-body">
-            <p>Re-enable the miners that have been disabled manually.</p>
-            <p>These miners have been disabled by the user. This will force benchmarking and power usage measurement for the re-enabled miners. </p>
-            <a href="#" id="showdisabledminers" class="btn btn-info">Show disabled miners</a>
-            <p></p>
-            <a href="#" id="enablediabledminers" class="btn btn-primary">Re-enable disabled miners</a>
-        </div>
-    </div> -->
     <div class="card m-2 bg-info">
         <div class="card-header">
             <h5>Reset Profit Data</h5>
@@ -103,19 +92,19 @@
         });
     });
 
-    $("#showdisabledminers").on("click",function() {
-        $(".modal-body").load("functions/stat/get?Type=HashRate&Value=-1&Unit=H/s", function() {
-            $(".modal-title").text($("#showdisabledminers").text());
-            $("#myModal").modal({show:true});
-        });
-    });
+    // $("#showdisabledminers").on("click",function() {
+    //     $(".modal-body").load("functions/stat/get?Type=HashRate&Value=-1&Unit=H/s", function() {
+    //         $(".modal-title").text($("#showdisabledminers").text());
+    //         $("#myModal").modal({show:true});
+    //     });
+    // });
 
-    $("#enablediabledminers").on("click",function() {
-        $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=-1&Unit=H/s", function() {
-            $(".modal-title").text($("#enablediabledminers").text());
-            $("#myModal").modal({show:true});
-        });
-    });
+    // $("#enablediabledminers").on("click",function() {
+    //     $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=-1&Unit=H/s", function() {
+    //         $(".modal-title").text($("#enablediabledminers").text());
+    //         $("#myModal").modal({show:true});
+    //     });
+    // });
 
     $("#resetallprofit").on("click",function() {
         $(".modal-body").load("functions/stat/remove?Type=Profit", function() {

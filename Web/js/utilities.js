@@ -14,7 +14,7 @@ function formatMiners(data) {
         if (item.DeviceName) {
             item.tDevices = item.DeviceName.toString();
         }
-        else{
+        else {
             item.tDevices = "";
         }
 
@@ -68,7 +68,7 @@ function formatMiners(data) {
         if (item.Reason) {
             item.tReason = item.Reason.toString();
         }
-        else{
+        else {
             item.Reason = "";
         }
 
@@ -131,11 +131,10 @@ function formatHashRate(value) {
 }
     
 function formatBTC(value) {
-        if (isNaN(value)) return '-';
-        if (value > 0) return parseFloat(value * rate).toFixed(8);
-        if (value == 0) return parseFloat(0).toFixed(8);
-        if (value < 0) return parseFloat(value * rate).toFixed(8);
-        return '-';
+    if (value > 0) return parseFloat(value * rate).toFixed(8);
+    if (value == 0) return parseFloat(0).toFixed(8);
+    if (value < 0) return parseFloat(value * rate).toFixed(8);
+    return '-';
 };
 
 function formatDate(value) {
@@ -182,8 +181,9 @@ function detailFormatter(index, row) {
 }
 
 function formatBytes(bytes) {
-    if(bytes == null) return '-';
-    if(bytes == 0) return '0 Bytes';
+    if (isNaN(bytes)) return '-';
+    if (bytes == null) return '-';
+    if (bytes == 0) return '0 Bytes';
     decimals = 2
     var k = 1024,
     dm = decimals || 2,

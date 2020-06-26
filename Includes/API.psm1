@@ -24,12 +24,26 @@ version date:   12 June 2020
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.2.3.2"
+    If ($Variables.APIRunspace) { 
+        If ($Config.APIPort -ne $Variables.APIRunspace.APIPort -and $Variables.APIRunspace.AsyncObject.IsCompleted -ne $true) { 
+            $null = Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/functions/api/stop" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop
+            Start-Sleep -Seconds 2
+        }
+        If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true) { 
+            $Variables.APIRunspace.Close()
+            $Variables.APIRunspace.PowerShell.EndInvoke($Variables.APIRunspace.AsyncObject)
+            $Variables.APIRunspace.Dispose()
+            $Variables.Remove("APIRunspace")
+            $Variables.Remove("APIVersion")
+            Start-Sleep -Seconds 2
+        }
+    }
+
+    $APIVersion = "0.2.4.2"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
     $APIRunspace.Open()
-
     Get-Variable -Scope Global | ForEach-Object { 
         Try { 
             $APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -37,8 +51,10 @@ Function Start-APIServer {
         Catch { }
     }
     $APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
-
-    $APIServer = [PowerShell]::Create().AddScript(
+    $APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $PowerShell = [PowerShell]::Create()
+    $PowerShell.Runspace = $APIRunspace
+    $PowerShell.AddScript(
         { 
             # Set the starting directory
             Set-Location (Split-Path $MyInvocation.MyCommand.Path)
@@ -58,6 +74,13 @@ Function Start-APIServer {
                 ".ps1"  = "text/html" # ps1 files get executed, assume their response is html
             }
 
+            # Get-Variable -Scope Global | ForEach-Object { 
+            #     Try { 
+            #         $_.Name | ConvertTo-Json > ".\Debug\$($_.Name).dump"
+            #     }
+            #     Catch { }
+            # }
+        
             # Setup the listener
             $Server = New-Object System.Net.HttpListener
 
@@ -65,13 +88,12 @@ Function Start-APIServer {
             $Server.Prefixes.Add("http://localhost:$($Config.APIPort)/")
             $Server.Start()
 
-            #Server is running. OK to add port to variables
-            $Variables.APIPort = $Config.APIPort
-
             While ($Server.IsListening) { 
                 $Context = $Server.GetContext()
                 $Request = $Context.Request
                 $URL = $Request.Url.OriginalString
+
+                "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" >> .\Logs\API.log
 
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
@@ -96,15 +118,33 @@ Function Start-APIServer {
                 Switch ($Path) { 
                     "/functions/api/stop" { 
                         If ($Variables.APIRunspace) { 
-                            Write-Message "Stopping API."
-                            $Variables.APIRunspace.Close()
-                            If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
-                            $Variables.Remove("APIRunspace")
+                            Write-Message "Web GUI: Stopping API."
+                            $Response.Headers.Add("Content-Type", $ContentType)
+                            $Response.StatusCode = $StatusCode
+                            $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
+                            $Response.ContentLength64 = $ResponseBuffer.Length
+                            $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
+                            $Response.Close()
+                            $Server.Stop()
+                            $Server.Close()
                         }
                         Break
                     }
                     "/functions/log/get" { 
-                        $Data = Get-Content -Path $Variables.LogFile -Tail 100 | ForEach-Object { "$($_)`n" }
+                        If ([Int]$Parameters.Lines) { 
+                            $Lines = [Int]$Parameters.Lines
+                        }
+                        Else { 
+                            $Lines = 100
+                        }
+                        $Data = " $(Get-Content -Path $Variables.LogFile -Tail $Lines | ForEach-Object { "$($_)`n" } )"
+                        Break
+                    }
+                    "/functions/log/clear" { 
+                        If ($Parameters.Path) { 
+                            #Get-ChildItem $Parameters.Path | Remove-Item -Force
+                            $Data = "<pre>Log ($Parameters.Path) cleared.</pre>"
+                        }
                         Break
                     }
                     "/functions/stat/get" { 
@@ -228,9 +268,9 @@ Function Start-APIServer {
                                 $Data += "`n`nNew values:"
                                 $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                 $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-
+                
                                 Write-Config -ConfigFile $Variables.ConfigFile
-
+                
                                 $Values | ForEach-Object { 
                                     $DeviceName = $_
                                     $Variables.Miners | Where-Object { $DeviceName -in $_.DeviceName } | ForEach-Object { 
@@ -257,9 +297,9 @@ Function Start-APIServer {
                                 $Data += "`n`nNew values:"
                                 $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                 $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-
+                
                                 Write-Config -ConfigFile $Variables.ConfigFile
-
+                
                                 $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
                                 Write-Message "Web GUI: Device $($Values -join ';') enabled. Config file '$($Variables.ConfigFile)' updated."
                             }
@@ -268,6 +308,11 @@ Function Start-APIServer {
                             }
                         }
                         $Data = "<pre>$Data</pre>"
+                        Break
+                    }
+                    "/functions/switchinglog/clear" { 
+                        Get-ChildItem ".\Logs\switching2.log" | Remove-Item -Force
+                        $Data = "<pre>Switching log cleared.</pre>"
                         Break
                     }
                     "/apiversion" { 
@@ -403,7 +448,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/switchinglog" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.SwitchingLog | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 (Get-Content ".\Logs\switching2.log" | ConvertFrom-Csv | Select-Object -Last 1000)
                         Break
                     }
                     "/watchdogtimers" { 
@@ -494,7 +539,14 @@ Function Start-APIServer {
             $Server.Close()
         }
     ) #end of $APIServer
+    $AsyncObject = $PowerShell.BeginInvoke()
 
-    $APIServer.Runspace = $APIRunspace
-    $APIServer.BeginInvoke()
+    $Variables.APIRunspace = $APIRunspace
+    $Variables.APIRunspace | Add-Member -Force @{ 
+        PowerShell = $PowerShell
+        AsyncObject = $AsyncObject
+    }
+    If ($Variables.APIRunspace.AsyncObject.IsCompleted -ne $true) { 
+        $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Config.APIPort }
+    }
 }
