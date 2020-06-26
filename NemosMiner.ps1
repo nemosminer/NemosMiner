@@ -27,8 +27,6 @@ version date:   04 June 2020
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
-    [Double]$ActiveMinerGainPct = 12, # percent of advantage that active miner has over candidates in term of profit
-    [Parameter(Mandatory = $false)]
     [String[]]$Algorithm = @(), #i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
     [Int]$API_ID = 0, 
@@ -43,7 +41,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\config.json",
     [Parameter(Mandatory = $false)]
-    [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (mill BTC) is also valid
+    [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory = $false)]
@@ -64,6 +62,8 @@ param(
     [Switch]$IncludeOptionalMiners = $true, #If true, use the miners in the 'OptionalMiners' directory
     [Parameter(Mandatory = $false)]
     [Switch]$IncludeRegularMiners = $true, #If true, use the miners in the 'Miners' directory
+    [Parameter(Mandatory = $false)]
+    [Switch]$IncludeLegacyMiners = $true, #If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 240, #seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
@@ -103,6 +103,8 @@ param(
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory = $false)]
     [Switch]$ReadPowerUsage = $true, #If true, power usage will be read from miners, required for true profit calculation
+    [Parameter(Mandatory = $false)]
+    [Double]$RunningMinerGainPct = 12, # percent of advantage that running miner has over candidates in term of earning/profit
     [Parameter(Mandatory = $false)]
     [String]$SelGPUCC = "0,1",
     [Parameter(Mandatory = $false)]
@@ -290,25 +292,11 @@ Function Global:TimerUITick {
         $host.UI.RawUI.WindowTitle = $MainForm.Text
 
         If ($Variables.EndLoop) { 
-            CheckBoxSwitching_Click
 
-            # Fixed memory leak to chart object not being properly disposed in 5.3.0
-            # https://stackoverflow.com/questions/8466343/why-controls-do-not-want-to-get-removed
-
-            If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
-                $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
-                $Chart1.top = 2
-                $Chart1.left = 0
-                $EarningsPage.Controls.Add($Chart1)
-                $Chart1.BringToFront()
-
-                $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 150"
-                $Chart2.top = 2
-                $Chart2.left = 500
-                $EarningsPage.Controls.Add($Chart2)
-                $Chart2.BringToFront()
-
-                $EarningsPage.Controls | Where-Object { ($_.GetType()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | ForEach-Object { $EarningsPage.Controls[$EarningsPage.Controls.IndexOf($_)].Dispose(); $EarningsPage.Controls.Remove($_) }
+            #Refresh selected tab
+            Switch ($TabControl.SelectedTab.Text) { 
+                "Earnings"  { Get-Chart }
+                "Switching" { CheckBoxSwitching_Click }
             }
 
             If ($Variables.Earnings -and $Config.TrackEarnings) { 
@@ -741,7 +729,7 @@ Function PrepareWriteConfig {
     $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") -and ($_.Tag -eq "Algorithm") } | ForEach-Object { 
         $Config.($_.Tag) = @($_.Text -split ",")
     }
-    $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "ActiveMinerGainPct")) } | ForEach-Object { 
+    $ConfigPageControls | Where-Object { (($_.GetType()).Name -eq "TextBox") -and ($_.Tag -in @("Donate", "Interval", "RunningMinerGainPct")) } | ForEach-Object { 
         $Config.($_.Tag) = [Int]$_.Text
     }
     $Config.($CheckedListBoxPools.Tag) = $CheckedListBoxPools.CheckedItems
@@ -833,8 +821,8 @@ $Variables | Add-Member -Force @{ CurrentVersionAutoupdated = (Get-Content .\Ver
 $Variables.StatusText = "Idle"
 $RunPage = New-Object System.Windows.Forms.TabPage
 $RunPage.Text = "Run"
-$EarningsPage = New-Object System.Windows.Forms.TabPage
-$EarningsPage.Text = "Earnings"
+$Global:EarningsPage = New-Object System.Windows.Forms.TabPage
+$Global:EarningsPage.Text = "Earnings"
 $SwitchingPage = New-Object System.Windows.Forms.TabPage
 $SwitchingPage.Text = "Switching"
 $ConfigPage = New-Object System.Windows.Forms.TabPage
@@ -850,12 +838,13 @@ $TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Name = "TabControl"
 $TabControl.Width = 722
 $TabControl.Height = 363
-$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
+$TabControl.Controls.AddRange(@($RunPage, $Global:EarningsPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
 If ($FreshConfig -EQ $true) { $TabControl.SelectedIndex = 3 } #Show config tab
 
 $TabControl_SelectedIndexChanged = {
     Switch ($TabControl.SelectedTab.Text) { 
-        "Switching"  { CheckBoxSwitching_Click }
+        "Earnings"  { Get-Chart }
+        "Switching" { CheckBoxSwitching_Click }
     }
 }
 $TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
@@ -970,7 +959,7 @@ $TBAddress.Tag = "Wallet"
 $TBAddress.MultiLine = $false
 $TBAddress.Text = $Config.Wallet
 $TBAddress.AutoSize = $false
-$TBAddress.Width = 290
+$TBAddress.Width = 285
 $TBAddress.Height = 20
 $TBAddress.Location = [System.Drawing.Point]::new(115, 68)
 $TBAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1022,19 +1011,6 @@ $RunPageControls += $RunningMinersDGV
 
 # Earnings Page Controls
 $EarningsPageControls = @()
-
-If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
-
-    $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
-    $Chart1.top = 2
-    $Chart1.left = 2
-    $EarningsPageControls += $Chart1
-
-    $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 150"
-    $Chart2.top = 2
-    $Chart2.left = 500
-    $EarningsPageControls += $Chart2
-}
 
 $LabelEarnings = New-Object System.Windows.Forms.Label
 $LabelEarnings.Text = "Earning statistics per pool"
@@ -1127,7 +1103,7 @@ $ConfigPageControls = @()
 $LabelWorkerName = New-Object System.Windows.Forms.Label
 $LabelWorkerName.Text = "Worker Name"
 $LabelWorkerName.AutoSize = $false
-$LabelWorkerName.Width = 120
+$LabelWorkerName.Width = 132
 $LabelWorkerName.Height = 20
 $LabelWorkerName.Location = [System.Drawing.Point]::new(2, 2)
 $LabelWorkerName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1138,16 +1114,16 @@ $TBWorkerName.Tag = "WorkerName"
 $TBWorkerName.MultiLine = $false
 $TBWorkerName.Text = $Config.WorkerName
 $TBWorkerName.AutoSize = $false
-$TBWorkerName.Width = 300
+$TBWorkerName.Width = 285
 $TBWorkerName.Height = 20
-$TBWorkerName.Location = [System.Drawing.Point]::new(122, 2)
+$TBWorkerName.Location = [System.Drawing.Point]::new(135, 2)
 $TBWorkerName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBWorkerName
 
 $LabelUserName = New-Object System.Windows.Forms.Label
 $LabelUserName.Text = "MPH UserName"
 $LabelUserName.AutoSize = $false
-$LabelUserName.Width = 120
+$LabelUserName.Width = 132
 $LabelUserName.Height = 20
 $LabelUserName.Location = [System.Drawing.Point]::new(2, 25)
 $LabelUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1158,16 +1134,16 @@ $TBUserName.Tag = "UserName"
 $TBUserName.MultiLine = $false
 $TBUserName.Text = $Config.UserName
 $TBUserName.AutoSize = $false
-$TBUserName.Width = 300
+$TBUserName.Width = 285
 $TBUserName.Height = 20
-$TBUserName.Location = [System.Drawing.Point]::new(122, 25)
+$TBUserName.Location = [System.Drawing.Point]::new(135, 25)
 $TBUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBUserName
 
 $LabelInterval = New-Object System.Windows.Forms.Label
 $LabelInterval.Text = "Interval"
 $LabelInterval.AutoSize = $false
-$LabelInterval.Width = 120
+$LabelInterval.Width = 132
 $LabelInterval.Height = 20
 $LabelInterval.Location = [System.Drawing.Point]::new(2, 48)
 $LabelInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1178,16 +1154,16 @@ $TBInterval.Tag = "Interval"
 $TBInterval.MultiLine = $false
 $TBInterval.Text = $Config.Interval
 $TBInterval.AutoSize = $false
-$TBInterval.Width = 300
+$TBInterval.Width = 285
 $TBInterval.Height = 20
-$TBInterval.Location = [System.Drawing.Point]::new(122, 48)
+$TBInterval.Location = [System.Drawing.Point]::new(135, 48)
 $TBInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBInterval
 
 $LabelLocation = New-Object System.Windows.Forms.Label
 $LabelLocation.Text = "Region"
 $LabelLocation.AutoSize = $false
-$LabelLocation.Width = 120
+$LabelLocation.Width = 132
 $LabelLocation.Height = 20
 $LabelLocation.Location = [System.Drawing.Point]::new(2, 71)
 $LabelLocation.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1202,16 +1178,16 @@ $Regions | ForEach-Object {
 $LBRegion.SelectedItem = $Config.Region
 $LBRegion.AutoSize = $false
 $LBRegion.Sorted = $true
-$LBRegion.Width = 300
+$LBRegion.Width = 285
 $LBRegion.Height = 20
-$LBRegion.Location = [System.Drawing.Point]::new(122, 71)
+$LBRegion.Location = [System.Drawing.Point]::new(135, 71)
 $LBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LBRegion
 
 # $LabelGPUCount = New-Object System.Windows.Forms.Label
 # $LabelGPUCount.Text = "GPU Count"
 # $LabelGPUCount.AutoSize = $false
-# $LabelGPUCount.Width = 120
+# $LabelGPUCount.Width = 132
 # $LabelGPUCount.Height = 20
 # $LabelGPUCount.Location = [System.Drawing.Point]::new(2, 91)
 # $LabelGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1224,7 +1200,7 @@ $ConfigPageControls += $LBRegion
 # $TBGPUCount.AutoSize = $false
 # $TBGPUCount.Width = 50
 # $TBGPUCount.Height = 20
-# $TBGPUCount.Location = [System.Drawing.Point]::new(122, 91)
+# $TBGPUCount.Location = [System.Drawing.Point]::new(135, 91)
 # $TBGPUCount.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 # $ConfigPageControls += $TBGPUCount
 
@@ -1252,7 +1228,7 @@ $ConfigPageControls += $LBRegion
 $LabelAlgos = New-Object System.Windows.Forms.Label
 $LabelAlgos.Text = "Algorithm"
 $LabelAlgos.AutoSize = $false
-$LabelAlgos.Width = 120
+$LabelAlgos.Width = 132
 $LabelAlgos.Height = 20
 $LabelAlgos.Location = [System.Drawing.Point]::new(2, 94)
 $LabelAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1263,16 +1239,16 @@ $TBAlgos.Tag = "Algorithm"
 $TBAlgos.MultiLine = $false
 $TBAlgos.Text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
-$TBAlgos.Width = 300
+$TBAlgos.Width = 285
 $TBAlgos.Height = 20
-$TBAlgos.Location = [System.Drawing.Point]::new(122, 94)
+$TBAlgos.Location = [System.Drawing.Point]::new(135, 94)
 $TBAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBAlgos
 
 $LabelCurrency = New-Object System.Windows.Forms.Label
 $LabelCurrency.Text = "Currencies"
 $LabelCurrency.AutoSize = $false
-$LabelCurrency.Width = 120
+$LabelCurrency.Width = 132
 $LabelCurrency.Height = 20
 $LabelCurrency.Location = [System.Drawing.Point]::new(2, 117)
 $LabelCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1284,17 +1260,17 @@ $TBCurrency.Tag = "Currency"
 $TBCurrency.MultiLine = $false
 $TBCurrency.Text = @($Config.Currency -join ', ')
 $TBCurrency.AutoSize = $false
-$TBCurrency.Width = 300
+$TBCurrency.Width = 285
 $TBCurrency.Height = 20
-$TBCurrency.Location = [System.Drawing.Point]::new(122, 117)
+$TBCurrency.Location = [System.Drawing.Point]::new(135, 117)
 $TBCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBCurrency
 
 $LabelPwdCurrency = New-Object System.Windows.Forms.Label
-$LabelPwdCurrency.Text = "Pwd Currency"
+$LabelPwdCurrency.Text = "Password Currency"
 $LabelPwdCurrency.AutoSize = $false
-$LabelPwdCurrency.Width = 120
+$LabelPwdCurrency.Width = 132
 $LabelPwdCurrency.Height = 20
 $LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 140)
 $LabelPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1305,16 +1281,16 @@ $TBPwdCurrency.Tag = "PasswordCurrency"
 $TBPwdCurrency.MultiLine = $false
 $TBPwdCurrency.Text = $Config.PasswordCurrency
 $TBPwdCurrency.AutoSize = $false
-$TBPwdCurrency.Width = 300
+$TBPwdCurrency.Width = 285
 $TBPwdCurrency.Height = 20
-$TBPwdCurrency.Location = [System.Drawing.Point]::new(122, 140)
+$TBPwdCurrency.Location = [System.Drawing.Point]::new(135, 140)
 $TBPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBPwdCurrency
 
 $LabelDonate = New-Object System.Windows.Forms.Label
 $LabelDonate.Text = "Donate"
 $LabelDonate.AutoSize = $false
-$LabelDonate.Width = 120
+$LabelDonate.Width = 132
 $LabelDonate.Height = 20
 $LabelDonate.Location = [System.Drawing.Point]::new(2, 163)
 $LabelDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1326,9 +1302,9 @@ $TBDonate.Tag = "Donate"
 $TBDonate.MultiLine = $false
 $TBDonate.Text = $Config.Donate
 $TBDonate.AutoSize = $false
-$TBDonate.Width = 300
+$TBDonate.Width = 285
 $TBDonate.Height = 20
-$TBDonate.Location = [System.Drawing.Point]::new(122, 163)
+$TBDonate.Location = [System.Drawing.Point]::new(135, 163)
 $TBDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBDonate
@@ -1336,7 +1312,7 @@ $ConfigPageControls += $TBDonate
 $LabelProxy = New-Object System.Windows.Forms.Label
 $LabelProxy.Text = "Proxy"
 $LabelProxy.AutoSize = $false
-$LabelProxy.Width = 120
+$LabelProxy.Width = 132
 $LabelProxy.Height = 20
 $LabelProxy.Location = [System.Drawing.Point]::new(2, 186)
 $LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1347,36 +1323,36 @@ $TBProxy.Tag = "Proxy"
 $TBProxy.MultiLine = $false
 $TBProxy.Text = $Config.Proxy
 $TBProxy.AutoSize = $false
-$TBProxy.Width = 300
+$TBProxy.Width = 285
 $TBProxy.Height = 20
-$TBProxy.Location = [System.Drawing.Point]::new(122, 186)    
+$TBProxy.Location = [System.Drawing.Point]::new(135, 186)    
 $TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBProxy
 
-$LabelActiveMinerGainPct = New-Object System.Windows.Forms.Label
-$LabelActiveMinerGainPct.Text = "ActiveMinerGain%"
-$LabelActiveMinerGainPct.AutoSize = $false
-$LabelActiveMinerGainPct.Width = 120
-$LabelActiveMinerGainPct.Height = 20
-$LabelActiveMinerGainPct.Location = [System.Drawing.Point]::new(2, 209)
-$LabelActiveMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $LabelActiveMinerGainPct
+$LabelRunningMinerGainPct = New-Object System.Windows.Forms.Label
+$LabelRunningMinerGainPct.Text = "RunningMinerGain%"
+$LabelRunningMinerGainPct.AutoSize = $false
+$LabelRunningMinerGainPct.Width = 132
+$LabelRunningMinerGainPct.Height = 20
+$LabelRunningMinerGainPct.Location = [System.Drawing.Point]::new(2, 209)
+$LabelRunningMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $LabelRunningMinerGainPct
 
-$TBActiveMinerGainPct = New-Object System.Windows.Forms.TextBox
-$TBActiveMinerGainPct.Tag = "ActiveMinerGainPct"
-$TBActiveMinerGainPct.MultiLine = $false
-$TBActiveMinerGainPct.Text = $Config.ActiveMinerGainPct
-$TBActiveMinerGainPct.AutoSize = $false
-$TBActiveMinerGainPct.Width = 300
-$TBActiveMinerGainPct.Height = 20
-$TBActiveMinerGainPct.Location = [System.Drawing.Point]::new(122, 209)
-$TBActiveMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $TBActiveMinerGainPct
+$TBRunningMinerGainPct = New-Object System.Windows.Forms.TextBox
+$TBRunningMinerGainPct.Tag = "RunningMinerGainPct"
+$TBRunningMinerGainPct.MultiLine = $false
+$TBRunningMinerGainPct.Text = $Config.RunningMinerGainPct
+$TBRunningMinerGainPct.AutoSize = $false
+$TBRunningMinerGainPct.Width = 285
+$TBRunningMinerGainPct.Height = 20
+$TBRunningMinerGainPct.Location = [System.Drawing.Point]::new(135, 209)
+$TBRunningMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $TBRunningMinerGainPct
 
 $LabelMPHAPIKey = New-Object System.Windows.Forms.Label
 $LabelMPHAPIKey.Text = "MPH API Key"
 $LabelMPHAPIKey.AutoSize = $false
-$LabelMPHAPIKey.Width = 120
+$LabelMPHAPIKey.Width = 132
 $LabelMPHAPIKey.Height = 20
 $LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 232)
 $LabelMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1387,16 +1363,16 @@ $TBMPHAPIKey.Tag = "APIKEY"
 $TBMPHAPIKey.MultiLine = $false
 $TBMPHAPIKey.Text = $Config.APIKEY
 $TBMPHAPIKey.AutoSize = $false
-$TBMPHAPIKey.Width = 300
+$TBMPHAPIKey.Width = 285
 $TBMPHAPIKey.Height = 20
-$TBMPHAPIKey.Location = [System.Drawing.Point]::new(122, 232)
+$TBMPHAPIKey.Location = [System.Drawing.Point]::new(135, 232)
 $TBMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBMPHAPIKey
 
 $LabelMinersTypes = New-Object System.Windows.Forms.Label
 $LabelMinersTypes.Text = "Miner Devices"
 $LabelMinersTypes.AutoSize = $false
-$LabelMinersTypes.Width = 120
+$LabelMinersTypes.Width = 132
 $LabelMinersTypes.Height = 20
 $LabelMinersTypes.Location = [System.Drawing.Point]::new(2, 258)
 $LabelMinersTypes.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1408,7 +1384,7 @@ $CheckBoxMinerTypeCPU.Text = "CPU"
 $CheckBoxMinerTypeCPU.AutoSize = $false
 $CheckBoxMinerTypeCPU.Width = 60
 $CheckBoxMinerTypeCPU.Height = 20
-$CheckBoxMinerTypeCPU.Location = [System.Drawing.Point]::new(124, 258)
+$CheckBoxMinerTypeCPU.Location = [System.Drawing.Point]::new(135, 258)
 $CheckBoxMinerTypeCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxMinerTypeCPU.Checked = ($CheckBoxMinerTypeCPU.Text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeCPU
@@ -1438,7 +1414,7 @@ $CheckBoxMinerTypeNVIDIA.Text = "NVIDIA"
 $CheckBoxMinerTypeNVIDIA.AutoSize = $false
 $CheckBoxMinerTypeNVIDIA.Width = 70
 $CheckBoxMinerTypeNVIDIA.Height = 20
-$CheckBoxMinerTypeNVIDIA.Location = [System.Drawing.Point]::new(186, 258)
+$CheckBoxMinerTypeNVIDIA.Location = [System.Drawing.Point]::new(197, 258)
 $CheckBoxMinerTypeNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxMinerTypeNVIDIA.Checked = ($CheckBoxMinerTypeNVIDIA.Text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeNVIDIA
@@ -1467,7 +1443,7 @@ $CheckBoxMinerTypeAMD.Text = "AMD"
 $CheckBoxMinerTypeAMD.AutoSize = $false
 $CheckBoxMinerTypeAMD.Width = 60
 $CheckBoxMinerTypeAMD.Height = 20
-$CheckBoxMinerTypeAMD.Location = [System.Drawing.Point]::new(261, 258)
+$CheckBoxMinerTypeAMD.Location = [System.Drawing.Point]::new(272, 258)
 $CheckBoxMinerTypeAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxMinerTypeAMD.Checked = ($CheckBoxMinerTypeAMD.Text -in $Config.Type)
 $ConfigPageControls += $CheckBoxMinerTypeAMD
@@ -1677,9 +1653,8 @@ $LabelPoolsSelect = New-Object System.Windows.Forms.Label
 $LabelPoolsSelect.Text = "Poolnames"
 $LabelPoolsSelect.AutoSize = $false
 $LabelPoolsSelect.Width = 130
-
 $LabelPoolsSelect.Height = 20
-$LabelPoolsSelect.Location = [System.Drawing.Point]::new(427, 2)
+$LabelPoolsSelect.Location = [System.Drawing.Point]::new(425, 2)
 $LabelPoolsSelect.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelPoolsSelect.TextAlign = 'MiddleCenter'
 $LabelPoolsSelect.BorderStyle = 'FixedSingle'
@@ -1687,10 +1662,10 @@ $ConfigPageControls += $LabelPoolsSelect
 
 $CheckedListBoxPools = New-Object System.Windows.Forms.CheckedListBox
 $CheckedListBoxPools.Tag = "PoolName"
-$CheckedListBoxPools.Height = 220
+$CheckedListBoxPools.Height = 230
 $CheckedListBoxPools.Width = 130
 $CheckedListBoxPools.Text = "Pools"
-$CheckedListBoxPools.Location = [System.Drawing.Point]::new(427, 25)
+$CheckedListBoxPools.Location = [System.Drawing.Point]::new(425, 25)
 $CheckedListBoxPools.CheckOnClick = $true
 $CheckedListBoxPools.BackColor = [System.Drawing.SystemColors]::Control
 $CheckedListBoxPools.Items.Clear()
@@ -1879,7 +1854,7 @@ $ConsoleHandle = (Get-Process -Id $pid).MainWindowHandle
 
 $MainForm.Controls.AddRange($MainFormControls)
 $RunPage.Controls.AddRange(@($RunPageControls))
-$EarningsPage.Controls.AddRange(@($EarningsPageControls))
+$Global:EarningsPage.Controls.AddRange(@($EarningsPageControls))
 $SwitchingPage.Controls.AddRange(@($SwitchingPageControls))
 $EstimationsPage.Controls.AddRange(@($EstimationsDGV))
 $ConfigPage.Controls.AddRange($ConfigPageControls)

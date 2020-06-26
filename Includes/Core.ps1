@@ -188,7 +188,7 @@ Function Start-Cycle {
                 If ($Pool.EstimateCorrection -gt 0 -and $Pool.EstimateCorrection -lt 1) { $_.EstimateCorrection = $Pool.EstimateCorrection } Else { $_.EstimateCorrection = 1 } 
                 If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $_.Fee = 0 } Else { $_.Fee = $Pool.Fee }
                 $_.Price = $Pool.Price * $_.EstimateCorrection
-                $_.Price_Bias = $Pool.Price * (1 - ($Pool.MarginOfError * $(If ($_.PayoutScheme -eq "PPLNS") { 1 } Else { 1 + $Config.ActiveMinerGainPct }) * (1 - $Pool.Fee) * [Math]::Pow($Variables.DecayBase, $DecayExponent)))
+                $_.Price_Bias = $Pool.Price * (1 - ($Pool.MarginOfError * $(If ($_.PayoutScheme -eq "PPLNS") { 1 } Else { 1 + $Config.RunningMinerGainPct }) * (1 - $Pool.Fee) * [Math]::Pow($Variables.DecayBase, $DecayExponent)))
                 $_.Price_Unbias = $Pool.Price * (1 - $Pool.Fee)
                 $_.StablePrice = $Pool.StablePrice
                 $_.MarginOfError = $Pool.MarginOfError
@@ -546,7 +546,7 @@ Function Start-Cycle {
             )
 
             If ($Config.ReadPowerUsage -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-            $BestMiners_Combo =            $BestMiners_Combos            | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum },       { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination
+            $BestMiners_Combo = $BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum },       { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination
             Remove-Variable SortBy
        
             Remove-Variable Miner_Device_Combo
@@ -557,10 +557,6 @@ Function Start-Cycle {
         $Variables.Miners | Where-Object Available -EQ $true | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Profit_Bias -= $SmallestProfitBias }
         Remove-Variable SmallestEarningBias
         Remove-Variable SmallestProfitBias
-
-        $Variables.MiningProfit = ($BestMiners_Combo | Measure-Object Profit -Sum).Sum
-        $Variables.MiningEarning = ($BestMiners_Combo | Measure-Object Earning -Sum).Sum
-        $Variables.MiningPowerCost = ($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum
 
         # No CPU mining if GPU miner prevents it
         If ($BestMiners_Combo.PreventCPUMining -contains $true) { 
@@ -577,6 +573,17 @@ Function Start-Cycle {
             Start-Sleep -Seconds 30
             $Variables.EndLoop = $true
             Continue
+        }
+
+        $Variables.MiningProfit = [Double]($Variables.Miners | Where-Object Best -EQ $true | Measure-Object Profit -Sum).Sum
+        $Variables.MiningEarning = ($Variables.Miners | Where-Object Best -EQ $true | Measure-Object Earning -Sum).Sum
+        $Variables.MiningPowerCost = ($Variables.Miners | Where-Object Best -EQ $true | Measure-Object PowerCost -Sum).Sum
+
+        If ([Double]::IsNaN($Variables.MiningEarning)) { 
+            $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+        }
+        Else { 
+            $Variables.Summary = "Estimated $(If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { "Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))        " } )Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))        1 BTC=$($Variables.Rates."BTC".$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
         }
 
         #Also restart running miners (stop & start) when 
@@ -664,9 +671,7 @@ Function Start-Cycle {
             }
         }
 
-        $Variables.SwitchingLog = @(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Select-Object -Last 1000); [Array]::Reverse($Variables.SwitchingLog)
-
-        $Variables.Miners | Where-Object { $_.Best -eq $true } | ForEach-Object { 
+        $Variables.Miners | Where-Object Best -eq $true | ForEach-Object { 
             $Message = ""
             If ($_.Benchmark -eq $true) { $Message = "Benchmark " }
             If ($_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true) { $Message = "$($Message)and "}
@@ -678,7 +683,7 @@ Function Start-Cycle {
 
         $Error.Clear()
 
-        Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
+        Get-Job | Where-Object State -EQ "Completed" | Remove-Job
 
         If ($Variables.BrainJobs.count -gt 0) { 
             $Variables.BrainJobs | ForEach-Object { $_.ChildJobs | ForEach-Object { $_.Error.Clear() } }
@@ -714,6 +719,7 @@ While ($true) {
 
         # Keep updating exchange rate
         Get-Rates
+        $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
 
         # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
         For ($i = 0; $i -lt 4; $i++) { 
@@ -794,6 +800,7 @@ While ($true) {
                 $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. "
                 Break
             }
+
             If ($BenchmarkingOrMeasuringMiners) { Start-Sleep -Seconds 1 } Else { Start-Sleep -Seconds 2 }
         }
         Write-Message -Level VERBOSE "$($Message)Ending cycle."

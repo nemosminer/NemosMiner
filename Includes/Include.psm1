@@ -594,6 +594,24 @@ Class Miner {
     }
 }
 
+Function Get-Chart { 
+    If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
+        $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
+        $Chart1.top = 2
+        $Chart1.left = 0
+        $Global:EarningsPage.Controls.Add($Chart1)
+        $Chart1.BringToFront()
+
+        $Chart2 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'DayPoolSplit' -Width 200 -Height 150"
+        $Chart2.top = 2
+        $Chart2.left = 500
+        $Global:EarningsPage.Controls.Add($Chart2)
+        $Chart2.BringToFront()
+
+        $Global:EarningsPage.Controls | Where-Object { ($_.GetType()).name -eq "Chart" -and $_ -ne $Chart1 -and $_ -ne $Chart2 } | ForEach-Object { $Global:EarningsPage.Controls[$Global:EarningsPage.Controls.IndexOf($_)].Dispose(); $Global:EarningsPage.Controls.Remove($_) }
+    }
+}
+
 Function Get-NMVersion { 
     # Check if new version is available
     Write-Message "Checking version..."
