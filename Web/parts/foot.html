@@ -23,27 +23,32 @@ $(function() {
     var profit = "N/A";
 
     try {
-
-        $.ajax({url: '/firstcurrency', success: function(result) {
-            firstcurrency = result;
+        $.ajax({url: '/summary', success: function(result) {
+            summary = result;
+            $("#profit").append("<h5>" + result + "</h5>");
         }});
 
-        $.ajax({url: '/miningcost', success: function(result) {
-            miningcost = (result * rate).toFixed(8);
-        }});
+        // $.ajax({url: '/firstcurrency', success: function(result) {
+        //     firstcurrency = result;
+        // }});
 
-        $.ajax({url: '/miningearning', success: function(result) {
-            earning = (result * rate).toFixed(8);
-        }});
+        // $.ajax({url: '/miningcost', success: function(result) {
+        //     miningcost = (result * rate).toFixed(8);
+        // }});
 
-        $.ajax({url: '/miningprofit', success: function(result) {
-            profit = (result * rate).toFixed(8);
-        }});
+        // $.ajax({url: '/miningearning', success: function(result) {
+        //     earning = (result * rate).toFixed(8);
+        // }});
 
-        $.ajax({url: '/rates', success: function(result) {
-            exchangerates = result;
-            $("#profit").append("<h5>Estimated Profit/day: " + firstcurrency + " " + profit + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspEarning/day: " + firstcurrency + " " + earning + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp1 BTC" + "=" + rate + " " + firstcurrency + "</h5>");
-        }});
+        // $.ajax({url: '/miningprofit', success: function(result) {
+        //     profit = (result * rate).toFixed(8);
+        // }});
+
+        // $.ajax({url: '/rates', success: function(result) {
+        //     exchangerates = result;
+        //     // $("#profit").append("<h5>Estimated Profit/day: " + firstcurrency + " " + profit + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspEarning/day: " + firstcurrency + " " + earning + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp1 BTC" + "=" + rate + " " + firstcurrency + "</h5>");
+
+        // }});
     }
     catch {};
 });
