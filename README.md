@@ -2,7 +2,7 @@
 
 NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 22 December 2019
+Updated 30 June 2020
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases) +
 [![Github All Releases](https://img.shields.io/github/downloads/Minerx117/Nemosminer/total.svg)](https://github.com/Minerx117/Nemosminer/releases)
@@ -13,15 +13,15 @@ Updated 22 December 2019
 [![GitHub stars](https://img.shields.io/github/stars/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/Nemosminer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
 
-Copyright (c) 2018-2019 Nemo and MrPlus
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 
-Updated/Maintained by Nemo/Minerx117
+Updated/Maintained by Nemo/Minerx117 & UselessGuru
 
-with alot of Help From MrPlusGH, grantemsley & UselessGuru without them NemosMiner would not be possible
+with alot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMiner would not be possible.
 
 NemosMiner was based on MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
 NemosMiner is currently based on NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
@@ -48,30 +48,31 @@ Easy configuration, easy start:
       
       note: 2. you only need to change Username if you are using Miningpoolhub
       
-     Algo selection / removal
+     Algorithm selection / removal
   
-      +algo for algo selection
-      -algo for algo removal
+      +[algorithm] to enable algorithm
+      -[algorithm] to disable algorithm
 
-      If "+" Used, all selected algo have to be listed
-      If "Minus" Used, all algo selected but exluded ones.
+      If '+' is used, then only the explicitly enabled algorithms are used
+      If '-' is used, then all algorithms except the disabled ones are used
+      Leave empty to use ALL available algorithms (not recommended as it may cause more miner switching)
 
       Do not combine + and - for the same algo
 
      Examples:
-     Algo list = -x16r
+     Algorithm list = -x16r
      Will mine anything but x16r
 
-     Algo list = -x16r,-bcd
+     Algorithm list = -x16r,-bcd
      Will mine anything but x16r and bcd
 
-     Algo list = +x16r
+     Algorithm list = +x16r
      Will mine only x16r
 
      Algo list = +x16r,+bcd
      Will mine only x16r and BCD
 
-     Algo list blank
+     Algorithm list blank
      Will mine anything
   
   Pools variants
@@ -89,13 +90,16 @@ Easy configuration, easy start:
     Donation Fee = 0.9%
     There is 13 minute per day default donation (0.9%),
     which can be increased or decreased in the config tab, 
-    please help support the great team behind NemosMiner by leaving mining donations turned on
+    please help support the great team behind NemosMiner by leaving mining donations turned on.
     We want to stay completely transparent on the way fees are managed in the product.
-    Fees cycle occurs once every 24 hours for the selected amount of time (14 minutes).
-    The first donation sequence occurs 1 hour after miners are started.
+    Fees cycle occurs once every 24 hours for the selected amount of time (13 minutes). 
+    Donation start time is randomized each day.
     If Interval is set higher than the donation time, the interval will prime.
-    Example for default parameters:
-    Miners started at 10, First donation cycle runs at 11 until 11:13, Next donation cycle occurs 24 hours after.
+    Example for default parameters (13 minutes):
+    - Miners started at 10:00h
+    - First donation cycle starts somewhen beween 10:01h and 23:47h and will then donate for 13 minutes, then mine for you again until the next donation run. 
+    - After 00:00h the donation start time is randomized again. 
+    - When donation start time is reached it will then donate for 13 minutes, then mine for you again until the next donation run.
     All donation time and addresses are recorded in the logs folder.
    
 NemosMiner Monitoring Server : https://nemosminer.com
@@ -107,7 +111,7 @@ NemosMiner Monitoring Server : https://nemosminer.com
    
    GUI
    
-      Since version 3.0 NemosMiner has a GUI making it easy to configure and run.
+     Since version 4.0 NemosMiner has a Web GUI making it easy to configure and run.
 	  Relies on config files. No need to edit bat files. Simply run NemosMiner.bat 
 	  Set the config on the config tab, save, close, run NemosMiner.bat
 
@@ -155,10 +159,10 @@ NemosMiner Monitoring Server : https://nemosminer.com
 
   zergpool/zergpoolcoins/nlpool/ahashpool/zpool/blazepool/blockmasters
    
-      Uses calculations based on 24hractual and currentestimate prices to get a more realistic estimate.
-      Includes some trust index based on past 1hr currentestimate variation from 24hr.
+      Uses calculations based on 24hractual and current estimate prices to get a more realistic estimate.
+      Includes some trust index based on past 1hr current estimate variation from 24hr.
       AND is NOT sensible to spikes.
-      This shows less switching than following Current Estimate and more switching that following the 24hr Actual.
+      This shows less switching than following current estimate and more switching that following the 24hr Actual.
       Better profitability.
 
    Earnings Tracking
