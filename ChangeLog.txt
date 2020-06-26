@@ -1,3 +1,32 @@
+Changelog NemosMiner 27.06.2020
+===============================
+
+Breaking changes (from main code base):
+- Changed config item 'Location' to 'Region' -> requires manual change in config file
+- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Pool files are not backwards compatible
+- New data format of SwitchingLog.txt -> need to delete old file manually
+- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> requires manual change in config file
+
+Added:
+- Basic log viewer in Web GUI
+
+Changed:
+- Removed redundant charing code
+
+Fixed:
+- Earnings display in GUI
+
+What's still broken:
+- Idle detection
+
+Todo:
+- Move config dialog to Web GUI
+- Move charts to Web GUI
+- Move Monitoring to Web GUI
+- Enhance miners to support device filters (e.g. available vram, disabled devices etc.)
+
+
 Changelog NemosMiner 23.06.2020
 ===============================
 
@@ -17,6 +46,7 @@ Breaking changes (from main code base):
 - Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
 - Pool files are not backwards compatible
 - New data format of SwitchingLog.txt -> need to delete old file manually
+- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> requires manual change in config file
 
 
 Changelog NemosMiner 21.06.2020
