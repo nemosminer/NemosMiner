@@ -147,29 +147,33 @@
 
     $(function() {
         function updatePoolBalances() {
-            var rates;
-            $.ajax({url: '/rates', success: function(result) {
-                rates = result[0];
-            }});
+            var rates = {};
+            $.ajax({url: '/rates',
+                success: function(result) {
+                    rates = result;
+                }
+            });
             var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
-            $.ajax({url: '/earnings', success: function(result) {
-                $("#balanceboxes").empty();
-                var template = Handlebars.compile($("#poolbalance_template").html());
-                var footer = new RegExp("-.+|=.+");
-                $.each(result, function(index, item) {
-                    if (!(footer.test(item.Pool))) {
-                        var currencies = Object.keys(rates[item.Currency]);
-                        var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
-                        $.each(currencies, function(cindex, currency) {
-                            data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
-                            if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
-                            data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
-                        });
-                        $("#balanceboxes").append(template(data));
-                    }
-                });
-                $("#balanceboxes").append(template(data_total));
-            }});
+            $.ajax({url: '/earnings',
+                success: function(result) {
+                    $("#balanceboxes").empty();
+                    var template = Handlebars.compile($("#poolbalance_template").html());
+                    var footer = new RegExp("-.+|=.+");
+                    $.each(result, function(index, item) {
+                        if (!(footer.test(item.Pool))) {
+                            var currencies = Object.keys(rates[item.Currency]);
+                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
+                            $.each(currencies, function(cindex, currency) {
+                                data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
+                                if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
+                                data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
+                            });
+                            $("#balanceboxes").append(template(data));
+                        }
+                    });
+                    $("#balanceboxes").append(template(data_total));
+                }
+            });
         }
         updatePoolBalances();
 
@@ -183,7 +187,7 @@
         if (value == "Unknown") {
             return "N/A"
         } else {
-            return (new Date(value).toLocaleString());
+            return (new Date(value).toLocaleString(navigator.language));
         }
     };
 
