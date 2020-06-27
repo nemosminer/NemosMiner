@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.4.2"
+    $APIVersion = "0.2.4.4"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -92,8 +92,6 @@ Function Start-APIServer {
                 $Context = $Server.GetContext()
                 $Request = $Context.Request
                 $URL = $Request.Url.OriginalString
-
-                "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" >> .\Logs\API.log
 
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
@@ -445,6 +443,10 @@ Function Start-APIServer {
                     }
                     "/stats" { 
                         $Data = ConvertTo-Json -Depth 10 @($Stats | Select-Object)
+                        Break
+                    }
+                    "/summary" { 
+                        $Data = ConvertTo-Json @($Variables.Summary | Select-Object)
                         Break
                     }
                     "/switchinglog" { 
