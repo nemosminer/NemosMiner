@@ -1,0 +1,69 @@
+<!--#include file="/parts/head.html" -->
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 id="title" data-navbaractive="navearningstatistics" class="h2">Earning statistics</h1>
+</div>
+
+<div class="alert alert-warning" role="alert">Earnings of the last 30 active days</div>
+
+<canvas id="EarningsChart" width="400" height="175" aria-label="Hello ARIA World" role="img"></canvas>
+
+<script type="text/javascript">
+    var dynamicColors = function() {
+        var r = Math.floor(Math.random() * 96) + 128;
+        var g = Math.floor(Math.random() * 96) + 128;
+        var b = Math.floor(Math.random() * 96) + 128;
+        return "rgb(" + r + "," + g + "," + b + ")";
+    };
+
+    function renderChart(labels, datasets) {
+        var ctx = document.getElementById("EarningsChart").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        stacked: true,
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                    }]
+                },
+            }
+        });
+    }
+
+    $.ajax({
+        url: '/earningsdata', 
+        success: function (earningsdata) {
+            console.log(earningsdata);
+            var datasets = [];
+            for (var pool in earningsdata.Pools) {
+                var label = pool;
+                var data = [];
+                for (var index in earningsdata.Pools[pool]) {
+                    data.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
+                };
+
+                var dataset = {
+                    label: label,
+                    data: data,
+                    borderColor: dynamicColors(),
+                    backgroundColor: dynamicColors()
+
+                };
+                datasets.push(dataset);
+            }
+
+            renderChart(earningsdata.labels, datasets);
+        }
+    });
+
+</script>
+
+<!-- End of page scripts -->
+
+<!--#include file="/parts/foot.html" -->
