@@ -240,6 +240,34 @@ While ($true) {
                 }
             }
             $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
+
+            #Write chart data file (used in Web GUI)
+            $DailyEarnings | ForEach-Object { $_.Date = [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) }
+            $DailyEarnings = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30
+
+            $EarningsData = [PSCustomObject]@{}
+            #Use dates for x-axis label
+            $EarningsData | Add-Member labels @(($DailyEarnings.Group.Date | Sort-Object -Unique).ToShortDateString())
+    
+            #Dataset for cumulated earnings
+            $EarningsData | Add-Member @{ CumulatedEarnings = [Double[]]@() }
+
+            #One dataset per pool
+            $PoolData = [PSCustomObject]@{}
+            $DailyEarnings.Group.Pool | Sort-Object -Unique | ForEach-Object { 
+                $PoolData | Add-Member @{ $_ = [Double[]]@() }
+            }
+
+            #Fill dataset
+            ForEach ($DailyEarning in $DailyEarnings) { 
+                $EarningsData.CumulatedEarnings += ([Double]($DailyEarning.Group | Measure-Object DailyEarnings -Sum).Sum)
+                $PoolData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
+                    $PoolData.$_ += [Double]($DailyEarning.Group | Where-Object Pool -EQ $_).DailyEarnings
+                }
+            }
+            $EarningsData | Add-Member Pools $PoolData
+            $Data = ConvertTo-Json ($EarningsData | Select-Object) | Out-File ".\Logs\ChartData.json"
+
             # Some pools do reset "Total" after payment (zpool)
             # Results in showing bad negative earnings
             # Detecting if current is more than 50% less than previous and reset history if so
