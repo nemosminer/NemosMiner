@@ -129,7 +129,7 @@ function formatHashRate(value) {
         return formatHashRateValue(value);
     }
 }
-    
+
 function formatBTC(value) {
     if (value > 0) return parseFloat(value * rate).toFixed(8);
     if (value == 0) return parseFloat(0).toFixed(8);
