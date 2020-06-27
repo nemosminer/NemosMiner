@@ -243,6 +243,12 @@ GTX 1650 Super Driver
 
 [Windows7, 8, 8.1](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,3.html)
 
+recommended/optimal Windows AMD GPU Driver 20.3.1
+
+[Win10:](https://drivers.amd.com/drivers/beta/Win10-Radeon-Software-Adrenalin-2020-Edition-20.3.1-Mar19.exe)
+
+[Win7:](https://drivers.amd.com/drivers/beta/Win7-Radeon-Software-Adrenalin-2020-Edition-20.3.1-Mar19.exe)
+
    NemosMiner is Currently Tested on the following Rigs: 
       
       windows10-1xGTX-1660Super/1xAMD-RX5600XT/1xAMD-RYZEN-3700x (Test Pc) 
