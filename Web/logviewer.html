@@ -1,9 +1,9 @@
 <!--#include file="/parts/head.html" -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 id="title" data-navbaractive="navtaillog" class="h2">Log viewer</h1>
+  <h1 id="title" data-navbaractive="navtaillog" class="h2">System Log</h1>
 </div>
 
-<div class="alert alert-info" role="alert">Shows the last 35 lines of the Nemos Miner log (refreshed every 3 seconds).</div>
+<div class="alert alert-info" role="alert">Shows the last 35 lines of the Nemos Miner log</div>
 
 <div id="logtext">
   <pre id="thePlace"></pre>
@@ -11,9 +11,8 @@
 </div>
 
 <script type="text/javascript"> 
-  tailf();
-  setInterval("tailf()", 3000);
-  // Substitute the URL for your server log file here...
+
+// Substitute the URL for your server log file here...
   var url = "/functions/log/get?lines=35";
 
   if (typeof XMLHttpRequest == "undefined") {
@@ -29,7 +28,6 @@
     };
   }
 
-
   function tailf() {
     var ajax = new XMLHttpRequest();
     ajax.open("POST", url, true);
@@ -42,6 +40,9 @@
     }
     ajax.send(null);
   }
+
+  tailf();
+  setInterval("tailf()", 1000);
 
 </script>
 <!--#include file="/parts/foot.html" -->
