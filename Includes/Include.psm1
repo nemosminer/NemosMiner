@@ -594,6 +594,20 @@ Class Miner {
     }
 }
 
+Function Get-NextColor {
+    param(
+        [Parameter(Mandatory = $true)]
+        [Byte[]]$Colors,
+        [Parameter(Mandatory = $true)]
+        [Int[]]$Factors
+    )
+    # Apply change Factor
+    0, 1, 2, 3 | ForEach-Object { 
+        $Colors[$_] = [math]::Abs(($Colors[$_] + $Factors[$_]) % 256)
+    }
+    $Colors
+}
+
 Function Get-Chart { 
     If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
         $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
