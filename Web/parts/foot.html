@@ -4,11 +4,12 @@
     </body>
     <script type="text/javascript">
 
-    var rate;
     // get BTC rate of first currency
+    var rate;
     $.ajax({url: '/btcratefirstcurrency', success: function(result) {
         rate = result;
-    }});
+        }
+    });
 
     // Set the active sidebar item
     $(function() {
@@ -17,14 +18,13 @@
 
     // set the values in the header
     $(function() {
-
-        try {
-            $.ajax({url: '/summary', success: function(result) {
+        $.ajax({
+            url: '/summary',
+            success: function(result) {
                 summary = result;
                 $("#profit").append("<h5>" + result + "</h5>");
-            }});
-        }
-        catch (err) {}
+            }
+        });
     });
 
     </script>
