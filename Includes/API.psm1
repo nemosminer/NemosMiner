@@ -74,13 +74,6 @@ Function Start-APIServer {
                 ".ps1"  = "text/html" # ps1 files get executed, assume their response is html
             }
 
-            # Get-Variable -Scope Global | ForEach-Object { 
-            #     Try { 
-            #         $_.Name | ConvertTo-Json > ".\Debug\$($_.Name).dump"
-            #     }
-            #     Catch { }
-            # }
-        
             # Setup the listener
             $Server = New-Object System.Net.HttpListener
 
@@ -355,6 +348,14 @@ Function Start-APIServer {
                     }
                     "/earnings" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables.Earnings | Select-Object)
+                        Break
+                    }
+                    "/earningsdata" { 
+
+                        $ChartData = Get-Content ".\Logs\ChartData.json" | ConvertFrom-Json
+                        #Add BTC rate to avoid blocking NaN errors
+                        $ChartData | Add-Member BTCrate ([Double]($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
+                        $Data = $ChartData | ConvertTo-Json
                         Break
                     }
                     "/earningstrackerjobs" { 
