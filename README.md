@@ -245,9 +245,9 @@ GTX 1650 Super Driver
 
 recommended/optimal Windows AMD GPU Driver 20.3.1
 
-[Win10:](https://drivers.amd.com/drivers/beta/Win10-Radeon-Software-Adrenalin-2020-Edition-20.3.1-Mar19.exe)
+[Win10:](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,1.html)
 
-[Win7:](https://drivers.amd.com/drivers/beta/Win7-Radeon-Software-Adrenalin-2020-Edition-20.3.1-Mar19.exe)
+[Windows7, 8, 8.1](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,2.html)
 
    NemosMiner is Currently Tested on the following Rigs: 
       
