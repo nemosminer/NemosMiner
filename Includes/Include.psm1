@@ -847,7 +847,7 @@ Function Get-Rates {
         $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{Currency = "BTC"}) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object {$_.ToUpper()}) -join ",")&tsyms=$(($Config.Currency | ForEach-Object {$_.ToUpper() -replace "mBTC", "BTC"}) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
     }
     Catch { 
-        Write-Log -Level Warn "CryptoCompare is down. "
+        Write-Message -Level Warn "CryptoCompare is down. "
     }
 
     If ($NewRates) { 
@@ -1030,7 +1030,7 @@ namespace PInvoke.Win32 {
             If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\IdleTracking.log" -Append -Force }
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Log "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) seconds..."
+            Write-Message "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) seconds..."
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
@@ -1042,7 +1042,7 @@ namespace PInvoke.Win32 {
                         If ($IdleSeconds -gt $Config.IdleSec) { 
                             $Variables.Paused = $false
                             $Variables.RestartCycle = $true
-                            Write-Log "System idle for $IdleSeconds seconds, starting mining..."
+                            Write-Message "System idle for $IdleSeconds seconds, starting mining..."
                         }
                     }
                     Else { 
@@ -1050,7 +1050,7 @@ namespace PInvoke.Win32 {
                         If ($IdleSeconds -lt $Config.IdleSec) { 
                             $Variables.Paused = $true
                             $Variables.RestartCycle = $true
-                            Write-Log "System active, pausing mining..."
+                            Write-Message "System active, pausing mining..."
                         }
                     }
                 }
@@ -1260,8 +1260,8 @@ Function Get-Config {
     If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
         $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-json
         #Default PasswordCurrency is BTC
-        $Config.PasswordCurrency = $Config.PasswordCurrency.TrimStart().TrimEnd().ToUpper()
         If ($Config.PasswordCurrency -notmatch "[A-Z0-9]{3,}") { $Config.PasswordCurrency = "BTC" }
+        $Config.PasswordCurrency = $Config.PasswordCurrency.TrimStart().TrimEnd().ToUpper()
         $PoolsConfig."Default" | Add-Member -Force "PasswordCurrency" $Config.PasswordCurrency
     }
     Else { 
