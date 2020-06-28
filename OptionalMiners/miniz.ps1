@@ -7,7 +7,7 @@ $Commands = [PSCustomObject]@{
     "equihash125"  = " --par=125,4 --pers auto --ocX" #Equihash125
     "zhash"        = " --par=144,5 --pers auto --ocX" #Zhash
     "beamv2"       = " --par=beam --pers auto --ocX" #Beamv2
-    "beamv3"       = " --par=150,5,3 --pers auto --ocX" #Beamv3
+    "beamv3"       = " --par=144,5s --pers auto --ocX" #Beamv3
     "beam"         = " --par=150,5 --pers auto --ocX" #Beam
     "equihash192"  = " --par=192,7 --pers auto --ocX" #Equihash192
     #"equihash96"   = " --par=96,5 --pers auto" #equihash96
