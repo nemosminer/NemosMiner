@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-Gminer211\miner.exe"
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.11/gminer_2_11_windows64.zip"
 $Commands = [PSCustomObject]@{ 
-    #"beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
+     "beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"beamv3"           = " --devices $($Config.SelGPUDSTM) -a BeamHash" #Equihash150,5,3 (NiceHash)
     #"equihash125"      = " --devices $($Config.SelGPUDSTM) -a 125_4" #Equihash125
     #"equihash144"      = " --devices $($Config.SelGPUDSTM) -a 144_5 --pers auto" #Equihash144
