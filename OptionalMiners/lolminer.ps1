@@ -1,20 +1,26 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-lolminer098\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/0.98/lolMiner_v098_Win64.zip"
+$Path = ".\Bin\AMD-lolminer101\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.01/lolMiner_v1.01_Win64.zip"
 $Commands = [PSCustomObject]@{ 
-    "grincuckatoo31" = " --coin GRIN-AT31" #grincuckatoo31
-    "grincuckatoo32" = " --coin GRIN-AT32" #grincuckatoo32
+     "grincuckatoo31"    = " -a C31" #grincuckatoo31
+     "grincuckatoo32"    = " -a C32" #grincuckatoo32
+     "equihash144"       = " -c AUTO144_5"  #equihash144
+     "equihash125"       = " -c ZEL"  #equihash125
+     "equihash192"       = " -c AUTO192_7"  #equihash192
+    #"grincuckarood29"   = " -c MWC-C29D"  #grincuckarood29
+     "cuckaroom"         = " -c GRIN-C29M"  #cuckaroom
+     "beamv3"            = " -a BEAM-III"  #beamv3
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     [PSCustomObject]@{ 
-        Type      = "NVIDIA"
+        Type      = "AMD"
         Path      = $Path
-        Arguments = "--tls 0 --digits 2 --longstats 60 --shortstats 5 --connectattempts 3 --devices $($Config.SelGPUCC) --apiport $($Variables.NVIDIAMinerAPITCPPort) --pool $($Pools.$Algo.Host) --port $($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
+        Arguments = "--tls 0 --devices AMD --longstats 120 --shortstats 10 --apiport $($Variables.AMDMinerAPITCPPort) --pool $($Pools.$Algo.Host):$($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
         Algorithm = $Algo
         API       = "lol"
-        Port      = $Variables.NVIDIAMinerAPITCPPort
+        Port      = $Variables.AMDMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
         Fee       = 0.02 #Dev fee
