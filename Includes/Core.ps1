@@ -582,7 +582,7 @@ Function Start-Cycle {
             $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
         }
         Else { 
-            $Variables.Summary = "Estimated $(If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { "Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))        " } )Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))        1 BTC=$($Variables.Rates."BTC".$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+            $Variables.Summary = "Estimated $(If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { "Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))          " } )Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))          1 BTC=$($Variables.Rates."BTC".$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
         }
 
         #Also restart running miners (stop & start) when 
@@ -759,20 +759,20 @@ While ($true) {
                     If ($Sample) { Write-Message -Level Verbose "$($_.Name) data sample retrieved: [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(if ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(if ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($_.Data).Count) sample$(If (($_.Data).Count -ne 1) { "s"} ))" }
                 }
                 If ($_.GetStatus() -ne "Running") { 
-                    #Miner crashed or enough samples collected, exit loop immediately
+                    #Miner crashed
                     Write-Message -Level ERROR "Miner '$($_.Info)' exited unexpectedly." 
                     $_.SetStatus("Failed")
                     $_.StatusMessage = "Exited unexpectedly."
                 }
                 ElseIf ($_.DataReaderJob.State -ne "Running") { 
-                    #Miner data reader process failed, exit loop immediately
+                    #Miner data reader process failed
                     Write-Message -Level ERROR "Miner data reader '$($_.Info)' exited unexpectedly." 
                     $_.SetStatus("Failed")
                     $_.StatusMessage = "Miner data reader exited unexpectedly."
                 }
                 ElseIf (((Get-Date) - $_.Process.PSBeginTime).TotalSeconds -gt $_.WarmupTime -and ($_.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds(-$_.WarmupTime).ToUniversalTime()) { 
-                    #Miner is stuck - no data for > 30 seconds
-                    Write-Message -Level ERROR "Miner '$($_.Info)' has not updated data for $($_.WarmupTime) seconds and got stopped."
+                    #Miner is stuck - no data for > $WarmupTime seconds
+                    Write-Message -Level ERROR "Miner '$($_.Info)' got stopped because it has not updated data for $($_.WarmupTime) seconds."
                     $_.SetStatus("Failed")
                     $_.StatusMessage = "Has not updated data for $($_.WarmupTime) seconds"
                 }
