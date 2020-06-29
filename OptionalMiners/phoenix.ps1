@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\AMD-Phoenix50e\PhoenixMiner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0e/PhoenixMiner_5.0e_Windows.7z"
 $Commands = [PSCustomObject]@{ 
-    "ethash"  = "" #Ethash
+   #"ethash"  = "" #Ethash
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
