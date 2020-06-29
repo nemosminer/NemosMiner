@@ -1,17 +1,11 @@
 ﻿using module .\Includes\Include.psm1
 
-$Config = $args
+$Variables = $args
 
-If ($Config.WorkingDirectory) { Set-Location $Config.WorkingDirectory }
-
-$ProgressPreferenceBackup = $ProgressPreference
 $ProgressPreference = "SilentlyContinue"
 
-#Make log filename available
-$Variables = @{}
-$Variables.LogFile = $Config.LogFile
 
-$Config.DownloadList | ForEach-Object { 
+$Variables.DownloadList | ForEach-Object { 
     $URI = $_.URI
     $Path = $_.Path
     $Searchable = $_.Searchable
@@ -43,7 +37,7 @@ $Config.DownloadList | ForEach-Object {
             }
 
             If ($Path_Old) { 
-                if (Test-Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
+                If (Test-Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
                 (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
                 Write-Message -Level Verbose "Downloader: Installed $($Path)."
             }
@@ -54,8 +48,5 @@ $Config.DownloadList | ForEach-Object {
         }
     }
 }
-$ProgressPreference = $ProgressPreferenceBackup
 
 Write-Message "Downloader: All tasks complete."
-
-Return
