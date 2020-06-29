@@ -1037,6 +1037,39 @@ Function Get-HashRate {
                 }
             }
 
+            "teamred" {
+                $Message = @{command = "summary"; parameter = "" } | ConvertTo-Json -Compress
+                $Request = Invoke_TcpRequest $server $port $message $Timeout
+
+                if ($Request) {
+                    $Data = $Request.Substring($Request.IndexOf("{"), $Request.LastIndexOf("}") - $Request.IndexOf("{") + 1) | ConvertFrom-Json
+
+                    $HashRate = @(
+                        [double]$Data.SUMMARY."HS 5s"
+                        [double]$Data.SUMMARY."MHS 5s" * 1e6
+                        [double]$Data.SUMMARY."KHS 5s" * 1e3
+                        [double]$Data.SUMMARY."GHS 5s" * 1e9
+                        [double]$Data.SUMMARY."THS 5s" * 1e12
+                        [double]$Data.SUMMARY."PHS 5s" * 1e15
+                    ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
+
+                    if (-not $HashRate) {
+                        $HashRate = @(
+                            [double]$Data.SUMMARY."HS av"
+                            [double]$Data.SUMMARY."MHS av" * 1e6
+                            [double]$Data.SUMMARY."KHS av" * 1e3
+                            [double]$Data.SUMMARY."GHS av" * 1e9
+                            [double]$Data.SUMMARY."THS av" * 1e12
+                            [double]$Data.SUMMARY."PHS av" * 1e15
+                        ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
+                    }
+                    $Shares = @(
+                        [int]$Data.SUMMARY.Accepted
+                        [int]$Data.SUMMARY.Rejected
+                    )
+                }
+            }
+            
             "ttminer" { 
                 $Parameters = @{ id = 1; jsonrpc = "2.0"; method = "miner_getstat1" } | ConvertTo-Json  -Compress
                 $Request = Invoke_tcpRequest $Server $Port $Parameters $Timeout
