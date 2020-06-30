@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-Bminer1624\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-v16.2.4-6b94c23-amd64.zip" #testing on windows 8.1 and 10
+$Path = ".\Bin\NVIDIA-Bminer1626\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.2.6-b0bf7b6-amd64.zip" #testing on windows 8.1 and 10
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
@@ -9,6 +9,7 @@ $Commands = [PSCustomObject]@{
     #"ethash"           = "-uri ethstratum://" #Ethash
     #"cuckoocycle"      = "-uri aeternity://" #aeternity
     #"beamv2"           = "-uri beamhash2://" #beam
+    #"beamv3"           = "-uri beamhash3://" #beam
     #"grincuckarood29"  = "-uri cuckaroo29d://" #grincuckaroo29 
     #"grincuckatoo31"   = "-uri cuckatoo31://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram) 
     #"grincuckatoo32"   = "-uri cuckatoo31://" #grincuckatoo32 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
