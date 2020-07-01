@@ -15,7 +15,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckatoo32"   = "-uri cuckatoo31://" #grincuckatoo32 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m 
     #"tensority"        = "-uri ethstratum://" #Tensority
-     "kawpow"           = "-uri raven://" #Kawpow
+    #"kawpow"           = "-uri raven://" #Kawpow
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
