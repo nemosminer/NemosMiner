@@ -12,7 +12,7 @@ $Variables.DownloadList | ForEach-Object {
  
     If (-not (Test-Path $Path -PathType Leaf)) { 
         Try { 
-            Write-Message "Downloader: Initiated download of '($URI)'."
+            Write-Message "Downloader: Initiated download of '$URI'."
 
             If ($URI -and (Split-Path $URI -Leaf) -eq (Split-Path $Path -Leaf)) { 
                 New-Item (Split-Path $Path) -ItemType "Directory" | Out-Null
