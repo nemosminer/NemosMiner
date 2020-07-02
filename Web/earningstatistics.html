@@ -3,15 +3,15 @@
   <h1 id="title" data-navbaractive="navearningstatistics" class="h2">Earning statistics</h1>
 </div>
 
-<div class="alert alert-warning" role="alert">Earnings of the last 30 active days</div>
+<div class="alert alert-info" role="alert">Earnings of the last 30 active days</div>
 
 <canvas id="EarningsChart" width="400" height="175" aria-label="Hello ARIA World" role="img"></canvas>
 
 <script type="text/javascript">
     var dynamicColors = function() {
-        var r = Math.floor(Math.random() * 96) + 128;
-        var g = Math.floor(Math.random() * 96) + 128;
-        var b = Math.floor(Math.random() * 96) + 128;
+        var r = Math.floor(Math.random() * 128) + 96;
+        var g = Math.floor(Math.random() * 128) + 96;
+        var b = Math.floor(Math.random() * 128) + 96;
         return "rgb(" + r + "," + g + "," + b + ")";
     };
 

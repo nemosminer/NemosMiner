@@ -87,7 +87,8 @@ function formatMiners(data) {
     return data;
 }
 
-function timeSince(date) {
+function formatTimeSince(value) {
+    date = new Date(value);
     var seconds = Math.floor((new Date() - date) / 1000);
     var interval = Math.floor(seconds / 31536000);
     if (interval > 1) {
@@ -138,7 +139,7 @@ function formatBTC(value) {
 };
 
 function formatDate(value) {
-    return timeSince(new Date(value));
+    return (new Date(value).toLocaleString(navigator.language));
 };
 
 function formatWatt(value) {
