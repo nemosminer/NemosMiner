@@ -83,6 +83,13 @@ function formatMiners(data) {
         // Format status
         const enumstatus = ["Running", "Idle", "Failed"];
         item.tStatus = enumstatus[item.Status];
+
+        // Format ApiRequestUri
+        if (item.ApiRequestUri) {
+            item.tApiRequestUri = "<a href='" + item.ApiRequestUri + "' target ='_blank'>" + item.ApiRequestUri + "</a>";
+        } else {
+            item.tApiRequestUri = "-";
+        }
     });
     return data;
 }
