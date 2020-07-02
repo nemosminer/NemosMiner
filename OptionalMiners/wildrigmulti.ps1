@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\AMD-WildRigMulti0251\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.25.1/wildrig-multi-windows-0.25.1.7z"
+$Path = ".\Bin\AMD-WildRigMulti0252b\wildrig.exe"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.25.2/wildrig-multi-windows-0.25.2.7z"
 
 $Commands = [PSCustomObject]@{
     "bcd"           = " --algo bcd" #BitcoinDiamond
