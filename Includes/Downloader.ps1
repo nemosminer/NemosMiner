@@ -12,7 +12,7 @@ $Variables.DownloadList | ForEach-Object {
  
     If (-not (Test-Path $Path -PathType Leaf)) { 
         Try { 
-            Write-Message "Downloader: Acquiring Online ($URI)"
+            Write-Message "Downloader: Initiated download of '($URI)'."
 
             If ($URI -and (Split-Path $URI -Leaf) -eq (Split-Path $Path -Leaf)) { 
                 New-Item (Split-Path $Path) -ItemType "Directory" | Out-Null
@@ -21,13 +21,14 @@ $Variables.DownloadList | ForEach-Object {
             Else { 
                 Expand-WebRequest $URI $Path -ErrorAction Stop
             }
-            Write-Message "Downloader: Installed miner binary ($($Path))."
+            Write-Message "Downloader: Installed downloaded miner binary '$($Path)'."
         }
         Catch { 
-            Write-Message "Downloader: Acquiring $Path Offline (Computer)..."
+            Write-Message "Downloader: Searching '$Path' on local computer..."
+            $Path_Old = $null
 
-            If ($URI) { Write-Message -Level Warn  "Downloader: Cannot download $(Split-Path $Path -Leaf) distributed at $($URI)." }
-            Else { Write-Message -Level Warn  "Downloader: Cannot download $(Split-Path $Path -Leaf)." }
+            If ($URI) { Write-Message -Level Warn  "Downloader: Cannot download '$(Split-Path $Path -Leaf)' distributed at '$($URI)'." }
+            Else { Write-Message -Level Warn  "Downloader: Cannot download'$(Split-Path $Path -Leaf)'." }
                         
             If ($Searchable) { 
                 Write-Message "Downloader: Searching for $(Split-Path $Path -Leaf)."
@@ -39,11 +40,11 @@ $Variables.DownloadList | ForEach-Object {
             If ($Path_Old) { 
                 If (Test-Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
                 (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
-                Write-Message -Level Verbose "Downloader: Installed $($Path)."
+                Write-Message -Level Verbose "Downloader: Copied '$($Path)' from local repository '$($PathOld)'."
             }
             Else { 
-                If ($URI) { Write-Message -Level Warn "Downloader: Cannot find $($Path) distributed at $($URI)." }
-                Else { Write-Message -Level Warn "Downloader: Cannot find $($Path)." }
+                If ($URI) { Write-Message -Level Warn "Downloader: Cannot find '$($Path)' distributed at '$($URI)'." }
+                Else { Write-Message -Level Warn "Downloader: Cannot find '$($Path)'." }
             }
         }
     }
