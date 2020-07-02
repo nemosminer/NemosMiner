@@ -174,9 +174,16 @@ Function Start-APIServer {
                             $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                 $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
-                                $_.Speed = @()
-                                $_.Activated = 0
-                                $_.Accuracy = 1
+                                If ($_.Status -EQ [MinerStatus]::Running) { 
+                                    $_.Speed = @()
+                                    $_.Benchmark = $true
+                                    $_.Activated = -1 #To allow 3 attempts
+                                    $_.Accuracy = 1
+                                    $Variables.EndLoopTime = Get-Date
+                                }
+                                If ($_.Reason = "Earning = 0") { 
+                                    $_.Available = $true
+                                }
                                 $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                 ForEach ($Algorithm in $_.Algorithm) { 
                                     $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
@@ -194,8 +201,16 @@ Function Start-APIServer {
                             $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                 $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = [Double]::NaN
-                                $_.Activated = 0
-                                $_.Accuracy = 1
+                                If ($_.Status -EQ [MinerStatus]::Running) { 
+                                    $_.PowerUsage = [Double]::NaN
+                                    $_.MeasurePowerUsage = $true
+                                    $_.Activated = -1 #To allow 3 attempts
+                                    $_.Accuracy = 1
+                                    $Variables.EndLoopTime = Get-Date
+                                }
+                                If ($_.Reason = "Earning = 0") { 
+                                    $_.Available = $true
+                                }
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
                                 $Data += "`n$($_.Name)$(If ($_.Algorithm.Count -eq 1) { " ($($_.Algorithm))" })"
                                 Remove-Stat -Name $StatName
@@ -283,7 +298,7 @@ Function Start-APIServer {
                             $Key = $_
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -in $Config.ExcludeDeviceName })) { 
                                 $Data = "`nDevice configuration changed`n`nOld values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ',')]'"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                 $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Values } | Sort-Object -Unique)
                                 $Data += "`n`nNew values:"
                                 $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
@@ -291,7 +306,7 @@ Function Start-APIServer {
                 
                                 Write-Config -ConfigFile $Variables.ConfigFile
                 
-                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = [MinerStatus]::Idle }
                                 Write-Message "Web GUI: Device $($Values -join ';') enabled. Config file '$($Variables.ConfigFile)' updated."
                             }
                             Else {
@@ -351,7 +366,6 @@ Function Start-APIServer {
                         Break
                     }
                     "/earningsdata" { 
-
                         $ChartData = Get-Content ".\Logs\ChartData.json" | ConvertFrom-Json
                         #Add BTC rate to avoid blocking NaN errors
                         $ChartData | Add-Member BTCrate ([Double]($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
@@ -379,7 +393,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Failed" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::IFailed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/fastest" { 
@@ -387,7 +401,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/idle" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ "Idle" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Idle | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
                         Break
                     }
                     "/miners/running" { 
@@ -439,7 +453,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/rates" { 
-                        $Data = ConvertTo-Json @($Variables.Rates | Select-Object)
+                        $Data = ConvertTo-Json ($Variables.Rates | Select-Object)
                         Break
                     }
                     "/stats" { 
