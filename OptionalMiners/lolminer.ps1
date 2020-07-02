@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\AMD-lolminer101\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.01/lolMiner_v1.01_Win64.zip"
+$Path = ".\Bin\AMD-lolminer102\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.02/lolMiner_v1.02_Win64.zip"
 $Commands = [PSCustomObject]@{ 
      "grincuckatoo31"    = " -a C31" #grincuckatoo31
      "grincuckatoo32"    = " -a C32" #grincuckatoo32
