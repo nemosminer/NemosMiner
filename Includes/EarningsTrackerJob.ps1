@@ -111,7 +111,7 @@ While ($true) {
         }
 
         Switch ($Pool) { 
-            "nicehashV2" { 
+            "NicehashV2" { 
                 Try { 
                     $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs2") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
                     [Double]$NHTotalBalance = [Double]($BalanceData.unpaidAmount) + [Double]($BalanceData.externalBalance)
@@ -121,7 +121,7 @@ While ($true) {
                 }
                 Catch { }
             }
-            "mph" { 
+            "MPH" { 
                 Try { 
                     $BalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
                     $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
@@ -243,7 +243,7 @@ While ($true) {
 
             #Write chart data file (used in Web GUI)
             $DailyEarnings | ForEach-Object { $_.Date = [DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) }
-            $DailyEarnings = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30
+            $DailyEarnings = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 #Last 30 days
 
             $EarningsData = [PSCustomObject]@{}
             #Use dates for x-axis label
