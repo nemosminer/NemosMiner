@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.4.4"
+    $APIVersion = "0.2.4.7"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -175,7 +175,7 @@ Function Start-APIServer {
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                 $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                                 If ($_.Status -EQ [MinerStatus]::Running) { 
-                                    $_.Speed = @()
+                                    If ($_.Benchmark -ne $true) { $_.Speed = @() }
                                     $_.Benchmark = $true
                                     $_.Activated = -1 #To allow 3 attempts
                                     $_.Accuracy = 1
@@ -279,12 +279,13 @@ Function Start-APIServer {
                 
                                 $Values | ForEach-Object { 
                                     $DeviceName = $_
-                                    $Variables.Miners | Where-Object { $DeviceName -in $_.DeviceName } | ForEach-Object { 
-                                        If ($_.Status -EQ "Running") { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
-                                        $_.Devices | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')" }
+                                    $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
+                                        If ($_.Status -EQ [DeviceState]::Running) { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
+                                        $_.State = [DeviceState]::Disabled
+                                        $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
                                     }
                                 }
-                                Write-Message "Web GUI: Device $($Values -join ';') disabled. Config file '$($Variables.ConfigFile)' updated."
+                                Write-Message "Web GUI: Device $($Values -join '; ') disabled. Config file '$($Variables.ConfigFile)' updated."
                             }
                             Else { 
                                 $Data = "No configuration change"
@@ -306,8 +307,8 @@ Function Start-APIServer {
                 
                                 Write-Config -ConfigFile $Variables.ConfigFile
                 
-                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = [MinerStatus]::Idle }
-                                Write-Message "Web GUI: Device $($Values -join ';') enabled. Config file '$($Variables.ConfigFile)' updated."
+                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                                Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
                             }
                             Else {
                                 $Data = "No configuration change"
@@ -465,7 +466,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/switchinglog" { 
-                        $Data = ConvertTo-Json -Depth 10 (Get-Content ".\Logs\switching2.log" | ConvertFrom-Csv | Select-Object -Last 1000)
+                        $Data = ConvertTo-Json -Depth 10 @(Get-Content ".\Logs\switching2.log" | ConvertFrom-Csv | Select-Object -Last 1000)
                         Break
                     }
                     "/watchdogtimers" { 
