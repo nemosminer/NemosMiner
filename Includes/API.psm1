@@ -121,6 +121,22 @@ Function Start-APIServer {
                         }
                         Break
                     }
+                    "/functions/config/set" { 
+                        Try { 
+                            $OrderedConfig = [PSCustomObject]@{ }
+                            $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
+                                $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
+                                    $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
+                                } 
+                            }
+                            $OrderedConfig | ConvertTo-Json | Out-File $Variables.ConfigFile
+                            $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
+                        }
+                        Catch { 
+                            $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile)'.</pre>"
+                        }
+                        Break
+                    }
                     "/functions/log/get" { 
                         If ([Int]$Parameters.Lines) { 
                             $Lines = [Int]$Parameters.Lines
@@ -285,7 +301,7 @@ Function Start-APIServer {
                                         $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
                                     }
                                 }
-                                Write-Message "Web GUI: Device $($Values -join '; ') disabled. Config file '$($Variables.ConfigFile)' updated."
+                                Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
                             }
                             Else { 
                                 $Data = "No configuration change"
@@ -343,7 +359,17 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" { 
-                        $Data = $Config | ConvertTo-Json -Depth 10
+                        $OrderedConfig = [PSCustomObject]@{ }
+                        Get-Content $Variables.ConfigFile | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
+                            $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
+                                $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
+                            } 
+                        }
+                        $Data = $OrderedConfig | ConvertTo-Json -Depth 10
+                        break
+                    }
+                    "/configfile" { 
+                        $Data = $Variables.ConfigFile | ConvertTo-Json -Depth 10
                         break
                     }
                     "/devices" { 
@@ -367,7 +393,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/earningsdata" { 
-                        $ChartData = Get-Content ".\Logs\ChartData.json" | ConvertFrom-Json
+                        $ChartData = Get-Content ".\Logs\EarningsChartData.json" | ConvertFrom-Json
                         #Add BTC rate to avoid blocking NaN errors
                         $ChartData | Add-Member BTCrate ([Double]($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
                         $Data = $ChartData | ConvertTo-Json
@@ -437,6 +463,10 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Config.PoolsConfig | Select-Object)
                         Break
                     }
+                    "/poolnames" { 
+                        $Data = ConvertTo-Json -Depth 10 @((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique)
+                        Break
+                    }
                     "/pools" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object)
                         Break
@@ -455,6 +485,10 @@ Function Start-APIServer {
                     }
                     "/rates" { 
                         $Data = ConvertTo-Json ($Variables.Rates | Select-Object)
+                        Break
+                    }
+                    "/regions" { 
+                        $Data = ConvertTo-Json ((Get-Content .\Includes\Regions.txt | ConvertFrom-Json).PSObject.Properties.Value | Sort-Object -Unique)
                         Break
                     }
                     "/stats" { 

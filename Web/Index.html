@@ -19,8 +19,7 @@
     data-cache="false"
     data-toggle="table"
     data-show-search-clear-button="true"
-    data-sort-order="desc"
-    data-sort-name="Profit"
+    data-sort-name="tDevices"
     data-remember-order="true"
     data-filter-control="true"
     data-show-button-text="true"
@@ -36,12 +35,12 @@
     <thead>
         <tr>
             <th data-field="state" data-checkbox="true"></th>
-            <th data-field="Name" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Name</th>
+            <th data-field="tName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Name</th>
             <th data-field="tDevices" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Devices</th>
             <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
             <th data-field="StatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="true">Status</th>
-            <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
             <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning</th>
+            <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
             <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-title-tooltip = "per 24hrs (estimated)">Power Usage</th>
             <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Power Cost</th>
             <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
@@ -50,9 +49,7 @@
             <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
             <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Speed</th>
             <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
-            <th data-field="tApiRequestUri" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="true">ApiRequestUri</th>
-            <th data-field="API" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API</th>
-            <th data-field="Port" data-sortable="true" data-filter-control="select" data-visible="false">API Port</th>
+            <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
             <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
             <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
             <th data-field="New" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">New</th>
@@ -163,7 +160,7 @@
                     $.each(result, function(index, item) {
                         if (!(footer.test(item.Pool))) {
                             var currencies = Object.keys(rates[item.Currency]);
-                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatPaydate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
+                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
                             $.each(currencies, function(cindex, currency) {
                                 data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
                                 if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
@@ -183,14 +180,6 @@
             $table.bootstrapTable("refresh");
         }, 30000);
     });
-
-    function formatPaydate(value) {
-        if (value == "Unknown") {
-            return "N/A"
-        } else {
-            return (new Date(value).toLocaleString(navigator.language));
-        }
-    };
 
 </script>
 <!-- End of page scripts -->

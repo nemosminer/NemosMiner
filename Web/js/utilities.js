@@ -10,8 +10,15 @@ function formatMiners(data) {
     // This function can alter the returned data before building the table, formatting it in a way
     // that is easier to display and manipulate in a table
     $.each(data, function(index, item) {
+        // Format miner link
+        if (item.MinerUri) {
+            item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
+        } else {
+            item.tName = item.Name;
+        }
+    
         // Format the device(s)
-        if (item.DeviceName) {
+            if (item.DeviceName) {
             item.tDevices = item.DeviceName.toString();
         }
         else {
@@ -83,13 +90,6 @@ function formatMiners(data) {
         // Format status
         const enumstatus = ["Running", "Idle", "Failed"];
         item.tStatus = enumstatus[item.Status];
-
-        // Format ApiRequestUri
-        if (item.ApiRequestUri) {
-            item.tApiRequestUri = "<a href='" + item.ApiRequestUri + "' target ='_blank'>" + item.ApiRequestUri + "</a>";
-        } else {
-            item.tApiRequestUri = "-";
-        }
     });
     return data;
 }
@@ -146,7 +146,11 @@ function formatBTC(value) {
 };
 
 function formatDate(value) {
-    return (new Date(value).toLocaleString(navigator.language));
+    if (value == "Unknown") {
+        return "N/A"
+    } else {
+        return (new Date(value).toLocaleString(navigator.language));
+    }
 };
 
 function formatWatt(value) {

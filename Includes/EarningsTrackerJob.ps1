@@ -266,7 +266,7 @@ While ($true) {
                 }
             }
             $EarningsData | Add-Member Pools $PoolData
-            $Data = ConvertTo-Json ($EarningsData | Select-Object) | Out-File ".\Logs\ChartData.json"
+            $Data = ConvertTo-Json ($EarningsData | Select-Object) | Out-File ".\Logs\EarningsChartData.json"
 
             # Some pools do reset "Total" after payment (zpool)
             # Results in showing bad negative earnings
