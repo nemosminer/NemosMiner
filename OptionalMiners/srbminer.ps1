@@ -26,7 +26,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Path      = $Path
         Arguments = "--cpu-threads $($ThreadCount) --nicehash true --send-stales true --api-enable --api-port $($Variables.CPUMinerAPITCPPort) --disable-gpu --pool stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) --wallet $($Pools.$Algo.User) --password $($Pools.$Algo.Pass)$($Commands.$_)"
         Algorithm = $Algo
-        API       = "SRB"
+        API       = "SRBMiner"
         Port      = $Variables.CPUMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
