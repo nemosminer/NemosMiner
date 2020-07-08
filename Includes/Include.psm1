@@ -7,7 +7,7 @@ it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-NemosMiner is distributed in the hope that it will be useful,
+NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -32,6 +32,10 @@ Class Device {
     [String]$Vendor
     [Int64]$Memory
     [String]$Type
+    [PSCustomObject]$CIM
+    [PSCustomObject]$PNP
+    [PSCustomObject]$Reg
+    [PSCustomObject]$CpuFeatures
 
     [String]$Status = "Idle"
 
@@ -171,6 +175,8 @@ Class Miner {
     [String[]]$Environment = @()
     [Int]$MinDataSamples #for safe hashrate values
     [Int]$WarmupTime
+    [DateTime]$BeginTime
+    [DateTime]$EndTime
 
     [Double]$Earning#derived from pool and stats
     [Double]$Earning_Bias #derived from pool and stats
@@ -188,15 +194,12 @@ Class Miner {
     [Double[]]$PoolFee = @() #derived from pool
     [Double[]]$PoolPrice = @() #derived from pool
     [Double[]]$Fee = @() #derived from miner
-
-    #Under review
-    [Int]$AllowedBadShareRatio
+    [Double]$AllowedBadShareRatio = 0
+    [String]$MinerUri = ""
     [String]$API
-    $BeginTime
-    $EndTime
-    
+
     [Int32]$ProcessId = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ $this.GetCommandLine() | Select-Object -ExpandProperty ProcessId)
-    
+
     [String[]]GetProcessNames() { 
         Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf -ErrorAction Ignore)).BaseName)
     }
@@ -218,13 +221,24 @@ Class Miner {
         Return $this.ProcessId
     }
 
+    [String]GetMinerUri () { 
+        Return ""
+    }
+
     hidden StartMining() { 
         $this.Status = [MinerStatus]::Failed
         $this.StatusMessage = "Launching..."
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.New = $true
-        $this.Activated ++
+        $this.Activated++
         $this.Intervals = @()
+        $this.MinerUri = $this.GetMinerUri()
+
+        $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+
+        If ($this.Arguments -match "^{.+}$") { 
+            $this.CreateConfigFiles()
+        }
 
         If ($this.Process) { 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -254,7 +268,7 @@ Class Miner {
 
             #Starting Miner Data reader
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } #When benchmarking clear data on each miner start
-            $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] } -ArgumentList $this }
+            $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, Type, Workers | ConvertTo-Json) }
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
@@ -267,10 +281,9 @@ Class Miner {
                 }
             }
 
+            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-
         }
     }
 
@@ -301,6 +314,7 @@ Class Miner {
         $this.StatusMessage = "Idle"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Info = ""
+        $this.MinerUri = ""
     }
 
     [DateTime]GetActiveLast() { 
@@ -346,6 +360,24 @@ Class Miner {
         Else { 
             Return $this.Status
         }
+    }
+
+    [Double]GetPowerUsage() { 
+
+        $PowerUsage_Value = [Double]0
+        $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
+        $RegistryData = [PSCustomObject]@{ }
+
+        If ($this.ReadPowerUsage) {
+            #read power usage
+            If ((Test-Path $RegistryHive) -and $this.DeviceName) { 
+                $RegistryData = Get-ItemProperty $RegistryHive
+                $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($this.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
+                    $PowerUsage_Value += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                }
+            }
+        }
+        Return $PowerUsage_Value
     }
 
     SetStatus([MinerStatus]$Status) { 
@@ -421,28 +453,23 @@ Class Miner {
                         }
                     }
 
-                    $Lines += $Line
-
-                    If ($HashRates) { 
-                        $this.Data += [PSCustomObject]@{ 
-                            Date       = $Date
-                            Raw        = $Line_Simple
-                            HashRate   = [PSCustomObject]@{[String]$this.Algorithm = [Double]($HashRates | Measure-Object -Sum).Sum }
-                            PowerUsage = (Get-PowerUsage $this.Device.Name)
-                            Device     = $Devices
+                    If ($HashRate.PSObject.Properties.Value -gt 0) { 
+                        $Sample = [PSCustomObject]@{ 
+                            Date       = (Get-Date).ToUniversalTime()
+                            HashRate   = $HashRate
+                            PowerUsage = $PowerUsage
+                            Shares     = $Shares
                         }
+                        Return $Sample
                     }
                 }
             }
-
-            $this.Data = @($this.Data | Select-Object -Last 10000)
         }
-
-        Return $Lines
+        Return $null
     }
 
-    [Double]GetHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
-        $HashRates_Devices = @($this.Data | Where-Object Device | Select-Object -ExpandProperty Device -Unique)
+    [Double]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
+        $HashRates_Devices = @($this.Data | Where-Object Devices | Select-Object -ExpandProperty Device -Unique)
         If (-not $HashRates_Devices) { $HashRates_Devices = @("Device") }
 
         $HashRates_Counts = @{ }
@@ -485,8 +512,8 @@ Class Miner {
         }
     }
 
-    [Double]GetPowerUsage([Boolean]$Safe = $this.New) { 
-        $PowerUsages_Devices = @($this.Data | Where-Object Device | Select-Object -ExpandProperty Device -Unique)
+    [Double]CollectPowerUsage([Boolean]$Safe = $this.New) { 
+        $PowerUsages_Devices = @($this.Data | Where-Object Devices | Select-Object -ExpandProperty Device -Unique)
         If (-not $PowerUsages_Devices) { $PowerUsages_Devices = @("Device") }
 
         $PowerUsages_Counts = @{ }
@@ -552,7 +579,7 @@ Class Miner {
         $this.Speed = $this.Workers | Select-Object -ExpandProperty Speed
 
         $this.Benchmark = $this.Workers | Where-Object { [Double]::IsNaN($_.Speed) }
-        $this.Disabled = $this.Workers | Where-Object Disabled -EQ $true
+        $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
 
         $this.Earning = 0
         $this.Earning_Bias = 0
@@ -595,9 +622,9 @@ Class Miner {
 }
 
 Function Get-NextColor {
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
-        [Byte[]]$Colors,
+        [Byte[]]$Colors, 
         [Parameter(Mandatory = $true)]
         [Int[]]$Factors
     )
@@ -651,9 +678,9 @@ Function Get-NMVersion {
 
 Function Start-MinerDataReader {
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
-        $Miner,
+        $Miner, 
         [Parameter(Mandatory = $false)]
         [Int]$Interval = 2 #Seconds
     )
@@ -665,9 +692,9 @@ Function Start-MinerDataReader {
     }
 
     $Miner | Add-Member -Force @{ 
-        DataReaderJob = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList $Parameters -ScriptBlock { 
+        DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList $Parameters -ScriptBlock { 
             [CmdletBinding()]
-            param(
+            Param(
                 [Parameter(Mandatory = $true)]
                 [Hashtable]$Parameters
             )
@@ -692,7 +719,7 @@ Function Start-MinerDataReader {
 
 Function Get-CommandLineParameters { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Arguments
     )
@@ -825,18 +852,22 @@ Function Initialize-Application {
     $Variables.BrainJobs = @()
     $Variables.EarningsTrackerJobs = @()
     $Variables.Earnings = @{ }
+    $Variables.Strikes = 3
+    $Variables.WatchdogTimers = @()
+    $Variables.Timer = (Get-Date).ToUniversalTime()
+    $Variables.StatEnd = $Variables.Timer
 
     # Purge Logs more than 10 days
     Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 
     # Find available TCP Ports
-    $StartPort = If ([UInt16]$Config.APIPort) { $Config.APIPort + 1 } Else { 4068 }
+    $StartPort = If ([UInt16]$Config.APIPort) { $Config.APIPort } Else { 4068 }
     $Config.Type | Sort-Object | ForEach-Object { 
         Write-Message "Finding available TCP Port for $_ miners..."
         $Port = Get-FreeTcpPort($StartPort)
         $Variables | Add-Member -Force @{ "$($_)MinerAPITCPPort" = $Port }
         Write-Message "$_ miners API Port: $($Port)"
-        $StartPort = $Port + 1
+        $StartPort = $Port - 1
     }
 }
 
@@ -1174,9 +1205,9 @@ Function Start-Mining {
 
 Function Stop-ChildJob { 
 
-    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job -ErrorAction Ignore }
+    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore }
     $Variables.EarningsTrackerJobs = @()
-    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru | Remove-Job -ErrorAction Ignore }
+    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
     $Variables.BrainJobs = @()
 
     Write-Message "Stopped Earnings tracker and Brain jobs."
@@ -1233,9 +1264,9 @@ Function Get-GPUCount {
 }
 
 Function Get-Config { 
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
-        [String]$ConfigFile,
+        [String]$ConfigFile, 
         [Parameter(Mandatory = $false)]
         [Hashtable]$Parameters = @{ }
     )
@@ -1265,7 +1296,7 @@ Function Get-Config {
         $PoolsConfig."Default" | Add-Member -Force "PasswordCurrency" $Config.PasswordCurrency
     }
     Else { 
-        $PoolsConfig = [PSCustomObject]@{ default = [PSCustomObject]@{ 
+        $PoolsConfig = [PSCustomObject]@{ Default = [PSCustomObject]@{ 
                 Wallet             = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
                 UserName           = "nemo"
                 WorkerName         = "NemosMinerNoCfg"
@@ -1278,7 +1309,7 @@ Function Get-Config {
 }
 
 Function Write-Config { 
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
     )
@@ -1313,13 +1344,13 @@ Function Get-FreeTcpPort ($StartPort) {
     # While ($Port -le ($StartPort + 10) -and !$PortFound) { Try { $null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} Catch { $Port;$PortFound=$true}}
     # $UsedPorts = (Get-NetTCPConnection | Where-Object { $_.state -eq "listen"}).LocalPort
     # While ($StartPort -in $UsedPorts) { 
-    While (Get-NetTCPConnection -LocalPort $StartPort -ErrorAction SilentlyContinue) { $StartPort++ }
+    While (Get-NetTCPConnection -LocalPort $StartPort -ErrorAction SilentlyContinue) { $StartPort-- }
     $StartPort
 }
 
 Function Set-Stat { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Name, 
         [Parameter(Mandatory = $true)]
@@ -1331,7 +1362,7 @@ Function Set-Stat {
         [Parameter(Mandatory = $false)]
         [Bool]$FaultDetection = $true, 
         [Parameter(Mandatory = $false)]
-        [Bool]$ChangeDetection = $false,
+        [Bool]$ChangeDetection = $false, 
         [Parameter(Mandatory = $false)]
         [Int]$ToleranceExceeded = 3
     )
@@ -1483,7 +1514,7 @@ Function Set-Stat {
 
 Function Get-Stat { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
             & {
@@ -1545,7 +1576,7 @@ Function Get-Stat {
 
 Function Remove-Stat { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
     )
@@ -1561,7 +1592,7 @@ Function Get-MinerConfig {
     #Read miner config
 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Name, 
         [Parameter(Mandatory = $true)]
@@ -1584,7 +1615,7 @@ function Get-CommandPerDevice {
     # excluded parameters are passed unmodified
 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
         [String]$Command = "", 
@@ -1631,7 +1662,7 @@ function Get-CommandPerDevice {
 
 Function Get-ChildItemContentJob { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Path, 
         [Parameter(Mandatory = $false)]
@@ -1645,8 +1676,8 @@ Function Get-ChildItemContentJob {
     $DefaultPriority = ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass
     If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority }
 
-    $Job = Start-Job -InitializationScript ([scriptblock]::Create("Set-Location('$(Get-Location)')")) -Name (($Path -replace '[^A-Za-z0-9-\\]', '') -replace '\\', '-') -ScriptBlock { 
-        param(
+    $Job = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name (($Path -replace '[^A-Za-z0-9-\\]', '') -replace '\\', '-') -ScriptBlock { 
+        Param(
             [Parameter(Mandatory = $true)]
             [String]$Path, 
             [Parameter(Mandatory = $false)]
@@ -1712,7 +1743,7 @@ Function Get-ChildItemContentJob {
 
 Function Get-ChildItemContent { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Path, 
         [Parameter(Mandatory = $false)]
@@ -1772,7 +1803,7 @@ Function Get-ChildItemContent {
 
 Function Invoke-TcpRequest { 
      
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Server = "localhost", 
         [Parameter(Mandatory = $true)]
@@ -1796,11 +1827,11 @@ Function Invoke-TcpRequest {
         $Response = $Reader.ReadLine()
     }
     Catch { $Error.Remove($error[$Error.Count - 1]) }
-    finally { 
-        If ($Reader) { $Reader.Close() }
-        If ($Writer) { $Writer.Close() }
-        If ($Stream) { $Stream.Close() }
-        If ($Client) { $Client.Close() }
+    Finally { 
+        $Reader.Close()
+        $Writer.Close()
+        $Stream.Close()
+        $Client.Close()
     }
 
     $Response
@@ -1808,7 +1839,7 @@ Function Invoke-TcpRequest {
 
 Function Invoke-HTTPRequest { 
      
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Server = "localhost", 
         [Parameter(Mandatory = $true)]
@@ -1955,7 +1986,7 @@ Function Get-CpuId {
 
 Function Get-Device { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = @(), 
         [Parameter(Mandatory = $false)]
@@ -2030,7 +2061,7 @@ Function Get-Device {
                             "Intel" { "INTEL" }
                             "NVIDIA" { "NVIDIA" }
                             "AMD" { "AMD" }
-                            default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
+                            Default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
                         }
                     )
                     Memory = $null
@@ -2058,10 +2089,10 @@ Function Get-Device {
                 #Read CPU features
 #                $Device | Add-member CpuFeatures ((Get-CpuId).Features | Sort-Object)
 
-                # #Add raw data
-                # $Device | Add-Member @{ 
-                #     CIM = $Device_CIM
-                # }
+                #Add raw data
+                $Device | Add-Member @{ 
+                    CIM = $Device_CIM
+                }
             }
 
             Get-CimInstance CIM_VideoController | ForEach-Object { 
@@ -2089,7 +2120,7 @@ Function Get-Device {
                             "Intel" { "INTEL" }
                             "NVIDIA" { "NVIDIA" }
                             "AMD" { "AMD" }
-                            default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
+                            Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
                         }
                     )
                     Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
@@ -2114,12 +2145,12 @@ Function Get-Device {
                 $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
                 $Type_Id.($Device.Type)++
 
-                # #Add raw data
-                # $Device | Add-Member @{ 
-                #      CIM = $Device_CIM
-                #      PNP = $Device_PNP
-                #      Reg = $Device_Reg
-                #  }
+                #Add raw data
+                $Device | Add-Member @{ 
+                    CIM = $Device_CIM
+                    PNP = $Device_PNP
+                    Reg = $Device_Reg
+                }
             }
         }
         Catch { 
@@ -2140,7 +2171,7 @@ Function Get-Device {
                             Switch -Regex ([String]$Device_OpenCL.Type) { 
                                 "CPU" { "CPU" }
                                 "GPU" { "GPU" }
-                                default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
+                                Default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
                             }
                         )
                         Bus    = $(
@@ -2154,7 +2185,7 @@ Function Get-Device {
                                 "Intel" { "INTEL" }
                                 "NVIDIA" { "NVIDIA" }
                                 "AMD" { "AMD" }
-                                default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
+                                Default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
                             }
                         )
                         Memory = [UInt64]$Device_OpenCL.GlobalMemSize
@@ -2271,9 +2302,9 @@ Function Get-DigitsFromValue {
     # Use $Offset to add/remove decimal places
 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
-        [Double]$Value,
+        [Double]$Value, 
         [Parameter(Mandatory = $false)]
         [Int]$Offset = 0
     )
@@ -2291,7 +2322,7 @@ Function ConvertTo-LocalCurrency {
     # Use $Offset to add/remove decimal places
 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $true)]
@@ -2308,7 +2339,7 @@ Function ConvertTo-LocalCurrency {
 }
 
 Function Get-Combination { 
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [Array]$Value, 
         [Parameter(Mandatory = $false)]
@@ -2341,7 +2372,7 @@ Function Get-Combination {
 
 function Start-SubProcess { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$FilePath, 
         [Parameter(Mandatory = $false)]
@@ -2371,7 +2402,7 @@ function Start-SubProcess {
 
 function Start-SubProcessWithoutStealingFocus { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$FilePath, 
         [Parameter(Mandatory = $false)]
@@ -2392,7 +2423,7 @@ function Start-SubProcessWithoutStealingFocus {
     If ($EnvBlock) { $EnvBlock | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force } }
 
     $Job = Start-Job -ArgumentList $PID, (Resolve-Path ".\Includes\CreateProcess.cs"), $FilePath, $ArgumentList, $WorkingDirectory, $MinerVisibility, $EnvBlock { 
-        param($ControllerProcessID, $CreateProcessPath, $FilePath, $ArgumentList, $WorkingDirectory, $MinerVisibility, $EnvBlock)
+        Param($ControllerProcessID, $CreateProcessPath, $FilePath, $ArgumentList, $WorkingDirectory, $MinerVisibility, $EnvBlock)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
         If ($null -eq $ControllerProcess) { return }
@@ -2454,7 +2485,7 @@ function Start-SubProcessWithoutStealingFocus {
 
 Function Expand-WebRequest { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Uri, 
         [Parameter(Mandatory = $false)]
@@ -2500,34 +2531,34 @@ Function Expand-WebRequest {
 
 Function Get-Algorithm { 
     [CmdletBinding()]
-    param(
+    Param(
         [Parameter(Mandatory = $false)]
         [String]$Algorithm = ""
     )
 
-    If (-not (Test-Path Variable:Script:Algorithms -ErrorAction SilentlyContinue)) {
-        $Script:Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
+    If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) {
+        $Global:Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
     }
 
     $Algorithm = (Get-Culture).TextInfo.ToTitleCase(($Algorithm.ToLower() -replace "-", " " -replace "_", " " -replace "/", " ")) -replace " "
 
-    If ($Script:Algorithms.$Algorithm) { $Script:Algorithms.$Algorithm }
+    If ($Global:Algorithms.$Algorithm) { $Global:Algorithms.$Algorithm }
     Else { $Algorithm }
 }
 
 Function Get-Region { 
-    param(
+    Param(
         [Parameter(Mandatory = $true)]
         [String]$Region
     )
 
-    If (-not (Test-Path Variable:Script:Regions -ErrorAction SilentlyContinue)) { 
-        $Script:Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
+    If (-not (Test-Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
+        $Global:Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
     }
 
     $Region = (Get-Culture).TextInfo.ToTitleCase(($Region -replace "-", " " -replace "_", " ")) -replace " "
 
-    If ($Script:Regions.$Region) { $Script:Regions.$Region }
+    If ($Global:Regions.$Region) { $Global:Regions.$Region }
     Else { $Region }
 }
 

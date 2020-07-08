@@ -8,7 +8,7 @@ it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-NemosMiner is distributed in the hope that it will be useful,
+NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -29,17 +29,16 @@ param(
     [Parameter(Mandatory = $false)]
     [String[]]$Algorithm = @(), #i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
-    [Int]$API_ID = 0, 
+    [Double]$AllowedBadShareRatio = 0.1, #Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)]
-    [String]$API_Key = "", 
-    [Parameter(Mandatory = $false)]
+    [String]$APIKEY = "", 
     [Int]$APIPort = 3999, #TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)] 
     [Switch]$AutoStart = $false, #If true NemosMiner will start mining automatically
     [Parameter(Mandatory = $false)]
     [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
-    [String]$ConfigFile = ".\Config\config.json",
+    [String]$ConfigFile = ".\Config\config.json", 
     [Parameter(Mandatory = $false)]
     [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
     [Parameter(Mandatory = $false)]
@@ -47,9 +46,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
+    [Switch]$EnableEarningsTrackerLog = $false, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
+    [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
     [Parameter(Mandatory = $false)]
     [Int]$GPUCount = 1, # Number of GPU on the system
+    [Parameter(Mandatory = $false)]
+    [Switch]$HideConsole = $false, 
     [Parameter(Mandatory = $false)]
     [Double]$IdlePowerUsageW = 60, #Powerusage of idle system in Watt. Part of profit calculation
     [Parameter(Mandatory = $false)]
@@ -84,6 +87,14 @@ param(
     [Parameter(Mandatory = $false)]
     [Hashtable]$MinDataSamplesAlgoMultiplier = [Hashtable]@{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
+    [Switch]$MinerInstancePerDeviceModel = $true, #If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
+    [Parameter(Mandatory = $false)]
+    [Switch]$MineWhenIdle = $false, 
+    [Parameter(Mandatory = $false)]
+    [String]$MonitoringServer = "", #Monitoring server hostname, default "https://nemosminer.com"
+    [Parameter(Mandatory = $false)]
+    [String]$MonitoringUser = "", #Unique monitoring user ID 
+    [Parameter(Mandatory = $false)]
     [Switch]$NoDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
     [Parameter(Mandatory = $false)]
     [Switch]$NoSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
@@ -104,11 +115,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ReadPowerUsage = $true, #If true, power usage will be read from miners, required for true profit calculation
     [Parameter(Mandatory = $false)]
+    [Switch]$ReportToServer = $false, 
+    [Parameter(Mandatory = $false)]
     [Double]$RunningMinerGainPct = 12, # percent of advantage that running miner has over candidates in term of earning/profit
     [Parameter(Mandatory = $false)]
-    [String]$SelGPUCC = "0,1",
+    [String]$SelGPUCC = "0,1", 
     [Parameter(Mandatory = $false)]
-    [String]$SelGPUDSTM = "0 1",
+    [String]$SelGPUDSTM = "0 1", 
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, #Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
@@ -132,19 +145,29 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPowerUsage = $true, #Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
+    [Switch]$ShowWorkerStatus = $true, 
+    [Parameter(Mandatory = $false)]
     [String]$SnakeTailExe = ".\Utils\SnakeTail.exe", #Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
     [Parameter(Mandatory = $false)]
     [Switch]$SSL = $false, 
-    [Parameter(Mandatory = $false)] 
+    [Parameter(Mandatory = $false)]
+    [Switch]$StartGUIMinimized = $false, 
+    [Parameter(Mandatory = $false)]
     [Switch]$StartPaused = $false, #If true, NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
-    [Parameter(Mandatory = $false)] 
+    [Parameter(Mandatory = $false)]
     [Int]$SyncWindow = 5, #Minutes. Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used instead of the biased value and a warning will be shown
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
     [Switch]$TrackEarnings = $true, # Display earnings information
     [Parameter(Mandatory = $false)]
-    [String[]]$Type = @("nvidia"), #AMD/NVIDIA/CPU
+    [String[]]$Type = @("AMD", "CPU", "NVIDIA"), #AMD/NVIDIA/CPU
+    [Parameter(Mandatory = $false)]
+    [Switch]$TypeAMD = $true, #to be removed
+    [Parameter(Mandatory = $false)]
+    [Switch]$TypeCPU = $true, #to be removed
+    [Parameter(Mandatory = $false)]
+    [Switch]$TypeNVIDIA = $true, #to be removed
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
@@ -153,6 +176,8 @@ param(
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
     [Int]$WarmupTime = 45, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
+    [Parameter(Mandatory = $false)]
+    [Switch]$Watchdog = $true, #if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
     [Parameter(Mandatory = $false)]
     [Switch]$WebGUI = $false, #If true launch Web GUI
     [Parameter(Mandatory = $false)]
@@ -202,7 +227,6 @@ $Variables.Pools = [Pool[]]@()
 $Variables.Miners = [Miner[]]@()
 $Variables.Devices = [Device[]]@()
 $Variables.SupportedVendors = @("AMD", "Intel", "NVidia")
-$Variables.DonateTime = (Get-Date).AddHours(-23).TimeOfDay
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -227,13 +251,30 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 
 If (-not (Test-Path $ConfigFile -PathType Leaf -ErrorAction Ignore)) { 
     $Config_Temp | ConvertTo-Json -Depth 10 | Set-Content $ConfigFile
-    Write-Host "No valid config file found. A new config file '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))' using default values has been created."-F Yellow
+    Write-Host "No valid config file found. A new config file '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))' using default values has been created." -F Yellow
     Write-Host "Use the GUI to save the config, then start mining."-F Yellow
     $FreshConfig = $true
 }
-Remove-Variable Config_Temp
 
 Get-Config -ConfigFile $ConfigFile -Parameters $Config_Parameters
+#Changed config items
+$Changed_Config_Keys = $Config.Keys | Where-Object { $_ -notin @(@($Config_Temp.PSObject.Properties.Name) + @("PoolsConfig")) }
+$Changed_Config_Keys | ForEach-Object { 
+    Switch ($_) { 
+        "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+        "PricePenaltyfactor" { $Config.EstimateCorrection = $Config.$_; $Config.Remove($_) }
+        "ActiveMinergain" { $Config.RunningMinerGainPct  = $Config.$_; $Config.Remove($_) }
+        Default { $Config.Remove($_) } #Remove unsupported config item
+    }
+}
+
+#Add new config items
+$Config_Temp.PSObject.Properties | Where-Object {$_.Name -notin $Config.Keys } | Sort-Object Name | ForEach-Object { 
+    $Value = Get-Variable $_.Name -ValueOnly -ErrorAction SilentlyContinue
+    If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+    $Global:Config.($_.Name) = $Value
+}
+Remove-Variable Config_Temp
 
 #Start transcript log
 If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
@@ -320,7 +361,7 @@ Function Global:TimerUITick {
             If ($Variables.Miners) { 
                 $DisplayEstimations = [System.Collections.ArrayList]@(
                     $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
-                        @{ Name = "Miner"; Expression = { $_.Name } },
+                        @{ Name = "Miner"; Expression = { $_.Name } }, 
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
                         @{ Name = "Speed(s)"; Expression = { ($_.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
@@ -442,8 +483,8 @@ Function Global:TimerUITick {
             If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
                 Write-Host "Run Miners: " $ProcessesIdle.Count
                 $ProcessesIdle | Sort-Object { If ($null -eq $_.Process) { (Get-Date) } Else { $_.Process.ExitTime } } | Format-Table -Wrap (
-                    @{ Label = "Run"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } },
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.Arguments)" } }  
+                    @{ Label = "Run  "; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
+                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.GetCommandLineParameters())" } }  
                 ) | Out-Host
             }
 
@@ -555,28 +596,19 @@ Function Global:TimerUITick {
                     )
                 )
             }
+            If ($Config.IgnorePowerCost) { $SortBy = "Earning" } Else { $SortBy = "Profit" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object { $_.Benchmark })
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object { $_.MeasurePowerUsage })
+                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -EQ $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
                     $Config.ShowAllMiners -or <#List all miners#>
-
-                    $_.Earning_Bias -ge ($MinersDeviceGroup.Earning_Bias | Sort-Object -Descending | Select-Object -Index 4) -or <#Always list at least the top 5 earning miners per device group#>
-                    $_.Profit_Bias -ge ($MinersDeviceGroup.Profit_Bias | Sort-Object -Descending | Select-Object -Index 4) -or <#Always list at least the top 5 profit miners per device group#>
-
-                    $_.Earning_Bias -ge (($MinersDeviceGroup.Earning_Bias | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% earning miners per device group#>
-                    $_.Profit_Bias -ge (($MinersDeviceGroup.Profit_Bias | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% profit miners per device group#>
-
-                    # $_.Earning -ge ($MinersDeviceGroup.Earning | Sort-Object -Descending | Select-Object -Index 4) -or <#Always list at least the top 5 earning miners per device group#>
-                    # $_.Profit -ge ($MinersDeviceGroup.Profit | Sort-Object -Descending | Select-Object -Index 4) -or <#Always list at least the top 5 profit miners per device group#>
-
-                    # $_.Earning -ge (($MinersDeviceGroup.Earning | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% earning miners per device group#>
-                    # $_.Profit -ge (($MinersDeviceGroup.Profit | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% profit miners per device group#>
-
+                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 4) -or <#Always list at least the top 5 miners per device group#>
+                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% miners per device group#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
                     $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <#List all miners when measuring power usage#>
-                } | Sort-Object DeviceName, @{ Expression = $(If ($Config.IgnorePowerCost) { "Earning_Bias" } Else { "Profit_Bias" } ); Descending = $true }, @{ Expression = { $_.Workers.Pool.Name } } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(if (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -eq $_.DeviceName).Model -join ', ')]" } } | Out-Host
+                } | Sort-Object DeviceName, @{ Expression = { $_.$SortBy } ; Descending = $true }, @{ Expression = { $_.Workers.Pool.Name } } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -eq $_.DeviceName).Model -join ', ')]" } } | Out-Host
 
                 #Display benchmarking progress
                 If ($MinersDeviceGroupNeedingBenchmark) { 
@@ -587,6 +619,7 @@ Function Global:TimerUITick {
                     "Power usage measurement for device$(If (($MinersDeviceGroup | Select-Object -Unique).Count -ne 1) { " group" } ) ($(($MinersDeviceGroup.DeviceName | Select-Object -Unique ) -join '; ')) in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                 }
             }
+            Remove-Variable SortBy
             Remove-Variable MinersDeviceGroup -ErrorAction SilentlyContinue
             Remove-Variable MinersDeviceGroupNeedingBenchmark -ErrorAction SilentlyContinue
             Remove-Variable MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction SilentlyContinue
@@ -612,7 +645,7 @@ Function Global:TimerUITick {
                     $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($Config.Type.Count * 3) | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
-                        @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } },
+                        @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.GetActiveTime() } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
@@ -624,7 +657,7 @@ Function Global:TimerUITick {
                     $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
-                        @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } },
+                        @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.GetActiveTime() } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
@@ -1669,7 +1702,7 @@ $CheckedListBoxPools.Location = [System.Drawing.Point]::new(425, 25)
 $CheckedListBoxPools.CheckOnClick = $true
 $CheckedListBoxPools.BackColor = [System.Drawing.SystemColors]::Control
 $CheckedListBoxPools.Items.Clear()
-$CheckedListBoxPools.Items.AddRange(((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique))
+$CheckedListBoxPools.Items.AddRange(((Get-ChildItem -File ".\Pools").BaseName | Sort-Object -Unique))
 $CheckedListBoxPools.Add_MouseHover($ShowHelp)
 $CheckedListBoxPools.Add_SelectedIndexChanged({ CheckedListBoxPools_Click($this) })
 $Config.PoolName | Where-Object { $_ -in $CheckedListBoxPools.Items } | ForEach-Object { $CheckedListBoxPools.SetItemChecked((($CheckedListBoxPools.Items).ToUpper()).IndexOf($_.ToUpper()), $true) }
