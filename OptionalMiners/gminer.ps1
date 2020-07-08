@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-Gminer214\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.14/gminer_2_14_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer215\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.15/gminer_2_15_windows64.zip"
 $Commands = [PSCustomObject]@{ 
     #"beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"beamv3"           = " --devices $($Config.SelGPUDSTM) -a BeamHash" #Equihash150,5,3 (NiceHash)
