@@ -5,55 +5,74 @@
 
 <div id="configfilename" class="alert alert-info" role="alert"></div>
 
-<label for="btcaddress">BTC Address:</label>
-<input title="Your BitCoin address &#10;(must be 34 chars long)" type="text" id="btcaddress" name="btcaddress" pattern="[0-9][A-Z][a-z]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=50>
-<br><br>
+<table>
+  <tr>
+    <td>
+      <label for="btcaddress">BTC Address </label>
+      <input title="Your BitCoin address &#10;(must be 34 chars long)" type="text" id="btcaddress" name="btcaddress" pattern="[0-9][A-Z][a-z]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=50>
+      <br>
 
-<label for="mphusername">MPH user name:</label>
-<input title="Your MiningPoolHub Username" type="text" id="mphusername" name="mphusername" value="nemo">
-<br><br>
+      <label for="mphusername">MPH user name </label>
+      <input title="Your MiningPoolHub Username" type="text" id="mphusername" name="mphusername" value="nemo">
+      <br>
 
-<label for="mphapikey">MPH API key:</label>
-<input title="Your MiningPoolHub API key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" type="text" pattern="[0-9][A-F][a-f]{64}" id="mphapikey" name="mphapikey" size=64>
-<br><br>
+      <label for="mphapikey">MPH API key </label>
+      <input title="Your MiningPoolHub API key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" type="text" pattern="[0-9][A-F][a-f]{64}" id="mphapikey" name="mphapikey" size=64>
+      <br><br>
 
-<label for="interval">Interval (seconds):</label>
-<input title="interval duration &#10;(between 30 & 3600 seconds)" type="number" id="interval" name="interval" min="30" max="3600" value=90>
-<br><br>
+      <label for="interval">Interval (seconds) </label>
+      <input title="interval duration &#10;(between 30 & 3600 seconds)" type="number" id="interval" name="interval" min="30" max="3600" value=90>
+      <br>
 
-<label for="donate">Donation (minutes):</label>
-<input title="Donation duration per day (Default 13) &#10;(between 0 & 60 minutes) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" type="number" id="donate" name="donate" min="0" max="60" value=13>
-<br><br>
+      <label for="donate">Donation (minutes) </label>
+      <input title="Donation duration per day (Default 13) &#10;(between 0 & 60 minutes) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" type="number" id="donate" name="donate" min="0" max="60" value=13>
+      <br><br>
 
-<label for="algorithm">Algorithms:</label>
-<input size=50 type="text" id="algorithm" name="algorithm" value="allium,bitcore,blake2s,blakecoin,c11,equihash,groestl,hmq1725,hsr,keccak,keccakc,lbry,Lyra2RE2,lyra2z,MyriadGroestl,neoscrypt,nist5,phi,poly,sha256t,sib,skein,skunk,tribus,x11evo,x16r,x16s,x17,xevan,yescrypt" title="'+[algorithm]' to enable algorithm &#10;'-[algorithm]' to disable algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used &#10;If '-' is used, then all algorithms except the disabled ones are used &#10;Leave empty to use ALL available algorithms (not recommended as it may to more switching)&#10;&#10;Do not combine '+' and '-' for the same algorithm">
-<br><br>
+      <label for="algorithm">Algorithms </label>
+      <input size=50 type="text" id="algorithm" name="algorithm" value="allium,bitcore,blake2s,blakecoin,c11,equihash,groestl,hmq1725,hsr,keccak,keccakc,lbry,Lyra2RE2,lyra2z,MyriadGroestl,neoscrypt,nist5,phi,poly,sha256t,sib,skein,skunk,tribus,x11evo,x16r,x16s,x17,xevan,yescrypt" title="'+[algorithm]' to enable algorithm &#10;'-[algorithm]' to disable algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used &#10;If '-' is used, then all algorithms except the disabled ones are used &#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same algorithm">
+      <br><br>
 
-<label for="currency">Currencies:</label>
-<input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion&#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">
-<br><br>
+      <label for="currency">Currencies </label>
+      <input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion&#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">
+      <br>
 
-<label for="pwdcurrency">Password Currency:</label>
-<input type="text" id="pwdcurrency" name="pwdcurrency" value="BTC" title="If unsure leave the default 'BTC' &#10;Consult the pool API information for more information">
-<br><br>
+      <label for="pwdcurrency">Password Currency </label>
+      <input type="text" id="pwdcurrency" name="pwdcurrency" value="BTC" title="If unsure leave the default 'BTC' &#10;Consult the pool API information for more information">
+      <br><br>
 
-<label for="proxy">Proxy:</label>
-<input type="text" id="proxy" name="proxy" title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128">
-<br><br>
+      <label for="proxy">Proxy </label>
+      <input type="text" id="proxy" name="proxy" title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128">
+      <br><br>
 
-<label for="runningminergainpct">Running Miner Gain (%):</label>
-<input title="Percent of advantage that running miner has  &#10;over candidates in term of earning/profit" type="number" id="runningminergainpct" name="runningminergainpct" min="0" max="100" value=5>
-<br><br>
+      <label for="runningminergainpct">Running Miner Gain (%) </label>
+      <input title="Percent of advantage that running miner has  &#10;over candidates in term of earning/profit" type="number" id="runningminergainpct" name="runningminergainpct" min="0" max="100" value=5>
+      <br><br>
+      <fieldset>
+        <legend class=h6>Select the region closest to your location</legend>
+        <div title="You cannot select multiple variants of the same pool" id="regions"></div>
+      </fieldset>
+      <br>
+    </td>
+    <td>
+      <div class="col-md-12">
+        <fieldset>
+          <legend class=h6 title="You cannot select multiple variants of the same pool">Select one or more pools</legend>
+          <div title="You cannot select multiple variants of the same pool" id="pools"></div>
+        </fieldset>
+        <br>
 
-<fieldset>
-  <legend class=h6>Select the region closest to your location</legend>
-  <div title="You cannot select multiple variants of the same pool" id="regions"></div>
-</fieldset>
-
-<fieldset>
-  <legend class=h6 title="You cannot select multiple variants of the same pool">Select one or more pools</legend>
-  <div title="You cannot select multiple variants of the same pool" id="pools"></div>
-</fieldset>
+        <fieldset>
+          <legend class=h6>Miners selection</legend>
+          <input type="checkbox" id="regularminers" name="regularminers" title="Miner definition files in folder '.\Miners'">
+          <label for="regularminers" title="Miner definition files in folder '.\Miners'">Regular Miners</label>
+          <br>
+          <input type="checkbox" id="optionalminers" name="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">
+          <label for="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">Optional Miners</label>
+        </fieldset>
+      </div>
+    </td>
+  </tr>
+</table>
 
 <button id="save-button" class="btn btn-primary">Save Configuration</button>
 
@@ -161,6 +180,12 @@
       $.each(config.PoolName, function (key, value) {
         document.getElementById((value).toString().toLowerCase()).checked = true;
       });
+      if (config.IncludeOptionalMiners) {
+        document.getElementById('optionalminers').checked = true;
+      }
+      if (config.IncludeRegularMiners) {
+        document.getElementById('regularminers').checked = true;
+      }
     }
   });
 
@@ -221,6 +246,8 @@
         (config.PoolName).push(value);
       }
     });
+    config.IncludeRegularMiners = document.getElementById('regularminers').checked;
+    config.IncludeOptionalMiners = document.getElementById('optionalminers').checked;
 
     //Write current config
     var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));

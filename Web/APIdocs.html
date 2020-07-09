@@ -23,178 +23,178 @@ version date:   09.06.2020
 <html>
 
 <body>
-    <h1>NemosMiner API (version 0.2.5.0)</h1>
+  <h1>NemosMiner API (version 0.2.5.0)</h1>
 
-    API data is available at http://localhost:[API port]/&lt;resource&gt.
-    (The default API port is 3999)
+  API data is available at http://localhost:[API port]/&lt;resource&gt.
+  (The default API port is 3999)
 
-    <h2>File and Scripts</h2>
-    <p>Anything other than the resources listed below will be looked for in the web directory and sent if it exists.</p>
+  <h2>File and Scripts</h2>
+  <p>Anything other than the resources listed below will be looked for in the web directory and sent if it exists.</p>
 
-    <p>Any .ps1 files in the web/scripts directory will be run and their output sent. They get passed a $Parameters object with
-        keys and values from the URL string.
-        Test it with this demo: <a
-            href="http://localhost:3999/scripts/demo.ps1?message=Hello%20world!">/scripts/demo.ps1?message=Hello%20world!</a>
-        This feature can be used to gather data that the API doesn't expose directly.</p>
-    <h2>Resources</h2>
+  <p>Any .ps1 files in the web/scripts directory will be run and their output sent. They get passed a $Parameters object with
+      keys and values from the URL string.
+      Test it with this demo: <a
+          href="http://localhost:3999/scripts/demo.ps1?message=Hello%20world!">/scripts/demo.ps1?message=Hello%20world!</a>
+      This feature can be used to gather data that the API doesn't expose directly.</p>
+  <h2>Resources</h2>
 
-    <h3>APIVersion</h3>
-    <a href="http://localhost:3999/apiversion">/apiversion</a>
-    <p>Returns the version number of NemosMiner API.</p>
+  <h3>APIVersion</h3>
+  <a href="http://localhost:3999/apiversion">/apiversion</a>
+  <p>Returns the version number of NemosMiner API.</p>
 
-    <h3>BTC Exchange rate</h3>
-    <a href="http://localhost:3999/btcratefirstcurrency">/btcratefirstcurrency</a>
-    <p>Shows the curent BCT exchange rate.</p>
+  <h3>BTC Exchange rate</h3>
+  <a href="http://localhost:3999/btcratefirstcurrency">/btcratefirstcurrency</a>
+  <p>Shows the curent BCT exchange rate.</p>
 
-    <h3>BrainJobs</h3>
-    <a href="http://localhost:3999/brainjobs">/brainjobs</a>
-    <p>Returns the brainjobs information.</p>
+  <h3>BrainJobs</h3>
+  <a href="http://localhost:3999/brainjobs">/brainjobs</a>
+  <p>Returns the brainjobs information.</p>
 
-    <h3>ConfigFile</h3>
-    <a href="http://localhost:3999/configfile">/configfile</a>
-    <p>Returns the current config file name.</p>
+  <h3>ConfigFile</h3>
+  <a href="http://localhost:3999/configfile">/configfile</a>
+  <p>Returns the current config file name.</p>
 
-    <h3>CompareMiners</h3>
-    <a href="http://localhost:3999/compareminers">/compareminers</a>
-    <p>Returns the Variables.compareminers information.</p>
+  <h3>CompareMiners</h3>
+  <a href="http://localhost:3999/compareminers">/compareminers</a>
+  <p>Returns the Variables.compareminers information.</p>
 
-    <h3>ComparePools</h3>
-    <a href="http://localhost:3999/comparepools">/comparepools</a>
-    <p>Returns the Variables. comparepools information.</p>
+  <h3>ComparePools</h3>
+  <a href="http://localhost:3999/comparepools">/comparepools</a>
+  <p>Returns the Variables. comparepools information.</p>
 
-    <h3>Devices</h3>
-    <a href="http://localhost:3999/devices">/devices</a>
-    <p>Shows information about all mining devices.</p>
+  <h3>Devices</h3>
+  <a href="http://localhost:3999/devices">/devices</a>
+  <p>Shows information about all mining devices.</p>
 
-    <h3>Disabled Devices</h3>
-    <a href="http://localhost:3999/devices/disabled">/devices/disabled</a>
-    <p>Shows information about all disabled mining devices.</p>
+  <h3>Disabled Devices</h3>
+  <a href="http://localhost:3999/devices/disabled">/devices/disabled</a>
+  <p>Shows information about all disabled mining devices.</p>
 
-    <h3>Enabled Devices</h3>
-    <a href="http://localhost:3999/devices/enabled">/devices/enabled</a>
-    <p>Shows information about all enabled mining devices.</p>
+  <h3>Enabled Devices</h3>
+  <a href="http://localhost:3999/devices/enabled">/devices/enabled</a>
+  <p>Shows information about all enabled mining devices.</p>
 
-    <h3>Get Running Configuration</h3>
-    <a href="http://localhost:3999/config/get">/config</a>
-    <p>Shows the full configuration for the running script, after all variable substitution.</p>
+  <h3>Get Running Configuration</h3>
+  <a href="http://localhost:3999/config/get">/config</a>
+  <p>Shows the full configuration for the running script, after all variable substitution.</p>
 
-    <h3>Unsupported Devices</h3>
-    <a href="http://localhost:3999/devices/unsupported">/devices/unsupported</a>
-    <p>Shows information about all unsupported mining devices.</p>
+  <h3>Unsupported Devices</h3>
+  <a href="http://localhost:3999/devices/unsupported">/devices/unsupported</a>
+  <p>Shows information about all unsupported mining devices.</p>
 
-    <h3>Earnings</h3>
-    <a href="http://localhost:3999/earnings">/earnings</a>
-    <p>Returns the earnings data.</p>
+  <h3>Earnings</h3>
+  <a href="http://localhost:3999/earnings">/earnings</a>
+  <p>Returns the earnings data.</p>
 
-    <h3>Earnings Statistics</h3>
-    <a href="http://localhost:3999/earnings">/earningsdata</a>
-    <p>Returns the earnings data required for earnings statistics.</p>
+  <h3>Earnings Statistics</h3>
+  <a href="http://localhost:3999/earnings">/earningsdata</a>
+  <p>Returns the earnings data required for earnings statistics.</p>
 
-    <h3>EarningsPool</h3>
-    <a href="http://localhost:3999/earningspool">/earningspool</a>
-    <p>Returns the earnings pool information.</p>
+  <h3>EarningsPool</h3>
+  <a href="http://localhost:3999/earningspool">/earningspool</a>
+  <p>Returns the earnings pool information.</p>
 
-    <h3>EarningsTrackerJobs</h3>
-    <a href="http://localhost:3999/earningstrackerjobs">/earningstrackerjobs</a>
-    <p>Returns the earningstrackerjobs information.</p>
+  <h3>EarningsTrackerJobs</h3>
+  <a href="http://localhost:3999/earningstrackerjobs">/earningstrackerjobs</a>
+  <p>Returns the earningstrackerjobs information.</p>
 
-    <h3>First currency</h3>
-    <a href="http://localhost:3999/firstcurrency">/firstcurrency</a>
-    <p>Returns the firstcurrency information.</p>
+  <h3>First currency</h3>
+  <a href="http://localhost:3999/firstcurrency">/firstcurrency</a>
+  <p>Returns the firstcurrency information.</p>
 
-    <h3>Miners</h3>
-    <a href="http://localhost:3999/miners">/miners</a>
-    <p>Shows all available miners data, use for debugging.</p>
+  <h3>Miners</h3>
+  <a href="http://localhost:3999/miners">/miners</a>
+  <p>Shows all available miners data, use for debugging.</p>
 
-    <h3>Best Miners</h3>
-    <a href="http://localhost:3999/miners/best">/miners/best</a>
-    <p>Shows the best miners data, use for debugging.</p>
+  <h3>Best Miners</h3>
+  <a href="http://localhost:3999/miners/best">/miners/best</a>
+  <p>Shows the best miners data, use for debugging.</p>
 
-    <h3>Enabled Miners</h3>
-    <a href="http://localhost:3999/miners/enabled">/miners/enabled</a>
-    <p>Shows the enabled miners data, use for debugging.</p>
+  <h3>Enabled Miners</h3>
+  <a href="http://localhost:3999/miners/enabled">/miners/enabled</a>
+  <p>Shows the enabled miners data, use for debugging.</p>
 
-    <h3>Disabled Miners</h3>
-    <a href="http://localhost:3999/miners/disabled">/miners/disabled</a>
-    <p>Shows disabled miners data, use for debugging.</p>
+  <h3>Disabled Miners</h3>
+  <a href="http://localhost:3999/miners/disabled">/miners/disabled</a>
+  <p>Shows disabled miners data, use for debugging.</p>
 
-    <h3>Failed Miners</h3>
-    <a href="http://localhost:3999/miners/failed">/miners/failed</a>
-    <p>Shows the failed miners data, use for debugging.</p>
+  <h3>Failed Miners</h3>
+  <a href="http://localhost:3999/miners/failed">/miners/failed</a>
+  <p>Shows the failed miners data, use for debugging.</p>
 
-    <h3>Idle Miners</h3>
-    <a href="http://localhost:3999/miners/idle">/miners/idle</a>
-    <p>Shows the idle miners data, use for debugging.</p>
+  <h3>Idle Miners</h3>
+  <a href="http://localhost:3999/miners/idle">/miners/idle</a>
+  <p>Shows the idle miners data, use for debugging.</p>
 
-    <h3>Running Miners</h3>
-    <a href="http://localhost:3999/miners/running">/miners/running</a>
-    <p>Shows the running miners data, use for debugging.</p>
+  <h3>Running Miners</h3>
+  <a href="http://localhost:3999/miners/running">/miners/running</a>
+  <p>Shows the running miners data, use for debugging.</p>
 
-    <h3>Mining cost</h3>
-    <a href="http://localhost:3999/miningcost">/miningcost</a>
-    <p>Shows current mining cost.
+  <h3>Mining cost</h3>
+  <a href="http://localhost:3999/miningcost">/miningcost</a>
+  <p>Shows current mining cost.
 
-    <h3>Mining earnings</h3>
-    <a href="http://localhost:3999/miningearning">/miningearning</a>
-    <p>Shows current mining earning.</p>
+  <h3>Mining earnings</h3>
+  <a href="http://localhost:3999/miningearning">/miningearning</a>
+  <p>Shows current mining earning.</p>
 
-    <h3>Mining profit</h3>
-    <a href="http://localhost:3999/profit">/profit</a>
-    <p>Shows current mining profit.</p>
+  <h3>Mining profit</h3>
+  <a href="http://localhost:3999/profit">/profit</a>
+  <p>Shows current mining profit.</p>
 
-    <h3>PoolsConfig</h3>
-    <a href="http://localhost:3999/poolsconfig">/poolsconfig</a>
-    <p>Shows the pool configuration entries.</p>
+  <h3>PoolsConfig</h3>
+  <a href="http://localhost:3999/poolsconfig">/poolsconfig</a>
+  <p>Shows the pool configuration entries.</p>
 
-    <h3>Pools</h3>
-    <a href="http://localhost:3999/pools">/pools</a>
-    <p>Shows all pool data entries.</p>
+  <h3>Pools</h3>
+  <a href="http://localhost:3999/pools">/pools</a>
+  <p>Shows all pool data entries.</p>
 
-    <h3>Best Pools</h3>
-    <a href="http://localhost:3999/pool/best">/pools/best</a>
-    <p>Shows the best pool configuration entries.</p>
+  <h3>Best Pools</h3>
+  <a href="http://localhost:3999/pool/best">/pools/best</a>
+  <p>Shows the best pool configuration entries.</p>
 
-    <h3>Available Pools</h3>
-    <a href="http://localhost:3999/pools/available">/pools/available</a>
-    <p>Shows the available pool configuration entries.</p>
+  <h3>Available Pools</h3>
+  <a href="http://localhost:3999/pools/available">/pools/available</a>
+  <p>Shows the available pool configuration entries.</p>
 
-    <h3>Unavailable Pools</h3>
-    <a href="http://localhost:3999/pools/unavailable">/pools/unavailable</a>
-    <p>Shows the unavailable pool configuration entries.</p>
+  <h3>Unavailable Pools</h3>
+  <a href="http://localhost:3999/pools/unavailable">/pools/unavailable</a>
+  <p>Shows the unavailable pool configuration entries.</p>
 
-    <h3>Rates</h3>
-    <a href="http://localhost:3999/rates">/rates</a>
-    <p>Shows exchange rates (currently only BTC), use for debugging.</p>
+  <h3>Rates</h3>
+  <a href="http://localhost:3999/rates">/rates</a>
+  <p>Shows exchange rates (currently only BTC), use for debugging.</p>
 
-    <h3>Regions</h3>
-    <a href="http://localhost:3999/regions">/regions</a>
-    <p>Shows the supported regions (defined in Regions.txt).</p>
+  <h3>Regions</h3>
+  <a href="http://localhost:3999/regions">/regions</a>
+  <p>Shows the supported regions (defined in Regions.txt).</p>
 
-    <h3>Stats</h3>
-    <a href="http://localhost:3999/stats">/stats</a>
-    <p>Shows all stat data in the $Stats hashtable, use for debugging.</p>
+  <h3>Stats</h3>
+  <a href="http://localhost:3999/stats">/stats</a>
+  <p>Shows all stat data in the $Stats hashtable, use for debugging.</p>
 
-    <h3>Summary</h3>
-    <a href="http://localhost:3999/summary">/summary</a>
-    <p>Shows earnings / profit summary and BTC exchange rate (as shown in the Web GUI header).</p>
+  <h3>Summary</h3>
+  <a href="http://localhost:3999/summary">/summary</a>
+  <p>Shows earnings / profit summary and BTC exchange rate (as shown in the Web GUI header).</p>
 
-    <h3>SwitchingLog</h3>
-    <a href="http://localhost:3999/stats">/switchinglog</a>
-    <p>Shows the previously executed miners.</p>
+  <h3>SwitchingLog</h3>
+  <a href="http://localhost:3999/stats">/switchinglog</a>
+  <p>Shows the previously executed miners.</p>
 
-    <!-- <h3>WatchdogTimers</h3>
-    <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
-    <p>Dump of the $WatchdogTimers variable, used only for debugging. WatchdogTimers data is used for internal calculations.</p>
+  <!-- <h3>WatchdogTimers</h3>
+  <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
+  <p>Dump of the $WatchdogTimers variable, used only for debugging. WatchdogTimers data is used for internal calculations.</p>
 
-    <h3>WatchdogTimersReset</h3>
-    <a href="http://localhost:3999/watchdogtimersreset">/watchdogtimersreset</a>
-    <p>Tells the script to reset all watchdog timers. Resetting watchdog timers will re-enable all bloked miner/algos on next run.</p> -->
+  <h3>WatchdogTimersReset</h3>
+  <a href="http://localhost:3999/watchdogtimersreset">/watchdogtimersreset</a>
+  <p>Tells the script to reset all watchdog timers. Resetting watchdog timers will re-enable all bloked miner/algos on next run.</p> -->
 
-    <h3>Write Configuration</h3>
-    <a href="http://localhost:3999/functions/config/set">/config/set</a>
-    <p>Write the configuration file.</p>
+  <h3>Write Configuration</h3>
+  <a href="http://localhost:3999/functions/config/set">/config/set</a>
+  <p>Write the configuration file.</p>
 
-    <a href="https://nemosminer.com">NemosMiner.com</a>
+  <a href="https://nemosminer.com">NemosMiner.com</a>
 </body>
 
 </html>

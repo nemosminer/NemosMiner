@@ -1,60 +1,60 @@
 <!--#include file="/parts/head.html" -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 id="title" data-navbaractive="navdashboard" class="h2">Dashboard</h1>
+  <h1 id="title" data-navbaractive="navdashboard" class="h2">Dashboard</h1>
 </div>
 
 <div id="toolbar">
-    <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
-    <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
-    <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
-    <button id="disable" class="btn btn-danger">Disable Miner</button>
+  <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
+  <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
+  <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
+  <button id="disable" class="btn btn-danger">Disable Miner</button>
 </div>
 
 <h3>Running Miners</h3>
 
 <table id="miners" class="table"
-    data-icons="icons"
-    data-toolbar="#toolbar"
-    data-url="/miners/running"
-    data-cache="false"
-    data-toggle="table"
-    data-show-search-clear-button="true"
-    data-sort-name="tDevices"
-    data-remember-order="true"
-    data-filter-control="true"
-    data-show-button-text="true"
-    data-show-columns="true"
-    data-show-toggle="true"
-    data-icons-prefix="fa"
-    data-icons="icons"
-    data-detail-view="true"
-    data-detail-formatter="detailFormatter"
-    data-response-handler="formatMiners"
-    >
+  data-icons="icons"
+  data-toolbar="#toolbar"
+  data-url="/miners/running"
+  data-cache="false"
+  data-toggle="table"
+  data-show-search-clear-button="true"
+  data-sort-name="tDevices"
+  data-remember-order="true"
+  data-filter-control="true"
+  data-show-button-text="true"
+  data-show-columns="true"
+  data-show-toggle="true"
+  data-icons-prefix="fa"
+  data-icons="icons"
+  data-detail-view="true"
+  data-detail-formatter="detailFormatter"
+  data-response-handler="formatMiners"
+  >
 
-    <thead>
-        <tr>
-            <th data-field="state" data-checkbox="true"></th>
-            <th data-field="tName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Name</th>
-            <th data-field="tDevices" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Devices</th>
-            <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
-            <th data-field="StatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="true">Status</th>
-            <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning</th>
-            <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
-            <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-title-tooltip = "per 24hrs (estimated)">Power Usage</th>
-            <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Power Cost</th>
-            <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
-            <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Speed</th>
-            <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
-            <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
-            <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Speed</th>
-            <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
-            <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
-            <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
-            <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
-            <th data-field="New" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">New</th>
-        </tr>
-    </thead>
+  <thead>
+    <tr>
+      <th data-field="state" data-checkbox="true"></th>
+      <th data-field="tName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Name</th>
+      <th data-field="tDevices" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Devices</th>
+      <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
+      <th data-field="StatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="true">Status</th>
+      <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning</th>
+      <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
+      <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-title-tooltip = "per 24hrs (estimated)">Power Usage</th>
+      <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Power Cost</th>
+      <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
+      <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Speed</th>
+      <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
+      <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
+      <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Speed</th>
+      <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
+      <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
+      <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
+      <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
+      <th data-field="New" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">New</th>
+    </tr>
+  </thead>
 </table>
 
 <h3 class="mt-4">Balances</h3>
@@ -62,124 +62,124 @@
 <div id="balanceboxes" class="card-deck"></div>
 
 <script id="poolbalance_template" type="text/x-handlebars-template">
-    <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}";>
-        <div class="card-header text-center">
-            <h5>{{#if total}}{{name}}{{else}}<a href="{{uri}}" target="_blank">{{name}}</a>{{/if}}</h5>
-            {{lastupdated}}
-        </div>
-        <div class="card-body text-center">
-            <p class="card-text currencies">
-                {{#each balances}}
-                <b>{{@key}}: {{this}}</b><br/>
-                {{/each}}
-            </p>
-            {{#if total}}{{else}}
-            <p class="payment">
-                <b>{{percentage}}%</b> of <b>{{paymentthreshold}} mBTC</b><br/>payment threshold<br/>
-                <br/>Estimated Paydate:<br><b>{{paydate}}</b><br/>
-                <br/>Avg. mBTC/h: <b>{{mBTCh}}</b><br/>Avg. mBTC/d: <b>{{mBTCd}}</b>
-            </p>
-            {{/if}}
-        </div>
+  <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}";>
+    <div class="card-header text-center">
+      <h5>{{#if total}}{{name}}{{else}}<a href="{{uri}}" target="_blank">{{name}}</a>{{/if}}</h5>
+      {{lastupdated}}
     </div>
+    <div class="card-body text-center">
+      <p class="card-text currencies">
+        {{#each balances}}
+        <b>{{@key}}: {{this}}</b><br/>
+        {{/each}}
+      </p>
+      {{#if total}}{{else}}
+      <p class="payment">
+        <b>{{percentage}}%</b> of <b>{{paymentthreshold}} mBTC</b><br/>payment threshold<br/>
+        <br/>Estimated Paydate:<br><b>{{paydate}}</b><br/>
+        <br/>Avg. mBTC/h: <b>{{mBTCh}}</b><br/>Avg. mBTC/d: <b>{{mBTCd}}</b>
+      </p>
+      {{/if}}
+    </div>
+  </div>
 </script>
 
 <script type="text/javascript">
-    var $table = $('#miners')
-    var $querysize = 10000
+  var $table = $('#miners')
+  var $querysize = 10000
 
-    $('#re-benchmark').click(function () {
-        var $data = $table.bootstrapTable('getSelections');
-        if ($data.length >= 1) {
-            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-            if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-            }
-            else {
-                $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=HashRate";
-                $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#re-benchmark').text());
-                    $('#myModal').modal({show:true});
-                });
-            }
+  $('#re-benchmark').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=HashRate";
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#re-benchmark').text());
+          $('#myModal').modal({show:true});
+        });
+      }
+    }
+  });
+
+  $('#re-measure').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=PowerUsage";
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#re-measure').text());
+          $('#myModal').modal({show:true});
+        });
+      }
+    }
+  });
+
+  $('#disable').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
+      }
+      else {
+        $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#disable').text());
+          $('#myModal').modal({show:true});
+        });
+      }
+    }
+  });
+
+  $('#myModal').on('hidden.bs.modal', function () {
+    $('#miners').bootstrapTable('refresh');
+  });
+
+  $(function() {
+    function updatePoolBalances() {
+      var rates = {};
+      $.ajax({url: '/rates',
+        success: function(result) {
+          rates = result;
         }
-    });
-
-    $('#re-measure').click(function () {
-        var $data = $table.bootstrapTable('getSelections');
-        if ($data.length >= 1) {
-            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-            if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      });
+      var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
+      $.ajax({url: '/earnings',
+        success: function(result) {
+          $("#balanceboxes").empty();
+          var template = Handlebars.compile($("#poolbalance_template").html());
+          var footer = new RegExp("-.+|=.+");
+          $.each(result, function(index, item) {
+            if (!(footer.test(item.Pool))) {
+              var currencies = Object.keys(rates[item.Currency]);
+              var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
+              $.each(currencies, function(cindex, currency) {
+                data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
+                if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
+                data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
+              });
+              $("#balanceboxes").append(template(data));
             }
-            else {
-                $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=PowerUsage";
-                $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#re-measure').text());
-                    $('#myModal').modal({show:true});
-                });
-            }
+          });
+          $("#balanceboxes").append(template(data_total));
         }
-    });
+      });
+    }
+    updatePoolBalances();
 
-    $('#disable').click(function () {
-        var $data = $table.bootstrapTable('getSelections');
-        if ($data.length >= 1) {
-            $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-            if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
-            }
-            else {
-                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
-                $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#disable').text());
-                    $('#myModal').modal({show:true});
-                });
-            }
-        }
-    });
-
-    $('#myModal').on('hidden.bs.modal', function () {
-        $('#miners').bootstrapTable('refresh');
-    });
-
-    $(function() {
-        function updatePoolBalances() {
-            var rates = {};
-            $.ajax({url: '/rates',
-                success: function(result) {
-                    rates = result;
-                }
-            });
-            var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
-            $.ajax({url: '/earnings',
-                success: function(result) {
-                    $("#balanceboxes").empty();
-                    var template = Handlebars.compile($("#poolbalance_template").html());
-                    var footer = new RegExp("-.+|=.+");
-                    $.each(result, function(index, item) {
-                        if (!(footer.test(item.Pool))) {
-                            var currencies = Object.keys(rates[item.Currency]);
-                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
-                            $.each(currencies, function(cindex, currency) {
-                                data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
-                                if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
-                                data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
-                            });
-                            $("#balanceboxes").append(template(data));
-                        }
-                    });
-                    $("#balanceboxes").append(template(data_total));
-                }
-            });
-        }
-        updatePoolBalances();
-
-        window.setInterval(function() { 
-            updatePoolBalances();
-            $table.bootstrapTable("refresh");
-        }, 30000);
-    });
+    window.setInterval(function() { 
+      updatePoolBalances();
+      $table.bootstrapTable("refresh");
+    }, 30000);
+  });
 
 </script>
 <!-- End of page scripts -->
