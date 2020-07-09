@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\CPU-XMRigv622\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.2.2/XMRigv622.7z"
+$Path = ".\Bin\Nvidia-XMRigv623\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.2.3/XMRigv623.7z"
 $Commands = [PSCustomObject]@{ 
      "kawpow" = " -a kawpow --nicehash" #kawpow
 }
