@@ -10,8 +10,21 @@ class NanoMiner : Miner {
         }
     }
 
-     [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)/stats"
+    CreateConfigFiles() { 
+        $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+        Try { 
+            $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
+
+            #Write config files. Keep separate files, do not overwrite to preserve optional manual customization
+            If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
+                $Parameters.ConfigFile.Content | Set-Content $ConfigFile -ErrorAction SilentlyContinue -Force
+            }
+        }
+        Catch { 
+            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -Index 0)']."
+            Return
+        }
     }
 
     [Object]UpdateMinerData () { 
@@ -20,7 +33,7 @@ class NanoMiner : Miner {
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = $this.MinerUri
+        $Request = "http://localhost:$($this.Port)/stats"
         $Response = ""
 
         Try { 
@@ -50,9 +63,6 @@ class NanoMiner : Miner {
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.Algorithms.$_.Total.Accepted | Measure-Object -Sum).Sum
                 $Shares_Rejected = [Int64]($Data.Algorithms.$_.Total.Denied | Measure-Object -Sum).Sum
-                If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                    $this.SetStatus("Failed")
-                }
                 $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
             }
 

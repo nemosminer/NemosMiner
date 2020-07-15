@@ -95,17 +95,13 @@ class XmRig : Miner {
         }
     }
 
-    [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)/api.json"
-    }
-
     [Object]UpdateMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = $this.MinerUri
+        $Request = "http://localhost:$($this.Port)/api.json"
         $Response = ""
 
         Try { 
@@ -135,9 +131,6 @@ class XmRig : Miner {
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]$Data.results.shares_good
             $Shares_Rejected = [Int64]($Data.results.shares_total - $Data.results.shares_good)
-            If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                $this.SetStatus([MinerStatus]::Failed)
-            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
         }
 

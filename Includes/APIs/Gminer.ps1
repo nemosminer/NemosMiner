@@ -1,17 +1,13 @@
 ﻿using module ..\Include.psm1
 
 class Gminer : Miner { 
-    [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)/stat"
-    }
-
     [Object]UpdateMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = $this.MinerUri
+        $Request = "http://localhost:$($this.Port)/stat"
         $Response = ""
 
         Try { 
@@ -55,9 +51,6 @@ class Gminer : Miner {
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.total_accepted_shares2)
                 $Shares_Rejected = [Int64]($Data.total_rejected_shares2)
-                If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                    $this.SetStatus("Failed")
-                }
                 $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
             }
 
@@ -67,10 +60,10 @@ class Gminer : Miner {
         }
 
         If ($this.ReadPowerusage) { 
-            $PowerUsage = $this.GetPowerUsage()
+            $PowerUsage = [Double](($Data.devices | Measure-Object power_usage -Sum).Sum)
         }
 
-        If ($HashRate.PSObject.Properties.Value -gt 0) { 
+        If ($HashRate[0].PSObject.Properties.Value -gt 0) { #Temp fix for 1h/s on second algo
             $Sample = [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate

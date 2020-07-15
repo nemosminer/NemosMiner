@@ -1,10 +1,6 @@
 ﻿using module ..\Include.psm1
 
 class Nheq : Miner { 
-    [String]GetMinerUri () { 
-        Return ""
-    }
-
     [Object]UpdateMinerData () { 
         $Server = "localhost"
         $Timeout = 5 #seconds
@@ -33,9 +29,6 @@ class Nheq : Miner {
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]($Data.result.accepted_per_minute | Measure-Object -Sum).Sum
             $Shares_Rejected = [Int64]($Data.result.rejected_per_minute | Measure-Object -Sum).Sum
-            If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                $this.SetStatus("Failed")
-            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
         }
 

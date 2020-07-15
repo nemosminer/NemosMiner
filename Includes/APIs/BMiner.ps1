@@ -1,10 +1,6 @@
 ﻿using module ..\Include.psm1
 
 class BMiner : Miner { 
-    [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)/api/v1/status/solver"
-    }
-    
     [Object]UpdateMinerData () { 
         $Server = "localhost"
         $Timeout = 5 #seconds
@@ -12,7 +8,7 @@ class BMiner : Miner {
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = $this.MinerUri
+        $Request = "http://localhost:$($this.Port)/api/v1/status/solver"
         $Request2 = "http://$($Server):$($this.Port)/api/v1/status/stratum"
         $Response = ""
 
@@ -53,16 +49,13 @@ class BMiner : Miner {
         $Shares_Rejected = [Int64]0
 
         $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers | ForEach-Object { $_.Algorithm } } | Select-Object -Unique | ForEach-Object { 
-            $HashRate_Name = [String]($this.Algorithm -match '^(' + [Regex]::Escape("$(Get-Algorithm $_)") + '(-.+|))$')[0]
+            $HashRate_Name = [String](Get-Algorithm $_)
             $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.hash_rate } | Measure-Object -Sum).Sum
             If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.solution_rate } | Measure-Object -Sum).Sum }
 
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]$Data.stratums.$_.accepted_shares
                 $Shares_Rejected = [Int64]$Data.stratums.$_.rejected_shares
-                If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                    $this.SetStatus("Failed")
-                }
                 $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
             }
 

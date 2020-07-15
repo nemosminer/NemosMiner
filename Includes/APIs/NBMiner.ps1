@@ -1,11 +1,6 @@
 ﻿using module ..\Include.psm1
 
 class NBMiner : Miner { 
-
-    [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)"
-    }
-
     [Object]UpdateMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
@@ -43,9 +38,6 @@ class NBMiner : Miner {
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]$Data.stratum.accepted_shares
             $Shares_Rejected = [Int64]$Data.stratum.rejected_shares
-            If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                $this.SetStatus("Failed")
-            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
         }
 
@@ -60,15 +52,12 @@ class NBMiner : Miner {
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]$Data.stratum.accepted_shares2
                 $Shares_Rejected = [Int64]$Data.stratum.rejected_shares2
-                If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                    $this.SetStatus("Failed")
-                }
                 $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
             }
         }
 
         If ($this.ReadPowerusage) { 
-            $PowerUsage = $this.GetPowerUsage()
+            $PowerUsage = [Double]$Data.miner.total_power_consume
         }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 

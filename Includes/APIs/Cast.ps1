@@ -1,17 +1,13 @@
 ﻿using module ..\Include.psm1
 
 class Cast : Miner { 
-    [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)/"
-    }
-
     [Object]UpdateMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = $this.MinerUri
+        $Request = "http://localhost:$($this.Port)/"
         $Response = ""
 
         Try { 
@@ -38,9 +34,6 @@ class Cast : Miner {
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]$Data.shares.num_accepted
             $Shares_Rejected = [Int64]($Data.shares.num_rejected + $Data.shares.num_rejected + $Data.shares.num_network_fail + $Data.shares.num_outdated)
-            If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                $this.SetStatus("Failed")
-            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
         }
 

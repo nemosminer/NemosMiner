@@ -89,17 +89,13 @@ class Fireice : Miner {
         }
     }
 
-    [String]GetMinerUri () { 
-        Return "http://localhost:$($this.Port)/api.json"
-    }
-
     [Object]UpdateMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = $this.MinerUri
+        $Request = "http://localhost:$($this.Port)/api.json"
         $Response = ""
 
         Try { 
