@@ -221,10 +221,6 @@ Class Miner {
         Return $this.ProcessId
     }
 
-    [String]GetMinerUri () { 
-        Return ""
-    }
-
     hidden StartMining() { 
         $this.Status = [MinerStatus]::Failed
         $this.StatusMessage = "Launching..."
@@ -232,7 +228,6 @@ Class Miner {
         $this.New = $true
         $this.Activated++
         $this.Intervals = @()
-        $this.MinerUri = $this.GetMinerUri()
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
 
@@ -659,7 +654,9 @@ Function Get-NMVersion {
     Try { 
         $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
-    Catch { $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json }
+    Catch { 
+        $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json
+    }
     If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
     If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
         Write-Message "Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))"
@@ -668,11 +665,6 @@ Function Get-NMVersion {
         $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
         $LabelNotifications.Lines += $Version.Message
         If ($Config.Autoupdate -and ! $Config.ManualConfig) { Initialize-Autoupdate }
-        # } Else { 
-        # Write-Message "Version $($Version.Version available. Please update NVIDIA driver. Will not Autoupdate"
-        # $LabelNotifications.ForeColor = "Red"
-        # $LabelNotifications.Lines += "Driver update required. Version $([Version]$Version.Version) available"
-        # }
     }
 }
 
@@ -976,21 +968,6 @@ Function Write-Message {
 Function Get-NVIDIADriverVersion { 
     ((Get-CimInstance CIM_VideoController) | Select-Object name, description, @{ Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{ 6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
 }
-
-# Function Global:RegisterLoaded ($File) { 
-#     New-Item -Path function: -Name script:"$((Get-FileHash (Resolve-Path $File)).Hash)" -Value { $true } -ErrorAction SilentlyContinue | Add-Member @{ "File" = (Resolve-Path $File).Path } -ErrorAction SilentlyContinue
-# }
-
-# Function Global:IsLoaded ($File) { 
-#     $Hash = (Get-FileHash (Resolve-Path $File).Path).hash
-#     If (Test-Path function::$Hash) { 
-#         $true
-#     }
-#     Else { 
-#         Get-ChildItem function: | Where-Object { $_.File -eq (Resolve-Path $File).Path } | Remove-Item
-#         $false
-#     }
-# }
 
 Function Start-IdleTracking { 
     # Function tracks how long the system has been idle and controls the paused state
@@ -1391,7 +1368,7 @@ Function Set-Stat {
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
+        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
             #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
                 Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
