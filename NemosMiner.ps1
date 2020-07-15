@@ -807,15 +807,6 @@ $MainForm.Add_Shown(
                 Get-NMVersion
             }
         )
-        # Detects GPU count If 0 or Null in config
-        If ($Config.GPUCount -eq $null -or $Config.GPUCount -lt 1) { 
-            If ($Config -eq $null) {
-                $Config = [Hashtable]::Synchronized(@{ })
-            }
-            $Config.GPUCount = Get-GPUCount
-            $TBGPUCount.Text = $Config.GPUCount
-            PrepareWriteConfig
-        }
         # Start on load if Autostart
         If ($Config.Autostart) { $ButtonStart.PerformClick() }
         # Start paused
