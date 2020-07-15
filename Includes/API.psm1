@@ -197,7 +197,7 @@ Function Start-APIServer {
                                     $_.Accuracy = 1
                                     $Variables.EndLoopTime = Get-Date
                                 }
-                                If ($_.Reason = "Earning = 0") { 
+                                If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
                                 $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
@@ -224,7 +224,7 @@ Function Start-APIServer {
                                     $_.Accuracy = 1
                                     $Variables.EndLoopTime = Get-Date
                                 }
-                                If ($_.Reason = "Earning = 0") { 
+                                If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_$($Parameters.Type)"
