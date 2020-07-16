@@ -800,7 +800,7 @@ While ($true) {
                     $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                     $Sample = @($Samples) | Select-Object -Last 1
                     If ($Sample) { 
-                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved: [$(($Miner.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { ", Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
+                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved: [$(($Miner.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
                         If ($Miner.AllowedBadShareRatio) { 
                             $Miner.Algorithm | ForEach-Object { 
                                 If ((-not $Sample.Shares.$_[0] -and $Sample.Shares.$_[1] -ge 3) -or ($Sample.Shares.$_[0] -and ($Sample.Shares.$_[1] * $Miner.AllowedBadShareRatio -gt $Sample.Shares.$_[0]))) { 
