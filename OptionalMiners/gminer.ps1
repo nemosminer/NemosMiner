@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
-$Path = ".\Bin\NVIDIA-Gminer216\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.16/gminer_2_16_windows64.zip"
+$Path = ".\Bin\NVIDIA-Gminer218\miner.exe"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.18/gminer_2_18_windows64.zip"
 $Commands = [PSCustomObject]@{ 
     #"beamv2"           = " --devices $($Config.SelGPUDSTM) -a BeamHashII" #Equihash150 (NiceHash)
     #"beamv3"           = " --devices $($Config.SelGPUDSTM) -a BeamHash" #Equihash150,5,3 (NiceHash)
@@ -24,6 +24,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckatoo32"   = " --devices $($Config.SelGPUDSTM) --algo grin32 --pers auto" #grincuckatoo32 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"kawpow"           = " --devices $($Config.SelGPUDSTM) --algo kawpow --pers auto" #KAWPOW
     "cuckaroo29bfc"    = " --devices $($Config.SelGPUDSTM) --algo bfc" #Cuckaroo29bfc
+    "cuckarooz29"      = " --devices $($Config.SelGPUDSTM) --algo cuckarooz29" #Cuckarooz29
 }
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     Switch ($_) { 
