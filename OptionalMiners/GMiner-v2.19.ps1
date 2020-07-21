@@ -20,7 +20,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" } #Profit very small
     [PSCustomObject]@{ Algorithm = @("CryptonightBBC", $null); MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cryptonightbbc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooD29", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckaroom29 --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckaroom29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX", $null);  MinMemGB = 8.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo C30CTX --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo31 --cuda 1 --opencl 0" }
@@ -39,7 +39,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong");   MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Handshake", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" } #Profit very small
     [PSCustomObject]@{ Algorithm = @("KawPoW", $null);         MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = @("Sero", $null);           MinMemGB = 4.0; Fee = @(0.0065);  Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } #Sero != ProgPoW on ZergPool
+    [PSCustomObject]@{ Algorithm = @("Qitmeer", $null);        MinMemGB = 6.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo qitmeer --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = @("Sero", $null);           MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } #Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = @("Vollar", $null);         MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo vollar --cuda 1 --opencl 0" }
 )
 
@@ -61,7 +62,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                 $_.Command += " --server $($Pools.$Algo.Host):$($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)"
 
                 # If ($Pools.$Algo.SSL) { $_.Command += " --ssl true --ssl_verification false" }
-                If ($Pools.$Algo.Name -match "NiceHash*|MPH*") { $_.Command += " --proto stratum" }
+                If ($Algo -eq "Ethash" -and $Pools.$Algo.Name -match "NiceHash*|MPH*") { $_.Command += " --proto stratum" }
 
                 If ($Algo2 = $_.Algorithm | Select-Object -Index 1) { 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($Algo2)) -join '-'
