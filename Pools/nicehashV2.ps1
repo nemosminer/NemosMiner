@@ -24,7 +24,7 @@ Else {
     $Fee = 0.05
 }
 
-$Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 fail stratum #> | ForEach-Object { 
+$Request.miningAlgorithms | Where-Object { $_.speed -gt 0 }| ForEach-Object { 
     $Algorithm = $_.Algorithm
     $PoolPort = $_.algodetails.port
     $Algorithm_Norm = Get-Algorithm $Algorithm
