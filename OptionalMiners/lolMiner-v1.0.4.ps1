@@ -11,7 +11,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BeamV3";        MinMemGB = 6.0;  Type = "AMD"   ; Fee = "0.01";  Command = " --algo BEAM-III" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 8.0;  Type = "AMD"   ; Fee = "0.025"; Command = " --algo C30CTX" }
 #   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0;  Type = "AMD"   ; Fee = "0.02";  Command = " --algo C29D" } #Does not work
-    [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0;  Type = "AMD"   ; Fee = "0.02";  Command = " --algo C29M" }
+#   [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0;  Type = "AMD"   ; Fee = "0.02";  Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0;  Type = "AMD"   ; Fee = "0.02";  Command = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0;  Type = "AMD"   ; Fee = "0.02";  Command = " --algo C32" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 1.85; Type = "AMD"   ; Fee = "0.01";  Command = " --coin AUTO144_5" }
@@ -24,7 +24,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BeamV3";        MinMemGB = 6.0;  Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-III" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 8.0;  Type = "NVIDIA"; Fee = "0.025"; Command = " --algo C30CTX" }
 #   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0;  Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29D" } #Does not work
-    [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0;  Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29M" }
+#   [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0;  Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0;  Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0;  Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C32" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 1.85; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin AUTO144_5" }
