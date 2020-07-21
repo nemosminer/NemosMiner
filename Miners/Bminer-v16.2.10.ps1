@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.9-c613f85-amd64.zip"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.10-071c04b-amd64.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
