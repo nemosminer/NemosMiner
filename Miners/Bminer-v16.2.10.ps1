@@ -6,24 +6,25 @@ $Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.10-071c04b-amd6
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = @("BeamV3", $null);       Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 8; Type = "AMD";    Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);       Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Protocol = @(" -uri ethstratum", " -uri2 handshake"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "AMD";    Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "AMD";    Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("BeamV3", $null);       Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 8; Type = "AMD"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", $null);       Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4; Type = "AMD"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Protocol = @(" -uri ethstratum", " -uri2 handshake"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "AMD"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "AMD"; Command = "" }
 
-#   [PSCustomObject]@{ Algorithm = @("BeamV3", $null);       Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);   Protocol = @(" -uri cuckatoo31");                     Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);   Protocol = @(" -uri cuckatoo32");                     Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);  Protocol = @(" -uri cuckaroo29m");                    Fee = @(0.01);      MinMemGB = 4; Type = "NVIDIA"; Command = " --fast" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);  Protocol = @(" -uri cuckaroo29z");                    Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("CuckooCycle", $null);  Protocol = @(" -uri aeternity");                      Fee = @(0.01);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445", $null); Protocol = @(" -pers auto -uri equihash1445");        Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);  Protocol = @(" -uri zhash");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);       Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Raven", $null);        Protocol = @(" -uri raven");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Sero", $null);         Protocol = @(" -uri sero");                           Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
-    [PSCustomObject]@{ Algorithm = @("Tensority", $null);    Protocol = @(" -uri tensority");                      Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("BeamV3", $null);        Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc", $null); Protocol = @(" -uri bfc");                            Fee = @(0.02);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);    Protocol = @(" -uri cuckatoo31");                     Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);    Protocol = @(" -uri cuckatoo32");                     Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);   Protocol = @(" -uri cuckaroo29m");                    Fee = @(0.01);      MinMemGB = 4; Type = "NVIDIA"; Command = " --fast" }
+    [PSCustomObject]@{ Algorithm = @("CuckooCycle", $null);   Protocol = @(" -uri aeternity");                      Fee = @(0.01);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);  Protocol = @(" -pers auto -uri equihash1445");        Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);   Protocol = @(" -uri zhash");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", $null);        Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority");  Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Qitmeer", $null);       Protocol = @(" -uri qitmeer");                        Fee = @(0.02);      MinMemGB = 6; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Raven", $null);         Protocol = @(" -uri raven");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Sero", $null);          Protocol = @(" -uri sero");                           Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Tensority", $null);     Protocol = @(" -uri tensority");                      Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = "" }
 )
 #Intensities for 2. algorithm
 $Intensities2 = [PSCustomObject]@{ 
