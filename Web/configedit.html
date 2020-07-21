@@ -49,7 +49,7 @@
       <br><br>
       <fieldset>
         <legend class=h6>Select the region closest to your location</legend>
-        <div title="You cannot select multiple variants of the same pool" id="regions"></div>
+        <div title="NemosMiner will prefer pools from the selected region" id="regions"></div>
       </fieldset>
       <br>
     </td>
@@ -83,7 +83,7 @@
   // Get config file name
   $.ajax({url: '/configfile',
     success: function(result) {
-      $('#configfilename').text("Current configuration file: " + result + "'");
+      $('#configfilename').text("Current configuration file: '" + result + "'");
     }
   });
 
@@ -95,7 +95,7 @@
       regions = result;
       $.each(regions, function (key, value) {
         $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value, name: "region", title: title}).appendTo(regionscontainer);
-        $('<label/>', { 'for': value, text: value, title: title }).appendTo(regionscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "NemosMiner will prefer pools from the selected region" }).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
       })
     }
@@ -103,13 +103,12 @@
 
   // Populate pool checkbox list
   var poolnames = [];
-  var title = "You cannot select multiple variants of the same pool";
   $.ajax({url: '/poolnames',
     success: function(result) {
       poolnames = result;
       $.each(result, function (key, value) {
         $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value, title: title }).appendTo(poolscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: title }).appendTo(poolscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "You cannot select multiple variants of the same pool" }).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }
