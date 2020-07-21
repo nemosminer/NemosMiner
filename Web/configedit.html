@@ -109,7 +109,7 @@
       poolnames = result;
       $.each(result, function (key, value) {
         $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value, title: title }).appendTo(poolscontainer);
-        $('<label/>', { 'for': value, text: value, title: title }).appendTo(poolscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: title }).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }
