@@ -1,183 +1,175 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-        <link rel="shortcut icon" type="image/x-icon" href="https://avatars2.githubusercontent.com/u/50767117?s=400&u=659df63c55ea1bafbb5256e6872ba1662950aae8&v=4"/>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="shortcut icon" type="image/x-icon" href="https://avatars2.githubusercontent.com/u/50767117?s=400&u=659df63c55ea1bafbb5256e6872ba1662950aae8&v=4"/>
 
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/bootstrap-table.min.css" integrity="sha512-zfridm8+ad8KSyxzl1REhqDP5975y8Q0AYaF22bcVGOnaVxlekxODmCGu0TP+Kbk3JbiNK5ENTHs7pT+yf+rBA==" crossorigin="anonymous" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/filter-control/bootstrap-table-filter-control.css" integrity="sha512-UvIZ/uxxxVzqs3x/n6L6kCMqMEkDat2cbNqa5/4yHaxPcoxganp4XwqQkclJ3kM38Iov7hChj3LH0WJtp6dRqA==" crossorigin="anonymous" />
-        <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/bootstrap-table.min.css" integrity="sha512-zfridm8+ad8KSyxzl1REhqDP5975y8Q0AYaF22bcVGOnaVxlekxODmCGu0TP+Kbk3JbiNK5ENTHs7pT+yf+rBA==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/filter-control/bootstrap-table-filter-control.css" integrity="sha512-UvIZ/uxxxVzqs3x/n6L6kCMqMEkDat2cbNqa5/4yHaxPcoxganp4XwqQkclJ3kM38Iov7hChj3LH0WJtp6dRqA==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/dashboard.css">
 
-        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/bootstrap-table.min.js" integrity="sha512-KtafFo5oE7fpMVyO/gXFnwsAXeGwl8Kxyikp1SCtMc+mXrvzO7WP1Zs70gSNmkcrBd9PS3byB/HFKvAVKtTWdg==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-ukINz8XitgiQnWx6+xr+IpmaRmaCKhkR6DpN0ePk2JrQDjkG28AZAgJ8iH/RO9F5vuyTq33qJAwh/nVQJZ82sg==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/filter-control/bootstrap-table-filter-control.min.js" integrity="sha512-jepMQuC62NmdjYDXqCfVs6AyIkNs8HLQk26iICpQrJR9tDbvl5bYj88bVmCFgvnD2Y6LIhJIOqYWKGsQf2lT1Q==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/multiple-sort/bootstrap-table-multiple-sort.js" integrity="sha512-xvZSHIATVBkUCLfXOUdLnnscGrF96FlNgsH2C5z42MXZQfpmdi203zCAg3y1JA2eso55b/OmeO1CJG5gJkYWUw==" crossorigin="anonymous"></script>        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.6/handlebars.min.js" integrity="sha256-usTqAE1ywvdMtksWzdeWzD75MsfJN0h0U7y2NtZL3N0=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha256-R4pqcOYV8lt7snxMQO/HSbVCFRPMdrhAFMH+vr9giYI=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/js/all.min.js" integrity="sha256-HkXXtFRaflZ7gjmpjGQBENGnq8NIno4SDNq/3DbkMgo=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/bootstrap-table.min.js" integrity="sha512-KtafFo5oE7fpMVyO/gXFnwsAXeGwl8Kxyikp1SCtMc+mXrvzO7WP1Zs70gSNmkcrBd9PS3byB/HFKvAVKtTWdg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-ukINz8XitgiQnWx6+xr+IpmaRmaCKhkR6DpN0ePk2JrQDjkG28AZAgJ8iH/RO9F5vuyTq33qJAwh/nVQJZ82sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/filter-control/bootstrap-table-filter-control.min.js" integrity="sha512-jepMQuC62NmdjYDXqCfVs6AyIkNs8HLQk26iICpQrJR9tDbvl5bYj88bVmCFgvnD2Y6LIhJIOqYWKGsQf2lT1Q==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/extensions/multiple-sort/bootstrap-table-multiple-sort.js" integrity="sha512-xvZSHIATVBkUCLfXOUdLnnscGrF96FlNgsH2C5z42MXZQfpmdi203zCAg3y1JA2eso55b/OmeO1CJG5gJkYWUw==" crossorigin="anonymous"></script>    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.6/handlebars.min.js" integrity="sha256-usTqAE1ywvdMtksWzdeWzD75MsfJN0h0U7y2NtZL3N0=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" integrity="sha256-R4pqcOYV8lt7snxMQO/HSbVCFRPMdrhAFMH+vr9giYI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/js/all.min.js" integrity="sha256-HkXXtFRaflZ7gjmpjGQBENGnq8NIno4SDNq/3DbkMgo=" crossorigin="anonymous"></script>
 
-        <script src="/js/utilities.js"></script>
-        <!-- <script src="/js/bootstrap-table-contextmenu.js"></script> -->
-    </head>
-    <body>
-        <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-            <a class="navbar-brand" href="/"><h5>NemosMiner</h5></a>
-            <div class="text-white" id="summary"></div>
-            <div class="text-white" id="exchangerates"></div>
+    <script src="/js/utilities.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+      <a class="navbar-brand" href="/"><h5>NemosMiner</h5></a>
+      <div class="text-white" id="summary"></div>
+      <div class="text-white" id="exchangerates"></div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="d-none d-md-block bg-light sidebar nav-collapse" id="sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a id="navdashboard" class="nav-link" href="/">
+                  <span data-feather="home"></span>
+                  <i class="fas fa-tachometer-alt" aria-hidden="true"></i>Dashboard
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Miners</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a id="navminersfastest" class="nav-link" href="minersfastest.html">
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(48, 192, 48);"></i> Best Miners
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navminersunavailable" class="nav-link" href="minersunavailable.html">
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(224, 32, 32);"></i>Unavailable Miners
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navminers" class="nav-link" href="miners.html">
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(0, 0, 0);"></i>All Miners
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Pools</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a id="navpoolsbest" class="nav-link" href="poolsbest.html">
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(48, 192, 48);"></i>Best Pools
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navpoolsunavailable" class="nav-link" href="poolsunavailable.html">
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(224, 32, 32);"></i>Unavailable Pools
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navallpools" class="nav-link" href="pools.html">
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0);"></i>All Pools
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Logs and Statistics</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a id="navearningstatistics" class="nav-link" href="earningstatistics.html">
+                  <i class="fas fa-chart-bar" aria-hidden="true"></i>Earnings statistics
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navswitchinglog" class="nav-link" href="switchinglog.html">
+                  <i class="fas fa-random" aria-hidden="true"></i>Switching log
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navtail" class="nav-link" href="logviewer.html">
+                  <i class="fa fa-align-left" aria-hidden="true"></i>System Log
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Config</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a id="navdevices" class="nav-link" href="devices.html">
+                  <i class="fa fa-microchip" aria-hidden="true"></i>Devices
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navconfigedit" class="nav-link" href="configedit.html">
+                  <i class="fa fa-edit" aria-hidden="true"></i>Edit Configuration
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navconfigrunning" class="nav-link" href="configrunning.html">
+                  <i class="fas fa-file-code" aria-hidden="true"></i>Running Configuration
+                </a>
+              </li>
+              <li class="nav-item">
+                <a id="navminerstats" class="nav-link" href="stats.html">
+                  <i class="fa fa-list-ol" aria-hidden="true"></i>Manage Stats
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Links</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a class="nav-link" href="https://nemosminer.com/">
+                  <i class="fa fa-external-link-alt" aria-hidden="true"></i>Website
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://github.com/Minerx117/NemosMiner">
+                  <i class="fab fa-github" aria-hidden="true"></i>Github
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="APIDocs.html">
+                  <i class="fa fa-book" aria-hidden="true"></i>API Documentation
+                </a>
+              </li>
+            </ul>
+          </div>
         </nav>
-
-        <div class="container-fluid">
-            <div class="row">
-                <nav class="d-none d-md-block bg-light sidebar nav-collapse" id="sidebar">
-                    <div class="sidebar-sticky">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a id="navdashboard" class="nav-link" href="/">
-                                    <span data-feather="home"></span>
-                                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i>Dashboard
-                                </a>
-                            </li>
-                        </ul>
-
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Miners</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a id="navminersfastest" class="nav-link" href="minersfastest.html">
-                                    <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(48, 192, 48);"></i> Best Miners
-                                </a>
-                            </li>
-                            <!-- <li class="nav-item">
-                                <a id="navminersavailable" class="nav-link" href="minersavailable.html">
-                                    <i class="fa fa-check" aria-hidden="true"></i>Available Miners
-                                </a>
-                            </li> -->
-                            <li class="nav-item">
-                                <a id="navminersunavailable" class="nav-link" href="minersunavailable.html">
-                                    <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(224, 32, 32);"></i>Unavailable Miners
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navminers" class="nav-link" href="miners.html">
-                                    <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(0, 0, 0);"></i>All Miners
-                                </a>
-                            </li>
-                        </ul>
-
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Pools</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a id="navpoolsbest" class="nav-link" href="poolsbest.html">
-                                    <i class="fas fa-database" aria-hidden="true" style="color:rgb(48, 192, 48);"></i>Best Pools
-                                    <!-- <i class="fa fa-check" aria-hidden="true"></i>Best Pools -->
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navpoolsunavailable" class="nav-link" href="poolsunavailable.html">
-                                    <i class="fas fa-database" aria-hidden="true" style="color:rgb(224, 32, 32);"></i>Unavailable Pools
-                                    <!-- <i class="fa fa-ban" aria-hidden="true"></i>Unavailable Pools -->
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navallpools" class="nav-link" href="pools.html">
-                                    <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0);"></i>All Pools
-                                </a>
-                            </li>
-                        </ul>
-
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Logs and Statistics</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a id="navearningstatistics" class="nav-link" href="earningstatistics.html">
-                                    <i class="fas fa-chart-bar" aria-hidden="true"></i>Earnings statistics
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navswitchinglog" class="nav-link" href="switchinglog.html">
-                                    <i class="fas fa-random" aria-hidden="true"></i>Switching log
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navtail" class="nav-link" href="logviewer.html">
-                                    <i class="fa fa-align-left" aria-hidden="true"></i>System Log
-                                </a>
-                            </li>
-                        </ul>
-
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Config</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a id="navdevices" class="nav-link" href="devices.html">
-                                    <i class="fa fa-microchip" aria-hidden="true"></i>Devices
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navconfigedit" class="nav-link" href="configedit.html">
-                                    <i class="fa fa-edit" aria-hidden="true"></i>Edit Configuration
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navconfigrunning" class="nav-link" href="configrunning.html">
-                                    <i class="fas fa-file-code" aria-hidden="true"></i>Running Configuration
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="navminerstats" class="nav-link" href="stats.html">
-                                    <i class="fa fa-list-ol" aria-hidden="true"></i>Manage Stats
-                                </a>
-                            </li>
-                        </ul>
-
-                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                            <span>Links</span>
-                        </h6>
-                        <ul class="nav flex-column mb-2">
-                            <li class="nav-item">
-                                <a class="nav-link" href="https://nemosminer.com/">
-                                    <i class="fa fa-external-link-alt" aria-hidden="true"></i>Website
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="https://github.com/Minerx117/NemosMiner">
-                                    <i class="fab fa-github" aria-hidden="true"></i>Github
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="APIDocs.html">
-                                    <i class="fa fa-book" aria-hidden="true"></i>API Documentation
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-                <main role="main" class="main col-sm-12">
-                
-                <!-- Modal -->
-                <div class="modal fade" id="myModal" role="dialog">
-                    <div class="modal-dialog">
-                        <!-- Modal content-->
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title"></h4>
-                            </div>
-                            <div class="modal-body">
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <main role="main" class="main col-sm-12">
+        
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" role="dialog">
+          <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title"></h4>
+              </div>
+              <div class="modal-body">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
