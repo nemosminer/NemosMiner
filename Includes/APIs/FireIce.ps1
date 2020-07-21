@@ -15,7 +15,6 @@ class Fireice : Miner {
             $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             $PoolFile = "$(Split-Path $this.Path)\$($Parameters.PoolFile.FileName)"
-            $Platform = $Parameters.Platform
             $PlatformThreadsConfigFile = "$(Split-Path $this.Path)\$($Parameters.PlatformThreadsConfigFileName)"
             $MinerThreadsConfigFile = "$(Split-Path $this.Path)\$($Parameters.MinerThreadsConfigFileName)"
             $ThreadsConfig = ""
@@ -27,10 +26,10 @@ class Fireice : Miner {
 
             #Check If we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
             If (-not (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
-                If (Test-Path -Path "$(Split-Path $this.Path)\ThreadsConfig-$($Platform)-$($this.Algorithm -join "_")-*.txt" -PathType Leaf) { 
+                If (Test-Path -Path "$(Split-Path $this.Path)\ThreadsConfig-$($this.Type)-$($this.Algorithm -join "_")-*.txt" -PathType Leaf) { 
                     #Remove old config files, thread info is no longer valid
                     Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner $($this.Info)'."
-                    Remove-Item -Path "$(Split-Path $this.Path)\ThreadsConfig-$($Platform)-$($this.Algorithm -join "_")-*.txt" -Force -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$(Split-Path $this.Path)\ThreadsConfig-$($this.Type)-$($this.Algorithm -join "_")-*.txt" -Force -ErrorAction SilentlyContinue
                 }
 
                 #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
@@ -44,7 +43,7 @@ class Fireice : Miner {
 
                 If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                     For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
-                        If ($this.ProcessId = (Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId) { 
+                        If ($this.ProcessId = (Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path } | Where-Object { $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId) { 
                             Break
                         }
                         Start-Sleep -Milliseconds 100

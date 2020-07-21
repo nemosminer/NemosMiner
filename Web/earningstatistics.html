@@ -7,12 +7,14 @@
 
 <canvas id="EarningsChart" width="400" height="175" aria-label="Hello ARIA World" role="img"></canvas>
 
+<!-- End of page scripts -->
+
 <script type="text/javascript">
-  var dynamicColors = function() {
-    var r = Math.floor(Math.random() * 128) + 96;
-    var g = Math.floor(Math.random() * 128) + 96;
-    var b = Math.floor(Math.random() * 128) + 96;
-    return "rgb(" + r + "," + g + "," + b + ")";
+
+  function HslColor (saturation, lightness, amount, item) {
+    let huedelta = Math.trunc(360 / amount)
+    let hue = item * huedelta
+    return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
   };
 
   function renderChart(labels, datasets) {
@@ -45,18 +47,17 @@
         var label = pool;
         var data = [];
         for (var index in earningsdata.Pools[pool]) {
-        data.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
-      };
+          data.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
+        };
 
-      var dataset = {
-        label: label,
-        data: data,
-        borderColor: dynamicColors(),
-        backgroundColor: dynamicColors()
-      };
-      datasets.push(dataset);
-    }
-    renderChart(earningsdata.labels, datasets);
+        var dataset = {
+          label: label,
+          data: data,
+          backgroundColor: HslColor(50, 66, Object.keys(earningsdata.Pools).length, (datasets.length + 1))
+        };
+        datasets.push(dataset);
+      }
+      renderChart(earningsdata.labels, datasets);
     }
   });
 

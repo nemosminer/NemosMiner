@@ -169,6 +169,7 @@ function formatPrices(value) {
 };
 
 function formatArrayAsString(value) {
+    if (value == null) return "";
     return value.toString();
 };
 

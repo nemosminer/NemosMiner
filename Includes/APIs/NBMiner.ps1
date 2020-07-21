@@ -57,7 +57,7 @@ class NBMiner : Miner {
         }
 
         If ($this.ReadPowerusage) { 
-            $PowerUsage = [Double]$Data.miner.total_power_consume
+            $PowerUsage = $this.GetPowerUsage()
         }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 

@@ -86,6 +86,7 @@ Class Pool {
     [Boolean]$SSL
     [Double]$Fee
     [String]$PayoutScheme = ""
+    [Double]$PricePenaltyfactor = 1
     [Double]$EstimateCorrection = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Int]$Workers
@@ -196,7 +197,6 @@ Class Miner {
     [Double[]]$Fee = @() #derived from miner
     [Double]$AllowedBadShareRatio = 0
     [String]$MinerUri = ""
-    [String]$API
 
     [Int32]$ProcessId = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ $this.GetCommandLine() | Select-Object -ExpandProperty ProcessId)
 
@@ -267,7 +267,7 @@ Class Miner {
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
-                    If ($this.ProcessId = ((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
+                    If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
                         Break
@@ -309,7 +309,6 @@ Class Miner {
         $this.StatusMessage = "Idle"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Info = ""
-        $this.MinerUri = ""
     }
 
     [DateTime]GetActiveLast() { 
@@ -363,13 +362,11 @@ Class Miner {
         $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
         $RegistryData = [PSCustomObject]@{ }
 
-        If ($this.ReadPowerUsage) {
-            #read power usage
-            If ((Test-Path $RegistryHive) -and $this.DeviceName) { 
-                $RegistryData = Get-ItemProperty $RegistryHive
-                $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($this.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                    $PowerUsage_Value += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
-                }
+        #Read power usage
+        If ((Test-Path $RegistryHive) -and $this.DeviceName) { 
+            $RegistryData = Get-ItemProperty $RegistryHive
+            $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($this.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
+                $PowerUsage_Value += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
             }
         }
         Return $PowerUsage_Value
@@ -1814,27 +1811,6 @@ Function Invoke-TcpRequest {
     $Response
 }
 
-Function Invoke-HTTPRequest { 
-     
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$Server = "localhost", 
-        [Parameter(Mandatory = $true)]
-        [String]$Port, 
-        [Parameter(Mandatory = $false)]
-        [String]$Request, 
-        [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 30 #seconds
-    )
-
-    Try { 
-        $Response = Invoke-WebRequest "http://$($Server):$Port$Request" -UseBasicParsing -TimeoutSec $timeout
-    }
-    Catch { $Error.Remove($error[$Error.Count - 1]) }
-
-    $Response
-}
-
 Function Get-CpuId { 
 
     # Brief : gets CPUID (CPU name and registers)
@@ -2064,7 +2040,7 @@ Function Get-Device {
                 $Type_Id.($Device.Type)++
 
                 #Read CPU features
-#                $Device | Add-member CpuFeatures ((Get-CpuId).Features | Sort-Object)
+                $Device | Add-Member CpuFeatures ((Get-CpuId).Features | Sort-Object)
 
                 #Add raw data
                 $Device | Add-Member @{ 
@@ -2263,7 +2239,7 @@ Function Get-Device {
 
 Filter ConvertTo-Hash { 
     [CmdletBinding()]
-    $Units = " kMGTPEZY" #k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
+    $Units = " kMGTPEZY " #k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs([Double]$_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
     "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))

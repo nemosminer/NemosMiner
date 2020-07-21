@@ -1,21 +1,51 @@
-Changelog NemosMiner 27.06.2020
+Changelog NemosMiner 21.07.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+
+Added:
+  - Bad share detection (Config Item 'AllowedBadShareRatio')
+  - More miners for AMD platform
+ 
+Changed:
+  - Added column 'ApiRequestUri' to running miners (Web GUI)
+  - use API modular API files for hash rate collection
+  - Miners: Enabled separate miner instance per GPU model (helps to improve profit rates on mixed rigs)
+
+Changelog NemosMiner 28.06.2020
+===============================
+
+Breaking changes (from main code base):
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+
+Changed:
+- Automatically convert config file (fixes breaking changes for config item change 'Location' & ActiveMinergain')
+  - Location -> Region
+  - Remove defunct properties 'API_ID, API_Key, DisableGPU0, FirstInterval, IdleSec, IsFixedSize, IsReadOnly, IsSynchronized, Location, ManualConfig, SyncRoot
+  - Add all new config items with their default values to existing config file
+
+Changelog NemosMiner 28.06.2020
 ===============================
 
 Breaking changes (from main code base):
 - Changed config item 'Location' to 'Region' -> requires manual change in config file
-- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
 - Pool files are not backwards compatible
 - New data format of SwitchingLog.txt -> need to delete old file manually
 - Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> requires manual change in config file
 
 Added:
 - Basic log viewer in Web GUI
+- Earnings statistics in Web GUI
 
 Changed:
-- Removed redundant charing code
+- Removed redundant charting code
+- Moved Get-NextColor to includes.psm1
 
 Fixed:
 - Earnings display in GUI
+- Date sort order in charting
 
 What's still broken:
 - Idle detection

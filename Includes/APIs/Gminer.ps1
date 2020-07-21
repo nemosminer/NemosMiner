@@ -34,9 +34,6 @@ class Gminer : Miner {
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = ($Data.total_accepted_shares)
             $Shares_Rejected = ($Data.total_rejected_shares)
-            If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                $this.SetStatus("Failed")
-            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
         }
 

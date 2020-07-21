@@ -1,21 +1,22 @@
 using module ..\Includes\Include.psm1
 
 Try { 
-    $Request = get-content ((split-path -parent (get-item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zpool\zpool.json") | ConvertFrom-Json 
+    $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zpool\zpool.json") | ConvertFrom-Json 
 }
-Catch { return }
+Catch { Return }
 
-If (-not $Request) { return }
+If (-not $Request) { Return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $HostSuffix = "mine.zpool.ca"
 $PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
+$PoolRegions = "eu", "jp", "na", "sea"
+
 # Placed here for Perf (Disk reads)
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $PoolsConfig.$ConfName
-$PoolRegions = "eu", "jp", "na", "sea"
 
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algorithm = $_
@@ -26,11 +27,13 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
     $Stat_Name = "$($Name)_$($Algorithm_Norm)_Profit"
-    If ((Get-Stat -Name $Stat_Name) -eq $null) { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) }
-    Else { $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) }
+    $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
     $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+
+    Try { $EstimateCorrection = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
+    Catch { $EstimateCorrection = [Decimal]1 }
 
     $PoolRegions | ForEach-Object { 
         $Region = $_
@@ -42,7 +45,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                EstimateCorrection = [Double]$PoolConf.EstimateCorrection
+                PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
                 Protocol           = "stratum+tcp"
                 Host               = "$($Algorithm).$($Region).$($HostSuffix)"
                 Port               = [UInt16]$PoolPort
@@ -51,6 +54,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee
+                EstimateCorrection = $EstimateCorrection
             }
         }
     }

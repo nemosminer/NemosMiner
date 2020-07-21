@@ -44,6 +44,10 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory = $false)]
+    [Switch]$DisableEstimateCorrection = $false, #If true NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+    [Parameter(Mandatory = $false)]
+    [Switch]$DisableMinerFees = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
+    [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
     [Switch]$EnableEarningsTrackerLog = $false, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
@@ -215,6 +219,15 @@ Catch {
     Add-Type -Path ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
+Try { 
+    Add-Type -Path ".\Includes\~CPUID.dll" -ErrorAction Stop
+}
+Catch { 
+    Remove-Item ".\Includes\~CPUID.dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Includes\~CPUID.dll"
+    Add-Type -Path ".\Includes\~CPUID.dll"
+}
+
 #Initialize variables
 New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
@@ -262,7 +275,6 @@ $Changed_Config_Keys = $Config.Keys | Where-Object { $_ -notin @(@($Config_Temp.
 $Changed_Config_Keys | ForEach-Object { 
     Switch ($_) { 
         "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
-        "PricePenaltyfactor" { $Config.EstimateCorrection = $Config.$_; $Config.Remove($_) }
         "ActiveMinergain" { $Config.RunningMinerGainPct  = $Config.$_; $Config.Remove($_) }
         Default { $Config.Remove($_) } #Remove unsupported config item
     }
@@ -324,8 +336,12 @@ Function Global:TimerUITick {
             }
         }
 
-        If (($Items = Compare-Object -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools").BaseName | Sort-Object -Unique) | Where-Object { $_.SideIndicator -eq "=>" }) | Where-Object InputObject -gt 0) { 
-            $Items | ForEach-Object { If ($_ -ne $null) { } $CheckedListBoxPools.Items.AddRange($_) }
+        If (($Items = Compare-Object -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique) | Where-Object { $_.SideIndicator -eq "=>" }) | Where-Object InputObject -gt 0) { 
+            $Items | ForEach-Object { 
+                If ($_ -ne $null) { 
+                    $CheckedListBoxPools.Items.AddRange($_)
+                }
+            }
             $Config.PoolName | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $true) }
         }
         $Variables | Add-Member -Force @{ InCycle = $true }
@@ -418,12 +434,11 @@ Function Global:TimerUITick {
             }
 
             If ($Variables.Miners) { 
-#                $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @{ Name = "Type"; Expression = { $_.Type -join " & " } }, @{ Name = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm -join "; " } }, Name, @{ Name = "HashRate(s)"; Expression = { "$($_.Workers.Pool.Speed | ConvertTo-Hash)/s" -join "; " } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } }, @{ Name = "Host(s)"; Expression = { (($_.Workers.Pool.Host | Select-Object -Unique) -join ';')} } | Sort-Object Type)
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object  @{ Name = "Type"; Expression = { $_.Type -join " & " } }, @{ Name = "Miner"; Expression = { $_.Info } }, @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '} }, @{ Name = "HashRate(s)"; Expression = { If ($_.Speed_Live -contains $null) { "$($_.Speed_Live | ConvertTo-Hash)/s" -join ' & ' } Else { "$($_.Speed | ConvertTo-Hash)/s" -join ' & ' } } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } } | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
             
                 If (-not ($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
-                    Write-Message "No miners running."
+                    Write-Message "No miners running. Waiting for next cycle."
                 }
             }
             $LabelBTCPrice.Text = If ($Variables.Rates."BTC"."BTC".$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 BTC = $(($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
@@ -599,8 +614,8 @@ Function Global:TimerUITick {
             If ($Config.IgnorePowerCost) { $SortBy = "Earning" } Else { $SortBy = "Profit" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
-                $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object { $_.Benchmark })
-                $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object { $_.MeasurePowerUsage })
+                $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
+                $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
                 $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -EQ $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
                     $Config.ShowAllMiners -or <#List all miners#>
@@ -1497,8 +1512,8 @@ $LabelGuiDevices.LinkColor = [System.Drawing.Color]::Blue
 $LabelGuiDevices.ActiveLinkColor = [System.Drawing.Color]::Blue
 $LabelGuiDevices.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelGuiDevices.TextAlign = "MiddleLeft"
-$LabelGuiDevices.Text = "Use the web GUI to enable / disable individual devices"
-$LabelGuiDevices.Add_Click( { Start-Process "http://localhost:$($Variables.APIPort)/devices.html" })
+$LabelGuiDevices.Text = "Use the Web GUI to enable / disable individual devices"
+$LabelGuiDevices.Add_Click( { Start-Process "http://localhost:$($Config.APIPort)/devices.html" })
 $ConfigPageControls += $LabelGuiDevices
 
 $CheckBoxAutostart = New-Object System.Windows.Forms.CheckBox

@@ -94,7 +94,7 @@
     success: function(result) {
       regions = result;
       $.each(regions, function (key, value) {
-        $('<input/>', { type: 'radio', id: value.toLowerCase(), value: value, name: "region", title: title}).appendTo(regionscontainer);
+        $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value, name: "region", title: title}).appendTo(regionscontainer);
         $('<label/>', { 'for': value, text: value, title: title }).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
       })

@@ -43,7 +43,7 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                EstimateCorrection = [Double]$PoolConf.EstimateCorrection
+                PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
                 Protocol           = "stratum+tcp"
                 Host               = [String]"$Algorithm.$Region.$PoolHost"
                 Port               = [UInt16]$PoolPort
@@ -53,23 +53,27 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
                 SSL                = [Boolean]$false
                 Fee                = $Fee
                 PayoutScheme       = "PPLNS"
+                EstimateCorrection = 1
             }
 
-            [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                EstimateCorrection = [Double]$PoolConf.EstimateCorrection
-                Protocol           = "stratum+ssl"
-                Host               = [String]"$Algorithm.$Region.$PoolHost"
-                Port               = [UInt16]$PoolPort
-                User               = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
-                Pass               = "x"
-                Region             = [String]$Region_Norm
-                SSL                = [Boolean]$true
-                Fee                = $Fee
-                PayoutScheme       = "PPLNS"
+            If ($Algorithm_Norm -notmatch "Ethash*") { 
+                [PSCustomObject]@{ 
+                    Algorithm          = [String]$Algorithm_Norm
+                    Price              = [Double]$Stat.Live
+                    StablePrice        = [Double]$Stat.Week
+                    MarginOfError      = [Double]$Stat.Week_Fluctuation
+                    PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
+                    Protocol           = "stratum+ssl"
+                    Host               = [String]"$Algorithm.$Region.$PoolHost"
+                    Port               = [UInt16]$PoolPort
+                    User               = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
+                    Pass               = "x"
+                    Region             = [String]$Region_Norm
+                    SSL                = [Boolean]$true
+                    Fee                = $Fee
+                    PayoutScheme       = "PPLNS"
+                    EstimateCorrection = 1
+                }
             }
         }
     }

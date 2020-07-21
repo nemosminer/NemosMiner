@@ -29,10 +29,10 @@ class BMiner : Miner {
             #Read stratum info from API
             Try { 
                 If ($Global:PSVersionTable.PSVersion -ge [System.Version]("6.2.0")) { 
-                    $Data | Add-member stratums (Invoke-WebRequest $Request2 -TimeoutSec $Timeout -DisableKeepAlive -MaximumRetryCount 3 -RetryIntervalSec 1 -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop).stratums
+                    $Data | Add-Member stratums (Invoke-WebRequest $Request2 -TimeoutSec $Timeout -DisableKeepAlive -MaximumRetryCount 3 -RetryIntervalSec 1 -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop).stratums
                 }
                 Else { 
-                    $Data | Add-member stratums (Invoke-WebRequest $Request2 -TimeoutSec $Timeout -UseBasicParsing -DisableKeepAlive -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop).stratums
+                    $Data | Add-Member stratums (Invoke-WebRequest $Request2 -TimeoutSec $Timeout -UseBasicParsing -DisableKeepAlive -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop).stratums
                 }
             }
             Catch { 
@@ -49,7 +49,8 @@ class BMiner : Miner {
         $Shares_Rejected = [Int64]0
 
         $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers | ForEach-Object { $_.Algorithm } } | Select-Object -Unique | ForEach-Object { 
-            $HashRate_Name = [String](Get-Algorithm $_)
+            If ( $_ -eq "equihash1445" -and $this.Algorithm -contains "EquihashBTG") { $HashRate_Name = "EquihashBTG" }
+            ELse { $HashRate_Name = [String](Get-Algorithm $_) }
             $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.hash_rate } | Measure-Object -Sum).Sum
             If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.solution_rate } | Measure-Object -Sum).Sum }
 

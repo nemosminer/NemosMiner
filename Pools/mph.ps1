@@ -35,7 +35,7 @@ $Request.return | ForEach-Object {
             CoinName           = [String]$Coin
             Price              = [Double]$Stat.Live
             StablePrice        = [Double]$Stat.Week
-            EstimateCorrection = [Double]$PoolConf.EstimateCorrection
+            PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
             Protocol           = "stratum+tcp"
             Host               = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
             Port               = [UInt16]$Current.algo_switch_port
@@ -44,6 +44,7 @@ $Request.return | ForEach-Object {
             Region             = [String]$Region_Norm
             SSL                = [Bool]$false
             Fee                = [Decimal](0.9 / 100)
+            EstimateCorrection = 1
         }
 
         [PSCustomObject]@{ 
@@ -51,7 +52,7 @@ $Request.return | ForEach-Object {
             CoinName           = [String]$Coin
             Price              = [Double]$Stat.Live
             StablePrice        = [Double]$Stat.Week
-            EstimateCorrection = [Double]$PoolConf.EstimateCorrection
+            PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
             Protocol           = "stratum+ssl"
             Host               = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
             Port               = [UInt16]$Current.algo_switch_port
@@ -60,6 +61,7 @@ $Request.return | ForEach-Object {
             Region             = [String]$Region_Norm
             SSL                = [Bool]$true
             Fee                = [Decimal](0.9 / 100)
+            EstimateCorrection = 1
         }
     }
 }

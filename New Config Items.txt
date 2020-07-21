@@ -1,12 +1,18 @@
-{
-#Powerusage of idle system in Watt. Part of profit calculation
-  "IdlePowerUsageW": 60,
+#Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
+    "AllowedBadShareRatio": 0.1,
+
+#If true MPM will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+  "DisableEstimateCorrection": false,
 
 #Will replace old device selection (work in progress)
   "ExcludeDeviceName": [
     "CPU#00",
     "GPU#02"
   ],
+{
+
+#Powerusage of idle system in Watt. Part of profit calculation
+  "IdlePowerUsageW": 60,
 
 #If true, NM will ignore miner fee for earning & profit calculation
   "IgnoreMinerFee": false,
@@ -49,6 +55,9 @@
     "X25r" = 3
   }
 
+#If true NemosMiner will create separate miner instances per device model. This will increase profitability. (WIP: Need to change each miner to support this new feature)
+  "MinerInstancePerDeviceModel": true, 
+
 #NoDialAlgoMining, if true NemosMiner will not use any dual algo miners
   "NoDualAlgoMining": false,
 
@@ -73,7 +82,7 @@
 #If true, power usage will be read from miners, required for true profit calculation
   "ReadPowerUsage": true,
 
-#europe/us/asia
+#One of europe/us/asia
   "Region": "Europe",
 
 #Show pool data accuracy column in miner overview
