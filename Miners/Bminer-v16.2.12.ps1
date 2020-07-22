@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.2.11-4ecd066-amd64.zip"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.2.11-4ecd066-amd64.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
@@ -25,6 +25,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Raven", $null);         Protocol = @(" -uri raven");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Sero", $null);          Protocol = @(" -uri sero");                           Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Tensority", $null);     Protocol = @(" -uri tensority");                      Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
+    [PSCustomObject]@{ Algorithm = @("Cuckarooz29", $null);   Protocol = @(" -uri cuckarooz29");                    Fee = @(0.02);      MinMemGB = 4; Type = "NVIDIA"; Command = " --fast 4" }
 )
 #Intensities for 2. algorithm
 $Intensities2 = [PSCustomObject]@{ 
