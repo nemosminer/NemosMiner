@@ -1,8 +1,8 @@
 using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Path = ".\Bin\$($Name)\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.6v3/miniZ_v1.6v3_cuda10_win-x64.7z"
+$Path = ".\Bin\NVIDIA-miniZ160v5\miniZ.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.6v5/miniZ_v1.6v5_cuda10_win-x64.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
