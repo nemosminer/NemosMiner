@@ -15,7 +15,7 @@ $Commands = [PSCustomObject]@{
     #"cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m 
     #"tensority"        = "-uri ethstratum://" #Tensority
     #"kawpow"           = "-uri raven://" #Kawpow
-    #"cuckaroo29z "     = "-uri cuckaroo29z://" #Cuckaroo29z 
+     "cuckaroo29z "     = "-uri cuckaroo29z://" #Cuckaroo29z 
     
 
 }
