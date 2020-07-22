@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-Bminer1626\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-v16.2.6-b0bf7b6-amd64.zip"
+$Path = ".\Bin\NVIDIA-Bminer16211\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.2.11-4ecd066-amd64.zip"
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
@@ -15,6 +15,8 @@ $Commands = [PSCustomObject]@{
     #"cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m 
     #"tensority"        = "-uri ethstratum://" #Tensority
     #"kawpow"           = "-uri raven://" #Kawpow
+    #"cuckaroo29z "     = "-uri cuckaroo29z://" #Cuckaroo29z 
+    
 
 }
 $Port = $Variables.NVIDIAMinerAPITCPPort
