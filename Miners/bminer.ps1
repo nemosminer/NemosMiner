@@ -5,7 +5,7 @@ $Commands = [PSCustomObject]@{
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
     #"zhash"            = "-pers auto -uri equihash1445://" #Zhash
-     "ethash"           = "-uri ethstratum://" #Ethash
+    #"ethash"           = "-uri ethstratum://" #Ethash
     #"cuckoocycle"      = "-uri aeternity://" #aeternity
     #"beamv2"           = "-uri beamhash2://" #beam
     #"beamv3"           = "-uri beamhash3://" #beam
@@ -15,7 +15,7 @@ $Commands = [PSCustomObject]@{
     #"cuckaroom"        = "-uri cuckaroo29m://" #cuckaroo29m 
     #"tensority"        = "-uri ethstratum://" #Tensority
     #"kawpow"           = "-uri raven://" #Kawpow
-     "cuckarooz29 "     = "-uri cuckaroo29z://" #Cuckaroo29z 
+    #"cuckarooz29 "     = "-uri cuckaroo29z://" #Cuckaroo29z 
     
 
 }
