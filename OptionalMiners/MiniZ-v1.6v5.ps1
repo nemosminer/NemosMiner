@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Path = ".\Bin\NVIDIA-miniZ160v5\miniZ.exe"
+$Path = ".\Bin\$($Name)\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.6v5/miniZ_v1.6v5_cuda10_win-x64.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
@@ -35,7 +35,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
                     Name       = $Miner_Name
                     DeviceName = $Miner_Devices.Name
                     Path       = $Path
-                    Arguments  = ("$($_.Command) --url $($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --cleanjobs --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')").trim() #--oc1 --oc2 --f11=0
+                    Arguments  = ("$($_.Command) --url $($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')").trim() #--oc1 --oc2 --f11=0
                     Algorithm  = $_.Algorithm
                     API        = "MiniZ"
                     Port       = $MinerAPIPort
