@@ -755,7 +755,6 @@ Function Start-Cycle {
             $MinersDeviceGroup = @($_.Group)
             $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object { $_.Benchmark })
             $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object { $_.MeasurePowerUsage })
-            $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -EQ $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
 
             #Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
