@@ -25,7 +25,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Raven", $null);         Protocol = @(" -uri raven");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Sero", $null);          Protocol = @(" -uri sero");                           Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Tensority", $null);     Protocol = @(" -uri tensority");                      Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
-    [PSCustomObject]@{ Algorithm = @("Cuckarooz29", $null);   Protocol = @(" -uri cuckarooz29");                    Fee = @(0.02);      MinMemGB = 4; Type = "NVIDIA"; Command = " --fast 4" }
+    [PSCustomObject]@{ Algorithm = @("cuckarooz29", $null);   Protocol = @(" -uri cuckarooz29");                    Fee = @(0.02);      MinMemGB = 4; Type = "NVIDIA"; Command = " --fast 4" }
 )
 #Intensities for 2. algorithm
 $Intensities2 = [PSCustomObject]@{ 
