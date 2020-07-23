@@ -18,13 +18,13 @@ $PoolRegions = "eu", "jp", "usa"
 $PoolHost = "nicehash.com"
 
 If ($PoolsConfig.$ConfName.IsInternal) { 
-    $Fee = 0.01
+    $Fee = 0.02
 }
 Else { 
     $Fee = 0.05
 }
 
-$Request.miningAlgorithms | Where-Object { $_.speed -gt 0 }| ForEach-Object { 
+$Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object { 
     $Algorithm = $_.Algorithm
     $PoolPort = $_.algodetails.port
     $Algorithm_Norm = Get-Algorithm $Algorithm
@@ -56,7 +56,7 @@ $Request.miningAlgorithms | Where-Object { $_.speed -gt 0 }| ForEach-Object {
                 EstimateCorrection = 1
             }
 
-            If ($Algorithm_Norm -notmatch "Ethash*") { 
+            If ($Algorithm_Norm -match "CryptonightR|Equihash1445|Randomx") { 
                 [PSCustomObject]@{ 
                     Algorithm          = [String]$Algorithm_Norm
                     Price              = [Double]$Stat.Live
