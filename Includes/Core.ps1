@@ -377,7 +377,7 @@ Function Start-Cycle {
         }
 
         #Prepare devices
-        $EnabledDevices = @($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
+        $EnabledDevices = $Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
         #For GPUs set type AMD or NVIDIA
         $EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
         If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } #Replace Model information from devices -> will create only one miner instance
@@ -628,7 +628,7 @@ Function Start-Cycle {
             $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
         }
         Else { 
-            $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))          $(If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { "Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))          " })1 BTC=$($Variables.Rates."BTC".$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+            $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))&ensp;&ensp;&ensp;&ensp;&ensp;$(If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { "Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))&ensp;&ensp;&ensp;&ensp;&ensp;" })1 BTC=$($Variables.Rates."BTC".$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
         }
 
         #Also restart running miners (stop & start)

@@ -220,12 +220,12 @@ Catch {
 }
 
 Try { 
-    Add-Type -Path ".\Includes\~CPUID.dll" -ErrorAction Stop
+    Add-Type -Path ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
 }
 Catch { 
-    Remove-Item ".\Includes\~CPUID.dll" -Force -ErrorAction Ignore
-    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Includes\~CPUID.dll"
-    Add-Type -Path ".\Includes\~CPUID.dll"
+    Remove-Item ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
+    Add-Type -Path ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
 #Initialize variables
