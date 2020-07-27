@@ -755,6 +755,16 @@ Function Start-ChildJob {
     }
 }
 
+Function Stop-ChildJob { 
+
+    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore }
+    $Variables.EarningsTrackerJobs = @()
+    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
+    $Variables.BrainJobs = @()
+
+    Write-Message "Stopped Earnings tracker and Brain jobs."
+}
+
 Function Initialize-API { 
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true) { 
@@ -1162,16 +1172,6 @@ Function Start-Mining {
 
     $Variables.CycleRunspace = $CycleRunspace
     $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-}
-
-Function Stop-ChildJob { 
-
-    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore }
-    $Variables.EarningsTrackerJobs = @()
-    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
-    $Variables.BrainJobs = @()
-
-    Write-Message "Stopped Earnings tracker and Brain jobs."
 }
 
 Function Stop-Mining { 
