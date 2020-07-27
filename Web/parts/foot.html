@@ -28,5 +28,50 @@
     });
   });
 
+  //Set button status
+  $(function() {
+    $.ajax({
+      url: '/functions/mining/getstatus',
+      success: function(result) {
+        document.getElementById('miningstart').disabled = (result == "Running");
+        document.getElementById('miningstop').disabled = (result == "Stopped");
+        document.getElementById('miningpause').disabled = (result == "Stopped" || result == "Paused");
+      }
+    });
+  });
+
+  $('#miningpause').click(function () {
+    $command = '/functions/mining/pause';
+    $('.modal-body').load($command, function() {
+      $('.modal-title').text($('#miningpause').text());
+      $('#myModal').modal({show:true});
+    });
+    document.getElementById('miningstart').disabled = false;
+    document.getElementById('miningstop').disabled = false;
+    document.getElementById('miningpause').disabled = true;
+  });
+
+  $('#miningstart').click(function () {
+    $command = '/functions/mining/start';
+    $('.modal-body').load($command, function() {
+      $('.modal-title').text($('#miningstart').text());
+      $('#myModal').modal({show:true});
+    });
+    document.getElementById('miningstart').disabled = true;
+    document.getElementById('miningstop').disabled = false;
+    document.getElementById('miningpause').disabled = false;
+  });
+
+  $('#miningstop').click(function () {
+    $command = '/functions/mining/stop';
+    $('.modal-body').load($command, function() {
+      $('.modal-title').text($('#miningstop').text());
+      $('#myModal').modal({show:true});
+    });
+    document.getElementById('miningstart').disabled = false;
+    document.getElementById('miningstop').disabled = true;
+    document.getElementById('miningpause').disabled = true;
+  });
+
   </script>
 </html>

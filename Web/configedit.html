@@ -95,7 +95,7 @@
       regions = result;
       $.each(regions, function (key, value) {
         $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value, name: "region", title: title}).appendTo(regionscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "NemosMiner will prefer pools from the selected region" }).appendTo(regionscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: ("&ensp;" + value), title: "NemosMiner will prefer pools from the selected region" }).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
       })
     }
@@ -108,7 +108,7 @@
       poolnames = result;
       $.each(result, function (key, value) {
         $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value, title: title }).appendTo(poolscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "You cannot select multiple variants of the same pool" }).appendTo(poolscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: ("&ensp;" + value), title: "You cannot select multiple variants of the same pool" }).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }

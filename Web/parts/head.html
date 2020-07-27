@@ -26,10 +26,16 @@
   </head>
   <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-      <a class="navbar-brand" href="/"><h5>NemosMiner</h5></a>
+      <div justify-content-space-between>
+        <a class="navbar-brand" href="/"><h5>NemosMiner</h5></a>
+        &ensp;&ensp;&ensp;
+        <button id="miningstart" class="btn btn-success btn-lg">Start mining</button>
+        <button id="miningpause" class="btn btn-warning btn-lg">Pause mining</button>
+        <button id="miningstop" class="btn btn-danger btn-lg">Stop mining</button>
+      </div>
       <div class="text-white" id="summary"></div>
-      <div class="text-white" id="exchangerates"></div>
-    </nav>
+      &ensp;&ensp;&ensp;&ensp;
+  </nav>
 
     <div class="container-fluid">
       <div class="row">

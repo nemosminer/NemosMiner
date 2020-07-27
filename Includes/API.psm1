@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.5.1"
+    $APIVersion = "0.2.6.0"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -130,6 +130,7 @@ Function Start-APIServer {
                                 } 
                             }
                             $OrderedConfig | ConvertTo-Json | Out-File $Variables.ConfigFile
+                            $Variables.RestartCycle = $true
                             $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
                         }
                         Catch { 
@@ -145,6 +146,39 @@ Function Start-APIServer {
                             $Lines = 100
                         }
                         $Data = " $(Get-Content -Path $Variables.LogFile -Tail $Lines | ForEach-Object { "$($_)`n" } )"
+                        Break
+                    }
+                    "/functions/mining/getstatus" { 
+                        $Data = ConvertTo-Json ($Variables.MiningStatus)
+                        Break
+                    }
+                    "/functions/mining/pause" { 
+                        If ($Variables.MiningStatus -ne "Paused") { 
+                            $Variables.NewMiningStatus = "Paused"
+                        }
+                        $Variables.RestartCycle = $true
+                        $Data = "Mining is paused. BrainPlus and Earning tracker running."
+                        $Data = "<pre>$Data</pre>"
+                        Break
+                    }
+                    "/functions/mining/start" { 
+                        If ($Variables.MiningStatus -ne "Running") { 
+                            $Variables.NewMiningStatus = "Running"
+                        }
+                        $Variables.RestartCycle = $true
+                        $Data = "Mining processes started."
+                        $Data = "<pre>$Data</pre>"
+                        Break
+                    }
+                    "/functions/mining/stop" { 
+                        If ($Variables.MiningStatus -ne "Stopped") { 
+                            $Variables.NewMiningStatus = "Stopped"
+                        }
+                        $Variables.RestartCycle = $true
+                        $Data = "NemosMiner is idle.`n"
+                        If ($Variables.MiningStatus -eq "Running") { $Data += "`nMining stopped." }
+                        $Data += "`nStopped Earnings tracker and Brain jobs."
+                        $Data = "<pre>$Data</pre>"
                         Break
                     }
                     "/functions/log/clear" { 
@@ -416,35 +450,35 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/available" { 
-                        $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/idle" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Idle | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Idle | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/running" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miningcost" { 
