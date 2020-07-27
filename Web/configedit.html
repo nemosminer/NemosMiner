@@ -6,72 +6,103 @@
 <div id="configfilename" class="alert alert-info" role="alert"></div>
 
 <table>
-  <tr>
-    <td>
-      <label for="btcaddress">BTC Address </label>
-      <input title="Your BitCoin address &#10;(must be 34 chars long)" type="text" id="btcaddress" name="btcaddress" pattern="[0-9][A-Z][a-z]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=50>
-      <br>
-
-      <label for="mphusername">MPH user name </label>
-      <input title="Your MiningPoolHub Username" type="text" id="mphusername" name="mphusername" value="nemo">
-      <br>
-
-      <label for="mphapikey">MPH API key </label>
-      <input title="Your MiningPoolHub API key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" type="text" pattern="[0-9][A-F][a-f]{64}" id="mphapikey" name="mphapikey" size=64>
-      <br><br>
-
-      <label for="interval">Interval (seconds) </label>
-      <input title="interval duration &#10;(between 30 & 3600 seconds)" type="number" id="interval" name="interval" min="30" max="3600" value=90>
-      <br>
-
-      <label for="donate">Donation (minutes) </label>
-      <input title="Donation duration per day (Default 13) &#10;(between 0 & 60 minutes) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" type="number" id="donate" name="donate" min="0" max="60" value=13>
-      <br><br>
-
-      <label for="algorithm">Algorithms </label>
-      <input size=50 type="text" id="algorithm" name="algorithm" value="allium,bitcore,blake2s,blakecoin,c11,equihash,groestl,hmq1725,hsr,keccak,keccakc,lbry,Lyra2RE2,lyra2z,MyriadGroestl,neoscrypt,nist5,phi,poly,sha256t,sib,skein,skunk,tribus,x11evo,x16r,x16s,x17,xevan,yescrypt" title="'+[algorithm]' to enable algorithm &#10;'-[algorithm]' to disable algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used &#10;If '-' is used, then all algorithms except the disabled ones are used &#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same algorithm">
-      <br><br>
-
-      <label for="currency">Currencies </label>
-      <input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion&#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">
-      <br>
-
-      <label for="pwdcurrency">Password Currency </label>
-      <input type="text" id="pwdcurrency" name="pwdcurrency" value="BTC" title="If unsure leave the default 'BTC' &#10;Consult the pool API information for more information">
-      <br><br>
-
-      <label for="proxy">Proxy </label>
-      <input type="text" id="proxy" name="proxy" title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128">
-      <br><br>
-
-      <label for="runningminergainpct">Running Miner Gain (%) </label>
-      <input title="Percent of advantage that running miner has  &#10;over candidates in term of earning/profit" type="number" id="runningminergainpct" name="runningminergainpct" min="0" max="100" value=5>
-      <br><br>
-      <fieldset>
-        <legend class=h6>Select the region closest to your location</legend>
-        <div title="NemosMiner will prefer pools from the selected region" id="regions"></div>
-      </fieldset>
-      <br>
-    </td>
-    <td>
-      <div class="col-md-12">
-        <fieldset>
-          <legend class=h6 title="You cannot select multiple variants of the same pool">Select one or more pools</legend>
-          <div title="You cannot select multiple variants of the same pool" id="pools"></div>
-        </fieldset>
+  <div>
+    <tr style="vertical-align: top">
+      <td>
+        <label for="btcaddress">BTC Address </label>
+        <input title="Your BitCoin address &#10;(must be 34 chars long)" type="text" id="btcaddress" name="btcaddress" pattern="[0-9][A-Z][a-z]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=50>
         <br>
 
-        <fieldset>
-          <legend class=h6>Miners selection</legend>
-          <input type="checkbox" id="regularminers" name="regularminers" title="Miner definition files in folder '.\Miners'">
-          <label for="regularminers" title="Miner definition files in folder '.\Miners'">Regular Miners</label>
+        <label for="mphusername">MPH user name </label>
+        <input title="Your MiningPoolHub Username" type="text" id="mphusername" name="mphusername" value="nemo">
+        <br>
+
+        <label for="mphapikey">MPH API key </label>
+        <input title="Your MiningPoolHub API key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" type="text" pattern="[0-9][A-F][a-f]{64}" id="mphapikey" name="mphapikey" size=64>
+        <br><br>
+
+        <label for="interval">Interval (seconds) </label>
+        <input title="interval duration &#10;(between 30 & 3600 seconds)" type="number" id="interval" name="interval" min="30" max="3600" value=90>
+        <br>
+
+        <label for="donate">Donation (minutes) </label>
+        <input title="Donation duration per day (Default 13) &#10;(between 0 & 60 minutes) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" type="number" id="donate" name="donate" min="0" max="60" value=13>
+        <br><br>
+
+        <label for="algorithm">Algorithms </label>
+        <input size=50 type="text" id="algorithm" name="algorithm" value="allium,bitcore,blake2s,blakecoin,c11,equihash,groestl,hmq1725,hsr,keccak,keccakc,lbry,Lyra2RE2,lyra2z,MyriadGroestl,neoscrypt,nist5,phi,poly,sha256t,sib,skein,skunk,tribus,x11evo,x16r,x16s,x17,xevan,yescrypt" title="'+[algorithm]' to enable algorithm &#10;'-[algorithm]' to disable algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used &#10;If '-' is used, then all algorithms except the disabled ones are used &#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same algorithm">
+        <br><br>
+
+        <label for="currency">Currencies </label>
+        <input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion&#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">
+        <br>
+
+        <label for="pwdcurrency">Password Currency </label>
+        <input type="text" id="pwdcurrency" name="pwdcurrency" value="BTC" title="If unsure leave the default 'BTC' &#10;Consult the pool API information for more information">
+        <br><br>
+
+        <label for="proxy">Proxy </label>
+        <input type="text" id="proxy" name="proxy" title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128">
+        <br><br>
+
+        <label for="runningminergainpct" title="Percent of advantage that running miner has  &#10;over candidates in term of earning/profit">Running Miner Gain (%) </label>
+        <input title="Percent of advantage that running miner has  &#10;over candidates in term of earning/profit" type="number" id="runningminergainpct" name="runningminergainpct" min="0" max="100" value=5>
+        <br>
+      </td>
+      <td>
+        <div class="col-md-12">
+          <fieldset>
+            <legend class=h6 title="You cannot select multiple variants of the same pool">Select one or more pools</legend>
+            <div title="You cannot select multiple variants of the same pool" id="pools"></div>
+          </fieldset>
           <br>
-          <input type="checkbox" id="optionalminers" name="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">
-          <label for="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">Optional Miners</label>
-        </fieldset>
-      </div>
-    </td>
-  </tr>
+        </div>
+      </td>
+      <td>
+        <div class="col-md-12">
+          <fieldset>
+            <legend class=h6>Select the region closest to your location</legend>
+            <div title="NemosMiner will prefer pools from the selected region" id="regions"></div>
+          </fieldset>
+        </div>
+        <br>
+        <div class="col-md-12">
+          <fieldset>
+            <legend class=h6>Miners selection</legend>
+            <input type="checkbox" id="regularminers" name="regularminers" title="Miner definition files in folder '.\Miners'">
+            <label for="regularminers" title="Miner definition files in folder '.\Miners'">Regular Miners</label>
+            <br>
+            <input type="checkbox" id="optionalminers" name="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">
+            <label for="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">Optional Miners</label>
+          </fieldset>
+          <br>
+          <br>
+          <input type="checkbox" id="autostart" name="autostart" title="Automatically start mining when NemosMiner is started">
+          <label for="autostart" title="Automatically start mining when NemosMiner is started">Auto Start</label>
+          <br>
+          <input type="checkbox" id="startpaused" name="startpaused" title="Start background processes, but do no not start mining when NemosMiner is started">
+          <label for="startpaused" title="Start background processes, but do no not start mining when NemosMiner is started">Pause on Auto Start</label>
+          <br>
+          <input type="checkbox" id="minewhenidle" name="minewhenidle" title="Mine only when system is idle, e.g. no mouse or keybord activity is detected">
+          <label for="minewhenidle" title="Mine only when system is idle, e.g. no mouse or keybord activity is detected">Mine only when system is idle for</label>
+          <input title="Seconds the system must be idle befor mining starts" type="number" id="idlesec" name="idlesec" min="0" max="3600" value=120>
+          <label for="idlesec" title="Seconds the system must be idle befor mining starts">seconds</label>
+          <br>
+          <input type="checkbox" id="enableearningstrackerlog" name="enableearningstrackerlog">
+          <label for="enableearningstrackerlog">Earnings tracker Log</label>
+          <br>
+          <input type="checkbox" id="startguiminimized" name="startguiminimized">
+          <label for="startguiminimized">Start UI minimized</label>
+          <br>
+          <input type="checkbox" id="autoupdate" name="autoupdate">
+          <label for="autoupdate">Auto Update</label>
+          <br>
+          <input type="checkbox" id="hideconsole" name="hideconsole">
+          <label for="hideconsole">Hide Console</label>
+        </div>
+      </td>
+    </tr>
+  </div>
 </table>
 
 <button id="save-button" class="btn btn-primary">Save Configuration</button>
@@ -95,7 +126,7 @@
       regions = result;
       $.each(regions, function (key, value) {
         $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value, name: "region", title: title}).appendTo(regionscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: ("&ensp;" + value), title: "NemosMiner will prefer pools from the selected region" }).appendTo(regionscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "NemosMiner will prefer pools from the selected region" }).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
       })
     }
@@ -108,7 +139,7 @@
       poolnames = result;
       $.each(result, function (key, value) {
         $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value, title: title }).appendTo(poolscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: ("&ensp;" + value), title: "You cannot select multiple variants of the same pool" }).appendTo(poolscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "You cannot select multiple variants of the same pool" }).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }
@@ -122,7 +153,7 @@
     } else {
       var poolname = (event.target).textContent;
     }
-    var basepoolname = (poolname.replace('24hr', '')).replace('Coins', '');
+    var basepoolname = (poolname.toLowerCase().replace('24hr', '')).replace('coins', '');
 
     var pool = document.getElementById(basepoolname);
     if (pool && poolname != pool.id) {
@@ -134,7 +165,7 @@
       pool.checked = false;
     }
 
-    var pool = document.getElementById(basepoolname + 'Coins');
+    var pool = document.getElementById(basepoolname + 'coins');
     if (pool && poolname != pool.id) {
       pool.checked = false;
     }
@@ -147,26 +178,26 @@
       config = result;
       if ((config.Wallet).toString().trim() != "") {
         document.getElementById('btcaddress').value = (config.Wallet).toString();
-      }
+      };
       if ((config.UserName).toString().trim() != "") {
         document.getElementById('mphusername').value = (config.UserName).toString();
-      }
+      };
       if ((config.APIKEY).toString().trim() != "") {
         document.getElementById('mphapikey').value = (config.APIKEY).toString();
-      }
+      };
       if (config.Interval == null) { 
         document.getElementById('interval').value = 90;
       } else {
         document.getElementById('interval').value = parseInt(config.Interval);
-      }
+      };
       if (config.Donate == null) { 
         document.getElementById('donate').value = 13;
       } else {
         document.getElementById('donate').value = parseInt(config.Donate);
-      }
+      };
       if ((config.Region).toString().trim() != "") {
         document.getElementById((config.Region).toString().toLowerCase()).checked = true;
-      }
+      };
       document.getElementById('algorithm').value = (config.Algorithm).toString();
       document.getElementById('currency').value = config.Currency;
       document.getElementById('pwdcurrency').value = config.Passwordcurrency;
@@ -175,78 +206,113 @@
         document.getElementById('runningminergainpct').value = 5;
       } else {
         document.getElementById('runningminergainpct').value = parseInt(config.RunningMinerGainPct);
-      }
+      };
       $.each(config.PoolName, function (key, value) {
         document.getElementById((value).toString().toLowerCase()).checked = true;
       });
       if (config.IncludeOptionalMiners) {
         document.getElementById('optionalminers').checked = true;
-      }
+      };
       if (config.IncludeRegularMiners) {
         document.getElementById('regularminers').checked = true;
-      }
+      };
+      if (config.Autostart) {
+        document.getElementById('autostart').checked = true;
+      };
+      if (config.StartPaused) {
+        document.getElementById('startpaused').checked = true;
+      };
+      if (config.MineWhenIdle) {
+        document.getElementById('minewhenidle').checked = true;
+      };
+      if (config.IdleSec == null) { 
+        document.getElementById('idlesec').value = 120;
+      } else {
+        document.getElementById('idlesec').value = parseInt(config.IdleSec);
+      };
+      if (config.EnableEarningsTrackerLog) {
+        document.getElementById('enableearningstrackerlog').checked = true;
+      };
+      if (config.StartGUIMinimized) {
+        document.getElementById('startguiminimized').checked = true;
+      };
+      if (config.Autoupdate) {
+        document.getElementById('autoupdate').checked = true;
+      };
+      if (config.HideConsole) {
+        document.getElementById('hideconsole').checked = true;
+      };
+      
     }
+  });
+
+  //StartPaused
+  document.getElementById('startpaused').disabled = !(document.getElementById('autostart').checked);
+  $(document.getElementById('autostart')).click(function(event) {
+    document.getElementById('startpaused').disabled = !(document.getElementById('autostart').checked);
+  });
+
+  //IdleSec
+  document.getElementById('idlesec').disabled = !(document.getElementById('minewhenidle').checked);
+  $(document.getElementById('minewhenidle')).click(function(event) {
+    document.getElementById('idlesec').disabled = !(document.getElementById('minewhenidle').checked);
   });
 
   $('#save-button').click(function () {
     config.PoolName = []
     if ((document.getElementById('btcaddress').value).toString().trim() == "") {
       document.getElementById('btcaddress').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
-    }
+    };
     config.Wallet = document.getElementById('btcaddress').value;
-
     if ((document.getElementById('mphusername').value).toString().trim() == "") {
       document.getElementById('mphusername').value = 'Nemo';
-    }
+    };
     config.UserName = document.getElementById('mphusername').value;
     config.APIKEY = document.getElementById('mphapikey').value;
-    
     if (document.getElementById('interval').value == null) { 
       document.getElementById('interval').value = 90;
-    }
+    };
     config.Interval = parseInt(document.getElementById('interval').value);
-
     if (document.getElementById('donate').value == null) { 
       document.getElementById('donate').value = 13;
-    }
+    };
     config.Donate = parseInt(document.getElementById('donate').value);
-
-    if (document.getElementById('donate').value == null) { 
-      document.getElementById('donate').value = 13;
-    }
-    config.Donate = parseInt(document.getElementById('donate').value)
-
     $.each(regions, function (key, value) {
       if (document.getElementById(value.toLowerCase()).checked == true) {
         config.Region = value;
-      }
+      };
     });
-
     if (document.getElementById('algorithm').value == null) {
       document.getElementById('algorithm').value = 'mBTC';
-    }
+    };
     config.Algorithm = document.getElementById('algorithm').value;
-
     if ((document.getElementById('currency').value).toString().trim() == null) {
       config.Currency = 'mBTC';
-    }
+    };
     config.Currency = (document.getElementById('currency').value).toString().split(',');
-
     config.Passwordcurrency = document.getElementById('pwdcurrency').value;
     config.Proxy = document.getElementById('proxy').value;
-
     if (document.getElementById('runningminergainpct').value == null) {
       document.getElementById('runningminergainpct').value = 5;
-    }
+    };
     config.RunningMinerGainPct = parseInt(document.getElementById('runningminergainpct').value);
-
     $.each(poolnames, function (key, value) {
       if (document.getElementById(value.toLowerCase()).checked == true) {
         (config.PoolName).push(value);
-      }
+      };
     });
     config.IncludeRegularMiners = document.getElementById('regularminers').checked;
     config.IncludeOptionalMiners = document.getElementById('optionalminers').checked;
+    config.Autostart = document.getElementById('autostart').checked;
+    config.StartPaused = document.getElementById('startpaused').checked;
+    config.MineWhenIdle = document.getElementById('minewhenidle').checked;
+    if (document.getElementById('idlesec').value == null) { 
+      document.getElementById('idlesec').value = 120;
+    };
+    config.EnableEarningsTrackerLog = document.getElementById('enableearningstrackerlog').checked;
+    config.StartGUIMinimized = document.getElementById('startguiminimized').checked;
+    config.Autoupdate = document.getElementById('autoupdate').checked;
+    config.HideConsole = document.getElementById('hideconsole').checked;
 
     //Write current config
     var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
