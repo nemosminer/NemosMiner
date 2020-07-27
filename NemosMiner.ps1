@@ -323,6 +323,8 @@ If ($Config.AutoStart) {
 Write-Message "Starting $($Branding.ProductLabel)® v$((Get-Content ".\Config\version.json" | ConvertFrom-Json).Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 Write-Message "Using configuration file '$($Variables.ConfigFile)'."
 
+If ($Config.WebGUI -eq $true) { Initialize-API }
+
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $false
 
@@ -1576,7 +1578,7 @@ $LabelIdleSec.Location = [System.Drawing.Point]::new(630, 68)
 $LabelIdleSec.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelIdleSec
 
-If ($Config.IdleSec -lt 1) { $Config.IdleSec = [Int]120 }
+If ($Config.IdleSec -lt 0) { $Config.IdleSec = [Int]120 }
 $NumudIdleSec = New-Object System.Windows.Forms.NumericUpDown
 $NumudIdleSec.DecimalPlaces = 0
 $NumudIdleSec.Minimum = 5
