@@ -553,7 +553,6 @@ Function Start-Cycle {
         $SmallestProfitBias = [Double][Math]::Abs((($Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_.Profit_Bias) }).Profit_Bias | Measure-Object -Minimum).minimum) * 2
         $Variables.Miners | Where-Object Available -EQ $true | ForEach-Object { $_.Earning_Bias += $SmallestEarningBias; $_.Profit_Bias += $SmallestProfitBias }
 
-        
         If (-not ($Variables.Miners | Where-Object Available -EQ $true)) { 
             Write-Message -Level Warn "No miners available. Waiting for next cycle."
             $Variables.EndLoop = $true
@@ -568,7 +567,6 @@ Function Start-Cycle {
             $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
             $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } #use a smaller subset of miners
             $BestMiners = $FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName) } | Select-Object -First 1) }
-            Remove-Variable SortBy
 
             $Miners_Device_Combos = Get-Combination ($Variables.Miners | Where-Object Available -EQ $true | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 }
 
@@ -585,13 +583,11 @@ Function Start-Cycle {
                 }
             )
 
-            If ($Config.ReadPowerUsage -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $BestMiners_Combo = $BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination
-            Remove-Variable SortBy
-       
             Remove-Variable Miner_Device_Combo
             Remove-Variable Miners_Device_Combos
             Remove-Variable BestMiners
+            Remove-Variable SortBy
         }
         #Hack part 2: reverse temporarily forced positive earnings & Earnings
         $Variables.Miners | Where-Object Available -EQ $true | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Profit_Bias -= $SmallestProfitBias }
@@ -802,7 +798,7 @@ $ProgressPreference = "SilentlyContinue"
 If (Test-Path ".\Includes\APIs" -PathType Container -ErrorAction Ignore) { Get-ChildItem ".\Includes\APIs" -File | ForEach-Object { . $_.FullName } }
 
 While ($true) { 
-    If ($Variables.Paused) { 
+    If ($Variables.MiningStatus -eq "Paused") { 
         # Run a dummy cycle to keep the UI updating.
         $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
 
