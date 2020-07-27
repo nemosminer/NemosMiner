@@ -807,9 +807,6 @@ Function Initialize-Application {
     $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
     $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
-    #Read the stats sp that they are available in the API
-    Get-Stat | Out-Null
-
     Initialize-API
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
@@ -848,16 +845,6 @@ Function Initialize-Application {
 
     # Purge Logs more than 10 days
     Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-
-    # Find available TCP Ports
-    $StartPort = If ([UInt16]$Config.APIPort) { $Config.APIPort } Else { 4068 }
-    $Config.Type | Sort-Object | ForEach-Object { 
-        Write-Message "Finding available TCP Port for $_ miners..."
-        $Port = Get-FreeTcpPort($StartPort)
-        $Variables | Add-Member -Force @{ "$($_)MinerAPITCPPort" = $Port }
-        Write-Message "$_ miners API Port: $($Port)"
-        $StartPort = $Port - 1
-    }
 }
 
 Function Get-Rates {
@@ -966,7 +953,7 @@ Function Get-NVIDIADriverVersion {
     ((Get-CimInstance CIM_VideoController) | Select-Object name, description, @{ Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{ 6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
 }
 
-Function Start-IdleTracking { 
+Function Start-IdleMining { 
     # Function tracks how long the system has been idle and controls the paused state
     $IdleRunspace = [runspacefactory]::CreateRunspace()
     $IdleRunspace.Open()
@@ -1032,41 +1019,43 @@ namespace PInvoke.Win32 {
 '@
 
             #Start transcript log
-            If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\IdleTracking.log" -Append -Force }
+            If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\IdleMining.log" -Append -Force }
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Message "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) seconds..."
+            Write-Message "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
-                #Only do something if 'Mine only when idle' is turned on
-                If ($Config.MineWhenIdle) { 
-                    If ($Variables.Paused) { 
-                        #Check if system has been idle long enough to unpause
-                        If ($IdleSeconds -gt $Config.IdleSec) { 
-                            $Variables.Paused = $false
-                            $Variables.RestartCycle = $true
-                            Write-Message "System idle for $IdleSeconds seconds, starting mining..."
-                        }
-                    }
-                    Else { 
-                        #Pause if system has become active
-                        If ($IdleSeconds -lt $Config.IdleSec) { 
-                            $Variables.Paused = $true
-                            $Variables.RestartCycle = $true
-                            Write-Message "System active, pausing mining..."
-                        }
-                    }
+                #Pause if system has become active
+                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CycleRunspace) { 
+                    Write-Message "System active, mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+                    Stop-Mining
+                }
+                #Check if system has been idle long enough to unpause
+                If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CycleRunspace) { 
+                    Write-Message "System was idle for $IdleSeconds seconds, start mining..."
+                    Start-Mining
                 }
                 Start-Sleep -Seconds 1
             }
+            Return
         }
     ) | Out-Null
     $PowerShell.BeginInvoke()
 
     $Variables.IdleRunspace = $IdleRunspace
     $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+}
+
+Function Stop-IdleMining { 
+
+    If ($Variables.IdleRunspace) { 
+        $Variables.IdleRunspace.Close()
+        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
+        $Variables.Remove("IdleRunspace")
+        Write-Message "Stopped idle detection."
+    }
 }
 
 Function Update-Monitoring { 
@@ -1156,6 +1145,7 @@ Function Update-Monitoring {
 
 Function Start-Mining { 
     $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
+    $Variables.Miners = $null
 
     $CycleRunspace = [runspacefactory]::CreateRunspace()
     $CycleRunspace.Open()
@@ -1172,9 +1162,6 @@ Function Start-Mining {
 
     $Variables.CycleRunspace = $CycleRunspace
     $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-
-    $Variables.Started = $true
-    $Variables.Suspended = $false
 }
 
 Function Stop-ChildJob { 
@@ -1189,26 +1176,19 @@ Function Stop-ChildJob {
 
 Function Stop-Mining { 
 
+    $Variables.Miners | Where-Object { $_.Status -EQ "Running" } | ForEach-Object { 
+        Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
+        $_.Status = "Idle"
+        $_.Best = $false
+        Write-Message "Stopped miner '$($_.Info)'."
+    }
+
     If ($Variables.CycleRunspace) { 
         $Variables.CycleRunspace.Close()
         If ($Variables.CycleRunspace.PowerShell) { $Variables.CycleRunspace.PowerShell.Dispose() }
         $Variables.Remove("CycleRunspace")
         Write-Message "Stopped cycle."
     }
-    If ($Variables.IdleRunspace) { 
-        $Variables.IdleRunspace.Close()
-        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
-        $Variables.Remove("IdleRunspace")
-        Write-Message "Stopped idle detection."
-    }
-
-    $Variables.Miners | Where-Object { $_.Status -EQ "Running" } | ForEach-Object { 
-        Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
-        $_.Status = "Idle"
-        Write-Message "Stopped miner '$($_.Info)'."
-    }
-
-    $Variables.Suspended = $true
 }
 
 Function Update-Notifications ($Text) { 
@@ -1217,24 +1197,6 @@ Function Update-Notifications ($Text) {
     $LabelNotifications.SelectionStart = $Variables.LabelStatus.TextLength;
     $LabelNotifications.ScrollToCaret();
     $Variables.LabelStatus.Refresh | Out-Null
-}
-
-Function Get-GPUCount { 
-    Write-Message "Fetching GPU Count"
-    $DetectedGPU = @()
-    Try { 
-        $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*NVIDIA*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
-    }
-    Catch { Write-Message "NVIDIA Detection failed" }
-    Try { 
-        $DetectedGPU += @(Get-CimInstance Win32_PnPEntity | Select-Object Name, Manufacturer, PNPClass, Availability, ConfigManagerErrorCode, ConfigManagerUserConfig | Where-Object { $_.Manufacturer -like "*Advanced Micro Devices*" -and $_.PNPClass -like "*display*" -and $_.ConfigManagerErrorCode -ne "22" }) 
-    }
-    Catch { Write-Message "AMD Detection failed" }
-    $DetectedGPUCount = $DetectedGPU.Count
-    $i = 0
-    $DetectedGPU | ForEach-Object { Write-Message "$($i): $($_.Name)" | Out-Null; $i++ }
-    Write-Message "Found $($DetectedGPUCount) GPU(s)"
-    $DetectedGPUCount
 }
 
 Function Get-Config { 
@@ -1287,16 +1249,18 @@ Function Write-Config {
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
     )
+
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
     If ($Global:Config -is [Hashtable]) { 
         If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
         $OrderedConfig = [PSCustomObject]@{ }
         $Global:Config | ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
             $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-                $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value } 
-            } 
+                $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value }
+            }
         }
-        $OrderedConfig | ConvertTo-Json | Out-File $ConfigFile
+        $OrderedConfig | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8
+
         $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" -ErrorAction Ignore | ConvertFrom-Json
         $OrderedPoolsConfig = [PSCustomObject]@{ }
         $PoolsConfig | ForEach-Object { 
@@ -1304,13 +1268,13 @@ Function Write-Config {
                 $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value }
             }
         }
-        $OrderedPoolsConfig | Add-Member -Force "default" @{ 
+        $OrderedPoolsConfig | Add-Member -Force "Default" @{ 
             APIKey = $Config.APIKey
             UserName = $Config.UserName
             Wallet = $Config.Wallet
             WorkerName = $Config.WorkerName
         }
-        $OrderedPoolsConfig | ConvertTo-Json | Out-File ".\Config\PoolsConfig.json"
+        $OrderedPoolsConfig | ConvertTo-Json | Out-File ".\Config\PoolsConfig.json" -Encoding UTF8
     }
 }
 
@@ -2537,7 +2501,7 @@ Function Initialize-Autoupdate {
         If ($AutoupdateVersion.Autoupdate) { 
             $LabelNotifications.Lines += "Starting Auto Update"
             # Setting autostart to true
-            If ($Variables.Started) { $Config.autostart = $true }
+            If ($Variables.MiningStatus -eq "Running") { $Config.autostart = $true }
             Write-Config -ConfigFile $ConfigFile
             
             # Download update file
