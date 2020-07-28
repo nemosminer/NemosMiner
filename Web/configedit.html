@@ -7,7 +7,7 @@
 
 <table>
   <div>
-    <tr valign="top">
+    <tr style="vertical-align: top;">
       <td>
         <label for="btcaddress">BTC Address </label>
         <input title="Your BitCoin address &#10;(must be 34 chars long)" type="text" id="btcaddress" name="btcaddress" pattern="[0-9][A-Z][a-z]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=50>
@@ -171,6 +171,16 @@
     }
   });
 
+  //StartPaused
+  $(document.getElementById('autostart')).click(function(event) {
+    document.getElementById('startpaused').disabled = !(document.getElementById('autostart').checked);
+  });
+
+  //IdleSec
+  $(document.getElementById('minewhenidle')).click(function(event) {
+    document.getElementById('idlesec').disabled = !(document.getElementById('minewhenidle').checked);
+  });
+
   // Get current config
   var config = {};
   $.ajax({url: '/config',
@@ -218,12 +228,16 @@
       };
       if (config.Autostart) {
         document.getElementById('autostart').checked = true;
+      } else {
+        document.getElementById('startpaused').disabled = true;
       };
       if (config.StartPaused) {
         document.getElementById('startpaused').checked = true;
       };
       if (config.MineWhenIdle) {
         document.getElementById('minewhenidle').checked = true;
+      } else {
+        document.getElementById('idlesec').disabled = true;
       };
       if (config.IdleSec == null) { 
         document.getElementById('idlesec').value = 120;
@@ -244,18 +258,6 @@
       };
       
     }
-  });
-
-  //StartPaused
-  document.getElementById('startpaused').disabled = !(document.getElementById('autostart').checked);
-  $(document.getElementById('autostart')).click(function(event) {
-    document.getElementById('startpaused').disabled = !(document.getElementById('autostart').checked);
-  });
-
-  //IdleSec
-  document.getElementById('idlesec').disabled = !(document.getElementById('minewhenidle').checked);
-  $(document.getElementById('minewhenidle')).click(function(event) {
-    document.getElementById('idlesec').disabled = !(document.getElementById('minewhenidle').checked);
   });
 
   $('#save-button').click(function () {
