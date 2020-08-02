@@ -33,17 +33,18 @@
       "WorkerName":"ID=NM3813",
       "APIKey":"",
       "Algorithm":[
+         "+cryptonightconceal",
+         "+cryptonighthaven",
+         "+cryptonightheavy",
+         "+cryptonightheavyx",
+         "+cryptonightupx",
+         "+ethash",
+         "+mtp",
          "+randomsfx",
          "+randomwow",
-         "+cryptonightconceal",
-         "+cryptonightupx",
-         "+cryptonighthaven",
-         "+cryptonightheavyx",
-         "+cryptonightheavy",
-         "+yescryptr8g",
          "+verushash",
-         "+yespoweriots",
-         "+mtp"
+         "+yescryptr8g",
+         "+yespoweriots"
       ]
    },
    "mph":{
@@ -67,16 +68,17 @@
       "Algorithm":[
          "+beamv2",
          "+beamv3",
-         "+grincuckaroo29",
-         "+grincuckatoo31",
-         "+grincuckarood29",
-         "+eaglesong",
          "+cuckaroom",
-         "+handshake",
-         "+cuckoocycle",
-         "+grincuckatoo32",
          "+cuckaroo29bfc",
          "+cuckarooz29"
+         "+cuckoocycle",
+         "+eaglesong",
+         "+ethash",
+         "+grincuckaroo29",
+         "+grincuckarood29",
+         "+grincuckatoo31",
+         "+grincuckatoo32",
+         "+handshake"
       ]
    }
 }
