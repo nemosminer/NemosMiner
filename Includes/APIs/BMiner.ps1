@@ -11,7 +11,7 @@ class BMiner : Miner {
         $Request2 = "http://localhost:$($this.Port)/api/v1/status/stratum"
 
         Try { 
-            $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout 5 #seconds
+            $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout #seconds
         }
         Catch { 
             Return $null

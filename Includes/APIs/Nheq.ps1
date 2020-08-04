@@ -10,7 +10,7 @@ class Nheq : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -request "status" -Timeout $Timeout
+            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -Request "status" -Timeout $Timeout
             $Data = $Response 
         }
         Catch { 
