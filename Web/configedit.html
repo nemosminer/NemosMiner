@@ -30,7 +30,8 @@
         <br><br>
 
         <label for="algorithm">Algorithms </label>
-        <input size=50 type="text" id="algorithm" name="algorithm" value="allium,bitcore,blake2s,blakecoin,c11,equihash,groestl,hmq1725,hsr,keccak,keccakc,lbry,Lyra2RE2,lyra2z,MyriadGroestl,neoscrypt,nist5,phi,poly,sha256t,sib,skein,skunk,tribus,x11evo,x16r,x16s,x17,xevan,yescrypt" title="'+[algorithm]' to enable algorithm &#10;'-[algorithm]' to disable algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used &#10;If '-' is used, then all algorithms except the disabled ones are used &#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same algorithm">
+        <input size=50 type="text" id="algorithm" name="algorithm" title="'+[algorithm]' to enable algorithm &#10;'-[algorithm]' to disable algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used &#10;If '-' is used, then all algorithms are used except the disabled ones &#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same algorithm">
+        <button type="button" id="defaultalgorithm" name="defaultalgorithm" title="Load the default algorithm list">Load default algorithms</button>
         <br><br>
 
         <label for="currency">Currencies </label>
@@ -55,17 +56,16 @@
             <legend class=h6 title="You cannot select multiple variants of the same pool">Select one or more pools</legend>
             <div title="You cannot select multiple variants of the same pool" id="pools"></div>
           </fieldset>
-          <br>
         </div>
-      </td>
-      <td>
+        <br>
         <div class="col-md-12">
           <fieldset>
             <legend class=h6>Select the region closest to your location</legend>
             <div title="NemosMiner will prefer pools from the selected region" id="regions"></div>
           </fieldset>
         </div>
-        <br>
+      </td>
+      <td>
         <div class="col-md-12">
           <fieldset>
             <legend class=h6>Miners selection</legend>
@@ -75,7 +75,6 @@
             <input type="checkbox" id="optionalminers" name="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">
             <label for="optionalminers" title="Miner definition files in folder '.\OptionalMiners'">Optional Miners</label>
           </fieldset>
-          <br>
           <br>
           <input type="checkbox" id="autostart" name="autostart" title="Automatically start mining when NemosMiner is started">
           <label for="autostart" title="Automatically start mining when NemosMiner is started">Auto Start</label>
@@ -99,6 +98,24 @@
           <br>
           <input type="checkbox" id="hideconsole" name="hideconsole">
           <label for="hideconsole">Hide Console</label>
+          <br>
+          <input type="checkbox" id="watchdog" name="watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">
+          <label for="watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">Watchdog</label>
+          <br>
+          <label for="watchdogmineralgorithmcount" title="Number of watchdog timers with same miner name & algorithm until miner/algo combination gets suspended">Watchdog (Miner & Algorithm) Count</label>
+          <input title="Number of watchdog timers with same miner name & algorithm until miner/algo combination gets suspended" type="number" id="watchdogmineralgorithmcount" name="watchdogmineralgorithmcount" min="0" max="10" value=3>
+          <br>
+          <label for="watchdogminercount" title="Number of watchdog timers with same miner name until miner gets suspended">Watchdog (Miner) Count</label>
+          <input title="Number of watchdog timers with same miner name until miner gets suspended" type="number" id="watchdogminercount" name="watchdogminercount" min="0" max="10" value=6>
+          <br>
+          <label for="watchdogpoolalgorithmcount" title="Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended">Watchdog (Pool & Algorithm) Count</label>
+          <input title="Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended" type="number" id="watchdogpoolalgorithmcount" name="watchdogpoolalgorithmcount" min="0" max="100" value=3>
+          <br>
+          <label for="watchdogpoolcount" title="Number of watchdog timers with same pool name until pool gets suspended">Watchdog (Pool) Count</label>
+          <input title="Number of watchdog timers with same pool name until pool gets suspended" type="number" id="watchdogpoolcount" name=watchdogpoolcount" min="0" max="10" value=7>
+          <br>
+          <input type="checkbox" id="estimatecorrection" name="estimatecorrection" title="NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices">
+          <label for="estimatecorrection" title="NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices">Estimate Correction</label>
         </div>
       </td>
     </tr>
@@ -181,6 +198,23 @@
     document.getElementById('idlesec').disabled = !(document.getElementById('minewhenidle').checked);
   });
 
+  //Watchdog sub item
+  $(document.getElementById('watchdog')).click(function(event) {
+    document.getElementById('watchdogmineralgorithmcount').disabled = !(document.getElementById('watchdog').checked);
+    document.getElementById('watchdogminercount').disabled = !(document.getElementById('watchdog').checked);
+    document.getElementById('watchdogpoolalgorithmcount').disabled = !(document.getElementById('watchdog').checked);
+    document.getElementById('watchdogpoolcount').disabled = !(document.getElementById('watchdog').checked);
+  });
+
+  //Load default algorithm list
+  $('#defaultalgorithm').click(function () {
+    $.ajax({url: '/defaultalgorithm',
+      success: function(result) {
+        algorithm.value = "+" + result.join(",+");
+      }
+    });
+  });
+
   // Get current config
   var config = {};
   $.ajax({url: '/config',
@@ -188,26 +222,26 @@
       config = result;
       if ((config.Wallet).toString().trim() != "") {
         document.getElementById('btcaddress').value = (config.Wallet).toString();
-      };
+      }
       if ((config.UserName).toString().trim() != "") {
         document.getElementById('mphusername').value = (config.UserName).toString();
-      };
+      }
       if ((config.APIKEY).toString().trim() != "") {
         document.getElementById('mphapikey').value = (config.APIKEY).toString();
-      };
+      }
       if (config.Interval == null) { 
         document.getElementById('interval').value = 90;
       } else {
         document.getElementById('interval').value = parseInt(config.Interval);
-      };
+      }
       if (config.Donate == null) { 
         document.getElementById('donate').value = 13;
       } else {
         document.getElementById('donate').value = parseInt(config.Donate);
-      };
+      }
       if ((config.Region).toString().trim() != "") {
         document.getElementById((config.Region).toString().toLowerCase()).checked = true;
-      };
+      }
       document.getElementById('algorithm').value = (config.Algorithm).toString();
       document.getElementById('currency').value = config.Currency;
       document.getElementById('pwdcurrency').value = config.Passwordcurrency;
@@ -216,47 +250,77 @@
         document.getElementById('runningminergainpct').value = 5;
       } else {
         document.getElementById('runningminergainpct').value = parseInt(config.RunningMinerGainPct);
-      };
+      }
       $.each(config.PoolName, function (key, value) {
         document.getElementById((value).toString().toLowerCase()).checked = true;
-      });
+      })
       if (config.IncludeOptionalMiners) {
         document.getElementById('optionalminers').checked = true;
-      };
+      }
       if (config.IncludeRegularMiners) {
         document.getElementById('regularminers').checked = true;
-      };
+      }
       if (config.Autostart) {
         document.getElementById('autostart').checked = true;
       } else {
         document.getElementById('startpaused').disabled = true;
-      };
+      }
       if (config.StartPaused) {
         document.getElementById('startpaused').checked = true;
-      };
+      }
       if (config.MineWhenIdle) {
         document.getElementById('minewhenidle').checked = true;
       } else {
         document.getElementById('idlesec').disabled = true;
-      };
+      }
       if (config.IdleSec == null) { 
         document.getElementById('idlesec').value = 120;
       } else {
         document.getElementById('idlesec').value = parseInt(config.IdleSec);
-      };
+      }
       if (config.EnableEarningsTrackerLog) {
         document.getElementById('enableearningstrackerlog').checked = true;
-      };
+      }
       if (config.StartGUIMinimized) {
         document.getElementById('startguiminimized').checked = true;
-      };
+      }
       if (config.Autoupdate) {
         document.getElementById('autoupdate').checked = true;
-      };
+      }
       if (config.HideConsole) {
         document.getElementById('hideconsole').checked = true;
-      };
-      
+      }
+      if (config.Watchdog) {
+        document.getElementById('watchdog').checked = true;
+      } else {
+        document.getElementById('watchdogmineralgorithmcount').disabled = true;
+        document.getElementById('watchdogminercount').disabled = true;
+        document.getElementById('watchdogpoolalgorithmcount').disabled = true;
+        document.getElementById('watchdogpoolcount').disabled = true;
+      }
+      if (config.WatchdogMinerAlgorithmCount == null) { 
+        document.getElementById('watchdogmineralgorithmcount').value = 3;
+      } else {
+        document.getElementById('watchdogmineralgorithmcount').value = parseInt(config.WatchdogMinerAlgorithmCount);
+      }
+      if (config.WatchdogMinerCount == null) { 
+        document.getElementById('watchdogminercount').value = 6;
+      } else {
+        document.getElementById('watchdogminercount').value = parseInt(config.WatchdogMinerCount);
+      }
+      if (config.WatchdogPoolAlgorithmCount == null) { 
+        document.getElementById('watchdogpoolalgorithmcount').value = 3;
+      } else {
+        document.getElementById('watchdogpoolalgorithmcount').value = parseInt(config.WatchdogPoolAlgorithmCount);
+      }
+      if (config.WatchdogPoolCount == null) { 
+        document.getElementById('watchdogpoolcount').value = 7;
+      } else {
+        document.getElementById('watchdogpoolcount').value = parseInt(config.WatchdogPoolCount);
+      }
+      if (config.EstimateCorrection) {
+        document.getElementById('estimatecorrection').checked = true;
+      }
     }
   });
 
@@ -287,7 +351,7 @@
     if (document.getElementById('algorithm').value == null) {
       document.getElementById('algorithm').value = 'mBTC';
     };
-    config.Algorithm = document.getElementById('algorithm').value;
+    config.Algorithm = document.getElementById('algorithm').value.split(',');
     if ((document.getElementById('currency').value).toString().trim() == null) {
       config.Currency = 'mBTC';
     };
@@ -311,10 +375,29 @@
     if (document.getElementById('idlesec').value == null) { 
       document.getElementById('idlesec').value = 120;
     };
+    config.IdleSec = parseInt(document.getElementById('idlesec').value);
     config.EnableEarningsTrackerLog = document.getElementById('enableearningstrackerlog').checked;
     config.StartGUIMinimized = document.getElementById('startguiminimized').checked;
     config.Autoupdate = document.getElementById('autoupdate').checked;
     config.HideConsole = document.getElementById('hideconsole').checked;
+    config.Watchdog = document.getElementById('watchdog').checked;
+    if (document.getElementById('watchdogmineralgorithmcount').value == null) { 
+      document.getElementById('watchdogmineralgorithmcount').value = 120;
+    };
+    config.WatchdogMinerAlgorithmCount = parseInt(document.getElementById('watchdogmineralgorithmcount').value);
+    if (document.getElementById('watchdogminercount').value == null) { 
+      document.getElementById('watchdogminercount').value = 120;
+    };
+    config.WatchdogMinerCount = parseInt(document.getElementById('watchdogminercount').value);
+    if (document.getElementById('watchdogpoolalgorithmcount').value == null) { 
+      document.getElementById('watchdogpoolalgorithmcount').value = 120;
+    };
+    config.WatchdogPoolAlgorithmCount = parseInt(document.getElementById('watchdogpoolalgorithmcount').value);
+    if (document.getElementById('watchdogpoolcount').value == null) { 
+      document.getElementById('watchdogpoolcount').value = 120;
+    };
+    config.WatchdogPoolCount = parseInt(document.getElementById('watchdogpoolcount').value);
+    config.EstimateCorrection = document.getElementById('estimatecorrection').checked;
 
     //Write current config
     var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));

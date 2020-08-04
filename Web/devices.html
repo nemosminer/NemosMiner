@@ -176,6 +176,8 @@
         $('.modal-title').text($('#disable-device').text());
         $('#myModal').modal({show:true});
       });
+      $('#enableddevices').bootstrapTable('refresh');
+      $('#disableddevices').bootstrapTable('refresh');
     });
   });
 
@@ -187,12 +189,9 @@
         $('.modal-title').text($('#enable-device').text());
         $('#myModal').modal({show:true});
       });
+      $('#enableddevices').bootstrapTable('refresh');
+      $('#disableddevices').bootstrapTable('refresh');
     });
-  });
-
-  $('#myModal').on('hidden.bs.modal', function () {
-    $('#enableddevices').bootstrapTable('refresh');
-    $('#disableddevices').bootstrapTable('refresh');
   });
 
   $(function() {

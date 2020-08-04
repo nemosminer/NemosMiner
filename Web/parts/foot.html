@@ -35,7 +35,7 @@
       success: function(result) {
         document.getElementById('miningstart').disabled = (result == "Running");
         document.getElementById('miningstop').disabled = (result == "Stopped");
-        document.getElementById('miningpause').disabled = (result == "Stopped" || result == "Paused");
+        document.getElementById('miningpause').disabled = (result == "Paused");
       }
     });
   });

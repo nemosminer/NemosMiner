@@ -23,7 +23,7 @@ version date:   09.06.2020
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.2.6.0)</h1>
+  <h1>NemosMiner API (version 0.2.7.0)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -179,8 +179,12 @@ version date:   09.06.2020
   <p>Shows earnings / profit summary and BTC exchange rate (as shown in the Web GUI header).</p>
 
   <h3>SwitchingLog</h3>
-  <a href="http://localhost:3999/stats">/switchinglog</a>
+  <a href="http://localhost:3999/switchinglog">/switchinglog</a>
   <p>Shows the previously executed miners.</p>
+
+  <h3>Watchdog Timers</h3>
+  <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
+  <p>Shows the watchdog timers.</p>
 
   <h3>Functions</h3>
   <p>/functions/api/stop</p>
@@ -193,6 +197,7 @@ version date:   09.06.2020
   <p>/functions/log/clear</p>
   <p>/functions/stat/get</p>
   <p>/functions/stat/remove</p>
+  <p>/functions/watchdogtimers/reset</p>
 
   <!-- <h3>WatchdogTimers</h3>
   <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>

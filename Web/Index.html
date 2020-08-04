@@ -103,6 +103,7 @@
           $('.modal-title').text($('#re-benchmark').text());
           $('#myModal').modal({show:true});
         });
+        $('#miners').bootstrapTable('refresh');
       }
     }
   });
@@ -120,6 +121,7 @@
           $('.modal-title').text($('#re-measure').text());
           $('#myModal').modal({show:true});
         });
+        $('#miners').bootstrapTable('refresh');
       }
     }
   });
@@ -137,13 +139,11 @@
           $('.modal-title').text($('#disable').text());
           $('#myModal').modal({show:true});
         });
+        $('#miners').bootstrapTable('refresh');
       }
     }
   });
 
-  $('#myModal').on('hidden.bs.modal', function () {
-    $('#miners').bootstrapTable('refresh');
-  });
 
   $(function() {
     function updatePoolBalances() {

@@ -95,11 +95,15 @@ function formatMiners(data) {
 }
 
 function formatTimeSince(value) {
-    date = new Date(value);
+    var date = new Date(value);
+    var localtime = new Date().getTime();
     var seconds = Math.floor((new Date() - date) / 1000);
+    if (isNaN(seconds)) {
+        seconds = Math.floor((localtime - parseInt(value.replace("/Date(", "").replace(")/", ""))) / 1000);
+    }
     var interval = Math.floor(seconds / 31536000);
     if (interval > 1) {
-        return interval + ' years ago"';
+        return interval + ' years ago';
     }
     interval = Math.floor(seconds / 2592000);
     if (interval > 1) {
@@ -165,11 +169,12 @@ function formatPercent(value) {
 };
 
 function formatPrices(value) {
+    if (isNaN(value)) return '-';
     return (value * 1000000000).toFixed(10);
 };
 
 function formatArrayAsString(value) {
-    if (value == null) return "";
+    if (value == null) return '';
     return value.toString();
 };
 
