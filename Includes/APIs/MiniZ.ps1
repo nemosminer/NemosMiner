@@ -2,7 +2,6 @@
 
 class MiniZ : Miner { 
     [Object]UpdateMinerData () { 
-        $Server = "localhost"
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
@@ -12,7 +11,7 @@ class MiniZ : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest $Server $this.Port $Request $Timeout -ErrorAction Stop
+            $Response = Invoke-TcpRequest "localhost" -Port $this.Port -Request $Request -Timeout $Timeout -ErrorAction Stop
             $Data = $Response | ConvertFrom-Json -ErrorAction Stop
         }
         Catch { 

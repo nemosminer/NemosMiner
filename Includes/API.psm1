@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.6.0"
+    $APIVersion = "0.2.7.0"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -214,8 +214,8 @@ Function Start-APIServer {
                                 }
                                 $Data += "`n$($StatName)"
                                 Remove-Stat -Name "$($StatName)_Profit"
-                                $_.Reason = ""
-                                $_.Price = $_.Price_Bias = $_.Price_Unbias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
+                                $_.Reason = $null
+                                $_.Price = $_.Price_Bias = $_.Price_Unbias = $_.StablePrice = $_.MarginOfError = $null
                             }
                             If ($Pools.Count -gt 0) { 
                                 $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
@@ -228,25 +228,32 @@ Function Start-APIServer {
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                If ($_.Status -EQ [MinerStatus]::Running) { 
-                                    $_.Data = @()
+                                $Miner = $_
+                                If ($Miner.Status -EQ [MinerStatus]::Running) { 
+                                    $Miner.Data = @()
                                     $Variables.EndLoopTime = Get-Date
                                 }
-                                If ($_.Earning -eq 0) { 
-                                    $_.Available = $true
+                                If ($Miner.Earning -eq 0) { 
+                                    $Miner.Available = $true
                                 }
-                                If ($_.Benchmark -ne $true) { $_.Speed = @() }
-                                $_.Benchmark = $true
-                                $_.Activated = -1 #To allow 3 attempts
-                                $_.Accuracy = 1
-                                $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
-                                ForEach ($Algorithm in $_.Algorithm) { 
-                                    $StatName = "$($_.Name)_$($Algorithm)_Hashrate"
+                                If ($Miner.Benchmark -ne $true) {$Miner.Speed = @() }
+                                $Miner.Benchmark = $true
+                                $Miner.Activated = -1 #To allow 3 attempts
+                                $Miner.Accuracy = 1
+                                $Data += "`n$($Miner.Name) ($($Miner.Algorithm -join " & "))"
+                                ForEach ($Worker in $Miner.Workers) { 
+                                    $StatName = "$($Miner.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                     Remove-Stat -Name $StatName
+
+                                    $WatchdogTimer = $Variables.WatchdogTimers | Where-Object { $_.MinerName -eq $Miner.Name } | Where-Object { $_.PoolName -eq $Worker.Pool.Name } | Where-Object { $_.Algorithm -eq $Worker.Pool.Algorithm } | Where-Object { $_.Device -eq $Miner.DeviceName }
+                                    If ($WatchdogTimer) { 
+                                        #Remove watchdog timer(s)
+                                        $Variables.WatchdogTimers = @(Compare-Object -PassThru @($Variables.WatchdogTimers) @($WatchdogTimer) | Where-Object SideIndicator -EQ "<=")
+                                    }
                                 }
                                 #Also clear power usage
                                 Remove-Stat -Name "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_PowerUsage"
-                                $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+                                $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $null
                             }
                             If ($Miners.Count -gt 0) { 
                                 Write-Message "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
@@ -265,7 +272,7 @@ Function Start-APIServer {
                                 If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
-                                $_.PowerUsage = [Double]::NaN
+                                $_.PowerUsage = $null
                                 $_.MeasurePowerUsage = $true
                                 $_.Activated = -1 #To allow 3 attempts
                                 $_.Accuracy = 1
@@ -380,6 +387,12 @@ Function Start-APIServer {
                         $Data = "<pre>Switching log cleared.</pre>"
                         Break
                     }
+                    "/functions/watchdogtimers/reset" { 
+                        $Variables.WatchdogTimersReset = $true
+                        $Variables.WatchDogTimers = $null
+                        $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
+                        Break
+                    }
                     "/apiversion" { 
                         $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
                         Break
@@ -430,6 +443,10 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Unsupported" | Select-Object)
                         Break
                     }
+                    "/defaultalgorithm" { 
+                        $Data = ConvertTo-Json -Depth 10 (Get-DefaultAlgorithm)
+                        Break
+                    }
                     "/earnings" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables.Earnings | Select-Object)
                         Break
@@ -450,11 +467,11 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/available" { 
@@ -462,11 +479,11 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | SortObject DeviceName, EndTime)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/idle" { 
@@ -510,19 +527,19 @@ Function Start-APIServer {
                         Break
                     }
                     "/pools" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/pools/available" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/pools/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Name, Algorithm)
                         Break
                     }
                     "/pools/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/rates" { 
@@ -547,12 +564,6 @@ Function Start-APIServer {
                     }
                     "/watchdogtimers" { 
                         $Data = ConvertTo-Json @($Variables.WatchdogTimers | Select-Object)
-                        Break
-                    }
-                    "/watchdogtimersreset" { 
-                        $Variables.WatchdogTimersReset = $true
-                        $Variables.WatchDogTimers = $null
-                        $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }
                     "/variables" { 

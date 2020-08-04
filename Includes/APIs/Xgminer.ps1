@@ -2,7 +2,6 @@
 
 class Xgminer : Miner { 
     [Object]UpdateMinerData () { 
-        $Server = "localhost"
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
@@ -12,7 +11,7 @@ class Xgminer : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest $Server $this.Port $Request $Timeout -ErrorAction Stop
+            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -Request $Request -Timeout $Timeout -ErrorAction Stop
             $Data = $Response.Substring($Response.IndexOf("{"), $Response.LastIndexOf("}") - $Response.IndexOf("{") + 1) -replace " ", "_" | ConvertFrom-Json -ErrorAction Stop
         }
         Catch { 

@@ -2,7 +2,6 @@
 
 class Nheq : Miner { 
     [Object]UpdateMinerData () { 
-        $Server = "localhost"
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
@@ -11,8 +10,8 @@ class Nheq : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest $Server $this.Port "status" $Timeout
-            $Data = $Response | ConvertFrom-Json -ErrorAction Stop
+            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -request "status" -Timeout $Timeout
+            $Data = $Response 
         }
         Catch { 
         }

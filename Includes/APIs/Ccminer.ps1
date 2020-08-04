@@ -2,7 +2,6 @@
 
 class Ccminer : Miner { 
     [Object]UpdateMinerData () { 
-        $Server = "localhost"
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
@@ -12,7 +11,7 @@ class Ccminer : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest $Server $this.Port $Request $Timeout -ErrorAction Stop
+            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -Request $Request -Timeout $Timeout -ErrorAction Stop
             $Data = $Response -split ";" | ConvertFrom-StringData -ErrorAction Stop
         }
         Catch { 

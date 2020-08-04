@@ -102,16 +102,9 @@ class XmRig : Miner {
         $Sample = [PSCustomObject]@{ }
 
         $Request = "http://localhost:$($this.Port)/api.json"
-        $Response = ""
 
         Try { 
-            If ($Global:PSVersionTable.PSVersion -ge [System.Version]("6.2.0")) { 
-                $Response = Invoke-WebRequest $Request -TimeoutSec $Timeout -DisableKeepAlive -MaximumRetryCount 3 -RetryIntervalSec 1 -ErrorAction Stop
-            }
-            Else { 
-                $Response = Invoke-WebRequest $Request -UseBasicParsing -TimeoutSec $Timeout -DisableKeepAlive -ErrorAction Stop
-            }
-            $Data = $Response | ConvertFrom-Json -ErrorAction Stop
+            $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
         }
         Catch { 
             Return $null
