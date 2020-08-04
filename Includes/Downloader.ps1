@@ -4,7 +4,6 @@ $Variables = $args
 
 $ProgressPreference = "SilentlyContinue"
 
-
 $Variables.DownloadList | ForEach-Object { 
     $URI = $_.URI
     $Path = $_.Path
