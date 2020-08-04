@@ -1,11 +1,14 @@
 {
-    "PollInterval": 3,
-    "EnableLog": true,
-    "WriteEvery": 10,
-    "Pools": [
-      "nicehashV2",
-      "zergpool",
-      "mph",
-      "zpool"
-    ]
-  }
+  "PollInterval": 3,
+  "EnableLog": true,
+  "WriteEvery": 10,
+  "Pools": [
+    "AHashPool",
+    "BlazePool",
+    "Blockmasters",
+    "MPH",
+    "NicehashV2",
+    "ZergPool",
+    "ZPool"
+  ]
+}

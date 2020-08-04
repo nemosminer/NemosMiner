@@ -44,13 +44,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds before opening each miner
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableEstimateCorrection = $false, #If true NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
-    [Parameter(Mandatory = $false)]
     [Switch]$DisableMinerFees = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
     [Switch]$EnableEarningsTrackerLog = $false, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
+    [Parameter(Mandatory = $false)]
+    [Switch]$EstimateCorrection = $false, #If true NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
     [Parameter(Mandatory = $false)]
@@ -185,6 +185,14 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$Watchdog = $true, #if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
     [Parameter(Mandatory = $false)]
+    [Int]$WatchdogMinerAlgorithmCount = 3, #Number of watchdog timers with same miner name & algorithm until miner/algo combination gets suspended
+    [Parameter(Mandatory = $false)]
+    [Int]$WatchdogMinerCount = 6, #Number of watchdog timers with same miner name until miner gets suspended
+    [Parameter(Mandatory = $false)]
+    [Int]$WatchdogPoolAlgorithmCount = 3, #Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended
+    [Parameter(Mandatory = $false)]
+    [Int]$WatchdogPoolCount = 7, #Number of watchdog timers with same pool name until pool gets suspended
+    [Parameter(Mandatory = $false)]
     [Switch]$WebGUI = $false, #If true launch Web GUI
     [Parameter(Mandatory = $false)]
     [String]$WorkerName = "ID=testing"
@@ -241,6 +249,7 @@ $Variables.Pools = [Pool[]]@()
 $Variables.Miners = [Miner[]]@()
 $Variables.Devices = [Device[]]@()
 $Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
+$Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -350,7 +359,7 @@ Function Global:TimerUITick {
                     Stop-Mining
                     Stop-IdleMining
                 }
-                Else{ 
+                Else { 
                     Initialize-Application
                     Start-ChildJob
                 }
@@ -377,14 +386,10 @@ Function Global:TimerUITick {
             }
             Else { 
 
-# #Added temporary, set a trace point.
-While ($DebugLoop) {
-    . .\Includes\Core.ps1
-}
-
                 Stop-IdleMining
                 Start-Mining
             }
+            $Variables.MiningStatus -eq "Running"
         }
         $Variables.RestartCycle = $false
         $Variables.MiningStatus = $Variables.NewMiningStatus
@@ -412,8 +417,7 @@ While ($DebugLoop) {
             }
             $Config.PoolName | ForEach-Object { $CheckedListBoxPools.SetItemChecked($CheckedListBoxPools.Items.IndexOf($_), $true) }
         }
-        $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s} Path: $(Split-Path $script:MyInvocation.MyCommand.Path)" -f ([TimeSpan]((Get-Date).ToUniversalTime() - $Variables.Timer))
-        $host.UI.RawUI.WindowTitle = $MainForm.Text
+        $host.UI.RawUI.WindowTitle = $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f ([TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime))
 
         If ($Variables.EndLoop) { 
 
@@ -434,7 +438,7 @@ While ($DebugLoop) {
                         @{ Name = "m$([char]0x20BF) in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * 1000 * 4) } }, 
                         @{ Name = "m$([char]0x20BF) in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * 1000) } }, 
                         @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is 'DateTime') { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } }, 
-                        @{ Name = "PaymentThreshold"; Expression = { "$($_.PaymentThreshold) ($('{0:P0} ' -f $($_.Balance / $_.PaymentThreshold)))" }
+                        @{ Name = "PaymentThreshold"; Expression = { "$($_.PaymentThreshold) ($('{0:P0}' -f $($_.Balance / $_.PaymentThreshold)))" }
                     }
                 ) | Sort-Object "m$([char]0x20BF) in 1h", "m$([char]0x20BF) in 6h", "m$([char]0x20BF) in 24h" -Descending)
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
@@ -503,7 +507,7 @@ While ($DebugLoop) {
             If ($Variables.Miners) { 
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@($Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object  @{ Name = "Type"; Expression = { $_.Type -join " & " } }, @{ Name = "Miner"; Expression = { $_.Info } }, @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '} }, @{ Name = "HashRate(s)"; Expression = { If ($_.Speed_Live -contains $null) { "$($_.Speed_Live | ConvertTo-Hash)/s" -join ' & ' } Else { "$($_.Speed | ConvertTo-Hash)/s" -join ' & ' } } }, @{ Name = "Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.Active } }, @{ Name = "Total Active"; Expression = { "{0:%h}:{0:mm}:{0:ss}" -f $_.GetActiveTime() } } | Sort-Object Type)
                 $RunningMinersDGV.ClearSelection()
-            
+
                 If (-not ($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
                     Write-Message "No miners running. Waiting for next cycle."
                 }
@@ -581,6 +585,11 @@ While ($DebugLoop) {
                     Write-Host "Balance $($Config.Currency | Select-Object -Index 0):                $(($_.Balance * $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold * $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0) payment threshold)"
                     Write-Host "Estimated Pay Date:         $(if ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString() } Else { "$($_.EstimatedPayDate)" })"
                 }
+            }
+
+            If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
+                Write-Host "`n"
+                Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -F Yellow
             }
 
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { $Config.UIStyle = "Full" }
@@ -744,6 +753,18 @@ While ($DebugLoop) {
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                     ) | Out-Host
                 }
+            }
+
+            If ($Config.Watchdog -eq $true) { 
+                #Display watchdog timers
+                $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds( -$Variables.WatchdogReset) | Format-Table -Wrap (
+                    @{Label = "Miner"; Expression = { $_.MinerName } }, 
+                    @{Label = "Pool"; Expression = { $_.PoolName } }, 
+                    @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
+                    @{Label = "Device(s)"; Expression = { $_.Device } }, 
+                    @{Label = "Watchdog Timer"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
+                    # @{Label = "Watchdog Timer"; Expression = { "{0:n0} Seconds" -f ($Variables.Timer - $_.Kicked | Select-Object -ExpandProperty TotalSeconds) }; Align = 'right' }
+                ) | Out-Host
             }
 
             If (-not $Variables.Paused) { 
@@ -1432,73 +1453,13 @@ $TBMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBMPHAPIKey
 
 $LabelMinersTypes = New-Object System.Windows.Forms.Label
-$LabelMinersTypes.Text = "Miner Devices"
+$LabelMinersTypes.Text = "Mining Devices"
 $LabelMinersTypes.AutoSize = $false
 $LabelMinersTypes.Width = 132
 $LabelMinersTypes.Height = 20
 $LabelMinersTypes.Location = [System.Drawing.Point]::new(2, 258)
 $LabelMinersTypes.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMinersTypes
-
-$CheckBoxMinerTypeCPU = New-Object System.Windows.Forms.CheckBox
-$CheckBoxMinerTypeCPU.Tag = "TypeCPU"
-$CheckBoxMinerTypeCPU.Text = "CPU"
-$CheckBoxMinerTypeCPU.AutoSize = $false
-$CheckBoxMinerTypeCPU.Width = 60
-$CheckBoxMinerTypeCPU.Height = 20
-$CheckBoxMinerTypeCPU.Location = [System.Drawing.Point]::new(135, 258)
-$CheckBoxMinerTypeCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxMinerTypeCPU.Checked = ($CheckBoxMinerTypeCPU.Text -in $Config.Type)
-$ConfigPageControls += $CheckBoxMinerTypeCPU
-
-$CheckBoxMinerTypeCPU.Add_Click(
-    { 
-        If ($this.checked -and $this.Text -notin $Config.Type) { 
-            [Array]$Config.Type += $this.Text
-        }
-        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
-    }
-)
-
-$CheckBoxMinerTypeNVIDIA = New-Object System.Windows.Forms.CheckBox
-$CheckBoxMinerTypeNVIDIA.Tag = "TypeNVIDIA"
-$CheckBoxMinerTypeNVIDIA.Text = "NVIDIA"
-$CheckBoxMinerTypeNVIDIA.AutoSize = $false
-$CheckBoxMinerTypeNVIDIA.Width = 70
-$CheckBoxMinerTypeNVIDIA.Height = 20
-$CheckBoxMinerTypeNVIDIA.Location = [System.Drawing.Point]::new(197, 258)
-$CheckBoxMinerTypeNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxMinerTypeNVIDIA.Checked = ($CheckBoxMinerTypeNVIDIA.Text -in $Config.Type)
-$ConfigPageControls += $CheckBoxMinerTypeNVIDIA
-
-$CheckBoxMinerTypeNVIDIA.Add_Click(
-    { 
-        If ($this.checked -and $this.Text -notin $Config.Type) { 
-            [Array]$Config.Type += $this.Text
-        }
-        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
-    }
-)
-
-$CheckBoxMinerTypeAMD = New-Object System.Windows.Forms.CheckBox
-$CheckBoxMinerTypeAMD.Tag = "TypeAMD"
-$CheckBoxMinerTypeAMD.Text = "AMD"
-$CheckBoxMinerTypeAMD.AutoSize = $false
-$CheckBoxMinerTypeAMD.Width = 60
-$CheckBoxMinerTypeAMD.Height = 20
-$CheckBoxMinerTypeAMD.Location = [System.Drawing.Point]::new(272, 258)
-$CheckBoxMinerTypeAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxMinerTypeAMD.Checked = ($CheckBoxMinerTypeAMD.Text -in $Config.Type)
-$ConfigPageControls += $CheckBoxMinerTypeAMD
-
-$CheckBoxMinerTypeAMD.Add_Click( 
-    { 
-        If ($this.checked -and $this.Text -notin $Config.Type) { 
-            [Array]$Config.Type += $this.Text
-        }
-        Else { $Config.Type = @($Config.Type | Where-Object { $_ -ne $this.Text }) }
-    }
-)
 
 $LabelGuiDevices = New-Object System.Windows.Forms.LinkLabel
 $LabelGuiDevices.Location = New-Object System.Drawing.Size(2, 281)
@@ -1507,7 +1468,7 @@ $LabelGuiDevices.LinkColor = [System.Drawing.Color]::Blue
 $LabelGuiDevices.ActiveLinkColor = [System.Drawing.Color]::Blue
 $LabelGuiDevices.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelGuiDevices.TextAlign = "MiddleLeft"
-$LabelGuiDevices.Text = "Use the Web GUI to enable / disable individual devices"
+$LabelGuiDevices.Text = "To enable / disable mining devices use the Web GUI"
 $LabelGuiDevices.Add_Click( { Start-Process "http://localhost:$($Config.APIPort)/devices.html" })
 $ConfigPageControls += $LabelGuiDevices
 
@@ -1680,15 +1641,7 @@ $ConfigPageControls += $ButtonLoadDefaultPoolsAlgos
 
 $ButtonLoadDefaultPoolsAlgos.Add_Click(
     { 
-        Try { 
-            $PoolsAlgos = Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json; $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
-        }
-        Catch { $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json }
-        If ($PoolsAlgos) { 
-            $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in $Config.PoolName }
-            $PoolsAlgos = $PoolsAlgos.Value | Sort-Object -Unique
-            $TBAlgos.Text = $PoolsAlgos -Join ","
-        }
+        $TBAlgos.Text = (Get-DefaultAlgorithm | ForEach-Object { "+$($_)" }) -Join ","
     }
 )
 

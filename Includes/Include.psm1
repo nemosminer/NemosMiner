@@ -85,7 +85,6 @@ Class Pool {
     [String]$Region
     [Boolean]$SSL
     [Double]$Fee
-    [String]$PayoutScheme = ""
     [Double]$PricePenaltyfactor = 1
     [Double]$EstimateCorrection = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
@@ -548,18 +547,27 @@ Class Miner {
         }
     }
 
-    Refresh([Hashtable]$Stats, [Double]$PowerCostBTCperW = $Variables.PowerCostBTCperW) { 
+    Refresh([Double]$PowerCostBTCperW) { 
         $this.Available = $true
         $this.Best = $false
         $this.Reason = [String[]]@()
 
         $this.Workers | ForEach-Object { 
-            $Stat_Name = "$($this.Name)_$($_.Pool.Algorithm)_HashRate"
-            $_.Speed = $(If ($Stats.$Stat_Name) { $Stats.$Stat_Name.Week } Else { [Double]::Nan })
-            $_.Earning = $_.Pool.Price * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
-            $_.Earning_Bias = $_.Pool.Price_Bias * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
-            $_.Earning_Unbias = $_.Pool.Price_Unbias * (($_.Speed * ([Double]1 - $_.Fee)) * (1 - $_.Pool.Fee))
-            $_.Earning_Accuracy = ([Double]1 - $_.Pool.MarginOfError)
+            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
+                $_.Speed = $Stat.Week
+                $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
+                $_.Earning = [Double]($_.Pool.Price * $Factor)
+                $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
+                $_.Earning_Unbias = [Double]($_.Pool.Price_Unbias * $Factor)
+                $_.Earning_Accuracy = [Double](1 - $_.Pool.MarginOfError)
+            }
+            Else { 
+                $_.Speed = [Double]::NaN
+                $_.Earning = [Double]::NaN
+                $_.Earning_Bias = [Double]::NaN
+                $_.Earning_Unbias = [Double]::NaN
+                $_.Earning_Accuracy = [Double]::Nan
+            }
         }
 
         #$this.Algorithm_Base = $this.Algorithm -replace '-.+'
@@ -593,9 +601,8 @@ Class Miner {
         }
 
         If ($this.ReadPowerUsage) { 
-            $Stat_Name = "$($this.Name)$(If ($this.Algorithm.Count -eq 1) { "_$($this.Algorithm | Select-Object -Index 0)" })_PowerUsage"
-            If ($Stats.$Stat_Name) { 
-                $this.PowerUsage = $Stats.$Stat_Name.Week
+            If ($Stat = Get-Stat "$($this.Name)$(If ($this.Algorithm.Count -eq 1) { "_$($this.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
+                $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
                 $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
@@ -610,6 +617,17 @@ Class Miner {
                 $this.Profit_Unbias = [Double]::NaN
             }
         }
+    }
+}
+
+Function Get-DefaultAlgorithm {
+    Try { 
+        $PoolsAlgos = Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json; $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
+    }
+    Catch { $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json }
+    If ($PoolsAlgos) { 
+        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in $Config.PoolName }
+        Return  $PoolsAlgos.Value | Sort-Object -Unique
     }
 }
 
@@ -665,47 +683,6 @@ Function Get-NMVersion {
     }
 }
 
-Function Start-MinerDataReader {
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        $Miner, 
-        [Parameter(Mandatory = $false)]
-        [Int]$Interval = 2 #Seconds
-    )
-
-    $Parameters = @{ 
-        Miner          = [Miner]$Miner
-        Interval       = [Int]$Interval
-        Algorithms     = [String[]]@($Miner.Algorithm)
-    }
-
-    $Miner | Add-Member -Force @{ 
-        DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ArgumentList $Parameters -ScriptBlock { 
-            [CmdletBinding()]
-            Param(
-                [Parameter(Mandatory = $true)]
-                [Hashtable]$Parameters
-            )
-
-            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
-
-            #Normal process priority
-            ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = "Normal"
-
-            $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-
-            While ($true) { 
-                Try { 
-                    Start-Sleep -Seconds $Interval
-                    Get-MinerData -Miner $Miner -Algorithms $Algorithms
-                }
-                Catch { Exit }
-            }
-        }
-    }
-}
-
 Function Get-CommandLineParameters { 
     [CmdletBinding()]
     Param(
@@ -724,6 +701,7 @@ Function Get-CommandLineParameters {
 Function Start-ChildJob { 
     # Starts Brains if necessary
     $NewBrains = @()
+    $Variables.BrainJobs = @()
     $Config.PoolName | ForEach-Object { 
         If ($_ -notin $Variables.BrainJobs.PoolName) { 
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
@@ -740,9 +718,8 @@ Function Start-ChildJob {
     If ($NewBrains) { Write-Message "Started Brains for $($NewBrains -join ", ")." }
 
     # Starts Earnings Tracker Job if necessary
-    $StartDelay = 0
-
     If ((Test-Path -PathType Leaf ".\Includes\EarningsTrackerJob.ps1") -and ($Config.TrackEarnings) -and (-not ($Variables.EarningsTrackerJobs))) { 
+        $Variables.EarningsTrackerJobs = @()
         $Params = @{ 
             WorkingDirectory = $Variables.MainPath
             PoolsConfig      = $Config.PoolsConfig
@@ -783,8 +760,13 @@ Function Initialize-API {
             }
             Else { 
                 Import-Module .\Includes\API.psm1
+
+                #Required for stat management
+                Get-Stat | Out-Null
+
                 #Start API server
                 Start-APIServer -Port $Config.APIPort
+
                 #Wait for API to get ready
                 $RetryCount = 3
                 While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
@@ -817,8 +799,6 @@ Function Initialize-Application {
     $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
     $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
-    Initialize-API
-
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
         [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
@@ -844,14 +824,8 @@ Function Initialize-Application {
     $Variables.DecayPeriod = 60 #seconds
     $Variables.DecayBase = 1 - 0.1 #decimal percentage
 
-    $Variables.EarningsPool = ""
-    $Variables.BrainJobs = @()
-    $Variables.EarningsTrackerJobs = @()
-    $Variables.Earnings = @{ }
     $Variables.Strikes = 3
     $Variables.WatchdogTimers = @()
-    $Variables.Timer = (Get-Date).ToUniversalTime()
-    $Variables.StatEnd = $Variables.Timer
 
     # Purge Logs more than 10 days
     Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
@@ -1154,28 +1128,29 @@ Function Update-Monitoring {
 }
 
 Function Start-Mining { 
-    $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
-    $Variables.Miners = $null
+    If (-not $Variables.CycleRunspace) { 
+        $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
+        $Variables.Miners = $null
 
-    $CycleRunspace = [runspacefactory]::CreateRunspace()
-    $CycleRunspace.Open()
-    $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-    $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-    $CycleRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-    $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-    $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
-    $CycleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-    $PowerShell = [PowerShell]::Create()
-    $PowerShell.Runspace = $CycleRunspace
-    $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-    $PowerShell.BeginInvoke()
+        $CycleRunspace = [runspacefactory]::CreateRunspace()
+        $CycleRunspace.Open()
+        $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
+        $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+        $CycleRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
+        $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
+        $CycleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+        $PowerShell = [PowerShell]::Create()
+        $PowerShell.Runspace = $CycleRunspace
+        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
+        $PowerShell.BeginInvoke()
 
-    $Variables.CycleRunspace = $CycleRunspace
-    $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+        $Variables.CycleRunspace = $CycleRunspace
+        $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+    }
 }
 
 Function Stop-Mining { 
-
     $Variables.Miners | Where-Object { $_.Status -EQ "Running" } | ForEach-Object { 
         Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
         $_.Status = "Idle"
@@ -1276,14 +1251,6 @@ Function Write-Config {
         }
         $OrderedPoolsConfig | ConvertTo-Json | Out-File ".\Config\PoolsConfig.json" -Encoding UTF8
     }
-}
-
-Function Get-FreeTcpPort ($StartPort) { 
-    # While ($Port -le ($StartPort + 10) -and !$PortFound) { Try { $null = New-Object System.Net.Sockets.TCPClient -ArgumentList 127.0.0.1,$Port;$Port++} Catch { $Port;$PortFound=$true}}
-    # $UsedPorts = (Get-NetTCPConnection | Where-Object { $_.state -eq "listen"}).LocalPort
-    # While ($StartPort -in $UsedPorts) { 
-    While (Get-NetTCPConnection -LocalPort $StartPort -ErrorAction SilentlyContinue) { $StartPort-- }
-    $StartPort
 }
 
 Function Set-Stat { 
@@ -1612,7 +1579,7 @@ Function Get-ChildItemContentJob {
     )
 
     $DefaultPriority = ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass
-    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority }
+    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority } Else { $Priority = $DefaultPriority}
 
     $Job = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name (($Path -replace '[^A-Za-z0-9-\\]', '') -replace '\\', '-') -ScriptBlock { 
         Param(
@@ -1624,7 +1591,7 @@ Function Get-ChildItemContentJob {
             [String]$Priority = "BelowNormal"
         )
 
-        If ((-not (Get-Module -Name "ThreadJob")) -and $Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority }
+        ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority
 
         function Invoke-ExpressionRecursive ($Expression) { 
             If ($Expression -is [String]) { 
@@ -1713,7 +1680,7 @@ Function Get-ChildItemContent {
         If ($_.Extension -eq ".ps1") { 
             $Content = & { 
                 If ($Parameters.Count) { 
-                    $Parameters.Keys | ForEach-Object {Set-Variable $_ $Parameters.$_}
+                    $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
                     & $_.FullName @Parameters
                 }
                 Else { 
@@ -1723,7 +1690,7 @@ Function Get-ChildItemContent {
         }
         Else { 
             $Content = & { 
-                $Parameters.Keys | ForEach-Object {Set-Variable $_ $Parameters.$_}
+                $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
                 Try { 
                     ($_ | Get-Content | ConvertFrom-Json) | ForEach-Object {Invoke-ExpressionRecursive $_}
                 }
@@ -1731,7 +1698,7 @@ Function Get-ChildItemContent {
                     $null
                 }
             }
-            If ($null -eq $Content) {$Content = $_ | Get-Content}
+            If ($null -eq $Content) { $Content = $_ | Get-Content }
         }
         $Content | ForEach-Object { 
             [PSCustomObject]@{ Name = $Name; Content = $_ }
@@ -1766,10 +1733,10 @@ Function Invoke-TcpRequest {
     }
     Catch { $Error.Remove($error[$Error.Count - 1]) }
     Finally { 
-        $Reader.Close()
-        $Writer.Close()
-        $Stream.Close()
-        $Client.Close()
+        If ($Reader) { $Reader.Close() }
+        If ($Writer) { $Writer.Close() }
+        If ($Stream) { $Stream.Close() }
+        If ($Client) { $Client.Close() }
     }
 
     $Response
@@ -2343,7 +2310,7 @@ function Start-SubProcessWithoutStealingFocus {
         Param($ControllerProcessID, $CreateProcessPath, $FilePath, $ArgumentList, $WorkingDirectory, $MinerVisibility, $EnvBlock)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
-        If ($null -eq $ControllerProcess) { return }
+        If ($null -eq $ControllerProcess) { Return }
 
         #CreateProcess won't be usable inside this job if Add-Type is run outside the job
         Add-Type -Path $CreateProcessPath
@@ -2392,7 +2359,7 @@ function Start-SubProcessWithoutStealingFocus {
         While ($Process.HasExited -eq $false)
     }
 
-    Do { Start-Sleep 1; $JobOutput = Receive-Job $Job }
+    Do { Start-Sleep -Seconds 1; $JobOutput = Receive-Job $Job }
     While ($null -eq $JobOutput)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
@@ -2521,7 +2488,7 @@ Function Initialize-Autoupdate {
                 Write-Message "Cannot find update file"
                 Update-Notifications("Cannot find update file")
                 $LabelNotifications.ForeColor = "Red"
-                return
+                Return
             }
 
             # Backup current version folder in zip file
@@ -2588,7 +2555,7 @@ Function Initialize-Autoupdate {
                     Write-Message "Failed to start new instance of $($Variables.CurrentProduct)"
                     Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoupdateVersion.Version) but failed to restart.")
                     $LabelNotifications.ForeColor = "Red"
-                    return
+                    Return
                 }
 
                 $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
