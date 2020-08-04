@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 Try { 
     $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
-    $CoinsRequest = Invoke-WebRequest "http://api.zergpool.com:8080/api/currencies" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
+    $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" }
 }
 Catch { Return }
 

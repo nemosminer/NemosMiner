@@ -19,6 +19,9 @@ $PoolRegions = "US"
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "Default" }
 $PoolConf = $PoolsConfig.$ConfName
 
+$PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
+$WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algorithm = $Request.$_.name
     $Algorithm_Norm = Get-Algorithm $Algorithm
@@ -35,11 +38,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
         "verushash"   { $Divisor *= 4 } #temp fix
     }
 
-    $Stat_Name = "$($Name)_$($Algorithm_Norm)_Profit"
-    $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
-
-    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
     Try { $EstimateCorrection = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
     Catch { $EstimateCorrection = [Decimal]1 }

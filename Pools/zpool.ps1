@@ -18,6 +18,9 @@ $PoolRegions = "eu", "jp", "na", "sea"
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $PoolsConfig.$ConfName
 
+$PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
+$WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algorithm = $_
     $Algorithm_Norm = Get-Algorithm $Algorithm
@@ -26,11 +29,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $Fee = [Decimal]($Request.$_.Fees / 100)
     $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    $Stat_Name = "$($Name)_$($Algorithm_Norm)_Profit"
-    $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
-
-    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
     Try { $EstimateCorrection = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
     Catch { $EstimateCorrection = [Decimal]1 }

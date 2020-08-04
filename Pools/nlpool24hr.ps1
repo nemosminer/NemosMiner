@@ -1,7 +1,7 @@
 using module ..\Includes\Include.psm1
 
 Try { 
-    $Request = Invoke-WebRequest "http://www.nlpool.nl/api/status" -UseBasicParsing -Headers @{"Cache-Control" = "no-cache" } | ConvertFrom-Json 
+    $Request = Invoke-RestMethod -Uri "http://www.nlpool.nl/api/status" -Headers @{"Cache-Control" = "no-cache" }
 }
 Catch { return }
 
@@ -18,6 +18,9 @@ $PoolRegions = "US"
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "Default" }
 $PoolConf = $PoolsConfig.$ConfName
 
+$PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
+$WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $PoolHost = $HostSuffix
     $PoolPort = $Request.$_.port
@@ -27,11 +30,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $Fee = [Decimal]($Request.$_.Fees / 100)
     $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    $Stat_Name = "$($Name)_$($Algorithm_Norm)_Profit"
-    $Stat = Set-Stat -Name $Stat_Name -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
-
-    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
     Try { $EstimateCorrection = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
     Catch { $EstimateCorrection = [Decimal]1 }
