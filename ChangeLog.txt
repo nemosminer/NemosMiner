@@ -1,3 +1,18 @@
+Changelog NemosMiner 04.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Added:
+- Watchdog functionality (Config items 'Watchdog*')
+
+Update:
+- CryptoDredge-v0.24
+- lolMiner-v1.0.5
+- PhoenixMiner-v5.1c
+
 Changelog NemosMiner 27.07.2020
 ===============================
 
@@ -6,10 +21,10 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 
 Added:
-  - Mining start/pause/stop control to the Web GUI
+- Mining start/pause/stop control to the Web GUI
 
 Fixed:
-  - Mining when Idle (Idle detection)
+- Mining when Idle (Idle detection)
 
 Changelog NemosMiner 21.07.2020
 ===============================
@@ -19,13 +34,13 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 
 Added:
-  - Bad share detection (Config Item 'AllowedBadShareRatio')
-  - More miners for AMD platform
+- Bad share detection (Config Item 'AllowedBadShareRatio')
+- More miners for AMD platform
  
 Changed:
-  - Added column 'ApiRequestUri' to running miners (Web GUI)
-  - use API modular API files for hash rate collection
-  - Miners: Enabled separate miner instance per GPU model (helps to improve profit rates on mixed rigs)
+- Added column 'ApiRequestUri' to running miners (Web GUI)
+- use API modular API files for hash rate collection
+- Miners: Enabled separate miner instance per GPU model (helps to improve profit rates on mixed rigs)
 
 Changelog NemosMiner 28.06.2020
 ===============================
@@ -37,7 +52,7 @@ Breaking changes (from main code base):
 Changed:
 - Automatically convert config file (fixes breaking changes for config item change 'Location' & ActiveMinergain')
   - Location -> Region
-  - Remove defunct properties 'API_ID, API_Key, DisableGPU0, FirstInterval, IdleSec, IsFixedSize, IsReadOnly, IsSynchronized, Location, ManualConfig, SyncRoot
+  - Remove defunct properties 'API_ID, API_Key, DisableGPU0, FirstInterval, IsFixedSize, IsReadOnly, IsSynchronized, Location, ManualConfig, SyncRoot
   - Add all new config items with their default values to existing config file
 
 What's still broken:
