@@ -22,6 +22,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
             [PSCustomObject]@{ 
                 Name       = $Miner_Name
                 DeviceName = $Miner_Devices.Name
+                Type       = "NVIDIA"
                 Path       = $Path
                 Arguments  = ("--pool stratum$(If ($Pool.$_.SSL) { "s" })+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.$_.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$_.Pass))@$($Pools.$_.Host):$($Pools.$_.Port) --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
                 Algorithm  = $_

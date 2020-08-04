@@ -21,6 +21,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
 
             [PSCustomObject]@{ 
                 Name       = $Miner_Name
+                Type       = "NVIDIA"
                 DeviceName = $Miner_Devices.Name
                 Path       = $Path
                 Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --cpu-priority 4 --statsavg 2 --retries 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()

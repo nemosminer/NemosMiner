@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.1b/PhoenixMiner_5.1b_Windows.7z"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/PhoenixMiner/PhoenixMiner_5.1c.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -11,9 +11,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "AMD";    Command = " -amd -eres 1 -mi 12" }
 #   [PSCustomObject]@{ Algorithm = @("BitcoinInterest", $null); Fee = @(0.009, 0); MinMemGB = 2;   WarmupTime = 45; Type = "AMD";    Command = " -coin BCI -amd -eres 1 -mi 12" } #Profit very small
 
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 60; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -straps 4" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 60; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -straps 4" }
+    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -straps 4" }
 )
 
 $Intensities2 = [PSCustomObject]@{ 
@@ -41,7 +41,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
         $Commands | Where-Object Type -eq $_.Type | ForEach-Object { $Algo = $_.Algorithm | Select-Object -Index 0; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
             $MinMemGB = $_.MinMemGB
 
-            If ($Miner_Devices = @($SelectedDevices | Where-Object { ([math]::Round((10 * $_.OpenCL.GlobalMemSize / 1GB), 0) / 10) -ge $MinMemGB })) { 
+            If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
                 #Get commands for active miner devices
                 #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
@@ -76,17 +76,12 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
 
                 If ($null -eq ($_.Algorithm | Select-Object -Index 1) -or $Pools.$Algo2.Host) { 
 
-                    #Optionally disable dev fee mining
-                    If ($Config.DisableMinerFees) { 
-                        $_.Command += " -nofee"
-                        $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
-                    }
-
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $Miner_Devices.Name
+                        Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$($_.Command) -log 0 -wdog 0 -mclock 0 -mport $($MinerAPIPort) -gpus $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) -log 0 -wdog 0 -mport $($MinerAPIPort) -gpus $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($Algo, $Algo2) | Select-Object
                         API        = "EthMiner"
                         Port       = $MinerAPIPort

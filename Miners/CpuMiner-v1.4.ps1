@@ -21,6 +21,7 @@ If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) {
         [PSCustomObject]@{ 
             Name       = $Miner_Name
             DeviceName = $Miner_Devices.Name
+            Type       = "CPU"
             Path       = $Path
             Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --retry-pause 1 --api-bind $MinerAPIPort" -replace "\s+", " ").trim()
             Algorithm  = $_

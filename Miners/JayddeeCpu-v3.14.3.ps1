@@ -38,6 +38,7 @@ $Miner_Devices | Select-Object Model -Unique | ForEach-Object {
         [PSCustomObject]@{ 
             Name       = $Miner_Name
             DeviceName = $Miner_Devices.Name
+            Type       = "CPU"
             Path       = $Path
             Arguments  = ("$($Commands.$_) --url $($Pools.$_.Protocol)://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
             Algorithm  = $_

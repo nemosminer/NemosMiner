@@ -7,7 +7,6 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
     "VerusHash" = " --algo verus --intensity 21"
-    #"VerusHash" = " --algo verus --intensity 21"
 }
 
 $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
@@ -23,12 +22,13 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
             [PSCustomObject]@{ 
                 Name       = $Miner_Name
                 DeviceName = $Miner_Devices.Name
+                Type       = "NVIDIA"
                 Path      = $Path
-                Arguments = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --statsavg 2 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
-                Algorithm = $_
-                API       = "Ccminer"
-                Port      = $MinerAPIPort
-                URI       = $Uri
+                Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --statsavg 2 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                Algorithm  = $_
+                API        = "Ccminer"
+                Port       = $MinerAPIPort
+                URI        = $Uri
             }
         }
     }

@@ -22,9 +22,13 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEac
             #Get commands for active miner devices
             #$_.Command = Get-CommandPerDevice -Command $Commands.$_ -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
+            If ($_ -eq "KawPoW") { $WarmupTime = 90 }
+            Else { $WarmupTime = $Config.WarmupTime }
+
             [PSCustomObject]@{ 
                 Name       = $Miner_Name
                 DeviceName = $Miner_Devices.Name
+                Type       = "NVIDIA"
                 Path       = $Path
                 Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
                 Algorithm  = $_
@@ -34,6 +38,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEac
                 URI        = $Uri
                 Fee        = 0.01 #dev fee
                 MinerUri   = "http://localhost:$($MinerAPIPort)"
+                WarmupTime = $WarmupTime # Seconds
             }
         }
     }

@@ -20,6 +20,7 @@ If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) {
         [PSCustomObject]@{ 
             Name       = $Miner_Name
             DeviceName = $Miner_Devices.Name
+            Type       = "CPU"
             Path       = $Path
             Arguments  = ("$($Commands.$_) -l $($Pools.$_.Host):$($Pools.$_.Port) -u $($Pools.$_.User) -p $($Pools.$_.Pass) -t $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) -a $MinerAPIPort" -replace "\s+", " ").trim()
             Algorithm  = $_

@@ -6,12 +6,12 @@ $Uri = "https://github.com/Minerx117/ccminer/releases/download/8.21-r18-v5/ccmin
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
-    "Lyra2RE3"     = " --algo lyra2v3 --intensity 24"
-    "Lyra2z330"    = " --algo lyra2z330 --timeout=1"
-    "YescryptR16"  = " --algo yescryptr16 --intensity 13.2"
-    "YescryptR32"  = " --algo yescryptr32 --intensity 12.23"
-#   "YescryptR8"   = " --algo yescryptr8" #profit very small
-    "YescryptR8g"  = " --algo yescrypt"
+    "Lyra2RE3"    = " --algo lyra2v3 --intensity 24"
+    "Lyra2z330"   = " --algo lyra2z330 --timeout 1"
+    "Yescrypt"    = " --algo yescrypt"
+    "YescryptR16" = " --algo yescryptr16 --intensity 13.2"
+    "YescryptR32" = " --algo yescryptr32 --intensity 12.23"
+#   "YescryptR8"  = " --algo yescryptr8" #profit very small
 }
 
 $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
@@ -29,6 +29,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
             [PSCustomObject]@{ 
                 Name       = $Miner_Name
                 DeviceName = $Miner_Devices.Name
+                Type       = "NVIDIA"
                 Path       = $Path
                 Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --cpu-priority 4 --timeout 50000 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
                 Algorithm  = $_

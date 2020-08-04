@@ -1,4 +1,4 @@
-using module ..\Include.psm1
+using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\xmr-stak.exe"
@@ -12,10 +12,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightMsr";        MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";        MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightV1";         MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";        MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
@@ -42,10 +42,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     MinMemGB = 1; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   MinMemGB = 1; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #CryptoDredge-v0.24 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightMsr";        MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #XmRigGpu-v6.3.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #XmRigGpu-v6.3.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";        MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightV1";         MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";        MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
@@ -78,7 +78,7 @@ $Devices | Select-Object Type, Model -Unique | ForEach-Object {
         $Commands | Where-Object Type -eq $_.Type | Where-Object { $Pools.($_.Algorithm).Host } | ForEach-Object { 
             $MinMemGB = $_.MinMemGB
 
-            If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ([math]::Round((10 * $_.OpenCL.GlobalMemSize / 1GB), 0) / 10) -ge $MinMemGB })) { 
+            If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
                 $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
   
                 # Note: For fine tuning directly edit the config files in the miner binary directory
@@ -141,6 +141,7 @@ $Devices | Select-Object Type, Model -Unique | ForEach-Object {
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name
                     DeviceName = $Miner_Devices.Name
+                    Type       = $_.Type
                     Path       = $Path
                     Arguments  = $Parameters
                     Algorithm  = $_.Algorithm

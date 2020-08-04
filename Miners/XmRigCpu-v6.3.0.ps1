@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         MinMemGB = 0.5;  Command = " --algo argon2/chukwa" } #Argon2id (Chukwa)
     [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           MinMemGB = 0.25; Command = " --algo argon2/wrkz" } #Argon2id (WRKZ)
-    [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Command = " --algo astrobwt" } #AstroBWT (Dero).
+#   [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Command = " --algo astrobwt" } #AstroBWT (Dero) #No pool
     [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 2;    Command = " --algo cn/0" } #CryptoNight (original)
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 2;    Command = " --algo cn/ccx" } #Conceal (CCX)
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 2;    Command = " --algo cn/double" } #CryptoNight variant 2 with double iterations
@@ -18,8 +18,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 2;    Command = " --algo cn/half" } #CryptoNight variant 2 with half iterations
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 4;    Command = " --algo cn-heavy/0" } #CryptoNight-Heavy
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 4;    Command = " --algo cn-heavy/tube" } #CryptoNight-Heavy (modified)
-    [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Command = " --algo cn-pico" } #CryptoNight-Pico
-    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   MinMemGB = 0.25; Command = " --algo cn-pico/tlo" } #CryptoNight-Pico (Talleo)
+#   [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Command = " --algo cn-pico" } #CryptoNight-Pico #No pool
+#   [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   MinMemGB = 0.25; Command = " --algo cn-pico/tlo" } #CryptoNight-Pico (Talleo) #No pool
     [PSCustomObject]@{ Algorithm = "CryptonightR";         MinMemGB = 2;    Command = " --algo cn/r" } #CryptoNightR (Monero's variant 4)
     [PSCustomObject]@{ Algorithm = "CryptonightRto";       MinMemGB = 2;    Command = " --algo cn/rto" } #CryptoNight variant 1 (modified)
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";       MinMemGB = 2;    Command = " --algo cn/rwz" } #CryptoNight variant 2 with 3/4 iterations and reversed shuffle operation
@@ -50,8 +50,9 @@ If ($SelectedDevices = @($Devices | Where-Object Type -EQ "CPU")) {
             [PSCustomObject]@{ 
                 Name       = $Miner_Name
                 DeviceName = $Miner_Devices.Name
+                Type       = "CPU"
                 Path       = $Path
-                Arguments  = ("$($_.Command) $(If ($Pools.($_.Algorithm).Name -eq "NiceHash") { " --nicehash" } ) $(If ($Pools.($_.Algorithm).SSL) { " --tls" } ) --url=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user=$($Pools.($_.Algorithm).User) --pass=$($Pools.($_.Algorithm).Pass) --threads=$($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --http-enabled --http-host=127.0.0.1  --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --donate-level 0 --retries=90 --retry-pause=1" -replace "\s+", " ").trim()
+                Arguments  = ("$($_.Command)$(If ($Pools.($_.Algorithm).Name -eq "NiceHash") { " --nicehash" } ) $(If ($Pools.($_.Algorithm).SSL) { " --tls" } ) --url=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user=$($Pools.($_.Algorithm).User) --pass=$($Pools.($_.Algorithm).Pass) --threads=$($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --http-enabled --http-host=127.0.0.1  --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --donate-level 0 --retries=90 --retry-pause=1" -replace "\s+", " ").trim()
                 Algorithm  = $_.Algorithm
                 API        = "XMRig"
                 Port       = $MinerAPIPort
