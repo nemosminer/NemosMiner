@@ -2,7 +2,7 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.8/teamredminer-v0.7.8-win.zip"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.9/teamredminer-v0.7.9-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
