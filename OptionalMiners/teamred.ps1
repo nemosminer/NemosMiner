@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\AMD-teamred078\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.8/teamredminer-v0.7.8-win.zip"
+$Path = ".\Bin\AMD-teamred079\teamredminer.exe"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.9/teamredminer-v0.7.9-win.zip"
 
 $Commands = [PSCustomObject]@{
     "ethash" = " --algo ethash" #ethash
