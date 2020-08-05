@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-CryptoDredge023\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.23.0/CryptoDredge_0.23.0_cuda_10.1_windows.zip"
+$Path = ".\Bin\NVIDIA-CryptoDredge024\CryptoDredge.exe"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.24.0/CryptoDredge_0.24.0_cuda_10.2_windows.zip"
 $Commands = [PSCustomObject]@{ 
     "argon2d250"          = " --intensity 8 -a argon2d250" #argon2d250
     "argon2d500"          = " --intensity 6 -a argon2d-dyn" #Argon2d-dyn
