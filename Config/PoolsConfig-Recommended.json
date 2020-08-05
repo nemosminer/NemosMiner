@@ -3,14 +3,16 @@
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3813",
+      "WorkerName":"ID=NM3900",
+      "Passwordcurrency":"BTC",
       "APIKey":""
    },
    "blockmasters":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3813",
+      "WorkerName":"ID=NM3900",
+      "Passwordcurrency":"BTC",
       "APIKey":"",
       "Algorithm":[
          "+m7m"
@@ -20,17 +22,19 @@
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3813",
+      "WorkerName":"ID=NM3900",
+      "Passwordcurrency":"BTC",
       "APIKey":"",
        "Algorithm":[
          "-verus"
       ]
    },
-   "zergpool":{
+   "zergpoolcoins":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3813",
+      "WorkerName":"ID=NM3900",
+      "Passwordcurrency":"BTC",
       "APIKey":"",
       "Algorithm":[
          "+cryptonightconceal",
@@ -38,7 +42,6 @@
          "+cryptonightheavy",
          "+cryptonightheavyx",
          "+cryptonightupx",
-         "+ethash",
          "+mtp",
          "+randomsfx",
          "+randomwow",
@@ -51,7 +54,7 @@
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"NM3813",
+      "WorkerName":"NM3900",
       "APIKey":"",
       "Algorithm":[
          "+cryptonightmonero",
@@ -63,17 +66,16 @@
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"NM3813",
+      "WorkerName":"NM3900",
       "APIKey":"",
       "Algorithm":[
          "+beamv2",
          "+beamv3",
          "+cuckaroom",
          "+cuckaroo29bfc",
-         "+cuckarooz29"
+         "+cuckarooz29",
          "+cuckoocycle",
          "+eaglesong",
-         "+ethash",
          "+grincuckaroo29",
          "+grincuckarood29",
          "+grincuckatoo31",
