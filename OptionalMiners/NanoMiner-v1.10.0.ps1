@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.9.6/nanominer-windows-1.9.6.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.10.0/nanominer-windows-1.10.0.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -18,6 +18,7 @@ $Commands = [PSCustomObject[]]@(
 
 #   [PSCustomObject]@{ Algorithm = "Ethash";  MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash"; MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ubqhash" }
+    [PSCustomObject]@{ Algorithm = "Kawpow";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" }
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
