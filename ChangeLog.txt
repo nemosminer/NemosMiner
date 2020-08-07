@@ -1,3 +1,28 @@
+Changelog NemosMiner 07.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Changed:
+- EarningsTracker renamed to BalanceTracker (note: file structure remains compatible, so files data & config fuile can be renamed manually if required)
+- Remove defunct properties 'Type, 
+
+Fixed:
+- Watchdogs not clearing / refreshing in certain scenarios
+- MPH Pool: Added MarginOfError property
+
+Improved:
+- Miners: 
+  - Added TotalMiningDuration property (also available in Web GUI)
+- Web GUI: 
+  - Minor tweaks & Typos
+
+Miner Update:
+- lolMiner-v1.06
+- TeamRedMiner-v0.7.9
+
 Changelog NemosMiner 04.08.2020
 ===============================
 
@@ -8,9 +33,9 @@ Breaking changes (from main code base):
 Added:
 - Watchdog functionality (Config items 'Watchdog*')
 
-Update:
+Miner Update:
 - CryptoDredge-v0.24
-- lolMiner-v1.0.5
+- lolMiner-v1.05
 - PhoenixMiner-v5.1c
 
 Changelog NemosMiner 27.07.2020
@@ -51,8 +76,9 @@ Breaking changes (from main code base):
 
 Changed:
 - Automatically convert config file (fixes breaking changes for config item change 'Location' & ActiveMinergain')
+  - ActiveMinerGainPct -> RunningMinerGainPct
   - Location -> Region
-  - Remove defunct properties 'API_ID, API_Key, DisableGPU0, FirstInterval, IsFixedSize, IsReadOnly, IsSynchronized, Location, ManualConfig, SyncRoot
+  - Remove defunct properties 'API_ID, API_Key, DisableGPU0, FirstInterval, IsFixedSize, IsReadOnly, IsSynchronized, Location, ManualConfig, SyncRoot'
   - Add all new config items with their default values to existing config file
 
 What's still broken:
@@ -65,7 +91,7 @@ Breaking changes (from main code base):
 - Changed config item 'Location' to 'Region' -> requires manual change in config file
 - Pool files are not backwards compatible
 - New data format of SwitchingLog.txt -> need to delete old file manually
-- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> requires manual change in config file
+- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> Item will be renamed in config on start (Since 28.06.2020)
 
 Added:
 - Basic log viewer in Web GUI
@@ -108,7 +134,7 @@ Breaking changes (from main code base):
 - Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
 - Pool files are not backwards compatible
 - New data format of SwitchingLog.txt -> need to delete old file manually
-- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> requires manual change in config file
+- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> Item will be renamed in config on start (Since 28.06.2020)
 
 
 Changelog NemosMiner 21.06.2020
