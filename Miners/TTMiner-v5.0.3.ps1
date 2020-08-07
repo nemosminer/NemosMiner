@@ -29,7 +29,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
                 DeviceName = $Miner_Devices.Name
                 Type       = "NVIDIA"
                 Path       = $Path
-                Arguments  = ("$($Commands.$_) --pool stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) -user $($Pools.$_.User) -pass $($Pools.$_.Pass) --api-bind 127.0.0.1:$($MinerAPIPort) -device $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ' ')" -replace "\s+", " ").trim()
+                Arguments  = ("$($Commands.$_) --pool stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) -work-timeout 500000 -user $($Pools.$_.User) -pass $($Pools.$_.Pass) --api-bind 127.0.0.1:$($MinerAPIPort) -device $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ' ')" -replace "\s+", " ").trim()
                 Algorithm  = $_
                 API        = "EthMiner"
                 Port       = $MinerAPIPort
