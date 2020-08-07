@@ -27,31 +27,33 @@ $Request.return | ForEach-Object {
         $Location = $_
 
         [PSCustomObject]@{ 
-            Algorithm   = $Algorithm
-            Info        = $Coin
-            Price       = $Stat.Live * $PoolConf.PricePenaltyFactor
-            StablePrice = $Stat.Week
-            Protocol    = 'stratum+tcp'
-            Host        = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
-            Port        = $Current.algo_switch_port
-            User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
-            Pass        = 'x'
-            Location    = $Location
-            SSL         = $false
+            Algorithm     = $Algorithm
+            Info          = $Coin
+            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+            StablePrice   = $Stat.Week
+            MarginOfError = $Stat.Week_Fluctuation
+            Protocol      = 'stratum+tcp'
+            Host          = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
+            Port          = $Current.algo_switch_port
+            User          = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
+            Pass          = 'x'
+            Location      = $Location
+            SSL           = $false
         }
 
         [PSCustomObject]@{ 
-            Algorithm   = $Algorithm
-            Info        = $Coin
-            Price       = $Stat.Live * $PoolConf.PricePenaltyFactor
-            StablePrice = $Stat.Week
-            Protocol    = 'stratum+ssl'
-            Host        = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
-            Port        = $Current.algo_switch_port
-            User        = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
-            Pass        = 'x'
-            Location    = $Location
-            SSL         = $true
+            Algorithm     = $Algorithm
+            Info          = $Coin
+            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+            StablePrice   = $Stat.Week
+            MarginOfError = $Stat.Week_Fluctuation
+            Protocol      = 'stratum+ssl'
+            Host          = $Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Location*" } | Select-Object -First 1
+            Port          = $Current.algo_switch_port
+            User          = "$($PoolConf.UserName).$($PoolConf.WorkerName.replace('ID=', ''))"
+            Pass          = 'x'
+            Location      = $Location
+            SSL           = $true
         }
     }
 }
