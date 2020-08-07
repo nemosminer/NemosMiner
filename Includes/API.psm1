@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.7.0"
+    $APIVersion = "0.2.8.0"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [runspacefactory]::CreateRunspace()
@@ -214,8 +214,8 @@ Function Start-APIServer {
                                 }
                                 $Data += "`n$($StatName)"
                                 Remove-Stat -Name "$($StatName)_Profit"
-                                $_.Reason = $null
-                                $_.Price = $_.Price_Bias = $_.Price_Unbias = $_.StablePrice = $_.MarginOfError = $null
+                                $_.Reason = [String[]]@()
+                                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::Nan
                             }
                             If ($Pools.Count -gt 0) { 
                                 $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
@@ -253,7 +253,7 @@ Function Start-APIServer {
                                 }
                                 #Also clear power usage
                                 Remove-Stat -Name "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_PowerUsage"
-                                $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $null
+                                $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::Nan
                             }
                             If ($Miners.Count -gt 0) { 
                                 Write-Message "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
@@ -272,13 +272,14 @@ Function Start-APIServer {
                                 If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
-                                $_.PowerUsage = $null
+                                $_.PowerUsage = [Double]::Nan
                                 $_.MeasurePowerUsage = $true
                                 $_.Activated = -1 #To allow 3 attempts
                                 $_.Accuracy = 1
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
                                 $Data += "`nStatName"
                                 Remove-Stat -Name "$($StatName)_PowerUsage"
+                                $_.PowerUsage = $_.PowerCost = [Double]::Nan
                             }
                             If ($Miners.Count -gt 0) { 
                                 Write-Message "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
@@ -310,8 +311,8 @@ Function Start-APIServer {
                                 $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $Parameters.Value
-                                    $_.Speed = $null
-                                    $_.Data = $null
+                                    $_.Speed = [Double]::Nan
+                                    $_.Data = @()
                                     $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                     ForEach ($Algorithm in $_.Algorithm) { 
                                         $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
@@ -389,7 +390,7 @@ Function Start-APIServer {
                     }
                     "/functions/watchdogtimers/reset" { 
                         $Variables.WatchdogTimersReset = $true
-                        $Variables.WatchDogTimers = $null
+                        $Variables.WatchDogTimers = @()
                         $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }
@@ -451,15 +452,15 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 ($Variables.Earnings | Select-Object)
                         Break
                     }
-                    "/earningsdata" { 
+                    "/earningschartdata" { 
                         $ChartData = Get-Content ".\Logs\EarningsChartData.json" | ConvertFrom-Json
                         #Add BTC rate to avoid blocking NaN errors
                         $ChartData | Add-Member BTCrate ([Double]($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
                         $Data = $ChartData | ConvertTo-Json
                         Break
                     }
-                    "/earningstrackerjobs" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJobs | Select-Object -Property * -ExcludeProperty ChildJobs, Command, Process)
+                    "/earningstrackerjob" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJob | Select-Object -Property * -ExcludeProperty ChildJobs, Command, Process)
                         Break
                     }
                     "/firstcurrency" { 

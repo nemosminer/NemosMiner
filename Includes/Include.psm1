@@ -97,7 +97,6 @@ Class Pool {
     #Stats
     [Double]$Price
     [Double]$Price_Bias
-    [Double]$Price_Unbias
     [Double]$StablePrice
     [Double]$MarginOfError
 }
@@ -107,11 +106,10 @@ Class Worker {
     [Double]$Fee
     [Double]$Speed
     [Double]$Earning
-    [Double]$Earning_Accuracy
     [Double]$Earning_Bias
-    [Double]$Earning_Unbias
+    [Double]$Earning_Accuracy
     [Boolean]$Disabled = $false
-
+    [TimeSpan]$TotalMiningDuration
 }
 
 enum MinerStatus { 
@@ -177,15 +175,14 @@ Class Miner {
     [Int]$WarmupTime
     [DateTime]$BeginTime
     [DateTime]$EndTime
+    [TimeSpan]$TotalMiningDuration
 
-    [Double]$Earning#derived from pool and stats
+    [Double]$Earning #derived from pool and stats
     [Double]$Earning_Bias #derived from pool and stats
-    [Double]$Earning_Unbias #derived from pool and stats
     [Double]$Earning_Accuracy #derived from pool and stats
 
     [Double]$Profit #derived from pool and stats
     [Double]$Profit_Bias #derived from pool and stats
-    [Double]$Profit_Unbias #derived from pool and stats
 
     [String[]]$Algorithm = @() #derived from pool
     #[String[]]$Algorithm_Base = @() #derived from pool
@@ -262,7 +259,7 @@ Class Miner {
 
             #Starting Miner Data reader
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } #When benchmarking clear data on each miner start
-            $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, Type, Workers | ConvertTo-Json) }
+            $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers | ConvertTo-Json) }
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
@@ -278,6 +275,7 @@ Class Miner {
             $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+            $this.StatStart = (Get-Date).ToUniversalTime()
         }
     }
 
@@ -558,21 +556,19 @@ Class Miner {
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
-                $_.Earning_Unbias = [Double]($_.Pool.Price_Unbias * $Factor)
                 $_.Earning_Accuracy = [Double](1 - $_.Pool.MarginOfError)
+                $_.TotalMiningDuration = $Stat.Duration
             }
             Else { 
                 $_.Speed = [Double]::NaN
                 $_.Earning = [Double]::NaN
                 $_.Earning_Bias = [Double]::NaN
-                $_.Earning_Unbias = [Double]::NaN
                 $_.Earning_Accuracy = [Double]::Nan
+                $_.TotalMiningDuration = New-TimeSpan
             }
         }
 
-        #$this.Algorithm_Base = $this.Algorithm -replace '-.+'
         $this.PoolName = $this.Workers.Pool | Select-Object -ExpandProperty Name
-        #$this.PoolName_Base = $this.PoolName -replace '-.+'
         $this.PoolFee = $this.Workers.Pool | Select-Object -ExpandProperty Fee
         $this.PoolPrice = $this.Workers.Pool | Select-Object -ExpandProperty Price
         $this.Fee = $this.Workers | Select-Object -ExpandProperty Fee
@@ -583,22 +579,23 @@ Class Miner {
 
         $this.Earning = 0
         $this.Earning_Bias = 0
-        $this.Earning_Unbias = 0
         $this.Earning_Accuracy = 0
 
         $this.Workers | ForEach-Object { 
             $this.Earning += $_.Earning
             $this.Earning_Bias += $_.Earning_Bias
-            $this.Earning_Unbias += $_.Earning_Unbias
-            $this.Earning_Accuracy += $_.Earning_Accuracy * $_.Earning
         }
 
         If ($this.Earning -eq 0) { 
             $this.Earning_Accuracy = 1
         }
         Else { 
-            $this.Earning_Accuracy /= $this.Earning
+            $this.Workers | ForEach-Object { 
+                $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning)
+            }
         }
+
+        $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
         If ($this.ReadPowerUsage) { 
             If ($Stat = Get-Stat "$($this.Name)$(If ($this.Algorithm.Count -eq 1) { "_$($this.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
@@ -606,7 +603,6 @@ Class Miner {
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
                 $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
-                $this.Profit_Unbias = $this.Earning_Unbias - $this.PowerCost
             }
             Else { 
                 $this.MeasurePowerUsage = $true
@@ -614,7 +610,6 @@ Class Miner {
                 $this.PowerCost = [Double]::NaN
                 $this.Profit = [Double]::NaN
                 $this.Profit_Bias = [Double]::NaN
-                $this.Profit_Unbias = [Double]::NaN
             }
         }
     }
@@ -698,7 +693,7 @@ Function Get-CommandLineParameters {
     }
 }
 
-Function Start-ChildJob { 
+Function Start-BrainJob { 
     # Starts Brains if necessary
     $NewBrains = @()
     $Variables.BrainJobs = @()
@@ -715,31 +710,80 @@ Function Start-ChildJob {
             }
         }
     }
-    If ($NewBrains) { Write-Message "Started Brains for $($NewBrains -join ", ")." }
+    If ($NewBrains) { Write-Message "Started Brain Jobs ($($NewBrains -join ", "))." }
+}
 
-    # Starts Earnings Tracker Job if necessary
-    If ((Test-Path -PathType Leaf ".\Includes\EarningsTrackerJob.ps1") -and ($Config.TrackEarnings) -and (-not ($Variables.EarningsTrackerJobs))) { 
-        $Variables.EarningsTrackerJobs = @()
-        $Params = @{ 
-            WorkingDirectory = $Variables.MainPath
-            PoolsConfig      = $Config.PoolsConfig
-            Transcript       = $Config.Transcript
+Function Stop-BrainJob { 
+
+    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
+    $Variables.BrainJobs = @()
+
+    Write-Message "Stopped Brain Jobs."
+}
+
+
+Function Start-BalancesTracker { 
+    If (-not $Variables.CycleRunspace) { 
+
+        $BalancesTrackerConfigFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Config\BalancesTrackerConfig.json")
+        $BalancesTrackerConfig = Get-Content $BalancesTrackerConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+
+        If (($BalancesTrackerConfig | Get-Member -MemberType NoteProperty | Measure-Object).Count -ne 4) { 
+            #Create default config file
+            If (Test-Path -PathType Leaf $BalancesTrackerConfigFile) { 
+                Write-Message -Level ERROR "Balances Tracker config file '$($BalancesTrackerConfigFile)' is corrupt. Creating new file using defaults..."
+            }
+            Else { 
+                Write-Message -Level ERROR "Balances Tracker config file '$($BalancesTrackerConfigFile)' is missing. Creating new file using defaults..."
+            }
+            $BalancesTrackerConfig = [PSCustomObject]@{ 
+                "PollInterval" = 15 #minutes
+                "EnableLog" = $true
+                "WriteEvery" = 15 #minutes
+                "Pools" = @(((Get-ChildItem ".\Pools" -File).BaseName -replace "24hr" -replace "Coins" ) | Sort-Object -Unique)
+            }
+            $BalancesTrackerConfig | ConvertTo-Json | Set-Content $BalancesTrackerConfigFile -Encoding UTF8 -Force
         }
-        $Variables.EarningsTrackerJobs = (Start-Job -FilePath ".\Includes\EarningsTrackerJob.ps1" -ArgumentList $Params)
-        If ($Variables.EarningsTrackerJobs.State -eq "Running") { 
-            Write-Message "Started Earnings Tracker."
+
+        Try { 
+            $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
+            $BalancesTrackerRunspace.Open()
+            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
+            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('BalancesTrackerConfig', $BalancesTrackerConfig)
+            $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+            $PowerShell = [PowerShell]::Create()
+            $PowerShell.Runspace = $BalancesTrackerRunspace
+            $PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1")
+            $PowerShell.BeginInvoke()
+
+            $Variables.BalancesTrackerRunspace = $BalancesTrackerRunspace
+            $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+        }
+        Catch { 
+            Write-Message -Level ERROR "Failed to start Balances Tracker Config [$Error[0]]."
         }
     }
 }
 
-Function Stop-ChildJob { 
 
-    $Variables.EarningsTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore }
-    $Variables.EarningsTrackerJobs = @()
+Function Stop-BalancesTracker { 
+    If ($Variables.BalancesTrackerRunspace) { 
+        $Variables.BalancesTrackerRunspace.Close()
+        If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
+        $Variables.Remove("BalancesTrackerRunspace")
+        Write-Message "Stopped Balances Tracker."
+    }
+}
+
+Function Stop-BalancesTracker { 
+
+    $Variables.BalancesTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore }
+    $Variables.BalancesTrackerJobs = @()
     $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
     $Variables.BrainJobs = @()
 
-    Write-Message "Stopped Earnings tracker and Brain jobs."
+    Write-Message "Stopped Earnings tracker."
 }
 
 Function Initialize-API { 
@@ -1132,20 +1176,20 @@ Function Start-Mining {
         $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
         $Variables.Miners = $null
 
-        $CycleRunspace = [runspacefactory]::CreateRunspace()
-        $CycleRunspace.Open()
-        $CycleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-        $CycleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-        $CycleRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-        $CycleRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-        $CycleRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
-        $CycleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+        $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
+        $BalancesTrackerRunspace.Open()
+        $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
+        $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+        # $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        # $BalancesTrackerRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
+        # $BalancesTrackerRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
+        $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
         $PowerShell = [PowerShell]::Create()
-        $PowerShell.Runspace = $CycleRunspace
+        $PowerShell.Runspace = $BalancesTrackerRunspace
         $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
         $PowerShell.BeginInvoke()
 
-        $Variables.CycleRunspace = $CycleRunspace
+        $Variables.CycleRunspace = $BalancesTrackerRunspace
         $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
     }
 }
@@ -1299,10 +1343,10 @@ Function Set-Stat {
         If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
             #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')) failed. It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Stat file ($Name) was not updated because the value ($($Value.ToString("N2"))W) is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [$($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Saving power usage ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')) failed. It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
         }
         Else { 
@@ -1310,10 +1354,10 @@ Function Set-Stat {
                 #Update immediately if stat value is 0
                 If ($Value) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "Stat file ($Name) was forcefully updated with value ($(($Value | ConvertTo-Hash) -replace '\s+', '')) because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ')) to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Saved hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row."
                     }
-                    ElseIf ($Name -match ".+_PowerUage$") { 
-                        Write-Message -Level Warn "Stat file ($Name) was forcefully updated with value ($($Value.ToString("N2"))W) because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
+                    ElseIf ($Name -match ".+_PowerUsage$") { 
+                        Write-Message -Level Warn "Saved power usage ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
                     }
                 }
 

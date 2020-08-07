@@ -1,3 +1,5 @@
+using module .\Include.psm1
+
 <#
 Copyright (c) 2018 MrPlus
 EarningsTrackerJob.ps1 Written by MrPlusGH https://github.com/MrPlusGH
@@ -19,80 +21,51 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EarningsTrackerJob.ps1
-version:        3.8.1.3
-version date:   12 November 2019
+version:        3.9.9.0
+version date:   05 August 2020
 #>
-
-# To start the job one could use the following
-# $job = Start-Job -FilePath .\EarningTrackerJob.ps1 -ArgumentList $params
-# Remove progress info from job.childjobs.Progress to avoid memory leak
 
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-$args[0].GetEnumerator() | ForEach-Object { New-Variable -Name $_.Key -Value $_.Value }
-
-If ($WorkingDirectory) { Set-Location $WorkingDirectory }
+Set-Location $Variables.MainPath
 
 #Start the log
-If ($Transcript) { Start-Transcript -Path ".\Logs\EarningTracker-$(Get-Date -Format "yyyy-MM-dd").log" -Append -Force | Out-Null }
+If ($Config.Transcript) { Start-Transcript -Path ".\Logs\EarningTracker-$(Get-Date -Format "yyyy-MM-dd").log" -Append -Force | Out-Null }
 
-If (Test-Path ".\Logs\EarningTrackerData.json") { $AllBalanceObjects = @(Get-Content ".\logs\EarningTrackerData.json" | ConvertFrom-Json) } Else { $AllBalanceObjects = @() }
+If (Test-Path -Path ".\Logs\EarningTrackerData.json" -PathType Leaf) { $AllBalanceObjects = @(Get-Content ".\logs\EarningTrackerData.json" | ConvertFrom-Json) } Else { $AllBalanceObjects = @() }
 
 $TrustLevel = 0
+
 $StartTime = $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
-$BalanceObject = [PSCustomObject]@{ }
-
-#To be removed: Fix typo in field name, convert date format
-If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
-    $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue)
-
-    If ($DailyEarnings.PrePaimentDayValue | Select-Object) { 
-        $DailyEarnings = $DailyEarnings | ForEach-Object  { 
-            [PSCustomObject]@{
-                Date               = [DateTime]::parseexact($_.Date, "MM/dd/yyyy", $null).ToShortDateString()
-                Pool               = $_.Pool
-                DailyEarnings      = $_.DailyEarnings
-                StartTime          = ([DateTime]($_.FirstDayDate)).ToLongTimeString()
-                StartValue         = $_.FirstDayValue
-                EndTime            = ([DateTime]($_.LastDayDate)).ToLongTimeString()
-                EndValue           = $_.LastDayValue
-                PrePaymentDayValue = $_.PrePaimentDayValue
-                Balance            = $_.Balance
-                BTCD               = $_.BTCD
-            }
-        }
-        $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
-    }
-    Remove-Variable DailyEarnings
-}
 
 While ($true) { 
 
     $CurDateTime = (Get-Date).ToUniversalTime()
+    $CurDateUxFormat = ([DateTimeOffset]$CurDateTime.Date).ToUnixTimeMilliseconds()
 
-    #Read Config (ie. Pools to track)
-    $EarningsTrackerConfig = Get-content ".\Config\EarningTrackerConfig.json" | ConvertFrom-Json
-    $Interval = $EarningsTrackerConfig.PollInterval
-    
+    $EarningsTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-Json
+
     #Filter pools variants
-    $TrackPools = @(($EarningsTrackerConfig.pools) -replace "24hr" -replace "coins") | Sort-Object -Unique
+    $TrackPools = @(($EarningsTrackerConfig.Pools) -replace "24hr" -replace "coins") | Sort-Object -Unique
 
     # Get pools api ref
     If (-not $PoolAPI -or ($LastAPIUpdateTime -le (Get-Date).ToUniversalTime().AddDays(-1))) { 
         Try { 
             $PoolAPI = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/poolapiref.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-            $PoolAPI | ConvertTo-Json | Out-File ".\Config\poolapiref.json" -Force
-            $LastAPIUpdateTime = Get-Date
+            $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
+            $PoolAPI | ConvertTo-Json | Out-File ".\Config\PoolApiRef.json" -Force
         }
         Catch { 
-            $PoolAPI = Get-Content ".\Config\poolapiref.json" | ConvertFrom-Json
+            If (-not $PoolAPI) { $PoolAPI = Get-Content ".\Config\PoolApiRef.json" | ConvertFrom-Json }
         }
     }
 
     #For each pool in config
-    #Go loop
-    $PoolNamesToTrack = @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes" | Where-Object Name -in $TrackPools ).Name | ForEach-Object { $_ -replace "24hr" -replace "coins" } | Sort-Object -Unique
-    $PoolAPI | Where-Object Name -in $PoolNamesToTrack | ForEach-Object { 
+    $PoolnamesToTrack = (Compare-Object @($EarningsTrackerConfig.Pools -replace "24hr" -replace "coins" | Sort-Object -Unique) @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes" | ForEach-Object { $_.Name -replace "24hr" -replace "coins"; $_ } | Sort-Object -Unique) -IncludeEqual -ExcludeDifferent).InputObject
+
+    Write-Message "Started Earnings Tracker for $($PoolnamesToTrack -join ', ')."
+
+    $PoolAPI | Where-Object Name -in $PoolNamesToTrack | ForEach-Object {
         $Pool = $_.Name
         $APIUri = $_.WalletUri
         $PaymentThreshold = $_.PaymentThreshold
@@ -102,20 +75,31 @@ While ($true) {
         $PoolAccountUri = $_.AccountUri
 
         $ConfName = If ($PoolsConfig.$Pool -ne $null) { $Pool } Else { "Default" }
-        $PoolConf = $PoolsConfig.$ConfName
 
         If ($Pool -eq "mph") { 
-            $Wallet = $PoolConf.APIKey
+            $Wallet = $Config.PoolsConfig.$PoolConf.APIKey
         }
         Else { 
-            $Wallet = $PoolConf.Wallet
+            $Wallet = $Config.PoolsConfig.$PoolConf.APIKey
         }
 
         Switch ($Pool) { 
             "NicehashV2" { 
                 Try { 
-                    $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)/rigs2") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
-                    [Double]$NHTotalBalance = [Double]($BalanceData.unpaidAmount) + [Double]($BalanceData.externalBalance)
+                    $TempBalance = 0
+                    $NicehashData = ((Invoke-RestMethod -Uri "$($APIUri)$($Wallet)/rigs/stats/unpaid/" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).Data | Where-Object { $_[0] -gt $CurDateUxFormat } | Sort-Object { $_[0] } | Group-Object { $_[2] }).group
+                    $NHTotalBalance = -$NicehashData[0][2]
+                    $NicehashData | ForEach-Object {
+                        #Nicehash continously transfers balances to wallet
+                        If ($_[2] -gt $TempBalance) {
+                            $TempBalance = $_[2]
+                        }
+                        Else { 
+                            $NHTotalBalance += $TempBalance
+                            $TempBalance = $_[2]
+                        }
+                    }
+                    $NHTotalBalance += $TempBalance
                     $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
                     $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
                     $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
@@ -124,14 +108,14 @@ While ($true) {
             }
             "MPH" { 
                 Try { 
-                    $BalanceData = ((((Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).content | ConvertFrom-Json).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
+                    $BalanceData = (((Invoke-RestMethod -Uri "$($APIUri)$($Wallet)" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
                     $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
                 }
                 Catch { }
             }
             Default { 
                 Try { 
-                    $BalanceData = Invoke-WebRequest ("$($APIUri)$($Wallet)") -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json 
+                    $BalanceData = Invoke-RestMethod "$($APIUri)$($Wallet)" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }
                     $PoolAccountUri = "$($PoolAccountUri -replace '\[currency\]', $PoolConf.PasswordCurrency)$Wallet"
                 }
                 Catch { }
@@ -197,6 +181,9 @@ While ($true) {
                 LastUpdated           = $CurDateTime
             }
             $EarningsObject
+
+            $Variables.Earnings.($Pool) = $EarningsObject
+
             If ($EarningsTrackerConfig.EnableLog) { $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\EarningTrackerLog.csv" }
 
             # Read existing earning data
@@ -284,15 +271,14 @@ While ($true) {
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\EarningTrackerData.json" }
     }
 
-    # Sleep until next update based on $Interval
+    # Sleep until next update based on $EarningsTrackerConfig.Interval
     If ($BalanceObject.Date -and ($CurDateTime - $BalanceObject.Date).TotalMinutes -le 20) { 
-        $Sleep = [Int](60 * ($Interval / 2))
+        $Sleep = [Int](60 * ($EarningsTrackerConfig.Interval / 2))
     }
     Else { 
-        $Sleep = [Int](60 * ($Interval))
+        $Sleep = [Int](60 * ($EarningsTrackerConfig.Interval))
     }
 
     #Sleep at least 30 seconds
     Start-Sleep -Seconds (30, $Sleep | Measure-Object -Maximum).Maximum
-    Remove-Variable Sleep
 }

@@ -38,6 +38,7 @@ class BMiner : Miner {
         $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers | ForEach-Object { $_.Algorithm } } | Select-Object -Unique | ForEach-Object { 
             If ( $_ -eq "equihash1445" -and $this.Algorithm -contains "EquihashBTG") { $HashRate_Name = "EquihashBTG" }
             Else { $HashRate_Name = [String](Get-Algorithm $_) }
+            If (-not $Hashrate_Name) { $Hashrate_Name = $this.Algorithm[0] } #Temp fix for broken CuckarooZ29 API
             $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.hash_rate } | Measure-Object -Sum).Sum
             If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.solution_rate } | Measure-Object -Sum).Sum }
 
