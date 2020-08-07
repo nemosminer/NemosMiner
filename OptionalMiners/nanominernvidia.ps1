@@ -1,12 +1,10 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nanominer194\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.9.4/nanominer-windows-1.9.4.zip"
+$Path = ".\Bin\NVIDIA-nanominer1100\nanominer.exe"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.10.0/nanominer-windows-1.10.0.zip"
 $Commands = [PSCustomObject]@{ 
-    #"Ethash" = "" #GPU Only
-    "Ubqhash" = "" #GPU Only
-    "Cuckaroo30" = "" #GPU Only
-    #"RandomX" = "" #CPU only
-    #"RandomHash2" = "" #CPU only
+    #"Ethash" = "" 
+    "Kawpow" = "" 
+    "Cuckaroo30" = "" 
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
