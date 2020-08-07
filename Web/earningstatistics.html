@@ -3,11 +3,11 @@
   <h1 id="title" data-navbaractive="navearningstatistics" class="h2">Earning statistics</h1>
 </div>
 
-<div class="alert alert-info" role="alert">Earnings of the last 30 active days</div>
+<div class="alert alert-info" role="alert">Earnings per pool of the last 30 active days.</div>
 
-<canvas id="EarningsChart" width="400" height="175" aria-label="Hello ARIA World" role="img"></canvas>
+<canvas id="EarningsChart" width="400" height="175" role="img"></canvas>
 
-<!-- End of page scripts -->
+<!-- Start of page scripts -->
 
 <script type="text/javascript">
 
@@ -17,7 +17,7 @@
     return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
   };
 
-  function renderChart(labels, datasets) {
+  function renderChart(labels, datasets, currency) {
     var ctx = document.getElementById("EarningsChart").getContext('2d');
     var myChart = new Chart(ctx, {
       type: 'bar',
@@ -26,21 +26,37 @@
         datasets: datasets
       },
       options: {
+        legend: {
+          labels: {
+            fontSize: 16
+          }
+        },
         scales: {
           xAxes: [{
-            stacked: true,
+            stacked: true
           }],
           yAxes: [{
             stacked: true,
+            ticks: {
+              fontSize: 14
+            }
           }]
         },
+        title: {
+          display: true,
+          fontSize: 32,
+          text: 'Mining Earnings in ' + currency
+        },
+        tooltips: {
+          titleFontSize: 16,
+          bodyFontSize: 16
+        }
       }
     });
   }
 
-  $.ajax({
-    url: '/earningsdata', 
-      success: function (earningsdata) {
+  $.ajax({url: '/earningschartdata', 
+    success: function (earningsdata) {
       console.log(earningsdata);
       var datasets = [];
       for (var pool in earningsdata.Pools) {
@@ -57,12 +73,11 @@
         };
         datasets.push(dataset);
       }
-      renderChart(earningsdata.labels, datasets);
+      renderChart(earningsdata.Labels, datasets, earningsdata.Currency);
     }
   });
 
 </script>
 
 <!-- End of page scripts -->
-
 <!--#include file="/parts/foot.html" -->

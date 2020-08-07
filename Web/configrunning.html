@@ -8,7 +8,8 @@
 </pre>
 
 
-<!-- End of page scripts -->
+<!-- Start of page scripts -->
+
 <script type="text/javascript">
   $(function() {
     $.ajax({url: '/config',
@@ -17,6 +18,13 @@
         $("#configrunning").append(JSON.stringify(result, undefined, 4));
       }
     });
+    $(function() {
+    $.ajax({url: '/poolsconfig', success: function(result) {
+        $("#configrunning").append(JSON.stringify(result, undefined, 4));
+      }});
+  });
   });
 </script>
+
+<!-- End of page scripts -->
 <!--#include file="/parts/foot.html" -->

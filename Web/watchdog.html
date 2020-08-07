@@ -13,11 +13,10 @@
   data-toolbar="#toolbar"
   data-toggle="table"
   data-url="/watchdogtimers"
-  data-response-handler="formatWatchdogTimers"
   data-filter-control="true"
   data-filter-show-clear="true"
   data-sort-order="asc"
-  data-sort-name="tMinerName"
+  data-sort-name="MinerName"
   data-cache="false"
   data-detail-view="true"
   data-detail-formatter="detailFormatter"
@@ -37,13 +36,14 @@
       <th data-field="Version" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Version</th>
       <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
       <th data-field="PoolName" data-sortable="true" data-filter-control="select">Pool</th>
-      <th data-field="Device" data-sortable="true" data-filter-control="select" data-formatter="formatArrayAsString">Device(s)</th>
-      <th data-field="tKicked" data-sortable="true">Timer</th>
+      <th data-field="DeviceName" data-sortable="true" data-filter-control="select" data-formatter="formatArrayAsString">Device(s)</th>
+      <th data-field="Kicked" data-sortable="true" data-formatter="formatTimeSince">Last Updated</th>
     </tr>
   </thead>
 </table>
 
-<!-- End of page scripts -->
+<!-- Begin of page scripts -->
+
 <script type="text/javascript">
   $(function () {
     $("#resetwatchdog").click(function () {
@@ -57,26 +57,39 @@
     });
   });
 
-  function formatWatchdogTimers(data) {
-    // This function can alter the returned data before building the table, formatting it in a way
-    // that is easier to display and manipulate in a table
+  function formatTimeSince(kicked) {
+    var value = (new Date).getTime() - (new Date(kicked)).getTime();
     var localtime = new Date().getTime();
-    $.each(data, function (index, item) {
-      var diff = (new Date).getTime() - (new Date(item.Kicked)).getTime()
-      if (isNaN(diff)) {
-        diff = localtime - parseInt(item.Kicked.replace("/Date(", "").replace(")/", ""));
-      }
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-      var hours = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hours * (1000 * 60 * 60);
-      var mins = Math.floor(diff / (1000 * 60));
-      diff -= mins * (1000 * 60);
-      var seconds = Math.floor(diff / (1000));
-      diff -= seconds * (1000);
-      item.tKicked = (days? days+"d ":'') + (hours<10? '0':'') + hours + ':' + (mins<10? '0':'') + mins + ':' + (seconds<10? '0':'') + seconds
-    });
-    return data;
+    var lastupdated = '';
+    if (isNaN(value)) {
+      value = localtime - parseInt(kicked.replace("/Date(", "").replace(")/", ""));
+    }
+    seconds = value / 1000
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+      lastupdated = lastupdated + interval.toString() + ' hours ';
+    } else if (interval == 1) {
+      lastupdated = lastupdated + interval.toString() + ' hour ';
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+      lastupdated = lastupdated + interval.toString() + ' minutes ';
+    } else if (interval == 1) {
+      lastupdated = lastupdated + interval.toString() + ' minute ';
+    }
+    interval = parseInt(seconds % 60);
+    if (interval > 1) {
+      lastupdated = lastupdated + interval.toString() + ' seconds ';
+    } else if (interval == 1) {
+      lastupdated = lastupdated + interval.toString() + ' second ';
+    }
+    if (lastupdated == '') {
+      return 'just now';
+    } else {
+      return lastupdated + 'ago';
+    }
   }
 </script>
+
+<!-- End of page scripts -->
 <!--#include file="/parts/foot.html" --> 

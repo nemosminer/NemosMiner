@@ -59,32 +59,36 @@
   </thead>
 </table>
 
-<h3 class="mt-4">Balances</h3>
+<div id="balances" .style.display="none">
+  <h3 class="mt-4">Balances</h3>
 
-<div id="balanceboxes" class="card-deck"></div>
+  <div id="balanceboxes" class="card-deck"></div>
 
-<script id="poolbalance_template" type="text/x-handlebars-template">
-  <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}";>
-    <div class="card-header text-center">
-      <h5>{{#if total}}{{name}}{{else}}<a href="{{uri}}" target="_blank">{{name}}</a>{{/if}}</h5>
-      {{lastupdated}}
-    </div>
-    <div class="card-body text-center">
-      <p class="card-text currencies">
-        {{#each balances}}
-        <b>{{@key}}: {{this}}</b><br/>
-        {{/each}}
-      </p>
-      {{#if total}}{{else}}
-      <p class="payment">
-        <b>{{percentage}}%</b> of <b>{{paymentthreshold}} mBTC</b><br/>payment threshold<br/>
-        <br/>Estimated Paydate:<br><b>{{paydate}}</b><br/>
-        <br/>Avg. mBTC/h: <b>{{mBTCh}}</b><br/>Avg. mBTC/d: <b>{{mBTCd}}</b>
-      </p>
-      {{/if}}
+  <script id="poolbalance_template" type="text/x-handlebars-template">
+    <div class="mb-2 card {{#if total}}text-white bg-primary {{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}";>
+      <div class="card-header text-center">
+        <h5>{{#if total}}{{name}}{{else}}<a href="{{uri}}" target="_blank">{{name}}</a>{{/if}}</h5>
+        {{lastupdated}}
+      </div>
+      <div class="card-body text-center">
+        <p class="card-text currencies">
+          {{#each balances}}
+          <b>{{@key}}: {{this}}</b><br/>
+          {{/each}}
+        </p>
+        {{#if total}}{{else}}
+        <p class="payment">
+          <b>{{percentage}}%</b> of <b>{{paymentthreshold}} mBTC</b><br/>payment threshold<br/>
+          <br/>Estimated Paydate:<br><b>{{paydate}}</b><br/>
+          <br/>Avg. mBTC/h: <b>{{mBTCh}}</b><br/>Avg. mBTC/d: <b>{{mBTCd}}</b>
+        </p>
+        {{/if}}
+      </div>
     </div>
   </div>
 </script>
+
+<!-- Start of page scripts -->
 
 <script type="text/javascript">
   var $table = $('#miners')
@@ -147,15 +151,23 @@
 
   $(function() {
     function updatePoolBalances() {
+      var balances = document.getElementById("balances");
+      var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
       var rates = {};
+
       $.ajax({url: '/rates',
         success: function(result) {
           rates = result;
         }
       });
-      var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
+
       $.ajax({url: '/earnings',
         success: function(result) {
+          if (result) {
+            balances.style.display = "block";
+          } else {
+            balances.style.display = "none";
+          }
           $("#balanceboxes").empty();
           var template = Handlebars.compile($("#poolbalance_template").html());
           var footer = new RegExp("-.+|=.+");
@@ -184,6 +196,6 @@
   });
 
 </script>
-<!-- End of page scripts -->
 
+<!-- End of page scripts -->
 <!--#include file="/parts/foot.html" -->

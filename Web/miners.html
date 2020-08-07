@@ -42,12 +42,11 @@
       <th data-field="tReason" data-sortable="true" data-filter-control="select" data-visible="false">Reason</th>
       <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning</th>
       <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Earning Bias</th>
-      <th data-field="Earning_Unbias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Earning unbias</th>
       <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
       <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Profit Bias</th>
-      <th data-field="Profit_Unbias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Profit Unbias</th>
       <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-title-tooltip = "per 24hrs (estimated)">Power Usage</th>
       <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Power Cost</th>
+      <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
       <th data-field="tEarningAccuracy" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=2>Accuracy</th>
       <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select">Primary Algorithm</th>
       <th data-field="tPrimarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashRateValue">Primary Speed</th>
@@ -71,6 +70,8 @@
     </tr>
   </thead>
 </table>
+
+<!-- Start of page scripts -->
 
 <script type="text/javascript">
   var $table = $('#miners');
@@ -149,4 +150,6 @@
   });
 
 </script>
+
+<!-- End of page scripts -->
 <!--#include file="/parts/foot.html" -->
