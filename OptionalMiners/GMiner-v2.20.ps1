@@ -9,6 +9,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Beam", $null);           MinMemGB = 0.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo beam --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("BFC", $null);            MinMemGB = 1.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo bfc --cuda 0 --opencl 1" }
 #   [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo blake2s --cuda 0 --opencl 1" } #Profit very small
+#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29S", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" } #No pool
 #   [PSCustomObject]@{ Algorithm = @("Eaglesong", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" } #Profit very small
     [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);   MinMemGB = 1.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Equihash1927", $null);   MinMemGB = 2.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" }
@@ -19,10 +20,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("BFC", $null);            MinMemGB = 1.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" } #Profit very small
     [PSCustomObject]@{ Algorithm = @("CryptonightBBC", $null); MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cryptonightbbc --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29B", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckaroo29b --cuda 1 --opencl 0" } #No pool
+#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29S", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckaroo29s --cuda 1 --opencl 0" } #No pool
     [PSCustomObject]@{ Algorithm = @("CuckarooD29", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29 --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooD29V", $null);   MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29v --cuda 1 --opencl 0" } #No pool
 #   [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckaroom29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX", $null);  MinMemGB = 8.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo C30CTX --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX", $null);  MinMemGB = 8.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo C30CTX --cuda 1 --opencl 0" } #No pool
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo31 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo32 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29", $null);       MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckoo29 --cuda 1 --opencl 0" }

@@ -20,7 +20,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Hmq1725";      Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo hmq1725" } #CryptoDredge-v0.24 is fastest
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo honeycomb" } #Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo kawpow" }
+#   [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo kawpow" } #TeamRed-v0.7.9 is fastest
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo lyra2v3" } #TeamRed-v0.7.8 is fastest
     [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp" }
 #   [PSCustomObject]@{ Algorithm = "MTPTrc";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp-trc" } #No pools
