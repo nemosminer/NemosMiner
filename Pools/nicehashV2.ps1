@@ -53,7 +53,7 @@ $Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object {
                 Region             = [String]$Region_Norm
                 SSL                = [Boolean]$false
                 Fee                = $Fee
-                EstimateCorrection = 1
+                EstimateCorrection = [Decimal]1
             }
 
             If ($Algorithm_Norm -match "CryptonightR|Equihash1445|Randomx") { 
@@ -71,7 +71,7 @@ $Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object {
                     Region             = [String]$Region_Norm
                     SSL                = [Boolean]$true
                     Fee                = $Fee
-                    EstimateCorrection = 1
+                    EstimateCorrection = [Decimal]1
                 }
             }
         }

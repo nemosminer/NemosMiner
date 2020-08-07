@@ -23,7 +23,7 @@ $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } El
 
 $PoolRegions = "eu", "us"
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
     $Algorithm = $Request.$_.name
     $Algorithm_Norm = Get-Algorithm $Algorithm
     $PoolPort = $Request.$_.port
@@ -34,7 +34,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
     $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
-    Try { $EstimateCorrection = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
+    Try { $EstimateCorrection = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
     Catch { $EstimateCorrection = [Decimal]1 }
 
     $PoolRegions | ForEach-Object { 
@@ -56,7 +56,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee
-                EstimateCorrection = $EstimateCorrection
+                EstimateCorrection = $(If ($PoolConf.PricePenaltyfactor -eq $true) { $EstimateCorrection } Else { [Decimal]1 } )
             }
         }
     }

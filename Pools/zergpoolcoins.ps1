@@ -28,7 +28,7 @@ $AllMiningCoins = @()
 ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
 
 #Uses BrainPlus calculated price
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.hashrate -gt 0 } | ForEach-Object { 
+$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.hashrate -gt 0 } | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
     $PoolHost = "$($HostSuffix)"
     $PoolPort = $Request.$_.port
     $Algorithm = $Request.$_.name
@@ -43,7 +43,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
         If ($TopCoin.Name -eq "BitcoinInterest") { $Algorithm_Norm = "BitcoinInterest" } # Temp fix
 
-        Try { $EstimateCorrection = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
+        Try { $EstimateCorrection = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
         Catch { $EstimateCorrection = [Decimal]1 }
     
         $PoolRegions | ForEach-Object { 
@@ -67,7 +67,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                     Region             = [String]$Region_Norm
                     SSL                = [Bool]$false
                     Fee                = $Fee
-                    EstimateCorrection = $EstimateCorrection
+                    EstimateCorrection = $(If ($PoolConf.PricePenaltyfactor -eq $true) { $EstimateCorrection } Else { [Decimal]1 } )
                 }
             }
         }
