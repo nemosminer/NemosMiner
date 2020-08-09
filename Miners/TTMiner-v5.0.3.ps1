@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Commands = [PSCustomObject]@{ 
     "MTP"       = " -algo MTP -i 21"
     "Eaglesong" = " -algo EAGLESONG"
-#   "Ethash"    = " -algo ETHASH" #Bminer-v16.2.12 is faster
+    "Ethash"    = " -algo ETHASH" 
     "KawPoW"    = " -algo KAWPOW"
 }
 
@@ -34,6 +34,7 @@ $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-O
                 API        = "EthMiner"
                 Port       = $MinerAPIPort
                 URI        = $Uri
+                WarmupTime = 90 #seconds
             }
         }
     }
