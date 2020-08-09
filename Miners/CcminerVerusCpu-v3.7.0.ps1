@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.7.0/ccm
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
-#    "VerusHash" = " --algo verus" #NheqMiner is faster
+    "VerusHash" = " --algo verus" #
 }
 
 If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 
@@ -28,6 +28,7 @@ If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) {
             API        = "Ccminer"
             Port       = $MinerAPIPort
             URI        = $Uri
+            WarmupTime = 90 #seconds
         }
     }
 }
