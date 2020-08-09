@@ -1,8 +1,7 @@
 using module ..\Includes\Include.psm1
 
-try {
-    $Headers = @{"Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"}
-    $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -Headers $Headers).data
+Try {
+    $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -Headers @{"Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"}).data
 }
 Catch { Return }
 
@@ -41,7 +40,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     Catch { $EstimateCorrection = [Decimal]1 }
 
     $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
-    
+
     $PoolRegions | ForEach-Object { 
         $Region = $_
         $Region_Norm = Get-Region $Region
