@@ -27,6 +27,7 @@ If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) {
             API        = "XmRig"
             Port       = $MinerAPIPort
             URI        = $Uri
+            WarmupTime = 60 #seconds
         }
     }
 }
