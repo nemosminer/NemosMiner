@@ -57,7 +57,7 @@ If ($SelectedDevices = @($Devices | Where-Object Type -EQ "CPU")) {
                 API        = "XMRig"
                 Port       = $MinerAPIPort
                 URI        = $Uri
-                WarmupTime = 60 #seconds
+                WarmupTime = 90 #seconds
                 MinerUri   = "http://workers.xmrig.info/worker?url=$([System.Web.HTTPUtility]::UrlEncode("http://localhost:$($MinerAPIPort)"))"
             }
         }
