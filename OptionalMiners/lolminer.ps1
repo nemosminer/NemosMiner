@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-lolminer105\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.05/lolMiner_v1.05_Win64.zip"
+$Path = ".\Bin\AMD-lolminer106\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.06/lolMiner_v1.06_Win64.zip"
 $Commands = [PSCustomObject]@{ 
      "grincuckatoo31"    = " -a C31" #grincuckatoo31
      "grincuckatoo32"    = " -a C32" #grincuckatoo32
