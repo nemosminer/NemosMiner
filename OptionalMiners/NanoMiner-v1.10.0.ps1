@@ -18,7 +18,7 @@ $Commands = [PSCustomObject[]]@(
 
 #   [PSCustomObject]@{ Algorithm = "Ethash";  MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash"; MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ubqhash" }
-    [PSCustomObject]@{ Algorithm = "Kawpow";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" }
+    [PSCustomObject]@{ Algorithm = "KawpoW";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" }
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
