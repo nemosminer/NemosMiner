@@ -37,6 +37,7 @@ $Miner_Devices | Select-Object Model -Unique | ForEach-Object {
             API        = "Ccminer"
             Port       = $MinerAPIPort
             URI        = $Uri
+            WarmupTime = 60 #seconds
         }
     }
 }
