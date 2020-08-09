@@ -49,7 +49,7 @@ $Devices | Where-Object Type -EQ "AMD" | Select-Object Model -Unique | Sort-Obje
 
                 If ($_.Algorithm -like "Cryptonight*") { 
                     $WarmupTime = 90
-                    $_.Command += " --auto_tune==NONE"
+                    $_.Command += " --auto_tune=NONE"
 
                 }
                 If ($_.Algorithm -eq "Ethash") { 
