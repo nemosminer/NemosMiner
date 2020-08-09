@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "AMD";    Command = " --opencl --opencl-devices" } #PhoenixMiner is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "NVIDIA"; Command = " --cuda --cuda-devices" } #PhoenixMiner is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "NVIDIA"; Command = " --cuda --cuda-devices" } #PhoenixMiner is fastest
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
@@ -36,6 +36,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                     Port       = $MinerAPIPort
                     Wrap       = $false
                     URI        = $Uri
+                    WarmupTime = 60 #seconds
                     MinerUri   = "http://localhost:$($MinerAPIPort)"
                 }
             }
