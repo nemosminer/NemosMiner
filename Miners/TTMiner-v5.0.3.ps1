@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.3/ttmi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
-    "Mtp"       = " -algo MTP -i 21"
+    "MTP"       = " -algo MTP -i 21"
     "Eaglesong" = " -algo EAGLESONG"
 #   "Ethash"    = " -algo ETHASH" #Bminer-v16.2.12 is faster
     "KawPoW"    = " -algo KAWPOW"
