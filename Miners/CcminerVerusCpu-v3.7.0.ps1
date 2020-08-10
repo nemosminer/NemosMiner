@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.7.0/ccm
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
-    "VerusHash" = " --algo verus" #
+    "VerusHash" = " --algo verus"
 }
 
 If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 

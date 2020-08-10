@@ -6,6 +6,7 @@ $Path = ".\Bin\$($Name)\cpuminer-sse42.exe"
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.5.11/cpuminer-opt-win.zip"
 
 $Commands = [PSCustomObject]@{ 
+#   "Lyra2z330"    = " --algo lyra2z330" #JayddeeCpu-v3.14.3 is fastest
     "YespowerIots" = " --algo yespoweriots"
     "Yespower"     = " --algo yespower"
     "YespowerR16"  = " --algo yespowerr16"
@@ -14,7 +15,6 @@ $Commands = [PSCustomObject]@{
     "Yescrypt"     = " --algo yescrypt"
     "Yescryptr32"  = " --algo yescryptr32"
     "YespowerItc"  = " --algo yespoweritc"
-    "Lyra2z330"    = " --algo lyra2z330"
 }
 
 $Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")

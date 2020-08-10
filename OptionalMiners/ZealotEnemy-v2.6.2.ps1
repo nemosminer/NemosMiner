@@ -6,10 +6,10 @@ $Uri = "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enem
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
-    "Aergo"  = " --algo aergo --intensity 23" #AeriumX
-    "Xevan"  = " --algo xevan --intensity 22" #Xevan 
-    "Hex"    = " --algo --intensity 24" #Hex 
-    "KawPoW" = " --algo kawpow" #--intensity 22 no result
+    "Aergo"  = " --algo aergo --intensity 23"
+    "Xevan"  = " --algo xevan --intensity 22"
+    "Hex"    = " --algo --intensity 24"
+#   "KawPoW" = " --algo kawpow --statsavg 2 --intensity 22" #No result
 }
 
 $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 

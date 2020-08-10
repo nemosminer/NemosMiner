@@ -59,8 +59,8 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "JeongHash";    Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-jeonghash" } #Trex-v0.15.8 is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo kawpow" } #ZealotEnemy-v2.6.2 is fastest
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo lyra2v3" } #TeamRed-v0.7.8 is fastest
-    [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo mtp" }
-    [PSCustomObject]@{ Algorithm = "MTPTrc";       Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo mtp-trc" }
+#   [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo mtp" } #CryptoDredge-v0.24 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTPTrc";       Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo mtp-trc" } #No pool
 #   [PSCustomObject]@{ Algorithm = "PadiHash";     Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-padihash" } #Trex-v0.15.8 is fastest
 #   [PSCustomObject]@{ Algorithm = "PawelHash";    Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-pawelhash" } #Trex-v0.15.8 is fastest
 #   [PSCustomObject]@{ Algorithm = "Phi";          Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo phi" } #CryptoDredge-v0.16 is fastest

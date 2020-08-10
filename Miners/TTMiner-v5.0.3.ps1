@@ -6,10 +6,10 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.3/ttmi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject]@{ 
-    "MTP"       = " -algo MTP -i 21"
     "Eaglesong" = " -algo EAGLESONG"
     "Ethash"    = " -algo ETHASH" 
     "KawPoW"    = " -algo KAWPOW"
+#   "MTP"       = " -algo MTP -i 21" #CcminerMTP-v1.3.2 is faster
 }
 
 $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 

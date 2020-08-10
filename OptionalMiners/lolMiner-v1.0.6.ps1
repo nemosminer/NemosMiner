@@ -23,7 +23,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "EquihashZCL";   MinMemGB = 3.0; Type = "AMD"   ; Fee = "0.01";  Command = " --coin ZEL" } #GMiner-v2.20 is fastest
 #   [PSCustomObject]@{ Algorithm = "Beam";          MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-I" } #No pool
 #   [PSCustomObject]@{ Algorithm = "BeamV2";        MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-II" } #No pool
-    [PSCustomObject]@{ Algorithm = "BeamV3";        MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-III" }
+#   [PSCustomObject]@{ Algorithm = "BeamV3";        MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-III" } #Gminer-v2.21 is fatest
 #   [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo CR29-40" } #No pool
 #   [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo CR29-32" } #No pool
 #   [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 8.0; Type = "NVIDIA"; Fee = "0.025"; Command = " --algo C30CTX" } #No pool
