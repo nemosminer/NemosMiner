@@ -14,31 +14,31 @@ $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $PoolsConfig.$ConfName
 
-$PoolRegions = "eu", "jp", "usa"
-$PoolHost = "nicehash.com"
+If ($PoolConf.Wallet) { 
+    $PoolRegions = "eu", "jp", "usa"
+    $PoolHost = "nicehash.com"
 
-If ($PoolsConfig.$ConfName.IsInternal) { 
-    $Fee = 0.02
-}
-Else { 
-    $Fee = 0.05
-}
+    If ($PoolsConfig.$ConfName.IsInternal) { 
+        $Fee = 0.02
+    }
+    Else { 
+        $Fee = 0.05
+    }
 
-$Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object { 
-    $Algorithm = $_.Algorithm
-    $PoolPort = $_.algodetails.port
-    $Algorithm_Norm = Get-Algorithm $Algorithm
-    $DivisorMultiplier = 1000000000
-    $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
-    $Divisor = 100000000
+    $Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object { 
+        $Algorithm = $_.Algorithm
+        $PoolPort = $_.algodetails.port
+        $Algorithm_Norm = Get-Algorithm $Algorithm
+        $DivisorMultiplier = 1000000000
+        $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
+        $Divisor = 100000000
 
-    $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor * (1 - $Fee))
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor * (1 - $Fee))
 
-    $PoolRegions | ForEach-Object { 
-        $Region = $_
-        $Region_Norm = Get-Region $Region
+        $PoolRegions | ForEach-Object { 
+            $Region = $_
+            $Region_Norm = Get-Region $Region
 
-        If ($PoolConf.Wallet) { 
             [PSCustomObject]@{ 
                 Algorithm          = [String]$Algorithm_Norm
                 Price              = [Double]$Stat.Live

@@ -18,28 +18,28 @@ $PoolRegions = "US"
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "Default" }
 $PoolConf = $PoolsConfig.$ConfName
 
-$PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-$WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+If ($PoolConf.Wallet) { 
+    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
+    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
-    $PoolHost = $HostSuffix
-    $PoolPort = $Request.$_.port
-    $Algorithm = $Request.$_.name
-    $Algorithm_Norm = Get-Algorithm $Algorithm
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
+        $PoolHost = $HostSuffix
+        $PoolPort = $Request.$_.port
+        $Algorithm = $Request.$_.name
+        $Algorithm_Norm = Get-Algorithm $Algorithm
 
-    $Fee = [Decimal]($Request.$_.Fees / 100)
-    $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
+        $Fee = [Decimal]($Request.$_.Fees / 100)
+        $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
 
-    $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
-    Try { $EstimateCorrection = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-    Catch { $EstimateCorrection = [Decimal]1 }
+        Try { $EstimateCorrection = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
+        Catch { $EstimateCorrection = [Decimal]1 }
 
-    $PoolRegions | ForEach-Object { 
-        $Region = $_
-        $Region_Norm = Get-Region $Region
+        $PoolRegions | ForEach-Object { 
+            $Region = $_
+            $Region_Norm = Get-Region $Region
 
-        If ($PoolConf.Wallet) { 
             [PSCustomObject]@{ 
                 Algorithm          = [String]$Algorithm_Norm
                 Price              = [Double]$Stat.Live

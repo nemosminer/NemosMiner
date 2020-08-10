@@ -8,7 +8,7 @@ Catch { Return }
 If (-not $Request) { Return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "prohashing.com"
+$PoolHost = "prohashing.com"
 # $PriceField = "actual_last24h"
 $PriceField = "actual_last24h"
 $PoolRegions = "US"
@@ -25,27 +25,27 @@ $PoolRegions = "US"
 $ConfName = If ($PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $PoolsConfig.$ConfName
 
-$PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-$WorkerName = $PoolConf.WorkerName -Replace '^ID='
+If ($PoolConf.UserName) { 
+    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
+    $WorkerName = $PoolConf.WorkerName -Replace '^ID='
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.hashrate_last24h) -gt 0 } | ForEach-Object {
-    $Algorithm = $Request.$_.name
-    $Algorithm_Norm = Get-Algorithm $Algorithm
-    $PoolPort = $Request.$_.port
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.hashrate_last24h) -gt 0 } | ForEach-Object {
+        $Algorithm = $Request.$_.name
+        $Algorithm_Norm = Get-Algorithm $Algorithm
+        $PoolPort = $Request.$_.port
 
-    $Fee = [Decimal]$Request.$_.pps_fee
-    $Divisor = [Double]$Request.$_.mbtc_mh_factor
+        $Fee = [Decimal]$Request.$_.pps_fee
+        $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
-    Try { $EstimateCorrection = [Decimal]($Request.$_.actual_last24h / $Request.$_.estimate_current) }
-    Catch { $EstimateCorrection = [Decimal]1 }
+        Try { $EstimateCorrection = [Decimal]($Request.$_.actual_last24h / $Request.$_.estimate_current) }
+        Catch { $EstimateCorrection = [Decimal]1 }
 
-    $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
-    $PoolRegions | ForEach-Object { 
-        $Region = $_
-        $Region_Norm = Get-Region $Region
+        $PoolRegions | ForEach-Object { 
+            $Region = $_
+            $Region_Norm = Get-Region $Region
 
-        If ($PoolConf.Wallet) { 
             [PSCustomObject]@{
                 Algorithm          = [String]$Algorithm_Norm
                 Price              = [Double]$Stat.Live
@@ -53,7 +53,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
                 Protocol           = "stratum+tcp"
-                Host               = [String]$HostSuffix
+                Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
                 User               = "$($PoolConf.UserName)"
                 Pass               = "a=$($Algorithm_Norm),n=$($WorkerName)"
