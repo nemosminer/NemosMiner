@@ -1,60 +1,28 @@
 {
-   "default":{
+   "Default":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3900",
-      "Passwordcurrency":"BTC",
+      "WorkerName":"ID=NM3990",
+      "PasswordCurrency":"BTC",
       "APIKey":""
    },
-   "blockmasters":{
+   "Blockmasters":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3900",
-      "Passwordcurrency":"BTC",
+      "WorkerName":"ID=NM3990",
+      "PasswordCurrency":"BTC",
       "APIKey":"",
       "Algorithm":[
          "+m7m"
       ]
-   },
-   "zpool":{
+   }
+   "MPH":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"ID=NM3900",
-      "Passwordcurrency":"BTC",
-      "APIKey":"",
-       "Algorithm":[
-         "-verus"
-      ]
-   },
-   "zergpoolcoins":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"ID=NM3900",
-      "Passwordcurrency":"BTC",
-      "APIKey":"",
-      "Algorithm":[
-         "+cryptonightconceal",
-         "+cryptonighthaven",
-         "+cryptonightheavy",
-         "+cryptonightheavyx",
-         "+cryptonightupx",
-         "+mtp",
-         "+randomsfx",
-         "+randomwow",
-         "+verushash",
-         "+yescryptr8g",
-         "+yespoweriots"
-      ]
-   },
-   "mph":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"NM3900",
+      "WorkerName":"NM3990",
       "APIKey":"",
       "Algorithm":[
          "+cryptonightmonero",
@@ -62,11 +30,11 @@
          "+kawpow"
       ]
    },
-   "nicehashV2":{
+   "NiceHash":{
       "PricePenaltyFactor":1,
       "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
       "UserName":"nemo",
-      "WorkerName":"NM3900",
+      "WorkerName":"NM3990",
       "APIKey":"",
       "Algorithm":[
          "+beamv2",
@@ -76,11 +44,45 @@
          "+cuckarooz29",
          "+cuckoocycle",
          "+eaglesong",
+         "+ethash",
          "+grincuckaroo29",
          "+grincuckarood29",
          "+grincuckatoo31",
          "+grincuckatoo32",
          "+handshake"
+      ]
+   },
+   "ZergPoolCoins":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"ID=NM3990",
+      "PasswordCurrency":"BTC",
+      "APIKey":"",
+      "Algorithm":[
+         "+cryptonightconceal",
+         "+cryptonighthaven",
+         "+cryptonightheavy",
+         "+cryptonightheavyx",
+         "+cryptonightupx",
+         "+ethash",
+         "+mtp",
+         "+randomsfx",
+         "+randomwow",
+         "+verushash",
+         "+yescryptr8g",
+         "+yespoweriots"
+      ]
+   },
+   "ZPool":{
+      "PricePenaltyFactor":1,
+      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "UserName":"nemo",
+      "WorkerName":"ID=NM3990",
+      "PasswordCurrency":"BTC",
+      "APIKey":"",
+       "Algorithm":[
+         "-verus"
       ]
    }
 }
