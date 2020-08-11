@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-version:        4.0.0.beta1
-version date:   04 June 2020
+Version:        3.9.9.0
+Version date:   10 August 2020
 #>
 
 [CmdletBinding()]
@@ -30,8 +30,6 @@ param(
     [String[]]$Algorithm = @(), #i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
     [Double]$AllowedBadShareRatio = 0.1, #Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
-    [Parameter(Mandatory = $false)]
-    [String]$APIKEY = "", 
     [Int]$APIPort = 3999, #TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)] 
     [Switch]$AutoStart = $false, #If true NemosMiner will start mining automatically
@@ -48,13 +46,11 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
-    [Switch]$EnableEarningsTrackerLog = $false, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
+    [Switch]$EnableBalancesTrackerLog = $false, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
     [Switch]$EstimateCorrection = $false, #If true NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
-    [Parameter(Mandatory = $false)]
-    [Int]$GPUCount = 1, # Number of GPU on the system
     [Parameter(Mandatory = $false)]
     [Switch]$HideConsole = $false, 
     [Parameter(Mandatory = $false)]
@@ -101,6 +97,14 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$MonitoringUser = "", #Unique monitoring user ID 
     [Parameter(Mandatory = $false)]
+    [String]$MPHAPIKey = "", #MPH API Key (required to retrieve balance information)
+    [Parameter(Mandatory = $false)]
+    [String]$MPHUserName = "", #MPH UserName
+    [Parameter(Mandatory = $false)]
+    [String]$NicehashAPIKey = "", #NiceHash API Key (required to retrieve balance information)
+    [Parameter(Mandatory = $false)]
+    [String]$NiceHashInternalWallet = "", #NiceHash internal BTC Wallet (lower pool fees)
+    [Parameter(Mandatory = $false)]
     [Switch]$NoDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
     [Parameter(Mandatory = $false)]
     [Switch]$NoSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
@@ -116,6 +120,10 @@ param(
     [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
     [Double]$ProfitabilityThreshold = -99, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+    [Parameter(Mandatory = $false)]
+    [String]$ProHashingAPIKey = "", #ProHasing API Key (required to retrieve balance information)
+    [Parameter(Mandatory = $false)]
+    [String]$ProHashingUserName = "Nemo", 
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory = $false)]
@@ -141,6 +149,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerWindow = $true, #if true most miner windows will be visible (they can steal focus) - miners that use the 'Wrapper' API will still remain hidden
     [Parameter(Mandatory = $false)]
+    [Switch]$ShowPoolBalances = $true, # Display pool balances & earnings information in text window
+    [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolFee = $true, #Show pool fee column in miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPowerCost = $true, #Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
@@ -165,15 +175,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
-    [Switch]$TrackEarnings = $true, # Display earnings information
-    [Parameter(Mandatory = $false)]
-    [String[]]$Type = @("AMD", "CPU", "NVIDIA"), #AMD/NVIDIA/CPU
-    [Parameter(Mandatory = $false)]
-    [Switch]$TypeAMD = $true, #to be removed
-    [Parameter(Mandatory = $false)]
-    [Switch]$TypeCPU = $true, #to be removed
-    [Parameter(Mandatory = $false)]
-    [Switch]$TypeNVIDIA = $true, #to be removed
+    [Switch]$TrackPoolBalances = $true, #Run background task to periodically collect pool balances & earnings data
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
@@ -193,7 +195,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$WatchdogPoolCount = 7, #Number of watchdog timers with same pool name until pool gets suspended
     [Parameter(Mandatory = $false)]
-    [Switch]$WebGUI = $false, #If true launch Web GUI
+    [Switch]$WebGUI = $true, #If true launch Web GUI
     [Parameter(Mandatory = $false)]
     [String]$WorkerName = "ID=testing"
 )
@@ -250,6 +252,9 @@ $Variables.Miners = [Miner[]]@()
 $Variables.Devices = [Device[]]@()
 $Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
+$Variables.CurrentProduct = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Product
+$Variables.CurrentVersion = [Version](Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Version
+$Variables.CurrentVersionAutoupdated = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Autoupdated.Value
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -275,7 +280,7 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 If (-not (Test-Path $ConfigFile -PathType Leaf -ErrorAction Ignore)) { 
     $Config_Temp | ConvertTo-Json -Depth 10 | Set-Content $ConfigFile
     Write-Host "No valid config file found. A new config file '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))' using default values has been created." -F Yellow
-    Write-Host "Use the GUI to save the config, then start mining."-F Yellow
+    Write-Host "Use the GUI to save the config, then start mining." -F Yellow
     $FreshConfig = $true
 }
 
@@ -284,8 +289,16 @@ Get-Config -ConfigFile $ConfigFile -Parameters $Config_Parameters
 $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($Config_Temp.PSObject.Properties.Name) + @("PoolsConfig")) }
 $Changed_Config_Items | ForEach-Object { 
     Switch ($_) { 
+        "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+        "APIKEY" { 
+            $Config.MPHAPIKey= $Config.$_
+            $Config.ProHahsingAPIKey= $Config.$_
+            $Config.Remove($_)
+        }
+        "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
         "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
-        "ActiveMinergain" { $Config.RunningMinerGainPct  = $Config.$_; $Config.Remove($_) }
+        "PasswordCurrency" { $Config.PasswordCurrency= $Config.$_; $Config.Remove($_) } #Change to capital C
+        "UserName" { $Config.MPHUserName= $Config.$_; $Config.Remove($_) }
         Default { $Config.Remove($_) } #Remove unsupported config item
     }
 }
@@ -329,8 +342,20 @@ If ($Config.AutoStart) {
     $Variables.RestartCycle = $true
 }
 
-Write-Message "Starting $($Branding.ProductLabel)® v$((Get-Content ".\Config\version.json" | ConvertFrom-Json).Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
+Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 Write-Message "Using configuration file '$($Variables.ConfigFile)'."
+
+#Import modules
+Import-Module NetSecurity -ErrorAction SilentlyContinue
+Import-Module Defender -ErrorAction SilentlyContinue
+Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
+Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
+
+#Unblock files
+If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
+If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
+    Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
+}
 
 If ($Config.WebGUI -eq $true) { Initialize-API }
 
@@ -346,7 +371,9 @@ Function Global:TimerUITick {
             $ButtonPause.Enabled = $true
             Stop-Mining
             Stop-IdleMining
-            Stop-ChildJob
+            Stop-BrainJob
+            Stop-BalancesTracker
+
             $LabelBTCD.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             Write-Message "$($Branding.ProductLabel) is idle."
         }
@@ -361,7 +388,8 @@ Function Global:TimerUITick {
                 }
                 Else { 
                     Initialize-Application
-                    Start-ChildJob
+                    Start-BrainJob
+                    Start-BalancesTracker
                 }
                 Write-Message "Mining is paused. BrainPlus and Earning tracker running."
                 $LabelBTCD.Text = "Mining Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
@@ -378,7 +406,8 @@ Function Global:TimerUITick {
             $ButtonPause.Enabled = $true
             If ($Variables.MiningStatus -ne "Running") { 
                 Initialize-Application
-                Start-ChildJob
+                Start-BrainJob
+                Start-BalancesTracker
             }
             If ($Config.MineWhenIdle) { 
                 Stop-Mining
@@ -398,17 +427,6 @@ Function Global:TimerUITick {
     If ($Variables.RefreshNeeded -and $Variables.MiningStatus -eq "Running") { 
         $LabelBTCD.ForeColor = [System.Drawing.Color]::Green
 
-        $Variables.EarningsTrackerJobs | Where-Object { $_.State -eq "Running" } | ForEach-Object { 
-            $EarnTrack = $_ | Receive-Job
-            If ($EarnTrack) { 
-                $Earnings = [Ordered]@{ }
-                $EarnTrack | Where-Object { $_.Pool -ne "" } | Sort-Object Date, Pool | Select-Object -Last ($EarnTrack.Pool | Sort-Object -Unique).Count | Sort-Object Pool | ForEach-Object { $Earnings.($_.Pool) = $_ }
-                $Variables.Earnings = $Earnings
-                Remove-Variable Earnings
-                Remove-Variable EarnTrack
-            }
-        }
-
         If (($Items = Compare-Object -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique) | Where-Object { $_.SideIndicator -eq "=>" }) | Where-Object InputObject -gt 0) { 
             $Items | ForEach-Object { 
                 If ($_ -ne $null) { 
@@ -427,7 +445,7 @@ Function Global:TimerUITick {
                 "Switching" { CheckBoxSwitching_Click }
             }
 
-            If ($Variables.Earnings -and $Config.TrackEarnings) { 
+            If ($Variables.Earnings -and $Config.ShowPoolBalances) { 
                 $DisplayEarnings = [System.Collections.ArrayList]@(
                     $Variables.Earnings.Values | Select-Object @(
                         @{ Name = "Pool"; Expression = { $_.Pool } }, 
@@ -559,7 +577,7 @@ Function Global:TimerUITick {
                 If ($KeyPressed.KeyDown) { 
                     Switch ($KeyPressed.Character) { 
                         "s" { If ($Config.UIStyle -eq "Light") { $Config.UIStyle = "Full" } Else { $Config.UIStyle = "Light" } }
-                        "e" { $Config.TrackEarnings = -not $Config.TrackEarnings }
+                        "e" { $Config.ShowPoolBalances = -not $Config.ShowPoolBalances }
                     }
                 }
             }
@@ -575,7 +593,7 @@ Function Global:TimerUITick {
 
             Write-Host "Exchange Rate: 1 BTC = $($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0).ToString('n')) $($Config.Currency | Select-Object -Index 0)"
             # Get and display earnings stats
-            If ($Variables.Earnings -and $Config.TrackEarnings) { 
+            If ($Variables.Earnings -and $Config.ShowPoolBalances) { 
                 $Variables.Earnings.Values | Sort-Object { $_.Pool } | ForEach-Object { 
                     Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " $($_.Pool)"
                     Write-Host "Trust Level:                $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F darkgray " (based on data from $(([DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
@@ -709,11 +727,6 @@ Function Global:TimerUITick {
                     "Power usage measurement for device$(If (($MinersDeviceGroup | Select-Object -Unique).Count -ne 1) { " group" } ) ($(($MinersDeviceGroup.DeviceName | Select-Object -Unique ) -join '; ')) in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                 }
             }
-            Remove-Variable SortBy
-            Remove-Variable MinersDeviceGroup -ErrorAction SilentlyContinue
-            Remove-Variable MinersDeviceGroupNeedingBenchmark -ErrorAction SilentlyContinue
-            Remove-Variable MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction SilentlyContinue
-            Remove-Variable Miner_Table -ErrorAction SilentlyContinue
 
             Write-Host "`n"
 
@@ -732,7 +745,7 @@ Function Global:TimerUITick {
             If ($Config.UIStyle -eq "Full") { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
                     Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s"}):"
-                    $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($Config.Type.Count * 3) | Format-Table -Wrap (
+                    $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
                         @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
@@ -755,15 +768,21 @@ Function Global:TimerUITick {
                 }
             }
 
+            Remove-Variable SortBy
+            Remove-Variable MinersDeviceGroup -ErrorAction SilentlyContinue
+            Remove-Variable MinersDeviceGroupNeedingBenchmark -ErrorAction SilentlyContinue
+            Remove-Variable MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction SilentlyContinue
+            Remove-Variable Miner_Table -ErrorAction SilentlyContinue
+
             If ($Config.Watchdog -eq $true) { 
+                Write-Host "Watchdog Timers"
                 #Display watchdog timers
                 $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds( -$Variables.WatchdogReset) | Format-Table -Wrap (
                     @{Label = "Miner"; Expression = { $_.MinerName } }, 
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
                     @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
-                    @{Label = "Device(s)"; Expression = { $_.Device } }, 
-                    @{Label = "Watchdog Timer"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
-                    # @{Label = "Watchdog Timer"; Expression = { "{0:n0} Seconds" -f ($Variables.Timer - $_.Kicked | Select-Object -ExpandProperty TotalSeconds) }; Align = 'right' }
+                    @{Label = "Device(s)"; Expression = { $_.DeviceName } }, 
+                    @{Label = "Last Updated"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
                 ) | Out-Host
             }
 
@@ -914,15 +933,13 @@ $MainForm.Add_FormClosing(
 
         Stop-Mining
         Stop-IdleMining
-        Stop-ChildJob
+        Stop-BrainJob
+        Stop-BalancesTracker
     }
 )
 
 $MainForm | Add-Member -Name "Variables" -Value $Variables -MemberType NoteProperty -Force
 
-$Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
-$Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
-$Variables | Add-Member -Force @{ CurrentVersionAutoupdated = (Get-Content .\Version.json | ConvertFrom-Json).Autoupdated.Value }
 $Variables.StatusText = "Idle"
 $RunPage = New-Object System.Windows.Forms.TabPage
 $RunPage.Text = "Run"
@@ -1131,7 +1148,7 @@ $RunPageControls += $RunningMinersDGV
 $EarningsPageControls = @()
 
 $LabelEarnings = New-Object System.Windows.Forms.Label
-$LabelEarnings.Text = "Earning statistics per pool"
+$LabelEarnings.Text = "Earnings statistics per pool"
 $LabelEarnings.AutoSize = $false
 $LabelEarnings.Width = 202
 $LabelEarnings.Height = 16
@@ -1159,7 +1176,6 @@ $CheckShowSwitchingCPU.Width = 60
 $CheckShowSwitchingCPU.Height = 20
 $CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(2, 2)
 $CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingCPU.Checked = ("CPU" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingCPU
 $CheckShowSwitchingCPU | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($this) }) }
 
@@ -1171,7 +1187,6 @@ $CheckShowSwitchingNVIDIA.Width = 70
 $CheckShowSwitchingNVIDIA.Height = 20
 $CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(62, 2)
 $CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingNVIDIA.Checked = ("NVIDIA" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
 $CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($this) }) }
 
@@ -1183,11 +1198,15 @@ $CheckShowSwitchingAMD.Width = 100
 $CheckShowSwitchingAMD.Height = 20
 $CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(137, 2)
 $CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingAMD.Checked = ("AMD" -in $Config.Type)
 $SwitchingPageControls += $CheckShowSwitchingAMD
 $CheckShowSwitchingAMD | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Click($this) }) }
 
 Function CheckBoxSwitching_Click { 
+    If (-not $SwitchingDGV.DataSource) { 
+        $CheckShowSwitchingAMD.Checked = ($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | Where-Object Type -EQ "GPU" | Where-Object Vendor -EQ "AMD")
+        $CheckShowSwitchingCPU.Checked = ($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | Where-Object Name -like "CPU#*")
+        $CheckShowSwitchingNVIDIA.Checked = ($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | Where-Object Type -EQ "GPU"| Where-Object Vendor -EQ "NVIDIA")
+    }
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
     If (Test-Path ".\Logs\switching.log") { $Variables.SwitchingLog = @(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Select-Object -Last 1000); [Array]::Reverse($Variables.SwitchingLog) }
@@ -1238,32 +1257,52 @@ $TBWorkerName.Location = [System.Drawing.Point]::new(135, 2)
 $TBWorkerName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBWorkerName
 
-$LabelUserName = New-Object System.Windows.Forms.Label
-$LabelUserName.Text = "MPH UserName"
-$LabelUserName.AutoSize = $false
-$LabelUserName.Width = 132
-$LabelUserName.Height = 20
-$LabelUserName.Location = [System.Drawing.Point]::new(2, 25)
-$LabelUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $LabelUserName
+$LabelMPHUserName = New-Object System.Windows.Forms.Label
+$LabelMPHUserName.Text = "MPH UserName"
+$LabelMPHUserName.AutoSize = $false
+$LabelMPHUserName.Width = 132
+$LabelMPHUserName.Height = 20
+$LabelMPHUserName.Location = [System.Drawing.Point]::new(2, 25)
+$LabelMPHUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $LabelMPHUserName
 
-$TBUserName = New-Object System.Windows.Forms.TextBox
-$TBUserName.Tag = "UserName"
-$TBUserName.MultiLine = $false
-$TBUserName.Text = $Config.UserName
-$TBUserName.AutoSize = $false
-$TBUserName.Width = 285
-$TBUserName.Height = 20
-$TBUserName.Location = [System.Drawing.Point]::new(135, 25)
-$TBUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $TBUserName
+$TBMPHUserName = New-Object System.Windows.Forms.TextBox
+$TBMPHUserName.Tag = "UserName"
+$TBMPHUserName.MultiLine = $false
+$TBMPHUserName.Text = $Config.MPHUserName
+$TBMPHUserName.AutoSize = $false
+$TBMPHUserName.Width = 285
+$TBMPHUserName.Height = 20
+$TBMPHUserName.Location = [System.Drawing.Point]::new(135, 25)
+$TBMPHUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $TBMPHUserName
+
+$LabelMPHAPIKey = New-Object System.Windows.Forms.Label
+$LabelMPHAPIKey.Text = "MPH API Key"
+$LabelMPHAPIKey.AutoSize = $false
+$LabelMPHAPIKey.Width = 132
+$LabelMPHAPIKey.Height = 20
+$LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 48)
+$LabelMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $LabelMPHAPIKey
+
+$TBMPHAPIKey = New-Object System.Windows.Forms.TextBox
+$TBMPHAPIKey.Tag = "MPHAPIKey"
+$TBMPHAPIKey.MultiLine = $false
+$TBMPHAPIKey.Text = $Config.MPHAPIKey
+$TBMPHAPIKey.AutoSize = $false
+$TBMPHAPIKey.Width = 285
+$TBMPHAPIKey.Height = 20
+$TBMPHAPIKey.Location = [System.Drawing.Point]::new(135, 48)
+$TBMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $TBMPHAPIKey
 
 $LabelInterval = New-Object System.Windows.Forms.Label
 $LabelInterval.Text = "Interval"
 $LabelInterval.AutoSize = $false
 $LabelInterval.Width = 132
 $LabelInterval.Height = 20
-$LabelInterval.Location = [System.Drawing.Point]::new(2, 48)
+$LabelInterval.Location = [System.Drawing.Point]::new(2, 71)
 $LabelInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelInterval
 
@@ -1276,7 +1315,7 @@ $NumudInterval.Text = $Config.Interval
 $NumudInterval.AutoSize = $false
 $NumudInterval.Width = 285
 $NumudInterval.Height = 20
-$NumudInterval.Location = [System.Drawing.Point]::new(135, 48)
+$NumudInterval.Location = [System.Drawing.Point]::new(135, 71)
 $NumudInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $NumudInterval
 
@@ -1285,7 +1324,7 @@ $LabelLocation.Text = "Region"
 $LabelLocation.AutoSize = $false
 $LabelLocation.Width = 132
 $LabelLocation.Height = 20
-$LabelLocation.Location = [System.Drawing.Point]::new(2, 71)
+$LabelLocation.Location = [System.Drawing.Point]::new(2, 94)
 $LabelLocation.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelLocation
 
@@ -1300,7 +1339,7 @@ $LBRegion.AutoSize = $false
 $LBRegion.Sorted = $true
 $LBRegion.Width = 285
 $LBRegion.Height = 20
-$LBRegion.Location = [System.Drawing.Point]::new(135, 71)
+$LBRegion.Location = [System.Drawing.Point]::new(135, 94)
 $LBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LBRegion
 
@@ -1309,7 +1348,7 @@ $LabelAlgos.Text = "Algorithm"
 $LabelAlgos.AutoSize = $false
 $LabelAlgos.Width = 132
 $LabelAlgos.Height = 20
-$LabelAlgos.Location = [System.Drawing.Point]::new(2, 94)
+$LabelAlgos.Location = [System.Drawing.Point]::new(2, 117)
 $LabelAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelAlgos
 
@@ -1320,7 +1359,7 @@ $TBAlgos.Text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
 $TBAlgos.Width = 285
 $TBAlgos.Height = 20
-$TBAlgos.Location = [System.Drawing.Point]::new(135, 94)
+$TBAlgos.Location = [System.Drawing.Point]::new(135, 117)
 $TBAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBAlgos
 
@@ -1329,7 +1368,7 @@ $LabelCurrency.Text = "Currencies"
 $LabelCurrency.AutoSize = $false
 $LabelCurrency.Width = 132
 $LabelCurrency.Height = 20
-$LabelCurrency.Location = [System.Drawing.Point]::new(2, 117)
+$LabelCurrency.Location = [System.Drawing.Point]::new(2, 140)
 $LabelCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelCurrency
@@ -1341,7 +1380,7 @@ $TBCurrency.Text = @($Config.Currency -join ', ')
 $TBCurrency.AutoSize = $false
 $TBCurrency.Width = 285
 $TBCurrency.Height = 20
-$TBCurrency.Location = [System.Drawing.Point]::new(135, 117)
+$TBCurrency.Location = [System.Drawing.Point]::new(135, 140)
 $TBCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBCurrency
@@ -1351,7 +1390,7 @@ $LabelPwdCurrency.Text = "Password Currency"
 $LabelPwdCurrency.AutoSize = $false
 $LabelPwdCurrency.Width = 132
 $LabelPwdCurrency.Height = 20
-$LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 140)
+$LabelPwdCurrency.Location = [System.Drawing.Point]::new(2, 163)
 $LabelPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelPwdCurrency
 
@@ -1362,7 +1401,7 @@ $TBPwdCurrency.Text = $Config.PasswordCurrency
 $TBPwdCurrency.AutoSize = $false
 $TBPwdCurrency.Width = 285
 $TBPwdCurrency.Height = 20
-$TBPwdCurrency.Location = [System.Drawing.Point]::new(135, 140)
+$TBPwdCurrency.Location = [System.Drawing.Point]::new(135, 163)
 $TBPwdCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBPwdCurrency
 
@@ -1371,7 +1410,7 @@ $LabelDonate.Text = "Donate"
 $LabelDonate.AutoSize = $false
 $LabelDonate.Width = 132
 $LabelDonate.Height = 20
-$LabelDonate.Location = [System.Drawing.Point]::new(2, 163)
+$LabelDonate.Location = [System.Drawing.Point]::new(2, 186)
 $LabelDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelDonate
@@ -1385,7 +1424,7 @@ $NumudDonate.Text = $Config.Donate
 $NumudDonate.AutoSize = $false
 $NumudDonate.Width = 285
 $NumudDonate.Height = 20
-$NumudDonate.Location = [System.Drawing.Point]::new(135, 163)
+$NumudDonate.Location = [System.Drawing.Point]::new(135, 186)
 $NumudDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $NumudDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $NumudDonate
@@ -1395,7 +1434,7 @@ $LabelProxy.Text = "Proxy"
 $LabelProxy.AutoSize = $false
 $LabelProxy.Width = 132
 $LabelProxy.Height = 20
-$LabelProxy.Location = [System.Drawing.Point]::new(2, 186)
+$LabelProxy.Location = [System.Drawing.Point]::new(2, 209)
 $LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelProxy
 
@@ -1406,7 +1445,7 @@ $TBProxy.Text = $Config.Proxy
 $TBProxy.AutoSize = $false
 $TBProxy.Width = 285
 $TBProxy.Height = 20
-$TBProxy.Location = [System.Drawing.Point]::new(135, 186)    
+$TBProxy.Location = [System.Drawing.Point]::new(135, 209)
 $TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBProxy
 
@@ -1415,7 +1454,7 @@ $LabelRunningMinerGainPct.Text = "RunningMinerGain%"
 $LabelRunningMinerGainPct.AutoSize = $false
 $LabelRunningMinerGainPct.Width = 132
 $LabelRunningMinerGainPct.Height = 20
-$LabelRunningMinerGainPct.Location = [System.Drawing.Point]::new(2, 209)
+$LabelRunningMinerGainPct.Location = [System.Drawing.Point]::new(2, 232)
 $LabelRunningMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelRunningMinerGainPct
 
@@ -1428,29 +1467,9 @@ $NumudRunningMinerGainPct.Text = $Config.RunningMinerGainPct
 $NumudRunningMinerGainPct.AutoSize = $false
 $NumudRunningMinerGainPct.Width = 285
 $NumudRunningMinerGainPct.Height = 20
-$NumudRunningMinerGainPct.Location = [System.Drawing.Point]::new(135, 209)
+$NumudRunningMinerGainPct.Location = [System.Drawing.Point]::new(135, 232)
 $NumudRunningMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $NumudRunningMinerGainPct
-
-$LabelMPHAPIKey = New-Object System.Windows.Forms.Label
-$LabelMPHAPIKey.Text = "MPH API Key"
-$LabelMPHAPIKey.AutoSize = $false
-$LabelMPHAPIKey.Width = 132
-$LabelMPHAPIKey.Height = 20
-$LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 232)
-$LabelMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $LabelMPHAPIKey
-
-$TBMPHAPIKey = New-Object System.Windows.Forms.TextBox
-$TBMPHAPIKey.Tag = "APIKEY"
-$TBMPHAPIKey.MultiLine = $false
-$TBMPHAPIKey.Text = $Config.APIKEY
-$TBMPHAPIKey.AutoSize = $false
-$TBMPHAPIKey.Width = 285
-$TBMPHAPIKey.Height = 20
-$TBMPHAPIKey.Location = [System.Drawing.Point]::new(135, 232)
-$TBMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigPageControls += $TBMPHAPIKey
 
 $LabelMinersTypes = New-Object System.Windows.Forms.Label
 $LabelMinersTypes.Text = "Mining Devices"
@@ -1566,14 +1585,14 @@ $CheckBoxMineWhenIdle.Add_Click(
 )
 
 $CheckBoxEarningTrackerLogs = New-Object System.Windows.Forms.CheckBox
-$CheckBoxEarningTrackerLogs.Tag = "EnableEarningsTrackerLog"
+$CheckBoxEarningTrackerLogs.Tag = "EnableBalancesTrackerLog"
 $CheckBoxEarningTrackerLogs.Text = "Earnings Tracker Logs"
 $CheckBoxEarningTrackerLogs.AutoSize = $false
 $CheckBoxEarningTrackerLogs.Width = 160
 $CheckBoxEarningTrackerLogs.Height = 20
 $CheckBoxEarningTrackerLogs.Location = [System.Drawing.Point]::new(560, 100)
 $CheckBoxEarningTrackerLogs.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxEarningTrackerLogs.Checked = $Config.EnableEarningsTrackerLog
+$CheckBoxEarningTrackerLogs.Checked = $Config.EnableBalancesTrackerLog
 $ConfigPageControls += $CheckBoxEarningTrackerLogs
 
 $CheckBoxGUIMinimized = New-Object System.Windows.Forms.CheckBox
