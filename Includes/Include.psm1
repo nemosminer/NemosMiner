@@ -726,9 +726,15 @@ Function Start-BalancesTracker {
     If (-not $Variables.CycleRunspace) { 
 
         $BalancesTrackerConfigFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Config\BalancesTrackerConfig.json")
-        $BalancesTrackerConfig = Get-Content $BalancesTrackerConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+        $BalancesTrackerConfig = [Hashtable]::Synchronized(@{ })
 
-        If (($BalancesTrackerConfig | Get-Member -MemberType NoteProperty | Measure-Object).Count -ne 4) { 
+        $BalancesTrackerTmp = Get-Content $BalancesTrackerConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+        $BalancesTrackerTmp | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Sort-Object Name | ForEach-Object { 
+            $BalancesTrackerConfig.$_ = $BalancesTrackerTmp.$_
+        }
+        Remove-Variable BalancesTrackerTmp
+
+        If ($BalancesTrackerConfig.Keys.Count -ne 4) { 
             #Create default config file
             If (Test-Path -PathType Leaf $BalancesTrackerConfigFile) { 
                 Write-Message -Level ERROR "Balances Tracker config file '$($BalancesTrackerConfigFile)' is corrupt. Creating new file using defaults..."
@@ -736,12 +742,13 @@ Function Start-BalancesTracker {
             Else { 
                 Write-Message -Level ERROR "Balances Tracker config file '$($BalancesTrackerConfigFile)' is missing. Creating new file using defaults..."
             }
-            $BalancesTrackerConfig = [PSCustomObject]@{ 
-                "PollInterval" = 15 #minutes
+            $BalancesTrackerConfig = [Hashtable]::Synchronized(@{ 
                 "EnableLog" = $true
+                "PollInterval" = 15 #minutes
+                "Pools" = @(((Get-ChildItem ".\Pools" -File).BaseName -replace "24hr" -replace "Coins") | Sort-Object -Unique)
                 "WriteEvery" = 15 #minutes
-                "Pools" = @(((Get-ChildItem ".\Pools" -File).BaseName -replace "24hr" -replace "Coins" ) | Sort-Object -Unique)
-            }
+            })
+
             $BalancesTrackerConfig | ConvertTo-Json | Set-Content $BalancesTrackerConfigFile -Encoding UTF8 -Force
         }
 
@@ -850,17 +857,6 @@ Function Initialize-Application {
 
     #Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
-
-    #Import modules
-    Import-Module NetSecurity -ErrorAction SilentlyContinue
-    Import-Module Defender -ErrorAction SilentlyContinue
-    Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
-    Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
-
-    If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
-        If ((Get-Command "Get-MpPreference" -ErrorAction SilentlyContinue) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
-        Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
-    }
 
     If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
     Else { $PSDefaultParameterValues["*:Proxy"] = $Proxy }
