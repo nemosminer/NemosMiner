@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-ethminer0190r2\ethminer.exe"
-$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r2/ethminer0.19.0r2cuda102.7z"
+$Path = ".\Bin\NVIDIA-ethminer0190r3\ethminer.exe"
+$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r3/ethminer0.19.0r3cuda102.7z"
 $Commands = [PSCustomObject]@{ 
     "ethash" = "" #ethash
 }
@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         [PSCustomObject]@{ 
             Type      = "NVIDIA"
             Path      = $Path
-            Arguments = "--farm-recheck 4000 --farm-retries 30 --work-timeout 950 --response-timeout 240 --cuda-devices $($Config.SelGPUDSTM) --api-port -$($Variables.NVIDIAMinerAPITCPPort) -U $AlgoParameter$($Commands.$_)"
+            Arguments = "--cuda-devices $($Config.SelGPUDSTM) --api-port -$($Variables.NVIDIAMinerAPITCPPort) -U $AlgoParameter$($Commands.$_)"
             HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
             API       = "ethminer"
             Port      = $Variables.NVIDIAMinerAPITCPPort #4068
