@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         [PSCustomObject]@{ 
             Type      = "NVIDIA"
             Path      = $Path
-            Arguments = "--cuda-devices $($Config.SelGPUDSTM) --api-port -$($Variables.NVIDIAMinerAPITCPPort) -U $AlgoParameter$($Commands.$_)"
+            Arguments = "--farm-recheck 4000 --farm-retries 30 --work-timeout 950 --response-timeout 240 --cuda-devices $($Config.SelGPUDSTM) --api-port -$($Variables.NVIDIAMinerAPITCPPort) -U $AlgoParameter$($Commands.$_)"
             HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
             API       = "ethminer"
             Port      = $Variables.NVIDIAMinerAPITCPPort #4068
