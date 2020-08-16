@@ -39,6 +39,7 @@
       "Algorithm":[
          "+cryptonightconceal",
          "+cryptonighthaven",
+         "+cryptonightgpu",
          "+cryptonightheavy",
          "+cryptonightheavyx",
          "+cryptonightupx",
