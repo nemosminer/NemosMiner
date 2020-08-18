@@ -53,7 +53,7 @@ class Gminer : Miner {
             $PowerUsage = [Double](($Data.devices | Measure-Object power_usage -Sum).Sum)
         }
 
-        If ($HashRate[0].PSObject.Properties.Value -gt 0) { #Temp fix for 1h/s on second algo
+        If ($HashRate[0].PSObject.Properties.Value) { 
             $Sample = [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate
