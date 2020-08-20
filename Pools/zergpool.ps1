@@ -14,8 +14,6 @@ $PriceField = "Plus_Price"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
 
-$Location = "US"
-
 # Placed here for Perf (Disk reads)
 $ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
