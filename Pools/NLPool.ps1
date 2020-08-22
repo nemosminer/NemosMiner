@@ -1,27 +1,24 @@
 using module ..\Includes\Include.psm1
 
-Try { 
-    $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\nlpool\nlpool.json") | ConvertFrom-Json
-}
-Catch { Return }
+param(
+    [PSCustomObject]$PoolConfig
+)
 
-If (-not $Request) { Return }
+If ($PoolConfig.Wallet) { 
+    Try { 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\nlpool\nlpool.json") | ConvertFrom-Json
+    }
+    Catch { Return }
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "mine.nlpool.nl"
-$PriceField = "Plus_Price"
-# $PriceField = "actual_last24h"
-# $PriceField = "estimate_current"
- 
-$PoolRegions = "US"
+    If (-not $Request) { Return }
 
-# Placed here for Perf (Disk reads)
-$ConfName = If ($PoolsConfig.$Name) { $Name } Else { "Default" }
-$PoolConf = $PoolsConfig.$ConfName
-
-If ($PoolConf.Wallet) { 
-    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+    $HostSuffix = "mine.nlpool.nl"
+    $PriceField = "Plus_Price"
+    # $PriceField = "actual_last24h"
+    # $PriceField = "estimate_current"
+    
+    $PoolRegions = "US"
 
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
@@ -41,8 +38,8 @@ If ($PoolConf.Wallet) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
 
-        Try { $EstimateCorrection = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-        Catch { $EstimateCorrection = [Decimal]1 }
+        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
+        Catch { $EstimateFactor = [Decimal]1 }
 
         $PoolRegions | ForEach-Object { 
             $Region = $_
@@ -53,16 +50,16 @@ If ($PoolConf.Wallet) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
                 Protocol           = "stratum+tcp"
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = $PoolConf.Wallet
-                Pass               = "$($WorkerName),c=$($PasswordCurrency)"
+                User               = $PoolConfig.Wallet
+                Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PasswordCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee
-                EstimateCorrection = $(If ($PoolConf.PricePenaltyfactor -eq $true) { $EstimateCorrection } Else { [Decimal]1 } )
+                EstimateFactor     = $EstimateFactor
             }
         }
     }

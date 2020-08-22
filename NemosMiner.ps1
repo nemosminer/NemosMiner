@@ -30,29 +30,34 @@ param(
     [String[]]$Algorithm = @(), #i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
     [Double]$AllowedBadShareRatio = 0.1, #Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
-    [Int]$APIPort = 3999, #TCP Port for API & Web GUI
-    [Parameter(Mandatory = $false)] 
+    [Parameter(Mandatory = $false)]
     [Switch]$AutoStart = $false, #If true NemosMiner will start mining automatically
+    [Parameter(Mandatory = $false)] 
+    [String]$APILogfile = "", #API will log all requests to this file, to disable leave empty
+    [Parameter(Mandatory = $false)]
+    [Int]$APIPort = 3999, #TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
     [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
-    [String]$ConfigFile = ".\Config\config.json", 
+    [Switch]$BalancesTrackerEnableLog = $true, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
+    [Parameter(Mandatory = $false)]
+    [UInt16]$BalancesTrackerPollInterval = 15, #minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
+    [Parameter(Mandatory = $false)]
+    [String]$ConfigFile = ".\Config\Config.json", #Config file name
     [Parameter(Mandatory = $false)]
     [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
     [Parameter(Mandatory = $false)]
-    [Int]$Delay = 1, #seconds before opening each miner
+    [Int]$Delay = 1, #seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
     [Switch]$DisableMinerFees = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
-    [Switch]$EnableBalancesTrackerLog = $false, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
-    [Parameter(Mandatory = $false)]
-    [Switch]$EstimateCorrection = $false, #If true NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+    [Switch]$EstimateCorrection = $false, #If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
     [Parameter(Mandatory = $false)]
-    [Switch]$HideConsole = $false, 
+    [Switch]$HideMinerWindow = $false, #if true all miners will run as a hidden background task (not recommended). Note that miners that use the 'Wrapper' API will always run hidden
     [Parameter(Mandatory = $false)]
     [Double]$IdlePowerUsageW = 60, #Powerusage of idle system in Watt. Part of profit calculation
     [Parameter(Mandatory = $false)]
@@ -71,8 +76,6 @@ param(
     [Switch]$IncludeLegacyMiners = $true, #If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 240, #seconds before between cycles after the first has passed 
-    [Parameter(Mandatory = $false)]
-    [String]$Region = "US", #Used to determine pool nearest to you. Valid values are: Europe, US or Asia
     [Parameter(Mandatory = $false)]
     [String[]]$LogToFile = @("Info", "Warn", "Error", "Verbose", "Debug"), #Log level detail to be written to log file, see Write-Message function
     [Parameter(Mandatory = $false)]
@@ -99,11 +102,17 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$MPHAPIKey = "", #MPH API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$MPHUserName = "", #MPH UserName
+    [String]$MPHUserName = "Nemo", #MPH UserName
     [Parameter(Mandatory = $false)]
-    [String]$NicehashAPIKey = "", #NiceHash API Key (required to retrieve balance information)
+    [String]$NiceHashAPIKey = "", #NiceHash API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$NiceHashInternalWallet = "", #NiceHash internal BTC Wallet (lower pool fees)
+    [String]$NiceHashAPISecret = "", #NiceHash API Secret (required to retrieve balance information)
+    [Parameter(Mandatory = $false)]
+    [Switch]$NiceHashWalletIsInternal = $false, #Set to $true if NiceHashWallet is a NiceHash internal Wallet (lower pool fees)
+    [Parameter(Mandatory = $false)]
+    [String]$NiceHashWallet = "", #NiceHash wallet, if left empty $Wallet is used
+    [Parameter(Mandatory = $false)]
+    [String]$NiceHashOrganizationId = "", #NiceHash Organization Id (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
     [Switch]$NoDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
     [Parameter(Mandatory = $false)]
@@ -113,29 +122,31 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$PasswordCurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH etc.
     [Parameter(Mandatory = $false)]
-    [String[]]$PoolName = @(), 
+    [String[]]$PoolName = @("Blockmasters", "MPH", "NiceHash", "ZergPoolCoins", "ZPool"), 
+    [Parameter(Mandatory = $false)]
+    [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", #PoolsConfig file name
     [Parameter(Mandatory = $false)]
     [Int]$PoolTimeout = 30, #Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get any pool data
     [Parameter(Mandatory = $false)]
     [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
+    [Double]$PricePenaltyFactor = 1, #Estimated profit as projected by pool will be multiplied by this facator. Allowed values: 0.0 - 1.0
+    [Parameter(Mandatory = $false)]
     [Double]$ProfitabilityThreshold = -99, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
     [Parameter(Mandatory = $false)]
-    [String]$ProHashingAPIKey = "", #ProHasing API Key (required to retrieve balance information)
+    [String]$ProHashingAPIKey = "", #ProHashing API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$ProHashingUserName = "Nemo", 
+    [String]$ProHashingUserName = "nemos", #ProHashing UserName, if left empty then $UserName is used
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080 
     [Parameter(Mandatory = $false)]
     [Switch]$ReadPowerUsage = $true, #If true, power usage will be read from miners, required for true profit calculation
     [Parameter(Mandatory = $false)]
+    [String]$Region = "Europe", #Used to determine pool nearest to you. Valid values are: Europe, US or Asia
+    [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, 
     [Parameter(Mandatory = $false)]
     [Double]$RunningMinerGainPct = 12, # percent of advantage that running miner has over candidates in term of earning/profit
-    [Parameter(Mandatory = $false)]
-    [String]$SelGPUCC = "0,1", 
-    [Parameter(Mandatory = $false)]
-    [String]$SelGPUDSTM = "0 1", 
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, #Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
@@ -147,9 +158,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerFee = $true, #Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowMinerWindow = $true, #if true most miner windows will be visible (they can steal focus) - miners that use the 'Wrapper' API will still remain hidden
-    [Parameter(Mandatory = $false)]
-    [Switch]$ShowPoolBalances = $true, # Display pool balances & earnings information in text window
+    [Switch]$ShowPoolBalances = $true, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolFee = $true, #Show pool fee column in miner overview
     [Parameter(Mandatory = $false)]
@@ -163,11 +172,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowWorkerStatus = $true, 
     [Parameter(Mandatory = $false)]
-    [String]$SnakeTailExe = ".\Utils\SnakeTail.exe", #Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+    [String]$SnakeTailExe = ".\Utils\SnakeTail.exe", #Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net], leave empty to disable
     [Parameter(Mandatory = $false)]
-    [Switch]$SSL = $false, 
+    [String]$SnakeTailConfig = ".\Utils\NemosMiner_LogReader.xml", #Path to SnakeTail session config file
     [Parameter(Mandatory = $false)]
-    [Switch]$StartGUIMinimized = $false, 
+    [Switch]$SSL = $false, #If true NemosMiner will only use pools which support SSL connections
+    [Parameter(Mandatory = $false)]
+    [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
     [Switch]$StartPaused = $false, #If true, NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
     [Parameter(Mandatory = $false)]
@@ -175,11 +186,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
-    [Switch]$TrackPoolBalances = $true, #Run background task to periodically collect pool balances & earnings data
-    [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
-    [Parameter(Mandatory = $false)]
-    [String]$UserName = "Nemo", 
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
@@ -195,13 +202,12 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$WatchdogPoolCount = 7, #Number of watchdog timers with same pool name until pool gets suspended
     [Parameter(Mandatory = $false)]
-    [Switch]$WebGUI = $true, #If true launch Web GUI
+    [Switch]$WebGUI = $true, #If true launch Web GUI (recommended)
     [Parameter(Mandatory = $false)]
     [String]$WorkerName = "ID=testing"
 )
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
-
 
 @"
 NemosMiner
@@ -220,6 +226,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
+    Version      = [System.Version]"3.9.9.0"
 }
 
 Try { 
@@ -240,21 +247,119 @@ Catch {
     Add-Type -Path ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
-#Initialize variables
-New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
-New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
-New-Variable Stats ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
+#Get command line parameters
+$AllCommandLineParameters = [Ordered]@{ }
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
+    $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+    If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
+}
 
-$Variables.MainPath = (Get-Location).Path
-$Variables.SourcesHash = @()
-$Variables.Pools = [Pool[]]@()
+#Create directories
+If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item  -Path . -Name "Config" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item  -Path . -Name "Logs" -ItemType Directory | Out-Null }
+
+#Initialize global variables
+New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
+New-Variable PoolsConfig ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
+New-Variable Stats ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
+New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
+
+#Expand paths
+$Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
+$Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))"
+$Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))"
+$Variables.LogFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"))"
+
+If (Test-Path ".\Config\Version.json" -PathType Leaf) { 
+    $Variables.CurrentProduct = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Product
+    $Variables.CurrentVersion = [Version](Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Version
+    $Variables.CurrentVersionAutoupdated = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Autoupdated.Value
+}
+Else { 
+    $Variables.CurrentVersion = $Branding.Version
+}
+
+#Get command line parameters, required in Read-Config
+$AllCommandLineParameters = [Ordered]@{ }
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
+    $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+    If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
+}
+
+#Read configuration
+Read-Config -Parameters $AllCommandLineParameters
+Read-PoolsConfig
+
+#Start transcript log
+If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
+
+Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
+If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($Variables.ConfigFile)'." }
+
+#Update config file to include all new config items
+If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion) { 
+    #Changed config items
+    $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
+    $Changed_Config_Items | ForEach-Object { 
+        Switch ($_) { 
+            "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+            "APIKEY" { 
+                $Config.MPHAPIKey = $Config.$_
+                $Config.ProHashingAPIKey = $Config.$_
+                $Config.Remove($_)
+            }
+            "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
+            "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+            "SelGPUCC" { $Config.Remove($_) }
+            "SelGPUDSTM" { $Config.Remove($_) }
+            "ShowMinerWindow" { $Config.HideMinerWindow = (-not $Config.$_); $Config.Remove($_) }
+            "UserName" { 
+                If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
+                If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
+                $Config.Remove($_)
+            }
+            Default { $Config.Remove($_) } #Remove unsupported config item
+        }
+    }
+    Remove-Variable Changed_Config_Items -ErrorAction Ignore
+
+    #Add new config items
+    If ($New_Config_Items = $AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
+        $New_Config_Items | Sort-Object Name | ForEach-Object { 
+            $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+            $Global:Config.$_ = $Value
+        }
+        Remove-Variable Value -ErrorAction Ignore
+
+    }
+    $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
+    Write-Config $Variables.ConfigFile
+    Write-Message "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())."
+    Remove-Variable New_Config_Items -ErrorAction Ignore
+}
+
+#Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
+    $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
+    $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
+    If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe)) { 
+        & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
+    }
+}
+
+Write-Host "Loading device information..." -F Yellow
+$Variables.Devices = [Device[]](Get-Device -Refresh)
+
+Write-Host "Setting variables..." -F Yellow
+$Variables.BrainJobs = @{ }
+$Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
+$Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
 $Variables.Miners = [Miner[]]@()
-$Variables.Devices = [Device[]]@()
-$Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
+$Variables.Pools = [Pool[]]@()
 $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
-$Variables.CurrentProduct = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Product
-$Variables.CurrentVersion = [Version](Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Version
-$Variables.CurrentVersionAutoupdated = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Autoupdated.Value
+$Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
+$Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -263,73 +368,6 @@ If ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }          
 If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }           # For AMD
 If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
 If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
-
-#Create logs directory
-If (-not (Test-Path -Path .\Logs -PathType Container)) { New-Item  -Path . -Name "Logs" -ItemType "directory" | Out-Null }
-$Variables.LogFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log")
-
-#Prepare config
-$Config_Temp = [PSCustomObject]@{ }
-[Hashtable]$Config_Parameters = @{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
-    $Config_Parameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
-    If ($Config_Parameters.$_ -is [Switch]) { $Config_Parameters.$_ = [Boolean]$Config_Parameters.$_ }
-    $Config_Temp | Add-Member @{$_ = "`$$_" }
-}
-
-If (-not (Test-Path $ConfigFile -PathType Leaf -ErrorAction Ignore)) { 
-    $Config_Temp | ConvertTo-Json -Depth 10 | Set-Content $ConfigFile
-    Write-Host "No valid config file found. A new config file '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))' using default values has been created." -F Yellow
-    Write-Host "Use the GUI to save the config, then start mining." -F Yellow
-    $FreshConfig = $true
-}
-
-Get-Config -ConfigFile $ConfigFile -Parameters $Config_Parameters
-#Changed config items
-$Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($Config_Temp.PSObject.Properties.Name) + @("PoolsConfig")) }
-$Changed_Config_Items | ForEach-Object { 
-    Switch ($_) { 
-        "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
-        "APIKEY" { 
-            $Config.MPHAPIKey= $Config.$_
-            $Config.ProHahsingAPIKey= $Config.$_
-            $Config.Remove($_)
-        }
-        "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
-        "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
-        "PasswordCurrency" { $Config.PasswordCurrency= $Config.$_; $Config.Remove($_) } #Change to capital C
-        "UserName" { $Config.MPHUserName= $Config.$_; $Config.Remove($_) }
-        Default { $Config.Remove($_) } #Remove unsupported config item
-    }
-}
-Remove-Variable Changed_Config_Items -ErrorAction Ignore
-
-#Add new config items
-If ($New_Config_Items = $Config_Temp.PSObject.Properties | Where-Object {$_.Name -notin $Config.Keys }) { 
-    $New_Config_Items | Sort-Object Name | ForEach-Object { 
-        $Value = Get-Variable $_.Name -ValueOnly -ErrorAction SilentlyContinue
-        If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-        $Global:Config.($_.Name) = $Value
-    }
-    Remove-Variable Value -ErrorAction Ignore
-    Write-Config -ConfigFile $ConfigFile
-}
-Remove-Variable New_Config_Items -ErrorAction Ignore
-Remove-Variable Config_Temp -ErrorAction Ignore
-
-#Start transcript log
-If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
-
-#Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-If ($Config.SnakeTailExe -and (Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore)) { 
-    $Variables.SnakeTail = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
-    If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTail)) { 
-        & "$($Variables.SnakeTail)" $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Utils\NemosMiner_LogReader.xml")
-    }
-}
-
-$Variables.ConfigFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile)
-$Variables | Add-Member -Force -MemberType ScriptProperty -Name 'StatusText' -Value { $this._StatusText; $this._StatusText = @() } -SecondValue { If (-not $this._StatusText) { $this._StatusText = @() } ; $this._StatusText += $args[0]; $Variables | Add-Member -Force @{ RefreshNeeded = $true } }
 
 If ($Config.AutoStart) { 
     If ($Config.StartPaused) { 
@@ -342,10 +380,7 @@ If ($Config.AutoStart) {
     $Variables.RestartCycle = $true
 }
 
-Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
-Write-Message "Using configuration file '$($Variables.ConfigFile)'."
-
-#Import modules
+Write-Host "Importing modules..." -F Yellow
 Import-Module NetSecurity -ErrorAction SilentlyContinue
 Import-Module Defender -ErrorAction SilentlyContinue
 Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
@@ -364,7 +399,6 @@ Function Global:TimerUITick {
 
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
-        Get-Config -ConfigFile $ConfigFile
         If ($Variables.NewMiningStatus -eq "Stopped") { 
             $ButtonStop.Enabled = $false
             $ButtonStart.Enabled = $true
@@ -534,14 +568,12 @@ Function Global:TimerUITick {
 
             If ($null -ne $Variables.Earnings.Values) { 
                 $LabelBTCD.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 3) = m$([char]0x20BF) {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000)
-                
                 $LabelEarningsDetails.Lines = @()
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3)) { 
                     { $_ -eq 0 } { "=" }
                     { $_ -gt 0 } { ">" }
                     { $_ -lt 0 } { "<" }
                 }
-               
                 $LabelEarningsDetails.Lines += "Last  1h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -BTCRate $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) -Offset 3) = m$([char]0x20BF) {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 1000 * 24)
                 $TrendSign = Switch ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 1000 * 4), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * 1000), 3)) { 
                     { $_ -eq 0 } { "=" }
@@ -565,14 +597,14 @@ Function Global:TimerUITick {
             $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
             $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
             $Variables | Add-Member -Force @{ Autoupdated = (Get-Content .\Version.json | ConvertFrom-Json).Autoupdated.Value }
-            If ((Get-Content .\Version.json | ConvertFrom-Json).Autoupdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoupdated)") { 
+            If ((Test-Path ".\Version.json" -PathType Leaf -ErrorAction Ignore) -and (Get-Content ".\Version.json" | ConvertFrom-Json -ErrorAction Ignore).Autoupdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoupdated)") { 
                 $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
                 Update-Notifications("Running $($Variables.CurrentProduct) Version $([Version]$Variables.CurrentVersion)")
                 Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoupdated)")
             }
 
             #Display mining information
-            If ($host.UI.RawUI.Keyavailable) { 
+            If ($host.UI.RawUI.KeyAvailable) { 
                 $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho, IncludeKeyDown, IncludeKeyUp"); Start-Sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
                 If ($KeyPressed.KeyDown) { 
                     Switch ($KeyPressed.Character) { 
@@ -596,7 +628,7 @@ Function Global:TimerUITick {
             If ($Variables.Earnings -and $Config.ShowPoolBalances) { 
                 $Variables.Earnings.Values | Sort-Object { $_.Pool } | ForEach-Object { 
                     Write-Host "+++++" $_.Wallet -B DarkBlue -F DarkGray -NoNewline; Write-Host " $($_.Pool)"
-                    Write-Host "Trust Level:                $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F darkgray " (based on data from $(([DateTime]::parseexact($_.Date, (Get-Culture).DateTimeFormat.ShortDatePattern, $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
+                    Write-Host "Trust Level:                $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F darkgray " (based on data from $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
                     Write-Host "Average mBTC/Hour:          $(($_.AvgHourlyGrowth * 1000).ToString('N6'))"
                     Write-Host "Average mBTC/Day:" -NoNewline; Write-Host "           $(($_.BTCD * 1000).ToString('N6'))" -F Yellow
                     Write-Host "Balance BTC:                $(($_.Balance).ToString('N6')) ($(($_.Balance / $_.PaymentThreshold).ToString('P0')) of $(($_.PaymentThreshold).ToString('N3')) BTC payment threshold)"
@@ -851,15 +883,6 @@ Function CheckedListBoxPools_Click ($Control) {
             $Control.SetItemChecked($Control.Items.IndexOf($_), $false)
         }
     }
-
-    $EarningTrackerConfig = Get-Content ".\Config\EarningTrackerConfig.json" | ConvertFrom-JSON
-    If ($Control.CheckedItems) { 
-        $EarningTrackerConfig | Add-Member -Force @{ "Pools" = ($Control.CheckedItems -replace "24hr" -replace "Coins") | Sort-Object -Unique }
-    }
-    Else { 
-        $EarningTrackerConfig | Add-Member -Force @{ "Pools" = $null }
-    }
-    $EarningTrackerConfig | ConvertTo-Json | Out-File ".\Config\EarningTrackerConfig.json"
 }
 
 Function PrepareWriteConfig { 
@@ -891,7 +914,7 @@ Function PrepareWriteConfig {
     $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "CheckBox") } | ForEach-Object { $Config.($_.Tag) = $_.Checked }
     $MonitoringSettingsControls | Where-Object { (($_.GetType()).Name -eq "TextBox") } | ForEach-Object { $Config.($_.Tag) = $_.Text }
 
-    $FreshConfig = $false
+    $Variables.FreshConfig = $false
 
     $MainForm.Refresh
     # [System.Windows.Forms.Messagebox]::show("Please restart NemosMiner",'Config saved','ok','Information') | Out-Null
@@ -908,6 +931,7 @@ $MainForm.Text = "Form"
 $MainForm.TopMost = $false
 $MainForm.FormBorderStyle = 'Fixed3D'
 $MainForm.MaximizeBox = $false
+If ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
 
 $MainForm.Add_Shown(
     { 
@@ -923,7 +947,6 @@ $MainForm.Add_Shown(
                 Get-NMVersion
             }
         )
-        If ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
     }
 )
 
@@ -961,7 +984,7 @@ $TabControl.Name = "TabControl"
 $TabControl.Width = 722
 $TabControl.Height = 363
 $TabControl.Controls.AddRange(@($RunPage, $Global:EarningsPage, $SwitchingPage, $ConfigPage, $MonitoringPage, $EstimationsPage))
-If ($FreshConfig -EQ $true) { $TabControl.SelectedIndex = 3 } #Show config tab
+If ($Variables.FreshConfig -eq $true) { $TabControl.SelectedIndex = 3 } #Show config tab
 
 $TabControl_SelectedIndexChanged = {
     Switch ($TabControl.SelectedTab.Text) { 
@@ -1639,17 +1662,6 @@ $CheckBoxIncludeOptionalMiners.Font = [System.Drawing.Font]::new("Microsoft Sans
 $CheckBoxIncludeOptionalMiners.Checked = $Config.IncludeOptionalMiners
 $ConfigPageControls += $CheckBoxIncludeOptionalMiners
 
-$CheckBoxConsole = New-Object System.Windows.Forms.CheckBox
-$CheckBoxConsole.Tag = "HideConsole"
-$CheckBoxConsole.Text = "Hide Console"
-$CheckBoxConsole.AutoSize = $false
-$CheckBoxConsole.Width = 160
-$CheckBoxConsole.Height = 20
-$CheckBoxConsole.Location = [System.Drawing.Point]::new(560, 210)
-$CheckBoxConsole.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckBoxConsole.Checked = $Config.HideConsole
-$ConfigPageControls += $CheckBoxConsole
-
 $ButtonLoadDefaultPoolsAlgos = New-Object System.Windows.Forms.Button
 $ButtonLoadDefaultPoolsAlgos.Text = "Load default algos for selected pools"
 $ButtonLoadDefaultPoolsAlgos.Width = 250
@@ -1674,7 +1686,7 @@ $ConfigPageControls += $ButtonWriteConfig
 
 $ButtonWriteConfig.Add_Click( { 
     PrepareWriteConfig
-    Write-Config -ConfigFile $ConfigFile
+    Write-Config -ConfigFile $Variables.ConfigFile
     $Variables.RestartCycle = $true
 })
 

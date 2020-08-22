@@ -50,6 +50,7 @@
       <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
       <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
       <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Speed</th>
+      <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
       <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
       <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
       <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
@@ -147,7 +148,6 @@
       }
     }
   });
-
 
   $(function() {
     function updatePoolBalances() {

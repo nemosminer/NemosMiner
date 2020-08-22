@@ -11,7 +11,7 @@ class Nheq : Miner {
 
         Try { 
             $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -Request "status" -Timeout $Timeout
-            $Data = $Response 
+            $Data = $Response | ConvertFrom-Json
         }
         Catch { 
         }

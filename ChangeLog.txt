@@ -1,3 +1,46 @@
+Changelog NemosMiner 22.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- Automatic upgrade of config file (rename changed items, remove defunct parameters)
+- Documentation for power readout with HwINFO64 (ConfigHWinfo64.pdf)
+
+Improved:
+- Optimized pools / miners code
+- Config editor in Web GUI
+
+Miner Update:
+- Bminer-v16.2.13
+- NanoMiner-v1.10.1
+- lolMiner-v1.0.7
+- Trex-v0.16.1
+
+Known Issues:
+- NiceHash balances not working (t.b.d)
+- BalancesTracker not reporting NiceHash data (-> Sum of all balances too low)
+
+Changelog NemosMiner 09.08.2020
+===============================
+
+New:
+- Added Support for ProHashing24hr (No balance processing yet)
+- Config items:
+  - MPHUserName
+  - NiceHashInternalWallet, NicehashAPIKey
+  - ProHashingAPIKey, ProHashingUserName
+
+Changed:
+- Config property APIKEY changed to MPHAPIKey
+- Renamed  NiceHashV2 to NiceHash
+
+Fixed:
+- Watchdogs not clearing / refreshing in certain scenarios
+
+
 Changelog NemosMiner 07.08.2020
 ===============================
 

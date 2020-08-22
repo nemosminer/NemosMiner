@@ -2,6 +2,9 @@
       </div>
     </div>
   </body>
+
+  <!-- Start of page scripts -->
+
   <script type="text/javascript">
 
   // get BTC rate of first currency
@@ -30,12 +33,11 @@
 
   //Set mining button status
   $(function() {
-    $.ajax({
-      url: '/functions/mining/getstatus',
+    $.ajax({url: '/functions/mining/getstatus',
       success: function(result) {
-        document.getElementById('miningstart').disabled = (result == "Running");
-        document.getElementById('miningstop').disabled = (result == "Stopped");
-        document.getElementById('miningpause').disabled = (result == "Paused");
+        document.getElementById('miningstart').disabled = (result == "Running" && result != null);
+        document.getElementById('miningstop').disabled = (result == "Stopped" || result == null);
+        document.getElementById('miningpause').disabled = (result == "Paused" || result == null);
       }
     });
   });

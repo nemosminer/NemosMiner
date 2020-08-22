@@ -18,12 +18,14 @@
         $("#configrunning").append(JSON.stringify(result, undefined, 4));
       }
     });
-    $(function() {
-    $.ajax({url: '/poolsconfig', success: function(result) {
+    $.ajax({url: '/poolsconfig',
+      success: function(result) {
+        $("#configrunning").append('<br><br>Pools config<br>');
         $("#configrunning").append(JSON.stringify(result, undefined, 4));
-      }});
+      }
+    });
   });
-  });
+
 </script>
 
 <!-- End of page scripts -->

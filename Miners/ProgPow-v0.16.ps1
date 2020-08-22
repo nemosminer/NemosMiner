@@ -5,30 +5,37 @@ $Path = ".\Bin\$($Name)\progpowminer-cuda.exe"
 $Uri = "https://nemosminer.com/data/optional/progpowminer0.16-FinalCuda10.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
-$Commands = [PSCustomObject]@{ 
-#   "BitcoinInterest" = "" #Profit very small
-}
+$Commands = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "BitcoinInterest"; MinMemGB = 1.4; Command = "" }
+)
 
-$Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
-    If ($Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model)) { 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
-        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-        $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Pools.$_.Host } | ForEach-Object {
+    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
+        If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            #Get commands for active miner devices
-            #$Commands.$_ = Get-CommandPerDevice -Command $Commands.$_ -ExcludeParameters @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+            $Commands | ForEach-Object {
+                $MinMemGB = $_.MinMemGB
 
-            [PSCustomObject]@{ 
-                Name       = $Miner_Name
-                DeviceName = $Miner_Devices.Name
-                Type       = "NVIDIA"
-                Path       = $Path
-                Arguments  = ("--pool stratum$(If ($Pool.$_.SSL) { "s" })+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.$_.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$_.Pass))@$($Pools.$_.Host):$($Pools.$_.Port) --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
-                Algorithm  = $_
-                API        = "EthMiner"
-                Port       = $MinerAPIPort
-                URI        = $Uri
+                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+
+                    #Get commands for active miner devices
+                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+
+                    [PSCustomObject]@{ 
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = "NVIDIA"
+                        Path       = $Path
+                        Arguments  = ("--pool stratum$(If ($Pool.($_.Algorithm).SSL) { "s" })+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).Pass))@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = $_.Algorithm
+                        API        = "EthMiner"
+                        Port       = $MinerAPIPort
+                        URI        = $Uri
+                    }
+                }
             }
         }
     }

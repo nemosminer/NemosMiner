@@ -5,30 +5,41 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.8/ccminerGPU38.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
-$Commands = [PSCustomObject]@{ 
-    "VerusHash" = " --algo verus --intensity 21"
-}
+[PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "VerusHash"; MinMemGB = 2; Command = " --algo verus --intensity 21" }
+)
 
-$Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
-    If ($Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model)) { 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
-        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-        $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Pools.$_.Host } | Where-Object { -not $Pools.$_.SSL } | ForEach-Object {
+    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
 
-            #Get commands for active miner devices
-            #$Commands.$_ = Get-CommandPerDevice -Command $Commands.$_ -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+        If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
-            [PSCustomObject]@{ 
-                Name       = $Miner_Name
-                DeviceName = $Miner_Devices.Name
-                Type       = "NVIDIA"
-                Path      = $Path
-                Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --statsavg 2 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
-                Algorithm  = $_
-                API        = "Ccminer"
-                Port       = $MinerAPIPort
-                URI        = $Uri
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+
+            $Commands | Where-Object { -not $Pools.($_.Algorithm).SSL } | ForEach-Object {
+
+                $MinMemGB = $_.MinMemGB
+
+                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+
+                    #Get commands for active miner devices
+                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+
+                    [PSCustomObject]@{ 
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = "NVIDIA"
+                        Path      = $Path
+                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --statsavg 2 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = $_.Algorithm
+                        API        = "Ccminer"
+                        Port       = $MinerAPIPort
+                        URI        = $Uri
+                    }
+                }
             }
         }
     }

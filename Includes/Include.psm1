@@ -86,7 +86,7 @@ Class Pool {
     [Boolean]$SSL
     [Double]$Fee
     [Double]$PricePenaltyfactor = 1
-    [Double]$EstimateCorrection = 1
+    [Double]$EstimateFactor = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Int]$Workers
     [Boolean]$Available = $true
@@ -144,7 +144,7 @@ Class Miner {
     [Double]$PowerUsage
     [Double]$PowerUsage_Live
     [Double]$PowerCost
-    [Boolean]$ReadPowerUsage
+    [Boolean]$ReadPowerUsage = $false
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
 
@@ -160,7 +160,7 @@ Class Miner {
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
-    hidden [Int]$Activated = 0
+    [Int]$Activated = 0
     [MinerStatus]$Status = [MinerStatus]::Idle
     [String]$StatusMessage
     [String]$Info
@@ -168,7 +168,7 @@ Class Miner {
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
     [String]$LogFile
-    [Boolean]$ShowMinerWindow = $true
+    [Boolean]$HideMinerWindow = $true
     [Boolean]$CachedShowMinerWindow = $true
     [String[]]$Environment = @()
     [Int]$MinDataSamples #for safe hashrate values
@@ -243,18 +243,12 @@ Class Miner {
         }
 
         If (-not $this.Process) { 
-            If ($this.ShowMinerWindow -and ($this.API -ne "Wrapper")) { 
-                If (Test-Path ".\Includes\CreateProcess.cs" -PathType Leaf) { 
-                    $this.Process = Start-SubProcessWithoutStealingFocus -FilePath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
-                }
-                Else { 
-                    $EnvCmd = ($this.Environment | Select-Object | ForEach-Object { "```$env:$($_)" }) -join "; "
-                    $this.Process = Start-Job ([ScriptBlock]::Create("Start-Process $(@{desktop = "PowerShell"; core = "pwsh"}.$Global:PSEdition) `"-command $EnvCmd```$Process = (Start-Process '$($this.Path)' '$($this.GetCommandLineParameters())' -WorkingDirectory '$(Split-Path $this.Path)' -WindowStyle Minimized -PassThru).Id; Wait-Process -Id `$PID; Stop-Process -Id ```$Process`" -WindowStyle Hidden -Wait"))
-                }
-            }
-            Else { 
+            If ($this.HideMinerWindow -or ($this.API -eq "Wrapper")) { 
                 $this.LogFile = $Global:ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\$($this.Name)-$($this.Port)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt")
                 $this.Process = Start-SubProcess -FilePath $this.Path -ArgumentList $this.GetCommandLineParameters() -LogPath $this.LogFile -WorkingDirectory (Split-Path $this.Path) -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
+            }
+            Else { 
+                $this.Process = Start-SubProcessWithoutStealingFocus -FilePath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
             }
 
             #Starting Miner Data reader
@@ -547,6 +541,7 @@ Class Miner {
 
     Refresh([Double]$PowerCostBTCperW) { 
         $this.Available = $true
+        $this.Benchmark = $false
         $this.Best = $false
         $this.Reason = [String[]]@()
 
@@ -560,6 +555,7 @@ Class Miner {
                 $_.TotalMiningDuration = $Stat.Duration
             }
             Else { 
+                $this.Benchmark = $true
                 $_.Speed = [Double]::NaN
                 $_.Earning = [Double]::NaN
                 $_.Earning_Bias = [Double]::NaN
@@ -574,7 +570,6 @@ Class Miner {
         $this.Fee = $this.Workers | Select-Object -ExpandProperty Fee
         $this.Speed = $this.Workers | Select-Object -ExpandProperty Speed
 
-        $this.Benchmark = $this.Workers | Where-Object { [Double]::IsNaN($_.Speed) }
         $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
 
         $this.Earning = 0
@@ -617,7 +612,8 @@ Class Miner {
 
 Function Get-DefaultAlgorithm {
     Try { 
-        $PoolsAlgos = Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json; $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
+        $PoolsAlgos = (Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
+        $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
     }
     Catch { $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json }
     If ($PoolsAlgos) { 
@@ -667,7 +663,7 @@ Function Get-NMVersion {
     Catch { 
         $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json
     }
-    If ($Version -ne $null) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
+    If ($Version.Version -gt $Variables.CurrentVersion) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
     If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
         Write-Message "Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))"
         # If ([Version](Get-NVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
@@ -694,63 +690,48 @@ Function Get-CommandLineParameters {
 }
 
 Function Start-BrainJob { 
+
     # Starts Brains if necessary
-    $NewBrains = @()
-    $Variables.BrainJobs = @()
-    $Config.PoolName | ForEach-Object { 
-        If ($_ -notin $Variables.BrainJobs.PoolName) { 
+    $JobNames = @()
+
+    $Config.PoolName | Select-Object | ForEach-Object { 
+        If (-not $Variables.BrainJobs.$_) { 
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
             $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
             If (Test-Path $BrainName -PathType Leaf) { 
-                $BrainJob = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath)
-                $BrainJob | Add-Member -Force @{ PoolName = $_ }
-                $Variables.BrainJobs += $BrainJob
-                If ($Brainjob.State -EQ "Running") { $NewBrains += $_ }
-                Remove-Variable BrainJob
+                $Variables.BrainJobs.$_ = (Start-Job -FilePath $BrainName -ArgumentList @($BrainPath))
+                If ($Variables.BrainJobs.$_.State -EQ "Running") { 
+                    $JobNames += $_
+                }
             }
         }
     }
-    If ($NewBrains) { Write-Message "Started Brain Jobs ($($NewBrains -join ", "))." }
+    If ($JobNames -gt 0) { Write-Message "Started Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ', '))." }
 }
 
 Function Stop-BrainJob { 
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String[]]$Jobs = $Variables.BrainJobs.Keys
+    )
 
-    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
-    $Variables.BrainJobs = @()
+    $JobNames = @()
 
-    Write-Message "Stopped Brain Jobs."
+    #Stop Brains if necessary
+    $Jobs | ForEach-Object { 
+        $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
+        $Variables.BrainJobs.Remove($_)
+        $JobNames += $_
+    }
+
+    If ($JobNames -gt 0) { Write-Message "Stopped Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ', '))." }
 }
 
 
 Function Start-BalancesTracker { 
+    
     If (-not $Variables.CycleRunspace) { 
-
-        $BalancesTrackerConfigFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Config\BalancesTrackerConfig.json")
-        $BalancesTrackerConfig = [Hashtable]::Synchronized(@{ })
-
-        $BalancesTrackerTmp = Get-Content $BalancesTrackerConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-        $BalancesTrackerTmp | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Sort-Object Name | ForEach-Object { 
-            $BalancesTrackerConfig.$_ = $BalancesTrackerTmp.$_
-        }
-        Remove-Variable BalancesTrackerTmp
-
-        If ($BalancesTrackerConfig.Keys.Count -ne 4) { 
-            #Create default config file
-            If (Test-Path -PathType Leaf $BalancesTrackerConfigFile) { 
-                Write-Message -Level ERROR "Balances Tracker config file '$($BalancesTrackerConfigFile)' is corrupt. Creating new file using defaults..."
-            }
-            Else { 
-                Write-Message -Level ERROR "Balances Tracker config file '$($BalancesTrackerConfigFile)' is missing. Creating new file using defaults..."
-            }
-            $BalancesTrackerConfig = [Hashtable]::Synchronized(@{ 
-                "EnableLog" = $true
-                "PollInterval" = 15 #minutes
-                "Pools" = @(((Get-ChildItem ".\Pools" -File).BaseName -replace "24hr" -replace "Coins") | Sort-Object -Unique)
-                "WriteEvery" = 15 #minutes
-            })
-
-            $BalancesTrackerConfig | ConvertTo-Json | Set-Content $BalancesTrackerConfigFile -Encoding UTF8 -Force
-        }
 
         Try { 
             $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
@@ -768,7 +749,7 @@ Function Start-BalancesTracker {
             $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
         }
         Catch { 
-            Write-Message -Level ERROR "Failed to start Balances Tracker Config [$Error[0]]."
+            Write-Message -Level ERROR "Failed to start Balances Tracker [$Error[0]]."
         }
     }
 }
@@ -781,16 +762,6 @@ Function Stop-BalancesTracker {
         $Variables.Remove("BalancesTrackerRunspace")
         Write-Message "Stopped Balances Tracker."
     }
-}
-
-Function Stop-BalancesTracker { 
-
-    $Variables.BalancesTrackerJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore }
-    $Variables.BalancesTrackerJobs = @()
-    $Variables.BrainJobs | ForEach-Object { $_ | Stop-Job -PassThru -ErrorAction Ignore| Remove-Job -ErrorAction Ignore }
-    $Variables.BrainJobs = @()
-
-    Write-Message "Stopped Earnings tracker."
 }
 
 Function Initialize-API { 
@@ -825,7 +796,7 @@ Function Initialize-API {
                     Try {
                         If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
                             Write-Message "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
-                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/" } # Start web dashboard
+                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })" } # Start web gui
                             Break
                         }
                     }
@@ -845,8 +816,6 @@ Function Initialize-API {
 Function Initialize-Application { 
     Write-Message "Initializing mining environment..."
 
-    #Load information about the devices, devices might have been enabled since last start
-    $Variables.Devices = [Device[]](Get-Device -Refresh)
     $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
     $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
@@ -897,6 +866,7 @@ Function Get-Rates {
         }
     }
     $Variables.Rates = $Rates
+    $Variables.BTCRateFirstCurrency = $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)
 }
 
 Function Write-Message { 
@@ -1168,25 +1138,23 @@ Function Update-Monitoring {
 }
 
 Function Start-Mining { 
-    If (-not $Variables.CycleRunspace) { 
+    If (-not $Variables.CoreRunspace) { 
         $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
         $Variables.Miners = $null
 
-        $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
-        $BalancesTrackerRunspace.Open()
-        $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
-        $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-        # $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-        # $BalancesTrackerRunspace.SessionStateProxy.SetVariable('StatusText', $StatusText)
-        # $BalancesTrackerRunspace.SessionStateProxy.SetVariable('LabelStatus', $Variables.LabelStatus)
-        $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+        $CoreRunspace = [RunspaceFactory]::CreateRunspace()
+        $CoreRunspace.Open()
+        $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
+        $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+        $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
         $PowerShell = [PowerShell]::Create()
-        $PowerShell.Runspace = $BalancesTrackerRunspace
+        $PowerShell.Runspace = $CoreRunspace
         $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
         $PowerShell.BeginInvoke()
 
-        $Variables.CycleRunspace = $BalancesTrackerRunspace
-        $Variables.CycleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+        $Variables.CoreRunspace = $CoreRunspace
+        $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
     }
 }
 
@@ -1198,10 +1166,10 @@ Function Stop-Mining {
         Write-Message "Stopped miner '$($_.Info)'."
     }
 
-    If ($Variables.CycleRunspace) { 
-        $Variables.CycleRunspace.Close()
-        If ($Variables.CycleRunspace.PowerShell) { $Variables.CycleRunspace.PowerShell.Dispose() }
-        $Variables.Remove("CycleRunspace")
+    If ($Variables.CoreRunspace) { 
+        $Variables.CoreRunspace.Close()
+        If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
+        $Variables.Remove("CoreRunspace")
         Write-Message "Stopped cycle."
     }
 }
@@ -1214,10 +1182,8 @@ Function Update-Notifications ($Text) {
     $Variables.LabelStatus.Refresh | Out-Null
 }
 
-Function Get-Config { 
+Function Read-Config { 
     Param(
-        [Parameter(Mandatory = $true)]
-        [String]$ConfigFile, 
         [Parameter(Mandatory = $false)]
         [Hashtable]$Parameters = @{ }
     )
@@ -1228,38 +1194,89 @@ Function Get-Config {
 
     #Load the configuration
     $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json
-    $Config_Temp = Get-ChildItemContent $ConfigFile -Parameters $Parameters | Select-Object -ExpandProperty Content
-    If ($Config_Temp -isnot [PSCustomObject]) { 
-        Write-Message -Level WARN "Config file '$ConfigFile' is corrupt. Loading defaults."
-        $Config_Temp = [PSCustomObject]@{ }
-    }
- 
-    $Config_Temp | ForEach-Object { 
-        $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-            $Global:Config.($_.Name) = $_.Value
+
+    If (Test-Path -PathType Leaf $Variables.ConfigFile) { 
+        $Config_Tmp = Get-Content $Variables.ConfigFile | ConvertFrom-Json -ErrorAction Ignore
+        If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
+            Copy-Item -Path $Variables.ConfigFile "$($Variables.ConfigFile).corrupt" -Force
+            Write-Message -Level WARN "Configuration file '$($Variables.ConfigFile)' is corrupt."
+            $Config.ConfigFileVersionCompatibility = $null
         }
-    }
-    If (Test-Path ".\Config\PoolsConfig.json" -PathType Leaf) { 
-        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" | ConvertFrom-json
-        #Default PasswordCurrency is BTC
-        If ($Config.PasswordCurrency -notmatch "[A-Z0-9]{3,}") { $Config.PasswordCurrency = "BTC" }
-        $Config.PasswordCurrency = $Config.PasswordCurrency.TrimStart().TrimEnd().ToUpper()
-        $PoolsConfig."Default" | Add-Member -Force "PasswordCurrency" $Config.PasswordCurrency
-    }
-    Else { 
-        $PoolsConfig = [PSCustomObject]@{ Default = [PSCustomObject]@{ 
-                Wallet             = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
-                UserName           = "nemo"
-                WorkerName         = "NemosMinerNoCfg"
-                PricePenaltyFactor = 1
-                PasswordCurrency   = "BTC"
+        Else { 
+            #Fix upper / lower case (Web GUI is case sensitive)
+            $Config_Tmp | ForEach-Object { 
+                $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
+                    $PropertyName = $_.Name
+                    If ($Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }) { $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName } }
+                    $Global:Config.$PropertyName = $_.Value
+                }
             }
         }
+        Remove-Variable Config_Tmp
     }
-    $Config.PoolsConfig = $PoolsConfig
+    Else { 
+        Write-Message -Level WARN "No valid configuration file found."
+
+        #Prepare new config
+        $Variables.FreshConfig = $true
+        If (Test-Path ".\Config\PoolsConfig-Recommended.json" -PathType Leaf) { 
+            $Parameters | Add-Member @{ PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } }) }
+        }
+        $Parameters.Keys | Sort-Object | ForEach-Object { 
+            $Global:Config.$_ = $Parameters.$_
+        }
+        $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
+        Write-Message -Level WARN  "New configuration using default values has been created. Use the GUI to save the configuration, then start mining."
+    }
+
+    #Default PasswordCurrency is BTC
+    If ($Config.PasswordCurrency -notmatch "[A-Z0-9]{3,}") { $Config.PasswordCurrency = "BTC" }
+    $Config.PasswordCurrency = $Config.PasswordCurrency.TrimStart().TrimEnd().ToUpper()
+}
+
+Function Read-PoolsConfig { 
+
+    If ($Global:PoolsConfig -isnot [Hashtable]) { 
+        New-Variable PoolsConfig ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
+    }
+
+    If (Test-Path $Variables.PoolsConfigFile -PathType Leaf) { 
+        $PoolsConfig = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
+        If ($PoolsConfig.PSObject.Properties.Count -eq 0 -or $PoolsConfig -isnot [PSCustomObject]) { 
+            Write-Message -Level WARN "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt."
+        }
+    }
+
+    #Add pool config to config (in-memory only)
+    $Config.PoolsConfig = [Ordered]@{ }
+    $Config.PoolName | ForEach-Object { 
+        If ($PoolsConfig.$_) { $PoolConfig = $PoolsConfig.$_ | ConvertTo-Json | ConvertFrom-Json } Else { $PoolConfig = [PSCustomObject]@{ } }
+        If (-not $PoolConfig.PasswordCurrency) { $PoolConfig | Add-Member PasswordCurrency $Config.PasswordCurrency -Force }
+        If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
+        If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
+        Switch -Regex ($_) { 
+            "MPH" { 
+                If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MPHUserName -Force }
+            }
+            "NiceHash" { 
+                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
+                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
+                $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
+            }
+            "ProHashing*" { 
+                If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
+            }
+            Default { 
+                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
+            }
+        }
+        $PoolConfig.WorkerName = $PoolConfig.WorkerName -replace "^ID="
+        $Config.PoolsConfig.$_ = $PoolConfig
+    }
 }
 
 Function Write-Config { 
+    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
@@ -1267,30 +1284,34 @@ Function Write-Config {
 
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
     If ($Global:Config -is [Hashtable]) { 
-        If (Test-Path $ConfigFile) { Copy-Item $ConfigFile "$($ConfigFile).backup" -force }
-        $OrderedConfig = [PSCustomObject]@{ }
-        $Global:Config | ConvertTo-Json | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | ForEach-Object { 
-            $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-                $OrderedConfig | Add-Member -Force @{ $_.Name = $_.Value }
-            }
+        If (Test-Path $ConfigFile -PathType Leaf) {
+            Copy-Item -Path $ConfigFile "$($ConfigFile).backup" -Force
         }
-        $OrderedConfig | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8
-
-        $PoolsConfig = Get-Content ".\Config\PoolsConfig.json" -ErrorAction Ignore | ConvertFrom-Json
-        $OrderedPoolsConfig = [PSCustomObject]@{ }
-        $PoolsConfig | ForEach-Object { 
-            $_.PSObject.Properties | Sort-Object  Name | ForEach-Object { 
-                $OrderedPoolsConfig | Add-Member -Force @{ $_.Name = $_.Value }
-            }
-        }
-        $OrderedPoolsConfig | Add-Member -Force "Default" @{ 
-            APIKey = $Config.APIKey
-            UserName = $Config.UserName
-            Wallet = $Config.Wallet
-            WorkerName = $Config.WorkerName
-        }
-        $OrderedPoolsConfig | ConvertTo-Json | Out-File ".\Config\PoolsConfig.json" -Encoding UTF8
+        ($Global:Config | Select-Object -Property * -ExcludeProperty PoolsConfig) | Get-SortedObject | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8 -Force
     }
+}
+
+Function Get-SortedObject { 
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Object]$Object
+    )
+
+    # Build an ordered hashtable of the property-value pairs.
+    $SortedByProperties = [Ordered]@{ }
+    Get-Member -Type NoteProperty -InputObject $Object | Sort-Object Name | ForEach-Object { 
+        #Upper / lower case conversion (Web GUI is case sensitive)
+        $PropertyName = $_.Name
+        If ($Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }) { $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName } }
+        If ($Object.$PropertyName -is [PSCustomObject]) { 
+            $SortedByProperties[$PropertyName] = Get-SortedObject $Object.$PropertyName
+        }
+        Else { 
+            $SortedByProperties[$PropertyName] = $Object.$PropertyName
+        }
+    }
+    $SortedByProperties
 }
 
 Function Set-Stat { 
@@ -1333,7 +1354,9 @@ Function Set-Stat {
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
-        If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
+        If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { 
+            $Stat.ToleranceExceeded ++
+        }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
         If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
@@ -1342,7 +1365,7 @@ Function Set-Stat {
                 Write-Message -Level Warn "Saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')) failed. It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Saving power usage ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')) failed. It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Saving power usage ($($Name): $($Value.ToString("N2"))W) failed. It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
         }
         Else { 
@@ -1353,7 +1376,7 @@ Function Set-Stat {
                         Write-Message -Level Warn "Saved hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row."
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "Saved power usage ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Saved power usage ($($Name): $($Value.ToString("N2"))W). It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
                     }
                 }
 
@@ -1527,32 +1550,12 @@ Function Remove-Stat {
     )
 
     $Name | Sort-Object -Unique | ForEach-Object { 
-        Remove-Item -Path  "Stats\$_.txt" -Force -Confirm:$false -ErrorAction SilentlyContinue
+       Remove-Item -Path "Stats\$_.txt" -Force -Confirm:$false -ErrorAction SilentlyContinue
         If ($Global:Stats.$_) { $Global:Stats.Remove($_) }
     }
 }
 
-Function Get-MinerConfig { 
-
-    #Read miner config
-
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$Name, 
-        [Parameter(Mandatory = $true)]
-        [PSCustomObject]$Config
-    )
-
-    $Miner_BaseName = $Name -split '-' | Select-Object -Index 0
-    $Miner_Version = $Name -split '-' | Select-Object -Index 1
-    $Miner_Config = $Config.MinersLegacy.$Miner_BaseName.$Miner_Version
-    If (-not $Miner_Config) { $Miner_Config = $Config.MinersLegacy.$Miner_BaseName."*" }
-
-    Return $Miner_Config
-}
-
-function Get-CommandPerDevice { 
+Function Get-CommandPerDevice { 
 
     # filters the command to contain only parameter values for present devices
     # if a parameter has multiple values, only the values for the available devices are included
@@ -1633,7 +1636,7 @@ Function Get-ChildItemContentJob {
 
         ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority
 
-        function Invoke-ExpressionRecursive ($Expression) { 
+        Function Invoke-ExpressionRecursive ($Expression) { 
             If ($Expression -is [String]) { 
                 If ($Expression -match '\$') { 
                     Try { $Expression = Invoke-Expression $Expression }
@@ -1654,7 +1657,6 @@ Function Get-ChildItemContentJob {
             If ($_.Extension -eq ".ps1") { 
                 $Content = & { 
                     If ($Parameters.Count) { 
-                        $Parameters.Keys | ForEach-Object {Set-Variable $_ $Parameters.$_}
                         & $_.FullName @Parameters
                     }
                     Else { 
@@ -1764,8 +1766,8 @@ Function Invoke-TcpRequest {
         $Stream = $Client.GetStream()
         $Writer = New-Object System.IO.StreamWriter $Stream
         $Reader = New-Object System.IO.StreamReader $Stream
-        $client.SendTimeout = $Timeout * 1000
-        $client.ReceiveTimeout = $Timeout * 1000
+        $Client.SendTimeout = $Timeout * 1000
+        $Client.ReceiveTimeout = $Timeout * 1000
         $Writer.AutoFlush = $true
 
         $Writer.WriteLine($Request)
@@ -2399,7 +2401,7 @@ function Start-SubProcessWithoutStealingFocus {
         While ($Process.HasExited -eq $false)
     }
 
-    Do { Start-Sleep -Seconds 1; $JobOutput = Receive-Job $Job }
+    Do { Start-Sleep -MilliSeconds 100; $JobOutput = Receive-Job $Job }
     While ($null -eq $JobOutput)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId

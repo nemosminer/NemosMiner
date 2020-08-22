@@ -6,75 +6,79 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/PhoenixMin
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "AMD";    Command = " -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 60; Type = "AMD";    Command = " -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "AMD";    Command = " -amd -eres 1 -mi 12" }
-#   [PSCustomObject]@{ Algorithm = @("BitcoinInterest", $null); Fee = @(0.009, 0); MinMemGB = 2;   WarmupTime = 45; Type = "AMD";    Command = " -coin BCI -amd -eres 1 -mi 12" } #Profit very small
+    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "AMD"; Command = " -dcoin blake2s -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
+#   [PSCustomObject]@{ Algorithm = @("BitcoinInterest", $null); Fee = @(0.009, 0); MinMemGB = 2;   WarmupTime = 45; Type = "AMD"; Command = " -coin BCI -amd -eres 1 -mi 12" } #Does not work
 
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -straps 4" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 60; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -straps 4" }
-    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -straps 4" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -dcoin blake2s -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
+    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
 )
 
-$Intensities2 = [PSCustomObject]@{ 
-    "Blake2s" = @($null, 30, 60, 90, 120) # $null is for auto-tuning
-}
+If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $Pools.($_.Algorithm[1]).Host) }) { 
 
-# Build command sets for intensities
-$Commands = $Commands | ForEach-Object { 
-    $Command = $_ 
-    If ($_.Algorithm | Select-Object -Index 1) { 
-        $Intensities2.($_.Algorithm | Select-Object -Index 1) | Select-Object | ForEach-Object { 
-            $Command | Add-Member Intensity2 ([Uint16]$_) -Force
-            $Command | ConvertTo-Json | ConvertFrom-Json
+    #Intensities for 2. algorithm
+    $Intensities2 = [PSCustomObject]@{ 
+        "Blake2s" = @($null, 10, 20, 30, 40) #$null is for auto-tuning
+    }
+
+    # Build command sets for intensities
+    $Commands = $Commands | ForEach-Object { 
+        $Command = $_ 
+        If ($_.Algorithm[1]) { 
+            $Intensities2.($_.Algorithm[1]) | ForEach-Object { 
+                $Command | Add-Member Intensity2 $_ -Force
+                $Command | ConvertTo-Json | ConvertFrom-Json
+            }
+        }
+        Else { 
+            $Command
         }
     }
-    Else { 
-        $Command
-    }
-}
 
-$Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
-    If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+    $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
 
-        $Commands | Where-Object Type -eq $_.Type | ForEach-Object { $Algo = $_.Algorithm | Select-Object -Index 0; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-            $MinMemGB = $_.MinMemGB
+        If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
-            If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-                #Get commands for active miner devices
-                #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+            $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                $_.Command += " -pool $(If ($Pools.$Algo.SSL) { "ssl://" })$($Pools.$Algo.Host):$($Pools.$Algo.Port) -wal $($Pools.$Algo.User) -pass $($Pools.$Algo.Pass)"
-                If ($Algo -like "Ethash*") {
-                    If ($Pools.$Algo.Name -like "ZergPool*") { Return }
-                    If ($Pools.$Algo.Name -like "NiceHash*" -or $Pools.$Algo.Name -like "MPH*") { 
-                        $_.Command += " -proto 4"
+                $MinMemGB = $_.MinMemGB
+
+                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+
+                    #Get commands for active miner devices
+                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+
+                    $_.Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
+                    If ($_.Algorithm[0] -like "Ethash*") {
+                        If ($Pools.($_.Algorithm[0]).Name -like "ZergPool*") { Return }
+                        If ($Pools.($_.Algorithm[0]).Name -like "NiceHash*" -or $Pools.($_.Algorithm[0]).Name -like "MPH*") { 
+                            $_.Command += " -proto 4"
+                        }
+                    } 
+
+                    If ($Miner_Devices.Vendor -eq "AMD" -and (($_.OpenCL.GlobalMemSize / 1GB) -ge (2 * $MinMemGB))) { 
+                        #Faster AMD "turbo" kernels require twice as much VRAM
+                        $_.Command += " -clkernel 3"
                     }
-                } 
 
-                If ($Miner_Devices.Vendor -eq "AMD" -and ([math]::Round((10 * ($s.OpenCL | Measure-Object GlobalMemSize -Minimum).Minimum / 1GB), 0) / 10) -ge (2 * $MinMemGB)) { 
-                    #Faster AMD "turbo" kernels require twice as much VRAM
-                    $_.Command += " -clkernel 3"
-                }
+                    If ($_.Algorithm[1]) { 
+                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+                        $_.Command += " -dpool $(If ($Pools.($_.Algorithm[1]).SSL) { "ssl://" })$($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpass $($Pools.($_.Algorithm[1]).Pass)"
 
-                If ($Algo2 = $_.Algorithm | Select-Object -Index 1) { 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($Algo2) + @($_.Intensity2) | Select-Object) -join '-'
-                    $_.Command += " -dcoin $($Algo2.toLower()) -dpool $(If ($Pools.$Algo2.SSL) { "ssl://" })$($Pools.$Algo2.Host):$($Pools.$Algo2.Port) -dwal $($Pools.$Algo2.User) -dpass $($Pools.$Algo2.Pass)"
-
-                    If ($_.Intensity2 -eq $null) { 
-                        $_.Command += " -gt 0" #Enable auto-tuning
+                        If ($_.Intensity2 -eq $null) { 
+                            $_.Command += " -gt 0" #Enable auto-tuning
+                        }
+                        Else { 
+                            $_.Command += " -sci $($_.Intensity2)"
+                        }
                     }
-                    Else { 
-                        $_.Command += " -sci $($_.Intensity2)"
+                    Else {
+                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
                     }
-                }
-                Else {
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
-                }
-
-                If ($null -eq ($_.Algorithm | Select-Object -Index 1) -or $Pools.$Algo2.Host) { 
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
@@ -82,7 +86,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                         Type       = "NVIDIA"
                         Path       = $Path
                         Arguments  = ("$($_.Command) -log 0 -wdog 0 -mport $($MinerAPIPort) -gpus $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = ($Algo, $Algo2) | Select-Object
+                        Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "EthMiner"
                         Port       = $MinerAPIPort
                         Wrap       = $false

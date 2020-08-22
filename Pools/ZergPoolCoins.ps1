@@ -1,29 +1,27 @@
 using module ..\Includes\Include.psm1
 
-Try { 
-    $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
-    $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" }
-}
-Catch { Return }
+param(
+    [PSCustomObject]$PoolConfig
+)
 
-If ((-not $Request) -or (-not $CoinsRequest)) { Return }
+If ($PoolConfig.Wallet) { 
+    Try { 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
+        $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" }
+    }
+    Catch { Return }
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "103.249.70.7"
+    If ((-not $Request) -or (-not $CoinsRequest)) { Return }
 
-$PriceField = "Plus_Price"
-#$PriceField = "actual_last24h"
-#$PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
+    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+    $HostSuffix = "103.249.70.7"
 
-$PoolRegions = "US"
+    $PriceField = "Plus_Price"
+    #$PriceField = "actual_last24h"
+    #$PriceField = "estimate_current"
+    $DivisorMultiplier = 1000000
 
-$ConfName = If ($PoolsConfig.$Name) { $Name } Else { "Default" }
-$PoolConf = $PoolsConfig.$ConfName
-
-If ($PoolConf.Wallet) { 
-    $PasswordCurrency = If ($PoolConf.PasswordCurrency) { $PoolConf.PasswordCurrency } Else { $PoolConf."Default".PasswordCurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $PoolRegions = "US"
 
     $AllMiningCoins = @()
     ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
@@ -44,8 +42,8 @@ If ($PoolConf.Wallet) {
 
             If ($TopCoin.Name -eq "BitcoinInterest") { $Algorithm_Norm = "BitcoinInterest" } # Temp fix
 
-            Try { $EstimateCorrection = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-            Catch { $EstimateCorrection = [Decimal]1 }
+            Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
+            Catch { $EstimateFactor = [Decimal]1 }
         
             $PoolRegions | ForEach-Object { 
                 $Region = $_
@@ -58,16 +56,16 @@ If ($PoolConf.Wallet) {
                     Price              = [Double]$Stat.Live
                     StablePrice        = [Double]$Stat.Week
                     MarginOfError      = [Double]$Stat.Week_Fluctuation
-                    PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
+                    PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
                     Protocol           = "stratum+tcp"
                     Host               = [String]$PoolHost
                     Port               = [UInt16]$PoolPort
-                    User               = $PoolConf.Wallet
-                    Pass               = "$($WorkerName),c=$($PasswordCurrency),mc=$($TopCoin.Symbol)"
+                    User               = $PoolConfig.Wallet
+                    Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PasswordCurrency),mc=$($TopCoin.Symbol)"
                     Region             = [String]$Region_Norm
                     SSL                = [Bool]$false
                     Fee                = $Fee
-                    EstimateCorrection = $(If ($PoolConf.PricePenaltyfactor -eq $true) { $EstimateCorrection } Else { [Decimal]1 } )
+                    EstimateFactor     = $EstimateFactor
                 }
             }
         }

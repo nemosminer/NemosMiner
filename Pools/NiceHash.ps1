@@ -1,29 +1,32 @@
 using module ..\Includes\Include.psm1
 
-Try { 
-    $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
-    $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
-    $Request.miningAlgorithms | ForEach-Object { $Algo = $_.Algorithm ; $_ | Add-Member -force @{algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algo } } }
-}
-Catch { return }
+param(
+    [PSCustomObject]$PoolConfig
+)
 
-If (-not $Request) { return }
+If ($PoolConfig.Wallet) { 
+    Try { 
+        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
+        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
+        $Request.miningAlgorithms | ForEach-Object { $Algo = $_.Algorithm ; $_ | Add-Member -Force @{algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algo } } }
+    }
+    Catch { Return }
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
+    If (-not $Request) { Return }
 
-$ConfName = If ($PoolsConfig.$Name) { $Name } Else { "default" }
-$PoolConf = $PoolsConfig.$ConfName
-
-If ($PoolConf.Wallet) { 
-    $PoolRegions = "eu", "jp", "usa"
+    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $PoolHost = "nicehash.com"
 
-    If ($PoolsConfig.$ConfName.IsInternal) { 
+    $PoolRegions = "eu", "jp", "usa"
+
+    If ($PoolConfig.NiceHashWalletIsInternal) { 
         $Fee = 0.02
     }
     Else { 
         $Fee = 0.05
     }
+
+    $User = "$($PoolConfig.Wallet).$($($PoolConfig.WorkerName -replace "^ID="))"
 
     $Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
@@ -33,7 +36,7 @@ If ($PoolConf.Wallet) {
         $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
         $Divisor = 100000000
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor * (1 - $Fee))
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
         $PoolRegions | ForEach-Object { 
             $Region = $_
@@ -44,16 +47,16 @@ If ($PoolConf.Wallet) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]0
+                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
                 Protocol           = "stratum+tcp"
                 Host               = [String]"$Algorithm.$Region.$PoolHost"
                 Port               = [UInt16]$PoolPort
-                User               = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
+                User               = $User
                 Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Boolean]$false
                 Fee                = $Fee
-                EstimateCorrection = [Decimal]1
+                EstimateFactor     = [Decimal]1
             }
 
             If ($Algorithm_Norm -match "CryptonightR|Equihash1445|Randomx") { 
@@ -62,16 +65,16 @@ If ($PoolConf.Wallet) {
                     Price              = [Double]$Stat.Live
                     StablePrice        = [Double]$Stat.Week
                     MarginOfError      = [Double]0
-                    PricePenaltyfactor = [Double]$PoolConf.PricePenaltyfactor
+                    PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
                     Protocol           = "stratum+ssl"
                     Host               = [String]"$Algorithm.$Region.$PoolHost"
                     Port               = [UInt16]$PoolPort
-                    User               = "$($PoolConf.Wallet).$($PoolConf.WorkerName.Replace('ID=', ''))"
+                    User               = $User
                     Pass               = "x"
                     Region             = [String]$Region_Norm
                     SSL                = [Boolean]$true
                     Fee                = $Fee
-                    EstimateCorrection = [Decimal]1
+                    EstimateFactor     = [Decimal]1
                 }
             }
         }

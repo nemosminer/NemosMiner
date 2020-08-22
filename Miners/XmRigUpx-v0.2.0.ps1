@@ -8,26 +8,36 @@ $Commands = [PSCustomObject]@{
     "CryptonightUpx" = " -a cryptonight-upx/2 --nicehash" #cryptonightupx
 }
 
-If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 
-    $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
-    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+$Commands = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx"; Command = "-a cryptonight-upx/2" }
+)
 
-    $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Pools.$_.Host } | ForEach-Object { 
+If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-        #Get commands for active miner devices
-        #$Commands.$_ = Get-CommandPerDevice -Command $Commands.$_ -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+    If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 
 
-        [PSCustomObject]@{ 
-            Name       = $Miner_Name
-            DeviceName = $Miner_Devices.Name
-            Type       = "CPU"
-            Path       = $Path
-            Arguments  = ("$($Commands.$_) --url stratum+tcp://$($Pools.$_.Host):$($Pools.$_.Port) --user $($Pools.$_.User) --pass $($Pools.$_.Pass) --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --api-port=$($MinerAPIPort) --donate-level 0").trim()
-            Algorithm  = $_
-            API        = "XmRig"
-            Port       = $MinerAPIPort
-            URI        = $Uri
-            WarmupTime = 60 #seconds
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+
+        If ($Pools.($_.Algorithm).Name -eq "NiceHash") { $_.Command = "$($_.Command) --nicehash" }
+
+        $Commands | ForEach-Object { 
+
+            #Get commands for active miner devices
+            #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+
+            [PSCustomObject]@{ 
+                Name       = $Miner_Name
+                DeviceName = $Miner_Devices.Name
+                Type       = "CPU"
+                Path       = $Path
+                Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --api-port=$($MinerAPIPort) --donate-level 0").trim()
+                Algorithm  = $_.Algorithm
+                API        = "XmRig"
+                Port       = $MinerAPIPort
+                URI        = $Uri
+                WarmupTime = 60 #seconds
+            }
         }
     }
 }

@@ -1,42 +1,25 @@
 {
-   "Default":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"ID=NM3990",
-      "PasswordCurrency":"BTC",
-      "APIKey":""
+   "Default": {
+      "PasswordCurrency": "BTC",
+      "PricePenaltyFactor": 1,
+      "UserName": "nemo",
+      "Wallet": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+      "WorkerName": "ID=NM3990"
    },
-   "Blockmasters":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"ID=NM3990",
-      "PasswordCurrency":"BTC",
-      "APIKey":"",
-      "Algorithm":[
+   "Blockmasters" : {
+      "Algorithm" : [
          "+m7m"
       ]
-   }
-   "MPH":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"NM3990",
-      "APIKey":"",
-      "Algorithm":[
+   },
+   "MPH": {
+      "Algorithm" :[
          "+cryptonightmonero",
          "+ethash",
          "+kawpow"
       ]
    },
-   "NiceHash":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"NM3990",
-      "APIKey":"",
-      "Algorithm":[
+   "NiceHash": {
+      "Algorithm": [
          "+beamv2",
          "+beamv3",
          "+cuckaroom",
@@ -52,14 +35,8 @@
          "+handshake"
       ]
    },
-   "ZergPoolCoins":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"ID=NM3990",
-      "PasswordCurrency":"BTC",
-      "APIKey":"",
-      "Algorithm":[
+   "ZergPoolCoins": {
+      "Algorithm": [
          "+cryptonightconceal",
          "+cryptonighthaven",
          "+cryptonightheavy",
@@ -74,14 +51,8 @@
          "+yespoweriots"
       ]
    },
-   "ZPool":{
-      "PricePenaltyFactor":1,
-      "Wallet":"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "UserName":"nemo",
-      "WorkerName":"ID=NM3990",
-      "PasswordCurrency":"BTC",
-      "APIKey":"",
-       "Algorithm":[
+   "ZPool": {
+       "Algorithm": [
          "-verus"
       ]
    }

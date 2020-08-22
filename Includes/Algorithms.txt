@@ -1,5 +1,5 @@
 {
-  "aeternity": "CuckooCycle",
+  "aeternity": "Cuckoo29",
   "arctichash": "ArcticHash",
   "argon2d500": "Argon2dDyn",
   "argon2ddyn": "Argon2dDyn",
@@ -43,6 +43,7 @@
   "cryptonightv8zelerius": "CryptonightZel",
   "cryptonightzel": "CryptonightZel",
   "cryptonightzelerius": "CryptonightZel",
+  "cuckaroo29-48": "Cuckaroo2948",
   "cuckaroo29d": "CuckarooD29",
   "cuckaroo29m": "CuckarooM29",
   "cuckaroo29b": "Cuckaroo29B", 
@@ -69,6 +70,7 @@
   "grincuckatoo31": "Cuckatoo31",
   "grincuckatoo32": "Cuckatoo32",
   "hns": "Handshake",
+  "Italocoin": "Cuckaroo2948",
   "jeonghash": "JeongHash",
   "kawpow": "KawPoW",
   "keccakc": "KeccakC",

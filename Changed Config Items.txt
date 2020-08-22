@@ -2,7 +2,10 @@ New Config Items
 ================
 
 #Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
-    "AllowedBadShareRatio": 0.1,
+  "AllowedBadShareRatio": 0.1,
+
+#If set API will log all requests to this file, to disable leave empty
+  "APILogfile": "", 
 
 #If true MPM will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
   "EstimateCorrection": false,
@@ -12,7 +15,9 @@ New Config Items
     "CPU#00",
     "GPU#02"
   ],
-{
+
+#If true all miners will run as a hidden background task (not recommended). Note that miners that use the 'Wrapper' API will always run hidden
+  "HideMinerWindow": false,
 
 #Powerusage of idle system in Watt. Part of profit calculation
   "IdlePowerUsageW": 60,
@@ -50,7 +55,7 @@ New Config Items
     "Debug"
   ],
 
-#Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
+#Use only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
   "MinAccuracy": 0.5,
 
 #Minimum number of hash rate samples required to store hash rate
@@ -64,6 +69,24 @@ New Config Items
 #If true NemosMiner will create separate miner instances per device model. This will increase profitability. (WIP: Need to change each miner to support this new feature)
   "MinerInstancePerDeviceModel": true, 
 
+#MPH API Key (required to retrieve balance information)
+  "MPHAPIKey": "",
+
+#MPH UserName, if left empty then $UserName is used
+  "MPHUserName": "",
+
+#NiceHash API Key (required to retrieve balance information)
+  "NicehashAPIKey": "",
+
+#Set to $true if NiceHashWallet is a NiceHash internal Wallet (lower pool fees)
+  "NiceHashWalletIsInternal": false,
+
+#NiceHash wallet, if left empty $Wallet is used
+  "NiceHashWallet": "",
+
+#NiceHash Organization Id (required to retrieve balance information)
+  "NicehashOrganizationId": "",
+
 #NoDialAlgoMining, if true NemosMiner will not use any dual algo miners
   "NoDualAlgoMining": false,
 
@@ -72,6 +95,10 @@ New Config Items
 
 #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
   "OpenFirewallPorts": true,
+
+#Default factor with which NemosMiner multiplies the prices reported by ALL pools. The default value is 1 (valid range is from 0.1 to 1.0). 
+#E.g. If you feel that the general profit estimations as reported by MPM are too high, e.g. %20, then set '-PricePenaltyFactor' to 0.8.
+  "PricePenaltyFactor": 1,
 
 #Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get an pool data
   "PoolTimeout": 30,
@@ -83,7 +110,13 @@ New Config Items
   },
 
 #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
-   "ProfitabilityThreshold": 0,
+  "ProfitabilityThreshold": 0,
+
+#ProHashing API Key (required to retrieve balance information)
+  "ProHashingAPIKey": "",
+
+#ProHashing UserName, if left empty then $UserName is used
+  "ProHashingUserName": "",
 
 #If true, power usage will be read from miners, required for true profit calculation
   "ReadPowerUsage": true,
@@ -150,13 +183,19 @@ New Config Items
 
 Removed Config Items
 ====================
-#AMD/NVIDIA/CPU, replaced with per device configuration option "ExcludeDeviceeName"
-  "Type": ["AMD", "CPU", "NVIDIA"], 
-  "TypeAMD": true
-  "TypeCPU": true
-  "TypeNVIDIA": true
+#AMD/NVIDIA/CPU, replaced with per device configuration option "ExcludeDeviceName"
+  "GPUCount": 1, (Replaced by device config in Web GUI)
+  "HideConsole": false, obsolete
+  "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "Type": ["AMD", "CPU", "NVIDIA"],  obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "TypeAMD": true, obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "TypeCPU": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "TypeNVIDIA": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "UserName": "", (Replaced with NiceHashUserName & ProHashingUsername)
+  "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
 
 
 NiceHash pool Config:
 =====================
-- Added 'IsInternal' flag (lower fee of 2% instad of 5%), see .\Config.PoolsConfig-NHV2Internal.json for an example
+- Added 'IsInternal' flag (lower fee of 2% instad of 5%), see .\Config.PoolsConfig-NiceHashInternal.json for an example
