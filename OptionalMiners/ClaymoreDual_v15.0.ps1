@@ -64,9 +64,9 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $Commands | Where-Object Type -eq $_.Type | ForEach-Object { $Algo = ($_.Algorithm[0]); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
+            $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                If ($Algo -eq "Ethash" -and $Pools.$Algo.Name -like "ZergPool*") { Return }
+                If ($Algo -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "ZergPool*") { Return }
                 $MinMemGB = $_.MinMemGB
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -74,14 +74,29 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    If ($Algo -eq "Ethash" -and $Pools.$Algo.Name -match "NiceHash*|MPH*") { $_.Command += " -esm 3" }
+                    If ($Pools.($_.Algorithm[0]).SSL) {
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "NiceHash*|MPH*") { 
+                            $Protocol = " -esm 3 -checkcert 0 stratum+ssl://"
+                        }
+                        Else { 
+                            $Protocol = " -checkcert 0 ssl://"
+                        }
+                    }
+                    Else { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "NiceHash*|MPH*") { 
+                            $Protocol = " -esm 3 stratum+tcp://"
+                        }
+                        Else { 
+                            $Protocol = ""
+                        }
+                    }
 
-                    If ($Algo2 = $_.Algorithm[1]) { 
+                    If ($_.Algorithm[1]) { 
 
-                        $_.Command += " -dpool $($Pools.$Algo2.Host):$($Pools.$Algo2.Port) -dwal $($Pools.$Algo2.User) -dpsw $($Pools.$Algo2.Pass)$($Dcoin.$Algo2)"
+                        $_.Command += " -dpool $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpsw $($Pools.($_.Algorithm[1]).Pass)$($Dcoin.($_.Algorithm[1]))"
                         If ($_.Intensity2 -ge 0) { $_.Command += " -dcri $($_.Intensity2)" }
 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($Algo2) + @($_.Intensity2) | Select-Object) -join '-'
+                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
                     }
                     Else {
                         $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
@@ -98,8 +113,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("-epool $($Pools.$Algo.Host):$($Pools.$Algo.Port) -ewal $($Pools.$Algo.User) -epsw $($Pools.$Algo.Pass)$($_.Command) -dbg -1 -wd 0 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = ($Algo, $Algo2) | Select-Object
+                        Arguments  = ("-epool $Protocol$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -ewal $($Pools.($_.Algorithm[0]).User) -epsw $($Pools.($_.Algorithm[0]).Pass)$($_.Command) -dbg -1 -wd 0 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "EthMiner"
                         Port       = $MinerAPIPort
                         URI        = $Uri
