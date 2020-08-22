@@ -23,6 +23,7 @@ class EthMiner : Miner {
 
         $HashRate_Name = [String]($this.Algorithm | Select-Object -Index 0)
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
+        If ($this.Algorithm -match '^(bitcoininterest(-.+|))$') { $HashRate_Value *= 1000 }
         If ($this.Algorithm -match '^(ethash(-.+|))$' -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
         If ($this.Algorithm -match '^(neoscrypt(-.+|))$') { $HashRate_Value *= 1000 }
 
@@ -47,6 +48,7 @@ class EthMiner : Miner {
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
             If ($this.Algorithm -match '^(ethash(-.+|))$') { $HashRate_Value *= 1000 }
             If ($this.Algorithm -match '^(neoscrypt(-.+|))$') { $HashRate_Value *= 1000 }
+            If ($this.Algorithm -match '^(bitcoininterest(-.+|))$') { $HashRate_Value *= 1000 }
 
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
