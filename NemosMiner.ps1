@@ -331,7 +331,6 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
             $Global:Config.$_ = $Value
         }
         Remove-Variable Value -ErrorAction Ignore
-
     }
     $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
     Write-Config $Variables.ConfigFile
