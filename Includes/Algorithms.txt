@@ -56,7 +56,7 @@
   "cuckarooz": "CuckarooZ29",
   "cuckarooz29": "CuckarooZ29",
   "cuckoobfc": "CuckooCycle",
-  "cuckoocycle": "CuckooCycle",
+  "cuckoocycle": "Cuckoo29",
   "daggerhashimoto": "Ethash",
   "equihash125": "Equihash1254",
   "equihash144": "Equihash1445",
