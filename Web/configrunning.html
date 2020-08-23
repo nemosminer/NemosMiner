@@ -3,7 +3,7 @@
   <h1 id="title" data-navbaractive="navconfigrunning" class="h2">Running Configuration</h1>
 </div>
 
-<div class="alert alert-info" role="alert">This is the full configuration NemosMiner is using, taking into account both your config file and any command line parameters.</div>
+<div class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
 <pre id="configrunning">
 </pre>
 
@@ -15,12 +15,6 @@
     $.ajax({url: '/config',
       success: function(result) {
         $("#configrunning").empty();
-        $("#configrunning").append(JSON.stringify(result, undefined, 4));
-      }
-    });
-    $.ajax({url: '/poolsconfig',
-      success: function(result) {
-        $("#configrunning").append('<br><br>Pools config<br>');
         $("#configrunning").append(JSON.stringify(result, undefined, 4));
       }
     });

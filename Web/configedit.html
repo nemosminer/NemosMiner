@@ -116,21 +116,19 @@
           <input title="Seconds the system must be idle befor mining starts" type="number" id="idlesec" name="idlesec" min="0" max="3600" value=120>
           <label for="idlesec" title="Seconds the system must be idle befor mining starts">seconds</label>
           <br><br>
-          <input type="checkbox" id="trackpoolbalances" name="trackpoolbalances" title="Run background task to periodically collect pool balances & earnings data">
-          <label for="trackpoolbalances" title="Run background task to periodically collect pool balances & earnings data">Track Pool Earnings & Balances</label>
+          <label for="balancestrackerpollinterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable">Poll Pools for Earnings & Balances every </label>
+          <input type="number" id="balancestrackerpollinterval" name="balancestrackerpollinterval" value=15 length=3 min=0 max=60 title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable">
+          <label for="balancestrackerpollinterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable">minutes</label>
           <br>
-          <input type="checkbox" id="enableearningstrackerlog" name="enableearningstrackerlog" style="margin-left:20px">
-          <label for="enableearningstrackerlog">Earnings tracker Log</label>
-          <br>
+          <input type="checkbox" id="enableearningstrackerlog" title="NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv" name="enableearningstrackerlog" style="margin-left:20px">
+          <label for="enableearningstrackerlog" title="NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv">Earnings tracker Log</label>
+          <br><br>
           <input type="checkbox" id="startguiminimized" name="startguiminimized">
           <label for="startguiminimized" title="">Start Legacy GUI minimized</label>
           <br>
-          <input type="checkbox" id="autoupdate" name="autoupdate">
-          <label for="autoupdate">Auto Update</label>
-          <br>
-          <input type="checkbox" id="hideconsole" name="hideconsole">
-          <label for="hideconsole">Hide Console</label>
-          <br>
+          <input type="checkbox" id="hideminerwindows" name="hideminerwindows" title="Miners will run as a hidden background task. Not recommended!">
+          <label for="hideminerwindows" title="Miners will run as a hidden background task. Not recommended!">Hide Miner Windows</label>
+          <br><br>
           <input type="checkbox" id="watchdog" name="watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">
           <label for="watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">Watchdog</label>
           <br>
@@ -145,9 +143,13 @@
           <br>
           <label for="watchdogpoolcount" title="Number of watchdog timers with same pool name until pool gets suspended" style="margin-left:20px">Watchdog (Pool) Count</label>
           <input title="Number of watchdog timers with same pool name until pool gets suspended" type="number" id="watchdogpoolcount" name="watchdogpoolcount" min="0" max="10" value=7>
-          <br>
+          <br><br>
           <input type="checkbox" id="estimatecorrection" name="estimatecorrection" title="NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices">
           <label for="estimatecorrection" title="NemosMiner will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices">Estimate Correction</label>
+          <br><br>
+          <input type="checkbox" id="autoupdate" title="Automatically update to the latest realeased program version" name="autoupdate">
+          <label for="autoupdate" title="Automatically update to the latest realeased program version">Auto Update</label>
+          <br>
         </div>
       </td>
     </tr>
@@ -233,6 +235,7 @@
       document.getElementById('mphapikey').value = config.MPHAPIKey;
       document.getElementById('mphapikey').disabled = !(document.getElementById('mph').checked);
       document.getElementById('mphusername').value = config.ProHashingUserName;
+      document.getElementById('mphusername').disabled = !(document.getElementById('mph').checked);
       document.getElementById('nicehashapikey').value = config.NiceHashAPIKey;
       document.getElementById('nicehashapikey').disabled = !(document.getElementById('nicehash').checked);
       document.getElementById('nicehashapisecret').value = config.NiceHashAPISecret;
@@ -274,10 +277,9 @@
       } else {
         document.getElementById('idlesec').value = parseInt(config.IdleSec);
       }
-      if (config.TrackPoolBalances) {
-        document.getElementById('trackpoolbalances').checked = true;
-      } else {
-        document.getElementById('enableearningstrackerlog').disabled = true;
+      document.getElementById('balancestrackerpollinterval').value = config.BalancesTrackerPollInterval;
+      if (config.BalancesTrackerPollInterval == 0) {
+        document.getElementById('enableearningstrackerlog').diabled = true;
       }
       if (config.EnableEarningsTrackerLog) {
         document.getElementById('enableearningstrackerlog').checked = true;
@@ -285,11 +287,11 @@
       if (config.StartGUIMinimized) {
         document.getElementById('startguiminimized').checked = true;
       }
+      if (config.HideMinerWindows) {
+        document.getElementById('hideminerwindows').checked = true;
+      }
       if (config.AutoUpdate) {
         document.getElementById('autoupdate').checked = true;
-      }
-      if (config.HideConsole) {
-        document.getElementById('hideconsole').checked = true;
       }
       if (config.Watchdog) {
         document.getElementById('watchdog').checked = true;
@@ -386,11 +388,10 @@
       document.getElementById('idlesec').value = 120;
     };
     config.IdleSec = parseInt(document.getElementById('idlesec').value);
-    config.TrackPoolBalances = document.getElementById('trackpoolbalances').checked;
+    config.BalancesTrackerPollInterval = document.getElementById('balancestrackerpollinterval').value;
     config.EnableEarningsTrackerLog = document.getElementById('enableearningstrackerlog').checked;
     config.StartGUIMinimized = document.getElementById('startguiminimized').checked;
-    config.AutoUpdate = document.getElementById('autoupdate').checked;
-    config.HideConsole = document.getElementById('hideconsole').checked;
+    config.HideMinerWindows = document.getElementById('hideminerwindows').checked;
     config.Watchdog = document.getElementById('watchdog').checked;
     if (document.getElementById('watchdogmineralgorithmcount').value == null) { 
       document.getElementById('watchdogmineralgorithmcount').value = 120;
@@ -409,6 +410,7 @@
     };
     config.WatchdogPoolCount = parseInt(document.getElementById('watchdogpoolcount').value);
     config.EstimateCorrection = document.getElementById('estimatecorrection').checked;
+    config.AutoUpdate = document.getElementById('autoupdate').checked;
 
     //Write current config
     var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
@@ -470,8 +472,8 @@
   });
 
   //enableearningstrackerlog
-  $(document.getElementById('trackpoolbalances')).click(function(event) {
-    document.getElementById('enableearningstrackerlog').disabled = !(document.getElementById('trackpoolbalances').checked);
+  $(document.getElementById('balancestrackerpollinterval')).click(function(event) {
+    document.getElementById('enableearningstrackerlog').disabled = !(document.getElementById('balancestrackerpollinterval').value != 0);
   });
 
   //Watchdog sub item

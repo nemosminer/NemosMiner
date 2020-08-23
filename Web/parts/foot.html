@@ -21,25 +21,28 @@
 
   // set the values in the header
   $(function() {
-    var summary = "";
-    $.ajax({
-      url: '/summary',
-      success: function(result) {
-        summary = result;
-        $("#summary").append("<h5>" + result + "</h5>");
-      }
-    });
-  });
+    function updateHeader() {
+      $.ajax({
+        url: '/summary',
+        success: function(result) {
+          $("#summary").empty().append('<h5>' + result + '</h5>');
+        }
+      });
 
-  //Set mining button status
-  $(function() {
-    $.ajax({url: '/functions/mining/getstatus',
-      success: function(result) {
-        document.getElementById('miningstart').disabled = (result == "Running" && result != null);
-        document.getElementById('miningstop').disabled = (result == "Stopped" || result == null);
-        document.getElementById('miningpause').disabled = (result == "Paused" || result == null);
-      }
-    });
+      //Set mining button status
+      $.ajax({url: '/functions/mining/getstatus',
+        success: function(result) {
+          document.getElementById('miningstart').disabled = (result == "Running" && result != null);
+          document.getElementById('miningstop').disabled = (result == "Stopped" || result == null);
+          document.getElementById('miningpause').disabled = (result == "Paused" || result == null);
+        }
+      });
+    }
+    updateHeader();
+
+    window.setInterval(function() { 
+      updateHeader();
+    }, 10000);
   });
 
   $('#miningpause').click(function () {
