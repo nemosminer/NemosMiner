@@ -65,13 +65,13 @@ While ($true) {
         $Pools = @(($Config.PoolName) -replace "24hr" -replace "coins") | Sort-Object -Unique
 
         #For each pool in config
-        $PoolNamesToTrack = @((Compare-Object @($Pools) @(($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name | Sort-Object -Unique) -IncludeEqual -ExcludeDifferent).InputObject)
+        $PoolsToTrack = @((Compare-Object @($Pools) @(($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name | Sort-Object -Unique) -IncludeEqual -ExcludeDifferent).InputObject)
 
-        Write-Message "Requesting balances data ($(($PoolAPI.Name | Where-Object { $_ -in $PoolNamesToTrack }) -join ', '))."
-        If ($PoolNamesToTrack) { 
+        Write-Message "Requesting balances data ($(($PoolAPI.Name | Where-Object { $_ -in $PoolsToTrack }) -join ', '))."
+        If ($PoolsToTrack) { 
         }
 
-        $PoolAPI | Where-Object Name -in $PoolNamesToTrack | ForEach-Object {
+        $PoolAPI | Where-Object Name -in $PoolsToTrack | ForEach-Object {
             $Pool = $_.Name
             $APIUri = $_.WalletUri
             $PaymentThreshold = $_.PaymentThreshold
@@ -276,8 +276,8 @@ While ($true) {
                 }
                 Default { 
                     Try { 
-                        $Wallet = If ($Config.PoolsConfig.$Pool.Wallet) { $Config.PoolsConfig.$Pool.Wallet } Else { $Config.Wallet }
-                        $PasswordCurrency = If ($Config.PoolsConfig.$Pool.PasswordCurrency) { $Config.PoolsConfig.$Pool.PasswordCurrency } Else { $Config.PasswordCurrency }
+                        $Wallet = $Config.PoolsConfig.$Pool.Wallet
+                        $PasswordCurrency = $Config.PoolsConfig.$Pool.PasswordCurrency
                         $BalanceData = Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }
                         $PoolAccountUri = "$($PoolAccountUri -replace '\[currency\]', $PasswordCurrency)$Wallet"
                     }
@@ -300,27 +300,19 @@ While ($true) {
 
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes) -eq 0) { $Now = $Now.AddMinutes(1) }
 
-                If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays) -ge 1) { 
-                    $Growth1 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum
-                    $Growth6 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddHours(-6) }).total_earned | Measure-Object -Minimum).Minimum
-                    $Growth24 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddDays(-1) }).total_earned | Measure-Object -Minimum).Minimum
-                }
-                If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays) -lt 1) { 
-                    $Growth1 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum
-                    $Growth6 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddHours(-6) }).total_earned | Measure-Object -Minimum).Minimum
-                    $Growth24 = (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) * 24
-                }
-                If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 6) { 
-                    $Growth1 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum
-                    $Growth6 = (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) * 6
-                }
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 1) { 
                     $Growth1 = (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes) * 60
+                }
+                If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 6) { 
+                    $Growth6 = (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) * 6
+                }
+                If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays) -ge 1) { 
+                    $Growth24 = $BalanceObject.total_earned - (($PoolBalanceObjects | Where-Object { $_.Date -ge $Now.AddDays(-1) }).total_earned | Measure-Object -Minimum).Minimum
                 }
 
                 $AvgBTCHour = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) } Else { $Growth1 }
 
-                $Variables.Earnings.$Pool = [PSCustomObject]@{ 
+                $Variables.Earnings.$Pool = $BalanceObject = [PSCustomObject]@{ 
                     Pool                  = $Pool
                     Wallet                = $Wallet
                     Uri                   = $PoolAccountUri
