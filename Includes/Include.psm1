@@ -840,11 +840,11 @@ Function Initialize-Application {
     Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 }
 
-Function Get-Rates {
+Function Get-Rate {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
-        $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{Currency = "BTC"}) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object {$_.ToUpper()}) -join ",")&tsyms=$(($Config.Currency | ForEach-Object {$_.ToUpper() -replace "mBTC", "BTC"}) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+        $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{ Currency = $Config.BaseCurrency }) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object { $_.ToUpper() }) -join ",")&tsyms=$((@($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_.ToUpper() -replace "m$($Config.BaseCurrency)", ($Config.BaseCurrency) }) | Select-Object -unique) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
     }
     Catch { 
         Write-Message -Level Warn "CryptoCompare is down. "
@@ -853,20 +853,20 @@ Function Get-Rates {
     If ($NewRates) { 
             $Rates = $NewRates
             $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates.($_) | Add-Member $_ ([Double]1) -Force }
-        If ($Rates.BTC.BTC -ne 1) { 
-            $Rates = [PSCustomObject]@{BTC = [PSCustomObject]@{BTC = [Double]1 } }
+        If ($Rates.($Config.BaseCurrency).($Config.BaseCurrency) -ne 1) { 
+            $Rates = [PSCustomObject]@{ ($Config.BaseCurrency) = [PSCustomObject]@{ ($Config.BaseCurrency) = [Double]1 } }
         }
-        #Convert values to milli BTC
-        If ($Config.Currency -contains "mBTC" -and $Rates.BTC) { 
-            $Rates | Add-Member mBTC ($Rates.BTC | ConvertTo-Json -Depth 10 | ConvertFrom-Json) -Force
-            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "BTC" } | ForEach-Object { $Rates.$_ | Add-Member mBTC ([Double]($Rates.$_.BTC * 1000)) -ErrorAction SilentlyContinue; if ($Config.Currency -notcontains "BTC") { $Rates.$_.PSObject.Properties.Remove("BTC") } }
-            $Rates.mBTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates.mBTC.$_ /= 1000 }
-            $Rates.BTC | Add-Member mBTC 1000 -Force
-            If ($Config.Currency -notcontains "BTC") { $Rates.BTC.PSObject.Properties.Remove("BTC") }
+        #Convert values to milli ($Config.BaseCurrency)
+        If ($Config.Currency -contains "m$($Config.BaseCurrency)" -and $Rates.($Config.BaseCurrency)) { 
+            $Rates | Add-Member "m$($Config.BaseCurrency)" ($Rates.($Config.BaseCurrency) | ConvertTo-Json -Depth 10 | ConvertFrom-Json) -Force
+            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -ne ($Config.BaseCurrency) } | ForEach-Object { $Rates.$_ | Add-Member "m$($Config.BaseCurrency)" ([Double]($Rates.$_.($Config.BaseCurrency) * 1000)) -ErrorAction SilentlyContinue; if ($Config.Currency -notcontains ($Config.BaseCurrency)) { $Rates.$_.PSObject.Properties.Remove(($Config.BaseCurrency)) } }
+            $Rates."m$($Config.BaseCurrency)" | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates."m$($Config.BaseCurrency)".$_ /= 1000 }
+            $Rates.($Config.BaseCurrency) | Add-Member "m$($Config.BaseCurrency)" 1000 -Force
+            If ($Config.Currency -notcontains ($Config.BaseCurrency)) { $Rates.($Config.BaseCurrency).PSObject.Properties.Remove(($Config.BaseCurrency)) }
         }
     }
     $Variables.Rates = $Rates
-    $Variables.BTCRateFirstCurrency = $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)
+    $Variables.RateFirstCurrency = $Variables.Rates.($Config.BaseCurrency).($Config.Currency | Select-Object -Index 0)
 }
 
 Function Write-Message { 
@@ -929,7 +929,7 @@ Function Write-Message {
 
                 $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-                # Attempt to aquire mutex, waiting up to 1 second If necessary.  If aquired, write to the log file and release mutex.  Otherwise, display an error. 
+                # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
                 If ($Mutex.WaitOne(1000)) { 
                     "$Date $LevelText $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
                     $Mutex.ReleaseMutex()
@@ -1229,29 +1229,19 @@ Function Read-Config {
         Write-Message -Level WARN  "New configuration using default values has been created. Use the GUI to save the configuration, then start mining."
     }
 
-    #Default PasswordCurrency is BTC
-    If ($Config.PasswordCurrency -notmatch "[A-Z0-9]{3,}") { $Config.PasswordCurrency = "BTC" }
-    $Config.PasswordCurrency = $Config.PasswordCurrency.TrimStart().TrimEnd().ToUpper()
-}
-
-Function Read-PoolsConfig { 
-
-    If ($Global:PoolsConfig -isnot [Hashtable]) { 
-        New-Variable PoolsConfig ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
-    }
-
+    #Build pools configuations
     If (Test-Path $Variables.PoolsConfigFile -PathType Leaf) { 
-        $PoolsConfig = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
-        If ($PoolsConfig.PSObject.Properties.Count -eq 0 -or $PoolsConfig -isnot [PSCustomObject]) { 
+        $PoolsConfig_Tmp = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
+        If ($PoolsConfig_Tmp.PSObject.Properties.Count -eq 0 -or $PoolsConfig_Tmp -isnot [PSCustomObject]) { 
             Write-Message -Level WARN "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt."
         }
     }
 
     #Add pool config to config (in-memory only)
-    $Config.PoolsConfig = [Ordered]@{ }
+    $PoolsConfig = [Ordered]@{ }
     $Config.PoolName | ForEach-Object { 
-        If ($PoolsConfig.$_) { $PoolConfig = $PoolsConfig.$_ | ConvertTo-Json | ConvertFrom-Json } Else { $PoolConfig = [PSCustomObject]@{ } }
-        If (-not $PoolConfig.PasswordCurrency) { $PoolConfig | Add-Member PasswordCurrency $Config.PasswordCurrency -Force }
+        If ($PoolsConfig_Tmp.$_) { $PoolConfig = $PoolsConfig_Tmp.$_ | ConvertTo-Json | ConvertFrom-Json }
+        If (-not $PoolConfig -and $PoolsConfig_Tmp.Default ) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json | ConvertFrom-Json } Else { $PoolConfig = [PSCustomObject]@{ } }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch -Regex ($_) { 
@@ -1264,15 +1254,18 @@ Function Read-PoolsConfig {
                 $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
             }
             "ProHashing*" { 
+                If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
             }
             Default { 
+                If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
                 If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
             }
         }
         $PoolConfig.WorkerName = $PoolConfig.WorkerName -replace "^ID="
-        $Config.PoolsConfig.$_ = $PoolConfig
+        $PoolsConfig.$_ = $PoolConfig
     }
+    $Config.PoolsConfig = $PoolsConfig
 }
 
 Function Write-Config { 

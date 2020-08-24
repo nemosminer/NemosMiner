@@ -120,7 +120,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$OpenFirewallPorts = $true, #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
-    [String]$PasswordCurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH etc.
+    [String]$PayoutCurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH etc., Default PayoutCurrency for all pools that have no other currency configured, PayoutCurrency is a per pool setting (to be configured in PoolsConfig.json)
     [Parameter(Mandatory = $false)]
     [String[]]$PoolName = @("Blockmasters", "MPH", "NiceHash", "ZergPoolCoins", "ZPool"), 
     [Parameter(Mandatory = $false)]
@@ -216,7 +216,7 @@ This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 "@
-Write-Host -F Yellow "Copyright and license notices must be preserved."
+Write-Host "Copyright and license notices must be preserved." -F Yellow
 @"
 "@
 
@@ -226,7 +226,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.0"
+    Version      = [System.Version]"3.9.9.1"
 }
 
 Try { 
@@ -260,7 +260,6 @@ If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item  -Path . -Na
 
 #Initialize global variables
 New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
-New-Variable PoolsConfig ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 
@@ -288,10 +287,9 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 
 #Read configuration
 Read-Config -Parameters $AllCommandLineParameters
-Read-PoolsConfig
 
 #Start transcript log
-If ($Config.Transcript -EQ $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
+If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($Variables.ConfigFile)'." }
@@ -310,6 +308,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
             }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+            "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "SelGPUCC" { $Config.Remove($_) }
             "SelGPUDSTM" { $Config.Remove($_) }
             "ShowMinerWindow" { $Config.HideMinerWindow = (-not $Config.$_); $Config.Remove($_) }
