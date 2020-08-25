@@ -79,9 +79,9 @@
         </p>
         {{#if total}}{{else}}
         <p class="payment">
-          <b>{{percentage}}%</b> of <b>{{paymentthreshold}} mBTC</b><br/>payment threshold<br/>
+          <b>{{percentage}}%</b> of <b>{{paymentthreshold}} m{{currency}}</b><br/>payment threshold<br/>
           <br/>Estimated Paydate:<br><b>{{paydate}}</b><br/>
-          <br/>Avg. mBTC/h: <b>{{mBTCh}}</b><br/>Avg. mBTC/d: <b>{{mBTCd}}</b>
+          <br/>Avg. m{{currency}}/h: {{mBTCh}}<br/>Avg. m{{currency}}/d: {{mBTCd}}
         </p>
         {{/if}}
       </div>
@@ -174,7 +174,7 @@
           $.each(result, function(index, item) {
             if (!(footer.test(item.Pool))) {
               var currencies = Object.keys(rates[item.Currency]);
-              var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.BTCD * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
+              var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PaymentThreshold).toFixed(1), mBTCh: (item.AvgHourlyGrowth * 1000).toFixed(6), mBTCd: (item.DailyGrowth * 1000).toFixed(6), paymentthreshold: (item.PaymentThreshold * 1000)};
               $.each(currencies, function(cindex, currency) {
                 data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
                 if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}

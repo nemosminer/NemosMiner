@@ -9,48 +9,48 @@
   <div>
     <tr style="vertical-align: top;">
       <td>
-        <label for="wallet">BTC Wallet Address </label>
-        <input title="Your Bitcoin address &#10;(must be 34 chars long)" type="text" id="wallet" name="wallet" pattern="[0-9A-Za-z\-]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=34>
+        <label title="Your Bitcoin address (must be 34 chars long).  &#10;Do not enter a non-BTC address here. &#10;Payouts in other currencies must be configured manually in  &#10;PoolConfig.json as a per pool setting."for="wallet">BTC Wallet Address </label>
+        <input title="Your Bitcoin address (must be 34 chars long).  &#10;Do not enter a non-BTC address here. &#10;Payouts in other currencies must be configured manually in  &#10;PoolConfig.json as a per pool setting." type="text" id="wallet" name="wallet" pattern="[0-9A-Za-z\-]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=34>
         <br><br>
 
-        <label for="workername">Worker Name </label>
+        <label title="Identifies your worker &#10;e.g. Computername"for="workername">Worker Name </label>
         <input title="Identifies your worker &#10;e.g. Computername" type="text" id="workername" name="workername" size=32>
         <br><br>
 
-        <label for="mphusername">MPH User Name </label>
+        <label title="Your MiningPoolHub Username" for="mphusername">MPH User Name </label>
         <input title="Your MiningPoolHub Username" type="text" id="mphusername" name="mphusername" value="nemo">
         <br>
-        <label for="mphapikey">MPH API Key </label>
+        <label title="Your MiningPoolHub API Key &#10;If left empty NemosMiner cannot retrieve balance data from MPH"for="mphapikey">MPH API Key </label>
         <input title="Your MiningPoolHub API Key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" type="text" pattern="[0-9A-Fa-f\-]{64}" id="mphapikey" name="mphapikey" size=64>
         <br><br>
 
-        <label for="nicehashwallet">NiceHash BTC Wallet Address </label>
-        <input title="Your NiceHash Bitcoin address &#10;configure only if different from BTC Wallet Address &#10;(must be 34 chars long)" type="text" id="nicehashwallet" name="nicehashwallet" pattern="[0-9][A-Z][a-z]{34}" value="" size=34>
-        <input type="checkbox" id="nicehashwalletisinternal" name="nicehashwalletisinternal" title="Wallet is a NiceHsh internal wallet &#10;(lower pool fees)">
-        <label for="nicehashwalletisinternal" title="Wallet is a NiceHsh internal wallet &#10;(lower pool fees)">is internal</label>
+        <label title="Your NiceHash Bitcoin address (must be 34 chars long) &#10;configure only if different from BTC Wallet Address &#10" for="nicehashwallet">NiceHash BTC Wallet Address </label>
+        <input title="Your NiceHash Bitcoin address (must be 34 chars long) &#10;configure only if different from BTC Wallet Address &#10" type="text" id="nicehashwallet" name="nicehashwallet" pattern="[0-9][A-Z][a-z]{34}" value="" size=34>
+        <input title="Wallet is a NiceHsh internal wallet &#10;(lower pool fees)"type="checkbox" id="nicehashwalletisinternal" name="nicehashwalletisinternal" title="Wallet is a NiceHsh internal wallet &#10;(lower pool fees)">
+        <label title="Wallet is a NiceHsh internal wallet &#10;(lower pool fees)" for="nicehashwalletisinternal" >is internal</label>
         <br>
-        <label for="nicehashapikey">NiceHash API Key </label>
+        <label title="Your NiceHash API Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash"for="nicehashapikey">NiceHash API Key </label>
         <input title="Your NiceHash API Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" type="text" pattern="[0-9A-Fa-f\-]{36}" id="nicehashapikey" name="nicehashapikey" size=36>
         <br>
-        <label for="nicehashapisecret">NiceHash API Secret </label>
+        <label title="Your NiceHash API Secretey &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash"for="nicehashapisecret">NiceHash API Secret </label>
         <input title="Your NiceHash API Secretey &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" type="text" pattern="[0-9A-Fa-f\-]{72}" id="nicehashapisecret" name="nicehashapisecret" size=72>
         <br>
-        <label for="nicehashorganizationid">NiceHash Organization Id </label>
-        <input title="Your NiceHash Organization Id &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash&#10;(must be 36 chars long)" type="text" pattern="[0-9A-Fa-f\-]{36}" id="nicehashorganizationid" name="nicehashorganizationid" size=36>
+        <label title="Your NiceHash Organization Id (must be 36 chars long) &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash"for="nicehashorganizationid">NiceHash Organization Id </label>
+        <input title="Your NiceHash Organization Id (must be 36 chars long) &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" type="text" pattern="[0-9A-Fa-f\-]{36}" id="nicehashorganizationid" name="nicehashorganizationid" size=36>
         <br><br>
 
-        <label for="prohashingusername">ProHashing User Name </label>
+        <label title="Your ProHashing Username"for="prohashingusername">ProHashing User Name </label>
         <input title="Your ProHashing Username" type="text" id="prohashingusername" name="prohashingusername" value="nemos">
         <br>
-        <label for="prohashingapikey">ProHashing API key </label>
+        <label title="Your ProHashing API key &#10;If left empty NemosMiner cannot retrieve balance data from ProHashing"for="prohashingapikey">ProHashing API key </label>
         <input title="Your ProHashing API key &#10;If left empty NemosMiner cannot retrieve balance data from ProHashing" type="text" pattern="[0-9A-Fa-f\-]{64}" id="prohashingapikey" name="prohashingapikey" size=64>
         <br><br>
 
-        <label for="interval">Interval (seconds) </label>
-        <input title="interval duration &#10;(between 30 & 3600 seconds)" type="number" id="interval" name="interval" min="30" max="3600" value=90>
+        <label title="interval duration (between 30 & 3600 seconds) &#10;This defines the approximate duration for one cycle."for="interval">Interval (seconds) </label>
+        <input title="interval duration (between 30 & 3600 seconds) &#10;This defines the approximate duration for one cycle." type="number" id="interval" name="interval" min="30" max="3600" value=90>
         <br>
 
-        <label for="donate">Donation (minutes) </label>
+        <label title="Donation duration per day (Default 13) &#10;(between 0 & 60 minutes) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on"for="donate">Donation (minutes) </label>
         <input title="Donation duration per day (Default 13) &#10;(between 0 & 60 minutes) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" type="number" id="donate" name="donate" min="0" max="60" value=13>
         <br><br>
 
@@ -60,19 +60,19 @@
         <br><br>
 
         <label for="currency">Currencies </label>
-        <input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion&#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency" size=64>
+        <input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency" size=64>
         <br>
 
-        <label for="passwordcurrency">Password Currency </label>
-        <input type="text" id="passwordcurrency" name="passwordcurrency" value="BTC" title="If unsure leave the default 'BTC' &#10;Consult the pool API information for more information" size=3>
+        <label title="Default payout currency for all pools &#10;unless configured otherwise in PoolsConfig.json &#10;Note: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information"for="payoutcurrency">Default Payout Currency </label>
+        <input title="Default payout currency for all pools &#10;unless configured otherwise in PoolsConfig.json &#10;Note: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information"type="text" id="payoutcurrency" name="payoutcurrency" value="BTC" size=3>
         <br><br>
 
-        <label for="proxy">Proxy </label>
+        <label title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128"for="proxy">Proxy </label>
         <input type="text" id="proxy" name="proxy" title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128" size=24>
         <br><br>
 
-        <label for="runningminergainpct" title="Percent of advantage that running miner has &#10;over candidates in term of earning/profit &#10;&#10;Smaller numbers will cause more switching">Running Miner Gain (%) </label>
-        <input title="Percent of advantage that running miner has  &#10;over candidates in term of earning/profit &#10;&#10;Smaller numbers will cause more switching" type="number" id="runningminergainpct" name="runningminergainpct" min="0" max="100" value=5>
+        <label title="Percent of advantage that running miner has &#10;over candidates in term of earning/profit &#10;&#10;Smaller numbers will cause more switching" for="runningminergainpct" >Running Miner Gain (%) </label>
+        <input title="Percent of advantage that running miner has &#10;over candidates in term of earning/profit &#10;&#10;Smaller numbers will cause more switching" type="number" id="runningminergainpct" name="runningminergainpct" min="0" max="100" value=5>
         <br>
       </td>
       <td>
@@ -222,7 +222,7 @@
         document.getElementById('algorithm').value = (config.Algorithm).toString();
       }
       document.getElementById('currency').value = config.Currency;
-      document.getElementById('passwordcurrency').value = config.PasswordCurrency;
+      document.getElementById('payoutcurrency').value = config.PayoutCurrency;
       document.getElementById('proxy').value = config.Proxy;
       if (config.RunningMinerGainPc == null) { 
         document.getElementById('runningminergainpct').value = 5;
@@ -367,7 +367,7 @@
       config.Currency = 'mBTC';
     };
     config.Currency = (document.getElementById('currency').value).toString().split(',');
-    config.PasswordCurrency = document.getElementById('passwordcurrency').value;
+    config.PayoutCurrency = document.getElementById('payoutcurrency').value;
     config.Proxy = document.getElementById('proxy').value;
     if (document.getElementById('runningminergainpct').value == null) {
       document.getElementById('runningminergainpct').value = 5;

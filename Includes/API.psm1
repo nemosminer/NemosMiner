@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.0
-version date:   12 June 2020
+version:        3.9.9.1
+version date:   25 August 2020
 #>
 
 Function Start-APIServer { 
@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.9.0"
+    $APIVersion = "0.2.9.1"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -380,12 +380,16 @@ Function Start-APIServer {
                         $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }
+                    "/allrates" { 
+                        $Data = ConvertTo-Json ($Variables.Rates | Select-Object)
+                        Break
+                    }
                     "/apiversion" { 
                         $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
                         Break
                     }
                     "/btcratefirstcurrency" { 
-                        $Data = ConvertTo-Json @($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0) | Select-Object)
+                        $Data = ConvertTo-Json @($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) | Select-Object)
                         Break
                     }
                     "/brainjobs" { 
@@ -401,16 +405,20 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" {
-                        If (Test-Path $Variables.ConfigFile -PathType Leaf -ErrorAction Ignore) { 
-                            $Data = Get-Content $Variables.ConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
-                        }
-                        Else { 
+                        # If (Test-Path $Variables.ConfigFile -PathType Leaf -ErrorAction Ignore) { 
+                        #     $Data = Get-Content $Variables.ConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
+                        # }
+                        # Else { 
                             $Data = $Config | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
-                        }
+                        # }
                         Break
                     }
                     "/configfile" { 
                         $Data = $Variables.ConfigFile | ConvertTo-Json -Depth 10
+                        break
+                    }
+                    "/currencies" { 
+                        $Data = $Config.Currencies | ConvertTo-Json -Depth 10
                         break
                     }
                     "/devices" { 
@@ -529,7 +537,10 @@ Function Start-APIServer {
                         Break
                     }
                     "/rates" { 
-                        $Data = ConvertTo-Json ($Variables.Rates | Select-Object)
+                        $Rates = [PSCustomObject]@{ }
+                        $Rates | Add-Member BTC ($Variables.Rates.BTC | ConvertTo-Json | ConvertFrom-Json)
+                        $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin (@($Config.Currency) + @("BTC"))  } | ForEach-Object { $Rates.BTC.PSObject.Properties.remove($_) }
+                        $Data = ConvertTo-Json ($Rates | Select-Object)
                         Break
                     }
                     "/regions" { 

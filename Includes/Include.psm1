@@ -844,29 +844,47 @@ Function Get-Rate {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
-        $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@([PSCustomObject]@{ Currency = $Config.BaseCurrency }) | Select-Object -ExpandProperty Currency -Unique | ForEach-Object { $_.ToUpper() }) -join ",")&tsyms=$((@($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_.ToUpper() -replace "m$($Config.BaseCurrency)", ($Config.BaseCurrency) }) | Select-Object -unique) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+        $Currencies = (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique
+        $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($Currencies -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+        # $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) | Select-Object -Unique) -join ",")&tsyms=$((@("BTC") + @($Config.Currency | ForEach-Object { $_ -replace "^m"} )) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+
     }
     Catch { 
         Write-Message -Level Warn "CryptoCompare is down. "
     }
 
     If ($NewRates) { 
-            $Rates = $NewRates
-            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates.($_) | Add-Member $_ ([Double]1) -Force }
-        If ($Rates.($Config.BaseCurrency).($Config.BaseCurrency) -ne 1) { 
-            $Rates = [PSCustomObject]@{ ($Config.BaseCurrency) = [PSCustomObject]@{ ($Config.BaseCurrency) = [Double]1 } }
+        $Rates = $NewRates | ConvertTo-Json | ConvertFrom-Json
+        $Currencies = $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name
+
+        $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
+            $Currency = $_
+            $mCurrency = "m$($Currency)"
+            $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json | ConvertFrom-Json) -ErrorAction Ignore
+            $Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
+                $Rates.$Currency | Add-Member $_ ([Double]($Rates.BTC.$_ / $Rates.BTC.$Currency)) -Force
+            }        
         }
-        #Convert values to milli ($Config.BaseCurrency)
-        If ($Config.Currency -contains "m$($Config.BaseCurrency)" -and $Rates.($Config.BaseCurrency)) { 
-            $Rates | Add-Member "m$($Config.BaseCurrency)" ($Rates.($Config.BaseCurrency) | ConvertTo-Json -Depth 10 | ConvertFrom-Json) -Force
-            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -ne ($Config.BaseCurrency) } | ForEach-Object { $Rates.$_ | Add-Member "m$($Config.BaseCurrency)" ([Double]($Rates.$_.($Config.BaseCurrency) * 1000)) -ErrorAction SilentlyContinue; if ($Config.Currency -notcontains ($Config.BaseCurrency)) { $Rates.$_.PSObject.Properties.Remove(($Config.BaseCurrency)) } }
-            $Rates."m$($Config.BaseCurrency)" | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Rates."m$($Config.BaseCurrency)".$_ /= 1000 }
-            $Rates.($Config.BaseCurrency) | Add-Member "m$($Config.BaseCurrency)" 1000 -Force
-            If ($Config.Currency -notcontains ($Config.BaseCurrency)) { $Rates.($Config.BaseCurrency).PSObject.Properties.Remove(($Config.BaseCurrency)) }
+
+        $Currencies | ForEach-Object { 
+            $Currency = $_
+            $mCurrency = "m$($Currency)"
+            $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json | ConvertFrom-Json)
+            $Rates.$mCurrency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
+                $Rates.$mCurrency | Add-Member $_ ([Double]($Rates.$Currency.$_) / 1000) -Force
+            }
+        }
+
+        $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
+            $Currency = $_
+            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $Currencies} | ForEach-Object { 
+                $mCurrency = "m$($_)"
+                $Rates.$Currency | Add-Member $mCurrency ([Double]($Rates.$Currency.$_) * 1000)
+            }
         }
     }
     $Variables.Rates = $Rates
-    $Variables.RateFirstCurrency = $Variables.Rates.($Config.BaseCurrency).($Config.Currency | Select-Object -Index 0)
+    $Variables.RateFirstCurrency = $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)
 }
 
 Function Write-Message { 
@@ -1240,11 +1258,15 @@ Function Read-Config {
     #Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
     $Config.PoolName | ForEach-Object { 
-        If ($PoolsConfig_Tmp.$_) { $PoolConfig = $PoolsConfig_Tmp.$_ | ConvertTo-Json | ConvertFrom-Json }
-        If (-not $PoolConfig -and $PoolsConfig_Tmp.Default ) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json | ConvertFrom-Json } Else { $PoolConfig = [PSCustomObject]@{ } }
+        $PoolName = $_ -replace "24hr" -replace "Coins"
+        $PoolConfig = [PSCustomObject]@{ }
+        If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
+        If (-not "$PoolConfig") { #https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
+            If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json | ConvertFrom-Json }
+        }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
-        Switch -Regex ($_) { 
+        Switch ($PoolName) { 
             "MPH" { 
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MPHUserName -Force }
             }
@@ -1253,7 +1275,7 @@ Function Read-Config {
                 If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
                 $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
             }
-            "ProHashing*" { 
+            "ProHashing" { 
                 If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
             }
@@ -1263,7 +1285,7 @@ Function Read-Config {
             }
         }
         $PoolConfig.WorkerName = $PoolConfig.WorkerName -replace "^ID="
-        $PoolsConfig.$_ = $PoolConfig
+        $PoolsConfig.$PoolName = $PoolConfig
     }
     $Config.PoolsConfig = $PoolsConfig
 }
@@ -2212,7 +2234,7 @@ Filter ConvertTo-Hash {
 }
 
 Function Get-DigitsFromValue { 
-    # To get same numbering scheme regardless of value BTC value (size) to determine formatting
+    # To get same numbering scheme regardless of value base currency value (size) to determine formatting
 
     # Length is calculated as follows:
     # Output will have as many digits as the integer value is to the power of 10
@@ -2237,7 +2259,7 @@ Function Get-DigitsFromValue {
 
 Function ConvertTo-LocalCurrency { 
 
-    # To get same numbering scheme regardless of value BTC value (size) to determine formatting
+    # To get same numbering scheme regardless of value PayoutCurrencyRate value (size) to determine formatting
     # Use $Offset to add/remove decimal places
 
     [CmdletBinding()]
@@ -2245,16 +2267,16 @@ Function ConvertTo-LocalCurrency {
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $true)]
-        [Double]$BTCRate, 
+        [Double]$PayoutCurrencyRate, 
         [Parameter(Mandatory = $false)]
         [Int]$Offset
     )
 
-    $Digits = ([math]::truncate(10 - $Offset - [math]::log($BTCRate, 10)))
+    $Digits = ([math]::truncate(10 - $Offset - [math]::log($PayoutCurrencyRate, 10)))
     If ($Digits -lt 0) { $Digits = 0 }
     If ($Digits -gt 10) { $Digits = 10 }
 
-    ($Value * $BTCRate).ToString("N$($Digits)")
+    ($Value * $PayoutCurrencyRate).ToString("N$($Digits)")
 }
 
 Function Get-Combination { 

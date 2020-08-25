@@ -203,7 +203,7 @@ Function Start-Cycle {
             Write-Message "Requesting pool data ($(@($PoolNames) -join ', ')) - this usually takes less than $($Config.PoolTimeout) second$(If ($Config.PoolTimeout -ne 1) { "s" } )..."
             $Variables.NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
-                    Get-ChildItemContentJob "Pools\$($_).*" -Parameters @{ PoolConfig = $PoolsConfig.$_ } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" })
+                    Get-ChildItemContentJob "Pools\$($_).*" -Parameters @{ PoolConfig = $PoolsConfig.($_ -replace "24hr$" -replace "Coins$")} -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" })
                 } | Select-Object
             )
             #Retrieve collected pool data
@@ -214,7 +214,7 @@ Function Start-Cycle {
             $Variables.Remove("NewPools_Jobs")
         }
         Else { 
-            Write-Message -Level WARN "No configured pools - retrying in 30 seconds..."
+            Write-Message -Level WARN "No configured pools - retrying in 10 seconds..."
             Start-Sleep -Seconds 10
             Continue
         }
@@ -665,7 +665,12 @@ Function Start-Cycle {
             $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
         }
         Else { 
-            $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)&ensp;&ensp;&ensp;&ensp;&ensp;$(If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { "Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)&ensp;&ensp;&ensp;&ensp;&ensp;" })1 BTC=$($Variables.Rates."BTC".$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+            $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)"
+            If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)" }
+            $Variables.Summary +=  "&ensp;&ensp;&ensp;&ensp;"
+            (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
+                $Variables.Summary += "&ensp;&ensp;1 $_=$($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+            }
         }
 
         #Also restart running miners (stop & start)
@@ -829,7 +834,7 @@ While ($true) {
         $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
 
         # Keep updating exchange rate
-        Get-Rates
+        Get-Rate
         $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
 
         # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
@@ -866,7 +871,7 @@ While ($true) {
         $BenchmarkingOrMeasuringMiners = @($ActiveMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
         If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
 
-        While ((Get-Date) -lt $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners | Where-Object Activated -GT 0)) {
+        While ((Get-Date) -le $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners | Where-Object Activated -GT 0)) {
             $NextLoop = (Get-Date).AddSeconds($Interval)
             $ActiveMiners | ForEach-Object { 
                 $Miner = $_
