@@ -405,12 +405,12 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" {
-                        # If (Test-Path $Variables.ConfigFile -PathType Leaf -ErrorAction Ignore) { 
-                        #     $Data = Get-Content $Variables.ConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
-                        # }
-                        # Else { 
+                        If (Test-Path $Variables.ConfigFile -PathType Leaf -ErrorAction Ignore) { 
+                            $Data = Get-Content $Variables.ConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
+                        }
+                        Else { 
                             $Data = $Config | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
-                        # }
+                        }
                         Break
                     }
                     "/configfile" { 
@@ -537,9 +537,14 @@ Function Start-APIServer {
                         Break
                     }
                     "/rates" { 
-                        $Rates = [PSCustomObject]@{ }
-                        $Rates | Add-Member BTC ($Variables.Rates.BTC | ConvertTo-Json | ConvertFrom-Json)
-                        $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin (@($Config.Currency) + @("BTC"))  } | ForEach-Object { $Rates.BTC.PSObject.Properties.remove($_) }
+                        $Rates = ($Variables.Rates | ConvertTo-Json | ConvertFrom-Json)
+                        $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin @(@($Config.Currency) + @("BTC")) } | ForEach-Object { 
+                            $Rates.PSObject.Properties.remove($_)
+                        }
+                        $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
+                            $Currency = $_
+                            $Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin @($Config.Currency) } | ForEach-Object { $Rates.$Currency.PSObject.Properties.remove($_) }
+                        }
                         $Data = ConvertTo-Json ($Rates | Select-Object)
                         Break
                     }

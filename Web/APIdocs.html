@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>. -->
 
 <!-- Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.0
+version:        3.9.9.1
 version date:   05.08.2020
  -->
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.2.9.0)</h1>
+  <h1>NemosMiner API (version 0.2.9.2)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -38,17 +38,25 @@ version date:   05.08.2020
       This feature can be used to gather data that the API doesn't expose directly.</p>
   <h2>Resources</h2>
 
+  <h3>All Rates</h3>
+  <a href="http://localhost:3999/allrates">/allrates</a>
+  <p>Shows exchange rates , use for debugging.</p>
+
   <h3>APIVersion</h3>
   <a href="http://localhost:3999/apiversion">/apiversion</a>
   <p>Returns the version number of NemosMiner API.</p>
 
   <h3>BTC Exchange rate</h3>
   <a href="http://localhost:3999/btcratefirstcurrency">/btcratefirstcurrency</a>
-  <p>Shows the curent BCT exchange rate.</p>
+  <p>Shows the curent BTC exchange rate for the first currency.</p>
 
   <h3>BrainJobs</h3>
   <a href="http://localhost:3999/brainjobs">/brainjobs</a>
   <p>Returns the brainjobs information.</p>
+
+  <h3>Config</h3>
+  <a href="http://localhost:3999/config">/config</a>
+  <p>Returns the current config.</p>
 
   <h3>ConfigFile</h3>
   <a href="http://localhost:3999/configfile">/configfile</a>
@@ -61,6 +69,10 @@ version date:   05.08.2020
   <h3>ComparePools</h3>
   <a href="http://localhost:3999/comparepools">/comparepools</a>
   <p>Returns the Variables. comparepools information.</p>
+
+  <h3>Currencies</h3>
+  <a href="http://localhost:3999/currencies">/currencies</a>
+  <p>Returns the configured currencies</p>
 
   <h3>Devices</h3>
   <a href="http://localhost:3999/devices">/devices</a>
@@ -78,15 +90,11 @@ version date:   05.08.2020
   <a href="http://localhost:3999/config/get">/config</a>
   <p>Shows the full configuration for the running script, after all variable substitution.</p>
 
-  <h3>Unsupported Devices</h3>
-  <a href="http://localhost:3999/devices/unsupported">/devices/unsupported</a>
-  <p>Shows information about all unsupported mining devices.</p>
-
   <h3>Earnings</h3>
   <a href="http://localhost:3999/earnings">/earnings</a>
   <p>Returns the earnings data.</p>
 
-  <h3>Earnings Chart</h3>
+  <h3>Earnings Chart Data</h3>
   <a href="http://localhost:3999/earningschartdata">/earningschartdata</a>
   <p>Returns the data required for earnings chart.</p>
 
@@ -164,7 +172,7 @@ version date:   05.08.2020
 
   <h3>Rates</h3>
   <a href="http://localhost:3999/rates">/rates</a>
-  <p>Shows exchange rates (currently only BTC), use for debugging.</p>
+  <p>Shows exchange rates required for balances summary, use for debugging.</p>
 
   <h3>Regions</h3>
   <a href="http://localhost:3999/regions">/regions</a>
@@ -181,6 +189,10 @@ version date:   05.08.2020
   <h3>SwitchingLog</h3>
   <a href="http://localhost:3999/switchinglog">/switchinglog</a>
   <p>Shows the previously executed miners.</p>
+
+  <h3>Unsupported Devices</h3>
+  <a href="http://localhost:3999/devices/unsupported">/devices/unsupported</a>
+  <p>Shows information about all unsupported mining devices.</p>
 
   <h3>Watchdog Timers</h3>
   <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
