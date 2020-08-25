@@ -32,9 +32,9 @@
       //Set mining button status
       $.ajax({url: '/functions/mining/getstatus',
         success: function(result) {
-          document.getElementById('miningstart').disabled = (result == "Running" && result != null);
-          document.getElementById('miningstop').disabled = (result == "Stopped" || result == null);
-          document.getElementById('miningpause').disabled = (result == "Paused" || result == null);
+          document.getElementById('miningstart').disabled = (result == "Running");
+          document.getElementById('miningstop').disabled = (result == "Stopped");
+          document.getElementById('miningpause').disabled = (result == "Paused");
         }
       });
     }
@@ -51,8 +51,6 @@
       $('.modal-title').text($('#miningpause').text());
       $('#myModal').modal({show:true});
     });
-    document.getElementById('miningstart').disabled = false;
-    document.getElementById('miningstop').disabled = false;
     document.getElementById('miningpause').disabled = true;
   });
 
@@ -63,8 +61,6 @@
       $('#myModal').modal({show:true});
     });
     document.getElementById('miningstart').disabled = true;
-    document.getElementById('miningstop').disabled = false;
-    document.getElementById('miningpause').disabled = false;
   });
 
   $('#miningstop').click(function () {
@@ -73,7 +69,6 @@
       $('.modal-title').text($('#miningstop').text());
       $('#myModal').modal({show:true});
     });
-    document.getElementById('miningstart').disabled = false;
     document.getElementById('miningstop').disabled = true;
     document.getElementById('miningpause').disabled = true;
   });
