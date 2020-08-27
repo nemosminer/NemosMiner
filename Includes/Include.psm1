@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.0
-version date:   29 June 2020
+version:        3.9.9.2
+version date:   29 August 2020
 #>
  
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
@@ -2274,7 +2274,7 @@ Function Get-DigitsFromValue {
 
 Function ConvertTo-LocalCurrency { 
 
-    # To get same numbering scheme regardless of value PayoutCurrencyRate value (size) to determine formatting
+    # To get same numbering scheme regardless of value
     # Use $Offset to add/remove decimal places
 
     [CmdletBinding()]
@@ -2282,16 +2282,16 @@ Function ConvertTo-LocalCurrency {
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $true)]
-        [Double]$PayoutCurrencyRate, 
+        [Double]$Rate, 
         [Parameter(Mandatory = $false)]
         [Int]$Offset
     )
 
-    $Digits = ([math]::truncate(10 - $Offset - [math]::log($PayoutCurrencyRate, 10)))
+    $Digits = ([math]::truncate(10 - $Offset - [math]::log($Rate, 10)))
     If ($Digits -lt 0) { $Digits = 0 }
     If ($Digits -gt 10) { $Digits = 10 }
 
-    ($Value * $PayoutCurrencyRate).ToString("N$($Digits)")
+    ($Value * $Rate).ToString("N$($Digits)")
 }
 
 Function Get-Combination { 
