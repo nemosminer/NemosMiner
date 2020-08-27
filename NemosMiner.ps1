@@ -482,13 +482,13 @@ Function Global:TimerUITick {
                     $Variables.Earnings.Values | Select-Object @(
                         @{ Name = "Pool"; Expression = { $_.Pool } }, 
                         @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } }, 
-                        @{ Name = "Balance ($DisplayCurrency)"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.$Currency.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.DailyGrowth * $Variables.Rates.$Currency.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.$Currency.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.$Currency.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.$Currency.$Currency) } }, 
+                        @{ Name = "Balance ($DisplayCurrency)"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.BTC.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.DailyGrowth * $Variables.Rates.BTC.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.BTC.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.BTC.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.BTC.$Currency) } }, 
                         @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is 'DateTime') { $_.EstimatedPayDate.ToShortDateString() } Else { "N/A" } } }, 
-                        @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.PayoutThresholdCurrency)) $($_.PayoutThresholdCurrency) ($('{0:P0}' -f $($_.Balance / $_.PayoutThreshold)))" } }
+                        @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P0}' -f $($_.Balance / $_.PayoutThreshold)))" } }
                     )
                 ) | Sort-Object "$DisplayCurrency in 1h", "$DisplayCurrency in 6h", "$DisplayCurrency in 24h" -Descending
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
@@ -502,9 +502,9 @@ Function Global:TimerUITick {
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
                         @{ Name = "Speed(s)"; Expression = { ($_.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
-                        @{ Name = "$DisplayCurrency/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.$Currency.$Currency).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
+                        @{ Name = "$DisplayCurrency/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.$Currency).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
-                        @{ Name = "$DisplayCurrency/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000 * $Variables.Rates.$Currency.$Currency).ToString("N5") }) -join ' + ' } }, 
+                        @{ Name = "$DisplayCurrency/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000 * $Variables.Rates.BTC.$Currency).ToString("N5") }) -join ' + ' } }, 
                         @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' }
                     }
                 ) | Sort-Object "m$($Config.PayoutCurrency)/day" -Descending)
@@ -564,17 +564,17 @@ Function Global:TimerUITick {
             $LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 $Currency = $(($Variables.Rates.$Currency.($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
 
             If ($null -ne $Variables.Earnings.Values) { 
-                $LabelPayoutCurrencyDay.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -PayoutCurrencyRate ($Variables.Rates.$Currency.($Config.Currency | Select-Object -Index 0)) -Offset 3) = $DisplayCurrency {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Rates.$Currency.$Currency)
+                $LabelPayoutCurrencyDay.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 3) = $DisplayCurrency {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Rates.BTC.$Currency)
                 $LabelEarningsDetails.Lines = @()
 
                 $TrendSign = Get-TrendSign ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4), 3))
-                $LabelEarningsDetails.Lines += "Last  1h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -PayoutCurrencyRate $Variables.Rates.$Currency.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24 * $Variables.Rates.BTC.$Currency)
+                $LabelEarningsDetails.Lines += "Last  1h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24 * $Variables.Rates.BTC.$Currency)
 
                 $TrendSign = Get-TrendSign ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum), 3))
-                $LabelEarningsDetails.Lines += "Last  6h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4)) -PayoutCurrencyRate $Variables.Rates.$Currency.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4 * $Variables.Earnings.$Currency.$Currency)
+                $LabelEarningsDetails.Lines += "Last  6h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4 * $Variables.Earnings.BTC.$Currency)
 
                 $TrendSign = Get-TrendSign -Value ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property DailyGrowth -Sum).sum * 0.96), 3))
-                $LabelEarningsDetails.Lines += "Last 24h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum)) -PayoutCurrencyRate $Variables.Rates.$Currency.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * $Variables.Earnings.$Currency.$Currency)
+                $LabelEarningsDetails.Lines += "Last 24h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * $Variables.Earnings.BTC.$Currency)
                 Remove-Variable TrendSign
             }
             Else { 
@@ -622,7 +622,7 @@ Function Global:TimerUITick {
                     Write-Host "Average/Hour: `t$(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$Currency).ToString('N8')) $Currency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
                     Write-Host "Average/Day:  `t" -NoNewline; Write-Host "$(($_.DailyGrowth * $Variables.Rates.BTC.$Currency).ToString('N8')) $Currency / $(($_.DailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -F Yellow
                     Write-Host "Balance:      `t$(($_.Balance * $Variables.Rates.BTC.$Currency).ToString('N8')) $($Currency) / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
-                    Write-Host "$(($_.Balance / $_.PayoutThreshold).ToString('P0')) of $($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.PayoutThresholdCurrency).ToString()) $($_.PayoutThresholdCurrency) ($($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($Config.Currency | Select-Object -Index 0).ToString()) $($Config.Currency | Select-Object -Index 0)) payment threshold"
+                    Write-Host "$(($_.Balance / $_.PayoutThreshold).ToString('P0')) of $($_.PayoutThreshold).ToString()) $($_.PayoutThresholdCurrency) ($($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($Config.Currency | Select-Object -Index 0).ToString()) $($Config.Currency | Select-Object -Index 0)) payment threshold"
                     Write-Host "Estimated Payment Date:`t$(if ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString() } Else { "N/A" })`n"
                 }
             }
@@ -654,14 +654,14 @@ Function Global:TimerUITick {
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(
                     @( <#Miner Earning#>
-                            @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                            @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowEarningBias) { 
                 $Miner_Table.AddRange(
                     @( <#Miner EarningsBias#>
-                            @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                            @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
@@ -675,21 +675,21 @@ Function Global:TimerUITick {
             If ($Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
                 $Miner_Table.AddRange(
                     @( <#PowerCost#>
-                        @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
+                        @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowProfit -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
                     @( <#Mining Profit#>
-                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowProfitBias -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
                     @( <#Mining ProfitBias#>
-                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
@@ -809,16 +809,16 @@ Function Global:TimerUITick {
             }
 
             If (-not $Variables.Paused) { 
-                Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
+                Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
 
                 If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
                     If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
                         #Mining causes a loss
-                        Write-Host -ForegroundColor Red "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningProfit - $Variables.BasePowerCost) * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day (including Base Power Cost)."
+                        Write-Host -ForegroundColor Red "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningProfit - $Variables.BasePowerCost) * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day (including Base Power Cost)."
                     }
                     If (($Variables.MiningEarning - $Variables.MiningPowerCost) -lt $Config.ProfitabilityThreshold) { 
                         #Mining profit is below the configured threshold
-                        Write-host -ForegroundColor Blue "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningProfit - $Variables.BasePowerCost) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+                        Write-host -ForegroundColor Blue "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningProfit - $Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
                     }
                 }
             }
