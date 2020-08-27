@@ -636,28 +636,6 @@ Function Get-NextColor {
     $Colors
 }
 
-Function Get-TrendSign { 
-    Param(
-        [Parameter(Mandatory = $true)]
-        [Double]$Value
-    )
-
-    If ($PSVersionTable.PSVersion -ge 6.0.0.0) { 
-        Switch ($Value) { 
-            { $_ -eq 0 } { "`u{21D2}" }
-            { $_ -gt 0 } { "`u{21D7}" }
-            { $_ -lt 0 } { "`u{21D8}" }
-        }
-    }
-    Else { 
-        Switch ($Value) { 
-            { $_ -eq 0 } { "=" }
-            { $_ -gt 0 } { ">" }
-            { $_ -lt 0 } { "<" }
-        }
-    }
-}
-
 Function Get-Chart { 
     If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
         $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
@@ -868,6 +846,8 @@ Function Get-Rate {
     Try { 
         $Currencies = (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency | Select-Object }) + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PaymentThresholdCurrency }) + @($Config.Currency | ForEach-Object { $_ } )) | Select-Object | ForEach-Object { $_ -replace "^m" } | Sort-Object -Unique
         $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($Currencies -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+        # $NewRates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=$((@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) | Select-Object -Unique) -join ",")&tsyms=$((@("BTC") + @($Config.Currency | ForEach-Object { $_ -replace "^m"} )) -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+
     }
     Catch { 
         Write-Message -Level Warn "CryptoCompare is down. "
@@ -978,6 +958,10 @@ Function Write-Message {
         }
     }
     End { }
+}
+
+Function Get-NVIDIADriverVersion { 
+    ((Get-CimInstance CIM_VideoController) | Select-Object name, description, @{ Name = "NVIDIAVersion" ; Expression = { ([regex]"[0-9.]{ 6}$").match($_.driverVersion).value.Replace(".", "").Insert(3, '.') } } | Where-Object { $_.Description -like "*NVIDIA*" } | Select-Object -First 1).NVIDIAVersion
 }
 
 Function Start-IdleMining { 

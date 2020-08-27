@@ -405,12 +405,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" {
-                        If (Test-Path $Variables.ConfigFile -PathType Leaf -ErrorAction Ignore) { 
-                            $Data = Get-Content $Variables.ConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
-                        }
-                        Else { 
-                            $Data = $Config | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
-                        }
+                        $Data = $Config | Select-Object -Property * | Get-SortedObject | ConvertTo-Json -Depth 10
                         Break
                     }
                     "/configfile" { 

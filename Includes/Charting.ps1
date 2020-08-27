@@ -41,12 +41,14 @@ $ScriptPath = Split-Path -parent $MyInvocation.MyCommand.Definition
 # FrontDayEarningsPoolSplit
 # DayPoolSplit
 
+$Currency = If ("m$($Config.PayoutCurrency)" -in $Config.Currency) { "m$($Config.PayoutCurrency)" } Else { $Config.PayoutCurrency }
+
 Switch ($ChartType) {
     "Front7DaysEarnings" {
         $Datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) -le (Get-Date).AddDays(-1) } }
         $Datasource | ForEach-Object { $_.Date = [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) }
         $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -Last 7
-        $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
+        $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{ Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
 
         $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
@@ -54,7 +56,7 @@ Switch ($ChartType) {
         $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-        $ChartTitle.Text = ("Earnings Tracker: Earnings of the last 7 active days")
+        $ChartTitle.Text = ("Earnings Tracker: Earnings of the past 7 active days")
         $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
         $ChartTitle.Alignment = "TopCenter"
         $Chart.Titles.Add($ChartTitle)
@@ -79,14 +81,14 @@ Switch ($ChartType) {
         $Chart.Series["TotalEarning"].ChartArea = "ChartArea1"
         $Chart.Series["TotalEarning"].Color = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"FFFFFF"
         $Chart.Series["TotalEarning"].label = "#VALY{N3}"
-        $Chart.Series["TotalEarning"].ToolTip = "#VALX: #VALY mBTC" # - Total: #TOTAL mBTC";
-        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series["TotalEarning"].Points.addxy( $_.Date.ToShortDateString() , ("{0:N5}" -f ([Decimal]$_.DaySum * 1000))) | Out-Null }
+        $Chart.Series["TotalEarning"].ToolTip = "#VALX: #VALY $($Currency)"
+        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series["TotalEarning"].Points.addxy( $_.Date.ToShortDateString() , ("{0:N5}" -f ([Decimal]$_.DaySum * $Variables.Rates.BTC.$Currency))) | Out-Null }
     }
     "Front7DaysEarningsWithPoolSplit" {
         $Datasource = If (Test-Path ".\Logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) -le (Get-Date).AddDays(-1) } }
         $Datasource | ForEach-Object { $_.Date = [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) }
         $RelevantDates = $Datasource.Date | Sort-Object -Unique | Select-Object -Last 7
-        $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
+        $Datasource = $Datasource | Where-Object { $_.Date -in $RelevantDates } | Select-Object *, @{ Name = "DaySum"; Expression = { $Date = $_.Date; (($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings | Measure-Object -sum).sum } }
 
         $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
@@ -94,7 +96,7 @@ Switch ($ChartType) {
         $Chart.BackColor = [System.Drawing.Color]::FromArgb(0, 240, 240, 240) #"#F0F0F0"
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-        $ChartTitle.Text = "Front7DaysEarningsWithPoolSplit"
+        $ChartTitle.Text = ("Earnings Tracker: Earnings of the past 7 active days")
         $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
         $ChartTitle.Alignment = "TopCenter"
         $Chart.Titles.Add($ChartTitle)
@@ -110,7 +112,7 @@ Switch ($ChartType) {
         $ChartArea.AxisY.MajorGrid.Enabled = $true
         $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
         $ChartArea.AxisY.labelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
-        $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * 1000 / 4, 3)
+        $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * $Variables.Rates.BTC.$Currency / 4, 3)
         $Chart.ChartAreas.Add($ChartArea)
 
         $Colors = @(255, 255, 255, 255) #"FFFFFF"
@@ -123,8 +125,8 @@ Switch ($ChartType) {
             $Chart.Series[$Pool].BorderWidth = 3
             $Chart.Series[$Pool].ChartArea = "ChartArea1"
             $Chart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Colors[0], $Colors[1], $Colors[2], $Colors[3])
-            $Chart.Series[$Pool].ToolTip = "#SERIESNAME: #VALY mBTC" # - Total: #TOTAL mBTC";
-            $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Date.ToShortDateString() , ("{0:N3}" -f ([Decimal]$_.DailyEarnings * 1000))) | Out-Null }
+            $Chart.Series[$Pool].ToolTip = "#SERIESNAME: #VALY $($Currency)"
+            $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Date.ToShortDateString() , ("{0:N3}" -f ([Decimal]$_.DailyEarnings * $Variables.Rates.BTC.$Currency))) | Out-Null }
         }
 
         [void]$Chart.Series.Add("Total")
@@ -132,13 +134,13 @@ Switch ($ChartType) {
         $Chart.Series["Total"].BorderWidth = 3
         $Chart.Series["Total"].ChartArea = "ChartArea1"
         $Chart.Series["Total"].Color = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
-        $Chart.Series["Total"].ToolTip = "#SERIESNAME: #VALY mBTC" # - Total: #TOTAL mBTC";
-        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Date , ("{0:N3}" -f ([Decimal]$_.DaySum * 1000))) | Out-Null }
+        $Chart.Series["Total"].ToolTip = "#SERIESNAME: #VALY $($Currency)"
+        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Date , ("{0:N3}" -f ([Decimal]$_.DaySum * $Variables.Rates.BTC.$Currency))) | Out-Null }
 
         $Chart.Series | ForEach-Object { $_.CustomProperties = "DrawSideBySide=True" }
     }
     "DayPoolSplit" {
-        $Datasource = If (Test-Path ".\logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { $_.Date -eq (Get-Date).ToShortDateString() } }
+        $Datasource = If (Test-Path ".\logs\DailyEarnings.csv" ) { Import-Csv ".\logs\DailyEarnings.csv" | Where-Object { [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) -eq (Get-Date).Date } }
         $Datasource = $Datasource | Where-Object { $_.DailyEarnings -gt 0 } | Sort-Object DailyEarnings -Descending
 
         $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
@@ -163,7 +165,7 @@ Switch ($ChartType) {
         $ChartArea.AxisY.MajorGrid.Enabled = $true
         $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
         $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
-        $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * 1000 / 4, 3)
+        $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * $Variables.Rates.BTC.$Currency / 4, 3)
         $Chart.ChartAreas.Add($ChartArea)
 
         $Colors = @(255, 255, 255, 255) #"FFFFFF"
@@ -176,8 +178,8 @@ Switch ($ChartType) {
             $Chart.Series[$Pool].BorderColor = [System.Drawing.Color]::FromArgb(255, 119, 126 ,126) #"#FFFFFF"
             $Chart.Series[$Pool].ChartArea = "ChartArea1"
             $Chart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Colors[0], $Colors[1], $Colors[2], $Colors[3])
-            $Chart.Series[$Pool].ToolTip = "#SERIESNAME: #VALY mBTC" # - Total: #TOTAL mBTC";
-            $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Pool , ("{0:N3}" -f ([Decimal]$_.DailyEarnings * 1000))) | Out-Null }
+            $Chart.Series[$Pool].ToolTip = "#SERIESNAME: #VALY $($Currency)"
+            $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Pool , ("{0:N3}" -f ([Decimal]$_.DailyEarnings * $Variables.Rates.BTC.$Currency))) | Out-Null }
         }
     }
 }

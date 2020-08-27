@@ -51,14 +51,14 @@ While ($true) {
 
         # Get pools api ref
         If (-not $PoolAPI -or ($LastAPIUpdateTime -le (Get-Date).ToUniversalTime().AddDays(-1))) { 
-            Try { 
-                $PoolAPI = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/poolapidata.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-                $LastAPIUpdateTime = $Now
-                $PoolAPI | ConvertTo-Json | Out-File ".\Config\PoolApiData.json" -Force
-            }
-            Catch { 
+            # Try { 
+            #     $PoolAPI = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/poolapidata.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+            #     $LastAPIUpdateTime = $Now
+            #     $PoolAPI | ConvertTo-Json | Out-File ".\Config\PoolApiData.json" -Force
+            # }
+            # Catch { 
                 If (-not $PoolAPI) { $PoolAPI = Get-Content ".\Config\PoolApiData.json" | ConvertFrom-Json }
-            }
+            # }
         }
 
         #Get pools to track
@@ -71,7 +71,7 @@ While ($true) {
             $PoolNorm = $_ -replace "24hr" -replace "Coins"
             $API = $PoolAPI | Where-Object Name -EQ $PoolNorm
             $APIUri = $API.WalletUri
-            $PaymentThreshold = $API.PaymentThreshold
+            $PayoutThreshold = $API.PayoutThreshold
             $BalanceData = [PSCustomObject]@{ }
             $BalanceJson = $API.Balance
             $TotalJson = $API.Total
@@ -84,193 +84,18 @@ While ($true) {
                         $Wallet = $Config.MPHAPIKey
                         $BalanceData = (((Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
                         $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
-                        If ($PoolConfig.PaymentThreshold) { $PaymentThreshold = $PoolConfig.PaymentThreshold }
+                        If ($PoolConfig.PayoutThreshold) { $PayoutThreshold = $PoolConfig.PayoutThreshold }
                     }
                     Catch { }
                 }
-                "Nicehash2" { 
-                #     $Request_Balance = [PSCustomObject]@{}
 
-                #     If ($PoolConfig.NicehashAPIKey -and $PoolConfig.NicehashAPISecret -and $PoolConfig.NicehashOrganizationID) { 
-                #         Try { 
-                #             $Request_Balance = Invoke-NHRequest "/main/api/v2/accounting/account2/BTC/" $PoolConfig.NicehashAPIKey $PoolConfig.NicehashAPISecret $PoolConfig.NicehashOrganizationID
-                #         }
-                #         Catch { 
-                #             If ($Error.Count) { $Error.RemoveAt(0) }
-                #             Write-Message -Level Warn "Pool Accounts API ($Name) has failed."
-                #         }
-                #     }
-
-                #     Function Get-MD5Hash { 
-                #         [CmdletBinding()]
-                #         Param(
-                #             [Parameter(
-                #                 Mandatory = $true,
-                #                 Position = 0, 
-                #                 ParameterSetName = '',
-                #                 ValueFromPipeline = $true)]
-                #                 [String]$Value
-                #         )
-
-                #         $MD5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
-                #         $UTF8 = New-Object -TypeName System.Text.UTF8Encoding
-                #         [System.BitConverter]::ToString($MD5.ComputeHash($UTF8.GetBytes($Value))).ToUpper() -replace '-'
-                #     }
-
-                #     Function Get-ReadableHex32 { 
-                #         [CmdletBinding()]
-                #         Param (
-                #             [Parameter(Mandatory = $true)]
-                #             [String]$Key
-                #         )
-
-                #         If ($Key.Length % 32) {
-                #             $Key
-                #         }
-                #         Else {
-                #             $s = ""
-                #             For ($i=0; $i -lt $Key.Length; $i+=32) { 
-                #                 $s = "$s$($Key.Substring($i, 8))-$($Key.Substring($i + 4, 4))-$($Key.Substring($i + 8, 4))-$($Key.Substring($i + 12, 4))-$($Key.Substring($i + 16, 12))"
-                #             }
-                #             $s
-                #          }
-                #      }
-
-                #     Function Invoke-NHRequest {
-                #         [CmdletBinding()]
-                #         Param(
-                #             [Parameter(Mandatory = $true)]
-                #             [String]$Endpoint,
-                #             [Parameter(Mandatory = $false)]
-                #             [String]$Key,
-                #             [Parameter(Mandatory = $false)]
-                #             [String]$Secret,
-                #             [Parameter(Mandatory = $false)]
-                #             [String]$OrganizationId,
-                #             [Parameter(Mandatory = $false)]
-                #             [Hashtable]$Params = @{ },
-                #             [Parameter(Mandatory = $false)]
-                #             [String]$Method = "GET",
-                #             [Parameter(Mandatory = $false)]
-                #             [String]$Base = "https://api2.nicehash.com",
-                #             [Parameter(Mandatory = $false)]
-                #             [Int]$Timeout = 15,
-                #             [Parameter(Mandatory = $false)]
-                #             [Int]$Cache = 0,
-                #             [Parameter(Mandatory = $false)]
-                #             [Sitch]$ForceLocal
-                #         )
-
-                #         #autofix key/secret/organizationid
-                #         If ($Key) {$Key = Get-ReadableHex32 $Key }
-                #         If ($Secret) { $Secret = Get-ReadableHex32 $Secret }
-                #         If ($OrganizationId) { $OrganizationId = Get-ReadableHex32 $OrganizationId }
-
-                #         $KeyStr = Get-MD5Hash "$($Endpoint)$(Get-HashtableAsJson $Params)"
-                #         If (-not (Test-Path Variable:Global:NHCache)) { $Global:NHCache = [Hashtable]@{} }
-                #         If (-not $Cache -or -not $Global:NHCache[$KeyStr] -or -not $Global:NHCache[$KeyStr].request -or $Global:NHCache[$KeyStr].last -lt (Get-Date).ToUniversalTime().AddSeconds(-$Cache)) { 
-                    
-                #         $Remote = $false
-
-                #         If (-not $ForceLocal -and $Session.Config.RunMode -eq "Client" -and $Session.Config.ServerName -and $Session.Config.ServerPort -and (Test-TcpServer $Session.Config.ServerName -Port $Session.Config.ServerPort -Timeout 1)) { 
-                #                 $ServerBody = @{
-                #                     Endpoint    = $Endpoint
-                #                     Key         = $Key
-                #                     Secret      = $Secret
-                #                     Ogid        = $OrganizationId
-                #                     Params      = $Params | ConvertTo-Json -Depth 10 -Compress
-                #                     Method      = $Method
-                #                     Base        = $Base
-                #                     Timeout     = $Timeout
-                #                     Machinename = $Session.MachineName
-                #                     Workername  = $PoolConfig.Workername
-                #                     MyIP        = $Session.MyIP
-                #                 }
-                #                 Try { 
-                #                     $Result = Invoke-GetUrl "http://$($Session.Config.ServerName):$($Session.Config.ServerPort)/getnh" -Body $ServerBody -User $Session.Config.ServerUser -Password $Session.Config.ServerPassword -ForceLocal
-                #                     If ($Result.Status) { 
-                #                         $Request = $Result.Content
-                #                         $Remote = $true
-                #                     }
-                #                 }
-                #                 Catch { 
-                #                     If ($Error.Count) { $Error.RemoveAt(0) }
-                #                     Write-Message -Level Info "Nicehash server call: $($_.Exception.Message)"
-                #                 }
-                #             }
-                #             If (-not $Remote -and $Key -and $Secret -and $OrganizationId) {
-                #                 $Uuid = [string]([guid]::NewGuid())
-                #                 $Timestamp = ([DateTimeOffset](Get-Date)).ToUnixTimeSeconds()
-                #                 #$timestamp_nh = Invoke-GetUrl "$($base)/main/api/v2/time" -timeout $Timeout | Select-Object -ExpandProperty serverTime
-                #                 #if ([Math]::Abs($timestamp_nh - $timestamp) -gt 3000) {$timestamp = $timestamp_nh}
-                #                 $ParamStr = "$(($Params.Keys | ForEach-Object { "$($_) = $([System.Web.HttpUtility]::UrlEncode($params.$_))" }) -join '&')"
-                #                 $Str = "$Key`0$Timestamp`0$Uuid`0`0$Organizationid`0`0$($Method.ToUpper())`0$Endpoint`0$(If ($Method -eq "GET") { $ParamStr } Else { "`0$($Params | ConvertTo-Json -Depth 10 -Compress)" })"
-                #                 $Sha = [System.Security.Cryptography.KeyedHashAlgorithm]::Create("HMACSHA256")
-                #                 $Sha.Key = [System.Text.Encoding]::UTF8.Getbytes($Secret)
-                #                 $Sign = [System.BitConverter]::ToString($Sha.ComputeHash([System.Text.Encoding]::UTF8.Getbytes(${str})))
-                #                 $Headers = [Hashtable]@{
-                #                     'X-Time'            = $Timestamp
-                #                     'X-Nonce'           = $Uuid
-                #                     'X-Organization-Id' = $OrganizationId
-                #                     'X-Auth'            = "$($Key):$(($Sign -replace '\-').ToLower())"
-                #                     'Cache-Control'     = 'no-cache'
-                #                 }
-                #                 Try { 
-                #                     $Body = Switch ($Method) {
-                #                         "GET" {
-                #                             If ($params.Count) { $Params } Else { $null }
-                #                             Break
-                #                         }
-                #                         Default { $Params | ConvertTo-Json -Depth 10 }
-                #                     }
-                #                     $Request = Invoke-GetUrl "$Base$Endpoint" -Timeout $Timeout -Headers $Headers -Requestmethod $Method -Body $Body
-                #                 }
-                #                 Catch { 
-                #                     If ($Error.Count) { $Error.RemoveAt(0) }
-                #                     Write-Message -Level Info "Nicehash API call: $($_.Exception.Message)"
-                #                 }
-                #             }
-
-                #             If (-not $Global:NHCache[$keystr] -or $Request) { 
-                #                 $Global:NHCache[$keystr] = [PSCustomObject]@{ 
-                #                     Last = (Get-Date).ToUniversalTime()
-                #                     Request = $Request
-                #                 }
-                #             }
-                #         }
-                #         $Global:NHCache[$KeyStr].request
-                #     }
-                }
-                "NiceHash" { 
-                    # Try { 
-                    #     $TempBalance = 0
-                    #     $Wallet = $PoolConfig.Wallet
-                    #     $NicehashData = ((Invoke-RestMethod -Uri "$APIUri$Wallet/rigs/stats/unpaid/" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).Data | Where-Object { $_[0] -gt $CurDateUxFormat } | Sort-Object { $_[0] } | Group-Object { $_[2] }).group
-                    #     $NHTotalBalance = -$NicehashData[0][2]
-                    #     $NicehashData | ForEach-Object {
-                    #         #Nicehash continously transfers balances to wallet
-                    #         If ($_[2] -gt $TempBalance) {
-                    #             $TempBalance = $_[2]
-                    #         }
-                    #         Else { 
-                    #             $NHTotalBalance += $TempBalance
-                    #             $TempBalance = $_[2]
-                    #         }
-                    #     }
-                    #     $NHTotalBalance += $TempBalance
-                    #     $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
-                    #     $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
-                    #     $BalanceData | Add-Member Currency "BTC" -ErrorAction Ignore
-                    # }
-                    # Catch { }
-                }
                 "ProHashing" { 
                     Try { 
                         $Wallet = $Config.ProHashingAPIKey
                         $BalanceData = (Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).data.balances."BTC"
                         $BalanceData | Add-Member "total_unpaid" $BalanceData.Unpaid -Force
                         $BalanceData | Add-Member Currency $PoolConfig.PayoutCurrency -ErrorAction Ignore
-                        If ($PoolConfig.PaymentThreshold) { $PaymentThreshold = $PoolConfig.PaymentThreshold }
+                        If ($PoolConfig.PayoutThreshold) { $PayoutThreshold = $PoolConfig.PayoutThreshold }
                     }
                     Catch { }
                 }
@@ -281,7 +106,7 @@ While ($true) {
                         $BalanceData = Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }
                         $PoolAccountUri = "$($PoolAccountUri -replace '\[currency\]', $PayoutCurrency)$Wallet"
                         $BalanceData | Add-Member Currency $PayoutCurrency -ErrorAction Ignore
-                        If ($PoolConfig.PaymentThreshold) { $PaymentThreshold = $PoolConfig.PaymentThreshold }
+                        If ($PoolConfig.PayoutThreshold) { $PayoutThreshold = $PoolConfig.PayoutThreshold }
                     }
                     Catch { }
                 }
@@ -315,29 +140,30 @@ While ($true) {
                 $AvgBaseCurrencyHour = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) } Else { $Growth1 }
 
                 $Variables.Earnings.$PoolNorm = $BalanceObject = [PSCustomObject]@{ 
-                    Pool                  = $PoolNorm
-                    Wallet                = $Wallet
-                    Uri                   = $PoolAccountUri
-                    Date                  = $Date
-                    StartTime             = $PoolBalanceObjects[0].DateTime.ToString("T")
-                    Balance               = [Double]$BalanceObject.balance
-                    Unsold                = [Double]$BalanceObject.unsold
-                    Total_unpaid          = [Double]$BalanceObject.total_unpaid
-                    Total_paid            = [Double]$BalanceObject.total_paid
-                    Total_earned          = [Double]$BalanceObject.total_earned
-                    Currency              = $BalanceObject.currency
-                    GrowthSinceStart      = $BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned
-                    Growth1               = [Double]$Growth1
-                    Growth6               = [Double]$Growth6
-                    Growth24              = [Double]$Growth24
-                    AvgHourlyGrowth       = [Double]$AvgBaseCurrencyHour
-                    DailyGrowth           = [Double]$AvgBaseCurrencyHour * 24
-                    EstimatedEndDayGrowth = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgBaseCurrencyHour * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                    EstimatedPayDate      = If ($PaymentThreshold) { If ($BalanceObject.balance -lt $PaymentThreshold) { If ($AvgBaseCurrencyHour -gt 0) { $Now.AddHours(($PaymentThreshold - $BalanceObject.balance) / $AvgBaseCurrencyHour) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
-                    TrustLevel            = $((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum
-                    PaymentThreshold      = [Double]$PaymentThreshold
-                    TotalHours            = ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours
-                    LastUpdated           = $Now
+                    Pool                    = $PoolNorm
+                    Wallet                  = $Wallet
+                    Uri                     = $PoolAccountUri
+                    Date                    = $Date
+                    StartTime               = $PoolBalanceObjects[0].DateTime.ToString("T")
+                    Balance                 = [Double]$BalanceObject.balance
+                    Unsold                  = [Double]$BalanceObject.unsold
+                    Total_unpaid            = [Double]$BalanceObject.total_unpaid
+                    Total_paid              = [Double]$BalanceObject.total_paid
+                    Total_earned            = [Double]$BalanceObject.total_earned
+                    Currency                = $BalanceObject.currency
+                    PayoutThresholdCurrency = If ($Config.PoolsConfig.$PoolNorm.PayoutThresholdCurrency) { $Config.PoolsConfig.$PoolNorm.PayoutThresholdCurrency } Else { $BalanceObject.currency }
+                    GrowthSinceStart        = $BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned
+                    Growth1                 = [Double]$Growth1
+                    Growth6                 = [Double]$Growth6
+                    Growth24                = [Double]$Growth24
+                    AvgHourlyGrowth         = [Double]$AvgBaseCurrencyHour
+                    DailyGrowth             = [Double]$AvgBaseCurrencyHour * 24
+                    EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgBaseCurrencyHour * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
+                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt $PayoutThreshold) { If ($AvgBaseCurrencyHour -gt 0) { $Now.AddHours(($PayoutThreshold - $BalanceObject.balance) / $AvgBaseCurrencyHour) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
+                    TrustLevel              = $((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum
+                    PayoutThreshold         = [Double]$PayoutThreshold
+                    TotalHours              = ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours
+                    LastUpdated             = $Now
                 }
 
                 If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolNorm | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" }
@@ -387,6 +213,8 @@ While ($true) {
                 Remove-Variable BalanceObject
             }
         }
+
+        $Variables.Earnings = $Variables.Earnings | Sort-Object Pools
 
         $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
 

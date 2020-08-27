@@ -48,7 +48,7 @@ If ($PoolConfig.Wallet) {
                 Host               = "$(if ($Region -eq "eu") { "eu." })$HostSuffix"
                 Port               = [UInt16]$PoolPort
                 User               = $PoolConfig.Wallet
-                Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PasswordCurrency)"
+                Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee

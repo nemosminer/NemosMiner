@@ -61,7 +61,7 @@ If ($PoolConfig.Wallet) {
                     Host               = [String]$PoolHost
                     Port               = [UInt16]$PoolPort
                     User               = $PoolConfig.Wallet
-                    Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PasswordCurrency),mc=$($TopCoin.Symbol)"
+                    Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency),mc=$($TopCoin.Symbol)"
                     Region             = [String]$Region_Norm
                     SSL                = [Bool]$false
                     Fee                = $Fee

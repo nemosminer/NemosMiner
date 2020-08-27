@@ -63,8 +63,8 @@
         <input type="text" id="currency" name="currency" value="mBTC" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency" size=64>
         <br>
 
-        <label title="Default payout currency for all pools &#10;unless configured otherwise in PoolsConfig.json &#10;Note: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information"for="payoutcurrency">Default Payout Currency </label>
-        <input title="Default payout currency for all pools &#10;unless configured otherwise in PoolsConfig.json &#10;Note: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information"type="text" id="payoutcurrency" name="payoutcurrency" value="BTC" size=3>
+        <label title="Default payout currency for all pools &#10;unless configured otherwise in PoolsConfig.json &#10;Note: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information"for="PaymentCurrency">Default Payout Currency </label>
+        <input title="Default payout currency for all pools &#10;unless configured otherwise in PoolsConfig.json &#10;Note: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information"type="text" id="PaymentCurrency" name="PaymentCurrency" value="BTC" size=3>
         <br><br>
 
         <label title="Enter proxy IP address and port &#10;e.g. 192.168.1.1:3128"for="proxy">Proxy </label>
@@ -222,7 +222,7 @@
         document.getElementById('algorithm').value = (config.Algorithm).toString();
       }
       document.getElementById('currency').value = config.Currency;
-      document.getElementById('payoutcurrency').value = config.PayoutCurrency;
+      document.getElementById('PaymentCurrency').value = config.PaymentCurrency;
       document.getElementById('proxy').value = config.Proxy;
       if (config.RunningMinerGainPc == null) { 
         document.getElementById('runningminergainpct').value = 5;
@@ -367,7 +367,7 @@
       config.Currency = 'mBTC';
     };
     config.Currency = (document.getElementById('currency').value).toString().split(',');
-    config.PayoutCurrency = document.getElementById('payoutcurrency').value;
+    config.PaymentCurrency = document.getElementById('PaymentCurrency').value;
     config.Proxy = document.getElementById('proxy').value;
     if (document.getElementById('runningminergainpct').value == null) {
       document.getElementById('runningminergainpct').value = 5;
