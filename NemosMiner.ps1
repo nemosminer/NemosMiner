@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.1
+Version:        3.9.9.2
 Version date:   10 August 2020
 #>
 
@@ -482,11 +482,11 @@ Function Global:TimerUITick {
                     $Variables.Earnings.Values | Select-Object @(
                         @{ Name = "Pool"; Expression = { $_.Pool } }, 
                         @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } }, 
-                        @{ Name = "Balance ($DisplayCurrency)"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.BTC.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.DailyGrowth * $Variables.Rates.BTC.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.BTC.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.BTC.$Currency) } }, 
-                        @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.BTC.$Currency) } }, 
+                        @{ Name = "Balance ($DisplayCurrency)"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.$Currency.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.DailyGrowth * $Variables.Rates.$Currency.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.$Currency.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.$Currency.$Currency) } }, 
+                        @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.$Currency.$Currency) } }, 
                         @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is 'DateTime') { $_.EstimatedPayDate.ToShortDateString() } Else { "N/A" } } }, 
                         @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.PayoutThresholdCurrency)) $($_.PayoutThresholdCurrency) ($('{0:P0}' -f $($_.Balance / $_.PayoutThreshold)))" } }
                     )
@@ -502,9 +502,9 @@ Function Global:TimerUITick {
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
                         @{ Name = "Speed(s)"; Expression = { ($_.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
-                        @{ Name = "$DisplayCurrency/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.$Currency).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
+                        @{ Name = "$DisplayCurrency/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.$Currency.$Currency).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
-                        @{ Name = "$DisplayCurrency/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000 * $Variables.Rates.BTC.$Currency).ToString("N5") }) -join ' + ' } }, 
+                        @{ Name = "$DisplayCurrency/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000 * $Variables.Rates.$Currency.$Currency).ToString("N5") }) -join ' + ' } }, 
                         @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' }
                     }
                 ) | Sort-Object "m$($Config.PayoutCurrency)/day" -Descending)
@@ -521,10 +521,8 @@ Function Global:TimerUITick {
                         @{ Name = "Status"; Expression = { $_.status } }, 
                         @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport.SubString(1))" } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
-                        # @{ Name = "Est. Earning m$($Config.PayoutCurrency)/day"; Expression = { [decimal]($_.Earning * 1000)} }, 
-                        # @{ Name = "Est. Earning $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Earning * ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0))) } }, 
-                        @{ Name = "Est. Profit m$($Config.PayoutCurrency)/day"; Expression = { [decimal]($_.Profit * 1000)} }, 
-                        @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0))) } }, 
+                        @{ Name = "Est. Profit $Currency)/day"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$Currency)} }, 
+                        @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))) } }, 
                         @{ Name = "Miner"; Expression = { $_.data.name -join ',' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.data.pool -join ',' } }, 
                         @{ Name = "Algo(s)"; Expression = { $_.data.algorithm -join ',' } }, 
@@ -656,14 +654,14 @@ Function Global:TimerUITick {
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(
                     @( <#Miner Earning#>
-                            @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                            @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowEarningBias) { 
                 $Miner_Table.AddRange(
                     @( <#Miner EarningsBias#>
-                            @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                            @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
@@ -677,21 +675,21 @@ Function Global:TimerUITick {
             If ($Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
                 $Miner_Table.AddRange(
                     @( <#PowerCost#>
-                        @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
+                        @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowProfit -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
                     @( <#Mining Profit#>
-                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowProfitBias -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
                     @( <#Mining ProfitBias#>
-                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -PayoutCurrencyRate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -PayoutCurrencyRate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
