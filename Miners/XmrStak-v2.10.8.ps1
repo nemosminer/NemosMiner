@@ -134,7 +134,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                             }
                         }
                         Commands = ("--poolconf $PoolFileName --config $ConfigFileName$($_.Command) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)").trim()
-                        Devices  = @($Miner_Devices.$DeviceEnumerator)
+                        Devices  = @($Miner_Devices.$DeviceEnumerator | Sort-Object)
                         HwDetectCommands = ("--poolconf $PoolFileName --config $ConfigFileName$($_.Command) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)").trim()
                         MinerThreadsConfigFileName = $MinerThreadsConfigFileName
                         Platform = $Platform

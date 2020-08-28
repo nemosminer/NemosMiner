@@ -48,7 +48,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[1]).Host -and (-
         }
     }
 
-    $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
+    $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
@@ -97,7 +97,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[1]).Host -and (-
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[1], $_.Algorithm[0]) | Select-Object
                         API        = "NBMiner"
                         Port       = $MinerAPIPort

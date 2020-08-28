@@ -47,7 +47,7 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $Pools.($_.Algorithm[1]).Host) }) { 
 
-    $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
+    $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
@@ -84,7 +84,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --api $($MinerAPIPort) --watchdog 0 --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.($DeviceEnumerator)) }) -join ' ')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) --api $($MinerAPIPort) --watchdog 0 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm) | Select-Object
                         API        = "Gminer"
                         Port       = $MinerAPIPort

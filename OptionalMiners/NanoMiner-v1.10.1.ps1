@@ -21,7 +21,7 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-    $Devices | Select-Object Type, Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
+    $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
@@ -58,7 +58,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
     webPort=$($MinerAPIPort)
     useSSL=$($Pools.($_.Algorithm).SSL)
     [$($_.Command)]
-    devices=$(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')
+    devices=$(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')
     pool1=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)
     wallet=$($Pools.($_.Algorithm).User)"
                         }

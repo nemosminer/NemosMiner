@@ -6,12 +6,12 @@ $Uri = "https://github.com/Minerx117/ccminer-bsha3/releases/download/1.0/ccminer
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Sha3d"; MinMemGB = 1; Command = " --algo keccak --statsavg 10" } #Keccak!!!
+    [PSCustomObject]@{ Algorithm = "Sha3d"; MinMemGB = 1; Command = " --algo keccak --statsavg 5" } #Keccak!!!
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique  | Sort-Object $DeviceEnumerator | ForEach-Object { 
+    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique  | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
@@ -32,7 +32,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName = $Miner_Devices.Name
                         Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-priority 4 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-priority 4 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Ccminer"
                         Port       = $MinerAPIPort
