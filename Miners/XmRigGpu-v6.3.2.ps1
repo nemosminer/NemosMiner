@@ -54,7 +54,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   MinMemGB = 4;    Type = "NVIDIA"; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/zls" } 
-#   [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "NVIDIA"; Command = " --algo kawpow" } #Wildrig 0.25.2 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "NVIDIA"; Command = " --algo kawpow" } 
     [PSCustomObject]@{ Algorithm = "Randomx";              MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo rx/kev" }
