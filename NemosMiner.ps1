@@ -88,7 +88,7 @@ param(
     [ValidateRange(0, 1)]
     [Double]$MinAccuracy = 0.5, #Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
     [Parameter(Mandatory = $false)]
-    [Int]$MinDataSamples = 20, #Minimum number of hash rate samples required to store hash rate
+    [Int]$MinDataSamples = 90, #Minimum number of hash rate samples required to store hash rate
     [Parameter(Mandatory = $false)]
     [Hashtable]$MinDataSamplesAlgoMultiplier = [Hashtable]@{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
@@ -190,7 +190,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
-    [Int]$WarmupTime = 45, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
+    [Int]$WarmupTime = 120, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
     [Parameter(Mandatory = $false)]
     [Switch]$Watchdog = $true, #if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
     [Parameter(Mandatory = $false)]
