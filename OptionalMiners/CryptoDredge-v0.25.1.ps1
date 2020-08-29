@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.24.0/CryptoDredge_0.24.0_cuda_10.2_windows.zip"
+$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.25.1/CryptoDredge_0.25.1_cuda_10.2_windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
