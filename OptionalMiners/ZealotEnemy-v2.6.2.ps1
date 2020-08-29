@@ -6,10 +6,10 @@ $Uri = "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enem
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Aergo";  MinMemGB = 1; Command = " --algo aergo --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 2; Command = " --algo xevan --intensity 22" }
-    [PSCustomObject]@{ Algorithm = "Hex";    MinMemGB = 1; Command = " --algo --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; Command = " --algo kawpow --statsavg 1 --intensity 20.5" } #No result in reasonable time
+    [PSCustomObject]@{ Algorithm = "Aergo";  MinMemGB = 1; Command = " -a aergo --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 2; Command = " -a xevan --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "Hex";    MinMemGB = 1; Command = " -a --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; Command = " -a kawpow --intensity 23" } 
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -38,7 +38,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName = $Miner_Devices.Name
                         Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) -o stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -R 1 -q -u $($Pools.($_.Algorithm).User) -p $($Pools.($_.Algorithm).Pass) -b $MinerAPIPort -d $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Trex"
                         Port       = $MinerAPIPort
