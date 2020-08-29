@@ -24,9 +24,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = @("CPU"); Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "MTP";           Fee = 0;      Type = @("CPU"); Command = " --algorithm mtp" }
 #   [PSCustomObject]@{ Algorithm = "Rainforestv2";  Fee = 0.0085; Type = @("CPU"); Command = " --algorithm rainforestv2" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomarq --randomx-use-1gb-pages" }
-#   [PSCustomObject]@{ Algorithm = "RandomxSfx";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomsfx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.1 is fastest
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomsfx --randomx-use-1gb-pages" } 
     [PSCustomObject]@{ Algorithm = "RandomxWow";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomwow" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = "YescryptR8";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescryptr8" }
