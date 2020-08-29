@@ -16,8 +16,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Geek";            MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";       MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";       MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-  [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } #ZealotEnemy-v2.6.2 is fastest
-#   [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" } #CryptoDredge-v0.24 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } 
+#   [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" } 
     [PSCustomObject]@{ Algorithm = "PadiHash";        MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";       MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";       MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
@@ -30,8 +30,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Veil";            MinMemGB = 2; Command = " --algo x16rt --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X17";             MinMemGB = 2; Command = " --algo x17 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16s";            MinMemGB = 2; Command = " --algo x16s --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "X16r";            MinMemGB = 2; Command = " --algo x16r --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "X16rv2";          MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" }
+#   [PSCustomObject]@{ Algorithm = "X16r";            MinMemGB = 2; Command = " --algo x16r --intensity 24" }
+#   [PSCustomObject]@{ Algorithm = "X16rv2";          MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "X16rt";           MinMemGB = 2; Command = " --algo x16rt --intensity 24" } #Profit very small
     [PSCustomObject]@{ Algorithm = "X21s";            MinMemGB = 2; Command = " --algo x21s --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X22i";            MinMemGB = 2; Command = " --algo x22i --intensity 23" }
