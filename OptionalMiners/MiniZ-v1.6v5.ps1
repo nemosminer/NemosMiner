@@ -8,14 +8,14 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Beam";         MinMemGB = 2.0; Command = " --par=-par=150,5 --pers auto --ocX" }
 #   [PSCustomObject]@{ Algorithm = "BeamV2";       MinMemGB = 4.0; Command = " --par=beam --pers auto --ocX" }
-#   [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Command = " --par=beam3 --pers=Beam-PoW --ocX" } #MiniZ-v1.6v5 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Command = " --par=beam3 --pers=Beam-PoW --ocX" } #MiniZ-v1.6v5 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Command = " --par=125,4 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Command = " --par=144,5 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 3.0; Command = " --par=192,7 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 1.0; Command = " --par=210,9 --pers auto --ocX" }
-#   [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" } #GMiner-v2.20 is fastest
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" } #GMiner-v2.20 is fastest
 #   [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 1.0; Command = " --par=192,7 --pers ZcashPoW --ocX" } #GMiner-v2.20 is fastest
 )
 
