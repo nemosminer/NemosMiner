@@ -37,7 +37,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);    MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash", $null);         MinMemGB = 4.0; Fee = @(0.0065);  Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");     MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.1c is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong");   MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong");   MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Handshake", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = @("KawPoW", $null);         MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.16.1 is fastest
     [PSCustomObject]@{ Algorithm = @("Qitmeer", $null);        MinMemGB = 6.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo qitmeer --cuda 1 --opencl 0" }
