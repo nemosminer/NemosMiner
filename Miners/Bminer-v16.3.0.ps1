@@ -14,7 +14,7 @@ $Commands = [PSCustomObject[]]@(
  #  [PSCustomObject]@{ Algorithm = @("BeamV3", $null);        Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 6; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc", $null); Protocol = @(" -uri bfc");                            Fee = @(0.02);      MinMemGB = 8; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);   Protocol = @(" -uri cuckaroo29m");                    Fee = @(0.01);      MinMemGB = 4; Type = "NVIDIA"; Command = " --fast 4" }
- #  [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);   Protocol = @(" -uri cuckaroo29z");                    Fee = @(0.02);      MinMemGB = 6; Type = "NVIDIA"; Command = " --fast 4" }
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);   Protocol = @(" -uri cuckaroo29z");                    Fee = @(0.02);      MinMemGB = 6; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);    Protocol = @(" -uri cuckatoo31");                     Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);    Protocol = @(" -uri cuckatoo32");                     Fee = @(0.01);      MinMemGB = 7; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("Cuckoo29", $null);      Protocol = @(" -uri aeternity");                      Fee = @(0.01);      MinMemGB = 6; Type = "NVIDIA"; Command = " --fast 4" }
