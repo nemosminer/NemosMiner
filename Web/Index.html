@@ -176,9 +176,9 @@
               var currencies = Object.keys(rates[item.Currency]);
               var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Total_earned * 100 / item.PayoutThreshold).toFixed(1), avgh: (item.AvgHourlyGrowth * 1000).toFixed(6), avgd: (item.DailyGrowth * 1000).toFixed(6)};
               $.each(currencies, function(cindex, currency) {
-                data["balances"][currency] = (item.Total_earned * rates[item.Currency][currency]).toFixed(8);
+                data["balances"][currency] = (item.Total_earned * rates['BTC'][currency]).toFixed(8);
                 if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
-                data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates[item.Currency][currency];
+                data_total["balances"][currency] = data_total["balances"][currency] + item.Total_earned * rates['BTC'][currency];
               });
               $("#balanceboxes").append(template(data));
             }
