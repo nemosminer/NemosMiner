@@ -8,7 +8,9 @@
     "StatusUri": "https://www.ahashpool.com/api/status",
     "CurrenciesUri": "https://www.ahashpool.com/api/currencies",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.003,
+    "PayoutThreshold": { 
+      "mBTC": 3
+    },
     "Total": "total_earned",
     "Balance": "balance"
   },
@@ -21,7 +23,9 @@
     "StatusUri": "http://api.blazepool.com/status",
     "CurrenciesUri": "",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.003,
+    "PayoutThreshold": { 
+      "mBTC": 3
+    },
     "Total": "total_earned",
     "Balance": "balance"
   },
@@ -34,7 +38,11 @@
     "StatusUri": "http://blockmasters.co/api/status",
     "CurrenciesUri": "http://blockmasters.co/api/currencies",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.0025,
+    "PayoutThreshold": { 
+      "mBTC": 1.65,
+      "LTC": 0.1,
+      "DODGE": 50
+    },
     "Total": "total",
     "Balance": "balance"
   },
@@ -47,7 +55,9 @@
     "StatusUri": "",
     "CurrenciesUri": "",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.01,
+    "PayoutThreshold": {
+      "mBTC": 10
+    },
     "Total": "confirmed",
     "Balance": "confirmed"
   },
@@ -60,7 +70,9 @@
     "StatusUri": "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/",
     "CurrenciesUri": "",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.001,
+    "PayoutThreshold": { 
+      "mBTC": 1
+    },
     "Total": "unpaidAmount",
     "Balance": "externalBalance"
   },
@@ -73,7 +85,9 @@
     "StatusUri": "https://www.nlpool.nl/api/status",
     "CurrenciesUri": "https://www.nlpool.nl/api/currencies",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.0025,
+    "PayoutThreshold": {
+      "mBTC": 1
+    },
     "Total": "total",
     "Balance": "balance"
   },
@@ -86,7 +100,9 @@
     "StatusUri": "https://prohashing.com/api/v1/status",
     "CurrenciesUri": "https://prohashing.com/api/v1/currencies",
     "PayoutCurrency": "USD",
-    "PayoutThreshold": null,
+    "PayoutThreshold": { 
+      "USD": 10
+    },
     "Total": "total",
     "Balance": "balance"
   },
@@ -99,7 +115,11 @@
     "StatusUri": "http://api.zergpool.com:8080/api/status",
     "CurrenciesUri": "http://api.zergpool.com:8080/api/currencies",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.0025,
+    "PayoutThreshold": { 
+      "mBTC": 2.5,
+      "LTC": 0.15,
+      "*": 0.0002
+    },
     "Total": "total",
     "Balance": "balance"
   },
@@ -112,7 +132,10 @@
     "StatusUri": "http://www.zpool.ca/api/status",
     "CurrenciesUri": "http://www.zpool.ca/api/currencies",
     "PayoutCurrency": "BTC",
-    "PayoutThreshold": 0.0025,
+    "PayoutThreshold": {
+      "mBTC": 2.5,
+      "*": 0.0125
+    },
     "Total": "total",
     "Balance": "balance"
   }
