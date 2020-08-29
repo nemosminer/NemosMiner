@@ -14,7 +14,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Equihash1927", $null);   MinMemGB = 2.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);    MinMemGB = 3.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
 
-    [PSCustomObject]@{ Algorithm = @("BeamV3", $null);         MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("BeamV3", $null);         MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" } #Profit very small
     [PSCustomObject]@{ Algorithm = @("CryptonightBBC", $null); MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cryptonightbbc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc", $null);  MinMemGB = 6.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
@@ -23,10 +23,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("CuckarooD29", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooD29V", $null);   MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29v --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckaroom29 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX", $null);  MinMemGB = 8.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo C30CTX --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo31 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo32 --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo32 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29", $null);       MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckoo29 --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Eaglesong", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo eaglesong --cuda 1 --opencl 0" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = @("Equihash965", $null);    MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash96_5 --cuda 1 --opencl 0" } #Profit very small
