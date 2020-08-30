@@ -30,7 +30,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Veil";            MinMemGB = 2; Command = " --algo x16rt --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X17";             MinMemGB = 2; Command = " --algo x17 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16s";            MinMemGB = 2; Command = " --algo x16s --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "X16r";            MinMemGB = 2; Command = " --algo x16r --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "X16r";            MinMemGB = 2; Command = " --algo x16r --intensity 24" }
 #   [PSCustomObject]@{ Algorithm = "X16rv2";          MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "X16rt";           MinMemGB = 2; Command = " --algo x16rt --intensity 24" } #Profit very small
     [PSCustomObject]@{ Algorithm = "X21s";            MinMemGB = 2; Command = " --algo x21s --intensity 23" }
@@ -62,7 +62,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName = $Miner_Devices.Name
                         Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(if ($Variables.IsLocalAdmin -eq $true) { " --mt 2" }) --no-watchdog --gpu-report-interval 25 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ' ')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(if ($Variables.IsLocalAdmin -eq $true) { " --mt 2" }) --no-watchdog --gpu-report-interval 25 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Trex"
                         Port       = $MinerAPIPort
