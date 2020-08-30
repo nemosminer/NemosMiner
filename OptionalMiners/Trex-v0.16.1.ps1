@@ -16,8 +16,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Geek";            MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";       MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";       MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } 
-#   [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" } 
+#   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } #Profit very small
+#   [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" } #Profit very small
     [PSCustomObject]@{ Algorithm = "PadiHash";        MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";       MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";       MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
@@ -40,7 +40,7 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | Sort-Object $DeviceEnumerator | ForEach-Object { 
+    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
@@ -62,7 +62,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName = $Miner_Devices.Name
                         Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(if ($Variables.IsLocalAdmin -eq $true) { " --mt 2" }) --no-watchdog --gpu-report-interval 25 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" }) --no-watchdog --gpu-report-interval 25 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Trex"
                         Port       = $MinerAPIPort
