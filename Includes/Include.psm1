@@ -36,6 +36,7 @@ Class Device {
     [PSCustomObject]$PNP
     [PSCustomObject]$Reg
     [PSCustomObject]$CpuFeatures
+    [Double]$CUDAComputeCapability = 0
 
     [String]$Status = "Idle"
 
@@ -1279,6 +1280,7 @@ Function Read-Config {
         If (-not "$PoolConfig") { #https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
             If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json | ConvertFrom-Json }
         }
+        If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch ($PoolName) { 
@@ -1291,11 +1293,9 @@ Function Read-Config {
                 $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
             }
             "ProHashing" { 
-                If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
             }
             Default { 
-                If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
                 If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
             }
         }
@@ -2182,6 +2182,11 @@ Function Get-Device {
                         PlatformId            = [Int]$PlatformId
                         PlatformId_Index      = [Int]$PlatformId_Index.($PlatformId)
                         Type_PlatformId_Index = [Int]$Type_PlatformId_Index.($Device.Type).($PlatformId)
+                    }
+
+                    #CUDA Compatibility
+                    If ($_.AAAA) { 
+                        $Device | Add-Member CUDAComputeCapability ("$($_.AAAA).$($_.AAAA1)" -as [Double])
                     }
 
                     #Add raw data
