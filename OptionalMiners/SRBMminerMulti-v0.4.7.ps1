@@ -21,12 +21,12 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CpuPower";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";     Fee = 0.0085; Type = @("CPU"); Command = " --algorithm eaglesong" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm k12" }
-    [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = @("CPU"); Command = " --algorithm keccak" }
+#   [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = @("CPU"); Command = " --algorithm keccak" } #Profit very small
     [PSCustomObject]@{ Algorithm = "MTP";           Fee = 0;      Type = @("CPU"); Command = " --algorithm mtp" }
 #   [PSCustomObject]@{ Algorithm = "Rainforestv2";  Fee = 0.0085; Type = @("CPU"); Command = " --algorithm rainforestv2" }
-    [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomx --randomx-use-1gb-pages" }
+#   [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.2 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomarq --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomsfx --randomx-use-1gb-pages" } 
+#   [PSCustomObject]@{ Algorithm = "RandomxSfx";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomsfx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.2 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxWow";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomwow" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = "YescryptR8";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescryptr8" }
@@ -51,8 +51,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object {
-
-                If ($_.Algorithm -eq "Blake2b" -and $Pools.($_.Algorithm).Name -like "AHashPool*") { Return } 
 
                 $MinMemGB = $_.MinMemGB
 
