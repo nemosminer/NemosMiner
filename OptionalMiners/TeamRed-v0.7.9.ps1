@@ -23,7 +23,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.025; MinMemGB = 4.0; Command = " --algo=ethash" } #PhoenixMiner is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 2.0; Command = " --algo=kawpow" } #Wildrig-v0.25.2 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; Command = " --algo=lyra2rev3" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" } #Profit very small
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.025; MinMemGB = 4.0; Command = " --algo=mtp" }
     [PSCustomObject]@{ Algorithm = "Nimiq";                Fee = 0.025; MinMemGB = 4.0; Command = " --algo=nimiq" }
     [PSCustomObject]@{ Algorithm = "Phi2";                 Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=phi2" }
@@ -43,7 +43,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "MPH*") { Return }
+                If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH*") { Return }
 
                 $MinMemGB = $_.MinMemGB
 
