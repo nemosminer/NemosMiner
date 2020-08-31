@@ -4,10 +4,6 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v0.2.0/xmrig-upx-v0.2.0-win64.zip"
 
-$Commands = [PSCustomObject]@{ 
-    "CryptonightUpx" = " -a cryptonight-upx/2 --nicehash" #cryptonightupx
-}
-
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx"; Command = "-a cryptonight-upx/2" }
 )

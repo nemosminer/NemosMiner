@@ -11,7 +11,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Command = " --algo yescrypt" }
     [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; Command = " --algo yescryptr16 --intensity 13.2" }
     [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr32 --intensity 12.23" }
-#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr8" } #profit very small
+    [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr8" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

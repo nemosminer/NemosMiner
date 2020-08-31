@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.3/ttmi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; Command = " -algo EAGLESONG" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; Command = " -algo EAGLESONG" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH" } #PhoenixMiner-v5.1c is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";    MinMemGB = 2; Command = " -algo KAWPOW" }
 #   [PSCustomObject]@{ Algorithm = "MTP";       MinMemGB = 2; Command = " -algo MTP -i 21" } #CcminerMTP-v1.3.2 is faster

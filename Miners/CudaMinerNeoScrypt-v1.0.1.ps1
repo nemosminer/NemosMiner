@@ -6,7 +6,7 @@ $Uri = "https://github.com/ghostlander/cudaminer-neoscrypt/releases/download/v1.
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --intensity 16.999" } #Cryptodredge.23 is fastest
+    [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --intensity 16.999" } #Cryptodredge-v25.1 is fastest
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

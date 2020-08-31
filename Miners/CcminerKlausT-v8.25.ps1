@@ -6,10 +6,10 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; Command = " --algo c11 --intensity 22" } #CcminerAlexis78 is faster
-#   [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 2; Command = " --algo keccak --diff-multiplier 2 --intensity 29" } #Profit very small
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 2; Command = " --algo lyra2v2" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 2; Command = " --algo keccak --diff-multiplier 2 --intensity 29" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 2; Command = " --algo lyra2v2" }
 #   [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --algo neoscrypt --intensity 15.5" } #CryptoDredge is fastest
-#   [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 2; Command = " --algo skein" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 2; Command = " --algo skein" }
     [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; Command = " --algo veltor --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Whirlcoin"; MinMemGB = 2; Command = " --algo whirlcoin" }
     [PSCustomObject]@{ Algorithm = "Whirlpool"; MinMemGB = 2; Command = " --algo whirlpool" }
