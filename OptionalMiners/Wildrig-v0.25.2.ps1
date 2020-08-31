@@ -11,22 +11,22 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc";  Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo blake2b-btcc" }
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";   Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo blake2b-glt" }
 #   [PSCustomObject]@{ Algorithm = "Bmw512";       Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo bmw512" } #CcminerBmw512 is fastest
-    [PSCustomObject]@{ Algorithm = "Bitcore";      Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo bitcore" }
-    [PSCustomObject]@{ Algorithm = "C11";          Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo c11" }
+#   [PSCustomObject]@{ Algorithm = "Bitcore";      Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo bitcore" } #Profit very small
+#   [PSCustomObject]@{ Algorithm = "C11";          Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo c11" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "Dedal";        Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo dedal" } # CryptoDredge-v0.24 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";       Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo exosis" } 
     [PSCustomObject]@{ Algorithm = "Geek";         Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo geek" }
     [PSCustomObject]@{ Algorithm = "Hex";          Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo hex" }
 #   [PSCustomObject]@{ Algorithm = "Hmq1725";      Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo hmq1725" } #CryptoDredge-v0.24 is fastest
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo honeycomb" } #Algo broken
-    [PSCustomObject]@{ Algorithm = "JeongHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-jeonghash" }
+#   [PSCustomObject]@{ Algorithm = "JeongHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-jeonghash" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo kawpow" } #TeamRed-v0.7.9 is fastest
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo lyra2v3" } #TeamRed-v0.7.8 is fastest
     [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp" }
     [PSCustomObject]@{ Algorithm = "MTPTrc";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp-trc" }
-    [PSCustomObject]@{ Algorithm = "PadiHash";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-padihash" }
+#   [PSCustomObject]@{ Algorithm = "PadiHash";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-padihash" } #Profit very small
     [PSCustomObject]@{ Algorithm = "PawelHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-pawelhash" }
-    [PSCustomObject]@{ Algorithm = "Phi";          Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo phi" }
+#   [PSCustomObject]@{ Algorithm = "Phi";          Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo phi" } #Profit very small
     [PSCustomObject]@{ Algorithm = "Polytimos";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo polytimos" }
     [PSCustomObject]@{ Algorithm = "Sha256t";      Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo sha256t" }
     [PSCustomObject]@{ Algorithm = "Sha256q";      Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo sha256q" }
@@ -42,14 +42,14 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "X16s";         Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo x16s" } #Wildrig-v0.25.2 is fastest
     [PSCustomObject]@{ Algorithm = "X17";          Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X21s";         Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo x21s" } #TeamRed-v0.7.8 is fastest
-    [PSCustomObject]@{ Algorithm = "X22i";         Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo x22i" }
+#   [PSCustomObject]@{ Algorithm = "X22i";         Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo x22i" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "AstralHash";   Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-astralhash" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "BCD";          Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo bcd" } #Profit close to 0
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc";  Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo blake2b-btcc" }
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";   Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo blake2b-glt" }
 #   [PSCustomObject]@{ Algorithm = "Bmw512";       Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo bmw512" } #CcminerBmw512-v2.2.5 is fastest
-    [PSCustomObject]@{ Algorithm = "Bitcore";      Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo bitcore" }
-#   [PSCustomObject]@{ Algorithm = "C11";          Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo c11" } #CcminerAlexis78 is fastest
+#    [PSCustomObject]@{ Algorithm = "Bitcore";      Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo bitcore" } #Profit very small
+#   [PSCustomObject]@{ Algorithm = "C11";          Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo c11" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "Dedal";        Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo dedal" } #CryptoDredge-v0.24 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";       Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo exosis" }
     [PSCustomObject]@{ Algorithm = "Geek";         Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo geek" }
@@ -61,9 +61,9 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo lyra2v3" } #TeamRed-v0.7.8 is fastest
 #   [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo mtp" } #CryptoDredge-v0.24 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";       Fee = @(0.01); MinMemGB = 3; Type = "NVIDIA"; Command = " --algo mtp-trc" }
-#   [PSCustomObject]@{ Algorithm = "PadiHash";     Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-padihash" } #Trex-v0.15.8 is fastest
+#   [PSCustomObject]@{ Algorithm = "PadiHash";     Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-padihash" } #Profit very small
 #   [PSCustomObject]@{ Algorithm = "PawelHash";    Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo glt-pawelhash" } #Trex-v0.15.8 is fastest
-#   [PSCustomObject]@{ Algorithm = "Phi";          Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo phi" } #CryptoDredge-v0.16 is fastest
+#   [PSCustomObject]@{ Algorithm = "Phi";          Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo phi" } #Profit very small
     [PSCustomObject]@{ Algorithm = "Polytimos";    Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo polytimos" }
     [PSCustomObject]@{ Algorithm = "Sha256t";      Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo sha256t" }
     [PSCustomObject]@{ Algorithm = "Sha256q";      Fee = @(0.01); MinMemGB = 2; Type = "NVIDIA"; Command = " --algo sha256q" }
