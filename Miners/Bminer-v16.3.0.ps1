@@ -18,7 +18,7 @@ $Commands = [PSCustomObject[]]@(
  #  [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);    Protocol = @(" -uri cuckatoo31");                     Fee = @(0.01);      MinMemGB = 8; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);    Protocol = @(" -uri cuckatoo32");                     Fee = @(0.01);      MinMemGB = 7; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("Cuckoo29", $null);      Protocol = @(" -uri aeternity");                      Fee = @(0.01);      MinMemGB = 6; Type = "NVIDIA"; Command = " --fast 4" }
- #  [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);  Protocol = @(" -pers auto -uri equihash1445");        Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" } #MiniZ ist fastest
+ #  [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);  Protocol = @(" -pers auto -uri equihash1445");        Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" } #MiniZ-v1.6v5 ist fastest
  #  [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);   Protocol = @(" -uri zhash");                          Fee = @(0.02);      MinMemGB = 2; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("Ethash", $null);        Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4; Type = "NVIDIA"; Command = " --fast 4" }
  #  [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority");  Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " --fast 4" }
