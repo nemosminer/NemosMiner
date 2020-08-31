@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/1.6v5/miniZ_v1.6v5_cuda10_win-x64.7z"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/miniZ/miniZ_v1.6v6_cuda10_win-x64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -15,8 +15,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 3.0; Command = " --par=192,7 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 1.0; Command = " --par=210,9 --pers auto --ocX" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" } #GMiner-v2.20 is fastest
-    [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 1.0; Command = " --par=192,7 --pers ZcashPoW --ocX" } #GMiner-v2.20 is fastest
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" }
+    [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 2.0; Command = " --par=192,7 --pers ZcashPoW --ocX" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
