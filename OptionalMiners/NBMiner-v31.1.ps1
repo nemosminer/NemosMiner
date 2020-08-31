@@ -14,7 +14,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.01);       MinMemGB = 3;   MinMemGBWin10 = 3;   Type = "AMD";    Command = " --algo kawpow --fee 1" }
 
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.01);       MinMemGB = 5;   MinMemGBWin10 = 6;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo bfc --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooD29");         Fee = @(0.01);       MinMemGB = 4;   MinMemGBWin10 = 5;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckarood --fee 1" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooD29");         Fee = @(0.01);       MinMemGB = 4;   MinMemGBWin10 = 5;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckarood --fee 1" } #GMiner-v2.22 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29s");         Fee = @(0.01);       MinMemGB = 5;   MinMemGBWin10 = 6;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckaroo_swap --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Fee = @(0.01);       MinMemGB = 8;   MinMemGBWin10 = 10;  MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckatoo --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Fee = @(0.01);       MinMemGB = 8;   MinMemGBWin10 = 10;  MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckatoo32 --fee 1" }
