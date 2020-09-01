@@ -280,6 +280,6 @@
     "zec":  "Equihash",
     "ziftr":  "zr5",
     "zoin":  "Lyra2z330",
-    "zhash":  "EquihashBTG",
+    "zhash":  "Zhash",
     "zuikkis":  "Scrypt"
 }
