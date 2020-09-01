@@ -167,11 +167,10 @@ function formatBTC(value) {
 };
 
 function formatDate(value) {
-  if (value == "Unknown") {
-    return "N/A"
-  } else {
-    return (new Date(value).toLocaleString(navigator.language));
-  }
+  if (Date.parse(value )) { return (new Date(value).toLocaleString(navigator.language)) };
+  if (value == "Unknown") { return "N/A" }
+  if (value == null) { return "N/A" }
+  return value;
 };
 
 function formatWatt(value) {
