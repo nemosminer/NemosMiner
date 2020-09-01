@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.16.1/t-rex-0.16.1-win-cuda10.0.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.16.2/t-rex-0.16.2-win-cuda10.0.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
@@ -10,14 +10,14 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Balloon";         MinMemGB = 2; Command = " --algo balloon --intensity 23" }
     [PSCustomObject]@{ Algorithm = "BCD";             MinMemGB = 2; Command = " --algo bcd --intensity 24" }
 #   [PSCustomObject]@{ Algorithm = "BitcoinInterest"; MinMemGB = 2; Command = " --algo progpow --coin BCI --intensity 21" } #Does not work
-#   [PSCustomObject]@{ Algorithm = "Bitcore";         MinMemGB = 2; Command = " --algo bitcore --intensity 25" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Bitcore";         MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";             MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";           MinMemGB = 2; Command = " --algo dedal --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Geek";            MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";       MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";       MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } #Profit very small
-#   [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "PadiHash";        MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";       MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";       MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
@@ -31,8 +31,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X17";             MinMemGB = 2; Command = " --algo x17 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16s";            MinMemGB = 2; Command = " --algo x16s --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16r";            MinMemGB = 2; Command = " --algo x16r --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "X16rv2";          MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" } #Profit very small
-#   [PSCustomObject]@{ Algorithm = "X16rt";           MinMemGB = 2; Command = " --algo x16rt --intensity 24" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "X16rv2";          MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "X16rt";           MinMemGB = 2; Command = " --algo x16rt --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X21s";            MinMemGB = 2; Command = " --algo x21s --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X22i";            MinMemGB = 2; Command = " --algo x22i --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X25x";            MinMemGB = 2; Command = " --algo x25x --intensity 21" }
