@@ -145,7 +145,7 @@ Class Miner {
     [Double]$PowerUsage
     [Double]$PowerUsage_Live
     [Double]$PowerCost
-    [Boolean]$ReadPowerUsage = $false
+    [Boolean]$CalculatePowerCost = $false
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
 
@@ -593,7 +593,7 @@ Class Miner {
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
-        If ($this.ReadPowerUsage) { 
+        If ($this.CalculatePowerCost) { 
             If ($Stat = Get-Stat "$($this.Name)$(If ($this.Algorithm.Count -eq 1) { "_$($this.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
                 $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
@@ -1172,8 +1172,14 @@ Function Update-Monitoring {
 }
 
 Function Start-Mining { 
+
+    #Load algorithm list
+    $Variables.Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
+    #Load regions list
+    $Variables.Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
+
     If (-not $Variables.CoreRunspace) { 
-        $Variables | Add-Member -Force @{ LastDonated = (Get-Date).AddDays(-1).AddHours(1) }
+        $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
         $Variables.Miners = $null
 
         $CoreRunspace = [RunspaceFactory]::CreateRunspace()
@@ -1638,7 +1644,7 @@ Function Get-CommandPerDevice {
     $CommandPerDevice
 }
 
-Function Get-ChildItemContentJob { 
+Function Get-ChildItemContent { 
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
@@ -1652,9 +1658,9 @@ Function Get-ChildItemContentJob {
     )
 
     $DefaultPriority = ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass
-    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority } Else { $Priority = $DefaultPriority}
+    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority } Else { $Priority = $DefaultPriority }
 
-    $Job = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name (($Path -replace '[^A-Za-z0-9-\\]', '') -replace '\\', '-') -ScriptBlock { 
+    $ScriptBlock = { 
         Param(
             [Parameter(Mandatory = $true)]
             [String]$Path, 
@@ -1687,6 +1693,7 @@ Function Get-ChildItemContentJob {
             If ($_.Extension -eq ".ps1") { 
                 $Content = & { 
                     If ($Parameters.Count) { 
+                        $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
                         & $_.FullName @Parameters
                     }
                     Else { 
@@ -1710,71 +1717,21 @@ Function Get-ChildItemContentJob {
                 [PSCustomObject]@{ Name = $Name; Content = $_ }
             }
         }
-    } -ArgumentList $Path, $Parameters, $Priority
-
-    If ($Threaded) { $Job }
-    Else { $Job | Receive-Job -Wait -AutoRemoveJob }
-
-    ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $DefaultPriority
-}
-
-Function Get-ChildItemContent { 
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$Path, 
-        [Parameter(Mandatory = $false)]
-        [Hashtable]$Parameters = @{}, 
-        [Parameter(Mandatory = $false)]
-        [Switch]$Threaded = $false, 
-        [Parameter(Mandatory = $false)]
-        [String]$Priority
-    )
-
-    Function Invoke-ExpressionRecursive ($Expression) { 
-        If ($Expression -is [String]) { 
-            If ($Expression -match '\$') { 
-                Try {$Expression = Invoke-Expression $Expression}
-                Catch {$Expression = Invoke-Expression "`"$Expression`""}
-            }
-        }
-        ElseIf ($Expression -is [PSCustomObject]) { 
-            $Expression | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-                $Expression.$_ = Invoke-ExpressionRecursive $Expression.$_
-            }
-        }
-        Return $Expression
     }
 
-    Get-ChildItem $Path -File -ErrorAction SilentlyContinue | ForEach-Object { 
-        $Name = $_.BaseName
-        $Content = @()
-        If ($_.Extension -eq ".ps1") { 
-            $Content = & { 
-                If ($Parameters.Count) { 
-                    $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-                    & $_.FullName @Parameters
-                }
-                Else { 
-                    & $_.FullName
-                }
-            }
-        }
-        Else { 
-            $Content = & { 
-                $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-                Try { 
-                    ($_ | Get-Content | ConvertFrom-Json) | ForEach-Object {Invoke-ExpressionRecursive $_}
-                }
-                Catch [ArgumentException] { 
-                    $null
-                }
-            }
-            If ($null -eq $Content) { $Content = $_ | Get-Content }
-        }
-        $Content | ForEach-Object { 
-            [PSCustomObject]@{ Name = $Name; Content = $_ }
-        }
+    If ($Threaded) { 
+        $PowerShell = [PowerShell]::Create().AddScript($ScriptBlock)
+        [Void]$PowerShell.AddArgument($Path)
+        [Void]$PowerShell.AddArgument($Parameters)
+        [Void]$PowerShell.AddArgument($Priority)
+
+        $Job = $PowerShell.BeginInvoke()
+        $PowerShell | Add-Member Job $Job
+
+        Return $PowerShell
+    }
+    Else { 
+        Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
     }
 }
 
@@ -2054,32 +2011,52 @@ Function Get-Device {
             Get-CimInstance CIM_VideoController | ForEach-Object { 
                 $Device_CIM = $_ | ConvertTo-Json | ConvertFrom-Json
 
-                $Device_PNP = [PSCustomObject]@{ }
-                Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
-                $Device_PNP = $Device_PNP | ConvertTo-Json | ConvertFrom-Json
+                If ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { 
+                    $Device_PNP = [PSCustomObject]@{ }
+                    Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
+                    $Device_PNP = $Device_PNP | ConvertTo-Json | ConvertFrom-Json
 
-                $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json | ConvertFrom-Json
+                    $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json | ConvertFrom-Json
 
-                #Add normalised values
-                $Variables.Devices += $Device = [PSCustomObject]@{ 
-                    Name   = $null
-                    Model  = $Device_CIM.Name
-                    Type   = "GPU"
-                    Bus    = $(
-                        If ($Device_PNP.DEVPKEY_Device_BusNumber -is [Int64] -or $Device_PNP.DEVPKEY_Device_BusNumber -is [Int32]) { 
-                            [Int64]$Device_PNP.DEVPKEY_Device_BusNumber
-                        }
-                    )
-                    Vendor = $(
-                        Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
-                            "Advanced Micro Devices" { "AMD" }
-                            "Intel" { "INTEL" }
-                            "NVIDIA" { "NVIDIA" }
-                            "AMD" { "AMD" }
-                            Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
-                        }
-                    )
-                    Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                    #Add normalised values
+                    $Variables.Devices += $Device = [PSCustomObject]@{ 
+                        Name   = $null
+                        Model  = $Device_CIM.Name
+                        Type   = "GPU"
+                        Bus    = $(
+                            If ($Device_PNP.DEVPKEY_Device_BusNumber -is [Int64] -or $Device_PNP.DEVPKEY_Device_BusNumber -is [Int32]) { 
+                                [Int64]$Device_PNP.DEVPKEY_Device_BusNumber
+                            }
+                        )
+                        Vendor = $(
+                            Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
+                                "Advanced Micro Devices" { "AMD" }
+                                "Intel" { "INTEL" }
+                                "NVIDIA" { "NVIDIA" }
+                                "AMD" { "AMD" }
+                                Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
+                            }
+                        )
+                        Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                    }
+                }
+                Else { 
+                    #Add normalised values
+                    $Variables.Devices += $Device = [PSCustomObject]@{ 
+                        Name   = $null
+                        Model  = $Device_CIM.Name
+                        Type   = "GPU"
+                        Vendor = $(
+                            Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
+                                "Advanced Micro Devices" { "AMD" }
+                                "Intel" { "INTEL" }
+                                "NVIDIA" { "NVIDIA" }
+                                "AMD" { "AMD" }
+                                Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' }
+                            }
+                        )
+                        Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                    }
                 }
 
                 $Device | Add-Member @{ 
@@ -2349,7 +2326,7 @@ function Start-SubProcess {
         [String[]]$EnvBlock
     )
 
-    If ($EnvBlock) { $EnvBlock | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force } }
+    $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
 
     $ScriptBlock = "Set-Location '$WorkingDirectory'; (Get-Process -Id `$PID).PriorityClass = '$(@{-2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime"}[$Priority])'; "
     $ScriptBlock += "& '$FilePath'"
@@ -2379,9 +2356,9 @@ function Start-SubProcessWithoutStealingFocus {
         [String[]]$EnvBlock
     )
 
-    $PriorityNames = [PSCustomObject]@{-2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
+    $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
 
-    If ($EnvBlock) { $EnvBlock | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force } }
+    $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
 
     $Job = Start-Job -ArgumentList $PID, (Resolve-Path ".\Includes\CreateProcess.cs"), $FilePath, $ArgumentList, $WorkingDirectory, $MinerVisibility, $EnvBlock { 
         Param($ControllerProcessID, $CreateProcessPath, $FilePath, $ArgumentList, $WorkingDirectory, $MinerVisibility, $EnvBlock)
@@ -2423,7 +2400,7 @@ function Start-SubProcessWithoutStealingFocus {
 
         $Process = Get-Process -Id $lpProcessInformation.dwProcessId
         If ($null -eq $Process) { 
-            [PSCustomObject]@{ProcessId = $null }
+            [PSCustomObject]@{ ProcessId = $null }
             Return
         }
 
@@ -2432,7 +2409,7 @@ function Start-SubProcessWithoutStealingFocus {
         $ControllerProcess.Handle | Out-Null
         $Process.Handle | Out-Null
 
-        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(500)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
 
@@ -2578,7 +2555,7 @@ Function Initialize-Autoupdate {
                 Return
             }
 
-            # Pre update specific actions If any
+            # Pre update specific actions if any
             # Use PreUpdateActions.ps1 in new release to place code
             If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1" -PathType Leaf) { 
                 Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
@@ -2595,16 +2572,16 @@ Function Initialize-Autoupdate {
             Write-Message "Copying files..."
             Copy-Item .\$UpdateFileName\* .\ -force -Recurse
 
-            # Remove any obsolete Optional miner file (ie. Not in new version OptionalMiners)
+            # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
             Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
-            # Update Optional Miners to Miners If in use
+            # Update Optional Miners to Miners if in use
             Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
 
-            # Remove any obsolete miner file (ie. Not in new version Miners or OptionalMiners)
+            # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
             Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
-            # Post update specific actions If any
+            # Post update specific actions if any
             # Use PostUpdateActions.ps1 in new release to place code
             If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1" -PathType Leaf) { 
                 Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
