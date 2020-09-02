@@ -5,7 +5,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.8/ccminerGPU38.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
-[PSCustomObject[]]@(
+$Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "VerusHash"; MinMemGB = 2; Command = " --algo verus --intensity 21" }
 )
 

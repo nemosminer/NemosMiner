@@ -7,14 +7,14 @@ $DeviceEnumerator = "Type_Slot"
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 16; Type = "AMD"; Fee = 0.02; Command = "Cuckaroo30" } #Cortex #No pool
-#   [PSCustomObject]@{ Algorithm = "Ethash";        MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";        MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";        MinMemGB = 3;  Type = "AMD"; Fee = 0.02; Command = "Kawpow" } #TeamRed-v0.7.9 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ubqhash" }
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0.05; Command = "RandomHash2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Command = "RandomX" } #XmRigCpu-v6.3.1 is fastest
 
-#   [PSCustomObject]@{ Algorithm = "Ethash";  MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";  MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" } #Trex-v0.16.1 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash"; MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ubqhash" }
 )

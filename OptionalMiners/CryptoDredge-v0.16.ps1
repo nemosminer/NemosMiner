@@ -6,11 +6,11 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/Cryp
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; Command = " --algo=allium --intensity 8" } # CryptoDredge v0.23 ist fastest
+#   [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; Command = " --algo=allium --intensity 8" } # CryptoDredge v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; Command = " --algo=exosis --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; Command = " --algo=dedal --intensity 8" }
-#   [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; Command = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.23 ist fastest
-#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; Command = " --algo=neoscrypt --intensity 6 " } #Cryptodredge v0.23 is fastest
+#   [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; Command = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; Command = " --algo=neoscrypt --intensity 6 " } #Cryptodredge v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; Command = " --algo=phi --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; Command = " --algo=pipe --intensity 8" }

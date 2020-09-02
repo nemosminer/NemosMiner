@@ -31,7 +31,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Tensority", "Ethash"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.1; Type = "NVIDIA"; Command = " --algo tensority_ethash --fee 1" }
 )
 
-If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $Pools.($_.Algorithm[1]).Host) }) { 
+If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($PoolsSecondaryAlgorithm.($_.Algorithm[0]).Host -and $Pools.($_.Algorithm[1]).Host) }) { 
 
     #Intensities for 2. algorithm
     $Intensities2 = [PSCustomObject]@{ 

@@ -9,7 +9,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Blake2b";      MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm blake2b" } #Bad shares
-#   [PSCustomObject]@{ Algorithm = "Blake2s";      MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm blake2s" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Blake2s";      MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";   MinMemGb = 1; Fee = 0.0085; Type = @("AMD"); Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Keccak";       MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "MTP";          MinMemGb = 3; Fee = 0;      Type = @("AMD"); Command = " --algorithm mtp" }
@@ -17,11 +17,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yescrypt";     MinMemGb = 1; Fee = 0.0085; Type = @("AMD"); Command = " --algorithm yescrypt" }
 
 #   [PSCustomObject]@{ Algorithm = "Blake2b";       Fee = 0;      Type = @("CPU"); Command = " --algorithm blake2b" } #Bad shares
-#   [PSCustomObject]@{ Algorithm = "Blake2s";       Fee = 0;      Type = @("CPU"); Command = " --algorithm blake2s" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Blake2s";       Fee = 0;      Type = @("CPU"); Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "CpuPower";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";     Fee = 0.0085; Type = @("CPU"); Command = " --algorithm eaglesong" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm k12" }
-#   [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = @("CPU"); Command = " --algorithm keccak" } #Profit very small
+    [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = @("CPU"); Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "MTP";           Fee = 0;      Type = @("CPU"); Command = " --algorithm mtp" }
 #   [PSCustomObject]@{ Algorithm = "Rainforestv2";  Fee = 0.0085; Type = @("CPU"); Command = " --algorithm rainforestv2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.2 is fastest

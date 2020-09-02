@@ -56,7 +56,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     Path       = $Path
                     Arguments  = ("$($_.Command)$(If ($Pools.($_.Algorithm).Name -eq "NiceHash") { " --nicehash" } )$(If ($Pools.($_.Algorithm).SSL) { " --tls" } ) --url=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user=$($Pools.($_.Algorithm).User) --pass=$($Pools.($_.Algorithm).Pass) --threads=$($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --http-enabled --http-host=127.0.0.1  --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --donate-level 0 --retries=90 --retry-pause=1" -replace "\s+", " ").trim()
                     Algorithm  = $_.Algorithm
-                    API        = "XMRig"
+                    API        = "XmRig"
                     Port       = $MinerAPIPort
                     URI        = $Uri
                     WarmupTime = 90 #seconds
