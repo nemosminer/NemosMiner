@@ -18,28 +18,28 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C32" }
-#   [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO144_5" } #GMiner-v2.21 is fastest
-#   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO192_7" } #GMiner-v2.21 is fastest
+#   [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO144_5" } #GMiner-v2.22 is fastest
+#   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO192_7" } #GMiner-v2.22 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash2109";  MinMemGB = 2.0; Type = "AMD"; Fee = "0.01";  Command = " --algo EQUI210_9" }
-#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin BTG" } #MiniZ-v2.21 is fastest
+#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin BTG" } #MiniZ-v1.6v6 is fastest
     [PSCustomObject]@{ Algorithm = "EquihashZCL";   MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin ZCL" }
 
     [PSCustomObject]@{ Algorithm = "Beam";          MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-I" }
     [PSCustomObject]@{ Algorithm = "BeamV2";        MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-II" }
-#   [PSCustomObject]@{ Algorithm = "BeamV3";        MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-III" } #Gminer-v2.21 is fatest
+#   [PSCustomObject]@{ Algorithm = "BeamV3";        MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo BEAM-III" } #Gminer-v2.22 is fastest
 #   [PSCustomObject]@{ Algorithm = "Cuckoo29";      MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo2948";  MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo CR29-48" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 8.0; Type = "NVIDIA"; Fee = "0.025"; Command = " --algo C30CTX" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29D" } #GMiner-v2.21 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29D" } #GMiner-v2.22 is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C32" }
-#   [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin AUTO144_5" } #Bminer-v16.2.12 is fastest
+#   [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin AUTO144_5" } #Bminer-v16.3.10 is fastest
 #   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin AUTO192_7" } #MiniZ-v1.6v6 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash2109";  MinMemGB = 2.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --algo EQUI210_9" }
-#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin BTG" } #GMiner-v2.21 is fastest
+#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin BTG" } #GMiner-v2.22 is fastest
 #   [PSCustomObject]@{ Algorithm = "EquihashZCL";   MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin ZCL" } #MiniZ-v1.6v6 is fastest
 )
 
@@ -55,7 +55,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and ([System.Environment]::OSVersion.Version -ge "10.0.0.0")) { $MinMemGB += 1 }
+                If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0")) { $MinMemGB += 1 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
