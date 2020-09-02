@@ -89,14 +89,14 @@
             <div title="NemosMiner will prefer pools from the selected region" id="Regions"></div>
           </fieldset>
         </div>
-        <br><br>
-
+        <br>
         <input title="Calculate power cost, required for true profit calculation &#10;Requires extra configuration of HWiNFO64 (See ConfigHWinfo64.pdf)" type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost" title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)">
         <label title="Calculate power cost, required for true profit calculation &#10;Requires extra configuration of HWiNFO64 (See ConfigHWinfo64.pdf)" for="CalculatePowerCost" >Calculate Power Cost</label>
         <br>
         <label title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: 0.26 USD per kW/h  &#10;from noon to midnight USD 0.30 per kW/h' for="PowerPricekWh">PowerPrice per kW/h </label>
-        <input type="text" id="PowerPricekWh" name="PowerPricekWh" title='Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: USD 0.26 per kW/h  &#10;from noon to midnight USD 0.30 per kW/h' size=32>
+        <input type="text" id="PowerPricekWh" name="PowerPricekWh" title='Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: USD 0.26 per kW/h  &#10;from noon to midnight USD 0.30 per kW/h' size=24>
       </td>
+
       <td>
         <div class="col-md-12">
           <fieldset>
@@ -142,8 +142,8 @@
           <input type="checkbox" id="HideMinerWindows" name="HideMinerWindows" title="Miners will run as a hidden background task. Not recommended!">
           <label for="HideMinerWindows" title="Miners will run as a hidden background task. Not recommended!">Hide Miner Windows</label>
           <br><br>
-          <input type="checkbox" id="Watchdog" name="Watchdog" title="Enable Watchdog to suspend failing Pools or miners for some cycles">
-          <label for="Watchdog" title="Enable Watchdog to suspend failing Pools or miners for some cycles">Watchdog</label>
+          <input type="checkbox" id="Watchdog" name="Watchdog" title="Enable Watchdog to suspend failing pools or miners for some cycles">
+          <label for="Watchdog" title="Enable Watchdog to suspend failing pools or miners for some cycles">Watchdog</label>
           <br>
           <label for="WatchdogMinerAlgorithmCount" title="Number of Watchdog timers with same miner name & Algorithm until miner/algo combination gets suspended" style="margin-left:20px">Watchdog (Miner & Algorithm) Count</label>
           <input title="Number of Watchdog timers with same miner name & Algorithm until miner/algo combination gets suspended" type="number" id="WatchdogMinerAlgorithmCount" name="WatchdogMinerAlgorithmCount" min="0" max="10" value=3>
