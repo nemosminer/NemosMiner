@@ -6,17 +6,21 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 
 Fixed:
-  WDDM Device detection under Windows 7 & Windows 8.1
+- WDDM Device detection under Windows 7 & Windows 8.1
+
+Improved:
+- Faster loading of pool & miner data, even when running CPU miners
 
 Added:
-- UnprofitableAlgorithm list
+- UnprofitableAlgorithm list (".\Includes\UnprofitableAlgorithms.txt")
   Syntax:
   "*:[AlgorithmName]" = Algo is unprofitable as primary AND secondary algorithm
   "1:[AlgorithmName]" = Algo is unprofitable as primary algorithm, but profitable as secondary algorithm
   "2:[AlgorithmName]" = Algo is unprofitable as secondary algorithm, but profitable as primary algorithm
+- NBMiner: Support for 'DisableMinerFees' parameter (0% Fee)
 
 Known Issues:
-- NiceHash balances not working (t.b.d)
+- NiceHash balances not working (t.b.d.)
 - BalancesTracker reporting incorrect data (t.b.d.)
 
 Changelog NemosMiner 29.08.2020
