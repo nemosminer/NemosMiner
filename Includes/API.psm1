@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.1
-version date:   25 August 2020
+version:        3.9.9.3
+version date:   29 August 2020
 #>
 
 Function Start-APIServer { 
@@ -39,7 +39,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.2.9.1"
+    $APIVersion = "0.2.9.3"
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -122,10 +122,60 @@ Function Start-APIServer {
                         }
                         Break
                     }
+                    "/functions/config/device/disable" { 
+                        $Parameters.Keys | ForEach-Object {
+                            $Key = $_
+                            If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
+                
+                                $Data = "`nDevice configuration changed`n`nOld values:"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
+                                $Data += "`n`nNew values:"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
+                                Write-Config -ConfigFile $Variables.ConfigFile
+                                $Values | ForEach-Object { 
+                                    $DeviceName = $_
+                                    $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
+                                        $_.State = [DeviceState]::Disabled
+                                        $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
+                                        If ($_.Status -EQ [DeviceState]::Running) { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
+                                    }
+                                }
+                                Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
+                            }
+                            Else { 
+                                $Data = "No configuration change"
+                            }
+                        }
+                        $Data = "<pre>$Data</pre>"
+                        Break
+                    }
+                    "/functions/config/device/enable" { 
+                        $Parameters.Keys | ForEach-Object {
+                            $Key = $_
+                            If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -in $Config.ExcludeDeviceName })) { 
+                                $Data = "`nDevice configuration changed`n`nOld values:"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Values } | Sort-Object -Unique)
+                                $Data += "`n`nNew values:"
+                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
+                                Write-Config -ConfigFile $Variables.ConfigFile
+                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                                Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
+                            }
+                            Else {
+                                $Data = "No configuration change"
+                            }
+                        }
+                        $Data = "<pre>$Data</pre>"
+                        Break
+                    }
                     "/functions/config/set" { 
                         Try { 
                             Set-Content -Path $Variables.ConfigFile -Value ($Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json) -Encoding UTF8 #Out-File produces emtpy {} file
-                            # $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                            Read-Config
                             $Variables.RestartCycle = $true
                             $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
                         }
@@ -134,6 +184,13 @@ Function Start-APIServer {
                         }
                         Break
                     }
+                    # "/functions/log/clear" { 
+                    #     If ($Parameters.Path) { 
+                    #         Get-ChildItem $Parameters.Path | Remove-Item -Force
+                    #         $Data = "<pre>Log ($Parameters.Path) cleared.</pre>"
+                    #     }
+                    #     Break
+                    # }
                     "/functions/log/get" { 
                         If ([Int]$Parameters.Lines) { 
                             $Lines = [Int]$Parameters.Lines
@@ -145,7 +202,9 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/mining/getstatus" { 
-                        $Data = ConvertTo-Json ($Variables.MiningStatus)
+                        If ($Variables.MiningStatus -eq $Variables.NewMiningStatus) { 
+                            $Data = ConvertTo-Json ($Variables.MiningStatus)
+                        }
                         Break
                     }
                     "/functions/mining/pause" { 
@@ -175,13 +234,6 @@ Function Start-APIServer {
                         If ($Variables.MiningStatus -eq "Running") { $Data += "`nMining stopped." }
                         $Data += "`nStopped Balances Tracker and Brain jobs."
                         $Data = "<pre>$Data</pre>"
-                        Break
-                    }
-                    "/functions/log/clear" { 
-                        If ($Parameters.Path) { 
-                            #Get-ChildItem $Parameters.Path | Remove-Item -Force
-                            $Data = "<pre>Log ($Parameters.Path) cleared.</pre>"
-                        }
                         Break
                     }
                     "/functions/stat/get" { 
@@ -319,56 +371,6 @@ Function Start-APIServer {
                             Break
                         }
                     }
-                    "/functions/config/device/disable" { 
-                        $Parameters.Keys | ForEach-Object {
-                            $Key = $_
-                            If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
-                
-                                $Data = "`nDevice configuration changed`n`nOld values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
-                                $Data += "`n`nNew values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                Write-Config -ConfigFile $Variables.ConfigFile
-                                $Values | ForEach-Object { 
-                                    $DeviceName = $_
-                                    $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
-                                        $_.State = [DeviceState]::Disabled
-                                        $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
-                                        If ($_.Status -EQ [DeviceState]::Running) { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
-                                    }
-                                }
-                                Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
-                            }
-                            Else { 
-                                $Data = "No configuration change"
-                            }
-                        }
-                        $Data = "<pre>$Data</pre>"
-                        Break
-                    }
-                    "/functions/config/device/enable" { 
-                        $Parameters.Keys | ForEach-Object {
-                            $Key = $_
-                            If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -in $Config.ExcludeDeviceName })) { 
-                                $Data = "`nDevice configuration changed`n`nOld values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Values } | Sort-Object -Unique)
-                                $Data += "`n`nNew values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                Write-Config -ConfigFile $Variables.ConfigFile
-                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
-                                Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
-                            }
-                            Else {
-                                $Data = "No configuration change"
-                            }
-                        }
-                        $Data = "<pre>$Data</pre>"
-                        Break
-                    }
                     "/functions/switchinglog/clear" { 
                         Get-ChildItem ".\Logs\switching2.log" | Remove-Item -Force
                         $Data = "<pre>Switching log cleared.</pre>"
@@ -380,8 +382,8 @@ Function Start-APIServer {
                         $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }
-                    "/allrates" { 
-                        $Data = ConvertTo-Json ($Variables.Rates | Select-Object)
+                    "/algorithms" { 
+                        $Data =ConvertTo-Json @($Variables.Algorithms | Select-Object)
                         Break
                     }
                     "/apiversion" { 
@@ -413,7 +415,7 @@ Function Start-APIServer {
                         break
                     }
                     "/currencies" { 
-                        $Data = $Config.Currencies | ConvertTo-Json -Depth 10
+                        $Data = $Config.Currency | ConvertTo-Json -Depth 10
                         break
                     }
                     "/devices" { 
@@ -443,7 +445,7 @@ Function Start-APIServer {
                     "/earningschartdata" { 
                         $ChartData = Get-Content ".\Logs\EarningsChartData.json" | ConvertFrom-Json
                         #Add BTC rate to avoid blocking NaN errors
-                        $ChartData | Add-Member BTCrate ([Double]($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
+                        $ChartData | Add-Member BTCrate ([Double]($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)))
                         $Data = $ChartData | ConvertTo-Json
                         Break
                     }
@@ -532,19 +534,11 @@ Function Start-APIServer {
                         Break
                     }
                     "/rates" { 
-                        $Rates = ($Variables.Rates | ConvertTo-Json | ConvertFrom-Json)
-                        $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin @(@($Config.Currency) + @("BTC")) } | ForEach-Object { 
-                            $Rates.PSObject.Properties.remove($_)
-                        }
-                        $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
-                            $Currency = $_
-                            $Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -notin @($Config.Currency) } | ForEach-Object { $Rates.$Currency.PSObject.Properties.remove($_) }
-                        }
-                        $Data = ConvertTo-Json ($Rates | Select-Object)
+                        $Data = ConvertTo-Json ($Variables.Rates | Select-Object)
                         Break
                     }
                     "/regions" { 
-                        $Data = ConvertTo-Json ((Get-Content .\Includes\Regions.txt | ConvertFrom-Json).PSObject.Properties.Value | Sort-Object -Unique)
+                        $Data = ConvertTo-Json @($Variables.Regions.PSObject.Properties.Value | Sort-Object -Unique)
                         Break
                     }
                     "/stats" { 
@@ -557,6 +551,10 @@ Function Start-APIServer {
                     }
                     "/switchinglog" { 
                         $Data = ConvertTo-Json -Depth 10 @(Get-Content ".\Logs\switching2.log" | ConvertFrom-Csv | Select-Object -Last 1000)
+                        Break
+                    }
+                    "/unprofitablealgorithms" { 
+                        $Data = ConvertTo-Json @($Variables.UnprofitableAlgorithms | Select-Object)
                         Break
                     }
                     "/watchdogtimers" { 
