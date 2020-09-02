@@ -66,7 +66,7 @@ While ($true) {
 
         Write-Message "Requesting balances data ($(($PoolAPI.Name | Where-Object { $_ -in $PoolsToTrack }) -join ', '))."
 
-        $PoolsToTrack | ForEach-Object { 
+        $PoolsToTrack | Where { $_ -notmatch "^NiceHash*|^ProHashing*"} | ForEach-Object { 
             $Pool = $_
             $PoolNorm = $_ -replace "24hr" -replace "Coins"
             $API = $PoolAPI | Where-Object Name -EQ $PoolNorm
@@ -289,7 +289,7 @@ While ($true) {
                     Catch { }
                 }
             }
-            If ($BalanceData.$TotalJson -gt 0) { 
+            If ($BalanceData-PSObject.Properties.Count -gt 0) { 
                 $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
                     Pool         = $PoolNorm
                     DateTime     = $Now
@@ -301,7 +301,7 @@ While ($true) {
                     Currency     = $PoolConfig.PayoutCurrency
                 }
 
-                $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolNorm | Sort-Object Date)
+                $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolNorm | Where-Object Currency -EQ $PoolConfig.PayoutCurrency | Sort-Object Date)
 
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes) -eq 0) { $Now = $Now.AddMinutes(1) }
 
@@ -405,7 +405,10 @@ While ($true) {
             }
         }
 
-        $Variables.Earnings = $Variables.Earnings | Sort-Object Pools
+        #Always keep pools sorted, even when new pools were added
+        $TempEarnings = $Variables.Earnings
+        $Variables.Earnings = [Ordered]@{ }
+        $TempEarnings.Keys | Sort-Object | ForEach-Object { $Variables.Earnings.$_ = $TempEarnings.$_ }
 
         $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
 
@@ -445,7 +448,7 @@ While ($true) {
 
     }
 
-    # Sleep until next update (at least 3 minutes)
+    # Sleep until next update (at least 1 minute)
     Start-Sleep -Seconds (60 * (1, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum)
 }
 
