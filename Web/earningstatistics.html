@@ -28,17 +28,23 @@
       options: {
         legend: {
           labels: {
-            fontSize: 16
+            fontColor: 'black',
+            fontSize: 18
           }
         },
         scales: {
           xAxes: [{
+            ticks: {
+              fontColor: 'black',
+              fontSize: 16
+            },
             stacked: true
           }],
           yAxes: [{
             stacked: true,
             ticks: {
-              fontSize: 14
+              fontColor: 'black',
+              fontSize: 16
             }
           }]
         },
@@ -46,6 +52,7 @@
           display: true,
           fontSize: 32,
           fontStyle: 'normal',
+          fontColor: 'black',
           text: 'Mining Earnings in ' + currency
         },
         tooltips: {
