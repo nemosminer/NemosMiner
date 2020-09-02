@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.2
+Version:        3.9.9.4
 Version date:   10 August 2020
 #>
 
@@ -43,6 +43,8 @@ param(
     [Parameter(Mandatory = $false)]
     [UInt16]$BalancesTrackerPollInterval = 15, #minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
     [Parameter(Mandatory = $false)]
+    [Switch]$CalculatePowerCost = $true, #If true, power usage will be read from miners and calculate power cost, required for true profit calculation
+    [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\Config.json", #Config file name
     [Parameter(Mandatory = $false)]
     [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
@@ -50,6 +52,8 @@ param(
     [Int]$Delay = 1, #seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
     [Switch]$DisableMinerFees = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
+    [Parameter(Mandatory = $false)]
+    [Switch]$DisableMinersWithFees = $false, #Set to true to disable all miners which contain fees
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
@@ -88,7 +92,7 @@ param(
     [ValidateRange(0, 1)]
     [Double]$MinAccuracy = 0.5, #Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
     [Parameter(Mandatory = $false)]
-    [Int]$MinDataSamples = 45, #Minimum number of hash rate samples required to store hash rate
+    [Int]$MinDataSamples = 20, #Minimum number of hash rate samples required to store hash rate
     [Parameter(Mandatory = $false)]
     [Hashtable]$MinDataSamplesAlgoMultiplier = [Hashtable]@{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
@@ -128,7 +132,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$PoolTimeout = 30, #Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get any pool data
     [Parameter(Mandatory = $false)]
-    [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
+    [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
     [Double]$PricePenaltyFactor = 1, #Estimated profit as projected by pool will be multiplied by this facator. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
@@ -139,8 +143,6 @@ param(
     [String]$ProHashingUserName = "nemos", #ProHashing UserName, if left empty then $UserName is used
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", #i.e http://192.0.0.1:8080
-    [Parameter(Mandatory = $false)]
-    [Switch]$ReadPowerUsage = $true, #If true, power usage will be read from miners, required for true profit calculation
     [Parameter(Mandatory = $false)]
     [String]$Region = "Europe", #Used to determine pool nearest to you. Valid values are: Europe, US or Asia
     [Parameter(Mandatory = $false)]
@@ -190,7 +192,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
-    [Int]$WarmupTime = 90, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
+    [Int]$WarmupTime = 30, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
     [Parameter(Mandatory = $false)]
     [Switch]$Watchdog = $true, #if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
     [Parameter(Mandatory = $false)]
@@ -216,7 +218,7 @@ This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 "@
-Write-Host "Copyright and license notices must be preserved." -F Yellow
+Write-Host "`nCopyright and license notices must be preserved.`n" -F Yellow
 
 # Load Branding
 $Global:Branding = [PSCustomObject]@{ 
@@ -224,7 +226,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.2"
+    Version      = [System.Version]"3.9.9.4"
 }
 
 Try { 
@@ -307,6 +309,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
             "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
+            "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "SelGPUCC" { $Config.Remove($_) }
             "SelGPUDSTM" { $Config.Remove($_) }
             "ShowMinerWindow" { $Config.HideMinerWindow = (-not $Config.$_); $Config.Remove($_) }
@@ -396,22 +399,28 @@ Function Global:TimerUITick {
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
         If ($Variables.NewMiningStatus -eq "Stopped") { 
+            $ButtonPause.Enabled = $false
+            $ButtonStart.Enabled = $false
             $ButtonStop.Enabled = $false
-            $ButtonStart.Enabled = $true
-            $ButtonPause.Enabled = $true
+
             Stop-Mining
             Stop-IdleMining
             Stop-BrainJob
             Stop-BalancesTracker
 
             $LabelPayoutCurrencyDay.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+            $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Red
             Write-Message "$($Branding.ProductLabel) is idle."
+
+            $ButtonPause.Enabled = $true
+            $ButtonStart.Enabled = $true
         }
         ElseIf ($Variables.NewMiningStatus -eq "Paused") { 
             If ($Variables.MiningStatus -ne "Paused") { 
-                $ButtonStop.Enabled = $true
-                $ButtonStart.Enabled = $true
                 $ButtonPause.Enabled = $false
+                $ButtonStart.Enabled = $false
+                $ButtonStop.Enabled = $false
+
                 If ($Variables.MiningStatus -eq "Running") { 
                     Stop-Mining
                     Stop-IdleMining
@@ -422,18 +431,22 @@ Function Global:TimerUITick {
                     Start-BalancesTracker
                 }
                 Write-Message "Mining is paused. BrainPlus and Earning tracker running."
+
+                $ButtonStop.Enabled = $true
+                $ButtonStart.Enabled = $true
+
                 $LabelPayoutCurrencyDay.Text = "Mining Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Blue
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@()
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@()
                 $WorkersDGV.DataSource = [System.Collections.ArrayList]@()
-                $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Red
                 $TimerUI.Stop
             }
         }
         ElseIf ($Variables.NewMiningStatus -eq "Running") {
-            $ButtonStop.Enabled = $true
+            $ButtonStop.Enabled = $false
             $ButtonStart.Enabled = $false
-            $ButtonPause.Enabled = $true
+            $ButtonPause.Enabled = $false
             If ($Variables.MiningStatus -ne "Running") { 
                 Initialize-Application
                 Start-BrainJob
@@ -447,7 +460,12 @@ Function Global:TimerUITick {
 
                 Stop-IdleMining
                 Start-Mining
+
+                $ButtonStop.Enabled = $true
+                $ButtonPause.Enabled = $true
+
                 $LabelPayoutCurrencyDay.Text = "Running | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Green
             }
         }
         $Variables.RestartCycle = $false
@@ -455,8 +473,6 @@ Function Global:TimerUITick {
     }
 
     If ($Variables.RefreshNeeded -and $Variables.MiningStatus -eq "Running") { 
-        $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Green
-
         If (($Items = Compare-Object -ReferenceObject $CheckedListBoxPools.Items -DifferenceObject ((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique) | Where-Object { $_.SideIndicator -eq "=>" }) | Where-Object InputObject -gt 0) { 
             $Items | ForEach-Object { 
                 If ($_ -ne $null) { 
@@ -562,24 +578,28 @@ Function Global:TimerUITick {
                 }
             }
 
-            $LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 $EarningsCurrency = $(($Variables.Rates.$EarningsCurrency.($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
+            # $LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 $EarningsCurrency = $(($Variables.Rates.$EarningsCurrency.($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
 
-            $LabelEarningsDetails.Lines = @()
-            If (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum -gt 0) { 
-                $LabelPayoutCurrencyDay.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 3) = $DisplayCurrency {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Rates.BTC.$EarningsCurrency)
-            }
+            $LabelPayoutCurrencyDay.Text = $Variables.Summary
 
-            If (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum -gt 0) { 
-                $TrendSign = Get-TrendSign ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4), 3))
-                $LabelEarningsDetails.Lines += "Last  1h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24 * $Variables.Rates.BTC.$EarningsCurrency)
+            #Disabled until all pools are properly supported in BalancesTracker
+            # $LabelEarningsDetails.Lines = @()
+            # If (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum -gt 0) { 
+            #     $LabelPayoutCurrencyDay.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 3) = $DisplayCurrency {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Rates.BTC.$EarningsCurrency)
+            # }
 
-                $TrendSign = Get-TrendSign ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum), 3))
-                $LabelEarningsDetails.Lines += "Last  6h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 4 * $Variables.Earnings.BTC.$EarningsCurrency)
+            #Disabled until all pools are properly supported in BalancesTracker
+            # If (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum -gt 0) { 
+            #     $TrendSign = Get-TrendSign ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4), 3))
+            #     $LabelEarningsDetails.Lines += "Last  1h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * 24 * $Variables.Rates.BTC.$EarningsCurrency)
 
-                $TrendSign = Get-TrendSign -Value ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property DailyGrowth -Sum).sum * 0.96), 3))
-                $LabelEarningsDetails.Lines += "Last 24h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth1 -Sum).sum * $Variables.Earnings.BTC.$EarningsCurrency)
-                Remove-Variable TrendSign
-            }
+            #     $TrendSign = Get-TrendSign ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum), 3))
+            #     $LabelEarningsDetails.Lines += "Last  6h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth6 -Sum).sum * 4 * $Variables.Earnings.BTC.$EarningsCurrency)
+
+            #     $TrendSign = Get-TrendSign -Value ([Math]::Round((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum), 3) - [Math]::Round((($Variables.Earnings.Values | Measure-Object -Property DailyGrowth -Sum).sum * 0.96), 3))
+            #     $LabelEarningsDetails.Lines += "Last 24h: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ((($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum)) -Rate $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 3) = $DisplayCurrency {0:N3}/day $TrendSign" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Earnings.BTC.$EarningsCurrency)
+            #     Remove-Variable TrendSign
+            # }
 
             $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
             $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
@@ -1039,14 +1059,15 @@ $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Green
 $LabelPayoutCurrencyDay.BackColor = [System.Drawing.Color]::Transparent
 $MainFormControls += $LabelPayoutCurrencyDay
 
-$LabelPayoutCurrencyPrice = New-Object System.Windows.Forms.Label
-$LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency -gt 0) { "$($Config.PayoutCurrency)/$($Config.Currency | Select-Object -Index 0) $($Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency)" }
-$LabelPayoutCurrencyPrice.AutoSize = $false
-$LabelPayoutCurrencyPrice.Width = 400
-$LabelPayoutCurrencyPrice.Height = 20
-$LabelPayoutCurrencyPrice.Location = [System.Drawing.Point]::new(510, 39)
-$LabelPayoutCurrencyPrice.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
-$MainFormControls += $LabelPayoutCurrencyPrice
+# $LabelPayoutCurrencyPrice = New-Object System.Windows.Forms.Label
+# $LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency -gt 0) { "$($Config.PayoutCurrency)/$($Config.Currency | Select-Object -Index 0) $($Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency)" }
+# $LabelPayoutCurrencyPrice.AutoSize = $false
+# $LabelPayoutCurrencyPrice.Width = 400
+# $LabelPayoutCurrencyPrice.Height = 20
+# $LabelPayoutCurrencyPrice.TextAlign = "MiddleRight"
+# $LabelPayoutCurrencyPrice.Location = [System.Drawing.Point]::new(510, 39)
+# $LabelPayoutCurrencyPrice.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
+# $MainFormControls += $LabelPayoutCurrencyPrice
 
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Text = "Start"
