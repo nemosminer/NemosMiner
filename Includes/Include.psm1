@@ -1180,6 +1180,7 @@ Function Start-Mining {
 
     If (-not $Variables.CoreRunspace) { 
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
+        $Variables.Pools = $null
         $Variables.Miners = $null
 
         $CoreRunspace = [RunspaceFactory]::CreateRunspace()
