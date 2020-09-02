@@ -52,6 +52,8 @@
       $('#myModal').modal({show:true});
     });
     document.getElementById('miningpause').disabled = true;
+    document.getElementById('miningstart').disabled = true;
+    document.getElementById('miningstop').disabled = true;
   });
 
   $('#miningstart').click(function () {
@@ -60,7 +62,9 @@
       $('.modal-title').text($('#miningstart').text());
       $('#myModal').modal({show:true});
     });
+    document.getElementById('miningpause').disabled = true;
     document.getElementById('miningstart').disabled = true;
+    document.getElementById('miningstop').disabled = true;
   });
 
   $('#miningstop').click(function () {
@@ -69,8 +73,9 @@
       $('.modal-title').text($('#miningstop').text());
       $('#myModal').modal({show:true});
     });
-    document.getElementById('miningstop').disabled = true;
     document.getElementById('miningpause').disabled = true;
+    document.getElementById('miningstart').disabled = true;
+    document.getElementById('miningstop').disabled = true;
   });
 
   </script>
