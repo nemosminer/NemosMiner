@@ -1,7 +1,8 @@
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig
+    [PSCustomObject]$PoolConfig,
+    [Hashtable]$Variables
 )
 
 If ($PoolConfig.UserName) { 
@@ -19,10 +20,11 @@ If ($PoolConfig.UserName) {
 
     $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
     
-    $Request.return | ForEach-Object { 
+    $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
+
         $Coin = (Get-Culture).TextInfo.ToTitleCase(($_.current_mining_coin -replace "-") -replace " ")
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([Decimal]$_.profit / $Divisor)

@@ -1,7 +1,8 @@
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig
+    [PSCustomObject]$PoolConfig,
+    [Hashtable]$Variables
 )
 
 If ($PoolConfig.UserName) { 

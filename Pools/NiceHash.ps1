@@ -1,7 +1,8 @@
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig
+    [PSCustomObject]$PoolConfig,
+    [Hashtable]$Variables
 )
 
 If ($PoolConfig.Wallet) { 
@@ -28,7 +29,7 @@ If ($PoolConfig.Wallet) {
 
     $User = "$($PoolConfig.Wallet).$($($PoolConfig.WorkerName -replace "^ID="))"
 
-    $Request.miningAlgorithms | Where-Object { $_.speed -gt 0 } | ForEach-Object { 
+    $Request.miningAlgorithms | Where-Object speed -GT 0 | ForEach-Object { 
         $Algorithm = $_.Algorithm
         $PoolPort = $_.algodetails.port
         $Algorithm_Norm = Get-Algorithm $Algorithm
