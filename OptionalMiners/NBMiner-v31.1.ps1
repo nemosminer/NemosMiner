@@ -73,7 +73,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[0]) + @($_.Intensity2) | Select-Object) -join '-'
 
                     If ($_.Algorithm[0] -match "^Ethash*|^Cuck*") { 
-                        $Protocol = If ($Pools.($_.Algorithm[0]).Name -match "MPH*|NiceHash*") { "nicehash+tcp://" } Else { "ethproxy+tcp://" } 
+                        $Protocol = If ($Pools.($_.Algorithm[0]).Name -match "^MPH*|^NiceHash*") { "nicehash+tcp://" } Else { "ethproxy+tcp://" } 
                     }
                     Else { $Protocol = "stratum+tcp://" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = $Protocol -replace '\+tcp\://$', '+ssl://' }
@@ -93,6 +93,11 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
                     Else { 
                         $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    }
+
+                    #Optionally disable dev fee mining
+                    If ($Config.DisableMinerFees) { 
+                        $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
                     }
 
                     [PSCustomObject]@{ 
