@@ -1,3 +1,41 @@
+Changelog NemosMiner 02.09.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+  WDDM Device detection under Windows 7 & Windows 8.1
+
+Added:
+- UnprofitableAlgorithm list
+  Syntax:
+  "*:[AlgorithmName]" = Algo is unprofitable as primary AND secondary algorithm
+  "1:[AlgorithmName]" = Algo is unprofitable as primary algorithm, but profitable as secondary algorithm
+  "2:[AlgorithmName]" = Algo is unprofitable as secondary algorithm, but profitable as primary algorithm
+
+Known Issues:
+- NiceHash balances not working (t.b.d)
+- BalancesTracker reporting incorrect data (t.b.d.)
+
+Changelog NemosMiner 29.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- Miner device ID order
+
+Added:
+- Support for non-BTC currencies
+
+Known Issues:
+- NiceHash balances not working (t.b.d)
+- BalancesTracker not reporting NiceHash data (-> Sum of all balances too low)
+
 Changelog NemosMiner 22.08.2020
 ===============================
 
