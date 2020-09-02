@@ -36,6 +36,7 @@ If ($PoolConfig.UserName) {
             [PSCustomObject]@{ 
                 Algorithm          = [String]$Algorithm_Norm
                 CoinName           = [String]$Coin
+                Currency           = [String]$Current.current_mining_coin_symbol
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
@@ -54,6 +55,7 @@ If ($PoolConfig.UserName) {
             [PSCustomObject]@{ 
                 Algorithm          = [String]$Algorithm_Norm
                 CoinName           = [String]$Coin
+                Currency           = [String]$Current.current_mining_coin_symbol
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
