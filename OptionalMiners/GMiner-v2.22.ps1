@@ -6,16 +6,16 @@ $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.22/gm
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo blake2s --cuda 0 --opencl 1" } #Profit very small
+    [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo blake2s --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc", $null);  MinMemGB = 6.0; Fee = @(0.03);    Type = "AMD";    Command = " --algo bfc --cuda 0 --opencl 1" }
-#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29S", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
-#   [PSCustomObject]@{ Algorithm = @("Eaglesong", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" } #Profit very small
+    [PSCustomObject]@{ Algorithm = @("Cuckaroo29S", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = @("Eaglesong", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);   MinMemGB = 1.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Equihash1927", $null);   MinMemGB = 2.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);    MinMemGB = 3.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
 
     [PSCustomObject]@{ Algorithm = @("BeamV3", $null);         MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" } #Profit very small
+    [PSCustomObject]@{ Algorithm = @("Blake2s", $null);        MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CryptonightBBC", $null); MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cryptonightbbc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc", $null);  MinMemGB = 6.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckaroo29b --cuda 1 --opencl 0" }
@@ -23,22 +23,22 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("CuckarooD29", $null);    MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooD29V", $null);   MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckarood29v --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckaroom29 --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" } #Profit very small
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29", $null);    MinMemGB = 4.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX", $null);  MinMemGB = 8.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo C30CTX --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo31 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32", $null);     MinMemGB = 7.4; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckatoo32 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29", $null);       MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckoo29 --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("Eaglesong", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo eaglesong --cuda 1 --opencl 0" } #Profit very small
-#   [PSCustomObject]@{ Algorithm = @("Equihash965", $null);    MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash96_5 --cuda 1 --opencl 0" } #Profit very small
-#   [PSCustomObject]@{ Algorithm = @("Equihash1254", $null);   MinMemGB = 1.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash125_4 --cuda 1 --opencl 0" } #MiniZ-v1.6v5 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);   MinMemGB = 1.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6v5 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Equihash1927", $null);   MinMemGB = 2.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6v5 is fastest
+    [PSCustomObject]@{ Algorithm = @("Eaglesong", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo eaglesong --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = @("Equihash965", $null);    MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash96_5 --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("Equihash1254", $null);   MinMemGB = 1.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash125_4 --cuda 1 --opencl 0" } #MiniZ-v1.6v6 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Equihash1445", $null);   MinMemGB = 1.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6v6 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Equihash1927", $null);   MinMemGB = 2.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6v6 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash2109", $null);   MinMemGB = 1.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo equihash210_9 --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);    MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } #MiniZ-v1.6v5 is fastest
+#   [PSCustomObject]@{ Algorithm = @("EquihashBTG", $null);    MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } #MiniZ-v1.6v6 is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", $null);         MinMemGB = 4.0; Fee = @(0.0065);  Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } #PhoenixMiner-v5.1c is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");     MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.1c is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong");   MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v31.1 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Handshake", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" } #Profit very small
+    [PSCustomObject]@{ Algorithm = @("Handshake", $null);      MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("KawPoW", $null);         MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.16.1 is fastest
     [PSCustomObject]@{ Algorithm = @("Qitmeer", $null);        MinMemGB = 6.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo qitmeer --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("Sero", $null);           MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } #Sero != ProgPoW on ZergPool
@@ -58,7 +58,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
                 $MinMemGB = $_.MinMemGB
 
                 #Windows 10 requires more memory on some algos
-                If ($_.Algorithm[0] -match "Cuckaroo*|Cuckoo*" -and [System.Environment]::OSVersion.Version -ge "10.0.0.0") { $MinMemGB += 1 }
+                If ($_.Algorithm[0] -match "Cuckaroo*|Cuckoo*" -and [System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB += 1 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
