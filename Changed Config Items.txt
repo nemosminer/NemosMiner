@@ -7,6 +7,12 @@ New Config Items
 #If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
 
+#If true, power usage will be read from miners and calculate power cost, required for true profit calculation
+  "CalculatePowerCost": true,
+
+#If true all miners which contain fees are disabled
+  "DisableMinersWithFees": false,
+
 #If true MPM will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
   "EstimateCorrection": false,
 
@@ -117,9 +123,6 @@ New Config Items
 
 #ProHashing UserName, if left empty then $UserName is used
   "ProHashingUserName": "",
-
-#If true, power usage will be read from miners, required for true profit calculation
-  "ReadPowerUsage": true,
 
 #One of europe/us/asia
   "Region": "Europe",
