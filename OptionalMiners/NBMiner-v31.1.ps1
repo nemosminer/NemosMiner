@@ -63,7 +63,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
                 $MinMemGB = $_.MinMemGB
 
                 #Windows 10 requires more memory on some algos
-                If ([System.Environment]::OSVersion.Version -ge "10.0.0.0") { $MinMemGB = $_.MinMemGBWin10 }
+                If ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB = $_.MinMemGBWin10 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.CUDAComputeCapability -ge $MinCUDAComputeCapability })) { 
 
