@@ -25,7 +25,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $Commands | Where-Object { -not $Pools.($_.Algorithm).SSL } | ForEach-Object {
 
                 If ($_.Algorithm -eq "Lyra2RE3" -and $Pools.($_.Algorithm).Name -like "MPH*") { Return } #Temp fix
-                If ($_.Algorithm -eq "Yescrypt" -and $Pools.($_.Currency).Name -ne "BSTY") { Return } #Temp fix
+                If ($_.Algorithm -eq "Yescrypt" -and $Pools.($_.Algorithm).Currency -ne "BSTY") { Return } #Temp fix
 
                 $MinMemGB = $_.MinMemGB
 
