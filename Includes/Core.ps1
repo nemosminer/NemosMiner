@@ -774,7 +774,7 @@ Function Start-Cycle {
                 If ($Miner.Type -eq "CPU" -and (Test-Path ".\Utils\Prerun\CPUPrerun.bat" -PathType Leaf)) { 
                     Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                 }
-                If ($Miner.Type -eq "CPU") { 
+                If ($Miner.Type -ne "CPU") { 
                     $PrerunName = ".\Utils\Prerun\$($Miner.Algorithm).bat"
                     $DefaultPrerunName = ".\Utils\Prerun\default.bat"
                     If (Test-Path $PrerunName -PathType Leaf) { 
