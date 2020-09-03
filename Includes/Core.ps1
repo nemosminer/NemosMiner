@@ -683,23 +683,28 @@ Function Start-Cycle {
         $FastestMiners | Select-Object | ForEach-Object { $_.Fastest =  $true }
 
         #ProfitabilityThreshold check - OK to run miners?
-        If ([Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+        If ((-not $Variables.Rates."BTC") -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             $BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
         }
         Else { 
             Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
         }
 
-        If ([Double]::IsNaN($Variables.MiningEarning)) { 
-            $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+        If ($Variables.Rates."BTC") { 
+            If ([Double]::IsNaN($Variables.MiningEarning)) { 
+                $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+            }
+            Else { 
+                $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)"
+                If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)" }
+                $Variables.Summary +=  "&ensp;&ensp;&ensp;&ensp;"
+                (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
+                    $Variables.Summary += "&ensp;&ensp;1 $_=$($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+                }
+            }
         }
         Else { 
-            $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)"
-            If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)" }
-            $Variables.Summary +=  "&ensp;&ensp;&ensp;&ensp;"
-            (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
-                $Variables.Summary += "&ensp;&ensp;1 $_=$($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
-            }
+            $Variables.Summary = ""
         }
 
         #Also restart running miners (stop & start)
