@@ -902,8 +902,8 @@ Function Get-Rate {
                 $Rates.$Currency | Add-Member $mCurrency ([Double]($Rates.$Currency.$_) * 1000)
             }
         }
+        $Variables.Rates = $Rates
     }
-    $Variables.Rates = $Rates
     $Variables.RateFirstCurrency = $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)
 }
 
