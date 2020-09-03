@@ -6,34 +6,34 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.3.2/XMR
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         MinMemGB = 0.5;  Command = " --algo argon2/chukwa" } #Argon2id (Chukwa)
-    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           MinMemGB = 0.25; Command = " --algo argon2/wrkz" } #Argon2id (WRKZ)
-    [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Command = " --algo astrobwt" } #AstroBWT (Dero)
-    [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 2;    Command = " --algo cn/0" } #CryptoNight (original)
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 2;    Command = " --algo cn/ccx" } #Conceal (CCX)
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 2;    Command = " --algo cn/double" } #CryptoNight variant 2 with double iterations
-    [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 2;    Command = " --algo cn/fast" } ##CryptoNight variant 1 with half iterations
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";      MinMemGB = 1;    Command = " --algo cn-lite/0" } #CryptoNight-Lite variant 0
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    MinMemGB = 1;    Command = " --algo cn-lite/1" } #CryptoNight-Lite variant 1
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 2;    Command = " --algo cn/half" } #CryptoNight variant 2 with half iterations
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 4;    Command = " --algo cn-heavy/0" } #CryptoNight-Heavy
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 4;    Command = " --algo cn-heavy/tube" } #CryptoNight-Heavy (modified)
-    [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Command = " --algo cn-pico" } #CryptoNight-Pico
-    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   MinMemGB = 0.25; Command = " --algo cn-pico/tlo" } #CryptoNight-Pico (Talleo)
-    [PSCustomObject]@{ Algorithm = "CryptonightR";         MinMemGB = 2;    Command = " --algo cn/r" } #CryptoNightR (Monero's variant 4)
-    [PSCustomObject]@{ Algorithm = "CryptonightRto";       MinMemGB = 2;    Command = " --algo cn/rto" } #CryptoNight variant 1 (modified)
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       MinMemGB = 2;    Command = " --algo cn/rwz" } #CryptoNight variant 2 with 3/4 iterations and reversed shuffle operation
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";        MinMemGB = 2;    Command = " --algo cn/1" } #CryptoNight variant 1
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";        MinMemGB = 2;    Command = " --algo cn/2" } #CryptoNight variant 2
-    [PSCustomObject]@{ Algorithm = "CryptonightXao";       MinMemGB = 2;    Command = " --algo cn/xao" } #CryptoNight variant 0 (modified)
-    [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   MinMemGB = 4;    Command = " --algo cn-heavy/xhv" } #CryptoNight-Heavy (modified)
-    [PSCustomObject]@{ Algorithm = "CryptonightZls";       MinMemGB = 2;    Command = " --algo cn/zls" } #CryptoNight variant 2 with 3/4 iterations
-    [PSCustomObject]@{ Algorithm = "Randomx";              MinMemGB = 2;    Command = " --algo rx/0" } #Randomx (Monero)
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           MinMemGB = 0.25; Command = " --algo rx/arq" } #RandomARQ (RandomX variant for ArQmA)
-    [PSCustomObject]@{ Algorithm = "RandomxKeva";          MinMemGB = 1;    Command = " --algo rx/kev" } #RandomKEVA (RandomX variant for Keva)
-    [PSCustomObject]@{ Algorithm = "RandomxLoki";          MinMemGB = 2;    Command = " --algo rx/loki" } #RandomXL (RandomX variant for Loki)
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           MinMemGB = 2;    Command = " --algo rx/sfx" } #RandomSFX (RandomX variant for Safex)
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           MinMemGB = 1;    Command = " --algo rx/wow" } #RandomWOW (RandomX variant for Wownero)
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         MinMemGB = 0.5;  Command = " --algo argon2/chukwa" }
+    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           MinMemGB = 0.25; Command = " --algo argon2/wrkz" }
+    [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Command = " --algo astrobwt" }
+    [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 2;    Command = " --algo cn/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 2;    Command = " --algo cn/ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 2;    Command = " --algo cn/double" } #XmrStak-v2.10.8 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 2;    Command = " --algo cn/fast" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";      MinMemGB = 1;    Command = " --algo cn-lite/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    MinMemGB = 1;    Command = " --algo cn-lite/1" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 2;    Command = " --algo cn/half" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 4;    Command = " --algo cn-heavy/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 4;    Command = " --algo cn-heavy/tube" }
+    [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Command = " --algo cn-pico" }
+    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   MinMemGB = 0.25; Command = " --algo cn-pico/tlo" }
+    [PSCustomObject]@{ Algorithm = "CryptonightR";         MinMemGB = 2;    Command = " --algo cn/r" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRto";       MinMemGB = 2;    Command = " --algo cn/rto" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       MinMemGB = 2;    Command = " --algo cn/rwz" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";        MinMemGB = 2;    Command = " --algo cn/1" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";        MinMemGB = 2;    Command = " --algo cn/2" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXao";       MinMemGB = 2;    Command = " --algo cn/xao" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   MinMemGB = 4;    Command = " --algo cn-heavy/xhv" }
+    [PSCustomObject]@{ Algorithm = "CryptonightZls";       MinMemGB = 2;    Command = " --algo cn/zls" }
+    [PSCustomObject]@{ Algorithm = "Randomx";              MinMemGB = 2;    Command = " --algo rx/0" }
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           MinMemGB = 0.25; Command = " --algo rx/arq" }
+    [PSCustomObject]@{ Algorithm = "RandomxKeva";          MinMemGB = 1;    Command = " --algo rx/kev" }
+    [PSCustomObject]@{ Algorithm = "RandomxLoki";          MinMemGB = 2;    Command = " --algo rx/loki" }
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           MinMemGB = 2;    Command = " --algo rx/sfx" }
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           MinMemGB = 1;    Command = " --algo rx/wow" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

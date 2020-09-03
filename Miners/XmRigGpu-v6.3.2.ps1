@@ -7,15 +7,15 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Type = "AMD"   ; Command = " --algo astrobwt" }
-    [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/ccx" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/double" }
-    [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/fast" }
+    [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/double" }
+    [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn-lite/0" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn-lite/1" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/half" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 4;    Type = "AMD"   ; Command = " --algo cn-heavy/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 4;    Type = "AMD"   ; Command = " --algo cn-heavy/tube" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/half" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn-heavy/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn-heavy/tube" }
     [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Type = "AMD"   ; Command = " --algo cn-pico" }
     [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   MinMemGB = 0.25; Type = "AMD"   ; Command = " --algo cn-pico/tlo" }
     [PSCustomObject]@{ Algorithm = "CryptonightR";         MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/r" }
@@ -35,15 +35,15 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxWow";           MinMemGB = 2;    Type = "AMD"   ; Command = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Type = "NVIDIA"; Command = " --algo astrobwt" }
-    [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/ccx" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/double" }
-    [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/fast" }
+    [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/double" }
+    [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-lite/0" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-lite/1" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/half" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 4;    Type = "NVIDIA"; Command = " --algo cn-heavy/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 4;    Type = "NVIDIA"; Command = " --algo cn-heavy/tube" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/half" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-heavy/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-heavy/tube" }
     [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Type = "NVIDIA"; Command = " --algo cn-pico" }
     [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   MinMemGB = 0.25; Type = "NVIDIA"; Command = " --algo cn-pico/tlo" }
     [PSCustomObject]@{ Algorithm = "CryptonightR";         MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/r" }

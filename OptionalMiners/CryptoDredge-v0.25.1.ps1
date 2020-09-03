@@ -11,15 +11,15 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2d4096";          Fee = 0.01; MinMemGB = 2; Command = " --algo=argon2d4096 --intensity 8" }
 #   [PSCustomObject]@{ Algorithm = "Argon2dDyn";           Fee = 0.01; MinMemGB = 2; Command = " --algo=argon2d-dyn --intensity 6" } #CcminerDyn v1.0.23 is fastest
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.01; MinMemGB = 2; Command = " --algo=chukwa --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXeq";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cngpu --intensity 8" } # CryptonightGPU (XEQ Zergpool)
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.01; MinMemGB = 2; Command = " --algo=cnsaber --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cnconceal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.01; MinMemGB = 2; Command = " --algo=cnfast2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXhv";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cnhaven --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.01; MinMemGB = 2; Command = " --algo=cnheavy --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightTlo";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cntlo --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cnupx2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightZls";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cnzls --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXeq";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cngpu --intensity 8" } # CryptonightGPU (XEQ Zergpool)
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.01; MinMemGB = 1; Command = " --algo=cnsaber --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnconceal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.01; MinMemGB = 1; Command = " --algo=cnfast2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXhv";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnhaven --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.01; MinMemGB = 1; Command = " --algo=cnheavy --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightTlo";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cntlo --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnupx2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightZls";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnzls --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CuckooD29";            Fee = 0.01; MinMemGB = 3; Command = " --algo aeternity" }
 #   [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.01; MinMemGB = 6; Command = " --algo cuckaroo29 --intensity 4" } #GMiner 2.22 is fastest
     [PSCustomObject]@{ Algorithm = "Hmq1725";              Fee = 0.01; MinMemGB = 2; Command = " --algo=hmq1725 --intensity 8" }

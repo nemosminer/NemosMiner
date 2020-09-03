@@ -12,29 +12,29 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.2 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.2 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightMsr";        MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
 #   [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.2 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.2 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #XmRigGpu-v6.3.2 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";        MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightV1";         MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";        MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightV2";         MinMemGB = 2; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
 
-    [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   MinMemGB = 4; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";        MinMemGB = 1; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";       MinMemGB = 1; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     MinMemGB = 1; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   MinMemGB = 1; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; MinMemGB = 4; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" } # XmRigCpu-v6.3.2 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightMsr";        MinMemGB = 2; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";        MinMemGB = 2; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";         MinMemGB = 2; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXtl";        MinMemGB = 2; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";         MinMemGB = 2; Type = "CPU";    Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";        Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";       Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" } # XmRigCpu-v6.3.2 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightMsr";        Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightR";          Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";     Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";        Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";         Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXtl";        Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";         Type = "CPU"; Command = " --noAMD --noNVIDIA --cpu" }
 
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";        MinMemGB = 1; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
@@ -42,10 +42,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     MinMemGB = 1; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   MinMemGB = 1; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      MinMemGB = 1; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #CryptoDredge-v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightMsr";        MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
 #   [PSCustomObject]@{ Algorithm = "CryptonightR";          MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #XmRigGpu-v6.3.2 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 4; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #XmRigGpu-v6.3.2 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";     MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } #XmRigGpu-v6.3.2 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";        MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightV1";         MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";        MinMemGB = 2; Type = "NVIDIA"; Command = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
