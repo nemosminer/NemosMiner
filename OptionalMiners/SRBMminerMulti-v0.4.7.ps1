@@ -8,38 +8,38 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Blake2b";      MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm blake2b" } #Bad shares
-    [PSCustomObject]@{ Algorithm = "Blake2s";      MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm blake2s" }
-    [PSCustomObject]@{ Algorithm = "Kangaroo12";   MinMemGb = 1; Fee = 0.0085; Type = @("AMD"); Command = " --algorithm k12" }
-    [PSCustomObject]@{ Algorithm = "Keccak";       MinMemGb = 1; Fee = 0;      Type = @("AMD"); Command = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGb = 3; Fee = 0;      Type = @("AMD"); Command = " --algorithm mtp" }
-    [PSCustomObject]@{ Algorithm = "RainforestV2"; MinMemGb = 1; Fee = 0.0085; Type = @("AMD"); Command = " --algorithm rainforestv2" }
-    [PSCustomObject]@{ Algorithm = "Yescrypt";     MinMemGb = 1; Fee = 0.0085; Type = @("AMD"); Command = " --algorithm yescrypt" }
+#   [PSCustomObject]@{ Algorithm = "Blake2b";      MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm blake2b" } #Bad shares
+    [PSCustomObject]@{ Algorithm = "Blake2s";      MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm blake2s" }
+    [PSCustomObject]@{ Algorithm = "Kangaroo12";   MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm k12" }
+    [PSCustomObject]@{ Algorithm = "Keccak";       MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm keccak" }
+    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGb = 3; Fee = 0;      Type = "AMD"; Command = " --algorithm mtp" }
+    [PSCustomObject]@{ Algorithm = "RainforestV2"; MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm rainforestv2" }
+    [PSCustomObject]@{ Algorithm = "Yescrypt";     MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm yescrypt" }
 
-#   [PSCustomObject]@{ Algorithm = "Blake2b";       Fee = 0;      Type = @("CPU"); Command = " --algorithm blake2b" } #Bad shares
-    [PSCustomObject]@{ Algorithm = "Blake2s";       Fee = 0;      Type = @("CPU"); Command = " --algorithm blake2s" }
-    [PSCustomObject]@{ Algorithm = "CpuPower";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm cpupower" }
-    [PSCustomObject]@{ Algorithm = "Eaglesong";     Fee = 0.0085; Type = @("CPU"); Command = " --algorithm eaglesong" }
-    [PSCustomObject]@{ Algorithm = "Kangaroo12";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm k12" }
-    [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = @("CPU"); Command = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "MTP";           Fee = 0;      Type = @("CPU"); Command = " --algorithm mtp" }
-#   [PSCustomObject]@{ Algorithm = "Rainforestv2";  Fee = 0.0085; Type = @("CPU"); Command = " --algorithm rainforestv2" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.2 is fastest
-    [PSCustomObject]@{ Algorithm = "RandomxArq";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomarq --randomx-use-1gb-pages" }
-#   [PSCustomObject]@{ Algorithm = "RandomxSfx";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomsfx --randomx-use-1gb-pages" } #XmRigCpu-v6.3.2 is fastest
-    [PSCustomObject]@{ Algorithm = "RandomxWow";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm randomwow" }
-    [PSCustomObject]@{ Algorithm = "Yescrypt";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescrypt" }
-    [PSCustomObject]@{ Algorithm = "YescryptR8";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescryptr8" }
-    [PSCustomObject]@{ Algorithm = "YescryptR16";   Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescryptr16" }
-    [PSCustomObject]@{ Algorithm = "YescryptR32";   Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yescryptr32" }
-    [PSCustomObject]@{ Algorithm = "Yespower";      Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yespower" }
-    [PSCustomObject]@{ Algorithm = "Yespower2b";    Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yespower2b" }
-    [PSCustomObject]@{ Algorithm = "YespowerItc";   Fee = 0     ; Type = @("CPU"); Command = " --algorithm yespoweritc" }
-    [PSCustomObject]@{ Algorithm = "Yespowerlitb";  Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yespowerlitb" }
-    [PSCustomObject]@{ Algorithm = "Yespowerltncg"; Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yespowerltncg" }
-    [PSCustomObject]@{ Algorithm = "YespowerR16";   Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yespowerr16" }
-    [PSCustomObject]@{ Algorithm = "YespowerSugar"; Fee = 0.0085; Type = @("CPU"); Command = " --algorithm yespowersugar" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   Fee = 0;      Type = @("CPU"); Command = " --algorithm yespowerurx" }
+#   [PSCustomObject]@{ Algorithm = "Blake2b";       Fee = 0;      Type = "CPU"; Command = " --algorithm blake2b" } #Bad shares
+    [PSCustomObject]@{ Algorithm = "Blake2s";       Fee = 0;      Type = "CPU"; Command = " --algorithm blake2s" }
+    [PSCustomObject]@{ Algorithm = "CpuPower";      Fee = 0.0085; Type = "CPU"; Command = " --algorithm cpupower" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";     Fee = 0.0085; Type = "CPU"; Command = " --algorithm eaglesong" }
+    [PSCustomObject]@{ Algorithm = "Kangaroo12";    Fee = 0.0085; Type = "CPU"; Command = " --algorithm k12" }
+    [PSCustomObject]@{ Algorithm = "Keccak";        Fee = 0;      Type = "CPU"; Command = " --algorithm keccak" }
+    [PSCustomObject]@{ Algorithm = "MTP";           Fee = 0;      Type = "CPU"; Command = " --algorithm mtp" }
+#   [PSCustomObject]@{ Algorithm = "Rainforestv2";  Fee = 0.0085; Type = "CPU"; Command = " --algorithm rainforestv2" }
+#   [PSCustomObject]@{ Algorithm = "Randomx";       Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.3.3 is fastest
+    [PSCustomObject]@{ Algorithm = "RandomxArq";    Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
+#   [PSCustomObject]@{ Algorithm = "RandomxSfx";    Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomsfx --randomx-use-1gb-pages" } #XmRig-v6.3.3 is fastest
+    [PSCustomObject]@{ Algorithm = "RandomxWow";    Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomwow" }
+    [PSCustomObject]@{ Algorithm = "Yescrypt";      Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescrypt" }
+    [PSCustomObject]@{ Algorithm = "YescryptR8";    Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr8" }
+    [PSCustomObject]@{ Algorithm = "YescryptR16";   Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr16" }
+    [PSCustomObject]@{ Algorithm = "YescryptR32";   Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr32" }
+    [PSCustomObject]@{ Algorithm = "Yespower";      Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespower" }
+    [PSCustomObject]@{ Algorithm = "Yespower2b";    Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespower2b" }
+    [PSCustomObject]@{ Algorithm = "YespowerItc";   Fee = 0     ; Type = "CPU"; Command = " --algorithm yespoweritc" }
+    [PSCustomObject]@{ Algorithm = "Yespowerlitb";  Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespowerlitb" }
+    [PSCustomObject]@{ Algorithm = "Yespowerltncg"; Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespowerltncg" }
+    [PSCustomObject]@{ Algorithm = "YespowerR16";   Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespowerr16" }
+    [PSCustomObject]@{ Algorithm = "YespowerSugar"; Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespowersugar" }
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   Fee = 0;      Type = "CPU"; Command = " --algorithm yespowerurx" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

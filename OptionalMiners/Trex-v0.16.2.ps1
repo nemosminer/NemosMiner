@@ -16,7 +16,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Geek";            MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";       MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";       MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" }
+#   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } #NBMiner-v31.1 is fastest
     [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "PadiHash";        MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";       MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
