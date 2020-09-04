@@ -407,7 +407,7 @@ Function Start-Cycle {
         }
 
         #Get new miners
-        Write-Message "Loading miners..."
+        Write-Message -Verbose "Loading miners..."
         $Pools = [PSCustomObject]@{ }
         $PoolsPrimaryAlgorithm =  [PSCustomObject]@{ }
         $PoolsSecondaryAlgorithm =  [PSCustomObject]@{ }
@@ -548,7 +548,7 @@ Function Start-Cycle {
         If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
             #Download miner binaries
             If ($Variables.Downloader.State -ne "Running") { 
-                Write-Message -Level Warn "Some miners binaries are missing, starting downloader..."
+                Write-Message "Some miners binaries are missing, starting downloader..."
                 $Downloader_Parameters = @{
                     Logfile = $Variables.Logfile
                     DownloadList = @($Variables.MinersMissingPreRequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
@@ -567,7 +567,7 @@ Function Start-Cycle {
             $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerAlgorithmCount } | ForEach-Object { $_.Available = $false; $_.Data = @(); $_.Reason += "Miner {$($_.Algorithm)} suspended by watchdog" }
         }
 
-        Write-Message -Level VERBOSE "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
+        Write-Message "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
 
         If ($Config.OpenFirewallPorts) { 
             #Open firewall ports for all miners
