@@ -24,6 +24,9 @@ Function Start-Cycle {
         #Always get the latest config
         Read-Config
 
+        $PoolNames = $Config.PoolName
+        $PoolsConfig = $Config.PoolsConfig
+
         #Activate or deactivate donation
         If (($Variables.DonateStart).DayOfYear -ne (Get-Date).DayOfYear) { 
             #Re-Randomize donation start once per day
@@ -31,68 +34,68 @@ Function Start-Cycle {
             $Variables.DonateEnd = $Variables.DonateStart
         }
 
-        If ($Config.Donate -and ((Get-Date) -ge $Variables.DonateStart -and ((Get-Date) -lt $Variables.DonateEnd -or $Variables.DonateStart -eq $Variables.DonateEnd))) { 
+        If ($Config.Donate) { 
+            If ((Get-Date) -ge $Variables.DonateStart) { 
+                If ($Variables.DonateEnd -eq $Variables.DonateStart) { 
+                    #We get here only once per donation period
+                    $Variables.DonateStart = (Get-Date)
+                    $Variables.DonateEnd = $Variables.DonateStart.AddMinutes($Config.Donate)
+                    $Variables.EndLoopTime = $Variables.DonateEnd
 
-            $PoolNames = @($Config.PoolName | Where-Object { $_ -notlike "ProHashing*" }) #No all devs have a known ProHashing account
-
-            $Variables.DonateStart = (Get-Date)
-            $Variables.DonateEnd = $Variables.DonateStart.AddMinutes($Config.Donate)
-            $Variables.EndLoopTime = $Variables.DonateEnd
-
-            If (-not $Variables.DonateRandom) { 
-                # Get donation addresses randomly from agreed developers list
-                # This will fairly distribute donations to developers
-                # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
-                Try { 
-                    $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-                }
-                Catch { 
-                    $DonationData = @(
-                        [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PayoutCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
-                    )
-                }
-                $Variables.DonateRandom = $DonationData | Get-Random #Use same donation data for the entire donation period to reduce switching
-
-                #Add pool config to config (in-memory only)
-                $PoolsConfig = [Ordered]@{ }
-                $PoolNames | ForEach-Object { 
-                    $PoolConfig = [PSCustomObject]@{ }
-                    $PoolConfig | Add-Member PricePenaltyFactor 1
-                    $PoolConfig | Add-Member WorkerName "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString() -replace '\.'))"
-                    Switch -Regex ($_) { 
-                        "MPH" { 
-                            $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
-                        }
-                        "NiceHash" { 
-                            $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
-                        }
-                        # "ProHashing*" { 
-                        #     $PoolConfig | Add-Member PayoutCurrency $Variables.DonateRandom.PayoutCurrency
-                        #     $PoolConfig | Add-Member UserName $Variables.DonateRandom.ProHashingUserName
-                        # }
-                        Default { 
-                            $PoolConfig | Add-Member PayoutCurrency $Variables.DonateRandom.PayoutCurrency
-                            $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
-                        }
+                    # Get donation addresses randomly from agreed developers list
+                    # This will fairly distribute donations to developers
+                    # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
+                    Try { 
+                        $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
                     }
-                    $PoolsConfig.$_ = $PoolConfig
+                    Catch { 
+                        $DonationData = @(
+                            [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
+                            [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PayoutCurrency = "BTC" }, 
+                            [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
+                            [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PayoutCurrency = "BTC" },
+                            [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
+                        )
+                    }
+                    $Variables.DonateRandom = $DonationData | Get-Random #Use same donation data for the entire donation period to reduce switching
+
+                    #Add pool config to config (in-memory only)
+                    $Variables.DonatePoolNames = @($Config.PoolName | Where-Object { $_ -notlike "ProHashing*" }) #No all devs have a known ProHashing account
+                    $Variables.DonatePoolsConfig = [Ordered]@{ }
+                    $Variables.DonatePoolNames | ForEach-Object { 
+                        $PoolConfig = [PSCustomObject]@{ }
+                        $PoolConfig | Add-Member PricePenaltyFactor 1
+                        $PoolConfig | Add-Member WorkerName "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString() -replace '\.'))"
+                        Switch -Regex ($_) { 
+                            "MPH" { 
+                                $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
+                            }
+                            "NiceHash" { 
+                                $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
+                            }
+                            # "ProHashing*" { 
+                            #     $PoolConfig | Add-Member PayoutCurrency $Variables.DonateRandom.PayoutCurrency
+                            #     $PoolConfig | Add-Member UserName $Variables.DonateRandom.ProHashingUserName
+                            # }
+                            Default { 
+                                $PoolConfig | Add-Member PayoutCurrency $Variables.DonateRandom.PayoutCurrency
+                                $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
+                            }
+                        }
+                        $DonatePoolsConfig.$_ = $PoolConfig
+                    }
+                }
+                If ((Get-Date) -lt $Variables.DonateEnd) { 
+                    $PoolNames = $Variables.DonatePoolNames
+                    $PoolsConfig = $Variables.DonatePoolsConfig
+                    Write-Message "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" })."
+                }
+                ElseIf ($Variables.DonatePoolsConfig) { 
+                    $Variables.DonatePoolNames = $null
+                    $Variables.DonatePoolsConfig = $null
+                    Write-Message "Donation run complete. Mining for you."
                 }
             }
-
-            Write-Message "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" })."
-
-        }
-        Else { 
-            If ($Variables.DonateRandom -and (Get-Date) -gt $Variables.DonateEnd) { 
-                $Variables.DonateRandom = $null
-                Write-Message "Donation run complete. Mining for you."
-            }
-            $PoolsConfig = $Config.PoolsConfig
-            $PoolNames = $Config.PoolName
         }
 
         #Stop BrainJobs for deconfigured pools
@@ -169,33 +172,6 @@ Function Start-Cycle {
         If (($Config.PoolsConfig | ConvertTo-Json -Compress) -ne ($Variables.PoolsConfigCached | ConvertTo-Json -Compress)) { 
             $Variables.Pools = [Miner]::Pools
         }
-
-        # #Stop CPU miner if benchmarking (loading pool and miner info might take ages) if not CPU benchmarking
-        # If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
-        #     $Variables.Miners | Where-Object Best -eq $true | Where-Object Type -EQ "CPU" | Where-Object Benchmark -NE $true | ForEach-Object { 
-        #         $Miner = $_
-        #         If ($Miner.GetStatus() -eq [MinerStatus]::Running)  { 
-        #             Write-Message "Stopped miner '$($Miner.Info)'."
-        #             $Miner.SetStatus([MinerStatus]::Idle)
-        #             If ($Miner.ProcessId) { Stop-Process -Id $Miner.ProcessId -Force -ErrorAction Ignore }
-
-        #             #Remove watchdog timer(s)
-        #             $Miner.Workers | ForEach-Object { 
-        #                 $Worker = $_
-        #                 $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
-        #                 If ($WatchdogTimer) { 
-        #                     $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -NE $Miner.Name | Where-Object Algorithm -NE $Worker.Pool.Algorithm | Where-Object DeviceName -NE $Miner.DeviceName)
-        #                 }
-        #             }
-        #         }
-
-        #         ElseIf ($Miner.GetStatus() -ne $Miner.Status) { 
-        #             Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
-        #             $Miner.SetStatus([MinerStatus]::Failed)
-        #             $Miner.StatusMessage = "Exited unexpectedly."
-        #         }
-        #     }
-        # }
 
         #Load unprofitable algorithms
         If (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore) { 
@@ -970,7 +946,7 @@ While ($true) {
 
             While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 200 }
         }
-        Write-Message -Level VERBOSE "$($Message)Ending cycle."
+        Write-Message "$($Message)Ending cycle."
         Remove-Variable Message -ErrorAction SilentlyContinue
         Remove-Variable ActiveMiners -ErrorAction SilentlyContinue
         Remove-Variable InitialActiveMiners -ErrorAction SilentlyContinue
