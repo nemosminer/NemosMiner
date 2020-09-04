@@ -408,8 +408,8 @@ Function Global:TimerUITick {
             Stop-BrainJob
             Stop-BalancesTracker
 
-            $LabelPayoutCurrencyDay.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
-            $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Red
+            $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+            $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
             Write-Message "$($Branding.ProductLabel) is idle."
 
             $ButtonPause.Enabled = $true
@@ -435,8 +435,8 @@ Function Global:TimerUITick {
                 $ButtonStop.Enabled = $true
                 $ButtonStart.Enabled = $true
 
-                $LabelPayoutCurrencyDay.Text = "Mining Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
-                $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Blue
+                $LabelMiningStatus.Text = "Mining Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@()
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@()
                 $WorkersDGV.DataSource = [System.Collections.ArrayList]@()
@@ -464,8 +464,8 @@ Function Global:TimerUITick {
                 $ButtonStop.Enabled = $true
                 $ButtonPause.Enabled = $true
 
-                $LabelPayoutCurrencyDay.Text = "Running | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
-                $LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Green
+                $LabelMiningStatus.Text = "Running | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
             }
         }
         $Variables.RestartCycle = $false
@@ -580,12 +580,12 @@ Function Global:TimerUITick {
 
             # $LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0) -gt 0) { "1 $EarningsCurrency = $(($Variables.Rates.$EarningsCurrency.($Config.Currency | Select-Object -Index 0)).ToString('n')) $($Config.Currency | Select-Object -Index 0)" }
 
-            $LabelPayoutCurrencyDay.Text = $Variables.Summary
+            $LabelEarningsDetails.Lines = @($Variables.Summary -replace '(&ensp;)+', '`n' -split '`n')
 
             #Disabled until all pools are properly supported in BalancesTracker
             # $LabelEarningsDetails.Lines = @()
             # If (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum -gt 0) { 
-            #     $LabelPayoutCurrencyDay.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 3) = $DisplayCurrency {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Rates.BTC.$EarningsCurrency)
+            #     $LabelMiningStatus.Text = "Avg: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 3) = $DisplayCurrency {0:N3}/day" -f (($Variables.Earnings.Values | Measure-Object -Property Growth24 -Sum).sum * $Variables.Rates.BTC.$EarningsCurrency)
             # }
 
             #Disabled until all pools are properly supported in BalancesTracker
@@ -854,7 +854,7 @@ Function Global:TimerUITick {
 
 Function Form_Load { 
     $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion)"
-    $LabelPayoutCurrencyDay.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion)"
+    $LabelMiningStatus.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
     $TimerUI.Add_Tick(
         { 
@@ -1037,8 +1037,8 @@ $LabelEarningsDetails.Tag = ""
 $LabelEarningsDetails.MultiLine = $true
 $LabelEarningsDetails.Text = ""
 $LabelEarningsDetails.AutoSize = $false
-$LabelEarningsDetails.Width = 332
-$LabelEarningsDetails.Height = 47 #62
+$LabelEarningsDetails.Width = 382
+$LabelEarningsDetails.Height = 77 #62
 $LabelEarningsDetails.Location = [System.Drawing.Point]::new(57, 2)
 $LabelEarningsDetails.Font = [System.Drawing.Font]::new("Lucida Console", 10)
 $LabelEarningsDetails.BorderStyle = 'None'
@@ -1047,27 +1047,17 @@ $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green
 $LabelEarningsDetails.Visible = $true
 $MainFormControls += $LabelEarningsDetails
 
-$LabelPayoutCurrencyDay = New-Object System.Windows.Forms.Label
-$LabelPayoutCurrencyDay.Text = "$($Config.PayoutCurrency)/day"
-$LabelPayoutCurrencyDay.AutoSize = $false
-$LabelPayoutCurrencyDay.Width = 473
-$LabelPayoutCurrencyDay.Height = 35
-$LabelPayoutCurrencyDay.Location = [System.Drawing.Point]::new(247, 2)
-$LabelPayoutCurrencyDay.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 14)
-$LabelPayoutCurrencyDay.TextAlign = "MiddleRight"
-$LabelPayoutCurrencyDay.ForeColor = [System.Drawing.Color]::Green
-$LabelPayoutCurrencyDay.BackColor = [System.Drawing.Color]::Transparent
-$MainFormControls += $LabelPayoutCurrencyDay
-
-# $LabelPayoutCurrencyPrice = New-Object System.Windows.Forms.Label
-# $LabelPayoutCurrencyPrice.Text = If ($Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency -gt 0) { "$($Config.PayoutCurrency)/$($Config.Currency | Select-Object -Index 0) $($Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency)" }
-# $LabelPayoutCurrencyPrice.AutoSize = $false
-# $LabelPayoutCurrencyPrice.Width = 400
-# $LabelPayoutCurrencyPrice.Height = 20
-# $LabelPayoutCurrencyPrice.TextAlign = "MiddleRight"
-# $LabelPayoutCurrencyPrice.Location = [System.Drawing.Point]::new(510, 39)
-# $LabelPayoutCurrencyPrice.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
-# $MainFormControls += $LabelPayoutCurrencyPrice
+$LabelMiningStatus = New-Object System.Windows.Forms.Label
+$LabelMiningStatus.Text = "$($Config.PayoutCurrency)/day"
+$LabelMiningStatus.AutoSize = $false
+$LabelMiningStatus.Width = 473
+$LabelMiningStatus.Height = 35
+$LabelMiningStatus.Location = [System.Drawing.Point]::new(247, 2)
+$LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 14)
+$LabelMiningStatus.TextAlign = "MiddleRight"
+$LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
+$LabelMiningStatus.BackColor = [System.Drawing.Color]::Transparent
+$MainFormControls += $LabelMiningStatus
 
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Text = "Start"
@@ -1112,26 +1102,6 @@ $LabelNotifications.BorderStyle = 'None'
 $LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
 $LabelNotifications.Visible = $true
 $MainFormControls += $LabelNotifications
-
-$LabelAddress = New-Object System.Windows.Forms.Label
-$LabelAddress.Text = "Wallet Address"
-$LabelAddress.AutoSize = $false
-$LabelAddress.Width = 100
-$LabelAddress.Height = 20
-$LabelAddress.Location = [System.Drawing.Point]::new(10, 68)
-$LabelAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$MainFormControls += $LabelAddress
-
-$TBAddress = New-Object System.Windows.Forms.TextBox
-$TBAddress.Tag = "Wallet"
-$TBAddress.MultiLine = $false
-$TBAddress.Text = $Config.Wallet
-$TBAddress.AutoSize = $false
-$TBAddress.Width = 285
-$TBAddress.Height = 20
-$TBAddress.Location = [System.Drawing.Point]::new(115, 68)
-$TBAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$MainFormControls += $TBAddress
 
 # Run Page Controls
 $RunPageControls = @()
@@ -1270,12 +1240,32 @@ $EstimationsDGV.AutoSizeColumnsMode = "DisplayedCells"
 # Config Page Controls
 $ConfigPageControls = @()
 
+$LabelAddress = New-Object System.Windows.Forms.Label
+$LabelAddress.Text = "Wallet Address"
+$LabelAddress.AutoSize = $false
+$LabelAddress.Width = 100
+$LabelAddress.Height = 20
+$LabelAddress.Location = [System.Drawing.Point]::new(2, 2)
+$LabelAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $LabelAddress
+
+$TBAddress = New-Object System.Windows.Forms.TextBox
+$TBAddress.Tag = "Wallet"
+$TBAddress.MultiLine = $false
+$TBAddress.Text = $Config.Wallet
+$TBAddress.AutoSize = $false
+$TBAddress.Width = 285
+$TBAddress.Height = 20
+$TBAddress.Location = [System.Drawing.Point]::new(135, 2)
+$TBAddress.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ConfigPageControls += $TBAddress
+
 $LabelWorkerName = New-Object System.Windows.Forms.Label
 $LabelWorkerName.Text = "Worker Name"
 $LabelWorkerName.AutoSize = $false
 $LabelWorkerName.Width = 132
 $LabelWorkerName.Height = 20
-$LabelWorkerName.Location = [System.Drawing.Point]::new(2, 2)
+$LabelWorkerName.Location = [System.Drawing.Point]::new(2, 25)
 $LabelWorkerName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelWorkerName
 
@@ -1286,7 +1276,7 @@ $TBWorkerName.Text = $Config.WorkerName
 $TBWorkerName.AutoSize = $false
 $TBWorkerName.Width = 285
 $TBWorkerName.Height = 20
-$TBWorkerName.Location = [System.Drawing.Point]::new(135, 2)
+$TBWorkerName.Location = [System.Drawing.Point]::new(135, 25)
 $TBWorkerName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBWorkerName
 
@@ -1295,7 +1285,7 @@ $LabelMPHUserName.Text = "MPH UserName"
 $LabelMPHUserName.AutoSize = $false
 $LabelMPHUserName.Width = 132
 $LabelMPHUserName.Height = 20
-$LabelMPHUserName.Location = [System.Drawing.Point]::new(2, 25)
+$LabelMPHUserName.Location = [System.Drawing.Point]::new(2, 48)
 $LabelMPHUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMPHUserName
 
@@ -1306,7 +1296,7 @@ $TBMPHUserName.Text = $Config.MPHUserName
 $TBMPHUserName.AutoSize = $false
 $TBMPHUserName.Width = 285
 $TBMPHUserName.Height = 20
-$TBMPHUserName.Location = [System.Drawing.Point]::new(135, 25)
+$TBMPHUserName.Location = [System.Drawing.Point]::new(135, 48)
 $TBMPHUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBMPHUserName
 
@@ -1315,7 +1305,7 @@ $LabelMPHAPIKey.Text = "MPH API Key"
 $LabelMPHAPIKey.AutoSize = $false
 $LabelMPHAPIKey.Width = 132
 $LabelMPHAPIKey.Height = 20
-$LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 48)
+$LabelMPHAPIKey.Location = [System.Drawing.Point]::new(2, 71)
 $LabelMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMPHAPIKey
 
@@ -1326,7 +1316,7 @@ $TBMPHAPIKey.Text = $Config.MPHAPIKey
 $TBMPHAPIKey.AutoSize = $false
 $TBMPHAPIKey.Width = 285
 $TBMPHAPIKey.Height = 20
-$TBMPHAPIKey.Location = [System.Drawing.Point]::new(135, 48)
+$TBMPHAPIKey.Location = [System.Drawing.Point]::new(135, 71)
 $TBMPHAPIKey.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBMPHAPIKey
 
@@ -1335,7 +1325,7 @@ $LabelInterval.Text = "Interval"
 $LabelInterval.AutoSize = $false
 $LabelInterval.Width = 132
 $LabelInterval.Height = 20
-$LabelInterval.Location = [System.Drawing.Point]::new(2, 71)
+$LabelInterval.Location = [System.Drawing.Point]::new(2, 94)
 $LabelInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelInterval
 
@@ -1348,7 +1338,7 @@ $NumudInterval.Text = $Config.Interval
 $NumudInterval.AutoSize = $false
 $NumudInterval.Width = 285
 $NumudInterval.Height = 20
-$NumudInterval.Location = [System.Drawing.Point]::new(135, 71)
+$NumudInterval.Location = [System.Drawing.Point]::new(135, 94)
 $NumudInterval.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $NumudInterval
 
@@ -1357,7 +1347,7 @@ $LabelLocation.Text = "Region"
 $LabelLocation.AutoSize = $false
 $LabelLocation.Width = 132
 $LabelLocation.Height = 20
-$LabelLocation.Location = [System.Drawing.Point]::new(2, 94)
+$LabelLocation.Location = [System.Drawing.Point]::new(2, 117)
 $LabelLocation.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelLocation
 
@@ -1372,7 +1362,7 @@ $LBRegion.AutoSize = $false
 $LBRegion.Sorted = $true
 $LBRegion.Width = 285
 $LBRegion.Height = 20
-$LBRegion.Location = [System.Drawing.Point]::new(135, 94)
+$LBRegion.Location = [System.Drawing.Point]::new(135, 117)
 $LBRegion.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LBRegion
 
@@ -1381,7 +1371,7 @@ $LabelAlgos.Text = "Algorithm"
 $LabelAlgos.AutoSize = $false
 $LabelAlgos.Width = 132
 $LabelAlgos.Height = 20
-$LabelAlgos.Location = [System.Drawing.Point]::new(2, 117)
+$LabelAlgos.Location = [System.Drawing.Point]::new(2, 140)
 $LabelAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelAlgos
 
@@ -1392,7 +1382,7 @@ $TBAlgos.Text = $Config.Algorithm -Join ","
 $TBAlgos.AutoSize = $false
 $TBAlgos.Width = 285
 $TBAlgos.Height = 20
-$TBAlgos.Location = [System.Drawing.Point]::new(135, 117)
+$TBAlgos.Location = [System.Drawing.Point]::new(135, 140)
 $TBAlgos.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBAlgos
 
@@ -1401,7 +1391,7 @@ $LabelCurrency.Text = "Currencies"
 $LabelCurrency.AutoSize = $false
 $LabelCurrency.Width = 132
 $LabelCurrency.Height = 20
-$LabelCurrency.Location = [System.Drawing.Point]::new(2, 140)
+$LabelCurrency.Location = [System.Drawing.Point]::new(2, 163)
 $LabelCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelCurrency
@@ -1413,7 +1403,7 @@ $TBCurrency.Text = @($Config.Currency -join ', ')
 $TBCurrency.AutoSize = $false
 $TBCurrency.Width = 285
 $TBCurrency.Height = 20
-$TBCurrency.Location = [System.Drawing.Point]::new(135, 140)
+$TBCurrency.Location = [System.Drawing.Point]::new(135, 163)
 $TBCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TBCurrency.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $TBCurrency
@@ -1423,7 +1413,7 @@ $LabelPayoutCurrency.Text = "Payout Currency"
 $LabelPayoutCurrency.AutoSize = $false
 $LabelPayoutCurrency.Width = 132
 $LabelPayoutCurrency.Height = 20
-$LabelPayoutCurrency.Location = [System.Drawing.Point]::new(2, 163)
+$LabelPayoutCurrency.Location = [System.Drawing.Point]::new(2, 186)
 $LabelPayoutCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelPayoutCurrency
 
@@ -1434,7 +1424,7 @@ $TBPayoutCurrency.Text = $Config.PayoutCurrency
 $TBPayoutCurrency.AutoSize = $false
 $TBPayoutCurrency.Width = 285
 $TBPayoutCurrency.Height = 20
-$TBPayoutCurrency.Location = [System.Drawing.Point]::new(135, 163)
+$TBPayoutCurrency.Location = [System.Drawing.Point]::new(135, 186)
 $TBPayoutCurrency.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBPayoutCurrency
 
@@ -1443,7 +1433,7 @@ $LabelDonate.Text = "Donate"
 $LabelDonate.AutoSize = $false
 $LabelDonate.Width = 132
 $LabelDonate.Height = 20
-$LabelDonate.Location = [System.Drawing.Point]::new(2, 186)
+$LabelDonate.Location = [System.Drawing.Point]::new(2, 209)
 $LabelDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $LabelDonate
@@ -1457,7 +1447,7 @@ $NumudDonate.Text = $Config.Donate
 $NumudDonate.AutoSize = $false
 $NumudDonate.Width = 285
 $NumudDonate.Height = 20
-$NumudDonate.Location = [System.Drawing.Point]::new(135, 186)
+$NumudDonate.Location = [System.Drawing.Point]::new(135, 209)
 $NumudDonate.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $NumudDonate.Add_MouseHover($ShowHelp)
 $ConfigPageControls += $NumudDonate
@@ -1467,7 +1457,7 @@ $LabelProxy.Text = "Proxy"
 $LabelProxy.AutoSize = $false
 $LabelProxy.Width = 132
 $LabelProxy.Height = 20
-$LabelProxy.Location = [System.Drawing.Point]::new(2, 209)
+$LabelProxy.Location = [System.Drawing.Point]::new(2, 235)
 $LabelProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelProxy
 
@@ -1478,7 +1468,7 @@ $TBProxy.Text = $Config.Proxy
 $TBProxy.AutoSize = $false
 $TBProxy.Width = 285
 $TBProxy.Height = 20
-$TBProxy.Location = [System.Drawing.Point]::new(135, 209)
+$TBProxy.Location = [System.Drawing.Point]::new(135, 235)
 $TBProxy.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $TBProxy
 
@@ -1487,7 +1477,7 @@ $LabelRunningMinerGainPct.Text = "RunningMinerGain%"
 $LabelRunningMinerGainPct.AutoSize = $false
 $LabelRunningMinerGainPct.Width = 132
 $LabelRunningMinerGainPct.Height = 20
-$LabelRunningMinerGainPct.Location = [System.Drawing.Point]::new(2, 232)
+$LabelRunningMinerGainPct.Location = [System.Drawing.Point]::new(2, 261)
 $LabelRunningMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelRunningMinerGainPct
 
@@ -1500,7 +1490,7 @@ $NumudRunningMinerGainPct.Text = $Config.RunningMinerGainPct
 $NumudRunningMinerGainPct.AutoSize = $false
 $NumudRunningMinerGainPct.Width = 285
 $NumudRunningMinerGainPct.Height = 20
-$NumudRunningMinerGainPct.Location = [System.Drawing.Point]::new(135, 232)
+$NumudRunningMinerGainPct.Location = [System.Drawing.Point]::new(135, 258)
 $NumudRunningMinerGainPct.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $NumudRunningMinerGainPct
 
@@ -1514,8 +1504,8 @@ $LabelMinersTypes.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMinersTypes
 
 $LabelGuiDevices = New-Object System.Windows.Forms.LinkLabel
-$LabelGuiDevices.Location = New-Object System.Drawing.Size(2, 281)
-$LabelGuiDevices.Size = New-Object System.Drawing.Size(370, 20)
+$LabelGuiDevices.Location = New-Object System.Drawing.Size(2, 304)
+$LabelGuiDevices.Size = New-Object System.Drawing.Size(355, 20)
 $LabelGuiDevices.LinkColor = [System.Drawing.Color]::Blue
 $LabelGuiDevices.ActiveLinkColor = [System.Drawing.Color]::Blue
 $LabelGuiDevices.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1713,7 +1703,7 @@ $ConfigPageControls += $LabelPoolsSelect
 
 $CheckedListBoxPools = New-Object System.Windows.Forms.CheckedListBox
 $CheckedListBoxPools.Tag = "PoolName"
-$CheckedListBoxPools.Height = 230
+$CheckedListBoxPools.Height = 265
 $CheckedListBoxPools.Width = 130
 $CheckedListBoxPools.Text = "Pools"
 $CheckedListBoxPools.Location = [System.Drawing.Point]::new(425, 25)
