@@ -921,15 +921,15 @@ Function Write-Message {
     Begin { }
     Process { 
 
-        #Update status text box in GUI
-        If ($Variables.LabelStatus) { 
-            $Variables.LabelStatus.Lines += $Message
-            $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
-            $Variables.LabelStatus.ScrollToCaret()
-            $Variables.LabelStatus.Refresh()
-        }
-
         If ((-not $Config.LogToScreen) -or $Level -in $Config.LogToScreen) { 
+
+            #Update status text box in GUI
+            If ($Variables.LabelStatus) { 
+                $Variables.LabelStatus.Lines += $Message
+                $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
+                $Variables.LabelStatus.ScrollToCaret()
+                $Variables.LabelStatus.Refresh()
+            }
 
             # Inherit the same verbosity settings as the script importing this
             If (-not $PSBoundParameters.ContainsKey('InformationPreference')) { $InformationPreference = $PSCmdlet.GetVariableValue('InformationPreference') }
