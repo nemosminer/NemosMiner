@@ -668,14 +668,16 @@ Function Start-Cycle {
 
         If ($Variables.Rates."BTC") { 
             If ([Double]::IsNaN($Variables.MiningEarning)) { 
-                $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+                $Variables.Summary = "1 BTC={0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0))
             }
             Else { 
-                $Variables.Summary = "Estimated Earning/day: $($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)"
-                If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: $($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))) $($Config.Currency | Select-Object -Index 0)" }
+                $Variables.Summary = "Estimated Earning/day: {0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
+                If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { 
+                    $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: {0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
+                }
                 $Variables.Summary +=  "&ensp;&ensp;&ensp;&ensp;"
                 (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
-                    $Variables.Summary += "&ensp;&ensp;1 $_=$($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+                    $Variables.Summary += "&ensp;&ensp;1 $_={0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0))
                 }
             }
         }
