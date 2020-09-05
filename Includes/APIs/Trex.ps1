@@ -26,17 +26,15 @@ class Trex : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
+        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]($Data.accepted_count)
             $Shares_Rejected = [Int64]($Data.rejected_count)
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
-        If ($HashRate_Name) { 
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-        }
-
-        If ($this.ReadPowerusage) { 
+        If ($this.CalculatePowerCost) { 
             If ($Data.gpus.power) { 
                 $PowerUsage = [Double]($Data.gpus.power | Measure-Object -Sum).Sum
             }

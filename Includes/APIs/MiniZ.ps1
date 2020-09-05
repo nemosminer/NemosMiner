@@ -27,17 +27,15 @@ class MiniZ : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
+        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]($Data.result.accepted_shares | Measure-Object -Sum).Sum
             $Shares_Rejected = [Int64]($Data.result.rejected_shares | Measure-Object -Sum).Sum
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
-        If ($HashRate_Name) { 
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-        }
-
-        If ($this.ReadPowerusage) { 
+        If ($this.CalculatePowerCost) { 
             $PowerUsage = [Double]($Data.result.gpu_power_usage | Measure-Object -Sum).Sum 
         }
 

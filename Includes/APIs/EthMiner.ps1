@@ -21,7 +21,7 @@ class EthMiner : Miner {
         $HashRate = [PSCustomObject]@{ }
         $Shares = [PSCustomObject]@{ }
 
-        $HashRate_Name = [String]($this.Algorithm | Select-Object -Index 0)
+        $HashRate_Name = [String]($this.Algorithm[0])
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
         If ($this.Algorithm -match '^(bitcoininterest(-.+|))$') { $HashRate_Value *= 1000 }
         If ($this.Algorithm -match '^(ethash(-.+|))$' -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
@@ -36,15 +36,13 @@ class EthMiner : Miner {
             If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
                 $this.SetStatus([MinerStatus]::Failed)
             }
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
-        If ($HashRate_Name) { 
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-        }
+        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         If ($this.Algorithm -ne $HashRate_Name) { 
-            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)[0]
+            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
             If ($this.Algorithm -match '^(ethash(-.+|))$') { $HashRate_Value *= 1000 }
             If ($this.Algorithm -match '^(neoscrypt(-.+|))$') { $HashRate_Value *= 1000 }
@@ -53,14 +51,15 @@ class EthMiner : Miner {
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
                 $Shares_Rejected = [Int64]($Data.result[4] -split ";")[2]
-                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
             }
 
             If ($HashRate_Name) { 
                 $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
             }
         }
-        If ($this.ReadPowerusage) { 
+
+        If ($this.CalculatePowerCost) { 
             If ($Data.Result.Count -gt 9) { 
                 $PowerUsage = [Double]$Data.result[9]
             }

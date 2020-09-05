@@ -15,6 +15,8 @@ class Gminer : Miner {
         Catch { 
         }
 
+        $Data | ConvertTo-Json -Compress > ".\Debug\Gminer_$($this.algorithm -join '-').json"
+
         $HashRate = [PSCustomObject]@{ }
         $Shares = [PSCustomObject]@{ }
 
@@ -24,24 +26,22 @@ class Gminer : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
+        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = ($Data.total_accepted_shares)
             $Shares_Rejected = ($Data.total_rejected_shares)
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
-        }
-
-        If ($HashRate_Name) { 
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
         If ($this.Algorithm -ne $HashRate_Name) { 
-            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)[0]
+            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
             $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
 
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.total_accepted_shares2)
                 $Shares_Rejected = [Int64]($Data.total_rejected_shares2)
-                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
             }
 
             If ($HashRate_Name) { 
@@ -49,7 +49,7 @@ class Gminer : Miner {
             }
         }
 
-        If ($this.ReadPowerusage) { 
+        If ($this.CalculatePowerCost) { 
             $PowerUsage = [Double](($Data.devices | Measure-Object power_usage -Sum).Sum)
         }
 

@@ -24,17 +24,15 @@ class Eminer : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
+        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]$Data.found_solutions
             $Shares_Rejected = [Int64]($Data.invalid_solutions + $Data.rejected_solutions)
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
-        If ($HashRate_Name) { 
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-        }
-
-        If ($this.ReadPowerusage) { 
+        If ($this.CalculatePowerCost) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 

@@ -20,36 +20,30 @@ class NBMiner : Miner {
 
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
-        If ($Data.stratum.dual_mine) { 
-            $HashRate_Name = [String](Get-Algorithm ($data.stratum.algorithm -split '_' | Select-Object -Index 0))
-        }
-        Else { 
-            $HashRate_Name = [String](Get-Algorithm $data.stratum.algorithm)
-        }
+
+        $HashRate_Name = $this.Algorithm | Select-Object -Last 1
+
         $HashRate_Value = [Double]$Data.miner.total_hashrate_raw
+        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]$Data.stratum.accepted_shares
             $Shares_Rejected = [Int64]$Data.stratum.rejected_shares
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
-        }
-
-        If ($HashRate_Name) { 
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
         If ($Data.stratum.dual_mine) { 
-            $HashRate_Name = [String](Get-Algorithm ($data.stratum.algorithm -split '_' | Select-Object -Index 1))
+            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$Data.miner.total_hashrate2_raw }
 
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]$Data.stratum.accepted_shares2
                 $Shares_Rejected = [Int64]$Data.stratum.rejected_shares2
-                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
+                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
             }
         }
 
-        If ($this.ReadPowerusage) { 
+        If ($this.CalculatePowerCost) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 

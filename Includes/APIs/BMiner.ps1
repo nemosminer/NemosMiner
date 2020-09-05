@@ -35,25 +35,21 @@ class BMiner : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
-        $Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers | ForEach-Object { $_.Algorithm } } | Select-Object -Unique | ForEach-Object { 
-            If ( $_ -eq "equihash1445" -and $this.Algorithm -contains "EquihashBTG") { $HashRate_Name = "EquihashBTG" }
-            Else { $HashRate_Name = [String](Get-Algorithm $_) }
-            If (-not $Hashrate_Name) { $Hashrate_Name = $this.Algorithm[0] } #Temp fix for broken CuckarooZ29 API
+        $Stratum = @($Data.Stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name)
+        $Stratum | ForEach-Object { 
+            $HashRate_Name = [String]$this.Algorithm[$Stratum.IndexOf($_)]
             $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.hash_rate } | Measure-Object -Sum).Sum
             If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.solution_rate } | Measure-Object -Sum).Sum }
 
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]$Data.stratums.$_.accepted_shares
                 $Shares_Rejected = [Int64]$Data.stratums.$_.rejected_shares
-                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $($Shares_Accepted + $Shares_Rejected)) }
-            }
-
-            If ($HashRate_Name) { 
-                $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
             }
         }
 
-        If ($this.ReadPowerusage) { 
+        If ($this.CalculatePowerCost) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 
