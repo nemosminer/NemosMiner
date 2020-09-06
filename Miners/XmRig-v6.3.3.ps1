@@ -2,13 +2,13 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.3.3/XMRigv633.7z"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/XmRig/XMRigv633.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Type = "AMD"   ; Command = " --algo astrobwt" }
     [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/ccx" } #SRBMminerMulti-v0.5. is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      MinMemGB = 1;    Type = "AMD"   ; Command = " --algo cn-lite/0" }
@@ -57,10 +57,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "CPU"; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Command = " --algo cn/zls" }
     [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Command = " --algo rx/0" }
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Command = " --algo rx/arq" }
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Command = " --algo rx/arq" } #SRBMminerMulti-v0.5.0 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Command = " --algo rx/kev" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Command = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Command = " --algo rx/sfx" }
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Command = " --algo rx/sfx" } #SRBMminerMulti-v0.5.0 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Command = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Type = "NVIDIA"; Command = " --algo astrobwt" }

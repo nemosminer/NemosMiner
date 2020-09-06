@@ -22,7 +22,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "JeongHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-jeonghash" }
 #   [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo kawpow" } #NBMiner-v31.1 is fastest
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo lyra2v3" } #TeamRed-v0.7.9 is fastest
-    [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp" }
+#   [PSCustomObject]@{ Algorithm = "MTP";          Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp" } #TeamRed-v0.7.9 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";       Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-pawelhash" }

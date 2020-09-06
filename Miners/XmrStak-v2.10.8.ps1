@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   MinMemGB = 4; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";        MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";        MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" } #SRBMminerMulti-v0.5.0 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightLite";       MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   MinMemGB = 1; Type = "AMD";    Command = " --noCPU --noNVIDIA --amd" }
