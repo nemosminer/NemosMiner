@@ -91,7 +91,7 @@ Easy configuration, easy start:
     which can be increased or decreased in the config tab, 
     please help support the great team behind NemosMiner by leaving mining donations turned on
     We want to stay completely transparent on the way fees are managed in the product.
-    Fees cycle occurs once every 24 hours for the selected amount of time (14 minutes).
+    Fees cycle occurs once every 24 hours for the selected amount of time (13 minutes).
     The first donation sequence occurs 1 hour after miners are started.
     If Interval is set higher than the donation time, the interval will prime.
     Example for default parameters:
