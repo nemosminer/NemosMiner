@@ -6,7 +6,7 @@ $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpumi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Cpupower"; Command = " --algo cpupower" }
+    [PSCustomObject]@{ Algorithm = "CpuPower"; Command = " --algo cpupower" }
     [PSCustomObject]@{ Algorithm = "Power2b";  Command = " --algo power2b" }
 )
 
