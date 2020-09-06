@@ -28,7 +28,12 @@ class SRBMiner : Miner {
         $Shares = [PSCustomObject]@{ }
 
         $HashRate_Name = [String]$this.Algorithm[0]
-        $HashRate_Value = [Double]$Data.hashrate_total_now
+        If ($Data.algorithms) { 
+            $HashRate_Value = [Double]$Data.algorithms[0].hashrate.now
+        }
+        Else { 
+            $HashRate_Value = [Double]$Data.hashrate_total_now
+        }
 
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
@@ -36,8 +41,14 @@ class SRBMiner : Miner {
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         If ($this.AllowedBadShareRatio) { 
-            $Shares_Accepted = [Int64]$Data.shares.accepted
-            $Shares_Rejected = [Int64]$Data.shares.rejected
+            If ($Data.algorithms) { 
+                $Shares_Accepted = [Int64]$Data.algorithms[0].shares.accepted
+                $Shares_Rejected = [Int64]$Data.algorithms[0].shares.rejected 
+            }
+            Else { 
+                $Shares_Accepted = [Int64]$Data.shares.accepted
+                $Shares_Rejected = [Int64]$Data.shares.rejected
+            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
