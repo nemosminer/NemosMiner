@@ -6,17 +6,17 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/PhoenixMin
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "AMD"; Command = " -dcoin blake2s -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
-#   [PSCustomObject]@{ Algorithm = @("BitcoinInterest", $null); Fee = @(0.009, 0); MinMemGB = 2;   WarmupTime = 45; Type = "AMD"; Command = " -coin BCI -amd -eres 1 -mi 12" } #Does not work
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "AMD"; Command = " -dcoin blake2s -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("ProgPoW");           Fee = @(0.009);    MinMemGB = 2.4; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
+#   [PSCustomObject]@{ Algorithm = @("BitcoinInterest");   Fee = @(0.009);    MinMemGB = 2;   WarmupTime = 45; Type = "AMD"; Command = " -coin BCI -amd -eres 1 -mi 12" } #Does not work
 
-    [PSCustomObject]@{ Algorithm = @("Ethash", $null);          Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");      Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -dcoin blake2s -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
-    [PSCustomObject]@{ Algorithm = @("ProgPoW", $null);         Fee = @(0.009, 0); MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009);    MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -dcoin blake2s -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
+    [PSCustomObject]@{ Algorithm = @("ProgPoW");           Fee = @(0.009);    MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
 )
 
-If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $Pools.($_.Algorithm[1]).Host) }) { 
+If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($PoolsSecondaryAlgorithm.($_.Algorithm[0]).Host -and $Pools.($_.Algorithm[1]).Host) }) { 
 
     #Intensities for 2. algorithm
     $Intensities2 = [PSCustomObject]@{ 
@@ -54,7 +54,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-
 
                     $_.Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
                     If ($_.Algorithm[0] -like "Ethash*") {
-                        If ($Pools.($_.Algorithm[0]).Name -like "ZergPool*") { Return }
                         If ($Pools.($_.Algorithm[0]).Name -like "NiceHash*" -or $Pools.($_.Algorithm[0]).Name -like "MPH*") { 
                             $_.Command += " -proto 4"
                         }
