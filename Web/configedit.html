@@ -242,24 +242,6 @@
       }
       document.getElementById('Currency').value = config.Currency;
       document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
-      document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
-      document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
-      document.getElementById('MPHUserName').value = config.MPHUserName;
-      document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked);
-      document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
-      document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
-      document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
-      document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
-      document.getElementById('NiceHashWallet').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
-      document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
-      document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('prohashing24hr').checked);
-      document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
-      document.getElementById('ProHashingUserName').disabled = !(document.getElementById('prohashing24hr').checked);
       document.getElementById('Proxy').value = config.Proxy;
       if (config.RunningMinerGainPc == null) { 
         document.getElementById('RunningMinerGainPct').value = 5;
@@ -362,6 +344,25 @@
       if (config.EstimateCorrection) {
         document.getElementById('EstimateCorrection').checked = true;
       }
+      //must be placed afetr pool loading
+      document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
+      document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
+      document.getElementById('MPHUserName').value = config.MPHUserName;
+      document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked);
+      document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
+      document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('nicehash').checked);
+      document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
+      document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('nicehash').checked);
+      document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
+      document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('nicehash').checked);
+      document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
+      document.getElementById('NiceHashWallet').disabled = !(document.getElementById('nicehash').checked);
+      document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
+      document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('nicehash').checked);
+      document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
+      document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('prohashing24hr').checked);
+      document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
+      document.getElementById('ProHashingUserName').disabled = !(document.getElementById('prohashing24hr').checked);
     }
   });
 
