@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@( 
     #Ethash -strap 1 -strap 2 -strap 3 -strap 4 -strap 5 -strap 6
-#   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" } #Bminer-v16.3.0 is faster
+#   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" } #Bminer-v16.3.0 & PhoenixMiner-v5.1c are faster
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
@@ -84,7 +84,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
                     Else { 
                         If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "NiceHash*|MPH*") { 
-                            $Protocol = " -esm 3 stratum+tcp://"
+                            $_.Command += " -esm 3"
+                            $Protocol = "stratum+tcp://"
                         }
                         Else { 
                             $Protocol = ""
@@ -92,7 +93,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-
                         $_.Command += " -dpool $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpsw $($Pools.($_.Algorithm[1]).Pass)$($Dcoin.($_.Algorithm[1]))"
                         If ($_.Intensity2 -ge 0) { $_.Command += " -dcri $($_.Intensity2)" }
 
