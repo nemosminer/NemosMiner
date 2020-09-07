@@ -13,7 +13,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "YescryptR8";   Command = " --algo yescryptr8" } #CcminerLyraYesscrypt-v8.21r18v5 is faster
     [PSCustomObject]@{ Algorithm = "YescryptR8g";  Command = " --algo yescryptr8g" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";     Command = " --algo yescrypt" }
-    [PSCustomObject]@{ Algorithm = "Yescryptr32";  Command = " --algo yescryptr32" }
+    [PSCustomObject]@{ Algorithm = "YescryptR32";  Command = " --algo yescryptr32" }
     [PSCustomObject]@{ Algorithm = "YespowerItc";  Command = " --algo yespoweritc" }
 )
 
