@@ -64,11 +64,10 @@ While ($true) {
         #Get pools to track
         $PoolsToTrack = @($Config.PoolName | Where-Object { ($_ -replace "24hr$" -replace "Coins$") -in @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name })
 
-        Write-Message "Requesting balances data ($($PoolsToTrack -join ', '))."
+        Write-Message "Requesting balances data ($(($PoolsToTrack -replace "24hr$" -replace "Coins$") -join ', '))."
 
         $PoolsToTrack | ForEach-Object { 
-            $Pool = $_
-            $PoolNorm = $_ -replace "24hr$" -replace "Coins$"
+            $PoolNorm = $PoolName = $_ -replace "24hr$" -replace "Coins$"
             $API = $PoolAPI | Where-Object Name -EQ $PoolNorm
             $APIUri = $API.WalletUri
             $BalanceData = [PSCustomObject]@{ }
@@ -76,6 +75,16 @@ While ($true) {
             $TotalJson = $API.Total
             $PoolAccountUri = $API.AccountUri
             $PoolConfig = $Config.PoolsConfig.$PoolNorm
+            If ($PoolNorm -eq "NiceHash") { 
+                If ($Config.NiceHashWalletIsInternal) { 
+                    $PoolName = "NiceHash`n(Internal Wallet)"
+                    $PoolNorm = "NiceHashInternal"
+                }
+                Else { 
+                    $PoolName = "NiceHash`n(External Wallet)"
+                    $PoolNorm = "NiceHashExternal"
+                }
+            }
 
             $PayoutThresholdCurrency = $PoolConfig.PayoutThresholdCurrency
             If (-not $PayoutThresholdCurrency) { $PayoutThresholdCurrency = $PoolConfig.PayoutCurrency }
@@ -96,7 +105,7 @@ While ($true) {
                     }
                     Catch { }
                 }
-                "Nicehash" { 
+                "NiceHashinternal" { 
                     Try { 
                         $Request_Balance = [PSCustomObject]@{}
 
@@ -124,6 +133,29 @@ While ($true) {
                             }
                             $BalanceData = Invoke-RestMethod "https://api2.nicehash.com$EndPoint" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop -Method $Method -Headers $Headers
                         }
+                    }
+                    Catch { }
+                }
+                "NiceHashExternal" { 
+                    Try { 
+                        $TempBalance = 0
+                        $Wallet = $PoolConfig.Wallet
+                        $PayoutCurrency = "BTC"
+                        $NicehashData = ((Invoke-RestMethod -Uri "$APIUri$Wallet/rigs/stats/unpaid/" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).Data | Where-Object { $_[0] -gt $CurDateUxFormat } | Sort-Object { $_[0] } | Group-Object { $_[2] }).group
+                        $NHTotalBalance = -$NicehashData[0][2]
+                        $NicehashData | ForEach-Object {
+                            #Nicehash continously transfers balances to wallet
+                            If ($_[2] -gt $TempBalance) {
+                                $TempBalance = $_[2]
+                            }
+                            Else { 
+                                $NHTotalBalance += $TempBalance
+                                $TempBalance = $_[2]
+                            }
+                        }
+                        $NHTotalBalance += $TempBalance
+                        $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
+                        $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
                     }
                     Catch { }
                 }
@@ -186,7 +218,7 @@ While ($true) {
                 $AvgHour = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) } Else { $Growth1 }
 
                 $Variables.Earnings.$PoolNorm = $BalanceObject = [PSCustomObject]@{ 
-                    Pool                    = $PoolNorm
+                    Pool                    = $PoolName
                     Wallet                  = $Wallet
                     Uri                     = $PoolAccountUri
                     Date                    = $Date
