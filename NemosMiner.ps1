@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.4
-Version date:   10 August 2020
+Version date:   08 September 2020
 #>
 
 [CmdletBinding()]
@@ -359,6 +359,7 @@ $Variables.Pools = [Pool[]]@()
 $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
 $Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
+$Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -408,6 +409,7 @@ Function Global:TimerUITick {
             Stop-BrainJob
             Stop-BalancesTracker
 
+            $Variables.Summary = ""
             $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
             Write-Message "$($Branding.ProductLabel) is idle."
@@ -435,7 +437,7 @@ Function Global:TimerUITick {
                 $ButtonStop.Enabled = $true
                 $ButtonStart.Enabled = $true
 
-                $LabelMiningStatus.Text = "Mining Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                $LabelMiningStatus.Text = "Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
                 $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@()
                 $RunningMinersDGV.DataSource = [System.Collections.ArrayList]@()
