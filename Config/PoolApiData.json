@@ -56,6 +56,17 @@
     "CurrenciesUri": "",
     "PayoutCurrency": "BTC",
     "PayoutThreshold": {
+      "BTCP": 0.0002,
+      "DASH": 0.0016,
+      "ETC": 0.00155,
+      "ETH": 0.013,
+      "ETN": 0.08,
+      "FTC": 0.017,
+      "LTC": 0.002,
+      "MAX": 0.0115,
+      "XMR": 0.0503,
+      "ZEC": 0.0016,
+      "ZEN": 0.0016,
       "mBTC": 10
     },
     "Total": "confirmed",
@@ -73,8 +84,8 @@
     "PayoutThreshold": { 
       "mBTC": 1
     },
-    "Total": "unpaidAmount",
-    "Balance": "externalBalance"
+    "Total": "totalBalance",
+    "Balance": "totalBalance"
   },
   {
     "Name": "NLPool",
@@ -101,6 +112,7 @@
     "CurrenciesUri": "https://prohashing.com/api/v1/currencies",
     "PayoutCurrency": "USD",
     "PayoutThreshold": { 
+      "mBTC": 0,
       "USD": 10
     },
     "Total": "total",
