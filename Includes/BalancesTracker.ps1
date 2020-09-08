@@ -62,13 +62,13 @@ While ($true) {
         }
 
         #Get pools to track
-        $PoolsToTrack = @($Config.PoolName | Where-Object { ($_ -replace "24hr" -replace "Coins") -in @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name })
+        $PoolsToTrack = @($Config.PoolName | Where-Object { ($_ -replace "24hr$" -replace "Coins$") -in @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name })
 
-        Write-Message "Requesting balances data ($(($PoolAPI.Name | Where-Object { $_ -in $PoolsToTrack }) -join ', '))."
+        Write-Message "Requesting balances data ($($PoolsToTrack -join ', '))."
 
-        $PoolsToTrack | Where { $_ -notmatch "^NiceHash*|^ProHashing*"} | ForEach-Object { 
+        $PoolsToTrack | Where-Object { $_ -notmatch "^NiceHash*|^ProHashing*" } | ForEach-Object { 
             $Pool = $_
-            $PoolNorm = $_ -replace "24hr" -replace "Coins"
+            $PoolNorm = $_ -replace "24hr$" -replace "Coins$"
             $API = $PoolAPI | Where-Object Name -EQ $PoolNorm
             $APIUri = $API.WalletUri
             $BalanceData = [PSCustomObject]@{ }
@@ -249,7 +249,7 @@ While ($true) {
                 #         $Global:NHCache[$KeyStr].request
                 #     }
                 }
-                "NiceHash" { 
+                "_NiceHash" { 
                     Try { 
                         $TempBalance = 0
                         $Wallet = $PoolConfig.Wallet
@@ -289,7 +289,7 @@ While ($true) {
                     Catch { }
                 }
             }
-            If ($BalanceData-PSObject.Properties.Count -gt 0) { 
+            If ($BalanceData.PSObject.Properties.Count -gt 0) { 
                 $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
                     Pool         = $PoolNorm
                     DateTime     = $Now
@@ -349,7 +349,7 @@ While ($true) {
                     AvgHourlyGrowth         = [Double]$AvgHour
                     DailyGrowth             = [Double]$AvgHour * 24
                     EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHour * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHour -gt 0) { $Now.AddHours(($PayoutThreshold - $BalanceObject.balance) / $AvgHour) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
+                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHour -gt 0) { $Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.total_unpaid) / $AvgHour) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
                     TrustLevel              = $((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum
                     TotalHours              = ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
@@ -413,7 +413,7 @@ While ($true) {
         $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
 
         #Write chart data file (used in Web GUI)
-        $ChartData = $DailyEarnings | Sort-Object StartTime | Group-Object -Property Date | Select-Object -Last 30 # days
+        $ChartData = $DailyEarnings | Sort-Object StartTime | Group-Object -Property Date | Select-Object -Last 30 #days
 
         #One dataset per pool
         $PoolData = [PSCustomObject]@{}
