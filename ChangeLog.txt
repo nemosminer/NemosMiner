@@ -1,3 +1,20 @@
+Changelog NemosMiner 07.09.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- NiceHash balances not working
+- BalancesTracker reporting incorrect data
+
+Miner Update:
+- Bminer-v16.3.0
+- GMiner 2.22
+- SRBMiner-Multi-v0.5.0
+- Trex-v0.16.2
+
 Changelog NemosMiner 02.09.2020
 ===============================
 
