@@ -97,6 +97,8 @@ While ($true) {
             }
             If (-not $PayoutThreshold) { $PayoutThreshold = $API.PayoutThreshold."*" }
 
+            $Growth1 = $Growth6 = $Growth24 = 0
+
             Switch ($PoolNorm) { 
                 "MPH" { 
                     Try { 
