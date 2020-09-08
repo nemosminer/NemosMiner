@@ -6,7 +6,7 @@ Function Start-Cycle {
 
         #Set master timer
         $Variables.Timer = (Get-Date).ToUniversalTime()
-        $Variables.StatStart = $Variables.StatEnd
+        $Variables.StatStart = If ($Variables.StatEnd) { $Variables.StatEnd } Else { $Variables.Timer }
         $Variables.StatEnd = $Variables.Timer.AddSeconds($Config.Interval)
         $Variables.StatSpan = New-TimeSpan $Variables.StatStart $Variables.StatEnd
         $Variables.WatchdogInterval = ($Variables.Strikes + 1) * $Variables.StatSpan.TotalSeconds
@@ -60,7 +60,7 @@ Function Start-Cycle {
                     $Variables.DonateRandom = $DonationData | Get-Random #Use same donation data for the entire donation period to reduce switching
 
                     #Add pool config to config (in-memory only)
-                    $Variables.DonatePoolNames = @($Config.PoolName | Where-Object { $_ -notlike "ProHashing*" }) #No all devs have a known ProHashing account
+                    $Variables.DonatePoolNames = @($Config.PoolName -replace "24hr$" -replace "Coins$" | Where-Object { $_ -notlike "ProHashing*" }) #No all devs have a known ProHashing account
                     $Variables.DonatePoolsConfig = [Ordered]@{ }
                     $Variables.DonatePoolNames | ForEach-Object { 
                         $PoolConfig = [PSCustomObject]@{ }
@@ -82,7 +82,7 @@ Function Start-Cycle {
                                 $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
                             }
                         }
-                        $DonatePoolsConfig.$_ = $PoolConfig
+                        $Variables.DonatePoolsConfig.$_ = $PoolConfig
                     }
                 }
                 If ((Get-Date) -lt $Variables.DonateEnd) { 
@@ -666,23 +666,18 @@ Function Start-Cycle {
             Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
         }
 
+        $Variables.Summary = ""
         If ($Variables.Rates."BTC") { 
-            If ([Double]::IsNaN($Variables.MiningEarning)) { 
-                $Variables.Summary = "1 BTC={0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0))
-            }
-            Else { 
+            If (-not [Double]::IsNaN($Variables.MiningEarning)) { 
                 $Variables.Summary = "Estimated Earning/day: {0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
                 If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { 
                     $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: {0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
                 }
                 $Variables.Summary +=  "&ensp;&ensp;&ensp;&ensp;"
-                (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
-                    $Variables.Summary += "&ensp;&ensp;1 $_={0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0))
-                }
             }
-        }
-        Else { 
-            $Variables.Summary = ""
+            (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
+                $Variables.Summary += "&ensp;&ensp;1 $_={0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0))
+            }
         }
 
         #Also restart running miners (stop & start)
@@ -847,7 +842,9 @@ While ($true) {
 
         # Keep updating exchange rate
         Get-Rate
-        $Variables.Summary = "1 BTC=$($Variables.Rates.BTC.$($Config.Currency | Select-Object -Index 0)) $($Config.Currency | Select-Object -Index 0)"
+        (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
+            $Variables.Summary = "1 $_={0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.Rates.$_.($Config.Currency | Select-Object -Index 0))
+        }
 
         # Update the UI every 30 seconds, and the Last 1/6/24hr and text window every 2 minutes
         For ($i = 0; $i -lt 4; $i++) { 
@@ -867,7 +864,6 @@ While ($true) {
         # Purge logs more than 10 days
         Get-ChildItem ".\Logs\CoreCyle-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 
-        $Variables.StatEnd = (Get-Date).ToUniversalTime()
         Start-Cycle
         Update-Monitoring
 
