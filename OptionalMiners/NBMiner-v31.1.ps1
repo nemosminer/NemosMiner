@@ -70,8 +70,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[0]) + @($_.Intensity2) | Select-Object) -join '-'
-
                     If ($_.Algorithm[0] -match "^Ethash*|^Cuck*") { 
                         $Protocol = If ($Pools.($_.Algorithm[0]).Name -match "^MPH*|^NiceHash*") { "nicehash+tcp://" } Else { "ethproxy+tcp://" } 
                     }

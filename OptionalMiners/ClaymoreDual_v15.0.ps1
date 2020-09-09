@@ -6,42 +6,32 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v15.0/Clay
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@( 
-    #Ethash -strap 1 -strap 2 -strap 3 -strap 4 -strap 5 -strap 6
 #   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" } #Bminer-v16.3.0 & PhoenixMiner-v5.1c are faster
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -strap 1 -platform 1 -y 1 -rxboost 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin blake2s -strap 1 -platform 1 -y 1 -rxboost 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin dcr -strap 1 -platform 1 -y 1 -rxboost 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin keccak -strap 1 -platform 1 -y 1 -rxboost 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin lbc -strap 1 -platform 1 -y 1 -rxboost 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin pasc -strap 1 -platform 1 -y 1 -rxboost 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin sc -strap 1 -platform 1 -y 1 -rxboost 1" }
 
-#   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01);    MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" } #ClaymoreDual-v15.0 is faster
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" } #PhoenixMiner-v5.1c is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01);    MinMemGB = 4; Type = "NVIDIA"; Command = " -strap 1 -platform 2" } #PhoenixMiner-v5.1c is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin blake2s -strap 1 -platform 2" } #PhoenixMiner-v5.1c is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin dcr -strap 1 -platform 2" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin keccak -strap 1 -platform 2" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin lbc -strap 1 -platform 2" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin pasc -strap 1 -platform 2" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin sc -strap 1 -platform 2" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
     $Intensities2 = [PSCustomObject]@{ 
-        "Blake2s" = @(40, 60, 80)
+        "Blake2s" = @(10, 20, 30, 40, 50, 60, 70)
         "Decred"  = @(20, 40, 70)
         "Keccak"  = @(20, 30, 40)
         "Lbry"    = @(60, 75, 90)
         "Pascal"  = @(20, 40, 60)
         "Sia"     = @(20, 40, 60, 80)
-    }
-
-    $Dcoin = @{
-        "Blake2s" = " -dcoin blake2s"
-        "Decred"  = " -dcoin dcr"
-        "Keccak"  = " -dcoin keccak"
-        "Lbry"    = " -dcoin lbc"
-        "Pascal"  = " -dcoin pasc"
-        "Sia"     = " -dcoin sc"
     }
 
     # Build command sets for intensities
@@ -71,11 +61,13 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($Pools.($_.Algorithm[0]).SSL) {
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "NiceHash*|MPH*") { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { 
                             $Protocol = " -esm 3 -checkcert 0 stratum+ssl://"
                         }
                         Else { 
@@ -83,7 +75,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                     }
                     Else { 
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "NiceHash*|MPH*") { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { 
                             $_.Command += " -esm 3"
                             $Protocol = "stratum+tcp://"
                         }
@@ -93,13 +85,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $_.Command += " -dpool $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpsw $($Pools.($_.Algorithm[1]).Pass)$($Dcoin.($_.Algorithm[1]))"
+                        $_.Command += " -dpool $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpsw $($Pools.($_.Algorithm[1]).Pass)"
                         If ($_.Intensity2 -ge 0) { $_.Command += " -dcri $($_.Intensity2)" }
-
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
-                    }
-                    Else {
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
                     }
 
                     #Optionally disable dev fee mining

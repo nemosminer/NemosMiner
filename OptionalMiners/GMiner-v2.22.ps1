@@ -62,6 +62,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1] | Select-Object)) -join '-'
+
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
@@ -71,12 +73,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { $_.Command += " --proto stratum" }
 
                     If ($_.Algorithm[1]) { 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(($_.Algorithm[1]))) -join '-'
                         #If ($Pools.($_.Algorithm[1]).SSL) { $_.Command += " --dssl true --dssl_verification false" }
                         $_.Command += " --dserver $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) --duser $($Pools.($_.Algorithm[1]).User):$($Pools.Algo2.Pass)"
-                    }
-                    Else { 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
                     }
 
                     [PSCustomObject]@{ 

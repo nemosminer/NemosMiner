@@ -49,6 +49,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
@@ -65,7 +67,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
                         $_.Command += " -dpool $(If ($Pools.($_.Algorithm[1]).SSL) { "ssl://" })$($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpass $($Pools.($_.Algorithm[1]).Pass)"
 
                         If ($_.Intensity2 -eq $null) { 
@@ -74,9 +75,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         Else { 
                             $_.Command += " -sci $($_.Intensity2)"
                         }
-                    }
-                    Else {
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
                     }
 
                     [PSCustomObject]@{ 
