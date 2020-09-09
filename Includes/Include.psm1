@@ -761,7 +761,6 @@ Function Start-BalancesTracker {
             $BalancesTrackerRunspace.Open()
             $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
             $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('BalancesTrackerConfig', $BalancesTrackerConfig)
             $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
             $PowerShell = [PowerShell]::Create()
             $PowerShell.Runspace = $BalancesTrackerRunspace
@@ -796,6 +795,12 @@ Function Initialize-API {
     #Initialize API & Web GUI
     If ($Config.APIPort -and ($Config.APIPort -ne $Variables.APIRunspace.APIPort)) { 
         If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
+            If ($Variables.APIRunspace) { 
+                $Variables.APIRunspace.Close()
+                If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
+                $Variables.Remove("APIRunspace")
+            }
+
             $TCPClient = New-Object System.Net.Sockets.TCPClient
             $AsyncResult = $TCPClient.BeginConnect("localhost", $Config.APIPort, $null, $null)
             If ($AsyncResult.AsyncWaitHandle.WaitOne(100)) { 
@@ -2410,11 +2415,11 @@ function Start-SubProcessWithoutStealingFocus {
         $ControllerProcess.Handle | Out-Null
         $Process.Handle | Out-Null
 
-        Do { If ($ControllerProcess.WaitForExit(500)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
 
-    Do { Start-Sleep -MilliSeconds 100; $JobOutput = Receive-Job $Job }
+    Do { Start-Sleep -MilliSeconds 50; $JobOutput = Receive-Job $Job }
     While ($null -eq $JobOutput)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
