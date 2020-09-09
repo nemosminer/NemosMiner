@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTrackerJob.ps1
-version:        3.9.9.0
-version date:   20 August 2020
+version:        3.9.9.4
+version date:   09 September 2020
 #>
 
 #Start the log
@@ -179,6 +179,7 @@ While ($true) {
                 }
             }
             If ($BalanceData.PSObject.Properties.Count -gt 0) { 
+            If ($BalanceData.$BalanceJson -or $BalanceData.$TotalJson) { 
                 $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
                     Pool         = $PoolNorm
                     DateTime     = $Now
@@ -186,7 +187,7 @@ While ($true) {
                     Unsold       = $BalanceData.unsold * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
                     Total_unpaid = $BalanceData.total_unpaid * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
                     Total_paid   = $BalanceData.total_paid * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
-                    Total_earned = ($BalanceData.$BalanceJson, ($BalanceData.$TotalJson * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC) | Measure-Object -Minimum).Minimum # Pool reduced balance!
+                    Total_earned = ($BalanceData.$BalanceJson, $BalanceData.$TotalJson | Measure-Object -Minimum).Minimum * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC #Pool reduced balance!
                     Currency     = $PoolConfig.PayoutCurrency
                 }
 
@@ -249,7 +250,7 @@ While ($true) {
                 If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolNorm | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" }
 
                 If ($PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolNorm | Where-Object Date -EQ $Date ) {
-                    # pool may have reduced estimated balance, use new balance as start value to avoid negative values
+                    #Pool may have reduced estimated balance, use new balance as start value to avoid negative values
                     $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $BalanceObject.total_earned | Measure-Object -Minimum).Minimum
                     $PoolDailyEarning.DailyEarnings = $BalanceObject.total_earned - $PoolDailyEarning.StartValue
                     $PoolDailyEarning.EndTime = $Now.ToString("T")
@@ -276,7 +277,7 @@ While ($true) {
                         EndTime            = $Now.ToString("T")
                         EndValue           = [Double]$BalanceObject.total_earned
                         PrePaymentDayValue = [Double]0
-                        Balance            = [Double]$BalanceObject.Balance
+                        Balance            = [Double]$BalanceObject.balance
                         DailyGrowth        = [Double]$BalanceObject.Growth24
                     }
                 }
@@ -285,7 +286,7 @@ While ($true) {
                 # Results in showing bad negative earnings
                 # Detecting if current is more than 50% less than previous and reset history if so
                 If ($BalanceObject -and $BalanceObject.total_earned -lt ($PoolBalanceObjects[$PoolBalanceObjects.Count - 2].total_earned / 2)) { 
-                    $AllBalanceObjects = $AllBalanceObjects | Where-Object { $_.Pool -ne $PoolNorm }
+                    $AllBalanceObjects = $AllBalanceObjects | Where-Object Pool -ne $PoolNorm
                     $AllBalanceObjects += $BalanceObject
                 }
 
