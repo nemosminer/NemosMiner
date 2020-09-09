@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>. -->
 
 <!-- Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.3
-version date:   29.08.2020
+version:        3.9.9.4
+version date:   09 September 2020
  -->
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.2.9.3)</h1>
+  <h1>NemosMiner API (version 0.3.0.0)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -50,6 +50,10 @@ version date:   29.08.2020
   <a href="http://localhost:3999/btcratefirstcurrency">/btcratefirstcurrency</a>
   <p>Shows the curent BTC exchange rate for the first currency.</p>
 
+  <h3>BalancesTrackerRunspace</h3>
+  <a href="http://localhost:3999/balancestrackerrunspace">/balancestrackerrunspace</a>
+  <p>Returns the balancestrackerrunspace information.</p>
+
   <h3>BrainJobs</h3>
   <a href="http://localhost:3999/brainjobs">/brainjobs</a>
   <p>Returns the brainjobs information.</p>
@@ -61,14 +65,6 @@ version date:   29.08.2020
   <h3>ConfigFile</h3>
   <a href="http://localhost:3999/configfile">/configfile</a>
   <p>Returns the current config file name.</p>
-
-  <h3>CompareMiners</h3>
-  <a href="http://localhost:3999/compareminers">/compareminers</a>
-  <p>Returns the Variables.compareminers information.</p>
-
-  <h3>ComparePools</h3>
-  <a href="http://localhost:3999/comparepools">/comparepools</a>
-  <p>Returns the Variables. comparepools information.</p>
 
   <h3>Currencies</h3>
   <a href="http://localhost:3999/currencies">/currencies</a>
@@ -98,14 +94,6 @@ version date:   29.08.2020
   <a href="http://localhost:3999/earningschartdata">/earningschartdata</a>
   <p>Returns the data required for earnings chart.</p>
 
-  <h3>EarningsPool</h3>
-  <a href="http://localhost:3999/earningspool">/earningspool</a>
-  <p>Returns the earnings pool information.</p>
-
-  <h3>EarningsTrackerJob</h3>
-  <a href="http://localhost:3999/earningstrackerjob">/earningstrackerjob</a>
-  <p>Returns the earningstrackerjob information.</p>
-
   <h3>First currency</h3>
   <a href="http://localhost:3999/firstcurrency">/firstcurrency</a>
   <p>Returns the firstcurrency information.</p>
@@ -114,40 +102,32 @@ version date:   29.08.2020
   <a href="http://localhost:3999/miners">/miners</a>
   <p>Shows all available miners data, use for debugging.</p>
 
+  <h3>Available Miners</h3>
+  <a href="http://localhost:3999/miners/available">/miners/available</a>
+  <p>Shows the available miners data, use for debugging.</p>
+
   <h3>Best Miners</h3>
   <a href="http://localhost:3999/miners/best">/miners/best</a>
   <p>Shows the best miners data, use for debugging.</p>
-
-  <h3>Enabled Miners</h3>
-  <a href="http://localhost:3999/miners/enabled">/miners/enabled</a>
-  <p>Shows the enabled miners data, use for debugging.</p>
-
-  <h3>Disabled Miners</h3>
-  <a href="http://localhost:3999/miners/disabled">/miners/disabled</a>
-  <p>Shows disabled miners data, use for debugging.</p>
 
   <h3>Failed Miners</h3>
   <a href="http://localhost:3999/miners/failed">/miners/failed</a>
   <p>Shows the failed miners data, use for debugging.</p>
 
-  <h3>Idle Miners</h3>
-  <a href="http://localhost:3999/miners/idle">/miners/idle</a>
-  <p>Shows the idle miners data, use for debugging.</p>
-
   <h3>Running Miners</h3>
   <a href="http://localhost:3999/miners/running">/miners/running</a>
   <p>Shows the running miners data, use for debugging.</p>
 
-  <h3>Mining cost</h3>
-  <a href="http://localhost:3999/miningcost">/miningcost</a>
-  <p>Shows current mining cost.
+  <h3>Mining power cost</h3>
+  <a href="http://localhost:3999/miningcost">/miningpowercost</a>
+  <p>Shows current mining power cost.
 
-  <h3>Mining earnings</h3>
+  <h3>Mining earning</h3>
   <a href="http://localhost:3999/miningearning">/miningearning</a>
   <p>Shows current mining earning.</p>
 
   <h3>Mining profit</h3>
-  <a href="http://localhost:3999/profit">/profit</a>
+  <a href="http://localhost:3999/miningprofit">/miningprofit</a>
   <p>Shows current mining profit.</p>
 
   <h3>PoolsConfig</h3>
@@ -159,16 +139,12 @@ version date:   29.08.2020
   <p>Shows all pool data entries.</p>
 
   <h3>Best Pools</h3>
-  <a href="http://localhost:3999/pool/best">/pools/best</a>
+  <a href="http://localhost:3999/pools/best">/pools/best</a>
   <p>Shows the best pool configuration entries.</p>
 
   <h3>Available Pools</h3>
   <a href="http://localhost:3999/pools/available">/pools/available</a>
   <p>Shows the available pool configuration entries.</p>
-
-  <h3>Unprofitable Algorithms</h3>
-  <a href="http://localhost:3999/pools/unprofitablealgorithms">/unprofitablealgorithms</a>
-  <p>Shows the list of unprofitable algorithms.</p>
 
   <h3>Unavailable Pools</h3>
   <a href="http://localhost:3999/pools/unavailable">/pools/unavailable</a>
@@ -194,6 +170,10 @@ version date:   29.08.2020
   <a href="http://localhost:3999/switchinglog">/switchinglog</a>
   <p>Shows the previously executed miners.</p>
 
+  <h3>Unprofitable Algorithms</h3>
+  <a href="http://localhost:3999/unprofitablealgorithms">/unprofitablealgorithms</a>
+  <p>Shows the list of unprofitable algorithms.</p>
+
   <h3>Unsupported Devices</h3>
   <a href="http://localhost:3999/devices/unsupported">/devices/unsupported</a>
   <p>Shows information about all unsupported mining devices.</p>
@@ -213,19 +193,8 @@ version date:   29.08.2020
   <p>/functions/log/clear</p>
   <p>/functions/stat/get</p>
   <p>/functions/stat/remove</p>
+  <p>/functions/switchinglog/clear</p>
   <p>/functions/watchdogtimers/reset</p>
-
-  <!-- <h3>WatchdogTimers</h3>
-  <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
-  <p>Dump of the $WatchdogTimers variable, used only for debugging. WatchdogTimers data is used for internal calculations.</p>
-
-  <h3>WatchdogTimersReset</h3>
-  <a href="http://localhost:3999/watchdogtimersreset">/watchdogtimersreset</a>
-  <p>Tells the script to reset all watchdog timers. Resetting watchdog timers will re-enable all bloked miner/algos on next run.</p> -->
-
-  <h3>Write Configuration</h3>
-  <a href="http://localhost:3999/functions/config/set">/config/set</a>
-  <p>Write the configuration file.</p>
 
   <a href="https://nemosminer.com">NemosMiner.com</a>
 </body>

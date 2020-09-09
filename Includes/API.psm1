@@ -18,28 +18,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.3
-version date:   29 August 2020
+version:        3.9.9.4
+version date:   09 September 2020
 #>
 
 Function Start-APIServer { 
 
     If ($Variables.APIRunspace) { 
-        If ($Config.APIPort -ne $Variables.APIRunspace.APIPort -and $Variables.APIRunspace.AsyncObject.IsCompleted -ne $true) { 
-            $null = Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/functions/api/stop" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop
-            Start-Sleep -Seconds 2
-        }
-        If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true) { 
+        If ($Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
             $Variables.APIRunspace.Close()
             $Variables.APIRunspace.PowerShell.EndInvoke($Variables.APIRunspace.AsyncObject)
             $Variables.APIRunspace.Dispose()
             $Variables.Remove("APIRunspace")
             $Variables.Remove("APIVersion")
+            Write-Message "Restarting API."
             Start-Sleep -Seconds 2
         }
     }
 
-    $APIVersion = "0.2.9.3"
+    $APIVersion = "0.3.0.0"
+
+    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -87,6 +86,8 @@ Function Start-APIServer {
                 $Request = $Context.Request
                 $URL = $Request.Url.OriginalString
 
+                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding UTF8 }
+
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
 
@@ -111,6 +112,7 @@ Function Start-APIServer {
                     "/functions/api/stop" { 
                         If ($Variables.APIRunspace) { 
                             Write-Message "Web GUI: Stopping API."
+                            $Variables.APIRunspace.APIPort = $null
                             $Response.Headers.Add("Content-Type", $ContentType)
                             $Response.StatusCode = $StatusCode
                             $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
@@ -184,13 +186,6 @@ Function Start-APIServer {
                         }
                         Break
                     }
-                    # "/functions/log/clear" { 
-                    #     If ($Parameters.Path) { 
-                    #         Get-ChildItem $Parameters.Path | Remove-Item -Force
-                    #         $Data = "<pre>Log ($Parameters.Path) cleared.</pre>"
-                    #     }
-                    #     Break
-                    # }
                     "/functions/log/get" { 
                         If ([Int]$Parameters.Lines) { 
                             $Lines = [Int]$Parameters.Lines
@@ -390,20 +385,16 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
                         Break
                     }
+                    "/balancestrackerrunspace" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.BalancesTrackerRunspace | Select-Object)
+                        Break
+                    }
                     "/btcratefirstcurrency" { 
                         $Data = ConvertTo-Json @($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) | Select-Object)
                         Break
                     }
                     "/brainjobs" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BrainJobs | Select-Object)
-                        Break
-                    }
-                    "/compareminers" { 
-                        $Data = ConvertTo-Json @($Variables.CompareMiners | Select-Object)
-                        Break
-                    }
-                    "/comparepools" { 
-                        $Data = ConvertTo-Json @($Variables.ComparePools | Select-Object)
                         Break
                     }
                     "/config" {
@@ -449,10 +440,6 @@ Function Start-APIServer {
                         $Data = $ChartData | ConvertTo-Json
                         Break
                     }
-                    "/earningstrackerjob" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.EarningsTrackerJob | Select-Object -Property * -ExcludeProperty ChildJobs, Command, Process)
-                        Break
-                    }
                     "/firstcurrency" { 
                         $Data = ConvertTo-Json -Depth 10 @($Config.Currency | Select-Object -Index 0)
                         Break
@@ -461,12 +448,12 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name)
                         Break
                     }
-                    "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
-                        Break
-                    }
                     "/miners/available" { 
                         $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        Break
+                    }
+                    "/miners/best" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/failed" { 
@@ -477,10 +464,6 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
-                    "/miners/idle" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Idle | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
-                        Break
-                    }
                     "/miners/running" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
@@ -489,8 +472,8 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
-                    "/miningcost" { 
-                        $Data = ConvertTo-Json @($Variables.MiningCost | Select-Object)
+                    "/miningpowercost" { 
+                        $Data = ConvertTo-Json @($Variables.MiningPowerCost | Select-Object)
                         Break
                     }
                     "/miningearning" { 
@@ -601,7 +584,7 @@ Function Start-APIServer {
                                     }
                                 }
                             }
-                
+
                             # Set content type based on file extension
                             If ($MIMETypes.ContainsKey($File.Extension)) { 
                                 $ContentType = $MIMETypes[$File.Extension]
