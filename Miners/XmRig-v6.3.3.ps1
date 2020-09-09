@@ -57,10 +57,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "CPU"; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Command = " --algo cn/zls" }
     [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Command = " --algo rx/0" }
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Command = " --algo rx/arq" } #SRBMminerMulti-v0.5.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Command = " --algo rx/arq" } #SRBMminerMulti-v0.5.1 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Command = " --algo rx/kev" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Command = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Command = " --algo rx/sfx" } #SRBMminerMulti-v0.5.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Command = " --algo rx/sfx" } #SRBMminerMulti-v0.5.1 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Command = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Type = "NVIDIA"; Command = " --algo astrobwt" }

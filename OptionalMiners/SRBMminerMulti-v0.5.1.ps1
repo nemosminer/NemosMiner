@@ -2,14 +2,16 @@ using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/SRBMiner-Multi/SRBMiner-Multi-0-5-0-win64.zip"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/SRBMiner-Multi/SRBMiner-Multi-0-5-1-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn";             Fee = 0;      Type = "CPU"; Command = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Fee = 0;      Type = "CPU"; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Fee = 0;      Type = "CPU"; Command = " --algorithm blake2s" }
+    [PSCustomObject]@{ Algorithm = "Chukwa";              Fee = 0;      Type = "CPU"; Command = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "CpuPower";            Fee = 0.0085; Type = "CPU"; Command = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = "CryptonightBbc";      Fee = 0.02;   Type = "CPU"; Command = " --algorithm cryptonight_bbc" }
     [PSCustomObject]@{ Algorithm = "CryptonightCatalans"; Fee = 0;      Type = "CPU"; Command = " --algorithm cryptonight_catalans" }
@@ -31,7 +33,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxSfx";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomwow" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           Fee = 0.0085; Type = "CPU"; Command = " --algorithm verushash" }
-   [PSCustomObject]@{ Algorithm = "YescryptR8";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr8" }
+    [PSCustomObject]@{ Algorithm = "YescryptR8";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr8" }
     [PSCustomObject]@{ Algorithm = "YescryptR16";         Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr16" }
     [PSCustomObject]@{ Algorithm = "YescryptR32";         Fee = 0.0085; Type = "CPU"; Command = " --algorithm yescryptr32" }
     [PSCustomObject]@{ Algorithm = "Yespower";            Fee = 0.0085; Type = "CPU"; Command = " --algorithm yespower" }
@@ -87,7 +89,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algorithm") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If (($Miner_Devices.Type | Select-Object -Unique) -eq "CPU") { 
-                        $DeviceCommand = " --cpu-threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --cpu-priority 1 --disable-gpu"
+                        $DeviceCommand = " --cpu-threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --miner-priority 2 --disable-gpu"
                     }
                     Else { 
                         $DeviceCommand = " --gpu-id $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',') --disable-cpu"

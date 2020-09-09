@@ -17,7 +17,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_half -rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightTurtle";    Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_trtl --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_rwz --rig_id $($Config.WorkerName)" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_upx2 --rig_id $($Config.WorkerName)" } #SRBMminerMulti-v0.5.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_upx2 --rig_id $($Config.WorkerName)" } #SRBMminerMulti-v0.5.1 is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cuckarood29_grin" } #2GB is not enough
 #   [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cuckatoo31_grin" } #lolMiner-v1.0.7 is fastest
 #   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.025; MinMemGB = 4.0; Command = " --algo=ethash" } #PhoenixMiner-v5.1c is fastest
