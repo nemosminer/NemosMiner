@@ -408,15 +408,18 @@ Function Start-Cycle {
 
         #Get new miners
         Write-Message -Verbose "Loading miners..."
-        $Pools = [PSCustomObject]@{ }
+        $AllPools = [PSCustomObject]@{ }
         $PoolsPrimaryAlgorithm =  [PSCustomObject]@{ }
         $PoolsSecondaryAlgorithm =  [PSCustomObject]@{ }
         #For leagacy miners
         $Variables.Pools | Select-Object -ExpandProperty Algorithm -Unique | ForEach-Object { $_.ToLower() } | Select-Object -Unique | ForEach-Object { 
-            $Variables.Pools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
+            $Variables.Pools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object {  
+                $_.Best = $true
+                $AllPools | Add-Member $_.Algorithm $_
+            }
         }
         $Variables.Pools | Sort-Object Algorithm | Where-Object Best -EQ $true | ForEach-Object { 
-            If ($_.Reason -ne "Unprofitable Primary Algorithm") { $Pools | Add-Member $_.Algorithm $_ } #Allow unprofitable algos for primary algorithm
+            If ($_.Reason -ne "Unprofitable Primary Algorithm") { $PoolsPrimaryAlgorithm | Add-Member $_.Algorithm $_ } #Allow unprofitable algos for primary algorithm
             If ($_.Reason -ne "Unprofitable Secondary Algorithm") { $PoolsSecondaryAlgorithm | Add-Member $_.Algorithm $_ } #Allow unprofitable algos for secondary algorithm
         }
 
@@ -429,9 +432,9 @@ Function Start-Cycle {
         #Load miners
         If (Test-Path ".\Miners" -PathType Container -ErrorAction Ignore) { 
             $Variables.NewMiners_Jobs = @(
-                If ($Config.IncludeRegularMiners -and (Test-Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $Pools; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" }) }
-                If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $Pools; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
-                If (Test-Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $Pools; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+                If ($Config.IncludeRegularMiners -and (Test-Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" }) }
+                If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+                If (Test-Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
             )
 
             #Retrieve collected miner data
@@ -443,7 +446,7 @@ Function Start-Cycle {
                     [Worker[]]$Workers = @()
                     $_.Content.Algorithm | ForEach-Object { 
                         $Workers += @{ 
-                            Pool = [Pool]$Pools.$_
+                            Pool = [Pool]$AllPools.$_
                             Fee = [Double]($Miner_Fees | Select-Object -Index $Workers.Count)
                         }
                     }
@@ -472,7 +475,8 @@ Function Start-Cycle {
             $Variables.NewMiners_Jobs | ForEach-Object { $_.Dispose() }
             $Variables.Remove("NewMiners_Jobs")
         }
-        Remove-Variable Pools -ErrorAction Ignore
+        Remove-Variable PoolsPrimaryAlgorithm -ErrorAction Ignore
+        Remove-Variable PoolsSecondaryAlgorithm -ErrorAction Ignore
 
         $CompareMiners = Compare-Object -PassThru @($Variables.Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Type, Path, Algorithm -IncludeEqual
 
