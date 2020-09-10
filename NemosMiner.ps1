@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.4
-Version date:   08 September 2020
+Version:        3.9.9.5
+Version date:   11 September 2020
 #>
 
 [CmdletBinding()]
@@ -60,8 +60,6 @@ param(
     [Switch]$EstimateCorrection = $false, #If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
-    [Parameter(Mandatory = $false)]
-    [Switch]$HideMinerWindow = $false, #if true all miners will run as a hidden background task (not recommended). Note that miners that use the 'Wrapper' API will always run hidden
     [Parameter(Mandatory = $false)]
     [Double]$IdlePowerUsageW = 60, #Powerusage of idle system in Watt. Part of profit calculation
     [Parameter(Mandatory = $false)]
@@ -160,6 +158,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerFee = $true, #Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
     [Parameter(Mandatory = $false)]
+    [String]$ShowMinerWindows = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
+    [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolBalances = $true, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolFee = $true, #Show pool fee column in miner overview
@@ -226,7 +226,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.4"
+    Version      = [System.Version]"3.9.9.5"
 }
 
 Try { 
@@ -307,12 +307,13 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
                 $Config.Remove($_)
             }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
+            "HideMinerWindow" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "SelGPUCC" { $Config.Remove($_) }
             "SelGPUDSTM" { $Config.Remove($_) }
-            "ShowMinerWindow" { $Config.HideMinerWindow = (-not $Config.$_); $Config.Remove($_) }
+            "ShowMinerWindow" { $Config.Remove($_) }
             "UserName" { 
                 If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
