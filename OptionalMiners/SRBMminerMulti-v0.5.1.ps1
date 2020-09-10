@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";             Fee = 0;      Type = "CPU"; Command = " --algorithm argon2d_dynamic" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Fee = 0;      Type = "CPU"; Command = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Fee = 0;      Type = "CPU"; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Fee = 0;      Type = "CPU"; Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Chukwa";              Fee = 0;      Type = "CPU"; Command = " --algorithm argon2id_chukwa" }
