@@ -104,7 +104,7 @@
         <label title="NemosMiner will ignore power cost in best miner selection &#10;instead miners with best earnings will be selected" for="IgnorePowerCost" >Ignore Power Cost</label>
         <br>
         <label style="margin-left:20px" title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" for="ProfitabilityThreshold">Profitability Threshold</label>
-        <input style="margin-left:20px" title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" size=6>
+        <input title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" size=6>
       </td>
 
       <td>
@@ -148,9 +148,15 @@
           <br><br>
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized">
           <label for="StartGUIMinimized" title="">Start Legacy GUI minimized</label>
-          <br>
-          <input type="checkbox" id="HideMinerWindows" name="HideMinerWindows" title="Miners will run as a hidden background task. Not recommended!">
-          <label for="HideMinerWindows" title="Miners will run as a hidden background task. Not recommended!">Hide Miner Windows</label>
+          <br><br>
+          <legend class=h6>Show Miner Windows as</legend>
+          <div title="NemosMiner will show the miner windows as" id="ShowMinerWindows"></div>
+          <input title="Miners will run as a hidden background task and are not accessible (not recommended)" type="radio" id="ShowMinerWindowsHidden" name="ShowMinerWindows" value="Hidden">
+          <label title="Miners will run as a hidden background task and are not accessible (not recommended)" for="ShowMinerWindowsHidden">Hidden</label><br>
+          <input title="Miner windows are minimized (default), but accessible" type="radio" id="ShowMinerWindowsMinimized" name="ShowMinerWindows" value="Minimized">
+          <label title="Miner windows are minimized (default), but accessible"for="ShowMinerWindowsMinimized">Minimized</label><br>
+          <input title="Miner windows are shown normally on desktop" type="radio" id="ShowMinerWindowsNormal" name="ShowMinerWindows" value="Normal">
+          <label title="Miner windows are shown normally on desktop" for="ShowMinerWindowsNormal">Normal</label>
           <br><br>
           <input type="checkbox" id="Watchdog" name="Watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">
           <label for="Watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">Watchdog</label>
@@ -307,8 +313,14 @@
       if (config.StartGUIMinimized) {
         document.getElementById('StartGUIMinimized').checked = true;
       }
-      if (config.HideMinerWindows) {
-        document.getElementById('HideMinerWindows').checked = true;
+      if (config.ShowMinerWindows.toLowerCase() == "hidden") {
+        document.getElementById('ShowMinerWindowsHidden').checked = true;
+      }
+      if (config.ShowMinerWindows.toLowerCase() == "minimized") {
+        document.getElementById('ShowMinerWindowsMinimized').checked = true;
+      }
+      if (config.ShowMinerWindows.toLowerCase() == "normal") {
+        document.getElementById('ShowMinerWindowsNormal').checked = true;
       }
       if (config.AutoUpdate) {
         document.getElementById('AutoUpdate').checked = true;
@@ -344,7 +356,7 @@
       if (config.EstimateCorrection) {
         document.getElementById('EstimateCorrection').checked = true;
       }
-      //must be placed afetr pool loading
+      //must be placed after pool loading
       document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
       document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
       document.getElementById('MPHUserName').value = config.MPHUserName;
@@ -441,8 +453,15 @@
     config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
     config.EnableBalancesTrackerLog = document.getElementById('EnableBalancesTrackerLog').checked;
     config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
-    config.HideMinerWindows = document.getElementById('HideMinerWindows').checked;
-    config.Watchdog = document.getElementById('Watchdog').checked;
+    if (document.getElementById('ShowMinerWindowsHidden').checked) {
+      config.ShowMinerWindows = "hidden" 
+    }
+    if (document.getElementById('ShowMinerWindowsMinimized').checked) {
+      config.ShowMinerWindows = "minimized" 
+    }
+    if (document.getElementById('ShowMinerWindowsNormal').checked) {
+      config.ShowMinerWindows = "normal" 
+    }
     if (document.getElementById('WatchdogMinerAlgorithmCount').value == null) { 
       document.getElementById('WatchdogMinerAlgorithmCount').value = 120;
     };
