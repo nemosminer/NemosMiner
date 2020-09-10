@@ -1,0 +1,384 @@
+Changelog NemosMiner 11.09.2020
+===============================
+
+Improved:
+- Faster launching of miners
+- Only load read power usage from HWiNFO/registry when miner does not expose power usage in miner API (uses less memory)
+
+
+Changelog NemosMiner 09.09.2020
+===============================
+
+Miner Update:
+- SRBMiner-Multi-v0.5.1
+
+
+Changelog NemosMiner 07.09.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- NiceHash balances not working
+- BalancesTracker reporting incorrect data
+
+Miner Update:
+- Bminer-v16.3.0
+- GMiner 2.22
+- SRBMiner-Multi-v0.5.0
+- Trex-v0.16.2
+
+Changelog NemosMiner 02.09.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- WDDM Device detection under Windows 7 & Windows 8.1
+
+Improved:
+- Faster loading of pool & miner data, even when running CPU miners
+
+Added:
+- UnprofitableAlgorithm list (".\Includes\UnprofitableAlgorithms.txt")
+  Syntax:
+  "*:[AlgorithmName]" = Algo is unprofitable as primary AND secondary algorithm
+  "1:[AlgorithmName]" = Algo is unprofitable as primary algorithm, but profitable as secondary algorithm
+  "2:[AlgorithmName]" = Algo is unprofitable as secondary algorithm, but profitable as primary algorithm
+- NBMiner: Support for 'DisableMinerFees' parameter (0% Fee)
+
+Known Issues:
+- NiceHash balances not working (t.b.d.)
+- BalancesTracker reporting incorrect data (t.b.d.)
+
+Changelog NemosMiner 29.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- Miner device ID order
+
+Added:
+- Support for non-BTC currencies
+
+Known Issues:
+- NiceHash balances not working (t.b.d)
+- BalancesTracker not reporting NiceHash data (-> Sum of all balances too low)
+
+Changelog NemosMiner 22.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Fixed:
+- Automatic upgrade of config file (rename changed items, remove defunct parameters)
+- Documentation for power readout with HwINFO64 (ConfigHWinfo64.pdf)
+
+Improved:
+- Optimized pools / miners code
+- Config editor in Web GUI
+
+Miner Update:
+- Bminer-v16.2.13
+- NanoMiner-v1.10.1
+- lolMiner-v1.0.7
+- Trex-v0.16.1
+
+Known Issues:
+- NiceHash balances not working (t.b.d)
+- BalancesTracker not reporting NiceHash data (-> Sum of all balances too low)
+
+Changelog NemosMiner 09.08.2020
+===============================
+
+New:
+- Added Support for ProHashing24hr (No balance processing yet)
+- Config items:
+  - MPHUserName
+  - NiceHashInternalWallet, NicehashAPIKey
+  - ProHashingAPIKey, ProHashingUserName
+
+Changed:
+- Config property APIKEY changed to MPHAPIKey
+- Renamed  NiceHashV2 to NiceHash
+
+Fixed:
+- Watchdogs not clearing / refreshing in certain scenarios
+
+
+Changelog NemosMiner 07.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Changed:
+- EarningsTracker renamed to BalanceTracker (note: file structure remains compatible, so files data & config fuile can be renamed manually if required)
+- Remove defunct properties 'Type, 
+
+Fixed:
+- Watchdogs not clearing / refreshing in certain scenarios
+- MPH Pool: Added MarginOfError property
+
+Improved:
+- Miners: 
+  - Added TotalMiningDuration property (also available in Web GUI)
+- Web GUI: 
+  - Minor tweaks & Typos
+
+Miner Update:
+- lolMiner-v1.06
+- TeamRedMiner-v0.7.9
+
+Changelog NemosMiner 04.08.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Added:
+- Watchdog functionality (Config items 'Watchdog*')
+
+Miner Update:
+- CryptoDredge-v0.24
+- lolMiner-v1.05
+- PhoenixMiner-v5.1c
+
+Changelog NemosMiner 27.07.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Added:
+- Mining start/pause/stop control to the Web GUI
+
+Fixed:
+- Mining when Idle (Idle detection)
+
+Changelog NemosMiner 21.07.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Added:
+- Bad share detection (Config Item 'AllowedBadShareRatio')
+- More miners for AMD platform
+ 
+Changed:
+- Added column 'ApiRequestUri' to running miners (Web GUI)
+- use API modular API files for hash rate collection
+- Miners: Enabled separate miner instance per GPU model (helps to improve profit rates on mixed rigs)
+
+Changelog NemosMiner 28.06.2020
+===============================
+
+Breaking changes (from main code base):
+- Pool files are not backwards compatible
+- Miner files are not backwards compatible
+
+Changed:
+- Automatically convert config file (fixes breaking changes for config item change 'Location' & ActiveMinergain')
+  - ActiveMinerGainPct -> RunningMinerGainPct
+  - Location -> Region
+  - Remove defunct properties 'API_ID, API_Key, DisableGPU0, FirstInterval, IsFixedSize, IsReadOnly, IsSynchronized, Location, ManualConfig, SyncRoot'
+  - Add all new config items with their default values to existing config file
+
+What's still broken:
+- Idle detection (fixed since 27.07.2020)
+
+Changelog NemosMiner 28.06.2020
+===============================
+
+Breaking changes (from main code base):
+- Changed config item 'Location' to 'Region' -> requires manual change in config file
+- Pool files are not backwards compatible
+- New data format of SwitchingLog.txt -> need to delete old file manually
+- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> Item will be renamed in config on start (Since 28.06.2020)
+
+Added:
+- Basic log viewer in Web GUI
+- Earnings statistics in Web GUI
+
+Changed:
+- Removed redundant charting code
+- Moved Get-NextColor to includes.psm1
+
+Fixed:
+- Earnings display in GUI
+- Date sort order in charting
+
+What's still broken:
+- Idle detection (fixed since 27.07.2020)
+
+Todo:
+- Move config dialog to Web GUI
+- Move charts to Web GUI
+- Move Monitoring to Web GUI
+- Enhance miners to support device filters (e.g. available vram, disabled devices etc.)
+
+
+Changelog NemosMiner 23.06.2020
+===============================
+
+Changed:
+- New data format of SwitchingLog.txt -> need to delete old file manually
+- Icons in web GUI
+- Removed some device config from GUI (WIP!)
+
+Added:
+- SwitchingLog info now available in web GUI
+
+Fixed:
+- Power readout was 33% too small (-> Power usage data needs to be re-measured for all miners)
+
+Breaking changes (from main code base):
+- Changed config item 'Location' to 'Region' -> requires manual change in config file
+- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Pool files are not backwards compatible
+- New data format of SwitchingLog.txt -> need to delete old file manually
+- Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> Item will be renamed in config on start (Since 28.06.2020)
+
+
+Changelog NemosMiner 21.06.2020
+===============================
+
+Fixed:
+- ZergPool / ZPool: Password currency was empty
+- Earnings display in GUI
+
+Changed:
+- GUI: Moved 'Earnings' information to separate tab
+
+What's still broken:
+- Idle detection (fixed since 27.07.2020)
+
+
+Changelog NemosMiner 17.06.2020
+===============================
+
+Fixed:
+- Fix endless loop when a miner has died
+
+Changed:
+- Remove de-configured pools from pool collection
+
+Added:
+- Near-Compatibility to MultiPoolMiner based miners, supports per-device miner instances (requires a simple path change in each MPM miner file)
+
+What's still broken:
+- Idle detection (fixed since 27.07.2020)
+- Earnings display in GUI (fixed)
+
+
+Changelog NemosMiner 16.06.2020
+===============================
+
+Fixed:
+- Downloader only downloading required miners
+- Stop miner gracefully when miner file gets removed while NemosMiner is running
+- Mining to correct address at start or end of donation
+- Do not switch miners while donating
+
+What's still broken:
+- Idle detection (fixed since 27.07.2020)
+- Earnings display in GUI (fixed)
+
+Changelog NemosMiner 14.06.2020
+===============================
+
+Fixed:
+- Downloader
+- Miner fee calculation (now done in core)
+
+Changed:
+- For all miner files:
+  - Removed 'Hashrate' property
+  - Added 'Hashrate' property instead. Hashrate calculation is done in core
+  - Added 'Fee' property (OptionalMiners)
+
+Added:
+- New config items 'NoDualAlgoMining' & 'NoSingleAlgoMining'
+
+Changelog NemosMiner 11.06.2020
+===============================
+
+Main improvements:
+- No doubling of miners after donation
+- Less switching while donating
+
+What's still broken:
+- Idle detection (fixed since 27.07.2020)
+
+Fixes:
+- algo selection does not seem to be working
+- running time starts at 12hour not 0
+- donation mining is not passing the c=BTC
+- Typos
+- Error '-AsHashtable'
+- Start / Pause / Stop from GUI
+
+Changed:
+- Donation is randomized to a different time every day.
+
+Changelog NemosMiner 08.06.2020
+===============================
+
+Main improvements:
+- Better hash rate state stability
+- Power usage measurement and true profit calculation
+- Shorter benchmark times
+- Changed code to use to use classes & methods
+
+What's broken:
+- Start / Pause / Stop from GUI
+- Idle detection
+
+Breaking changes:
+- Changed config item 'Location' to 'Region' -> requires manual change in config file
+- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Pool files are not backwards compatible
+
+Added:
+- Basic Web GUI
+- New config parameters (see New Config Items.txt)
+- All config parameters are available as command line parameters
+- Automatically add missing config parameters to config file
+- Print message when hash rate was collected
+- Detect miners with unreal earning (> 5x higher than the next best 10% miners, error in data provided by pool?
+- Support for external log viewer (Download Snaketail from https://github.com/snakefoot/snaketail-net/releases and put in '\Utils' folder)
+
+Changed:
+- Changed Core.ps1 & Includes.ps1 to modules
+- Use jobs for reading data from miners (hashrate & power usage), this gives more samples & and more reliable numbers
+- Changed 'IsLoaded' to 'using module'
+
+Fixed:
+- Property Fee in Pools.
+- Earnings tracker working again
+- Various cosmetic fixes
+
+Removed:
+- Separate PowerUsage job
+- Config parameter "FirstInterval"
+- Removed config Item 'FirstInterval'. (If in config file it will be ignored)
+- Removed config item 'StatsInterval'. (If in config file it will be ignored)
+
+Todo:
+- Extend config dialog for new config options
+- Make a proper web interface to replace GUI
+- Change devices selection from 'Type' to device names.
