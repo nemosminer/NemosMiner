@@ -67,6 +67,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
@@ -81,14 +83,10 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
                         $Protocol2 = $_.Protocol[1]
-                        If ($Pools.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
-                        $_.Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[1]).Pass))@$($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port)$(If($_.Intensity2 -ge 0) { " -dual-intensity $($_.Intensity2)" })"
+                        If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
+                        $_.Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)$(If($_.Intensity2 -ge 0) { " -dual-intensity $($_.Intensity2)" })"
                         $WarmupTime = 120
-                    }
-                    Else {
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
                     }
 
                     #Optionally disable dev fee mining
