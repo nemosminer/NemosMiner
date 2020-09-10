@@ -7,10 +7,10 @@ $DeviceEnumerator = "Type_Slot"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Type = "AMD";    Command = " --algo eaglesong --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("Eaglesong", "Ethash"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   Type = "AMD";    Command = " --algo eaglesong_ethash --fee 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   Type = "AMD";    Command = " --algo eaglesong_ethash --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);     MinMemGB = 4;   MinMemGBWin10 = 4;   Type = "AMD";    Command = " --algo ethash" } #BMiner & PhoenixMiner are fastest
     [PSCustomObject]@{ Algorithm = @("Handshake");           Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Type = "AMD";    Command = " --algo hns --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("Handshake", "Ethash"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   Type = "AMD";    Command = " --algo hns_ethash --fee 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   Type = "AMD";    Command = " --algo hns_ethash --fee 1" }
     [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.01);       MinMemGB = 3;   MinMemGBWin10 = 3;   Type = "AMD";    Command = " --algo kawpow --fee 1" }
 
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.01);       MinMemGB = 5;   MinMemGBWin10 = 6;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo bfc --fee 1" }
@@ -20,18 +20,18 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Fee = @(0.01);       MinMemGB = 8;   MinMemGBWin10 = 10;  MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckatoo32 --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Fee = @(0.01);       MinMemGB = 5;   MinMemGBWin10 = 6;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckoo_ae --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo eaglesong --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("Eaglesong", "Ethash"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo eaglesong_ethash --fee 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo eaglesong_ethash --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);     MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo ethash" } #BMiner & PhoenixMiner are fastest
 #   [PSCustomObject]@{ Algorithm = @("Handshake");           Fee = @(0.01)      ; MinMemGB = 0.1; MinMemGBWin10 = 0.1; MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo hns --fee 1" } #SRBMminerMulti-v0.5.1 is fastest
-    [PSCustomObject]@{ Algorithm = @("Handshake", "Ethash"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo hns_ethash --fee 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo hns_ethash --fee 1" }
     [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.01)      ; MinMemGB = 3;   MinMemGBWin10 = 3;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo kawpow --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Sero");                Fee = @(0.01)      ; MinMemGB = 2;   MinMemGBWin10 = 2;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo progpow_sero --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Sipc");                Fee = @(0.01)      ; MinMemGB = 1;   MinMemGBWin10 = 1;   MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo sipc --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Tensority");           Fee = @(0.01)      ; MinMemGB = 0.1; MinMemGBWin10 = 0.1; MinCUDAComputeCapability = 6.1; Type = "NVIDIA"; Command = " --algo tensority --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("Tensority", "Ethash"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.1; Type = "NVIDIA"; Command = " --algo tensority_ethash --fee 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Fee = @(0.01, 0.01); MinMemGB = 4;   MinMemGBWin10 = 4;   MinCUDAComputeCapability = 6.1; Type = "NVIDIA"; Command = " --algo tensority_ethash --fee 1" }
 )
 
-If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($PoolsSecondaryAlgorithm.($_.Algorithm[0]).Host -and $Pools.($_.Algorithm[1]).Host) }) { 
+If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
     #Intensities for 2. algorithm
     $Intensities2 = [PSCustomObject]@{ 
@@ -44,7 +44,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
     $Commands = $Commands | ForEach-Object { 
         $Command = $_ 
         If ($_.Algorithm[1]) { 
-            $Intensities2.($_.Algorithm[0]) | Select-Object | ForEach-Object { 
+            $Intensities2.($_.Algorithm[1]) | Select-Object | ForEach-Object { 
                 $Command | Add-Member Intensity2 ([Uint16]$_) -Force
                 $Command | ConvertTo-Json | ConvertFrom-Json
             }
@@ -67,6 +67,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.CUDAComputeCapability -ge $MinCUDAComputeCapability })) { 
 
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
@@ -76,21 +78,17 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     Else { $Protocol = "stratum+tcp://" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = $Protocol -replace '\+tcp\://$', '+ssl://' }
 
-                    $_.Command += " --url $($Protocol)$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)"
-
                     If ($_.Algorithm[1]) { 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[0]) + @($_.Intensity2) | Select-Object) -join '-'
-
                         If ($_.Algorithm[1] -match "^Ethash*|^Cuck*") { 
-                            $Protocol2 = If ($Pools.($_.Algorithm[1]).Name -match "MPH*|NiceHash*") { "nicehash+tcp://" } Else { "ethproxy+tcp://" } 
+                            $Protocol2 = If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Name -match "MPH*|NiceHash*") { "nicehash+tcp://" } Else { "ethproxy+tcp://" } 
                         }
                         Else { $Protocol2 = "stratum+tcp://" }
-                        If ($Pools.($_.Algorithm[1]).SSL) { $Protocol2 = $Protocol2 -replace '\+tcp\://$', '+ssl://' }
+                        If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = $Protocol2 -replace '\+tcp\://$', '+ssl://' }
 
-                        $_.Command += " --secondary-url $($Protocol2)$($Pools.$($_.Algorithm[1]).Host):$($Pools.$($_.Algorithm[1]).Port) --secondary-user $($Pools.$($_.Algorithm[1]).User):$($Pools.($_.Algorithm[0]).Pass)$(If($_.Intensity2 -ge 0) { " --secondary-intensity $($_.Intensity2)" })"
+                        $_.Command += " --url $($Protocol2)$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) --secondary-url $($Protocol)$($Pools.$($_.Algorithm[0]).Host):$($Pools.$($_.Algorithm[0]).Port) --secondary-user $($Pools.$($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)$(If($_.Intensity2 -ge 0) { " --secondary-intensity $($_.Intensity2)" })"
                     }
                     Else { 
-                        $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                        $_.Command += " --url $($Protocol)$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)"
                     }
 
                     #Optionally disable dev fee mining
@@ -104,7 +102,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         Type       = $_.Type
                         Path       = $Path
                         Arguments  = ("$($_.Command) --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = ($_.Algorithm[1], $_.Algorithm[0]) | Select-Object
+                        Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "NBMiner"
                         Port       = $MinerAPIPort
                         Wrap       = $false
