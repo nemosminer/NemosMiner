@@ -26,7 +26,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   MinMemGB = 4;    Type = "AMD"   ; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       MinMemGB = 2;    Type = "AMD"   ; Command = " --algo cn/zls" } 
-#   [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "AMD"   ; Command = " --algo kawpow" } #NBMiner-v31.1 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "AMD"   ; Command = " --algo kawpow" } #NBMiner-v31.1 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "Randomx";              MinMemGB = 2;    Type = "AMD"   ; Command = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           MinMemGB = 2;    Type = "AMD"   ; Command = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          MinMemGB = 1;    Type = "AMD"   ; Command = " --algo rx/kev" }
@@ -65,12 +65,12 @@ $Commands = [PSCustomObject[]]@(
 
     [PSCustomObject]@{ Algorithm = "AstroBWT";             MinMemGB = 0.02; Type = "NVIDIA"; Command = " --algo astrobwt" }
     [PSCustomObject]@{ Algorithm = "Cryptonight";          MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/ccx" } #CryptoDredge-v0.25.1 is fastest, keep enabled for IgnoreMinersWithFees
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/ccx" } #CryptoDredge-v0.25.1 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-lite/0" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-lite/1" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/half" } #CryptoDredge-v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn/half" } #CryptoDredge-v0.25.1 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-heavy/0" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo cn-heavy/tube" }
     [PSCustomObject]@{ Algorithm = "CryptonightPico";      MinMemGB = 0.25; Type = "NVIDIA"; Command = " --algo cn-pico" }
@@ -83,7 +83,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   MinMemGB = 4;    Type = "NVIDIA"; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo cn/zls" } 
-#   [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "NVIDIA"; Command = " --algo kawpow" } #NBMiner-v31.1 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "NVIDIA"; Command = " --algo kawpow" } #NBMiner-v31.1 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "Randomx";              MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           MinMemGB = 2;    Type = "NVIDIA"; Command = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          MinMemGB = 1;    Type = "NVIDIA"; Command = " --algo rx/kev" }
