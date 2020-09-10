@@ -1404,10 +1404,10 @@ Function Set-Stat {
         If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
             #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')) failed. It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Failed saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Saving power usage ($($Name): $($Value.ToString("N2"))W) failed. It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Failed saving power usage ($($Name): $($Value.ToString("N2"))W). It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
             }
         }
         Else { 
