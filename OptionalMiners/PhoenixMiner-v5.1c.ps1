@@ -67,7 +67,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $_.Command += " -dpool $(If ($Pools.($_.Algorithm[1]).SSL) { "ssl://" })$($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpass $($Pools.($_.Algorithm[1]).Pass)"
+                        $_.Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
 
                         If ($_.Intensity2 -eq $null) { 
                             $_.Command += " -gt 0" #Enable auto-tuning
