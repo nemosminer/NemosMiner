@@ -6,7 +6,7 @@ $Uri = "https://github.com/nemosminer/Dynamic-GPU-Miner-Nvidia/releases/download
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn"; MinMemGB = 1; Command = " --algo argon2d --statsavg 1" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn"; MinMemGB = 2; Command = " --algo argon2d --statsavg 1" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
