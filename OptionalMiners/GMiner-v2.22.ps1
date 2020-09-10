@@ -74,7 +74,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     If ($_.Algorithm[1]) { 
                         #If ($Pools.($_.Algorithm[1]).SSL) { $_.Command += " --dssl true --dssl_verification false" }
-                        $_.Command += " --dserver $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) --duser $($Pools.($_.Algorithm[1]).User):$($Pools.Algo2.Pass)"
+                        $_.Command += " --dserver $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --duser $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User):$($PoolsSecondaryAlgorithm.Algo2.Pass)"
                     }
 
                     [PSCustomObject]@{ 
