@@ -58,17 +58,18 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = "NVIDIA"
-                        Path       = $Path
-                        Arguments  = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" }) --no-watchdog --gpu-report-interval 25 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = $_.Algorithm
-                        API        = "Trex"
-                        Port       = $MinerAPIPort
-                        URI        = $Uri
-                        Fee        = 0.01 #Dev fee
-                        MinerUri   = "http://localhost:$($MinerAPIPort)/trex"
+                        Name            = $Miner_Name
+                        DeviceName      = $Miner_Devices.Name
+                        Type            = "NVIDIA"
+                        Path            = $Path
+                        Arguments       = ("$($_.Command) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" }) --no-watchdog --gpu-report-interval 25 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm       = $_.Algorithm
+                        API             = "Trex"
+                        Port            = $MinerAPIPort
+                        URI             = $Uri
+                        Fee             = 0.01 #Dev fee
+                        MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
+                        PowerUsageInAPI = $true
                     }
                 }
             }

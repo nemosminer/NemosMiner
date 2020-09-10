@@ -65,17 +65,18 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "coin") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = $_.Type
-                        Path       = $Path
-                        Arguments  = ("$($_.Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).pass)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}:0' -f $_.$DeviceEnumerator }) -join ',')").trim()
-                        Algorithm  = $_.Algorithm
-                        API        = "lolMiner"
-                        Port       = $MinerAPIPort
-                        URI        = $Uri
-                        Fee        = $_.Fee
-                        WarmupTime = 45 #seconds
+                        Name            = $Miner_Name
+                        DeviceName      = $Miner_Devices.Name
+                        Type            = $_.Type
+                        Path            = $Path
+                        Arguments       = ("$($_.Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).pass)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}:0' -f $_.$DeviceEnumerator }) -join ',')").trim()
+                        Algorithm       = $_.Algorithm
+                        API             = "lolMiner"
+                        Port            = $MinerAPIPort
+                        URI             = $Uri
+                        Fee             = $_.Fee
+                        WarmupTime      = 45 #seconds
+                        PowerUsageInAPI = $true
                     }
                 }
             }

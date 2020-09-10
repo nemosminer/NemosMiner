@@ -19,7 +19,8 @@ Function Start-Cycle {
         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
         #To trigger an eventual miner restart
-        $Variables.OldCalculatePowerCost = $Variables.CalculatePowerCost
+        $Variables.OldShowMinerWindows = $Config.ShowMinerWindows
+        $Variables.OldCalculatePowerCost = $Config.CalculatePowerCost
 
         #Always get the latest config
         Read-Config
@@ -463,11 +464,11 @@ Function Start-Cycle {
                         Devices          = [Device[]]($Variables.Devices | Where-Object Name -in $_.Content.DeviceName)
                         Type             = [String]$_.Content.Type
                         Port             = [UInt16]$_.Content.Port
-                        HideMinerWindow  = [Boolean]($_.Content.API -eq "Wrapper" -or $Config.HideMinerWindow) #Wrapper miner must always run hidden
                         URI              = [String]$_.Content.URI
                         PrerequisitePath = [String]$_.Content.PrerequisitePath
                         WarmupTime       = $(If ($_.Content.WarmupTime -lt $Config.WarmupTime) { [Int]$Config.WarmupTime } Else { [Int]$_.Content.WarmupTime })
                         MinerUri         = [String]$_.Content.MinerUri
+                        PowerUsageInAPI  = [Boolean]$_.PowerUsageInAPI
                     } -as "$($_.Content.API)"
                 }
             }
@@ -502,18 +503,19 @@ Function Start-Cycle {
         #Update existing miners
         $Variables.Miners | Select-Object | ForEach-Object { 
             If ($Miner = Compare-Object -PassThru ($NewMiners | Where-Object Name -EQ $_.Name | Where-Object Path -EQ $_.Path | Where-Object Type -EQ $_.Type | Select-Object) $_ -Property Algorithm -ExcludeDifferent -IncludeEqual) { 
-                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.HideMinerWindow -ne $Miner.HideMinerWindow -or $Variables.OldCalculatePowerCost -ne $Variables.CalculatePowerCost)
+                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.PowerUsageInAPI -ne $Miner.PowerUsageInAPI)
                 $_.Arguments = $Miner.Arguments
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
-                $_.HideMinerWindow = $Miner.HideMinerWindow
                 $_.WarmupTime = $Miner.WarmupTime
+                $_.PowerUsageInAPI = $Miner.PowerUsageInAPI
             }
+            $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
             $_.CalculatePowerCost = $Variables.CalculatePowerCost
             $_.Refresh($Variables.PowerCostBTCperW)
             $_.MinDataSamples = $Config.MinDataSamples * (1, @($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).maximum
             $_.MeasurePowerUsage = [Boolean]($Variables.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
-            $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
+            $_.ShowMinerWindows = $Config.ShowMinerWindows
         }
         Remove-Variable Miner -ErrorAction Ignore
         Remove-Variable NewMiners -ErrorAction Ignore
@@ -689,15 +691,17 @@ Function Start-Cycle {
         # MeasurePowerUsage state changed
         # CalculatePowerCost -> true -> done (to change data poll interval)
         $BestMiners_Combo | Select-Object | ForEach-Object { 
-            If ($_.Activated -EQ -1) { 
+            If ($_.Activated -EQ -1) { #Re-benchmark triggered in Web GUI
                 $_.Restart = $true
                 $_.Data = @()
                 $_.Activated = 0
             }
-            If ($_.DataReaderJob.State -ne $_.GetStatus()) { $_.Restart = $true }
-            If ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
-            If ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
-            If ($_.CalculatePowerCost -eq $false -and -$Variables.CalculatePowerCost) { $_.Restart = $true }
+            ElseIf ($_.MeasurePowerUsage -and (-not $_.PowerUsageInAPI) -and $_.DataReaderJob.State -ne $_.GetStatus()) { $_.Restart = $true }
+            ElseIf ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
+            ElseIf ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
+            ElseIf ($_.CalculatePowerCost -eq $false -and -$Variables.CalculatePowerCost) { $_.Restart = $true }
+            ElseIf ($Config.ShowMinerWindows -ne $Variables.OldShowMinerWindows) { $_.Restart = $true } 
+            ElseIf ($Config.CalculatePowerCost -ne $Variables.OldCalculatePowerCost) { $_.Restart = $true }
         }
 
         #Stop running miners
@@ -913,7 +917,7 @@ While ($true) {
                     $Miner.SetStatus([MinerStatus]::Failed)
                     $Miner.StatusMessage = "Miner data reader exited unexpectedly."
                 }
-                ElseIf (((Get-Date) - $Miner.Process.PSBeginTime).TotalSeconds -gt $Miner.WarmupTime -and ($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds(-$Miner.WarmupTime).ToUniversalTime()) { 
+                ElseIf (((Get-Date) - $Miner.Process.StartTime).TotalSeconds -gt $Miner.WarmupTime -and ($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds( -$Miner.WarmupTime).ToUniversalTime()) { 
                     #Miner is stuck - no data for > $WarmupTime seconds
                     Write-Message -Level ERROR "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
                     $Miner.SetStatus([MinerStatus]::Failed)

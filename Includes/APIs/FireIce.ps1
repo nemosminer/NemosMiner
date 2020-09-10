@@ -33,21 +33,9 @@ class Fireice : Miner {
                 }
 
                 #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
-                If ((Test-Path ".\CreateProcess.cs" -PathType Leaf) -and ($this.API -ne "Wrapper")) { 
-                    $this.Process = Start-SubProcessWithoutStealingFocus -FilePath $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -Priority ($this.DeviceName | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
-                }
-                Else { 
-                    $EnvCmd = ($this.Environment | ForEach-Object { "```$env:$($_)" }) -join "; "
-                    $this.Process = Start-Job ([ScriptBlock]::Create("Start-Process $(@{ desktop = "powershell"; core = "pwsh" }.$Global:PSEdition) `"-command $EnvCmd```$Process = (Start-Process '$($this.Path)' '$($Parameters.HwDetectCommands)' -WorkingDirectory '$(Split-Path $this.Path)' -WindowStyle Minimized -PassThru).Id; Wait-Process -Id `$PID; Stop-Process -Id ```$Process`" -WindowStyle Hidden -Wait"))
-                }
+                $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
-                If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
-                    For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
-                        If ($this.ProcessId = (Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path } | Where-Object { $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId) { 
-                            Break
-                        }
-                        Start-Sleep -Milliseconds 100
-                    }
+                If ($this.Process) { 
                     For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
                         If (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf) { 
                             #Read hw config created by miner

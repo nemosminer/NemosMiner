@@ -60,7 +60,7 @@ class EthMiner : Miner {
         }
 
         If ($this.CalculatePowerCost) { 
-            If ($Data.Result.Count -gt 9) { 
+            If ($this.PowerUsageInAPI) { 
                 $PowerUsage = [Double]$Data.result[9]
             }
             Else { 

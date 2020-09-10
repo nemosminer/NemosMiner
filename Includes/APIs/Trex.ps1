@@ -35,7 +35,7 @@ class Trex : Miner {
         }
 
         If ($this.CalculatePowerCost) { 
-            If ($Data.gpus.power) { 
+            If ($this.PowerUsageInAPI) { 
                 $PowerUsage = [Double]($Data.gpus.power | Measure-Object -Sum).Sum
             }
             Else { 

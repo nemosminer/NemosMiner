@@ -78,18 +78,19 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = $_.Type
-                        Path       = $Path
-                        Arguments  = ("$($_.Command) --api $($MinerAPIPort) --watchdog 0 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
-                        Algorithm  = ($_.Algorithm) | Select-Object
-                        API        = "Gminer"
-                        Port       = $MinerAPIPort
-                        URI        = $Uri
-                        Fee        = $_.Fee
-                        WarmupTime = 45 #seconds
-                        MinerUri   = "http://localhost:$($MinerAPIPort)"
+                        Name            = $Miner_Name
+                        DeviceName      = $Miner_Devices.Name
+                        Type            = $_.Type
+                        Path            = $Path
+                        Arguments       = ("$($_.Command) --api $($MinerAPIPort) --watchdog 0 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                        Algorithm       = ($_.Algorithm) | Select-Object
+                        API             = "Gminer"
+                        Port            = $MinerAPIPort
+                        URI             = $Uri
+                        Fee             = $_.Fee
+                        WarmupTime      = 45 #seconds
+                        MinerUri        = "http://localhost:$($MinerAPIPort)"
+                        PowerUsageInAPI = $true
                     }
                 }
             }
