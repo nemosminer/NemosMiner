@@ -280,6 +280,7 @@ Function Start-APIServer {
                                 }
                                 $_.Activated = -1 #To allow 3 attempts
                                 $_.Benchmark = $true
+                                $_.Accuracy = $null
                                 $_.Data = @()
                                 $_.Speed = @()
                                 $_.SpeedLive = @()
