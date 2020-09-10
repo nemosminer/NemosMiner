@@ -26,10 +26,10 @@ $Commands = [PSCustomObject[]]@(
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
     $Intensities2 = [PSCustomObject]@{ 
-        "Blake2s" = @(10, 20, 30, 40, 50, 60, 70)
-        "Decred"  = @(20, 40, 70)
-        "Keccak"  = @(20, 30, 40)
-        "Lbry"    = @(60, 75, 90)
+        "Blake2s" = @(10, 30, 50, 70)
+        "Decred"  = @(10, 20, 30, 40)
+        "Keccak"  = @(1, 3, 6, 9)
+        "Lbry"    = @(10, 20, 30, 40)
         "Pascal"  = @(20, 40, 60)
         "Sia"     = @(20, 40, 60, 80)
     }
@@ -85,7 +85,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $_.Command += " -dpool $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) -dwal $($Pools.($_.Algorithm[1]).User) -dpsw $($Pools.($_.Algorithm[1]).Pass)"
+                        $_.Command += " -dpool $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpsw $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
                         If ($_.Intensity2 -ge 0) { $_.Command += " -dcri $($_.Intensity2)" }
                     }
 
