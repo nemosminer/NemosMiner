@@ -334,7 +334,6 @@ Function Start-Cycle {
             If (($Miner.GetStatus() -eq [MinerStatus]::Running -and ($Miner.Data).Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
                 $Miner.StatEnd = (Get-Date).ToUniversalTime()
                 $Miner.Intervals += $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
-                $Miner.StatStart = $Miner.StatEnd
 
                 $Miner.Workers | ForEach-Object { 
                     $Worker =  $_
@@ -349,6 +348,7 @@ Function Start-Cycle {
                             If ($WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
                                 $WatchdogTimer.Kicked = $Stat.Updated
                             }
+                            $Miner.StatStart = $Miner.StatEnd
                         }
                     }
                 }
@@ -428,7 +428,7 @@ Function Start-Cycle {
         $EnabledDevices = $Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
         #For GPUs set type AMD or NVIDIA
         $EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
-        If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } #Replace Model information from devices -> will create only one miner instance
+        If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } #Remove Model information from devices -> will create only one miner instance
 
         #Load miners
         If (Test-Path ".\Miners" -PathType Container -ErrorAction Ignore) { 
@@ -617,22 +617,24 @@ Function Start-Cycle {
             If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
             $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } #use a smaller subset of miners
-            $BestMiners = $FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName) } | Select-Object -First 1) }
+            $BestMiners = @($FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
-            $Miners_Device_Combos = Get-Combination ($Variables.Miners | Where-Object Available -EQ $true | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 }
+            $Miners_Device_Combos = @(Get-Combination ($BestMiners | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 })
 
-            $BestMiners_Combos = $Miners_Device_Combos | ForEach-Object { 
-                $Miner_Device_Combo = $_.Combination
-                [PSCustomObject]@{ 
-                    Combination = $Miner_Device_Combo | ForEach-Object { 
-                        $Miner_Device_Count = $_.DeviceName.Count
-                        [Regex]$Miner_Device_Regex = "^(" + (($_.DeviceName | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ")$"
-                        $BestMiners | Where-Object { ([Array]$_.DeviceName -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.DeviceName -match $Miner_Device_Regex).Count -eq $Miner_Device_Count }
+            $BestMiners_Combos = @(
+                $Miners_Device_Combos | ForEach-Object { 
+                    $Miner_Device_Combo = $_.Combination
+                    [PSCustomObject]@{ 
+                        Combination = $Miner_Device_Combo | ForEach-Object { 
+                            $Miner_Device_Count = $_.DeviceName.Count
+                            [Regex]$Miner_Device_Regex = "^(" + (($_.DeviceName | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ")$"
+                            $BestMiners | Where-Object { ([Array]$_.DeviceName -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.DeviceName -match $Miner_Device_Regex).Count -eq $Miner_Device_Count }
+                        }
                     }
                 }
-            }
+            )
 
-            $BestMiners_Combo = $BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination
+            $BestMiners_Combo = @($BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
             Remove-Variable Miner_Device_Combo
             Remove-Variable Miners_Device_Combos
             Remove-Variable BestMiners
@@ -723,8 +725,10 @@ Function Start-Cycle {
                     $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                     If ($WatchdogTimer) { 
                         If ($WatchdogTimer.Kicked -lt $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval)) { 
-                            Write-Message -Level Warn "Watchdog: Miner '$($Miner_Info)' suspended by watchdog."
-                            $Miner.StatusMessage = " suspended by watchdog"
+                            If ($Miner.StatusMessage -ne " suspended by watchdog") { 
+                                Write-Message -Level Warn "Watchdog: Miner '$($Miner_Info)' suspended by watchdog."
+                                $Miner.StatusMessage = " suspended by watchdog"
+                            }
                         }
                         Else { 
                             #Remove watchdog timer(s)
@@ -947,7 +951,7 @@ While ($true) {
                 Break
             }
 
-            While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 200 }
+            While ((Get-Date) -le $NextLoop) { Start-Sleep -Milliseconds 100 }
         }
         Write-Message "$($Message)Ending cycle."
         Remove-Variable Message -ErrorAction SilentlyContinue
