@@ -110,7 +110,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$NiceHashAPISecret = "", #NiceHash API Secret (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [Switch]$NiceHashWalletIsInternal = $false, #Set to $true if NiceHashWallet is a NiceHash internal Wallet (lower pool fees)
+    [Switch]$NiceHashWalletIsInternal = $false, #Set to $true if NiceHashWallet is a NiceHash internal wallet (lower pool fees)
     [Parameter(Mandatory = $false)]
     [String]$NiceHashWallet = "", #NiceHash wallet, if left empty $Wallet is used
     [Parameter(Mandatory = $false)]
@@ -132,7 +132,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
-    [Double]$PricePenaltyFactor = 1, #Estimated profit as projected by pool will be multiplied by this facator. Allowed values: 0.0 - 1.0
+    [Double]$PricePenaltyFactor = 1, #Estimated profit as projected by pool will be multiplied by this factor. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
     [Double]$ProfitabilityThreshold = -99, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
     [Parameter(Mandatory = $false)]
@@ -146,7 +146,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, 
     [Parameter(Mandatory = $false)]
-    [Double]$RunningMinerGainPct = 12, # percent of advantage that running miner has over candidates in term of earning/profit
+    [Double]$RunningMinerGainPct = 12, #As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, #Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
