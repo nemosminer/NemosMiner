@@ -125,7 +125,6 @@ Class Miner {
     [Device[]]$Devices = @()
 
     [String[]]$Type
-    [Boolean]$Wrap
 
     [String]$Name
     [String]$BaseName
