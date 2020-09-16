@@ -880,7 +880,7 @@ While ($true) {
         TimerUITick
 
         #End loop when
-        # - a miner crashed
+        # - a miner crashed (and no other miners are benchmarking)
         # - all benchmarking miners have collected enough samples
         # - warmuptime is up
         # - timeout is reached (no readout from miner)
