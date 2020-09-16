@@ -2,26 +2,26 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.9/teamredminer-v0.7.9-win.zip"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/TeamRed/teamredminer-v0.7.10-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; Command = " --algo=trtl_chukwa" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_conceal --rig_id $($Config.WorkerName)" } #XmRig-v6.3.3 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_heavy --rig_id $($Config.WorkerName)" } #XmRig-v6.3.3 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_haven --rig_id $($Config.WorkerName)" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_saber --rig_id $($Config.WorkerName)" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnr --rig_id $($Config.WorkerName)" } #XmRig-v6.3.3 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";        Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8 --rig_id $($Config.WorkerName)" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Fee = 0.025; MinMemGB = 4.0; Command = " --algo=cnv8_dbl --rig_id $($Config.WorkerName)" } #XmRig-v6.3.3 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_half -rig_id $($Config.WorkerName)" }
-    [PSCustomObject]@{ Algorithm = "CryptonightTurtle";    Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_trtl --rig_id $($Config.WorkerName)" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_rwz --rig_id $($Config.WorkerName)" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_upx2 --rig_id $($Config.WorkerName)" } #SRBMminerMulti-v0.5.1 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_conceal --auto_tune=NONE --rig_id $($Config.WorkerName)" } #TeamRed-v0.7.10 is fastest, but has 2.0% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_heavy --auto_tune=NONE --rig_id $($Config.WorkerName)" } #TeamRed-v0.7.10 is fastest, but has 2.0% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_haven --auto_tune=NONE --rig_id $($Config.WorkerName)" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_saber --auto_tune=NONE --rig_id $($Config.WorkerName)" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnr --auto_tune=NONE --rig_id $($Config.WorkerName)" } #XmRig-v6.3.3 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";        Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8 --auto_tune=NONE --rig_id $($Config.WorkerName)" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Fee = 0.025; MinMemGB = 4.0; Command = " --algo=cnv8_dbl --auto_tune=NONE --rig_id $($Config.WorkerName)" } #XmRig-v6.3.3 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_half --auto_tune=NONE -rig_id $($Config.WorkerName)" }
+    [PSCustomObject]@{ Algorithm = "CryptonightTurtle";    Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_trtl --auto_tune=NONE --rig_id $($Config.WorkerName)" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cnv8_rwz --auto_tune=NONE --rig_id $($Config.WorkerName)" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cnv8_upx2 --auto_tune=NONE --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cuckarood29_grin" } #2GB is not enough
-#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cuckatoo31_grin" } #lolMiner-v1.0.7 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cuckatoo31_grin" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.025; MinMemGB = 4.0; Command = " --algo=ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } #NBMiner-v31.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } #Wildrig-v0.26.0-1 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; Command = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" }
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.025; MinMemGB = 4.0; Command = " --algo=mtp" }
@@ -43,7 +43,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH*") { Return }
+                If ($_.Algorithm -notin @("Ethash", "Kawpow", "Nimiq", "MTP") -and (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Navi is not supported by other algorithms
 
                 $MinMemGB = $_.MinMemGB
 
@@ -58,11 +58,10 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     If ($_.Algorithm -like "Cryptonight*") { 
                         $WarmupTime = 90
-                        $_.Command += " --auto_tune=NONE"
                     }
                     ElseIf ($_.Algorithm -eq "Ethash") { 
                         $WarmupTime = 60
-                        If ($Pools.($_.Algorithm).Name -match "NiceHash*|MPH*") { $_.Command += " --eth_stratum_mode=nicehash" }
+                        If ($Pools.($_.Algorithm).Name -match "^NiceHash*|^MPH*") { $_.Command += " --eth_stratum_mode=nicehash" }
                     }
 
                     [PSCustomObject]@{ 
@@ -70,7 +69,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName = $Miner_Devices.Name
                         Type       = "AMD"
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --url $($Pools.($_.Algorithm).Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --watchdog_disable --no_gpu_monitor --init_style=3 --pool_no_ensub --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Command) --url $($Pools.($_.Algorithm).Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --allow_large_alloc --watchdog_disable --no_gpu_monitor --init_style=3 --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Xgminer"
                         Port       = $MinerAPIPort
