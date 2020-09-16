@@ -159,9 +159,7 @@ Class Miner {
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
-    $Process = $null
-    # hidden [System.Management.Automation.Job]$DataReaderJob = $null
-    # hidden [System.Management.Automation.Job]$Process = $null
+    hidden [System.Diagnostics.Process]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
     [Int]$Activated = 0
     [MinerStatus]$Status = [MinerStatus]::Idle
@@ -324,7 +322,8 @@ Class Miner {
         ElseIf ($this.Status -eq "Running") { 
             $this.ProcessId = $null
             #Stop Miner data reader
-            Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
+            Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore
+            Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Remove-Job -Force -ErrorAction Ignore
             $this.Status = [MinerStatus]::Failed
             Return $this.Status
         }
