@@ -26,7 +26,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Fee = 0.0085; Type = "CPU"; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Fee = 0;      Type = "CPU"; Command = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "MTP";                 Fee = 0;      Type = "CPU"; Command = " --algorithm mtp" }
+#   [PSCustomObject]@{ Algorithm = "MTP";                 Fee = 0;      Type = "CPU"; Command = " --algorithm mtp" } #TeamRed-v0.7.10 ist fastest
     [PSCustomObject]@{ Algorithm = "RainforestV2";        Fee = 0.0085; Type = "CPU"; Command = " --algorithm rainforestv2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";             Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.3.3 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
@@ -55,7 +55,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_gpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_upx" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.10 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm eaglesong" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";              MinMemGb = 4; Fee = 0.0085; Type = "AMD"; Command = " --algorithm ethash" } #NBMiner-v31.1 is fastest
@@ -63,7 +63,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "MTP";                 MinMemGb = 3; Fee = 0;      Type = "AMD"; Command = " --algorithm mtp" } #TeamRed-v0.7.9 is fastest, but has 2.5% miner fee
+    [PSCustomObject]@{ Algorithm = "MTP";                 MinMemGb = 3; Fee = 0;      Type = "AMD"; Command = " --algorithm mtp" } #TeamRed-v0.7.10 is fastest, but has 2.5% miner fee
     [PSCustomObject]@{ Algorithm = "RainforestV2";        MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm rainforestv2" }
     [PSCustomObject]@{ Algorithm = "Tellor";              MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm tellor" }
     [PSCustomObject]@{ Algorithm = "UbqHash";             MinMemGb = 1; Fee = 0.85;   Type = "AMD"; Command = " --algorithm ubqhash" }
