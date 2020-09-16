@@ -92,8 +92,9 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
-  var $table = $('#miners')
-  var $querysize = 10000
+  var $table = $('#miners');
+  var $querysize = 10000;
+  document.getElementById("balances").style.display = "none";
 
   $('#re-benchmark').click(function () {
     var $data = $table.bootstrapTable('getSelections');
@@ -152,44 +153,47 @@
   $(function() {
     function updatePoolBalances() {
       var balances = document.getElementById("balances");
-      var data_total = {name: "Total Balance From All Pools", balances: {}, total: true};
+      var data_total = {name: "Total Balance from all Pools", balances: {}, total: true};
       var rates = {};
 
       $.ajax({url: '/rates',
         success: function(result) {
-          rates = result;
-        }
-      });
+          if (result != null) {
+            rates = result;
 
-      $.ajax({url: '/currencies',
-        success: function(result) {
-          currencies = result;
-        }
-      });
+            $.ajax({url: '/currencies',
+              success: function(result) {
+                if (result != null) { 
+                  currencies = result;
 
-      $.ajax({url: '/earnings',
-        success: function(result) {
-          if (result) {
-            balances.style.display = "block";
-          } else {
-            balances.style.display = "none";
+                  $.ajax({url: '/earnings',
+                    success: function(result) {
+                      if (result != null) { 
+                        document.getElementById("balances").style.display = "block";
+
+                        $("#balanceboxes").empty();
+                        var template = Handlebars.compile($("#poolbalance_template").html());
+                        var footer = new RegExp("-.+|=.+");
+                        $.each(result, function(index, item) {
+                          if (!(footer.test(item.Pool))) {
+                            // var currencies = Object.keys(rates[item.Currency]);
+                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avgh: (item.AvgHourlyGrowth).toFixed(6), avgd: (item.DailyGrowth).toFixed(6)};
+                            $.each(currencies, function(cindex, currency) {
+                              data["balances"][currency] = (item.Balance * rates['BTC'][currency]).toFixed(8);
+                              if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
+                              data_total["balances"][currency] = data_total["balances"][currency] + item.Balance * rates['BTC'][currency];
+                            });
+                            $("#balanceboxes").append(template(data));
+                          }
+                        });
+                        $("#balanceboxes").append(template(data_total));
+                      }
+                    }
+                  });
+                }
+              }
+            });
           }
-          $("#balanceboxes").empty();
-          var template = Handlebars.compile($("#poolbalance_template").html());
-          var footer = new RegExp("-.+|=.+");
-          $.each(result, function(index, item) {
-            if (!(footer.test(item.Pool))) {
-              // var currencies = Object.keys(rates[item.Currency]);
-              var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avgh: (item.AvgHourlyGrowth).toFixed(6), avgd: (item.DailyGrowth).toFixed(6)};
-              $.each(currencies, function(cindex, currency) {
-                data["balances"][currency] = (item.Balance * rates['BTC'][currency]).toFixed(8);
-                if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
-                data_total["balances"][currency] = data_total["balances"][currency] + item.Balance * rates['BTC'][currency];
-              });
-              $("#balanceboxes").append(template(data));
-            }
-          });
-          $("#balanceboxes").append(template(data_total));
         }
       });
     }
