@@ -6,8 +6,8 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/PhoenixMin
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "AMD"; Command = " -dcoin blake2s -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 3.9; WarmupTime = 60; Type = "AMD"; Command = " -dcoin blake2s -amd -eres 1 -mi 12" }
     [PSCustomObject]@{ Algorithm = @("ProgPoW");           Fee = @(0.009);    MinMemGB = 2.4; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
 #   [PSCustomObject]@{ Algorithm = @("BitcoinInterest");   Fee = @(0.009);    MinMemGB = 2;   WarmupTime = 45; Type = "AMD"; Command = " -coin BCI -amd -eres 1 -mi 12" } #Does not work
 
@@ -16,7 +16,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("ProgPoW");           Fee = @(0.009);    MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
 )
 
-If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($PoolsSecondaryAlgorithm.($_.Algorithm[0]).Host -and $Pools.($_.Algorithm[1]).Host) }) { 
+If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
     #Intensities for 2. algorithm
     $Intensities2 = [PSCustomObject]@{ 
@@ -61,20 +61,20 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                     } 
 
-                    If ($Miner_Devices.Vendor -eq "AMD" -and (($_.OpenCL.GlobalMemSize / 1GB) -ge (2 * $MinMemGB))) { 
-                        #Faster AMD "turbo" kernels require twice as much VRAM
-                        $_.Command += " -clkernel 3"
+                    If ($Miner_Devices.Vendor -eq "AMD") { 
+                        If (($_.OpenCL.GlobalMemSize / 1GB) -ge (2 * $MinMemGB)) { 
+                            #Faster AMD "turbo" kernels require twice as much VRAM
+                            $_.Command += " -clkernel 3"
+                        }
+                        If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
+                            #Extra Speed for Navi cards
+                            $_.Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096"
+                        }
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $_.Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
-
-                        If ($_.Intensity2 -eq $null) { 
-                            $_.Command += " -gt 0" #Enable auto-tuning
-                        }
-                        Else { 
-                            $_.Command += " -sci $($_.Intensity2)"
-                        }
+                        If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { Return } #No dual mining for Navi cards
+                        $_.Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) -sci $([Int]$_.Intensity2)"
                     }
 
                     [PSCustomObject]@{ 
