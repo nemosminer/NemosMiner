@@ -532,7 +532,7 @@ Class Miner {
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
-                $_.Speed = $Stat.Week
+                $_.Speed = $Stat.Hour
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
@@ -1162,29 +1162,34 @@ Function Update-Monitoring {
 
 Function Start-Mining { 
 
-    #Load algorithm list
-    $Variables.Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
-    #Load regions list
-    $Variables.Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
+    If (Test-Path -PathType Leaf "$($Variables.MainPath)\Includes\Core.ps1") { 
+        #Load algorithm list
+        $Variables.Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
+        #Load regions list
+        $Variables.Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
 
-    If (-not $Variables.CoreRunspace) { 
-        $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-        $Variables.Pools = $null
-        $Variables.Miners = $null
+        If (-not $Variables.CoreRunspace) { 
+            $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
+            $Variables.Pools = $null
+            $Variables.Miners = $null
 
-        $CoreRunspace = [RunspaceFactory]::CreateRunspace()
-        $CoreRunspace.Open()
-        $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
-        $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-        $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-        $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-        $PowerShell = [PowerShell]::Create()
-        $PowerShell.Runspace = $CoreRunspace
-        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-        $PowerShell.BeginInvoke()
+            $CoreRunspace = [RunspaceFactory]::CreateRunspace()
+            $CoreRunspace.Open()
+            $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
+            $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+            $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+            $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+            $PowerShell = [PowerShell]::Create()
+            $PowerShell.Runspace = $CoreRunspace
+            $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
+            $PowerShell.BeginInvoke()
 
-        $Variables.CoreRunspace = $CoreRunspace
-        $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+            $Variables.CoreRunspace = $CoreRunspace
+            $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+        }
+    }
+    Else { 
+        Write-Message -Level ERROR "Corrupt installation. File '$($Variables.MainPath)\Includes\Core.ps1' is missing."
     }
 }
 
@@ -2396,7 +2401,7 @@ public static class Kernel32
     Switch ($ShowMinerWindows) {
         "hidden" { $ShowWindow = "0x0000" } #SW_HIDE
         "normal" { $ShowWindow = "0x0004" } #SW_SHOWNOACTIVATE
-        Default  { $ShowWindow = "0x0002" } #SW_SHOWMINIMIZED
+        Default  { $ShowWindow = "0x0007" } #SW_SHOWMINNOACTIVE
     }
 
     #Set local environment
