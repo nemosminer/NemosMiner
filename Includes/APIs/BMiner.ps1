@@ -17,7 +17,7 @@ class BMiner : Miner {
             Return $null
         }
 
-        # If ($this.AllowedBadShareRatio) { 
+        If ($this.AllowedBadShareRatio) { 
             #Read stratum info from API
             Try { 
                 $Data | Add-Member stratums (Invoke-RestMethod -Uri $Request2 -TimeoutSec $Timeout).stratums
@@ -25,7 +25,7 @@ class BMiner : Miner {
             Catch { 
                 Return $null
             }
-        # }
+        }
 
         $HashRate = [PSCustomObject]@{ }
         $Shares = [PSCustomObject]@{ }
