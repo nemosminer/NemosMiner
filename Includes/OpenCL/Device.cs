@@ -325,60 +325,41 @@ namespace OpenCl
             get { return Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE); }
         }
 
-        public string AAAA
-        {
-            get { return  (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV)).ToString(); }
-        }
-
-        public string AAAA1
-        {
-            get { return  (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV)).ToString(); }
-        }
-
-//         public string ComputeCapability
-//         {
-//             get {
-//                 try {
-//                     string ComputeCapability_AMD = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_NAME);
-
-//                     return ComputeCapability_AMD;
-//                 }
-//                 catch (OpenClException) {
-//                 }
-
-// //                try {
-// //                    string Vendor = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_VENDOR);
-
-// //                    if(Vendor == "NVIDIA Corporation") {
-//                         string ComputeCapability_NV_MAJOR = (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV)).ToString();
-//                         string ComputeCapability_NV_MINOR = (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV)).ToString();
-//                         string ComputeCapability_NV = ComputeCapability_NV_MAJOR + "." + ComputeCapability_NV_MINOR;
-
-//                         return ComputeCapability_NV;
-// //                    }
-// //                }
-// //                catch (OpenClException) {
-// //                }
-
-// //                return Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_NAME);
-//             }
-//         }
-
         public string ComputeCapability
         {
             get {
                 try {
-                    string ComputeCapability_AMD = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_NAME);
+                    string Vendor = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_VENDOR);
 
-                    return ComputeCapability_AMD;
+                    if(Vendor == "NVIDIA Corporation") {
+                        string ComputeCapability_NV_MAJOR = (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV)).ToString();
+                        string ComputeCapability_NV_MINOR = (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV)).ToString();
+                        string ComputeCapability = ComputeCapability_NV_MAJOR + "." + ComputeCapability_NV_MINOR;
+
+                        return  ComputeCapability;
+
+                    }
                 }
                 catch (OpenClException) {
                 }
-                string ComputeCapability_NV_MAJOR = (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV)).ToString();
-                string ComputeCapability_NV_MINOR = (Cl.GetInfo<uint>(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV)).ToString();
-                string ComputeCapability_NV = ComputeCapability_NV_MAJOR + "." + ComputeCapability_NV_MINOR;
 
-                return ComputeCapability_NV;
+                return  null;
+            }
+        }
+        public string CodeName
+        {
+            get {
+                try {
+                    string Vendor = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_VENDOR);
+
+                    if(Vendor == "Advanced Micro Devices, Inc.") {
+                        return Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_NAME);
+                    }
+                }
+                catch (OpenClException) {
+                }
+
+                return  null;
             }
         }
 
