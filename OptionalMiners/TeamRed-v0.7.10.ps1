@@ -4,6 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/TeamRed/teamredminer-v0.7.10-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
+$DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; Command = " --algo=trtl_chukwa" }
@@ -43,7 +44,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                If ($_.Algorithm -notin @("Ethash", "Kawpow", "Nimiq", "MTP") -and (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Navi is not supported by other algorithms
+                If ($_.Algorithm -notin @("Ethash", "Kawpow", "Nimiq", "MTP") -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Navi is not supported by other algorithms
 
                 $MinMemGB = $_.MinMemGB
 

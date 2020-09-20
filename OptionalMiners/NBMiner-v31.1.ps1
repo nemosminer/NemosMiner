@@ -59,6 +59,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
+                If ($_.Algorithm[0] -eq "Ethash" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Ethash on navi is slow
+
                 $MinCUDAComputeCapability = $_.MinCUDAComputeCapability
                 $MinMemGB = $_.MinMemGB
 

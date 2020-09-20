@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.22/gminer_2_22_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.23/gminer_2_23_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -54,6 +54,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
+
+                If ($_.Algorithm[0] -match "^Equihash*|^Cuckaroo29bfc" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Dual mining not supported on Navi
 
                 $MinMemGB = $_.MinMemGB
 

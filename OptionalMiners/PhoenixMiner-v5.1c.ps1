@@ -48,6 +48,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                 $MinMemGB = $_.MinMemGB
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+                    If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Dual mining not supported on Navi
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
 
@@ -59,7 +60,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         If ($Pools.($_.Algorithm[0]).Name -like "NiceHash*" -or $Pools.($_.Algorithm[0]).Name -like "MPH*") { 
                             $_.Command += " -proto 4"
                         }
-                    } 
+                    }
 
                     If ($Miner_Devices.Vendor -eq "AMD") { 
                         If (($_.OpenCL.GlobalMemSize / 1GB) -ge (2 * $MinMemGB)) { 
@@ -68,12 +69,11 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
                             #Extra Speed for Navi cards
-                            $_.Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096"
+                            # $_.Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096"
                         }
                     }
 
                     If ($_.Algorithm[1]) { 
-                        If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { Return } #No dual mining for Navi cards
                         $_.Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) -sci $([Int]$_.Intensity2)"
                     }
 

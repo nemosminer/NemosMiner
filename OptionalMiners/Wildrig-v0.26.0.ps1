@@ -24,7 +24,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo hmq1725" } #CryptoDredge-v0.25.1 is fastest
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";   Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo honeycomb" } #Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";      Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo kawpow" }
+#   [PSCustomObject]@{ Algorithm = "KawPoW";      Fee = @(0.01); MinMemGB = 3; Type = "AMD";    Command = " --algo kawpow" } #Trex-v0.17.2-1 is fastest
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Fee = @(0.01); MinMemGB = 2; Type = "AMD";    Command = " --algo lyra2v3" } #TeamRed-v0.7.10 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Fee = @(0.01); MinMemGB = 1; Type = "AMD";    Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Fee = @(0.01); MinMemGB = 1; Type = "AMD";    Command = " --algo megamec" }

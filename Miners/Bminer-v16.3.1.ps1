@@ -7,14 +7,14 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");              Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 7.8; Type = "AMD"; Command = "" } #Undefined but requested solver: beamhash3d
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "AMD"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Protocol = @(" -uri ethstratum", " -uri2 handshake"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
+   [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethstratum");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "AMD"; Command = "" }
+   [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Protocol = @(" -uri ethstratum", " -uri2 handshake"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
+   [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethstratum", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
 
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");              Protocol = @(" -uri beam");                           Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" }
 #   [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Protocol = @(" -uri bfc");                            Fee = @(0.02);      MinMemGB = 8.0; Type = "NVIDIA"; Command = " --fast 4" }
 #   [PSCustomObject]@{ Algorithm = @("CuckarooM29");         Protocol = @(" -uri cuckaroo29m");                    Fee = @(0.01);      MinMemGB = 4.0; Type = "NVIDIA"; Command = " --fast 4" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");         Protocol = @(" -uri cuckaroo29z");                    Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");         Protocol = @(" -uri cuckaroo29z");                    Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" } #GMiner-v2.23 is fastest
 #   [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Protocol = @(" -uri cuckatoo31");                     Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = " --fast 4" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Protocol = @(" -uri cuckatoo32");                     Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = " --fast 4" }
 #   [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Protocol = @(" -uri aeternity");                      Fee = @(0.01);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" }
@@ -58,6 +58,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
+                If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Dual mining not supported on Navi
                 If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "MPH*") { Return } #temp fix
 
                 $MinMemGB = $_.MinMemGB
