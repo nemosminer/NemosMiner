@@ -22,9 +22,6 @@ New Config Items
     "GPU#02"
   ],
 
-#If true all miners will run as a hidden background task (not recommended). Note that miners that use the 'Wrapper' API will always run hidden
-  "HideMinerWindow": false,
-
 #Powerusage of idle system in Watt. Part of profit calculation
   "IdlePowerUsageW": 60,
 
@@ -139,11 +136,14 @@ New Config Items
 #Show miner earning bias column in miner overview
   "ShowEarningBias": true,
 
-#Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
+#Show miner fee column in miner overview (if fees are available, Property '[Double]Fee')
   "ShowMinerFee": true,
 
-#Show pool fee column in miner overview (if fees are available, t.b.d. in pool files, Property '[Double]Fee')
+#Show pool fee column in miner overview (if fees are available, Property '[Double]Fee')
   "ShowPoolFee": true,
+
+#Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
+  "ShowMinerWindow": "minimized",
 
 #Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
   "ShowPowerCost": true,
