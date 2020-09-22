@@ -1,4 +1,4 @@
-Changelog NemosMiner 20.09.2020
+Changelog NemosMiner 22.09.2020
 ===============================
 
 Improved:
@@ -12,6 +12,7 @@ Miner Updates:
 - SRBMiner-Multi-v0.5.2
 - TeamRed-v0.7.10
 - Trex-v0.17.2
+- Wildrig-v0.27.2
 
 
 Changelog NemosMiner 09.09.2020
