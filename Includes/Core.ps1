@@ -66,7 +66,7 @@ Function Start-Cycle {
                     $Variables.DonatePoolNames | ForEach-Object { 
                         $PoolConfig = [PSCustomObject]@{ }
                         $PoolConfig | Add-Member PricePenaltyFactor 1
-                        $PoolConfig | Add-Member WorkerName "$($Variables.CurrentProduct)$($Variables.CurrentVersion.ToString() -replace '\.'))"
+                        $PoolConfig | Add-Member WorkerName "NemosMiner-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
                         Switch -Regex ($_) { 
                             "MPH" { 
                                 $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
