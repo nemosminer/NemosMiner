@@ -61,6 +61,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
                 If ($_.Algorithm[0] -eq "Ethash" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Ethash on navi is slow
 
+                $Command = $_.Command
                 $MinCUDAComputeCapability = $_.MinCUDAComputeCapability
                 $MinMemGB = $_.MinMemGB
 
@@ -72,7 +73,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
 
                     #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($_.Algorithm[0] -match "^Ethash*|^Cuck*") { 
                         $Protocol = If ($Pools.($_.Algorithm[0]).Name -match "^MPH*|^NiceHash*") { "nicehash+tcp://" } Else { "ethproxy+tcp://" } 
@@ -87,10 +88,10 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         Else { $Protocol2 = "stratum+tcp://" }
                         If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = $Protocol2 -replace '\+tcp\://$', '+ssl://' }
 
-                        $_.Command += " --url $($Protocol2)$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) --secondary-url $($Protocol)$($Pools.$($_.Algorithm[0]).Host):$($Pools.$($_.Algorithm[0]).Port) --secondary-user $($Pools.$($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)$(If($_.Intensity2 -ge 0) { " --secondary-intensity $($_.Intensity2)" })"
+                        $Command += " --url $($Protocol2)$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) --secondary-url $($Protocol)$($Pools.$($_.Algorithm[0]).Host):$($Pools.$($_.Algorithm[0]).Port) --secondary-user $($Pools.$($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)$(If($_.Intensity2 -ge 0) { " --secondary-intensity $($_.Intensity2)" })"
                     }
                     Else { 
-                        $_.Command += " --url $($Protocol)$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)"
+                        $Command += " --url $($Protocol)$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User):$($Pools.($_.Algorithm[0]).Pass)"
                     }
 
                     #Optionally disable dev fee mining
@@ -103,7 +104,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$($_.Command) --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "NBMiner"
                         Port       = $MinerAPIPort
