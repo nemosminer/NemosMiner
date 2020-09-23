@@ -61,6 +61,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                 If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Dual mining not supported on Navi
                 If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "MPH*") { Return } #temp fix
 
+                $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
 
                 #Add 1GB when GPU with connected monitor
@@ -71,11 +72,11 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
 
                     #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    #$Command = Get-CommandPerDevice -Command $Command -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Protocol = $_.Protocol[0]
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
-                    $_.Command += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
+                    $Command += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
                     If ($_.Algorithm[0] -like "Cuck*") { 
                         $WarmupTime = 90
                     }
@@ -86,13 +87,13 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     If ($_.Algorithm[1]) { 
                         $Protocol2 = $_.Protocol[1]
                         If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
-                        $_.Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)$(If($_.Intensity2) { " -dual-intensity $([Double]$_.Intensity2)" })"
+                        $Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)$(If($_.Intensity2) { " -dual-intensity $([Double]$_.Intensity2)" })"
                         $WarmupTime = 120
                     }
 
                     #Optionally disable dev fee mining
                     If ($Config.DisableMinerFees) { 
-                        $_.Command += " -nofee"
+                        $Command += " -nofee"
                         $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
                     }
 
@@ -101,7 +102,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$($_.Command) -watchdog=false -api 127.0.0.1:$($MinerAPIPort) -devices $(If ($Miner_Devices.Vendor -eq "AMD") { "amd:" })$(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command -watchdog=false -api 127.0.0.1:$($MinerAPIPort) -devices $(If ($Miner_Devices.Vendor -eq "AMD") { "amd:" })$(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "Bminer"
                         Port       = $MinerAPIPort
