@@ -255,8 +255,8 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 }
 
 #Create directories
-If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item  -Path . -Name "Config" -ItemType Directory | Out-Null }
-If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item  -Path . -Name "Logs" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
 
 #Initialize global variables
 New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
