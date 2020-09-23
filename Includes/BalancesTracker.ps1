@@ -247,12 +247,17 @@ While ($true) {
                     LastUpdated             = $Now
                 }
 
-                If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolNorm | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" }
+                If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolNorm | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -ErrorAction Ignore}
 
-                If ($PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolNorm | Where-Object Date -EQ $Date ) {
+                If ($PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolNorm | Where-Object Date -EQ $Date) {
                     #Pool may have reduced estimated balance, use new balance as start value to avoid negative values
-                    $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $BalanceObject.total_earned | Measure-Object -Minimum).Minimum
-                    $PoolDailyEarning.DailyEarnings = $BalanceObject.total_earned - $PoolDailyEarning.StartValue
+                    If ($BalanceObject.total_earned -gt 0) { 
+                        $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $BalanceObject.total_earned | Measure-Object -Minimum).Minimum
+                    }
+                    Else { 
+                        $PoolDailyEarning.StartValue = $PoolDailyEarning.StartValue
+                    }
+                    $PoolDailyEarning.DailyEarnings = (($BalanceObject.total_earned - $PoolDailyEarning.StartValue), 0 | Measure-Object -Maximum).Maximum
                     $PoolDailyEarning.EndTime = $Now.ToString("T")
                     $PoolDailyEarning.EndValue = $BalanceObject.total_earned
                     If ($BalanceObject.total_earned -lt ($PoolBalanceObjects[$PoolBalanceObjects.Count - 2].total_earned / 2)) { 
@@ -330,11 +335,11 @@ While ($true) {
             )
             #Use dates for x-axis label
             Pools = $PoolData
-        } | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8
+        } | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore
 
         #Keep only last 7 days
         If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = $AllBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddDays(-7) } }
-        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" }
+        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore }
 
     }
 
