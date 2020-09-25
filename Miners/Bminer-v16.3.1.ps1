@@ -11,21 +11,21 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Protocol = @(" -uri ethproxy", " -uri2 handshake"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethproxy", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
 
-#   [PSCustomObject]@{ Algorithm = @("BeamV3");              Protocol = @(" -uri beam");                         Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Protocol = @(" -uri bfc");                          Fee = @(0.02);      MinMemGB = 8.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooM29");         Protocol = @(" -uri cuckaroo29m");                  Fee = @(0.01);      MinMemGB = 4.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");         Protocol = @(" -uri cuckaroo29z");                  Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" } #GMiner-v2.23 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Protocol = @(" -uri cuckatoo31");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = " --fast 4" }
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Protocol = @(" -uri cuckatoo32");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Protocol = @(" -uri aeternity");                    Fee = @(0.01);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Equihash1445");        Protocol = @(" -pers auto -uri equihash1445");      Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = " --fast 4" } #MiniZ-v1.6v6 ist fastest
-#   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Protocol = @(" -uri zhash");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethproxy");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethproxy", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Qitmeer");             Protocol = @(" -uri qitmeer");                      Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Raven");               Protocol = @(" -uri raven");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Sero");                Protocol = @(" -uri sero");                         Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = " --fast 4" }
-#   [PSCustomObject]@{ Algorithm = @("Tensority");           Protocol = @(" -uri tensority");                    Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = " --fast 4" }
+#   [PSCustomObject]@{ Algorithm = @("BeamV3");              Protocol = @(" -uri beam");                         Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Protocol = @(" -uri bfc");                          Fee = @(0.02);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooM29");         Protocol = @(" -uri cuckaroo29m");                  Fee = @(0.01);      MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");         Protocol = @(" -uri cuckaroo29z");                  Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" } #GMiner-v2.23 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Protocol = @(" -uri cuckatoo31");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Protocol = @(" -uri cuckatoo32");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Protocol = @(" -uri aeternity");                    Fee = @(0.01);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Equihash1445");        Protocol = @(" -pers auto -uri equihash1445");      Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" } #MiniZ-v1.6v6 ist fastest
+#   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Protocol = @(" -uri zhash");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethproxy");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethproxy", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Qitmeer");             Protocol = @(" -uri qitmeer");                      Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Raven");               Protocol = @(" -uri raven");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Sero");                Protocol = @(" -uri sero");                         Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Tensority");           Protocol = @(" -uri tensority");                    Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -74,7 +74,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "NiceHash*") { $Protocol = "ethstratum" } Else { $Protocol = $_.Protocol[0] }
+                    $Protocol = $_.Protocol[0]
+                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "NiceHash*") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
 
                     $Command += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
