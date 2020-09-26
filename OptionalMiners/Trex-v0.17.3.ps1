@@ -2,18 +2,17 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.17.2/t-rex-0.17.2-win-cuda11.0.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.17.3/t-rex-0.17.3-win-cuda11.1.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "AstralHash";      MinMemGB = 2; Command = " --algo astralhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Balloon";         MinMemGB = 2; Command = " --algo balloon --intensity 23" }
     [PSCustomObject]@{ Algorithm = "BCD";             MinMemGB = 2; Command = " --algo bcd --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "BitcoinInterest"; MinMemGB = 2; Command = " --algo progpow --coin BCI --intensity 21" } #Does not work
     [PSCustomObject]@{ Algorithm = "Bitcore";         MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";             MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";           MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";          MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.1c is fastest
+   [PSCustomObject]@{ Algorithm = "Ethash";          MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.1c is fastest
     [PSCustomObject]@{ Algorithm = "Geek";            MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";       MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";       MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
@@ -37,6 +36,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X21s";            MinMemGB = 2; Command = " --algo x21s --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X22i";            MinMemGB = 2; Command = " --algo x22i --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X25x";            MinMemGB = 2; Command = " --algo x25x --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "X33";             MinMemGB = 2; Command = " --algo x33" }
     [PSCustomObject]@{ Algorithm = "Zano";            MinMemGB = 2; Command = " --algo progpowz" }
 )
 
@@ -59,13 +59,14 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Host) {
-                        $Stratum = "nicehash+tcp://"
+                    If ($Pools.($_.Algorithm).Name -match "^NiceHash*|^MPH*") { 
+                        $Stratum = "stratum2"
                     }
                     Else {
-                        $Stratum = "stratum+tcp://"
+                        $Stratum = "stratum"
                     }
-                    
+                    If ($Pools.($_.Algorithm).SSL -eq $true) { $Stratum += "+ssl://" } Else { $Stratum += "+tcp://" }
+
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name
