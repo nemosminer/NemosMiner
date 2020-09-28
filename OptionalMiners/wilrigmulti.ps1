@@ -1,7 +1,7 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) {. .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1")}
 
-$Path = ".\Bin\AMD-WildRigMulti0260b\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.26.0/wildrig-multi-windows-0.26.0.7z"
+$Path = ".\Bin\AMD-WildRigMulti0273\wildrig.exe"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.27.3/wildrig-multi-windows-0.27.3.7z"
 
 $Commands = [PSCustomObject]@{
     "mtp"           = " --algo mtp" #Mtp
