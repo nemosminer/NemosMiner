@@ -1,11 +1,11 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-Bminer1630\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-v16.3.0-bab438a-amd64.zip"
+$Path = ".\Bin\AMD-Bminer1631\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.3.1-135666e-amd64.zip"
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
     #"zhash"            = "-pers auto -uri equihash1445://" #Zhash
-    #"ethash"           = "-uri ethstratum://" #Ethash
+     "ethash"           = "-uri ethstratum://" #Ethash
     #"cuckoocycle"      = "-uri aeternity://" #aeternity
     #"beamv2"           = "-uri beamhash2://" #beam
     #"beamv3"           = "-uri beamhash3://" #beam
@@ -19,7 +19,7 @@ $Commands = [PSCustomObject]@{
     
 
 }
-$Port = $Variables.NVIDIAMinerAPITCPPort
+$Port = $Variables.AMDMinerAPITCPPort
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm ($_ -split '\+' | Select-Object -Index 0); $Algo2 = Get-Algorithm ($_ -split '\+' | Select-Object -Index 1); $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
 If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
@@ -38,7 +38,7 @@ If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
     }
 
     [PSCustomObject]@{ 
-        Type      = "NVIDIA"
+        Type      = "AMD"
         Name      = $Name
         Path      = $Path
         Arguments = "$($Commands.$_)$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.User)):$([System.Web.HttpUtility]::UrlEncode($Pools.$Algo.Pass))@$($Pools.$Algo.Host):$($Pools.$Algo.Port) -max-temperature 94 -nofee -devices $($Config.SelGPUCC) -api 127.0.0.1:$Port$Algo2Parameter"
