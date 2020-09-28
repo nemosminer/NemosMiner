@@ -1,18 +1,21 @@
-Changelog NemosMiner 22.09.2020
+Changelog NemosMiner 28.09.2020
 ===============================
 
 Improved:
 - Faster launching of miners
-- Only load read power usage from HWiNFO/registry when miner does not expose power usage in miner API (uses less memory)
+- Only read power usage from HWiNFO/registry when miner does not expose power usage in miner API (uses less memory)
 - Filter miner/algorithms that are not supported on AMD RX5700
+
+Fixed:
+- Bminer-v16.3.1 Ethash protocol
 
 Miner Updates:
 - Bminer-v16.3.1
-- Gminer-v2.23
+- Gminer-v2.24
 - SRBMiner-Multi-v0.5.2
 - TeamRed-v0.7.10
-- Trex-v0.17.2
-- Wildrig-v0.27.2
+- Trex-v0.17.3
+- Wildrig-v0.27.3
 
 
 Changelog NemosMiner 09.09.2020
