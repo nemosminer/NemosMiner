@@ -253,7 +253,7 @@ recommended/optimal Windows AMD GPU Driver 20.3.1
       
       windows10-1xGTX-1660Super/1xAMD-RX5600XT/1xAMD-RYZEN-3700x (Test Pc) 
       
-      windows10-9xGTX-1660ti/Octominer (test Rig 1)
+      windows10-9xRX-5700XT/Octominer (test Rig 1)
       windows10-6xRTX-2060/RYZEN-3700x  (test Rig 2)
       windows8.1-6xRTX-2080/RYZEN-3700x   (test Rig 3)
       (users have reported up to 12cards working have not tested myself)
