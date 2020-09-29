@@ -11,7 +11,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Type = "AMD";    Command = " --algo ethash" } #BMiner & PhoenixMiner are fastest
     [PSCustomObject]@{ Algorithm = @("Handshake");           Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Type = "AMD";    Command = " --algo hns --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Type = "AMD";    Command = " --algo hns_ethash --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Type = "AMD";    Command = " --algo kawpow --fee 1" } #Wildrig-v0.27.4 is fastest
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Type = "AMD";    Command = " --algo kawpow --fee 1" } #Wildrig-v0.27.5 is fastest
 
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.1;  MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo bfc --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("CuckarooD29");         Fee = @(0.01);       MinMemGB = 4.0; MinMemGBWin10 = 5.0;  MinCUDAComputeCapability = 6.0; Type = "NVIDIA"; Command = " --algo cuckarood --fee 1" } #GMiner-v2.22 is fastest
