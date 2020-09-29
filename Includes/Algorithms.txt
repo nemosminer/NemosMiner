@@ -112,6 +112,7 @@
   "sha256asicboost": "Sha256AsicBoost",
   "skunk": "SkunkHash",
   "swap": "Cuckaroo29S",
+  "ubqhash": "UbqHash",
   "verus": "VerusHash",
   "verushash": "VerusHash",
   "yescryptr16": "YescryptR16",
