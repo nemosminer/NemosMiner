@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Slot"
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 16; Type = "AMD"; Fee = 0.02; Command = "Cuckaroo30" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";        MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";        MinMemGB = 3;  Type = "AMD"; Fee = 0.02; Command = "Kawpow" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";        MinMemGB = 3;  Type = "AMD"; Fee = 0.02; Command = "Kawpow" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ubqhash" }
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0.05; Command = "RandomHash2" }

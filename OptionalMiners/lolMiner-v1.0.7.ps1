@@ -14,9 +14,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 7.8; Type = "AMD"; Fee = "0.025"; Command = " --algo C30CTX" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29D" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29D" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29M" }
-#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C32" }
 #   [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO144_5" } #GMiner-v2.22 is fastest
 #   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO192_7" } #GMiner-v2.22 is fastest
@@ -34,7 +34,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 8.0; Type = "NVIDIA"; Fee = "0.025"; Command = " --algo C30CTX" }
 #   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29D" } #GMiner-v2.22 is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C29M" }
-#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0; Type = "NVIDIA"; Fee = "0.02";  Command = " --algo C32" }
 #   [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin AUTO144_5" } #Bminer-v16.3.10 is fastest
 #   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "NVIDIA"; Fee = "0.01";  Command = " --coin AUTO192_7" } #MiniZ-v1.6v6 is fastest

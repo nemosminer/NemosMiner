@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.27.3/wildrig-multi-windows-0.27.3.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.27.4/wildrig-multi-windows-0.27.4.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -22,11 +22,11 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";   Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo honeycomb" } #Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo glt-jeonghash" }
 #   [PSCustomObject]@{ Algorithm = "KawPoW";      Fee = @(0.01); MinMemGB = 3; Type = "AMD"; Command = " --algo kawpow" } #Trex-v0.17.3 is fastest
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo lyra2v3" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo lyra2v3" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Fee = @(0.01); MinMemGB = 1; Type = "AMD"; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Fee = @(0.01); MinMemGB = 1; Type = "AMD"; Command = " --algo megamec" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Fee = @(0.01); MinMemGB = 1; Type = "AMD"; Command = " --algo minotaur" }
-#   [PSCustomObject]@{ Algorithm = "MTP";         Fee = @(0.01); MinMemGB = 3; Type = "AMD"; Command = " --algo mtp" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";         Fee = @(0.01); MinMemGB = 3; Type = "AMD"; Command = " --algo mtp" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Fee = @(0.01); MinMemGB = 3; Type = "AMD"; Command = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo glt-pawelhash" }
@@ -42,13 +42,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Timetravel";  Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo tribus" }
     [PSCustomObject]@{ Algorithm = "X11k";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x11k" }
-#   [PSCustomObject]@{ Algorithm = "X16r";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x16r" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16r";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x16r" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x16rt" }
-#   [PSCustomObject]@{ Algorithm = "X16rv2";      Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x16rv2" } #TeamRed-v0.7.10 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16rv2";      Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x16rv2" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "X16s";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x17r --protocol ufo2" }
-    [PSCustomObject]@{ Algorithm = "X21s";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x21s" } #TeamRed-v0.7.10 is fastest
+    [PSCustomObject]@{ Algorithm = "X21s";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x21s" } #TeamRed-v0.7.11 is fastest
     [PSCustomObject]@{ Algorithm = "X22i";        Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x22i" }
     [PSCustomObject]@{ Algorithm = "X33";         Fee = @(0.01); MinMemGB = 2; Type = "AMD"; Command = " --algo x33" }
 
