@@ -1,7 +1,12 @@
-Changelog NemosMiner 29.09.2020
+Changelog NemosMiner 30.09.2020
 ===============================
 
+Fixed:
+- API: Fix StatName when removing PowerUsage stat
+- Miner: Active (this run / total)
+
 Miner Updates:
+- Gminer-v2.25
 - TeamRed-v0.7.11
 - Wildrig-v0.27.5
 
