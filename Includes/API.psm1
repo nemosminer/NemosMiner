@@ -315,7 +315,7 @@ Function Start-APIServer {
                                 $_.Accuracy = 1
                                 $_. Benchmark = $true
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
-                                $Data += "`nStatName"
+                                $Data += "`n$StatName"
                                 Remove-Stat -Name "$($StatName)_PowerUsage"
                                 $_.PowerUsage = $_.PowerCost = [Double]::Nan
                             }
