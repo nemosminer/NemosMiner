@@ -541,7 +541,7 @@ Function Global:TimerUITick {
                         @{ Name = "Status"; Expression = { $_.status } }, 
                         @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport.SubString(1))" } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
-                        @{ Name = "Est. Profit $EarningsCurrency)/day"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
+                        @{ Name = "Est. Profit $EarningsCurrency/day"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
                         @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))) } }, 
                         @{ Name = "Miner"; Expression = { $_.data.name -join ',' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.data.pool -join ',' } }, 
