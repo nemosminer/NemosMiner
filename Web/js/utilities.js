@@ -159,6 +159,13 @@ function formatHashRate(value) {
   }
 }
 
+function formatmBTC(value) {
+  if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
+  if (value == 0) return parseFloat(0).toFixed(8);
+  if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
+  return '-';
+};
+
 function formatBTC(value) {
   if (value > 0) return parseFloat(value * rate).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
@@ -233,4 +240,11 @@ function formatTimeSpan(timespan) {
   duration = duration + timespan.Minutes + ' min ';
   duration = duration + timespan.Seconds + ' sec ';
   return duration
+}
+
+function createUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+     return v.toString(16);
+  });
 }

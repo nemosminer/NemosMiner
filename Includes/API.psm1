@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.4
-version date:   09 September 2020
+version:        3.9.9.5
+version date:   30 September 2020
 #>
 
 Function Start-APIServer { 
@@ -430,6 +430,25 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 (Get-DefaultAlgorithm)
                         Break
                     }
+                    "/displayworkers" { 
+                        $EarningsCurrency = If ("m$($Config.PayoutCurrency)" -in $Config.Currency) { "m$($Config.PayoutCurrency)" } Else { $Config.PayoutCurrency }
+                        $DisplayWorkers = [System.Collections.ArrayList]@(
+                            $Variables.Workers | Select-Object @(
+                                @{ Name = "Worker"; Expression = { $_.worker } }, 
+                                @{ Name = "Status"; Expression = { $_.status } }, 
+                                @{ Name = "LastSeen"; Expression = { "$($_.timesincelastreport.SubString(1))" } }, 
+                                @{ Name = "Version"; Expression = { $_.version } }, 
+                                @{ Name = "EstimatedProfit"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
+                                @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>' } }, 
+                                @{ Name = "Pools"; Expression = { $_.data.pool -join '<br/>' } }, 
+                                @{ Name = "Algos"; Expression = { $_.data.algorithm -join '<br/>' } }, 
+                                @{ Name = "Speeds"; Expression = { If ($_.data.currentspeed) { ($_.data.currentspeed | ConvertTo-Hash) -join '<br/> ' } Else { "" } } }, 
+                                @{ Name = "BenchmarkSpeeds"; Expression = { If ($_.data.estimatedspeed) { ($_.data.estimatedspeed | ConvertTo-Hash) -join '<br/>' } Else { "" } }
+                            }
+                        ) | Sort-Object "Worker Name")
+                        $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
+                        Break
+                    }
                     "/earnings" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables.Earnings | Select-Object)
                         Break
@@ -450,7 +469,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/available" { 
-                        $Data = ConvertTo-Json -Depth 10  @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
                         Break
                     }
                     "/miners/best" { 
