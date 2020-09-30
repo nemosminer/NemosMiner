@@ -36,7 +36,6 @@ Class Device {
     [PSCustomObject]$PNP
     [PSCustomObject]$Reg
     [PSCustomObject]$CpuFeatures
-    [Double]$CUDAComputeCapability = 0
 
     [String]$Status = "Idle"
 
@@ -160,7 +159,6 @@ Class Miner {
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Diagnostics.Process]$Process = $null
-    hidden [TimeSpan]$Active = [TimeSpan]::Zero
     [Int]$Activated = 0
     [MinerStatus]$Status = [MinerStatus]::Idle
     [String]$StatusMessage
@@ -238,10 +236,7 @@ Class Miner {
             $this.ProcessId = $null
         }
 
-        If ($this.Process) { 
-            $this.Active += $this.Process.ExitTime - $this.Process.StartTime
-            $this.Process = $null
-        }
+        If ($this.Process) { $this.Process = $null }
 
         If (-not $this.Process) { 
             $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
@@ -264,7 +259,8 @@ Class Miner {
 
     hidden StopMining() { 
         $this.Status = [MinerStatus]::Failed
-        $this.Devices | ForEach-Object { $_.Status = "Stopping..." }
+        $this.StatusMessage = "Stopping..."
+        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.EndTime = (Get-Date).ToUniversalTime()
         If ($this.ProcessId) { 
             If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
@@ -274,7 +270,6 @@ Class Miner {
         }
 
         If ($this.Process) { 
-            $this.Active += $this.Process.ExitTime - $this.Process.StartTime
             $this.Process = $null
             $this.Status = [MinerStatus]::Idle
         }
@@ -296,18 +291,6 @@ Class Miner {
         }
         Else { 
             Return [DateTime]::MinValue.ToUniversalTime()
-        }
-    }
-
-    [TimeSpan]GetActiveTime() { 
-        If ($this.Process.StartTime -and $this.Process.ExitTime) { 
-            Return $this.Active + ($this.Process.ExitTime - $this.Process.StartTime)
-        }
-        ElseIf ($this.Process.StartTime) { 
-            Return $this.Active + ((Get-Date) - $this.Process.StartTime)
-        }
-        Else { 
-            Return $this.Active
         }
     }
 
@@ -2154,11 +2137,6 @@ Function Get-Device {
                         PlatformId            = [Int]$PlatformId
                         PlatformId_Index      = [Int]$PlatformId_Index.($PlatformId)
                         Type_PlatformId_Index = [Int]$Type_PlatformId_Index.($Device.Type).($PlatformId)
-                    }
-
-                    #CUDA Compatibility
-                    If ($_.AAAA) { 
-                        $Device | Add-Member CUDAComputeCapability ("$($_.AAAA).$($_.AAAA1)" -as [Double])
                     }
 
                     #Add raw data
