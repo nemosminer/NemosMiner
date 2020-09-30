@@ -1,6 +1,10 @@
 Changelog NemosMiner 30.09.2020
 ===============================
 
+Added:
+- Web GUI: Rig Monitor
+- Web GUI: List of unprofitable algorithms
+
 Fixed:
 - API: Fix StatName when removing PowerUsage stat
 - Miner: Active (this run / total)
