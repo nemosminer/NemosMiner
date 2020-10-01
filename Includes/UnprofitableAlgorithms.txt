@@ -1,5 +1,5 @@
 ﻿[
-    "*:AtralHash",
+    "*:AstralHash",
     "*:Bitcoin",
     "*:Bitcore",
     "1:Blake2s",
@@ -26,6 +26,7 @@
     "1:Nist5",
     "*:Nist5",
     "*:PadiHash",
+    "*:PawelHash",
     "1:Pascal",
     "*:Phi",
     "*:Quark",
