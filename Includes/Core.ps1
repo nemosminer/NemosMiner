@@ -468,7 +468,7 @@ Function Start-Cycle {
                         PrerequisitePath = [String]$_.Content.PrerequisitePath
                         WarmupTime       = $(If ($_.Content.WarmupTime -lt $Config.WarmupTime) { [Int]$Config.WarmupTime } Else { [Int]$_.Content.WarmupTime })
                         MinerUri         = [String]$_.Content.MinerUri
-                        PowerUsageInAPI  = [Boolean]$_.PowerUsageInAPI
+                        PowerUsageInAPI  = [Boolean]$_.Content.PowerUsageInAPI
                     } -as "$($_.Content.API)"
                 }
             }
@@ -912,10 +912,9 @@ While ($true) {
                 If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                     #Miner crashed
                     Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
-                    $Miner.SetStatus([MinerStatus]::Failed)
                     $Miner.StatusMessage = "Exited unexpectedly."
                 }
-                ElseIf ($Miner.DataReaderJob.State -ne [MinerStatus]::Running) { 
+                ElseIf (-not $this.PowerUsageInAPI -and $Miner.DataReaderJob.State -ne "Running") { 
                     #Miner data reader process failed
                     Write-Message -Level ERROR "Miner data reader '$($Miner.Info)' exited unexpectedly." 
                     $Miner.SetStatus([MinerStatus]::Failed)
@@ -929,9 +928,9 @@ While ($true) {
                 }
             }
 
-            $FailedMiners = $ActiveMiners | Where-Object { $_.GetStatus() -ne [MinerStatus]::Running }
-            $ActiveMiners = $ActiveMiners | Where-Object { $_.GetStatus() -eq [MinerStatus]::Running }
-            $BenchmarkingOrMeasuringMiners = @($BenchmarkingOrMeasuringMiners | Where-Object { $_.GetStatus() -eq [MinerStatus]::Running })
+            $FailedMiners = $ActiveMiners | Where-Object { $_.Status -eq "Failed" }
+            $ActiveMiners = $ActiveMiners | Where-Object { $_.Status -eq "Running" }
+            $BenchmarkingOrMeasuringMiners = @($BenchmarkingOrMeasuringMiners | Where-Object { $_.Status -eq "Running" })
 
             If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
                 #A miner crashed and we're not benchmarking, end the loop now
