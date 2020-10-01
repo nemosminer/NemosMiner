@@ -1774,7 +1774,7 @@ $CheckBoxReportToServer = New-Object System.Windows.Forms.CheckBox
 $CheckBoxReportToServer.Tag = "ReportToServer"
 $CheckBoxReportToServer.Text = "Report to server"
 $CheckBoxReportToServer.AutoSize = $false
-$CheckBoxReportToServer.Width = 130
+$CheckBoxReportToServer.Width = 123
 $CheckBoxReportToServer.Height = 20
 $CheckBoxReportToServer.Location = [System.Drawing.Point]::new(324, 21)
 $CheckBoxReportToServer.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -1783,11 +1783,11 @@ $MonitoringSettingsControls += $CheckBoxReportToServer
 
 $CheckBoxShowWorkerStatus = New-Object System.Windows.Forms.CheckBox
 $CheckBoxShowWorkerStatus.Tag = "ShowWorkerStatus"
-$CheckBoxShowWorkerStatus.Text = "Show other workers"
+$CheckBoxShowWorkerStatus.Text = "Show other mining rigs"
 $CheckBoxShowWorkerStatus.AutoSize = $false
-$CheckBoxShowWorkerStatus.Width = 145
+$CheckBoxShowWorkerStatus.Width = 164
 $CheckBoxShowWorkerStatus.Height = 20
-$CheckBoxShowWorkerStatus.Location = [System.Drawing.Point]::new(456, 21)
+$CheckBoxShowWorkerStatus.Location = [System.Drawing.Point]::new(447, 21)
 $CheckBoxShowWorkerStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckBoxShowWorkerStatus.Checked = $Config.ShowWorkerStatus
 $MonitoringSettingsControls += $CheckBoxShowWorkerStatus
@@ -1827,12 +1827,19 @@ $TBMonitoringUser.Add_TextChanged( { $ButtonGenerateMonitoringUser.Enabled = ($T
 
 $ButtonMonitoringWriteConfig = New-Object System.Windows.Forms.Button
 $ButtonMonitoringWriteConfig.Text = "Save Config"
-$ButtonMonitoringWriteConfig.Width = 100
+$ButtonMonitoringWriteConfig.Width = 88
 $ButtonMonitoringWriteConfig.Height = 30
 $ButtonMonitoringWriteConfig.Location = [System.Drawing.Point]::new(600, 21)
 $ButtonMonitoringWriteConfig.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $ButtonMonitoringWriteConfig
-$ButtonMonitoringWriteConfig.Add_Click({ $ButtonWriteConfig.Add_Click() })
+
+$ButtonMonitoringWriteConfig.Add_Click(
+    { 
+        PrepareWriteConfig
+        Write-Config -ConfigFile $Variables.ConfigFile
+        $Variables.RestartCycle = $true
+    }
+)
 
 $MainForm | Add-Member -Name Number -Value 0 -MemberType NoteProperty
 
