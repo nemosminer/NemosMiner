@@ -26,14 +26,14 @@ class Fireice : Miner {
 
             #Check If we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
             If (-not (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
-                If (Test-Path -Path "$(Split-Path $this.Path)\ThreadsConfig-$($this.Type)-$($this.Algorithm -join "_")-*.txt" -PathType Leaf) { 
+                If (Test-Path -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -PathType Leaf) { 
                     #Remove old config files, thread info is no longer valid
                     Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner $($this.Info)'."
-                    Remove-Item -Path "$(Split-Path $this.Path)\ThreadsConfig-$($this.Type)-$($this.Algorithm -join "_")-*.txt" -Force -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -Force -ErrorAction SilentlyContinue
                 }
 
                 #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
-                $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
+                $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
                 If ($this.Process) { 
                     For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
@@ -52,7 +52,8 @@ class Fireice : Miner {
                         }
                         Start-Sleep -Milliseconds 500
                     }
-                    $this.StopMining()
+                    Stop-Process -Id $this.Process.Id -Force -ErrorAction Ignore
+                    $this.Process = $null
                 }
                 Else { 
                     Write-Message -Level Error "Running temporary miner failed - cannot create threads config file '$($this.Info)' [Error: '$($Error | Select-Object -Index 0)']."
