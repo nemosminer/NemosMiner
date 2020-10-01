@@ -12,7 +12,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Command = " --par=144,5 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 4.0; Command = " --par=192,7 --pers auto --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 1.0; Command = " --par=210,9 --pers auto --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Command = " --par=210,9 --pers auto --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 2.0; Command = " --par=192,7 --pers ZcashPoW --ocX" }
 )
