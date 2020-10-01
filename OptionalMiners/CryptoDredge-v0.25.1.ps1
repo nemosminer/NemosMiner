@@ -19,7 +19,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cnupx2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnzls --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CuckooD29";            Fee = 0.01; MinMemGB = 3; Command = " --algo aeternity" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.01; MinMemGB = 6; Command = " --algo cuckaroo29 --intensity 4" } #GMiner-v2.22 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.01; MinMemGB = 6; Command = " --algo cuckaroo29 --intensity 4" } #GMiner-v2.26 is fastest
     [PSCustomObject]@{ Algorithm = "Hmq1725";              Fee = 0.01; MinMemGB = 2; Command = " --algo=hmq1725 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lux";                  Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lyra2vc0ban";          Fee = 0.01; MinMemGB = 2; Command = " --algo=lyra2vc0ban --intensity 8" }
