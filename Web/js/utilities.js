@@ -76,7 +76,7 @@ function formatMiners(data) {
 
       // Format the reason(s)
       if (item.Reason) {
-        item.tReason = item.Reason.toString();
+        item.tReason = (item.Reason.toString()).replace(',', '; ');
       }
       else {
         item.Reason = "";
@@ -198,7 +198,7 @@ function formatPrices(value) {
 
 function formatArrayAsString(value) {
   if (value == null) return '';
-  return value.toString();
+  return (value.toString()).replace(',', '; ');
 };
 
 function formatMinerHashRatesAlgorithms(value) {
