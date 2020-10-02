@@ -12,16 +12,16 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";         MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";             MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";           MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-   [PSCustomObject]@{ Algorithm = "Ethash";          MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.1c is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";          MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.1c is fastest
     [PSCustomObject]@{ Algorithm = "Geek";            MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";       MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";       MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } #NBMiner-v31.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";          MinMemGB = 2; Command = " --algo kawpow" } #NBMiner-v32.0 is fastest
     [PSCustomObject]@{ Algorithm = "MTP";             MinMemGB = 2; Command = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "PadiHash";        MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";       MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";       MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
-   [PSCustomObject]@{ Algorithm = "ProgPoW";         MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } #Coin parameter required, no pool
+#   [PSCustomObject]@{ Algorithm = "ProgPoW";         MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } #Coin parameter required, no pool
     [PSCustomObject]@{ Algorithm = "Sha256t";         MinMemGB = 2; Command = " --algo sha256t --intensity 26" }
     [PSCustomObject]@{ Algorithm = "Sha256q";         MinMemGB = 2; Command = " --algo sha256q --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Sonoa";           MinMemGB = 2; Command = " --algo sonoa --intensity 23" }

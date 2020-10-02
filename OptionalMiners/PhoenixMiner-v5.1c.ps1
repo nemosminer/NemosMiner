@@ -7,13 +7,10 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 3.9; WarmupTime = 60; Type = "AMD"; Command = " -dcoin blake2s -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("ProgPoW");           Fee = @(0.009);    MinMemGB = 2.4; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
-#   [PSCustomObject]@{ Algorithm = @("BitcoinInterest");   Fee = @(0.009);    MinMemGB = 2;   WarmupTime = 45; Type = "AMD"; Command = " -coin BCI -amd -eres 1 -mi 12" } #Does not work
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 3.9; WarmupTime = 60; Type = "AMD"; Command = " -amd -eres 1 -mi 12 -dcoin blake2s" }
 
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009);    MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -dcoin blake2s -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
-    [PSCustomObject]@{ Algorithm = @("ProgPoW");           Fee = @(0.009);    MinMemGB = 2.4; WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" } #-straps 4"
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 13 -vmt3 0 -vmr 15" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 13 -vmt3 0 -vmr 15 -dcoin blake2s" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -58,7 +55,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     $Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
                     If ($_.Algorithm[0] -like "Ethash*") {
-                        If ($Pools.($_.Algorithm[0]).Name -like "NiceHash*" -or $Pools.($_.Algorithm[0]).Name -like "MPH*") { 
+                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { 
                             $Command += " -proto 4"
                         }
                     }
@@ -70,7 +67,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
                             #Extra Speed for Navi cards
-                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096"
+                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work :-(
                         }
                     }
 
@@ -83,7 +80,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$Command -log 0 -wdog 0 -mport $($MinerAPIPort) -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command -log 0 -wdog 0 -mport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "EthMiner"
                         Port       = $MinerAPIPort
@@ -91,6 +88,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
+                        WarmupTime = 60 #Seconds
                     }
                 }
             }

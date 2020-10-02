@@ -6,8 +6,8 @@ $Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r4/ethmi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "AMD";    Command = " --opencl --opencl-devices" } #PhoenixMiner is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "NVIDIA"; Command = " --cuda --cuda-devices" } #PhoenixMiner is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "AMD";    Command = " --opencl --opencl-devices" } #PhoenixMiner-v5.1c is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash"; MinMemGB = 4; Type = "NVIDIA"; Command = " --cuda --cuda-devices" } #PhoenixMiner-v5.1c is fastest
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 

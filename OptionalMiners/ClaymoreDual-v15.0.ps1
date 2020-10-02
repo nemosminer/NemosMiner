@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v15.0/Clay
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@( 
-#   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD";    Command = " -platform 1 -y 1 -rxboost 1" } #Bminer-v16.3.0 & PhoenixMiner-v5.1c are faster
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD";    Command = " -platform 1 -y 1 -rxboost 1" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin blake2s -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin dcr -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin keccak -platform 1 -y 1 -rxboost 1" }
