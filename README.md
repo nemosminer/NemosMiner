@@ -1,17 +1,9 @@
 # NemosMiner
 
-NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
+NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 30 June 2020
+Updated 02 October 2020
 
-[![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases) +
-[![Github All Releases](https://img.shields.io/github/downloads/Minerx117/Nemosminer/total.svg)](https://github.com/Minerx117/Nemosminer/releases)
-[![GitHub release](https://img.shields.io/github/release/Minerx117/Nemosminer/all.svg)](https://github.com/Minerx117/NemosMiner/releases)
-[![GitHub Release Date](https://img.shields.io/github/release-date-pre/Minerx117/NemosMiner.svg)](https://github.com/Minerx117/NemosMiner/releases)
-[![GitHub license](https://img.shields.io/github/license/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/NemosMiner/blob/master/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/stargazers) +
-[![GitHub stars](https://img.shields.io/github/stars/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/Nemosminer/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
 
 Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
@@ -25,6 +17,12 @@ with alot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMi
 
 NemosMiner was based on MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
 NemosMiner is currently based on NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
+
+Note: This beta version is **NOT backwards compatible** with the curren 3.8 code base.
+Install to a new directory
+
+Also configuration options have changed, see Changed Config Items.txt for more information.
+
  
 *****
 
@@ -217,11 +215,11 @@ NemosMiner Monitoring Server : https://nemosminer.com
 
    New version notification
    
-      NemosMiner will notify new version availability
+      NemosMiner will notify new version availability (currently not available in this beta - will be implemented later)
  
-If you have Windows 7, 8, or 8.1, please update PowerShell: 
+If you have Windows 7, 8, or 8.1, please update PowerShell (Version 7.x is highly recommeded): 
  
-[update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
+[update PowerShell](https://github.com/PowerShell/PowerShell/releases)
  
 Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
  
@@ -229,23 +227,9 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 10 = 441.34
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1,10 = 452.06
 
-[DCH:](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win10-64bit-international-dch.hf.exe)
-
-[Standard:](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win10-64bit-international.hf.exe)
-
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 441.34
-
-[Windows7, 8, 8.1](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win8-win7-64bit-international.hf.exe)
-
-GTX 1650 Super Driver
-
-[DCH:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,2.html)
-
-[Standard:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,1.html)
-
-[Windows7, 8, 8.1](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,3.html)
+https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Windows/452.06/452.06-desktop-win10-64bit-international-whql.exe&lang=us&type=TITAN
 
    NemosMiner is Currently Tested on the following Rigs: 
       
