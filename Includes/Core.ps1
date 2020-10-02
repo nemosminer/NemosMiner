@@ -482,7 +482,6 @@ Function Start-Cycle {
                         PrerequisitePath = [String]$_.Content.PrerequisitePath
                         WarmupTime       = $(If ($_.Content.WarmupTime -lt $Config.WarmupTime) { [Int]$Config.WarmupTime } Else { [Int]$_.Content.WarmupTime })
                         MinerUri         = [String]$_.Content.MinerUri
-                        PowerUsageInAPI  = [Boolean]$_.Content.PowerUsageInAPI
                     } -as "$($_.Content.API)"
                 }
             }
@@ -517,12 +516,11 @@ Function Start-Cycle {
         #Update existing miners
         $Variables.Miners | Select-Object | ForEach-Object { 
             If ($Miner = Compare-Object -PassThru ($NewMiners | Where-Object Name -EQ $_.Name | Where-Object Path -EQ $_.Path | Where-Object Type -EQ $_.Type | Select-Object) $_ -Property Algorithm -ExcludeDifferent -IncludeEqual) { 
-                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port -or $_.PowerUsageInAPI -ne $Miner.PowerUsageInAPI)
+                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port)
                 $_.Arguments = $Miner.Arguments
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
                 $_.WarmupTime = $Miner.WarmupTime
-                $_.PowerUsageInAPI = $Miner.PowerUsageInAPI
             }
             $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
             $_.CalculatePowerCost = $Variables.CalculatePowerCost
@@ -727,7 +725,7 @@ Function Start-Cycle {
                 $_.Data = @()
                 $_.Activated = 0
             }
-            ElseIf ($_.MeasurePowerUsage -and (-not $_.PowerUsageInAPI) -and $_.DataReaderJob.State -ne $_.GetStatus()) { $_.Restart = $true }
+            ElseIf ($_.MeasurePowerUsage -and $_.DataReaderJob.State -ne $_.GetStatus()) { $_.Restart = $true }
             ElseIf ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
             ElseIf ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
             ElseIf ($_.CalculatePowerCost -eq $false -and -$Variables.CalculatePowerCost) { $_.Restart = $true }
@@ -934,10 +932,10 @@ While ($true) {
                 }
                 If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                     #Miner crashed
-                    Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
+                    Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly."
                     $Miner.StatusMessage = "Exited unexpectedly."
                 }
-                ElseIf (-not $Miner.PowerUsageInAPI -and $Miner.DataReaderJob.State -ne "Running") { 
+                ElseIf ($Miner.DataReaderJob.State -ne "Running") { 
                     #Miner data reader process failed
                     Write-Message -Level ERROR "Miner data reader '$($Miner.Info)' exited unexpectedly." 
                     $Miner.SetStatus([MinerStatus]::Failed)
