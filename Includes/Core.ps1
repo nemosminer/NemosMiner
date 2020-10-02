@@ -291,10 +291,24 @@ Function Start-Cycle {
 
         If ($Config.Watchdog) { 
             #Apply watchdog to pools
-            $Variables.Pools | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Where-Object Algorithm -EQ $_.Algorithm).Count -ge $Config.WatchdogPoolAlgorithmCount } | ForEach-Object { $_.Available = $false; $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN; $_.Reason += "Algorithm suspended by watchdog" }
-            $Variables.Pools | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval)).Count -ge $Config.WatchdogPoolCount } | ForEach-Object { $_.Available = $false; $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN; $_.Reason += "Pool suspended by watchdog" }
+            $Message = @()
+            $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogPoolAlgorithmCount } | ForEach-Object { 
+                $_.Available = $false
+                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
+                $_.Reason += "Algorithm suspended by watchdog"
+                $Message += "Algorithm $($_.Algorithm)@$($_.Name) is suspended by watchdog."
+            }
+            $Message | Sort-Object -unique | ForEach-Object { Write-Message -Level WARN $_ }
+            $Message = @()
+            $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogPoolCount } | ForEach-Object {
+                $_.Available = $false
+                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
+                $_.Reason += "Pool suspended by watchdog"
+                $Message += "Pool $($_.Name) is suspended by watchdog."
+            }
+            $Message | Sort-Object -unique | ForEach-Object { Write-Message -Level WARN $_ }
+            Remove-Variable Message
         }
-
         #Pre-sort all pools
         [Pool[]]$Variables.Pools = $Variables.Pools | Sort-Object -Descending { -not $_.Available }, { $_.StablePrice * (1 - $_.MarginOfError) }, { $_.Region -eq $Config.Region }, { $_.SSL -eq $Config.SSL }
 
@@ -566,8 +580,23 @@ Function Start-Cycle {
 
         If ($Config.WatchDog) { 
             #Apply watchdog to miners
-            $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerCount } | ForEach-Object { $_.Available = $false; $_.Data = @(); $_.Reason += "Miner (all algorithms) suspended by watchdog" }
-            $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerAlgorithmCount } | ForEach-Object { $_.Available = $false; $_.Data = @(); $_.Reason += "Miner {$($_.Algorithm)} suspended by watchdog" }
+            $Message = @()
+            $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerCount } | ForEach-Object { 
+                $_.Available = $false
+                $_.Data = @()
+                $_.Reason += "Miner (all algorithms) suspended by watchdog"
+                $Message += "Miner $($_.BaseName)-$($_.Version) (all algorithms) is suspended by watchdog."
+            }
+            $Message | Sort-Object -unique | ForEach-Object { Write-Message -Level WARN $_ }
+            $Message = @()
+            $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerAlgorithmCount } | ForEach-Object {
+                $_.Available = $false
+                $_.Data = @()
+                $_.Reason += "Miner suspended by watchdog"
+                $Message += "Miner $($_.Name) ($($_.Algorithm)) is suspended by watchdog."
+            }
+            $Message | Sort-Object -unique | ForEach-Object { Write-Message -Level WARN $_ }
+            Remove-Variable Message
         }
 
         Write-Message "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
@@ -908,7 +937,7 @@ While ($true) {
                     Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
                     $Miner.StatusMessage = "Exited unexpectedly."
                 }
-                ElseIf (-not $this.PowerUsageInAPI -and $Miner.DataReaderJob.State -ne "Running") { 
+                ElseIf (-not $Miner.PowerUsageInAPI -and $Miner.DataReaderJob.State -ne "Running") { 
                     #Miner data reader process failed
                     Write-Message -Level ERROR "Miner data reader '$($Miner.Info)' exited unexpectedly." 
                     $Miner.SetStatus([MinerStatus]::Failed)
