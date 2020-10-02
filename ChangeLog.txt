@@ -1,3 +1,17 @@
+Changelog NemosMiner 02.10.2020
+===============================
+
+Miner Updates:
+- NBMiner-v32.0
+
+
+Changelog NemosMiner 31.09.2020
+===============================
+
+Miner Updates:
+- Gminer-v2.26
+
+
 Changelog NemosMiner 30.09.2020
 ===============================
 
@@ -12,7 +26,7 @@ Fixed:
 Miner Updates:
 - Gminer-v2.25
 - TeamRed-v0.7.11
-- Wildrig-v0.27.5
+- Wildrig-v0.27.6
 
 
 Changelog NemosMiner 28.09.2020
