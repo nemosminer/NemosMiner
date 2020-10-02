@@ -267,13 +267,13 @@ Function Start-Cycle {
         If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -lt 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
 
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in generic config" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.($_.Name).Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in $($_.Name) pool config" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in $($_.Name -replace "24hr$" -replace "Coins$") pool config" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in default pool config)" }
         If ($Config.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin $Config.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled in generic config" } }
-        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.($_.Name).Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled in $($_.Name) pool config" }
+        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled in $($_.Name -replace "24hr$" -replace "Coins$") pool config" }
         If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled in default pool config" } }
 
-        $Variables.Pools | Where-Object { $Config.Pools.$($_.Name).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name).ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded in $($_.Name) pool config" } 
+        $Variables.Pools | Where-Object { $Config.Pools.$($_.Name).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded in $($_.Name -replace "24hr$" -replace "Coins$") pool config" } 
 
         # Use region as preference and not the only one
         [Pool[]]$ThisRegionPools = $Variables.Pools | Where-Object { $_.Region -eq $Config.Region }
@@ -724,13 +724,7 @@ Function Start-Cycle {
                     $Worker = $_
                     $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                     If ($WatchdogTimer) { 
-                        If ($WatchdogTimer.Kicked -lt $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval)) { 
-                            If ($Miner.StatusMessage -ne " suspended by watchdog") { 
-                                Write-Message -Level Warn "Watchdog: Miner '$($Miner_Info)' suspended by watchdog."
-                                $Miner.StatusMessage = " suspended by watchdog"
-                            }
-                        }
-                        Else { 
+                        If ($WatchdogTimer.Kicked -ge $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval)) { 
                             #Remove watchdog timer(s)
                             $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -NE $Miner.Name | Where-Object Algorithm -NE $Worker.Pool.Algorithm | Where-Object DeviceName -NE $Miner.DeviceName)
                         }
