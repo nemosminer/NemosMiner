@@ -11,6 +11,8 @@ $Commands = [PSCustomObject[]]@(
 
     [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 13 -vmt3 0 -vmr 15" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 13 -vmt3 0 -vmr 15 -dcoin blake2s" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Type = "NVIDIA"; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25 -dcoin blake2s" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 

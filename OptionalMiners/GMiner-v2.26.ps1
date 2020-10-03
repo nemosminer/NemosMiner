@@ -10,11 +10,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       MinMemGB = 6.0; Fee = @(0.03);    Type = "AMD";    Command = " --algo bfc --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");         MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           MinMemGB = 0.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445");        MinMemGB = 1.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");        MinMemGB = 1.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.0.9 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash1927");        MinMemGB = 2.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");         MinMemGB = 3.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
 
-    [PSCustomObject]@{ Algorithm = @("BeamV3");              MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithm = @("BeamV3");              MinMemGB = 3.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } #MiniZ-v1.6w is fastest
     [PSCustomObject]@{ Algorithm = @("Blake2s");             MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       MinMemGB = 6.0; Fee = @(0.03);    Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");         MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo cuckaroo29b --cuda 1 --opencl 0" }
