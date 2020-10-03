@@ -25,7 +25,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Keccak";              MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "RainforestV2";        MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm rainforestv2" }
     [PSCustomObject]@{ Algorithm = "Tellor";              MinMemGb = 1; Fee = 0;      Type = "AMD"; Command = " --algorithm tellor" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             MinMemGb = 1; Fee = 0.85;   Type = "AMD"; Command = " --algorithm ubqhash" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";             MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm ubqhash" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           MinMemGb = 1; Fee = 0.0085; Type = "AMC"; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm yescrypt" }
 
