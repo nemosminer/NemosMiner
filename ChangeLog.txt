@@ -1,8 +1,19 @@
+Changelog NemosMiner 3.9.9.9 Beta2 03.10.2020
+=============================================
+
+Miner Updates:
+- lolMiner-v1.0.9
+
+Fixes:
+- Fixed typo in configedit.html
+
+
 Changelog NemosMiner 02.10.2020
 ===============================
 
 Miner Updates:
 - NBMiner-v32.0
+- TeamRed-v0.7.12
 
 
 Changelog NemosMiner 31.09.2020
