@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2020 Nemo & MrPlus
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,12 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.2
-version date:   29 August 2020
+version:        3.9.9.5
+version date:   04 October 2020
 #>
  
-# New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
-# Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
+New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true } -ErrorAction SilentlyContinue | Out-Null
+Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
 
 Class Device { 
     [String]$Name
@@ -659,7 +659,7 @@ Function Get-NMVersion {
         $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
         $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
         $LabelNotifications.Lines += $Version.Message
-        If ($Config.Autoupdate -and ! $Config.ManualConfig) { Initialize-Autoupdate }
+        If ($Config.Autoupdate -and (-not $Config.ManualConfig)) { Initialize-Autoupdate }
     }
 }
 
@@ -2572,13 +2572,11 @@ Function Get-Region {
 }
 
 Function Initialize-Autoupdate { 
-    # GitHub Supporting only TLSv1.2 on feb 22 2018
+    # GitHub only supporting TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
-    Write-host (Split-Path $script:MyInvocation.MyCommand.Path)
     Write-Message "Checking Autoupdate"
     Update-Notifications("Checking Auto Update")
-    # write-host "Checking Autoupdate"
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
     Try { 
         $AutoupdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json

@@ -1,4 +1,32 @@
+<#
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+File:           core.ps1
+version:        3.9.9.5
+version date:   04 October 2020
+#>
+
 using module .\Include.psm1
+
+New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true } -ErrorAction SilentlyContinue | Out-Null
+Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
 
 Function Start-Cycle { 
     $Variables.CycleTime = Measure-Command -Expression {
@@ -368,7 +396,7 @@ Function Start-Cycle {
                 }
 
                 If ($Variables.CalculatePowerCost -and $Variables.OldCalculatePowerCost -eq $Variables.CalculatePowerCost) {
-                    $Stat_Name = "$($Miner.Name)$(If ($Miner.Algorithm.Count -eq 1) { "_$($Miner.Algorithm | Select-Object -Index 0)" })_PowerUsage"
+                    $Stat_Name = "$($Miner.Name)$(If ($Miner.Algorithm.Count -eq 1) { "_$($Miner.Algorithm[0])" })_PowerUsage"
                     If ($Miner.Activated -gt 0 -or $Stats.$Stat_Name) { #Do not save data if stat just got removed
                         $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples)
                         If ($Stat.Updated -gt $Variables.StatStart) { 
@@ -620,8 +648,8 @@ Function Start-Cycle {
 
         Write-Message "Calculating earning$(If ($Variables.PowerPricekWh) { " and profit" }) for each miner$(If ($Variables.PowerPricekWh) { " (power cost $($Config.Currency | Select-Object -Index 0) $($Variables.PowerPricekWh)/kW⋅h)"})..."
 
-        #Don't penalize active miners, add RunningMiner bonus
-        $Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -eq [MinerStatus]::Running } | ForEach-Object { 
+        #Don't penalize active miners, add running miner bonus
+        $Variables.Miners | Select-Object | Where-Object { $_.Status -eq "Running" } | ForEach-Object { 
             $_.Earning_Bias = $_.Earning * (1 + ($Config.RunningMinerGainPct / 100))
             $_.Profit_Bias = $_.Profit * (1 + ($Config.RunningMinerGainPct / 100))
         }
@@ -783,11 +811,17 @@ Function Start-Cycle {
                     Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                 }
                 If ($Miner.Type -ne "CPU") { 
-                    $PrerunName = ".\Utils\Prerun\$($Miner.Algorithm).bat"
+                    $MinerAlgorithmPrerunName = ".\Utils\Prerun\$($Miner.Name)$(If ($Miner.Algorithm.Count -eq 1) { "_$($Miner.Algorithm[0])" }).bat"
+                    $AlgorithmPrerunName = ".\Utils\Prerun\$($Miner.Algorithm).bat"
                     $DefaultPrerunName = ".\Utils\Prerun\default.bat"
-                    If (Test-Path $PrerunName -PathType Leaf) { 
-                        Write-Message "Launching Prerun: $PrerunName"
-                        Start-Process $PrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                    If (Test-Path $MinerAlgorithmPrerunName -PathType Leaf) { 
+                        Write-Message "Launching Prerun: $MinerAlgorithmPrerunName"
+                        Start-Process $MinerAlgorithmPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
+                        Start-Sleep -Seconds 2
+                    }
+                    ElseIf (Test-Path $AlgorithmPrerunName -PathType Leaf) { 
+                        Write-Message "Launching Prerun: $AlgorithmPrerunName"
+                        Start-Process $AlgorithmPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                         Start-Sleep -Seconds 2
                     }
                     ElseIf (Test-Path $DefaultPrerunName -PathType Leaf) { 

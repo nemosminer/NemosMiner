@@ -938,7 +938,7 @@ Add-Type -AssemblyName System.Windows.Forms
 $MainForm = New-Object System.Windows.Forms.Form
 $NMIcon = New-Object system.drawing.icon ("$($PWD)\Includes\NM.ICO")
 $MainForm.Icon = $NMIcon
-$MainForm.ClientSize = [System.Drawing.Size]::new(740, 463) # best to keep under 800,600
+$MainForm.ClientSize = [System.Drawing.Size]::new(740, 463) # best to keep under 800x600
 $MainForm.Text = "Form"
 $MainForm.TopMost = $false
 $MainForm.FormBorderStyle = 'Fixed3D'
@@ -1829,7 +1829,7 @@ $ButtonMonitoringWriteConfig = New-Object System.Windows.Forms.Button
 $ButtonMonitoringWriteConfig.Text = "Save Config"
 $ButtonMonitoringWriteConfig.Width = 88
 $ButtonMonitoringWriteConfig.Height = 30
-$ButtonMonitoringWriteConfig.Location = [System.Drawing.Point]::new(600, 21)
+$ButtonMonitoringWriteConfig.Location = [System.Drawing.Point]::new(612, 21)
 $ButtonMonitoringWriteConfig.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MonitoringSettingsControls += $ButtonMonitoringWriteConfig
 

@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 02 October 2020
+Updated 04 October 2020
 
 
 Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
@@ -16,13 +16,12 @@ Updated/Maintained by Nemo/Minerx117 & UselessGuru
 with alot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMiner would not be possible.
 
 NemosMiner was based on MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
-NemosMiner is currently based on NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
 
-Note: This beta version is **NOT backwards compatible** with the curren 3.8 code base.
-Install to a new directory
+Note: This beta version is **NOT backwards compatible** with the current 3.8.x code base.
+It is highly recommended to install this version to a new directory.
 
 Also configuration options have changed, see Changed Config Items.txt for more information.
-
+NemosMiner will automatically convert an existing configuration file.
  
 *****
 
@@ -44,7 +43,7 @@ Easy configuration, easy start:
       4. Save Config
       5. Start
       
-      note: 2. you only need to change Username if you are using Miningpoolhub
+      note: 2. you only need to change Username if you are using Miningpoolhub or ProHashing
       
      Algorithm selection / removal
   
@@ -73,13 +72,13 @@ Easy configuration, easy start:
      Algorithm list blank
      Will mine anything
   
-  Pools variants
+  Pools Variants
 
-      24hr - uses last 24hour Actual API too request profit (no estimates or advanced calculations)
+      *24hr - uses last 24hour Actual API too request profit (no estimates or advanced calculations)
 	 
       normal - uses advanced calculations to reduce uneeded switching
 	 
-      coins - uses advanced calculations, mines only top paying coin in Algo (ZergPool Only)
+      *Coins - uses advanced calculations, mines only top paying coin in Algo (ZergPool Only)
 	 
   
   Developer/Contributors Donation: 
@@ -120,12 +119,17 @@ NemosMiner Monitoring Server : https://nemosminer.com
       BrainPlus will still run in the background avoiding the learning phase on resume
       EarningTracker will still run in the background avoiding the learning phase on resume
 
-   prerun
+   PreRun
    
-      Ability to run a batch prior switching to a specific algo.
-      For example, can be used to set per algo OC via nvidiaInspector
-      Simply create a file named <AlgoName>.bat in prerun folder
-      If <AlgoName>.bat does not exist, will try to launch prerun/default.bat
+      Ability to run a batch prior switching to a specific miner and/or algo.
+      The prerun scripts can be used to set per miner/algo OC via nvidiaInspector or OverdriveNTool.
+      Before starting a miner executable NemosMiner is trying to launch one of the following 3 prerun scripts (in this order):
+      1. <MinerName>_<Algorithm>.bat
+         Simply create a file named <MinerName>_<AlgoName>.bat in prerun folder, e.g. 'Bminer-v16.3.1-1xRadeonRX5808GB-Handshake-10.bat' or 'CcminerMTP-v1.3.2-1xGTX10606GB_MTP.bat'
+      2. <Algorithm>.bat
+         Simply create a file named <AlgoName>.bat in prerun folder, e.g. 'Ethash.bat'
+      3. default.bat
+         If neither of the two above exist, NemosMiner will try to launch prerun\default.bat
       Use overclock with caution
 
    Per pools config (Advanced)
@@ -155,30 +159,35 @@ NemosMiner Monitoring Server : https://nemosminer.com
         - Example scenario
           - You feel like a pool is exaggerating his estimations by 10% - Set PricePenaltyFactor to 0.9
 
-  zergpool/zergpoolcoins/nlpool/ahashpool/zpool/blazepool/blockmasters
+  AHashPool/BlazePool/BlockMasters/NLPool/ZergPool/ZergPoolCoins/Zpool
    
-      Uses calculations based on 24hractual and current estimate prices to get a more realistic estimate.
+      Uses calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
       Includes some trust index based on past 1hr current estimate variation from 24hr.
       AND is NOT sensible to spikes.
-      This shows less switching than following current estimate and more switching that following the 24hr Actual.
+      This shows less switching than following current estimate and more switching that following the 24hr actual.
       Better profitability.
 
    Earnings Tracking
    
       Displays BTC/H and BTC/D as well a estimation of when the pool payment threshold will be reached.
       Supported pools:
-            ahashpool
-            zpool
-            nicehash
-            miningpoolhub (partial)
-      If mining more that one pools, shows stats for any supported pool
+            AHashPool
+            BlazePool
+            BlockMasters
+            MiningPoolHub (partial)
+            NiceHash (internal & external wallet)
+            NLPool
+            ProHashing
+            ZergPool
+            Zpool
+      If mining more than one pool, NemosMiner shows stats for any supported pool
       Press key e in the console window to show/hide earnings
 
-   Support running multiple instances
+   Support for running multiple instances
    
       **Experimental**
       More than one instance of NemosMiner can run on the same rig
-      Each instance must be placed in it's own directory
+      Each instance must be placed in its own directory
       Miner has to be started prior the launch of the next instance
 
    Optional miners (Advanced)
@@ -236,8 +245,8 @@ https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Wi
       windows10-1xGTX-1660Super/RYZEN-3700x (Test Pc) 
       
       windows10-9xGTX-1660ti/Octominer (test Rig 1)
-      windows10-6xRTX-2060/RYZEN-3700x  (test Rig 2)
-      windows8.1-6xRTX-2080/RYZEN-3700x   (test Rig 3)
+      windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
+      windows8.1-6xRTX-2080/RYZEN-3700x (test Rig 3)
       (users have reported up to 12cards working have not tested myself)
       Some miners do not support more that 9 cards
 

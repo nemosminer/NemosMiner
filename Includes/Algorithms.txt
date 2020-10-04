@@ -3,6 +3,8 @@
   "arctichash": "ArcticHash",
   "argon2d500": "Argon2dDyn",
   "argon2ddyn": "Argon2dDyn",
+  "argon2chukwa": "Argon2Chukwa",
+  "argon2wkrz": "Argon2WKZR",
   "astralhash": "AstralHash",
   "bcd": "BCD",
   "beamv2": "BeamV2",
@@ -10,6 +12,7 @@
   "bfc": "Cuckaroo29bfc",
   "binariumv1": "BinariumV1",
   "bittube": "Cuckaroo29B",
+  "chukwa": "Argon2Chukwa",
   "cortex": "Cuckaroo30CTX",
   "cpupower": "CpuPower",
   "cryptonight7": "CryptonightV1",
@@ -19,6 +22,7 @@
   "cryptonightccx": "CryptonightCcx",
   "cryptonightbbc": "CryptonightBbc",
   "cryptonightcatalans": "CryptonightCatalans",
+  "cryptonightcache": "CryptonightCache",
   "cryptonightconceal": "CryptonightCcx",
   "cryptonightdouble": "CryptonightDouble",
   "cryptonightfast": "CryptonightHalf",
@@ -123,5 +127,6 @@
   "yespowerr16": "YespowerR16",
   "yespowerr32": "YespowerR32",
   "yespowerr8": "YespowerR8",
+  "wkrz": "Argon2Chukwa",
   "zhash": "EquihashBTG"
 }

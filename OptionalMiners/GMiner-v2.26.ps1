@@ -6,7 +6,7 @@ $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.26/gm
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = @("Blake2s");             MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo blake2s --cuda 0 --opencl 1" } #SRBMminerMulti-v0.5.2 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Blake2s");             MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo blake2s --cuda 0 --opencl 1" } #SRBMminerMulti-v0.5.3 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       MinMemGB = 6.0; Fee = @(0.03);    Type = "AMD";    Command = " --algo bfc --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");         MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           MinMemGB = 0.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" }
