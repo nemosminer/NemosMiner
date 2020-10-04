@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-XMRigv633\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.3.3/XMRigv633.7z"
+$Path = ".\Bin\AMD-XMRigv635\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miners/releases/download/xmrig/XMRigv635.7z"
 $Commands = [PSCustomObject]@{ 
     "kawpow"              = " -a kawpow --nicehash" #kawpow
     "cryptonight_conceal" = " -a cn/ccx --nicehash" #cryptonight_conceal
