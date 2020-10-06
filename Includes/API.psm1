@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2020 Nemo & MrPlus
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           API.psm1
 version:        3.9.9.5
-version date:   30 September 2020
+version date:   06 October 2020
 #>
 
 Function Start-APIServer { 
@@ -258,7 +258,7 @@ Function Start-APIServer {
                                 $Data += "`n$($StatName)"
                                 Remove-Stat -Name "$($StatName)_Profit"
                                 $_.Reason = [String[]]@()
-                                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::Nan
+                                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = $_.EstimateFactor = [Double]::Nan
                             }
                             If ($Pools.Count -gt 0) { 
                                 $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
@@ -436,16 +436,16 @@ Function Start-APIServer {
                             $Variables.Workers | Select-Object @(
                                 @{ Name = "Worker"; Expression = { $_.worker } }, 
                                 @{ Name = "Status"; Expression = { $_.status } }, 
-                                @{ Name = "LastSeen"; Expression = { "$($_.timesincelastreport.SubString(1))" } }, 
+                                @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
                                 @{ Name = "Version"; Expression = { $_.version } }, 
                                 @{ Name = "EstimatedProfit"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
-                                @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>' } }, 
-                                @{ Name = "Pools"; Expression = { $_.data.pool -join '<br/>' } }, 
-                                @{ Name = "Algos"; Expression = { $_.data.algorithm -join '<br/>' } }, 
-                                @{ Name = "Speeds"; Expression = { If ($_.data.currentspeed) { ($_.data.currentspeed | ConvertTo-Hash) -join '<br/> ' } Else { "" } } }, 
-                                @{ Name = "BenchmarkSpeeds"; Expression = { If ($_.data.estimatedspeed) { ($_.data.estimatedspeed | ConvertTo-Hash) -join '<br/>' } Else { "" } }
-                            }
-                        ) | Sort-Object "Worker Name")
+                                @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
+                                @{ Name = "Pools"; Expression = { $_.data.pool -replace ',', '; ' -join '<br/>' } }, 
+                                @{ Name = "Algos"; Expression = { $_.data.algorithm -replace ',', '; ' -join '<br/>' } }, 
+                                @{ Name = "BenchmarkSpeeds"; Expression = { If ($_.data.EstimatedSpeed) { @($_.data | ForEach-Object { ($_.EstimatedSpeed -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join '; ' }) -join '<br/>' } Else { '' } } }, 
+                                @{ Name = "ActualSpeeds"; Expression = { If ($_.data.CurrentSpeed) { @($_.data | ForEach-Object { ($_.CurrentSpeed -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join '; ' }) -join '<br/>' } Else { '' } } }
+                            ) | Sort-Object "Worker Name"
+                        )
                         $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
                         Break
                     }

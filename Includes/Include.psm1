@@ -1096,7 +1096,7 @@ Function Update-Monitoring {
         $Profit = [String]([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8))
 
         # Send the request
-        $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON }
+        $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Variables.CurrentVersion; status = $Status; profit = $Profit; data = $DataJSON }
         Try { 
             $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
             Write-Message -Level VERBOSE "Reported status to monitoring server '$($Config.MonitoringServer)' [$($Response)]."
