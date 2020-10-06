@@ -15,14 +15,12 @@ If ($PoolConfig.Wallet) {
     If ((-not $Request) -or (-not $CoinsRequest)) { Return }
 
     $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-    $HostSuffix = "103.249.70.7"
+    $HostSuffix = "mine.zergpool.com"
 
     $PriceField = "Plus_Price"
     #$PriceField = "actual_last24h"
     #$PriceField = "estimate_current"
     $DivisorMultiplier = 1000000
-
-    $PoolRegions = "US"
 
     $AllMiningCoins = @()
     ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
@@ -45,29 +43,24 @@ If ($PoolConfig.Wallet) {
 
             Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
             Catch { $EstimateFactor = [Decimal]1 }
-        
-            $PoolRegions | ForEach-Object { 
-                $Region = $_
-                $Region_Norm = Get-Region $Region
 
-                [PSCustomObject]@{ 
-                    Algorithm          = [String]$Algorithm_Norm
-                    CoinName           = [String]$TopCoin.Name
-                    Currency           = [String]$TopCoin.Symbol
-                    Price              = [Double]$Stat.Live
-                    StablePrice        = [Double]$Stat.Week
-                    MarginOfError      = [Double]$Stat.Week_Fluctuation
-                    PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                    Protocol           = "stratum+tcp"
-                    Host               = [String]$PoolHost
-                    Port               = [UInt16]$PoolPort
-                    User               = $PoolConfig.Wallet
-                    Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency),mc=$($TopCoin.Symbol)"
-                    Region             = [String]$Region_Norm
-                    SSL                = [Bool]$false
-                    Fee                = $Fee
-                    EstimateFactor     = $EstimateFactor
-                }
+            [PSCustomObject]@{ 
+                Algorithm          = [String]$Algorithm_Norm
+                CoinName           = [String]$TopCoin.Name
+                Currency           = [String]$TopCoin.Symbol
+                Price              = [Double]$Stat.Live
+                StablePrice        = [Double]$Stat.Week
+                MarginOfError      = [Double]$Stat.Week_Fluctuation
+                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+                Protocol           = "stratum+tcp"
+                Host               = [String]$PoolHost
+                Port               = [UInt16]$PoolPort
+                User               = $PoolConfig.Wallet
+                Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency),mc=$($TopCoin.Symbol)"
+                Region             = "N/A (Anycast)"
+                SSL                = [Bool]$false
+                Fee                = $Fee
+                EstimateFactor     = $EstimateFactor
             }
         }
     }
