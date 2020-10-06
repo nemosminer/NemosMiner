@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v32.0/NBMiner_32.0_Win.zip"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v32.1/NBMiner_32.1_Win.zip"
 $DeviceEnumerator = "Type_Slot"
 
 $Commands = [PSCustomObject[]]@(

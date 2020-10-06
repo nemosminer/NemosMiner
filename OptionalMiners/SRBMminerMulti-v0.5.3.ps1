@@ -18,7 +18,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_gpu" }
-   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.12 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.13 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm eaglesong" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";              MinMemGb = 4; Fee = 0.0085; Type = "AMD"; Command = " --algorithm ethash" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
@@ -52,7 +52,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kadena";              Fee = 0.0085; Type = "CPU"; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Fee = 0;      Type = "CPU"; Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "RainforestV2";        Fee = 0.0085; Type = "CPU"; Command = " --algorithm rainforestv2" }
-   [PSCustomObject]@{ Algorithm = "Randomx";             Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.3.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Randomx";             Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.3.5 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";          Fee = 0.0085; Type = "CPU"; Command = " --algorithm randomwow" }

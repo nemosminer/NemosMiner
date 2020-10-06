@@ -26,7 +26,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       MinMemGB = 2;    Type = "AMD"; Command = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   MinMemGB = 4;    Type = "AMD"; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       MinMemGB = 2;    Type = "AMD"; Command = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "AMD"; Command = " --algo kawpow" } #NBMiner-v32.0 is fastest, but has 1% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";               MinMemGB = 3;    Type = "AMD"; Command = " --algo kawpow" } #NBMiner-v32.1 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "Randomx";              MinMemGB = 2;    Type = "AMD"; Command = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           MinMemGB = 2;    Type = "AMD"; Command = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          MinMemGB = 1;    Type = "AMD"; Command = " --algo rx/kev" }
