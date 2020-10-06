@@ -275,6 +275,7 @@ If (Test-Path ".\Config\Version.json" -PathType Leaf) {
     $Variables.CurrentVersionAutoupdated = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Autoupdated.Value
 }
 Else { 
+    $Variables.CurrentProduct = $Branding.ProductLabel
     $Variables.CurrentVersion = $Branding.Version
 }
 
@@ -753,10 +754,10 @@ Function Global:TimerUITick {
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
-                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -EQ $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
+                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
                     $Config.ShowAllMiners -or <#List all miners#>
-                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 4) -or <#Always list at least the top 5 miners per device group#>
+                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum -1)) -or <#Always list at least the top 5 miners per device group#>
                     $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% miners per device group#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
                     $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <#List all miners when measuring power usage#>
