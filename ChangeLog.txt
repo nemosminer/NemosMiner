@@ -1,3 +1,30 @@
+Changelog NemosMiner 3.9.9.9 Beta4 06.10.2020
+=============================================
+
+Fixed:
+- Main window: List miner device group with less than 5 miners
+- Rig Monitor: Hashrate formatting
+
+Miner Updates:
+- NanoMiner-v1.11.0
+- NBMiner-v32.1
+- TeamRed-v0.7.13
+
+Pools:
+- Zergpool: Use host name 
+
+
+Changelog NemosMiner 3.9.9.9 Beta3 04.10.2020
+=============================================
+
+Added:
+- Support for <MinerName>_<Algorithm>.cmd prerun files
+
+Miner Updates:
+- SRBMminerMulti-v0.5.3
+- XmRig-v6.3.5
+
+
 Changelog NemosMiner 3.9.9.9 Beta2 03.10.2020
 =============================================
 
