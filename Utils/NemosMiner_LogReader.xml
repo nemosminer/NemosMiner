@@ -15,11 +15,11 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2020-08-02.log</Title>
+      <Title>NemosMiner_2020-10-08.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
-        <Width>965</Width>
-        <Height>517</Height>
+        <Width>979</Width>
+        <Height>627</Height>
       </WindowSize>
       <WindowPosition>
         <X>-8</X>
@@ -52,7 +52,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Reported status to monitoring server|Updated status of workers for</Keyword>
+          <Keyword>Reported status to monitoring server|Retrieved status for workers with ID</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -553,12 +553,12 @@
   </TailFiles>
   <SelectedTab>0</SelectedTab>
   <WindowSize>
-    <Width>969</Width>
-    <Height>590</Height>
+    <Width>983</Width>
+    <Height>700</Height>
   </WindowSize>
   <WindowPosition>
-    <X>13</X>
-    <Y>19</Y>
+    <X>20</X>
+    <Y>18</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>
