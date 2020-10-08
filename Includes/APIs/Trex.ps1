@@ -35,10 +35,8 @@ class Trex : Miner {
         }
 
         If ($this.CalculatePowerCost) { 
-            If ($this.PowerUsageInAPI) { 
-                $PowerUsage = [Double]($Data.gpus.power | Measure-Object -Sum).Sum
-            }
-            Else { 
+            $PowerUsage = [Double]($Data.gpus.power | Measure-Object -Sum).Sum
+            If (-not $PowerUsage) { 
                 #Zealot Enemy
                 $PowerUsage = $this.GetPowerUsage()
             }

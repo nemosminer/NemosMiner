@@ -51,6 +51,9 @@ class Gminer : Miner {
 
         If ($this.CalculatePowerCost) { 
             $PowerUsage = [Double](($Data.devices | Measure-Object power_usage -Sum).Sum)
+            If (-not $PowerUsage) { 
+                $PowerUsage = $this.GetPowerUsage()
+            }
         }
 
         If ($HashRate[0].PSObject.Properties.Value) { 
