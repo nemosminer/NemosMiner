@@ -7,7 +7,7 @@ Fixed:
 
 Miner Updates:
 - lolMiner-v1.10.0
-- SRBMminerMulti-v0.5.3
+- SRBMminerMulti-v0.5.4
 - Trex-v0.18.1
 
 
