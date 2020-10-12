@@ -88,8 +88,13 @@ While ($true) {
 
             $PayoutThresholdCurrency = $PoolConfig.PayoutThresholdCurrency
             If (-not $PayoutThresholdCurrency) { $PayoutThresholdCurrency = $PoolConfig.PayoutCurrency }
+            If (-not $PayoutThresholdCurrency) { $PayoutThresholdCurrency = $API.PayoutCurrency }
 
-            $PayoutThreshold = $PoolConfig.PayoutThreshold
+            $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutThresholdCurrency
+            If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold."m$($PayoutThresholdCurrency)") { 
+                $PayoutThresholdCurrency = "m$($PayoutThresholdCurrency)"
+                $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutThresholdCurrency
+            }
             If (-not $PayoutThreshold) { $PayoutThreshold = $API.PayoutThreshold.$PayoutThresholdCurrency }
             If (-not $PayoutThreshold -and $API.PayoutThreshold."m$($PayoutThresholdCurrency)") { 
                 $PayoutThresholdCurrency = "m$($PayoutThresholdCurrency)"
@@ -178,15 +183,15 @@ While ($true) {
                     Catch { }
                 }
             }
-            If ($BalanceData.PSObject.Properties.Count -gt 0) { 
+
             If ($BalanceData.$BalanceJson -or $BalanceData.$TotalJson) { 
                 $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
                     Pool         = $PoolNorm
                     DateTime     = $Now
-                    Balance      = $BalanceData.$BalanceJson * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
-                    Unsold       = $BalanceData.unsold * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
-                    Total_unpaid = $BalanceData.total_unpaid * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
-                    Total_paid   = $BalanceData.total_paid * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC
+                    Balance      = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.$BalanceJson
+                    Unsold       = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.unsold
+                    Total_unpaid = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.total_unpaid
+                    Total_paid   = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.total_paid
                     Total_earned = ($BalanceData.$BalanceJson, $BalanceData.$TotalJson | Measure-Object -Minimum).Minimum * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC #Pool reduced balance!
                     Currency     = $PoolConfig.PayoutCurrency
                 }
@@ -221,7 +226,7 @@ While ($true) {
                 $AvgHour = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { (($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) } Else { $Growth1 }
 
                 $Variables.Earnings.$PoolNorm = $BalanceObject = [PSCustomObject]@{ 
-                    Pool                    = $PoolName
+                    Pool                    = $PoolNorm
                     Wallet                  = $Wallet
                     Uri                     = $PoolAccountUri
                     Date                    = $Date
@@ -232,15 +237,15 @@ While ($true) {
                     Total_paid              = [Double]$BalanceObject.total_paid
                     Total_earned            = [Double]$BalanceObject.total_earned
                     Currency                = $PoolConfig.PayoutCurrency
-                    GrowthSinceStart        = $BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned
+                    GrowthSinceStart        = [Double]($BalanceObject.total_earned - $PoolBalanceObjects[0].total_earned)
                     Growth1                 = [Double]$Growth1
                     Growth6                 = [Double]$Growth6
                     Growth24                = [Double]$Growth24
                     AvgHourlyGrowth         = [Double]$AvgHour
-                    DailyGrowth             = [Double]$AvgHour * 24
+                    DailyGrowth             = [Double]($AvgHour * 24)
                     EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHour * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
                     EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHour -gt 0) { $Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.total_unpaid) / $AvgHour) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
-                    TrustLevel              = $((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum
+                    TrustLevel              = [Double](((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum)
                     TotalHours              = ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
                     PayoutThreshold         = [Double]$PayoutThreshold
@@ -260,6 +265,7 @@ While ($true) {
                     $PoolDailyEarning.DailyEarnings = (($BalanceObject.total_earned - $PoolDailyEarning.StartValue), 0 | Measure-Object -Maximum).Maximum
                     $PoolDailyEarning.EndTime = $Now.ToString("T")
                     $PoolDailyEarning.EndValue = $BalanceObject.total_earned
+                    #Payment occured?
                     If ($BalanceObject.total_earned -lt ($PoolBalanceObjects[$PoolBalanceObjects.Count - 2].total_earned / 2)) { 
                         $PoolDailyEarning.PrePaymentDayValue = $PoolBalanceObjects[$PoolBalanceObjects.Count - 2].total_earned
                         If ($PoolDailyEarning.PrePaymentDayValue -gt 0) { 
