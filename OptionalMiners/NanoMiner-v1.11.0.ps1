@@ -15,7 +15,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Command = "RandomX" } #XmRig-v6.3.5 is fastest
 
 #   [PSCustomObject]@{ Algorithm = "Ethash";  MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" } #Trex-v0.17.3 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" } #Trex-v0.18.1 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash"; MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ubqhash" }
 )
 

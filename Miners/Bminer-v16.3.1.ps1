@@ -7,21 +7,21 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");              Protocol = @(" -uri beam");                         Fee = @(0.02);      MinMemGB = 7.8; Type = "AMD"; Command = "" } #Undefined but requested solver: beamhash3d
-    [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethproxy");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "AMD"; Command = "" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethproxy");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "AMD"; Command = "" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Protocol = @(" -uri ethproxy", " -uri2 handshake"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethproxy", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "AMD"; Command = "" }
 
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");              Protocol = @(" -uri beam");                         Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Protocol = @(" -uri bfc");                          Fee = @(0.02);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooM29");         Protocol = @(" -uri cuckaroo29m");                  Fee = @(0.01);      MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");         Protocol = @(" -uri cuckaroo29z");                  Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" } #GMiner-v2.26 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Protocol = @(" -uri cuckatoo31");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Protocol = @(" -uri bfc");                          Fee = @(0.02);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("CuckarooM29");         Protocol = @(" -uri cuckaroo29m");                  Fee = @(0.01);      MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");         Protocol = @(" -uri cuckaroo29z");                  Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" } #GMiner-v2.26 is fastest
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Protocol = @(" -uri cuckatoo31");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Protocol = @(" -uri cuckatoo32");                   Fee = @(0.01);      MinMemGB = 8.0; Type = "NVIDIA"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Protocol = @(" -uri aeternity");                    Fee = @(0.01);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Equihash1445");        Protocol = @(" -pers auto -uri equihash1445");      Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" } #MiniZ-v1.6w is fastest
-#   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Protocol = @(" -uri zhash");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Protocol = @(" -uri aeternity");                    Fee = @(0.01);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");        Protocol = @(" -pers auto -uri equihash1445");      Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" } #MiniZ-v1.6w is fastest
+    [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Protocol = @(" -uri zhash");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Protocol = @(" -uri ethproxy");                     Fee = @(0.0065);    MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethproxy", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Tensority"); Protocol = @(" -uri ethproxy", " -uri2 tensority"); Fee = @(0.0065, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = "" }
 #   [PSCustomObject]@{ Algorithm = @("Qitmeer");             Protocol = @(" -uri qitmeer");                      Fee = @(0.02);      MinMemGB = 6.0; Type = "NVIDIA"; Command = "" }
 #   [PSCustomObject]@{ Algorithm = @("Raven");               Protocol = @(" -uri raven");                        Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
 #   [PSCustomObject]@{ Algorithm = @("Sero");                Protocol = @(" -uri sero");                         Fee = @(0.02);      MinMemGB = 2.0; Type = "NVIDIA"; Command = "" }
@@ -58,14 +58,14 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Dual mining not supported on Navi
-                If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "MPH*") { Return } #temp fix
+                If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$')) { Return } #Dual mining not supported on Navi or GTX1660
+                If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "^MPH*") { Return } #temp fix
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
 
-                #Add 1GB when GPU with connected monitor
-                If ($_.Algorithm[0] -eq "BeamV3" -and ($SelectedDevices | Where-Object { $_.CIM.CurrentRefreshRate })) { $MinMemGB += 1 }
+                #Add 512 MB when GPU with connected monitor
+                If ($SelectedDevices | Where-Object { $_.CIM.CurrentRefreshRate }) { $MinMemGB += 0.5 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 

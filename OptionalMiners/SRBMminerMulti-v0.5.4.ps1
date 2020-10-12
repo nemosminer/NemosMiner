@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.3/SRBMiner-Multi-0-5-3-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.4/SRBMiner-Multi-0-5-4-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 
@@ -32,6 +32,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "VerusHash";           MinMemGb = 1; Fee = 0.0085; Type = "AMC"; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm yescrypt" }
 
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Fee = 0.0085; Type = "CPU"; Command = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Fee = 0;      Type = "CPU"; Command = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Fee = 0;      Type = "CPU"; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Fee = 0;      Type = "CPU"; Command = " --algorithm blake2s" }

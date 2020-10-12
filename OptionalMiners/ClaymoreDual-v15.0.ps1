@@ -55,7 +55,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
-
+                If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^GTX1660.*GB$')) { Return } #Dual mining not working on GTX1660
                 If ($Algo -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "ZergPool*") { Return }
 
                 $Command = $_.Command 
