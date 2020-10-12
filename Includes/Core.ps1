@@ -46,10 +46,6 @@ Function Start-Cycle {
         #Expire watchdog timers
         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
-        #To trigger an eventual miner restart
-        $Variables.OldShowMinerWindows = $Config.ShowMinerWindows
-        $Variables.OldCalculatePowerCost = $Config.CalculatePowerCost
-
         #Always get the latest config
         Read-Config
 
@@ -166,8 +162,8 @@ Function Start-Cycle {
                                 $Variables.CalculatePowerCost = $false
                             }
                         }
-                        If ($Variables.Devices | Where-Object State -EQ "Enabled" | Where-Object { $null -eq $Hashtable.($_.Name) }) { 
-                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $((($Variables.Devices).Name | Where-Object { $null -eq $Hashtable.$_ }) -join ', ')] - disabling power usage calculations."
+                        If ($DeviceNamesMissingSensor = Compare-Object @(($Variables.Devices).Name) @($Hashtable.Keys) -passthru | Where-Object SideIndicator -EQ "<=") { 
+                            Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage calculations."
                             $Variables.CalculatePowerCost = $false
                         }
                         Remove-Variable Device
@@ -180,7 +176,7 @@ Function Start-Cycle {
                     $Variables.CalculatePowerCost = $false
                 }
             }
-            If ($Config.CalculatePowerCost -and -not ($Variables.CalculatePowerCost)) { 
+            If (-not $Variables.CalculatePowerCost) { 
                 Write-Message -Level Warn "Realtime power usage cannot be read from system. Will display static values where available."
             }
         }
@@ -205,7 +201,7 @@ Function Start-Cycle {
         #Load unprofitable algorithms
         If (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore) { 
             $Variables.UnprofitableAlgorithms = [String[]](Get-Content ".\Includes\UnprofitableAlgorithms.txt" | ConvertFrom-Json -ErrorAction SilentlyContinue | Sort-Object -Unique)
-            Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) entrie$(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "s" }))."
+            Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) entr$(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "ies" } Else { "y" } ))."
         }
         Else {
             $Variables.UnprofitableAlgorithms = $null
@@ -383,7 +379,7 @@ Function Start-Cycle {
                     $Stat_Name = "$($Miner.Name)_$($Algorithm)_HashRate"
                     If ($Miner.Activated -gt 0 -or (Get-Stat $Stat_Name)) { #Do not save data if stat just got removed
                         $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples)
-                        If ($Stat.Updated -gt $Variables.StatStart) { 
+                        If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             #Update watchdog timer
                             $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName | Sort-Object Kicked | Select-Object -Last 1
@@ -395,11 +391,11 @@ Function Start-Cycle {
                     }
                 }
 
-                If ($Variables.CalculatePowerCost -and $Variables.OldCalculatePowerCost -eq $Variables.CalculatePowerCost) {
+                If ($Variables.CalculatePowerCost -and $PowerUsage -gt 0) {
                     $Stat_Name = "$($Miner.Name)$(If ($Miner.Algorithm.Count -eq 1) { "_$($Miner.Algorithm[0])" })_PowerUsage"
                     If ($Miner.Activated -gt 0 -or $Stats.$Stat_Name) { #Do not save data if stat just got removed
                         $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples)
-                        If ($Stat.Updated -gt $Variables.StatStart) { 
+                        If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message "Saved power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                         }
                     }
@@ -670,7 +666,7 @@ Function Start-Cycle {
         Else { 
             #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
             If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-            $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
+            $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Algorithm.Count }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
             $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } #use a smaller subset of miners
             $BestMiners = @($FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
@@ -756,9 +752,8 @@ Function Start-Cycle {
             ElseIf ($_.MeasurePowerUsage -and $_.DataReaderJob.State -ne $_.GetStatus()) { $_.Restart = $true }
             ElseIf ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
             ElseIf ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
-            ElseIf ($_.CalculatePowerCost -eq $false -and -$Variables.CalculatePowerCost) { $_.Restart = $true }
-            ElseIf ($Config.ShowMinerWindows -ne $Variables.OldShowMinerWindows) { $_.Restart = $true } 
-            ElseIf ($Config.CalculatePowerCost -ne $Variables.OldCalculatePowerCost) { $_.Restart = $true }
+            ElseIf ($_.CalculatePowerCost -ne -$Variables.CalculatePowerCost) { $_.Restart = $true }
+            ElseIf ($_.ShowMinerWindows -ne $Config.ShowMinerWindows) { $_.Restart = $true }
         }
 
         #Stop running miners
