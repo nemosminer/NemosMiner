@@ -30,12 +30,13 @@ NemosMiner will automatically convert an existing configuration file.
 
 *****
 
-   GUI and easy configuration
-   Auto Benchmarks Each algo to get optimal speeds 
-   Fully automated 
-   Auto Downloads Miners
-   Auto Updates
-   Monitoring
+**Main features:**
+   - GUI and easy configuration
+   - Auto Benchmarks Each algo to get optimal speeds 
+   - Fully automated 
+   - Auto Downloads Miners
+   - Auto Updates
+   - Monitoring
 
 *****
 
