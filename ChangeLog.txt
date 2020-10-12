@@ -1,3 +1,29 @@
+Changelog NemosMiner 3.9.9.9 Beta6 12.10.2020
+=============================================
+
+Fixed:
+- PoolBalances (Regression of Beta5 / PayoutThreshold paremeter in PoolsConfig.json not working)
+- Power readout when HwINFO64 registry entries were corrected while NemosMiner was running
+
+Miner Updates:
+- lolMiner-v1.10.0
+- SRBMminerMulti-v0.5.3
+- Trex-v0.18.1
+
+
+Changelog NemosMiner 3.9.9.9 Beta5 08.10.2020
+=============================================
+
+Fixed:
+- PayoutThreshold paremeter in PoolsConfig.json not working
+- Power readout compatibility for Gminer & Trex and NVidia driver 456.55 and newer
+- Web GUI: Other than ticked objects were removed (problem with bootstrap table 0.18, reverting to 0.17.1 fixes the issue)
+
+Miner Updates:
+- Gminer-v2.27
+- Wildrig-v0.28.0
+
+
 Changelog NemosMiner 3.9.9.9 Beta4 06.10.2020
 =============================================
 
@@ -11,7 +37,7 @@ Miner Updates:
 - TeamRed-v0.7.13
 
 Pools:
-- Zergpool: Use host name 
+- Zergpool: Use host name for anycast
 
 
 Changelog NemosMiner 3.9.9.9 Beta3 04.10.2020
