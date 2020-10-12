@@ -11,6 +11,7 @@
   "beamv3": "BeamV3",
   "bfc": "Cuckaroo29bfc",
   "binariumv1": "BinariumV1",
+  "bitcore": "MegaBtx",
   "bittube": "Cuckaroo29B",
   "chukwa": "Argon2Chukwa",
   "cortex": "Cuckaroo30CTX",
