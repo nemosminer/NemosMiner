@@ -1247,7 +1247,7 @@ Function Read-Config {
     }
 
     #Build pools configuations
-    If (Test-Path $Variables.PoolsConfigFile -PathType Leaf) { 
+    If (Test-Path -PathType Leaf $Variables.PoolsConfigFile) { 
         $PoolsConfig_Tmp = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($PoolsConfig_Tmp.PSObject.Properties.Count -eq 0 -or $PoolsConfig_Tmp -isnot [PSCustomObject]) { 
             Write-Message -Level WARN "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt."
