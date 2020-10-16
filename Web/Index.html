@@ -15,7 +15,7 @@
   data-icons="icons"
   data-toolbar="#toolbar"
   data-url="/miners/running"
-  data-cache="false"
+  data-cache="true"
   data-toggle="table"
   data-show-search-clear-button="true"
   data-sort-name="tDevices"
@@ -93,6 +93,13 @@
 <script type="text/javascript">
   var $table = $('#miners');
   var $querysize = 10000;
+
+  $.ajax({url: '/btcratefirstcurrency',
+    success: function(result) {
+      rate = result;
+    }
+  });
+
   document.getElementById("balances").style.display = "none";
 
   $('#re-benchmark').click(function () {
@@ -201,7 +208,7 @@
     window.setInterval(function() { 
       updatePoolBalances();
       $table.bootstrapTable("refresh");
-    }, 30000);
+    }, 60000);
   });
 
 </script>

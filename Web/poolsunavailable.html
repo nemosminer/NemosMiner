@@ -12,21 +12,21 @@
   data-icons="icons"
   data-toolbar="#toolbar"
   data-url="/pools/unavailable"
-  data-cache="false"
+  data-cache="true"
   data-toggle="table"
-  data-filter-control="true"
   data-show-search-clear-button="true"
-  data-sort-order="asc"
-  data-sort-name="Algorithm"
   data-remember-order="true"
   data-filter-control="true"
+  data-disable-control-when-search="true"
+  data-sort-name="Algorithm"
+  data-remember-order="true"
   data-show-button-text="true"
   data-show-columns="true"
   data-show-toggle="true"
   data-show-refresh="true"
   data-detail-view="true"
-  data-detail-formatter="detailFormatter"
   data-click-to-select="true"
+  data-detail-formatter="detailFormatter"
   >
 
   <thead>
@@ -44,7 +44,6 @@
       <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
       <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
       <th data-field="Protocol" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Protocol</th>
-      <!-- <th data-field="Workers" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-width=1>Workers</th> -->
       <th data-field="EstimateFactor" data-sortable="true" data-filter-control="input" data-formatter="formatPercent" data-width=2>Estimate Factor</th>
       <th data-field="Region" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-width=1>Region</th>
       <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4>SSL</th>
@@ -57,10 +56,13 @@
 
 <!-- Start of page scripts -->
 
-<script>
-
+<script type='text/javascript'>
   var $table = $('#pools');
   var $querysize = 10000;
+
+  $table.bootstrapTable({
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985,
+  })
 
   $('#reset-data').click(function () {
     var $data = $table.bootstrapTable('getSelections');
@@ -75,7 +77,7 @@
           $('.modal-title').text($('#reset-data').text());
           $('#myModal').modal({show:true});
         });
-        $table.bootstrapTable("refresh");
+        $table.bootstrapTable('refresh');
       }
     }
   });

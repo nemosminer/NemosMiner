@@ -67,12 +67,6 @@ function formatMiners(data) {
 
       // Format Total Mining Duration (TimeSpan)
       item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
-  
-      // // Get effective command line from argument json
-      // var arguments = new Object(item.Arguments);
-      // if (arguments.Commands) {
-      //   item.Arguments = arguments.Commands;
-      // }
 
       // Format the reason(s)
       if (item.Reason) {

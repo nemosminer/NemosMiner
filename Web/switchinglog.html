@@ -43,6 +43,19 @@
 <script type="text/javascript">
   var $table = $('#switchinglog')
 
+  // get BTC rate of first currency
+  var rate;
+
+  $.ajax({url: '/btcratefirstcurrency',
+    success: function(result) {
+      rate = result;
+    }
+  });
+
+  $table.bootstrapTable({
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985,
+  })
+
   $('#clear-log').click(function () {
     $command = '/functions/switchinglog/clear';
     $('.modal-body').load($command, function() {

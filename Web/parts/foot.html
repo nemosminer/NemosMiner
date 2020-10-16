@@ -7,13 +7,6 @@
 
   <script type="text/javascript">
 
-  // get BTC rate of first currency
-  var rate;
-  $.ajax({url: '/btcratefirstcurrency', success: function(result) {
-    rate = result;
-    }
-  });
-
   // Set the active sidebar item
   $(function() {
     $('#'+$('#title').data('navbaractive')).addClass('active');

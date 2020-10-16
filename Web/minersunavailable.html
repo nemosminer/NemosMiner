@@ -15,15 +15,16 @@
   data-icons="icons"
   data-toolbar="#toolbar"
   data-url="/miners/unavailable"
-  data-cache="false"
+  data-cache="true"
   data-toggle="table"
   data-show-search-clear-button="true"
   data-remember-order="true"
   data-filter-control="true"
+  data-disable-control-when-search="true"
   data-show-button-text="true"
   data-show-columns="true"
-  data-show-refresh="true"
   data-show-toggle="true"
+  data-show-refresh="true"
   data-detail-view="true"
   data-click-to-select="true"
   data-detail-formatter="detailFormatter"
@@ -72,9 +73,22 @@
 
 <!-- Start of page scripts -->
 
-<script type="text/javascript">
+<script type='text/javascript'>
   var $table = $('#miners');
   var $querysize = 10000;
+
+  // get BTC rate of first currency
+  var rate;
+
+  $.ajax({url: '/btcratefirstcurrency',
+    success: function(result) {
+      rate = result;
+    }
+  });
+
+  $table.bootstrapTable({
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985,
+  })
 
   $('#re-benchmark').click(function () {
     var $data = $table.bootstrapTable('getSelections');
@@ -84,7 +98,7 @@
         alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
       }
       else {
-        $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=HashRate";
+        $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#re-benchmark').text());
           $('#myModal').modal({show:true});
@@ -102,7 +116,7 @@
         alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
       }
       else {
-        $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=PowerUsage";
+        $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#re-measure').text());
           $('#myModal').modal({show:true});
@@ -120,7 +134,7 @@
   //       alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
   //     }
   //     else {
-  //       $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
+  //       $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
   //       $('.modal-body').load($command, function() {
   //         $('.modal-title').text($('#failed').text());
   //         $('#myModal').modal({show:true});
@@ -138,7 +152,7 @@
         alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
       }
       else {
-        $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
+        $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#disable').text());
           $('#myModal').modal({show:true});
