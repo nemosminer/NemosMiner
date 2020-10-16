@@ -25,7 +25,10 @@ If ($PoolConfig.UserName) {
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
-        $Coin = (Get-Culture).TextInfo.ToTitleCase(($_.current_mining_coin -replace "-") -replace " ")
+        # #Temp fix for Ethash
+        # If ($Algorithm_Norm -eq "Ethash") { $Current.algo_switch_port = 20535 }
+
+        $Coin = (Get-Culture).TextInfo.ToTitleCase($_.current_mining_coin -replace "-" -replace " ")
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
@@ -45,10 +48,10 @@ If ($PoolConfig.UserName) {
                 Host               = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port               = [UInt16]$Current.algo_switch_port
                 User               = $User
-                Pass               = 'x'
+                Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
-                Fee                = [Decimal](0.9 / 100)
+                Fee                = [Decimal]0.009
                 EstimateFactor     = [Decimal]1
             }
 
@@ -64,10 +67,10 @@ If ($PoolConfig.UserName) {
                 Host               = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port               = [UInt16]$Current.algo_switch_port
                 User               = $User
-                Pass               = 'x'
+                Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$true
-                Fee                = [Decimal](0.9 / 100)
+                Fee                = [Decimal]0.009
                 EstimateFactor     = [Decimal]1
             }
         }
