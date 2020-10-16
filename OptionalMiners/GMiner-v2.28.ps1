@@ -10,7 +10,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       MinMemGB = 6.0; Fee = @(0.03);    Type = "AMD";    Command = " --algo bfc --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");         MinMemGB = 4.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           MinMemGB = 0.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445");        MinMemGB = 1.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.10.0 is fastest
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");        MinMemGB = 1.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.11.0 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash1927");        MinMemGB = 2.8; Fee = @(0.02);    Type = "AMD";    Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");         MinMemGB = 3.0; Fee = @(0.02);    Type = "AMD";    Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
 
@@ -42,8 +42,8 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("KawPoW");              MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.18.1 is fastest
 #   [PSCustomObject]@{ Algorithm = @("Sero");                MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } #Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = @("Vollar");              MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo vollar --cuda 1 --opencl 0" }
-   [PSCustomObject]@{ Algorithm = @("VeriBlock");           MinMemGB = 2.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
-   [PSCustomObject]@{ Algorithm = @("Zano");                MinMemGB = 2.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo ProgPoWZ --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = @("VeriBlock");           MinMemGB = 2.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = @("Zano");                MinMemGB = 2.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo ProgPoWZ --cuda 1 --opencl 0" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 

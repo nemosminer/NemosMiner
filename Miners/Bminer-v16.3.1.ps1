@@ -59,7 +59,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
                 If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$')) { Return } #Dual mining not supported on Navi or GTX1660
-                If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "^MPH*") { Return } #temp fix
+                If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH*") { Return } #temp fix
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB

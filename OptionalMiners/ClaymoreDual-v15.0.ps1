@@ -55,8 +55,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
-                If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^GTX1660.*GB$')) { Return } #Dual mining not working on GTX1660
-                If ($Algo -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "ZergPool*") { Return }
+
+                If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH*") { Return } #temp fix
 
                 $Command = $_.Command 
                 $MinMemGB = $_.MinMemGB
@@ -69,16 +69,18 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($Pools.($_.Algorithm[0]).SSL) {
+                        $Command =+ " -checkcert 0"
                         If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { 
-                            $Protocol = " -esm 3 -checkcert 0 stratum+ssl://"
+                            $Command =+ " -esm 3"
+                            $Protocol = "stratum+ssl://"
                         }
                         Else { 
-                            $Protocol = " -checkcert 0 ssl://"
+                            $Protocol = "ssl://"
                         }
                     }
                     Else { 
                         If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { 
-                            $Command += " -esm 3"
+                            $Command =+ " -esm 3"
                             $Protocol = "stratum+tcp://"
                         }
                         Else { 
@@ -88,7 +90,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     If ($_.Algorithm[1]) { 
 
-                        If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { Return } #No dual mining for Navi cards
+                        If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$') { Return } #No dual mining for Navi or GTX1660 cards
 
                         $Command += " -dpool $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpsw $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
                         If ($_.Intensity2 -ge 0) { $Command += " -dcri $($_.Intensity2)" }

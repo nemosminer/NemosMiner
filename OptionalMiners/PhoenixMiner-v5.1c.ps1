@@ -69,7 +69,11 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
                             #Extra Speed for Navi cards
-                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work :-(
+                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lots of bad shares :-(
+                        }
+                        If (($Miner_Devices.OpenCL.CodeName | Sort-Object -unique) -join '' -eq 'Ellesmere') { 
+                            #Extra Speed for Ellesmere cards
+                            #$Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lot's of bad shares :-(
                         }
                     }
 
