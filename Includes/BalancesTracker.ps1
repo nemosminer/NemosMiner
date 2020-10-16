@@ -42,7 +42,11 @@ While ($true) {
             Write-Message "Balances Tracker started."
             # Read existing earning data
             If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { $AllBalanceObjects = @(Get-Content ".\logs\BalancesTrackerData.json" | ConvertFrom-Json) } Else { $AllBalanceObjects = @() }
-            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue) } Else { $DailyEarnings = @() }
+            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+                $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue)
+                Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
+            } 
+            Else { $DailyEarnings = @() }
         }
 
         $Now = Get-Date
@@ -267,6 +271,7 @@ While ($true) {
                     $PoolDailyEarning.EndValue = $BalanceObject.total_earned
                     #Payment occured?
                     If ($BalanceObject.total_earned -lt ($PoolBalanceObjects[$PoolBalanceObjects.Count - 2].total_earned / 2)) { 
+                        Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
                         $PoolDailyEarning.PrePaymentDayValue = $PoolBalanceObjects[$PoolBalanceObjects.Count - 2].total_earned
                         If ($PoolDailyEarning.PrePaymentDayValue -gt 0) { 
                             #Payment occured
