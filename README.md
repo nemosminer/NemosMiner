@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 12 October 2020
+Updated 16 October 2020
 
 
 Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
@@ -51,7 +51,7 @@ Easy configuration, easy start:
 
       Note: 2. you only need to change Username if you are using Miningpoolhub or ProHashing
 
-     Algorithm selection / removal
+   Algorithm selection / removal
 
       +[algorithm] to enable algorithm
       -[algorithm] to disable algorithm
@@ -62,33 +62,33 @@ Easy configuration, easy start:
 
       Do not combine + and - for the same algo
 
-     Examples:
-     Algorithm list = -x16r
-     Will mine anything but x16r
+      Examples:
+      Algorithm list = -x16r
+      Will mine anything but x16r
 
-     Algorithm list = -x16r,-bcd
-     Will mine anything but x16r and bcd
+      Algorithm list = -x16r,-bcd
+      Will mine anything but x16r and bcd
 
-     Algorithm list = +x16r
-     Will mine only x16r
+      Algorithm list = +x16r
+      Will mine only x16r
 
-     Algorithm list = +x16r,+bcd
-     Will mine only x16r and BCD
+      Algorithm list = +x16r,+bcd
+      Will mine only x16r and BCD
 
-     Algorithm list blank
-     Will mine anything
+      Algorithm list blank
+      Will mine anything
 
-  Pools Variants
+   Pools Variants
 
-      *24hr - uses last 24hour Actual API too request profit (no estimates or advanced calculations)
+      *24hr  - uses last 24hour Actual API too request profit (no estimates or advanced calculations)
 
       normal - uses advanced calculations to reduce uneeded switching
 
       *Coins - uses advanced calculations, mines only top paying coin in Algo (ZergPool Only)
 
 
-  Developer/Contributors Donation: 
-  list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
+   Developer/Contributors Donation: 
+      The list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
 
       Donation Fee = 0.9%
       There is 13 minute per day default donation (0.9%),
@@ -105,7 +105,7 @@ Easy configuration, easy start:
       - When donation start time is reached it will then donate for 13 minutes, then mine for you again until the next donation run.
       All donation time and addresses are recorded in the logs folder.
 
-NemosMiner Monitoring Server : https://nemosminer.com
+   NemosMiner Monitoring Server: https://nemosminer.com
 
       Keep tabs on all your mining rigs from one place
       You can now optionally monitor all your workers remotely, both in the GUI and via https://nemosminer.com  
@@ -202,17 +202,15 @@ NemosMiner Monitoring Server : https://nemosminer.com
 
    Optional miners (Advanced)
 
-      Some miners are not enabled by default in NemosMiner for a variety of reasons:
-
-         These are closed source and therefore not enabled in NemosMiner by default.
-         Use at your own risk.
+      These are closed source and therefore not enabled in NemosMiner by default.
+      Use at your own risk.
 
       For advanced users, check the Optional Miners checkbox on the Config tab to enable these miners.
 
    CustomMiners (Advanced)
 
-      Users can place any miner.ps1 from miners/optionalminers or custom user created miner.ps1 files, in CustomMiners folder 
-      leaving miners and optionalminers disabled in config will enable CustomMiners folder 
+      Users can place any miner.ps1 from miners/optionalminers or custom user created miner.ps1 files in CustomMiners folder 
+      Note: Miners in CustomMiners folder are always enabled (to disable a custom miner it must be removed from the CustomMiners folder)
 
    Algorithm switching log
 
@@ -223,8 +221,8 @@ NemosMiner Monitoring Server : https://nemosminer.com
 
       Use -UIStyle Light or -UIStyle Full in config.json
          Full = Usual display (Default)
-         Light = Show only currently mining info
-      UIStyle automaticaly swtiches to Full during benchmarking.
+         Light = Show only current mining info
+      UIStyle automatically switches to Full during benchmarking.
 
    In session console display toggle
 
