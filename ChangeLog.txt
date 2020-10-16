@@ -1,3 +1,16 @@
+Changelog NemosMiner 3.9.9.9 Beta6 17.10.2020
+=============================================
+
+Miner Updates:
+- lolMiner-v1.10.0
+- TeamRed-v0.7.14
+- Wildrig-v0.28.1
+
+New:
+- Sticky headers in Web GUI (Miners, Pools & Switching Log)
+- Create backup of Logs\DailyEarnings.csv at mining start to prevent earnings data loss 
+
+
 Changelog NemosMiner 3.9.9.9 Beta6 12.10.2020
 =============================================
 
