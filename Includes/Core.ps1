@@ -199,7 +199,7 @@ Function Start-Cycle {
         }
 
         #Load unprofitable algorithms
-        If (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore) { 
+        If ($Config.ApplyUnprofitableAlgorithmList -and (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore)) { 
             $Variables.UnprofitableAlgorithms = [String[]](Get-Content ".\Includes\UnprofitableAlgorithms.txt" | ConvertFrom-Json -ErrorAction SilentlyContinue | Sort-Object -Unique)
             Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) entr$(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "ies" } Else { "y" } ))."
         }
@@ -297,12 +297,7 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object { $PoolsConfig.($_.Name).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled in $($_.Name -replace "24hr$" -replace "Coins$") pool config" }
         If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled in default pool config" } }
 
-        $Variables.Pools | Where-Object { $Config.Pools.$($_.Name).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded in $($_.Name -replace "24hr$" -replace "Coins$") pool config" } 
-
-        # Use region as preference and not the only one
-        [Pool[]]$ThisRegionPools = $Variables.Pools | Where-Object { $_.Region -eq $Config.Region }
-        $Variables.Pools = $ThisRegionPools + ($Variables.Pools | Where-Object { $_ -notin $ThisRegionPools })
-        Remove-Variable ThisRegionPools
+        $Variables.Pools | Where-Object { $Config.Pools.($_.Name).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded in $($_.Name -replace "24hr$" -replace "Coins$") pool config" } 
 
         Write-Message -Level VERBOSE "Had $($Variables.PoolsCount) pool$( If ($Variables.PoolsCount -ne 1) { "s" }), found $($ComparePools.Count) new pool$( If ($ComparePools.Count -ne 1) { "s" }). $(@($Variables.Pools | Where-Object Available -EQ $true).Count) pool$(If (@($Variables.Pools | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Variables.Pools | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(@($Variables.Pools | Where-Object Available -NE $true).Count) pool$(If (@($Variables.Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
         Remove-Variable ComparePools
@@ -334,7 +329,15 @@ Function Start-Cycle {
             Remove-Variable Message
         }
         #Pre-sort all pools
-        [Pool[]]$Variables.Pools = $Variables.Pools | Sort-Object -Descending { -not $_.Available }, { $_.StablePrice * (1 - $_.MarginOfError) }, { $_.Region -eq $Config.Region }, { $_.SSL -eq $Config.SSL }
+        [Pool[]]$Variables.Pools = $Variables.Pools | Sort-Object -Descending { -not $_.Available }, { $_.StablePrice * (1 - $_.MarginOfError) }, { $_.SSL -eq $Config.SSL }
+
+        # Use region as preference and not the only one
+        [Pool[]]$ThisRegionPools = $Variables.Regions.($Config.Region) | ForEach-Object { 
+            $Variables.Pools | Where-Object Region -eq $_
+       }
+       $ThisRegionPools += $Variables.Pools | Where-Object { $_ -notin $ThisRegionPools }
+       $Variables.Pools = $ThisRegionPools
+       Remove-Variable ThisRegionPools
 
         # Ensure we get the hashrate for running miners prior looking for best miner
         $Variables.Miners | Where-Object Best | ForEach-Object { 
