@@ -88,8 +88,8 @@
         <br>
         <div class="col-md-12">
           <fieldset>
-            <legend class=h6>Select the region closest to your location</legend>
-            <div title="NemosMiner will prefer pools from the selected region" id="Regions"></div>
+            <legend class=h6 title="NemosMiner will prefer pools from the selected region">Select the region closest to your location</legend>
+            <div id="Regions"></div>
           </fieldset>
         </div>
         <br>
@@ -174,6 +174,9 @@
           <br><br>
           <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection" title="NemosMiner will reduce the profitability (as reported by the pool) by &#10;a correction factor (actual_last24h / estimate_last24h) &#10;to counter pool overestimated profitability">
           <label for="EstimateCorrection" title="NemosMiner will reduce the profitability (as reported by the pool) by &#10;a correction factor (actual_last24h / estimate_last24h) &#10;to counter pool overestimated profitability">Use Estimate Correction</label>
+          <br><br>
+          <input type="checkbox" id="ApplyUnprofitableAlgorithmList" name="ApplyUnprofitableAlgorithmList" title="NemosMiner will not mine algorithms listed in &#10;UnprofitableAlgorithms.txt (recommended)">
+          <label for="ApplyUnprofitableAlgorithmList" title="NemosMiner will not mine algorithms listed in &#10;UnprofitableAlgorithms.txt (recommended)">Do not mine algorithms in the Unprofitable Algorithms List</label>
           <br><br>
           <input type="checkbox" id="AutoUpdate" title="Automatically update to the latest realeased program version" name="AutoUpdate">
           <label for="AutoUpdate" title="Automatically update to the latest realeased program version">Auto Update</label>
@@ -355,6 +358,9 @@
       if (config.EstimateCorrection) {
         document.getElementById('EstimateCorrection').checked = true;
       }
+      if (config.ApplyUnprofitableAlgorithmList) {
+        document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
+      }
       //must be placed after pool loading
       document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
       document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
@@ -478,6 +484,7 @@
     };
     config.WatchdogPoolCount = parseInt(document.getElementById('WatchdogPoolCount').value);
     config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
+    config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
     config.AutoUpdate = document.getElementById('AutoUpdate').checked;
 
     //Write current config

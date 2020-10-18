@@ -7,6 +7,9 @@ New Config Items
 #If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
 
+#NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt (recommended)
+  "ApplyUnprofitableAlgorithmList": true,
+
 #If true, power usage will be read from miners and calculate power cost, required for true profit calculation
   "CalculatePowerCost": true,
 
