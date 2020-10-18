@@ -24,7 +24,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
     # Build command sets for intensities
     $Commands = $Commands | ForEach-Object { 
-        $Command = $_ 
+        $Command = $_
         If ($_.Algorithm[1]) { 
             $Intensities2.($_.Algorithm[1]) | ForEach-Object { 
                 $Command | Add-Member Intensity2 $_ -Force

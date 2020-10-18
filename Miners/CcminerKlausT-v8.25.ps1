@@ -1,5 +1,6 @@
 using module ..\Includes\Include.psm1
 
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\ccminer.exe"
 $Uri = "https://github.com/KlausT/ccminer/releases/download/8.25/ccminer-825-cuda100-x64.zip"
 $DeviceEnumerator = "Type_Vendor_Index"

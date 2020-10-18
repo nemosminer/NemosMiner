@@ -2,7 +2,7 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\lolminer.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.10/lolMiner_v1.10_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.11/lolMiner_v1.11_Win64.zip"
 $DeviceEnumerator = "Bus"
 
 $Commands = [PSCustomObject[]]@(
@@ -14,9 +14,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 7.8; Type = "AMD"; Fee = "0.025"; Command = " --algo C30CTX" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29D" } #TeamRed-v0.7.13 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29D" } #TeamRed-v0.7.14 is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29M" }
-#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.13 is fastest
+#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.14 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C32" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO144_5" }
 #   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO192_7" } #GMiner-v2.28 is fastest
