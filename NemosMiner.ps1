@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.5
-Version date:   11 September 2020
+Version:        3.9.9.6
+Version date:   17. October 2020
 #>
 
 [CmdletBinding()]
@@ -37,7 +37,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, #TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
-    [Boolean]$AutoUpdate = $false, # Autoupdate
+    [Boolean]$ApplyUnprofitableAlgorithmList = $true, #NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt
+    [Parameter(Mandatory = $false)]
+    [Boolean]$AutoUpdate = $false, #Autoupdate
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerEnableLog = $true, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
@@ -226,7 +228,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.5"
+    Version      = [System.Version]"3.9.9.6"
 }
 
 Try { 
