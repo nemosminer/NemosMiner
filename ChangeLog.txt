@@ -1,4 +1,25 @@
-Changelog NemosMiner 3.9.9.9 Beta7 17.10.2020
+Breaking changes (from main code base):
+- Miner files are not backwards compatible
+- Pool files are not backwards compatible
+
+Changelog NemosMiner 3.9.9.6 Beta1 19.10.2020
+=============================================
+
+Miner Updates:
+- GMiner-v2.29
+- JayddeeCpu-v3.15.0
+- lolMiner-v1.11.0
+- Trex-v0.18.2
+
+Improved:
+- More available regions (=less latency = less stale shares)
+
+New:
+- Config item 'ApplyUnprofitableAlgorithmList'
+  If 'true' NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt (recommended)
+
+
+Changelog NemosMiner 3.9.9.5 Beta7 16.10.2020
 =============================================
 
 Miner Updates:
@@ -11,7 +32,7 @@ New:
 - Create backup of Logs\DailyEarnings.csv at mining start to prevent earnings data loss 
 
 
-Changelog NemosMiner 3.9.9.9 Beta6 12.10.2020
+Changelog NemosMiner 3.9.9.5 Beta6 12.10.2020
 =============================================
 
 Fixed:
@@ -24,7 +45,7 @@ Miner Updates:
 - Trex-v0.18.1
 
 
-Changelog NemosMiner 3.9.9.9 Beta5 08.10.2020
+Changelog NemosMiner 3.9.9.5 Beta5 08.10.2020
 =============================================
 
 Fixed:
@@ -37,7 +58,7 @@ Miner Updates:
 - Wildrig-v0.28.0
 
 
-Changelog NemosMiner 3.9.9.9 Beta4 06.10.2020
+Changelog NemosMiner 3.9.9.5 Beta4 06.10.2020
 =============================================
 
 Fixed:
@@ -53,7 +74,7 @@ Pools:
 - Zergpool: Use host name for anycast
 
 
-Changelog NemosMiner 3.9.9.9 Beta3 04.10.2020
+Changelog NemosMiner 3.9.9.5 Beta3 04.10.2020
 =============================================
 
 Added:
@@ -64,7 +85,7 @@ Miner Updates:
 - XmRig-v6.3.5
 
 
-Changelog NemosMiner 3.9.9.9 Beta2 03.10.2020
+Changelog NemosMiner 3.9.9.5 Beta2 03.10.2020
 =============================================
 
 Miner Updates:
