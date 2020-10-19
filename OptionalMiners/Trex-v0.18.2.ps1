@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.1/t-rex-0.18.1-win-cuda10.0.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.2/t-rex-0.18.2-win-cuda11.1.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
