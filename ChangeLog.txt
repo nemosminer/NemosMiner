@@ -2,6 +2,13 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
+Changelog NemosMiner 3.9.9.6 Beta2 20.10.2020
+=============================================
+
+Miner Updates:
+- JayddeeCpu-v3.15.0
+
+
 Changelog NemosMiner 3.9.9.6 Beta1 19.10.2020
 =============================================
 

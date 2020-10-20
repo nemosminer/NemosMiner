@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.28/gminer_2_28_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.29/gminer_2_29_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -39,7 +39,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v32.1 is fastest
     [PSCustomObject]@{ Algorithm = @("Zilliqa");             MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo eth --cuda 1 --opencl 0" } #!ETH, see readme
     [PSCustomObject]@{ Algorithm = @("Handshake");           MinMemGB = 0.8; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.18.1 is fastest
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.18.2 is fastest
 #   [PSCustomObject]@{ Algorithm = @("Sero");                MinMemGB = 4.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } #Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = @("Vollar");              MinMemGB = 4.0; Fee = @(0.03, 0); Type = "NVIDIA"; Command = " --algo vollar --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("VeriBlock");           MinMemGB = 2.0; Fee = @(0.02);    Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
