@@ -1,4 +1,5 @@
 {
+    "asia":  ["HongKong", "Japan", "India", "Europe", "US", "Brazil"],
     "br":  ["Brazil", "US", "Europe", "HongKong", "Japan", "India" ],
     "eu":  ["Europe", "US", "India", "HongKong", "Japan", "Brazil"],
     "europe":  ["Europe", "US", "India", "HongKong", "Japan", "Brazil"],
