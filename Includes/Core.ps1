@@ -328,16 +328,9 @@ Function Start-Cycle {
             $Message | Sort-Object -unique | ForEach-Object { Write-Message -Level WARN $_ }
             Remove-Variable Message
         }
-        #Pre-sort all pools
-        [Pool[]]$Variables.Pools = $Variables.Pools | Sort-Object -Descending { -not $_.Available }, { $_.StablePrice * (1 - $_.MarginOfError) }, { $_.SSL -eq $Config.SSL }
 
-        # Use region as preference and not the only one
-        [Pool[]]$ThisRegionPools = $Variables.Regions.($Config.Region) | ForEach-Object { 
-            $Variables.Pools | Where-Object Region -eq $_
-       }
-       $ThisRegionPools += $Variables.Pools | Where-Object { $_ -notin $ThisRegionPools }
-       $Variables.Pools = $ThisRegionPools
-       Remove-Variable ThisRegionPools
+        # Sort best pools
+        [Pool[]]$Variables.Pools = $Variables.Pools | Sort-Object { $_.Available }, { - $_.StablePrice * (1 - $_.MarginOfError) }, { $_.SSL -ne $Config.SSL }, { $Variables.Regions.($Config.Region).IndexOf($_.Region) }
 
         # Ensure we get the hashrate for running miners prior looking for best miner
         $Variables.Miners | Where-Object Best | ForEach-Object { 
