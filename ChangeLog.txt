@@ -2,6 +2,28 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
+Changelog NemosMiner 3.9.9.6 Beta3 26.10.2020
+=============================================
+
+Miner Updates:
+- TeamRed-v0.7.16c
+
+Fixes:
+- 'Time since run' in text window reported wrong time (error in includes.psm1/GetActiveLast())
+- Always select most profitable miner, even if pool is not available in configured location
+- Fixed NiceHash margin of error to static 0
+- NBMiner-v32.1: Ethash on NiceHash uses 'nicehash+tcp://' protocol
+- Region 'asia' added to region list
+
+Improved:
+- Compatibility with pwsh 7.1-rc2
+- Faster building of miner objects for dual algorithm miners (Bminer, ClaymoreDual, NBMiner, PhoenixMiner)
+
+New:
+- Added support for MPHCoins
+- Ethash DAG growth detection. NemosMiner will automatically ignore graphic cards where DAG size exceeds available memory
+
+
 Changelog NemosMiner 3.9.9.6 Beta2 20.10.2020
 =============================================
 
@@ -322,7 +344,7 @@ Changelog NemosMiner 21.07.2020
 Breaking changes (from main code base):
 - Pool files are not backwards compatible
 - Miner files are not backwards compatible
-
+$Variables.NewMiners_Jobs
 Added:
 - Bad share detection (Config Item 'AllowedBadShareRatio')
 - More miners for AMD platform
