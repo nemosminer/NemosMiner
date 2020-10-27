@@ -4,6 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/PhoenixMiner/PhoenixMiner_5.1c.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Type = "AMD"; Command = " -amd -eres 1 -mi 12" }
@@ -20,21 +21,16 @@ $Commands = [PSCustomObject[]]@(
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
     #Intensities for 2. algorithm
-    $Intensities2 = [PSCustomObject]@{ 
+    $Intensities = [PSCustomObject]@{ 
         "Blake2s" = @($null, 10, 20, 30, 40) #$null is for auto-tuning
     }
 
     # Build command sets for intensities
     $Commands = $Commands | ForEach-Object { 
-        $Command = $_
-        If ($_.Algorithm[1]) { 
-            $Intensities2.($_.Algorithm[1]) | ForEach-Object { 
-                $Command | Add-Member Intensity2 $_ -Force
-                $Command | ConvertTo-Json | ConvertFrom-Json
-            }
-        }
-        Else { 
-            $Command
+        $_.PsObject.Copy()
+        ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
+            $_ | Add-Member Intensity $Intensity -Force
+            $_.PsObject.Copy()
         }
     }
 
@@ -48,11 +44,14 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm[0] -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm[0]).EthashDAGSize + $EthashMemReserve) / 1GB
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
                     If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$')) { Return } #Dual mining not supported on Navi or GTX 1660
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity) | Select-Object) -join '-'
 
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
@@ -75,12 +74,12 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                         If (($Miner_Devices.OpenCL.CodeName | Sort-Object -unique) -join '' -eq 'Ellesmere') { 
                             #Extra Speed for Ellesmere cards
-                            #$Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lot's of bad shares :-(
+                            #$Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lots of bad shares :-(
                         }
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) -sci $([Int]$_.Intensity2)"
+                        $Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) -sci $([Int]$_.Intensity)"
                     }
 
                     [PSCustomObject]@{ 
@@ -96,7 +95,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = 60 #Seconds
+                        WarmupTime = 75 #Seconds
                     }
                 }
             }

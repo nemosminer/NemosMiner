@@ -4,6 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\EthDcrMiner64.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v15.0/Claymoresethereumv15.0.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@( 
 #   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD";    Command = " -platform 1 -y 1 -rxboost 1" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
@@ -15,7 +16,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD";    Command = " -dcoin sc -platform 1 -y 1 -rxboost 1" }
 
 #   [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01);    MinMemGB = 4; Type = "NVIDIA"; Command = " -platform 2" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin blake2s -platform 2" } #PhoenixMiner-v5.1c is fastest
+   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin blake2s -platform 2" } #PhoenixMiner-v5.1c is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin dcr -platform 2" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin keccak -platform 2" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; Command = " -dcoin lbc -platform 2" }
@@ -25,7 +26,7 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
-    $Intensities2 = [PSCustomObject]@{ 
+    $Intensities = [PSCustomObject]@{ 
         "Blake2s" = @(10, 30, 50, 70)
         "Decred"  = @(10, 20, 30, 40)
         "Keccak"  = @(1, 3, 6, 9)
@@ -36,15 +37,10 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
     # Build command sets for intensities
     $Commands = $Commands | ForEach-Object { 
-        $Command = $_
-        If ($_.Algorithm[1]) { 
-            $Intensities2.($_.Algorithm[1]) | Select-Object | ForEach-Object { 
-                $Command | Add-Member Intensity2 ([Uint16]$_) -Force
-                $Command | ConvertTo-Json | ConvertFrom-Json
-            }
-        }
-        Else { 
-            $Command
+        $_.PsObject.Copy()
+        ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
+            $_ | Add-Member Intensity ([Uint16]$Intensity) -Force
+            $_.PsObject.Copy()
         }
     }
 
@@ -60,10 +56,13 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command 
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm[0] -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm[0]).EthashDAGSize + $EthashMemReserve) / 1GB
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity2) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity) | Select-Object) -join '-'
 
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
@@ -93,7 +92,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$') { Return } #No dual mining for Navi or GTX1660 cards
 
                         $Command += " -dpool $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpsw $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
-                        If ($_.Intensity2 -ge 0) { $Command += " -dcri $($_.Intensity2)" }
+                        If ($_.Intensity -ge 0) { $Command += " -dcri $($_.Intensity)" }
                     }
 
                     #Optionally disable dev fee mining
