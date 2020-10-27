@@ -4,6 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.2/t-rex-0.18.2-win-cuda11.1.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "AstralHash"; MinMemGB = 2; Command = " --algo astralhash --intensity 23" }
@@ -16,13 +17,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Geek";       MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = 2; Command = " --algo kawpow" } #NBMiner-v32.1 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = 3; Command = " --algo kawpow" } #NBMiner-v32.1 is fastest but has optional 1% fee
     [PSCustomObject]@{ Algorithm = "MegaBtx";    MinMemGB = 2; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MTP";        MinMemGB = 2; Command = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "PadiHash";   MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";  MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
-#   [PSCustomObject]@{ Algorithm = "ProgPoW";    MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } #Coin parameter required, no pool
+    [PSCustomObject]@{ Algorithm = "ProgPoW";    MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } #Sero, Zano
     [PSCustomObject]@{ Algorithm = "Sha256t";    MinMemGB = 2; Command = " --algo sha256t --intensity 26" }
     [PSCustomObject]@{ Algorithm = "Sha256q";    MinMemGB = 2; Command = " --algo sha256q --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2; Command = " --algo sonoa --intensity 23" }
@@ -53,6 +54,9 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $Commands | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -69,12 +73,22 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     }
                     If ($Pools.($_.Algorithm).SSL -eq $true) { $Stratum += "+ssl://" } Else { $Stratum += "+tcp://" }
 
+                    If ($_.Algorithm -eq "ProgPoW") { 
+                        If ($Pools.($_.Algorithm).Currency -in @("SERO", "ZANO")) { 
+                            $Coin = " -coin $($Pools.($_.Algorithm).Currency)"
+                        }
+                        Else { 
+                            $Coin = ""
+                            Return
+                        }
+                    }
+
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Command) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" }) --no-watchdog --gpu-report-interval 1 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Command) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" })$Coin --no-watchdog --gpu-report-interval 1 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "Trex"
                         Port            = $MinerAPIPort
