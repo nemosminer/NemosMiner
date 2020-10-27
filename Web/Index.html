@@ -94,6 +94,9 @@
   var $table = $('#miners');
   var $querysize = 10000;
 
+  // get BTC rate of first currency
+  var rate;
+
   $.ajax({url: '/btcratefirstcurrency',
     success: function(result) {
       rate = result;
@@ -202,6 +205,12 @@
           }
         }
       });
+
+      $.ajax({url: '/btcratefirstcurrency',
+        success: function(result) {
+          rate = result;
+        }
+      });
     }
     updatePoolBalances();
 
@@ -209,6 +218,7 @@
       updatePoolBalances();
       $table.bootstrapTable("refresh");
     }, 60000);
+
   });
 
 </script>
