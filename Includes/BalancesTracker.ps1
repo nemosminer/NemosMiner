@@ -68,7 +68,7 @@ While ($true) {
         #Get pools to track
         $PoolsToTrack = @($Config.PoolName | Where-Object { ($_ -replace "24hr$" -replace "Coins$") -in @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name })
 
-        Write-Message "Requesting balances data ($(($PoolsToTrack -replace "24hr$" -replace "Coins$") -join ', '))."
+        Write-Message "Balances Tracker requesting data ($(($PoolsToTrack -replace "24hr$" -replace "Coins$") -join ', '))."
 
         $PoolsToTrack | ForEach-Object { 
             $PoolNorm = $PoolName = $_ -replace "24hr$" -replace "Coins$"
