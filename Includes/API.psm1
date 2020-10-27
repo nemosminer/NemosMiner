@@ -128,7 +128,7 @@ Function Start-APIServer {
                         $Parameters.Keys | ForEach-Object {
                             $Key = $_
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
-                
+
                                 $Data = "`nDevice configuration changed`n`nOld values:"
                                 $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                 $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
@@ -577,20 +577,20 @@ Function Start-APIServer {
                         If ($Path -eq "/") { 
                             $Path = "/index.html"
                         }
-                
+
                         # Check if there is a file with the requested path
                         $Filename = "$BasePath$Path"
                         If (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
                             # If the file is a PowerShell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
                             $File = Get-ChildItem $Filename -File
-                
+
                             If ($File.Extension -eq ".ps1") { 
                                 $Data = & $File.FullName -Parameters $Parameters
                             }
                             Else { 
                                 $Data = Get-Content $Filename -Raw
-                
+
                                 # Process server side includes for html files
                                 # Includes are in the traditional '<!-- #include file="/path/filename.html" -->' format used by many web servers
                                 If ($File.Extension -eq ".html") { 

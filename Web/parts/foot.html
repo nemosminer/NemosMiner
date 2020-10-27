@@ -7,69 +7,69 @@
 
   <script type="text/javascript">
 
-  // Set the active sidebar item
-  $(function() {
-    $('#'+$('#title').data('navbaractive')).addClass('active');
-  });
+    // Set the active sidebar item
+    $(function() {
+      $('#'+$('#title').data('navbaractive')).addClass('active');
+    });
 
-  // set the values in the header
-  $(function() {
-    function updateHeader() {
-      $.ajax({
-        url: '/summary',
-        success: function(result) {
-          $("#summary").empty().append('<h5>' + result + '</h5>');
-        }
-      });
+    // set the values in the header
+    $(function() {
+      function updateHeader() {
+        $.ajax({
+          url: '/summary',
+          success: function(result) {
+            $("#summary").empty().append('<h5>' + result + '</h5>');
+          }
+        });
 
-      //Set mining button status
-      $.ajax({url: '/functions/mining/getstatus',
-        success: function(result) {
-          document.getElementById('miningstart').disabled = (result == "Running");
-          document.getElementById('miningstop').disabled = (result == "Stopped");
-          document.getElementById('miningpause').disabled = (result == "Paused");
-        }
-      });
-    }
-    updateHeader();
-
-    window.setInterval(function() { 
+        //Set mining button status
+        $.ajax({url: '/functions/mining/getstatus',
+          success: function(result) {
+            document.getElementById('miningstart').disabled = (result == "Running");
+            document.getElementById('miningstop').disabled = (result == "Stopped");
+            document.getElementById('miningpause').disabled = (result == "Paused");
+          }
+        });
+      }
       updateHeader();
-    }, 10000);
-  });
 
-  $('#miningpause').click(function () {
-    $command = '/functions/mining/pause';
-    $('.modal-body').load($command, function() {
-      $('.modal-title').text($('#miningpause').text());
-      $('#myModal').modal({show:true});
+      window.setInterval(function() { 
+        updateHeader();
+      }, 10000);
     });
-    document.getElementById('miningpause').disabled = true;
-    document.getElementById('miningstart').disabled = true;
-    document.getElementById('miningstop').disabled = true;
-  });
 
-  $('#miningstart').click(function () {
-    $command = '/functions/mining/start';
-    $('.modal-body').load($command, function() {
-      $('.modal-title').text($('#miningstart').text());
-      $('#myModal').modal({show:true});
+    $('#miningpause').click(function () {
+      $command = '/functions/mining/pause';
+      $('.modal-body').load($command, function() {
+        $('.modal-title').text($('#miningpause').text());
+        $('#myModal').modal({show:true});
+      });
+      document.getElementById('miningpause').disabled = true;
+      document.getElementById('miningstart').disabled = true;
+      document.getElementById('miningstop').disabled = true;
     });
-    document.getElementById('miningpause').disabled = true;
-    document.getElementById('miningstart').disabled = true;
-    document.getElementById('miningstop').disabled = true;
-  });
 
-  $('#miningstop').click(function () {
-    $command = '/functions/mining/stop';
-    $('.modal-body').load($command, function() {
-      $('.modal-title').text($('#miningstop').text());
-      $('#myModal').modal({show:true});
+    $('#miningstart').click(function () {
+      $command = '/functions/mining/start';
+      $('.modal-body').load($command, function() {
+        $('.modal-title').text($('#miningstart').text());
+        $('#myModal').modal({show:true});
+      });
+      document.getElementById('miningpause').disabled = true;
+      document.getElementById('miningstart').disabled = true;
+      document.getElementById('miningstop').disabled = true;
     });
-    document.getElementById('miningpause').disabled = true;
-    document.getElementById('miningstart').disabled = true;
-    document.getElementById('miningstop').disabled = true;
-  });
+
+    $('#miningstop').click(function () {
+      $command = '/functions/mining/stop';
+      $('.modal-body').load($command, function() {
+        $('.modal-title').text($('#miningstop').text());
+        $('#myModal').modal({show:true});
+      });
+      document.getElementById('miningpause').disabled = true;
+      document.getElementById('miningstart').disabled = true;
+      document.getElementById('miningstop').disabled = true;
+    });
 
   </script>
 </html>
