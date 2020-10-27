@@ -53,9 +53,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, #seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
+    [Switch]$DisableDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
+    [Parameter(Mandatory = $false)]
     [Switch]$DisableMinerFees = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
     [Parameter(Mandatory = $false)]
     [Switch]$DisableMinersWithFees = $false, #Set to true to disable all miners which contain fees
+    [Parameter(Mandatory = $false)]
+    [Switch]$DisableSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, #Minutes per Day
     [Parameter(Mandatory = $false)]
@@ -117,10 +121,6 @@ param(
     [String]$NiceHashWallet = "", #NiceHash wallet, if left empty $Wallet is used
     [Parameter(Mandatory = $false)]
     [String]$NiceHashOrganizationId = "", #NiceHash Organization Id (required to retrieve balance information)
-    [Parameter(Mandatory = $false)]
-    [Switch]$NoDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
-    [Parameter(Mandatory = $false)]
-    [Switch]$NoSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
     [Parameter(Mandatory = $false)]
     [Switch]$OpenFirewallPorts = $true, #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
