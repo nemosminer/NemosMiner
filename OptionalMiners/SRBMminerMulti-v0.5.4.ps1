@@ -5,6 +5,7 @@ $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.4/SRBMiner-Multi-0-5-4-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
@@ -18,7 +19,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_gpu" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.14 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.16b is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           MinMemGb = 1; Fee = 0.0085; Type = "AMD"; Command = " --algorithm eaglesong" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";              MinMemGb = 4; Fee = 0.0085; Type = "AMD"; Command = " --algorithm ethash" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
@@ -86,6 +87,9 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'

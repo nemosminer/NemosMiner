@@ -2,12 +2,13 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.14/teamredminer-v0.7.14-win.zip"
-$DeviceEnumerator = "Type_Vendor_Index"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.16c/teamredminer-v0.7.16c-win.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; Command = " --algo=trtl_chukwa" }
+    [PSCustomObject]@{ Algorithm = "Chukwa2";              Fee = 0.025; MinMemGB = 2.0; Command = " --algo=trtl_chukwa2" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" } #SRBMminerMulti-v0.5.4 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
@@ -21,7 +22,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cuckarood29_grin" } #2GB is not enough
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cuckatoo31_grin" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.025; MinMemGB = 4.0; Command = " --algo=ethash" } #PhoenixMiner-v5.1c is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=ethash" } #PhoenixMiner-v5.1c is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } #Wildrig-v0.28.1 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; Command = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" }
@@ -48,6 +49,9 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
 
@@ -72,7 +76,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Type       = "AMD"
                         Path       = $Path
                         Arguments  = ("$Command --url $($Pools.($_.Algorithm).Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --allow_large_alloc --watchdog_disable --no_gpu_monitor --init_style=3 --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = $_.Algorithm
+                        Algorithm  = "$(If ($_.Algorithm -eq "Ethash") { "Ethash$([Math]::Ceiling($MinMemGB))GB" } Else { $_.Algorithm })"
                         API        = "Xgminer"
                         Port       = $MinerAPIPort
                         URI        = $Uri
