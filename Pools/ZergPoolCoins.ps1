@@ -31,18 +31,27 @@ If ($PoolConfig.Wallet) {
         $PoolPort = $Request.$_.port
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
+
         # Find best coin for algo
         If ($TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ((Get-Algorithm $_.algo) -eq $Algorithm_Norm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | Select-Object -first 1) { 
 
-            $Fee = [Decimal]($Request.$_.Fees / 100)
+            $Block = $null
+            If ($Algorithm_Norm -eq "Ethash") { 
+                Try { 
+                    $Block = Measure-Object ((Invoke-RestMethod "http://api.zergpool.com:8080/api/blocks?coin=$($TopCoin.Symbol)" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop).height | Measure-Object -Maximum).Maximum
+                }
+                Catch { }
+            }
+
+            $Fee = $Request.$_.Fees / 100
             $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
             $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($TopCoin.Symbol)_Profit" -Value ([Double]($Request.$_.$PriceField / $Divisor)) -FaultDetection $true
 
             If ($TopCoin.Name -eq "BitcoinInterest") { $Algorithm_Norm = "BitcoinInterest" } # Temp fix
 
-            Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-            Catch { $EstimateFactor = [Decimal]1 }
+            Try { $EstimateFactor = ($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h }
+            Catch { $EstimateFactor = 1 }
 
             [PSCustomObject]@{ 
                 Algorithm          = [String]$Algorithm_Norm
@@ -59,8 +68,9 @@ If ($PoolConfig.Wallet) {
                 Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency),mc=$($TopCoin.Symbol)"
                 Region             = "N/A (Anycast)"
                 SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = $EstimateFactor
+                Fee                = [Decimal]$Fee
+                EstimateFactor     = [Decimal]$EstimateFactor
+                EthashBlockHeight  = [Int64]$Block
             }
         }
     }
