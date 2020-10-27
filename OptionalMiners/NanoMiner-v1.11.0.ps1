@@ -4,11 +4,12 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\nanominer.exe"
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v1.11.0/nanominer-windows-1.11.0.zip"
 $DeviceEnumerator = "Type_Slot"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 16; Type = "AMD"; Fee = 0.02; Command = "Cuckaroo30" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";        MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";        MinMemGB = 3;  Type = "AMD"; Fee = 0.02; Command = "Kawpow" } #TeamRed-v0.7.14 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";        MinMemGB = 3;  Type = "AMD"; Fee = 0.02; Command = "Kawpow" } #TeamRed-v0.7.16b is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ubqhash" }
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    Command = "RandomHash2" }
@@ -32,6 +33,10 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
 
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                    # $_.Algorithm = "Ethash$([Math]::Ceiling($MinMemGB))GB"
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
