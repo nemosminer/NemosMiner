@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.5
+version:        3.9.9.6
 version date:   04 October 2020
 #>
  
@@ -75,6 +75,9 @@ Class Pool {
 
     [String]$Name
     [String]$Algorithm
+    [Int]$EthashEpoch = 0
+    [Int64]$EthashBlockHeight = 0
+    [Int64]$EthashDAGsize = 0
     [String]$Currency = ""
     [String]$CoinName = ""
     [String]$Protocol
@@ -173,8 +176,7 @@ Class Miner {
     [Int]$WarmupTime
     [DateTime]$BeginTime
     [DateTime]$EndTime
-    [TimeSpan]$TotalMiningDuration
-
+    [TimeSpan]$TotalMiningDuration #derived from pool and stats
     [Double]$Earning #derived from pool and stats
     [Double]$Earning_Bias #derived from pool and stats
     [Double]$Earning_Accuracy #derived from pool and stats
@@ -248,7 +250,6 @@ Class Miner {
             If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                 $this.Status = [MinerStatus]::Running
                 $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                 $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                 $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
                 $this.StatStart = (Get-Date).ToUniversalTime()
@@ -281,11 +282,10 @@ Class Miner {
     }
 
     [DateTime]GetActiveLast() { 
-        If ($this.Process.StartTime -and $this.Process.ExitTime) { 
-            Return $this.Process.PSEndTime.ToUniversalTime()
+        If ($this.BeginTime -and $this.EndTime) { 
+            Return  $this.EndTime.ToUniversalTime()
         }
-        # ElseIf ($this.Process.PSBeginTime) { 
-        ElseIf ($this.Process.StartTime) { 
+        ElseIf ($this.BeginTime) { 
             Return [DateTime]::Now.ToUniversalTime()
         }
         Else { 
@@ -846,12 +846,12 @@ Function Get-Rate {
     }
 
     If ($NewRates) { 
-        $Rates = $NewRates | ConvertTo-Json | ConvertFrom-Json
+        $Rates = $NewRates | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
         $Currencies = $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name
 
         $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
             $Currency = $_
-            $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json | ConvertFrom-Json) -ErrorAction Ignore
+            $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -ErrorAction Ignore
             $Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
                 $Rates.$Currency | Add-Member $_ ([Double]($Rates.BTC.$_ / $Rates.BTC.$Currency)) -Force
             }        
@@ -860,7 +860,7 @@ Function Get-Rate {
         $Currencies | ForEach-Object { 
             $Currency = $_
             $mCurrency = "m$($Currency)"
-            $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json | ConvertFrom-Json)
+            $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
             $Rates.$mCurrency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
                 $Rates.$mCurrency | Add-Member $_ ([Double]($Rates.$Currency.$_) / 1000) -Force
             }
@@ -1261,7 +1261,7 @@ Function Read-Config {
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
         If (-not "$PoolConfig") { #https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
-            If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json | ConvertFrom-Json }
+            If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json }
         }
         If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
@@ -1937,7 +1937,7 @@ Function Get-Device {
         #Get WDDM data
         Try { 
             Get-CimInstance CIM_Processor | ForEach-Object { 
-                $Device_CIM = $_ | ConvertTo-Json | ConvertFrom-Json
+                $Device_CIM = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
                 #Add normalised values
                 $Variables.Devices += $Device = [PSCustomObject]@{ 
@@ -1986,14 +1986,14 @@ Function Get-Device {
             }
 
             Get-CimInstance CIM_VideoController | ForEach-Object { 
-                $Device_CIM = $_ | ConvertTo-Json | ConvertFrom-Json
+                $Device_CIM = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
                 If ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { 
                     $Device_PNP = [PSCustomObject]@{ }
                     Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
-                    $Device_PNP = $Device_PNP | ConvertTo-Json | ConvertFrom-Json
+                    $Device_PNP = $Device_PNP | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                    $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json | ConvertFrom-Json
+                    $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
                     #Add normalised values
                     $Variables.Devices += $Device = [PSCustomObject]@{ 
@@ -2071,7 +2071,7 @@ Function Get-Device {
         Try { 
             [OpenCl.Platform]::GetPlatformIDs() | ForEach-Object { 
                 [OpenCl.Device]::GetDeviceIDs($_, [OpenCl.DeviceType]::All) | ForEach-Object { 
-                    $Device_OpenCL = $_ | ConvertTo-Json | ConvertFrom-Json
+                    $Device_OpenCL = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
                     #Add normalised values
                     $Device = [PSCustomObject]@{ 
@@ -2567,7 +2567,7 @@ Function Get-Region {
 
     $Region = (Get-Culture).TextInfo.ToTitleCase(($Region -replace "-", " " -replace "_", " ")) -replace " "
 
-    If ($Global:Regions.$Region) { $Global:Regions.$Region }
+    If ($Global:Regions.$Region) { $Global:Regions.$Region | Select-Object -Index 0 }
     Else { $Region }
 }
 
@@ -2717,4 +2717,58 @@ Function Initialize-Autoupdate {
         Update-Notifications("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
         $LabelNotifications.ForeColor = "Green"
     }
+}
+
+Function Test-Prime { 
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Number
+    )
+
+    For ([Int64]$i = 2; $i -lt [Int64][Math]::Pow($Number, 0.5); $i++) { If ($Number % $i -eq 0) { Return $false } }
+
+    Return $true
+}
+
+Function Get-EthashSize { 
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Block
+    )
+
+    If (-not $Block) { Return [Math]::Pow(2, 32) } # Default 4GB
+
+    $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
+    $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
+    $EPOCH_LENGTH = 30000
+    $MIX_BYTES = 128
+
+    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
+    $Size -= $MIX_BYTES
+    While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
+
+    Return $Size
+}
+
+Function Get-EthashEpoch { 
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Block
+    )
+
+    If (-not $Block) { Return [Math]::Pow(2, 32) } # Default 4GB
+
+    $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
+    $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
+    $EPOCH_LENGTH = 30000
+    $MIX_BYTES = 128
+
+    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
+    $Size -= $MIX_BYTES
+    While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
+
+    Return $Size
 }
