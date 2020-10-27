@@ -4,6 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.11/lolMiner_v1.11_Win64.zip"
 $DeviceEnumerator = "Bus"
+$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Beam";          MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --algo BEAM-I" } #Algo is dead
@@ -14,9 +15,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 7.8; Type = "AMD"; Fee = "0.025"; Command = " --algo C30CTX" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29D" } #TeamRed-v0.7.14 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29D" } #TeamRed-v0.7.16b is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   MinMemGB = 6.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C29M" }
-#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.14 is fastest
+#   [PSCustomObject]@{ Algorithm = "Cuckatoo31";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C31" } #TeamRed-v0.7.16b is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    MinMemGB = 4.0; Type = "AMD"; Fee = "0.02";  Command = " --algo C32" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";  MinMemGB = 2.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO144_5" }
 #   [PSCustomObject]@{ Algorithm = "Equihash1927";  MinMemGB = 3.0; Type = "AMD"; Fee = "0.01";  Command = " --coin AUTO192_7" } #GMiner-v2.29 is fastest
@@ -55,6 +56,9 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $Commands | Where-Object Type -EQ $_.Type | Where-Object { -not $Pools.($_.Algorithm).SSL } | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm -eq "Ethash") { 
+                    $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                }
 
                 If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0")) { $MinMemGB += 1 }
 
