@@ -18,7 +18,7 @@ If ($PoolConfig.Wallet) {
     $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $PoolHost = "nicehash.com"
 
-    $PoolRegions = "eu", "jp", "usa"
+    $PoolRegions = "br", "eu", "hk", "in", "jp", "usa"
 
     If ($PoolConfig.NiceHashWalletIsInternal) { 
         $Fee = 0.02
@@ -47,7 +47,7 @@ If ($PoolConfig.Wallet) {
                 Algorithm          = [String]$Algorithm_Norm
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
+                MarginOfError      = [Double]0
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
                 Protocol           = "stratum+tcp"
                 Host               = [String]"$Algorithm.$Region.$PoolHost"
@@ -56,7 +56,7 @@ If ($PoolConfig.Wallet) {
                 Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Boolean]$false
-                Fee                = $Fee
+                Fee                = [Decimal]$Fee
                 EstimateFactor     = [Decimal]1
             }
 
@@ -74,7 +74,7 @@ If ($PoolConfig.Wallet) {
                     Pass               = "x"
                     Region             = [String]$Region_Norm
                     SSL                = [Boolean]$true
-                    Fee                = $Fee
+                    Fee                = [Decimal]$Fee
                     EstimateFactor     = [Decimal]1
                 }
             }
