@@ -14,8 +14,8 @@ If ($PoolConfig.UserName) {
     If (-not $Request) { Return }
 
     $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-    $PoolRegions = 'EU', 'US', 'Asia'
-    $Fee = 0.0090
+    $PoolRegions = 'Asia', 'EU', 'US'
+    $Fee = 0.009
     $Divisor = 1000000000
 
     $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
@@ -25,12 +25,18 @@ If ($PoolConfig.UserName) {
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
-        # #Temp fix for Ethash
-        # If ($Algorithm_Norm -eq "Ethash") { $Current.algo_switch_port = 20535 }
+        #Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676#msg55320676
+        If ($Algorithm_Norm -eq "Ethash") { 
+            # $Current.algo_switch_port = 20535
+            $PoolRegions = 'Asia', 'US'
+        }
+        Else {
+            $PoolRegions = 'Asia', 'EU', 'US'
+        }
 
         $Coin = (Get-Culture).TextInfo.ToTitleCase($_.current_mining_coin -replace "-" -replace " ")
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([Decimal]$_.profit / $Divisor)
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $true
 
         $PoolRegions | ForEach-Object { 
             $Region = $_
