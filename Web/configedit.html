@@ -127,6 +127,12 @@
           <br>
           <input type="checkbox" id="DisableMinersWithFees" name="DisableMinersWithFees" title="NemosMiner will disable all miners which contain fees">
           <label for="DisableMinersWithFees" title="NemosMiner will disable all miners which contain fees">Do not use Miner which contain Fees</label>
+          <br>
+          <input type="checkbox" id="DisableDualAlgoMining" name="DisableDualAlgoMining" title="NemosMiner will disable all dual algorithm miners &#10;(Note: This will enable single algorithm mining)">
+          <label for="DisableDualAlgoMining" title="NemosMiner will disable all dual algorithm miners &#10;(Note: This will enable single algorithm mining)">Disable Dual Algorithm Miners</label>
+          <br>
+          <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining" title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">
+          <label for="DisableSingleAlgoMining" title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">Disable Single Algorithm Miners</label>
           <br><br>
           <input type="checkbox" id="AutoStart" name="AutoStart" title="Automatically start mining when NemosMiner is started">
           <label for="AutoStart" title="Automatically start mining when NemosMiner is started">Auto Start</label>
@@ -287,6 +293,12 @@
       if (config.DisableMinersWithFees) {
         document.getElementById('DisableMinersWithFees').checked = true;
       }
+      if (config.DisableDualAlgoMining) {
+        document.getElementById('DisableDualAlgoMining').checked = true;
+      }
+      if (config.DisableSingleAlgoMining) {
+        document.getElementById('DisableSingleAlgoMining').checked = true;
+      }
       if (config.AutoStart) {
         document.getElementById('AutoStart').checked = true;
       } else {
@@ -442,12 +454,14 @@
     if (document.getElementById('ProfitabilityThreshold').value == null) { 
       document.getElementById('ProfitabilityThreshold').value = 0;
     };
-
     config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
     config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
     config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
     config.DisableMinerFees = document.getElementById('DisableMinerFees').checked;
     config.DisableMinersWithFees = document.getElementById('DisableMinersWithFees').checked;
+    config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
+    config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+
     config.AutoStart = document.getElementById('AutoStart').checked;
     config.StartPaused = document.getElementById('StartPaused').checked;
     config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
@@ -533,6 +547,14 @@
       document.getElementById('ProHashingUserName').disabled = !(document.getElementById(PoolName).checked);
       document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById(PoolName).checked);
     }
+  });
+
+  //dual AND single algo mining cannot be disabled at the same time
+  $(document.getElementById('DisableDualAlgoMining')).click(function(event) {
+    if (document.getElementById('DisableDualAlgoMining').checked) { document.getElementById('DisableSingleAlgoMining').checked = false }
+  });
+  $(document.getElementById('DisableSingleAlgoMining')).click(function(event) {
+    if (document.getElementById('DisableSingleAlgoMining').checked) { document.getElementById('DisableDualAlgoMining').checked = false }
   });
 
   //StartPaused
