@@ -629,8 +629,8 @@ Function Start-Cycle {
         $Variables.Miners | Select-Object | Where-Object Disabled -NE $true | Where-Object Earning -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Earning -eq 0" }
         $Variables.Miners | Select-Object | Where-Object { ($Config.Algorithm | Select-Object | Where-Object { $_.StartsWith("+") }) -and (Compare-Object (($Config.Algorithm | Select-Object | Where-Object { $_.StartsWith("+") }).Replace("+", "")) $_.Algorithm -IncludeEqual -ExcludeDifferent | Measure-Object).Count -eq 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.ExcludeAlgorithm ($($_.Algorithm -join " & "))" }
         $Variables.Miners | Select-Object | Where-Object { $Config.DisableMinersWithFees -and $_.Fee -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableMinersWithFees" }
-        $Variables.Miners | Select-Object | Where-Object { $Config.NoSingleAlgoMining -and $_.Workers.Count -eq 1 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.NoSingleAlgoMining" }
-        $Variables.Miners | Select-Object | Where-Object { $Config.NoDualAlgoMining -and $_.Workers.Count -eq 2 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.NoDualAlgoMining" }
+        $Variables.Miners | Select-Object | Where-Object { $Config.DisableDualAlgoMining -and $_.Workers.Count -eq 2 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableDualAlgoMining" }
+        $Variables.Miners | Select-Object | Where-Object { $Config.DisableSingleAlgoMining -and $_.Workers.Count -eq 1 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableSingleAlgoMining" }
 
         $Variables.MinersNeedingBenchmark = $Variables.Miners | Where-Object Benchmark -EQ $true
         $Variables.MinersNeedingPowerUsageMeasurement = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
