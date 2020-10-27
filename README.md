@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 16 October 2020
+Updated 23 October 2020
 
 
 Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
@@ -84,7 +84,7 @@ Easy configuration, easy start:
 
       normal - uses advanced calculations to reduce uneeded switching
 
-      *Coins - uses advanced calculations, mines only top paying coin in Algo (ZergPool Only)
+      *Coins - uses advanced calculations, mines only top paying coin in Algo (MiningPoolHub & ZergPool)
 
 
    Developer/Contributors Donation: 
@@ -169,7 +169,7 @@ Easy configuration, easy start:
       Example scenario:
          - You feel like a pool is exaggerating its estimations by 10% - Set PricePenaltyFactor to 0.9
 
-   AHashPool/BlazePool/BlockMasters/NLPool/ZergPool/ZergPoolCoins/Zpool
+   AHashPool/BlazePool/BlockMasters/NLPool/ZergPool/Zpool
 
       Uses calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
       Includes some trust index based on past 1hr current estimate variation from 24hr.
