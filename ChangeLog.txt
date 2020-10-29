@@ -33,6 +33,7 @@ Fixed:
 Improved:
 - Compatibility with pwsh 7.1-rc2
 - Faster building of miner objects for dual algorithm miners (Bminer, ClaymoreDual, NBMiner, PhoenixMiner)
+- Faster building of pool objects
 
 New:
 - Added support for MPHCoins
