@@ -105,6 +105,9 @@
         <br>
         <label style="margin-left:20px" title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" for="ProfitabilityThreshold">Profitability Threshold</label>
         <input title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" size=6>
+        <br><br>
+        <label title="Mark pool as unavailable if the price reported by the pool &#10;is X times higher than the average price reported by all other pools &#10;(min=1, max=10)" for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
+        <input type="number" step="0.1" min="1" max="10" value=5 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor" title="Mark pool as unavailable if the price reported by the pool &#10;is X times higher than the average price reported by all other pools &#10;(min=1, max=10)">
       </td>
 
       <td>
@@ -257,7 +260,7 @@
       document.getElementById('Currency').value = config.Currency;
       document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
       document.getElementById('Proxy').value = config.Proxy;
-      if (config.RunningMinerGainPc == null) { 
+      if (config.RunningMinerGainPct == null) { 
         document.getElementById('RunningMinerGainPct').value = 5;
       } else {
         document.getElementById('RunningMinerGainPct').value = parseInt(config.RunningMinerGainPct);
@@ -277,6 +280,7 @@
         document.getElementById('IgnorePowerCost').checked = true;
       }
       document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
+      document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
 
       if (config.IncludeOptionalMiners) {
         document.getElementById('OptionalMiners').checked = true;
@@ -436,6 +440,11 @@
       document.getElementById('RunningMinerGainPct').value = 5;
     };
     config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
+    config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
+    if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
+      config.UnrealPoolPriceFactor = 3;
+      document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
+    }
 
     $.each(poolnames, function (key, value) {
       if (document.getElementById(value.toLowerCase()).checked == true) {
