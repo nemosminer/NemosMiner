@@ -73,7 +73,6 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-
 While ($true) {
     If (Test-Path ".\BrainConfig.xml") {
         $Config = Import-Clixml ".\BrainConfig.xml"
@@ -92,9 +91,11 @@ While ($true) {
         $UseFullTrust = $Config.UseFullTrust
     }
     Else { Return }
-    $CurDate = Get-Date
+
+    $CurDate = (Get-Date).ToUniversalTime()
     $RetryInterval = 0
-    try {
+
+    Try {
         $AlgoData = Invoke-RestMethod -Uri $PoolStatusUri -Headers @{"Cache-Control" = "no-cache" }
         $APICallFails = 0
     }
@@ -102,24 +103,25 @@ While ($true) {
         $APICallFails++
         $RetryInterval = $Interval * [math]::max(0, $APICallFails - $AllowedAPIFailureCount)
     }
-    Foreach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty).Name) {
-        $BasePrice = If ($AlgoData.($Algo).actual_last24h) { $AlgoData.($Algo).actual_last24h / 1000 } Else { $AlgoData.($Algo).estimate_last24h }
-        $AlgoData.($Algo).estimate_current = [math]::max(0, [decimal]($AlgoData.($Algo).estimate_current * ( 1 - ($PerAPIFailPercentPenalty * [math]::max(0, $APICallFails - $AllowedAPIFailureCount) / 100))))
+
+    ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)) {
+        $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]($AlgoData.$Algo.actual_last24h / 1000) } Else { [Double]($AlgoData.$Algo.estimate_last24h) }
+        $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($PerAPIFailPercentPenalty * [math]::max(0, $APICallFails - $AllowedAPIFailureCount) / 100))))
         $AlgoObject += [PSCustomObject]@{
             Date               = $CurDate
-            Name               = $AlgoData.($Algo).name
-            Port               = $AlgoData.($Algo).port
-            coins              = $AlgoData.($Algo).coins
-            Fees               = $AlgoData.($Algo).Fees
-            Hashrate           = $AlgoData.($Algo).Hashrate
-            Workers            = $AlgoData.($Algo).Workers
-            estimate_current   = $AlgoData.($Algo).estimate_current -as [Decimal]
-            estimate_last24h   = $AlgoData.($Algo).estimate_last24h
+            Name               = $AlgoData.$Algo.name
+            Port               = $AlgoData.$Algo.port
+            coins              = $AlgoData.$Algo.coins
+            Fees               = $AlgoData.$Algo.Fees
+            Hashrate           = $AlgoData.$Algo.Hashrate
+            Workers            = $AlgoData.$Algo.Workers
+            estimate_current   = $AlgoData.$Algo.estimate_current -as [Double]
+            estimate_last24h   = $AlgoData.$Algo.estimate_last24h
             actual_last24h     = $BasePrice
-            hashrate_last24h   = $AlgoData.($Algo).hashrate_last24h
-            Last24Drift        = $AlgoData.($Algo).estimate_current - $BasePrice
-            Last24DriftSign    = If (($AlgoData.($Algo).estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
-            Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.($Algo).estimate_current - $BasePrice) / $BasePrice } Else { 0 }
+            hashrate_last24h   = $AlgoData.$Algo.hashrate_last24h
+            Last24Drift        = $AlgoData.$Algo.estimate_current - $BasePrice
+            Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
+            Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
             FirstDate          = ($AlgoObject[0]).Date
             TimeSpan           = If ($AlgoObject.Date -ne $null) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
         }
@@ -144,41 +146,51 @@ While ($true) {
         $Penalty = ($PenaltySampleSizeHalf * $SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower + 1)
         $LiveTrend = ((Get-Trendline ($AlgoObjects | Where-Object { $_.Name -eq $Name }).estimate_current)[1])
         # $Price = (($Penalty) + ($CurAlgoObject | Where-Object {$_.Name -eq $Name}).actual_last24h) 
-        $Price = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
+        $Price = [math]::max( 0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
         If ( $UseFullTrust ) {
             If ( $Penalty -gt 0 ) {
-                $Price = [Math]::max([decimal]$Price, [decimal]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
+                $Price = [Math]::max([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
             }
             Else {
-                $Price = [Math]::min([decimal]$Price, [decimal]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
+                $Price = [Math]::min([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
             }
         }
 
-        $MathObject += [PSCustomObject]@{
-            Name         = $Name
-            DriftAvg     = (($CurAlgoObject | Where-Object { $_.Name -eq $Name }).Last24DriftPercent | Measure-Object -Average).Average
-            TimeSpan     = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).TimeSpan
-            UpDriftAvg   = ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Avg
-            DownDriftAvg = ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Avg
-            Penalty      = $Penalty
-            PlusPrice    = $Price
-            PlusPriceRaw = [math]::max( 0, [decimal](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
-            PlusPriceMax = $Price
-            CurrentLive  = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current
-            Current24hr  = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h
-            Date         = $CurDate
-            LiveTrend    = $LiveTrend
-            APICallFails = $APICallFails
+        If ($EnableLog) { 
+            $MathObject += [PSCustomObject]@{
+                Name         = $Name
+                DriftAvg     = (($CurAlgoObject | Where-Object { $_.Name -eq $Name }).Last24DriftPercent | Measure-Object -Average).Average
+                TimeSpan     = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).TimeSpan
+                UpDriftAvg   = ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Avg
+                DownDriftAvg = ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Avg
+                Penalty      = $Penalty
+                PlusPrice    = $Price
+                PlusPriceRaw = [math]::max( 0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
+                PlusPriceMax = $Price
+                CurrentLive  = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current
+                Current24hr  = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h
+                Date         = $CurDate
+                LiveTrend    = $LiveTrend
+                APICallFails = $APICallFails
+            }
         }
         # $AlgoData.($Name).actual_last24h = $Price
-        $AlgoData.($Name) | Add-Member -Force @{Plus_Price = $Price }
+        $AlgoData.($Name) | Add-Member -Force @{ Plus_Price = $Price }
     }
     If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
+
+    $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+        If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
+            $AlgoData.$_ | Add-Member Updated $CurDate
+        }
+        Else { 
+            $AlgoData.PSObject.Properties.Remove($_)
+        }
+    }
     ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Set-Content $TransferFile
 
     # Limit to only sample size + 10 minutes min history
     $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes( - ($SampleSizeMinutes + 10)) }
-    (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)
 
     $MathObject = @()
     Start-Sleep ($Interval + $RetryInterval - (Get-Date).Second)
