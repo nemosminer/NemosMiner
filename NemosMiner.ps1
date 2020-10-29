@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.6
-Version date:   17. October 2020
+Version:        3.9.9.7
+Version date:   29. October 2020
 #>
 
 [CmdletBinding()]
@@ -192,6 +192,8 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
+    [Double]$UnrealPoolPriceFactor = 3, #Mark pool as unavailable if price in pool API exceeds price average by UnrealPriceFactor
+    [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
     [Int]$WarmupTime = 30, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
@@ -228,7 +230,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.6"
+    Version      = [System.Version]"3.9.9.7"
 }
 
 Try { 
@@ -312,6 +314,8 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
             "EnableEarningsTrackerLog" { $Config.EnableBalancesTrackerLog = $Config.$_; $Config.Remove($_) }
             "HideMinerWindow" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+            "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
+            "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "SelGPUCC" { $Config.Remove($_) }
