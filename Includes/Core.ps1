@@ -355,7 +355,13 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Price -eq 0" }
         $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
         If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
-
+        $Variables.Pools | Group-Object -Property Algorithm | ForEach-Object { 
+            $AvgPrice = ($_.Group.Price_Bias | Measure-Object -Average).Average
+            $_.Group | Where-Object { $_.Price_Bias -gt ($Config.UnrealPoolPriceFactor * $AvgPrice) } | ForEach-Object { 
+                $_.Available = $false; $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than pool average)"
+            }
+        }
+        Remove-Variable AvgPrice -ErrorAction SilentlyContinue
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in generic config" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in $($_.Name -replace "24hr$" -replace "Coins$") pool config" }
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (-$($_.Algorithm)) in default pool config)" }
