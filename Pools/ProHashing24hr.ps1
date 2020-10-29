@@ -27,7 +27,7 @@ If ($PoolConfig.UserName) {
         $Fee = [Decimal]$Request.$_.pps_fee
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         $PoolRegions | ForEach-Object { 
             $Region = $_

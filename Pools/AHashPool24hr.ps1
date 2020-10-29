@@ -30,7 +30,7 @@ If ($PoolConfig.Wallet) {
         $Fee = [Decimal]($Request.$_.Fees / 100)
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = [Decimal]1 }

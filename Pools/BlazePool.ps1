@@ -7,7 +7,7 @@ param(
 
 If ($PoolConfig.Wallet) { 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\blazepool\blazepool.json") | ConvertFrom-Json 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\blazepool\blazepool.json") | ConvertFrom-Json
     }
     Catch { Return }
 
@@ -22,18 +22,19 @@ If ($PoolConfig.Wallet) {
 
     $PoolRegions = "US"
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0.000000001 } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolHost = "$($_)$($HostSuffix)"
         $PoolPort = $Request.$_.port
+        $Updated = $Request.$_.Updated
 
         $Fee = [Decimal]($Request.$_.Fees / 100)
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.hashrate_last24h) }
+        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = [Decimal]1 }
 
         $PoolRegions | ForEach-Object { 
@@ -53,8 +54,9 @@ If ($PoolConfig.Wallet) {
                 Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = $EstimateFactor
+                Fee                = [Decimal]$Fee
+                EstimateFactor     = [Decimal]$EstimateFactor
+                Updated            = [DateTime]$Updated
             }
         }
     }

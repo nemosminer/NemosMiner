@@ -26,11 +26,12 @@ If ($PoolConfig.Wallet) {
     ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
 
     #Uses BrainPlus calculated price
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.hashrate -gt 0 } | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
         $PoolHost = "$($HostSuffix)"
         $PoolPort = $Request.$_.port
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Updated = $Request.$_.Updated
 
         # Find best coin for algo
         If ($TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ((Get-Algorithm $_.algo) -eq $Algorithm_Norm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | Select-Object -first 1) { 
@@ -46,7 +47,7 @@ If ($PoolConfig.Wallet) {
             $Fee = $Request.$_.Fees / 100
             $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-            $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($TopCoin.Symbol)_Profit" -Value ([Double]($Request.$_.$PriceField / $Divisor)) -FaultDetection $true
+            $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($TopCoin.Symbol)_Profit" -Value ([Double]($Request.$_.$PriceField / $Divisor))
 
             If ($TopCoin.Name -eq "BitcoinInterest") { $Algorithm_Norm = "BitcoinInterest" } # Temp fix
 
@@ -71,6 +72,7 @@ If ($PoolConfig.Wallet) {
                 Fee                = [Decimal]$Fee
                 EstimateFactor     = [Decimal]$EstimateFactor
                 EthashBlockHeight  = [Int64]$Block
+                Updated            = [DateTime]$Updated
             }
         }
     }

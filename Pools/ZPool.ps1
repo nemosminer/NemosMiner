@@ -7,7 +7,7 @@ param(
 
 If ($PoolConfig.Wallet) { 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\zpool\zpool.json") | ConvertFrom-Json 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\zpool\zpool.json") | ConvertFrom-Json
     }
     Catch { Return }
 
@@ -21,15 +21,16 @@ If ($PoolConfig.Wallet) {
 
     $PoolRegions = "eu", "jp", "na", "sea"
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
+        $Updated = $Request.$_.Updated
 
         $Fee = [Decimal]($Request.$_.Fees / 100)
         $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $true
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = [Decimal]1 }
@@ -51,8 +52,9 @@ If ($PoolConfig.Wallet) {
                 Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = $EstimateFactor
+                Fee                = [Decimal]$Fee
+                EstimateFactor     = [Decimal]$EstimateFactor
+                Updated            = [DateTime]$Updated
             }
         }
     }
