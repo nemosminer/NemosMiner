@@ -8,12 +8,15 @@ Changelog NemosMiner 3.9.9.7 Beta1 29.10.2020
 Fixed:
 - Stat data not being updated in certain scenarios
 
+Improved:
+- Faster building of pool objects
+
 Miner Updates:
 - Trex-v0.18.5
 
 New:
 - Auto repair for profit stats if margin of error exceeds 100%
-- New config item 'UnrealPoolPriceFactor'
+- New config item 'UnrealPoolPriceFactor' (NM will not use a pool if the price information is way off from all other pools)
 - Web GUI: Added 'DisableDualAlgoMining' and 'DisableSingleAlgoMining' config item
 
 
@@ -33,7 +36,6 @@ Fixed:
 Improved:
 - Compatibility with pwsh 7.1-rc2
 - Faster building of miner objects for dual algorithm miners (Bminer, ClaymoreDual, NBMiner, PhoenixMiner)
-- Faster building of pool objects
 
 New:
 - Added support for MPHCoins
