@@ -31,6 +31,7 @@ If ($PoolConfig.UserName) {
                 $Block = (Invoke-RestMethod "http://$($_.coin_name).miningpoolhub.com/index.php?page=api&action=public" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop).last_block #correct
             }
             Catch { }
+            If ($Topcoin.symbol -eq "ETC" -and (Get-EthashEpoch $Block) -ge 390) { $Algorithm_Norm = "EtcHash" }
         }
 
         $Coin = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-" -replace " ")
