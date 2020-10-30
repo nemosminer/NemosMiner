@@ -2,6 +2,21 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
+
+Changelog NemosMiner 3.9.9.7 Beta2 30.10.2020
+=============================================
+
+Miner Updates:
+- MiniZ-v1.6w2
+- lolMiner-v1.12
+
+New:
+- Auto repair for profit stats if margin of error exceeds 100%
+- Support for Ethash Classic ECIP-1099 “DAG Recalibration” 
+
+Fixes:
+- MPHCoins: Fix block height
+
 Changelog NemosMiner 3.9.9.7 Beta1 29.10.2020
 =============================================
 
@@ -15,7 +30,6 @@ Miner Updates:
 - Trex-v0.18.5
 
 New:
-- Auto repair for profit stats if margin of error exceeds 100%
 - New config item 'UnrealPoolPriceFactor' (NM will not use a pool if the price information is way off from all other pools)
 - Web GUI: Added 'DisableDualAlgoMining' and 'DisableSingleAlgoMining' config item
 
