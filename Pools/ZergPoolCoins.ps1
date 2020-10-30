@@ -42,7 +42,7 @@ If ($PoolConfig.Wallet) {
                     $Block = ((Invoke-RestMethod "http://api.zergpool.com:8080/api/blocks?coin=$($TopCoin.Symbol)" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop).height | Measure-Object -Maximum).Maximum
                 }
                 Catch { }
-                If ($Topcoin.symbol -eq "ETC" -and (Get-EthashEpoch $Block) -ge 390) { $Algorithm_Norm = "EtcHash" }
+                If ($Topcoin.symbol -eq "ETC" -and ([Int]([Math]::Floor($Block / 30000)) -ge 390) { $Algorithm_Norm = "EtcHash" }
             }
 
             $Fee = $Request.$_.Fees / 100
