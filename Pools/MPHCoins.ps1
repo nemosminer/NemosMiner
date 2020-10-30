@@ -36,7 +36,7 @@ If ($PoolConfig.UserName) {
 
         $Coin = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-" -replace " ")
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
         $PoolRegions | ForEach-Object { 
             $Region = $_
