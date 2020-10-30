@@ -1367,29 +1367,29 @@ Function Set-Stat {
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
-        If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { 
+        If ($Stat.Week_Fluctuation -lt 1 -and ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax)) { 
             $Stat.ToleranceExceeded ++
         }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
+        If ($Value -and $Stat.Week_Fluctuation -lt 1 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
             #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Failed saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Failed saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Failed saving power usage ($($Name): $($Value.ToString("N2"))W). It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stat.ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Failed saving power usage ($($Name): $($Value.ToString("N2"))W). It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
             }
         }
         Else { 
-            If ($Value -eq 0 -or $Stat.ToleranceExceeded -eq $ToleranceExceeded) { 
-                #Update immediately if stat value is 0
+            If ($Value -eq 0 -or $Stat.ToleranceExceeded -eq $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
+                #Update immediately if stat value is 0 or Week_Fluctuation greater 1
                 If ($Value) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "Saved hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stat.ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Saved hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "Saved power usage ($($Name): $($Value.ToString("N2"))W). It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stat.ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Saved power usage ($($Name): $($Value.ToString("N2"))W). It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                 }
 
@@ -2732,27 +2732,6 @@ Function Test-Prime {
 }
 
 Function Get-EthashSize { 
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [Double]$Block
-    )
-
-    If (-not $Block) { Return [Math]::Pow(2, 32) } # Default 4GB
-
-    $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
-    $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
-    $EPOCH_LENGTH = 30000
-    $MIX_BYTES = 128
-
-    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
-    $Size -= $MIX_BYTES
-    While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
-
-    Return $Size
-}
-
-Function Get-EthashEpoch { 
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
