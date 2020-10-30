@@ -7,17 +7,17 @@ $DeviceEnumerator = "Type_Slot"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; MinMemGB = 16; Type = "AMD"; Fee = 0.02; Command = "Cuckaroo30" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";        MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";        MinMemGB = 3;  Type = "AMD"; Fee = 0.02; Command = "Kawpow" } #TeamRed-v0.7.16b is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";       MinMemGB = 4;  Type = "AMD"; Fee = 0.01; Command = "Ubqhash" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.02; MinMemGB = 16; Command = "Cuckaroo30" }
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  Command = "Kawpow" } #TeamRed-v0.7.16b is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Command = "Ubqhash" }
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    Command = "RandomHash2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Command = "RandomX" } #XmRig-v6.3.5 is fastest
 
-#   [PSCustomObject]@{ Algorithm = "Ethash";  MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";  MinMemGB = 3; Type = "NVIDIA"; Fee = 0.01; Command = "Kawpow" } #Trex-v0.18.5 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash"; MinMemGB = 4; Type = "NVIDIA"; Fee = 0.01; Command = "Ubqhash" }
+#   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Command = "Kawpow" } #Trex-v0.18.5 is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ubqhash" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

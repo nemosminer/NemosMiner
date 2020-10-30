@@ -6,8 +6,8 @@ $Uri = "https://github.com/Minerx117/ccminer8.21r9-lyra2z330/releases/download/v
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinMemGB = 2; Command = " --algo lyra2z330  --intensity 12.5 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
-    [PSCustomObject]@{ Algorithm = "Yescrypt";  MinMemGB = 2; Command = " --algo yescrypt --statsavg 5" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 2; Command = " --algo lyra2z330  --intensity 12.5 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
+    [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Command = " --algo yescrypt --statsavg 5" }
 #   [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; Command = " --algo yescryptr16 --intensity 13.4 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
 #   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr32 --intensity 12.55 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGB = 2; Command = " --algo yescryptr8 --statsavg 5" }
