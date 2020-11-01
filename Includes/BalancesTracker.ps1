@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTrackerJob.ps1
-version:        3.9.9.4
-version date:   09 September 2020
+version:        3.9.9.7
+version date:   01 November 2020
 #>
 
 #Start the log
@@ -319,7 +319,7 @@ While ($true) {
         $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force
 
         #Write chart data file (used in Web GUI)
-        $ChartData = $DailyEarnings | Sort-Object StartTime | Group-Object -Property Date | Select-Object -Last 30 #days
+        $ChartData = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 #days
 
         #One dataset per pool
         $PoolData = [PSCustomObject]@{}
@@ -335,7 +335,7 @@ While ($true) {
                 $PoolData.$_ += [Double]($PoolDailyEarning.Group | Where-Object Pool -EQ $_).DailyEarnings
             }
         }
-        
+
         [PSCustomObject]@{
             CumulatedEarnings = $CumulatedEarnings #Dataset for cumulated earnings
             Currency = ($Config.Currency | Select-Object -Index 0)
