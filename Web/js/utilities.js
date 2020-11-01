@@ -26,44 +26,35 @@ function formatMiners(data) {
       }
 
       // Format the algorithm(s)
-      if (Array.isArray(item.Speed)) {
-        item.tPrimaryAlgorithm = item.Algorithm[0];
-        item.tSecondaryAlgorithm = item.Algorithm[1];
-      } else {
-        item.tPrimaryAlgorithm = item.Algorithm
+      item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
+      if (item.Workers[1]) {
+        item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
       }
 
       // Format the speed(s)
-      if (Array.isArray(item.Speed)) {
-        item.tPrimarySpeed = item.Speed[0];
-        item.tSecondarySpeed = item.Speed[1];
-      } else {
-        item.tPrimarySpeed = item.Speed;
-      }
-
-      // Format the live speed(s)
-      if (Array.isArray(item.Speed)) {
-        item.tPrimarySpeedLive = item.Speed_Live[0];
-        item.tSecondarySpeedLive = item.Speed_Live[1];
-      } else {
-        item.tPrimarySpeedLive = item.Speed_Live;
+      item.tPrimarySpeed = item.Workers[0].Speed;
+      if (item.Workers[1]) {
+        item.tSecondarySpeed = item.Workers[1].Speed;
       }
 
       // Format the pool name(s)
-      if (Array.isArray(item.PoolName)) {
-        item.tPrimaryPool = item.PoolName[0];
-        item.tSecondaryPool = item.PoolName[1];
-      } else {
-        item.tPrimaryPool = item.PoolName
+      item.tPrimaryPool = item.Workers[0].Pool.Name;
+      if (item.Workers[1]) {
+        item.tSecondaryPool = item.Workers[1].Pool.Name;
       }
 
       // Format the fee(s)
-      if (Array.isArray(item.Fee)) {
-        item.tPrimaryFee = item.Fee[0];
-        item.tSecondaryFee = item.Fee[1];
-      } else {
-        item.tPrimaryFee = item.Fee;
+      item.tPrimaryFee = item.Workers[0].Fee;
+      if (item.Workers[1]) {
+        item.tSecondaryFee = item.Workers[1].Fee;
       }
+
+      // Format margin of error
+      item.tEarningAccuracy = formatPercent(item.Earning_Accuracy)
+
+      // Format the live speed(s)
+      item.tPrimarySpeedLive = item.Speed_Live[0];
+      item.tSecondarySpeedLive = item.Speed_Live[1];
 
       // Format Total Mining Duration (TimeSpan)
       item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
@@ -74,14 +65,6 @@ function formatMiners(data) {
       }
       else {
         item.Reason = "";
-      }
-
-      // Format margin of error
-      if (Array.isArray(item.Earning_Accuracy)) {
-        item.tEarningAccuracy = formatPercent(item.Earning_Accuracy[0]);
-        item.tEarningAccuracy = formatPercent(item.Earning_Accuracy[1]);
-      } else {
-        item.tEarningAccuracy = formatPercent(item.Earning_Accuracy)
       }
 
       // Format status
