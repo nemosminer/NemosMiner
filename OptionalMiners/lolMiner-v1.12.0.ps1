@@ -7,45 +7,45 @@ $DeviceEnumerator = "Bus"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Beam";          Type = "AMD"; Fee = 0.01;   MinMemGB = 3.0; Command = " --algo BEAM-I" } #Algo is dead, needs pers
-#   [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "AMD"; Fee = 0.01;   MinMemGB = 3.0; Command = " --algo BEAM-II" } #Algo is dead
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "AMD"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo BEAM-III" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "AMD"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo C29AE" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo2948";  Type = "AMD"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo CR29-48" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo CR29-40" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo CR29-32" }
+#   [PSCustomObject]@{ Algorithm = "Beam";          Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --algo BEAM-I" } #Algo is dead, needs pers
+#   [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --algo BEAM-II" } #Algo is dead
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo BEAM-III" }
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29AE" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo2948";  Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-48" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-40" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.01;  MinMemGB = 7.8; Command = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;   MinMemGB = 4.0; Command = " --algo C29D" } #TeamRed-v0.7.16b is fastest, keep enabled because TeamRed does not support algo on Navi
-    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;   MinMemGB = 4.0; Command = " --algo C31" } #TeamRed-v0.7.16b is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.01;   MinMemGB = 4.0; Command = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;   MinMemGB = 2.0; Command = " --coin AUTO144_5" }
-#   [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;   MinMemGB = 3.0; Command = " --coin AUTO192_7" } #GMiner-v2.29 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "AMD"; Fee = 0.01;   MinMemGB = 2.0; Command = " --algo EQUI210_9" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "AMD"; Fee = 0.01;   MinMemGB = 3.0; Command = " --coin BTG" }
-    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;   MinMemGB = 3.0; Command = " --coin ZCL" }
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007;  MinMemGB = 4.0; Command = " --algo ETHASH" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007;  MinMemGB = 4.0; Command = " --algo ETCHASH --enable-ecip1099" } #Ethereum Classic
+    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C29D" } #TeamRed-v0.7.16b is fastest, keep enabled because TeamRed does not support algo on Navi
+    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29M" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C31" } #TeamRed-v0.7.16b is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C32" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; Command = " --coin AUTO144_5" }
+#   [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin AUTO192_7" } #GMiner-v2.29 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; Command = " --algo EQUI210_9" }
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" }
+    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" }
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007;  MinMemGB = 4.0; Command = " --algo ETHASH" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007;  MinMemGB = 4.0; Command = " --algo ETCHASH --enable-ecip1099" } #Ethereum Classic starting with epoch 390
 
-#   [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; Command = " --algo BEAM-I" } #Algo is dead, needs pers
-#   [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; Command = " --algo BEAM-II" } #Algo is dead
-#   [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo BEAM-III" } #MiniZ-v1.6w2 is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo C29AE" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo2948";  Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo CR29-48" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo CR29-40" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo CR29-32" }
+#   [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --algo BEAM-I" } #Algo is dead, needs pers
+#   [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --algo BEAM-II" } #Algo is dead
+#   [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo BEAM-III" } #MiniZ-v1.6w2 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29AE" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo2948";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-48" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-40" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 8.0; Command = " --algo C30CTX" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 4.0; Command = " --algo C29D" } #GMiner-v2.29 is fastest
-    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; Command = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 4.0; Command = " --algo C31" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 4.0; Command = " --algo C32" }
-#   [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 2.0; Command = " --coin AUTO144_5" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
-#   [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; Command = " --coin AUTO192_7" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 2.0; Command = " --algo EQUI210_9" }
-#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; Command = " --coin BTG" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
-#   [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; Command = " --coin ZCL" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETHASH" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETCHASH --enable-ecip1099" } #Ethereum Classic
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C29D" } #GMiner-v2.29 is fastest
+    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29M" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C31" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C32" }
+#   [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; Command = " --coin AUTO144_5" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin AUTO192_7" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; Command = " --algo EQUI210_9" }
+#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETHASH" } #TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETCHASH --enable-ecip1099" } #Ethereum Classic starting with epoch 390
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
