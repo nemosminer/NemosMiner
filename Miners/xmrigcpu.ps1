@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-XMRigv635\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/xmrig/XMRigv635.7z"
+$Path = ".\Bin\CPU-XMRigv650\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miners/releases/download/xmrig/XMRigv650.7z"
 $Commands = [PSCustomObject]@{ 
     "randomxmonero"       = " -a rx/0 --nicehash" #RandomX
     "randomx"             = " -a rx/0 --nicehash" #RandomX 
