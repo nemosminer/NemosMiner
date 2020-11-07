@@ -80,7 +80,7 @@
         <p class="payout">
           <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{thresholdcurrency}}</b><br/>payout threshold<br/>
           <br/>Estimated Paydate:<br><b>{{paydate}}</b><br/>
-          <br/>Avg. {{thresholdcurrency}}/h: {{avgh}}<br/>Avg. {{thresholdcurrency}}/d: {{avgd}}
+          <br/>Avg. {{thresholdcurrency}}/hour: {{avghourlygrowth}}<br/>
         </p>
         {{/if}}
       </div>
@@ -186,7 +186,7 @@
                         $.each(result, function(index, item) {
                           if (!(footer.test(item.Pool))) {
                             // var currencies = Object.keys(rates[item.Currency]);
-                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avgh: (item.AvgHourlyGrowth).toFixed(6), avgd: (item.DailyGrowth).toFixed(6)};
+                            var data = {name: item.Pool, lastupdated: formatDate(item.LastUpdated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avghourlygrowth: (item.AvgHourlyGrowth).toFixed(6)};
                             $.each(currencies, function(cindex, currency) {
                               data["balances"][currency] = (item.Balance * rates['BTC'][currency]).toFixed(8);
                               if (!(data_total["balances"][currency])) {data_total["balances"][currency] = 0}
