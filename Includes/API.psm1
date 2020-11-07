@@ -379,55 +379,55 @@ Function Start-APIServer {
                         Break
                     }
                     "/algorithms" { 
-                        $Data =ConvertTo-Json -Depth 10 -Compress @($Variables.Algorithms | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Algorithms | Select-Object)
                         Break
                     }
                     "/apiversion" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($APIVersion | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
                         Break
                     }
                     "/balancestrackerrunspace" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Variables.BalancesTrackerRunspace | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.BalancesTrackerRunspace | Select-Object)
                         Break
                     }
                     "/btcratefirstcurrency" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) | Select-Object)
                         Break
                     }
                     "/brainjobs" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.BrainJobs | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BrainJobs | Select-Object)
                         Break
                     }
                     "/config" {
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Config | Get-SortedObject)
+                        $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
                         Break
                     }
                     "/configfile" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Variables.ConfigFile)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.ConfigFile)
                         break
                     }
                     "/currencies" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Config.Currency)
+                        $Data = ConvertTo-Json -Depth 10 ($Config.Currency)
                         break
                     }
                     "/devices" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Devices | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Select-Object)
                         Break
                     }
                     "/devices/enabled" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object)
                         Break
                     }
                     "/devices/disabled" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Devices | Where-Object State -EQ "Disabled" | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Disabled" | Select-Object)
                         Break
                     }
                     "/devices/unsupported" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Devices | Where-Object State -EQ "Unsupported" | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Unsupported" | Select-Object)
                         Break
                     }
                     "/defaultalgorithm" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress (Get-DefaultAlgorithm)
+                        $Data = ConvertTo-Json -Depth 10 (Get-DefaultAlgorithm)
                         Break
                     }
                     "/displayworkers" { 
@@ -451,11 +451,18 @@ Function Start-APIServer {
                     }
                     "/earnings" { 
                         #Format dates for powershell 5.1 compatiblity
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Variables.Earnings | ForEach-Object { 
-                            $_.EstimatedPayDate = [DateTime]($_.EstimatedPayDate).ToString("g")
-                            $_.LastUpdated = [DateTime]($_.LastUpdated).ToString("g")
-                            $_
-                        } | Select-Object)
+                        $Earnings = $Variables.Earnings
+                        $Earnings.GetEnumerator() | ForEach-Object { 
+                            Try {
+                                $_.Value.EstimatedPayDate = ([DateTime]($_.Value.EstimatedPayDate)).ToString("u")
+                            }
+                            Catch { }
+                            Try { 
+                                $_.Value.LastUpdated = ([DateTime]($_.Value.LastUpdated)).ToString("u")
+                            }
+                            Catch { }
+                        }
+                        $Data = ConvertTo-Json -Depth 10 ($Earnings | Select-Object)
                         Break
                     }
                     "/earningschartdata" { 
@@ -466,111 +473,111 @@ Function Start-APIServer {
                         Break
                     }
                     "/firstcurrency" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Config.Currency | Select-Object -Index 0)
+                        $Data = ConvertTo-Json -Depth 10 @($Config.Currency | Select-Object -Index 0)
                         Break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name, SwitchingLogData)
                         Break
                     }
                     "/miners/available" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | SortObject DeviceName, EndTime)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData | SortObject DeviceName, EndTime)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/running" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData)
                         Break
                     }
                     "/miners/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData)
                         Break
                     }
                     "/miningpowercost" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.MiningPowerCost | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.MiningPowerCost | Select-Object)
                         Break
                     }
                     "/miningearning" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.MiningEarning | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.MiningEarning | Select-Object)
                         Break
                     }
                     "/miningprofit" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.MiningProfit | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.MiningProfit | Select-Object)
                         Break
                     }
                     "/newminers" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.NewMiners | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.NewMiners | Select-Object)
                         Break
                     }
                     "/newpools" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.NewPools | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.NewPools | Select-Object)
                         Break
                     }
                     "/poolsconfig" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Config.PoolsConfig | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Config.PoolsConfig | Select-Object)
                         Break
                     }
                     "/poolnames" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique)
+                        $Data = ConvertTo-Json -Depth 10 @((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique)
                         Break
                     }
                     "/pools" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Pools | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/pools/available" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/pools/best" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Name, Algorithm)
                         Break
                     }
                     "/pools/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/rates" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Variables.Rates | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.Rates | Select-Object)
                         Break
                     }
                     "/regions" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Regions.PSObject.Properties.Value | Sort-Object -Unique)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Regions.PSObject.Properties.Value | Sort-Object -Unique)
                         Break
                     }
                     "/stats" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Stats | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Stats | Select-Object)
                         Break
                     }
                     "/summary" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.Summary | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Summary | Select-Object)
                         Break
                     }
                     "/switchinglog" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @(Get-Content ".\Logs\switchinglog.csv" | ConvertFrom-Csv | Select-Object -Last 1000)
+                        $Data = ConvertTo-Json -Depth 10 @(Get-Content ".\Logs\switchinglog.csv" | ConvertFrom-Csv | Select-Object -Last 1000)
                         Break
                     }
                     "/unprofitablealgorithms" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @(Variables.UnprofitableAlgorithms | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @(Variables.UnprofitableAlgorithms | Select-Object)
                         Break
                     }
                     "/watchdogtimers" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress @($Variables.WatchdogTimers | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.WatchdogTimers | Select-Object)
                         Break
                     }
                     "/variables" { 
-                        $Data = ConvertTo-Json -Depth 10 -Compress ($Variables | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables | Select-Object)
                         break
                     }
                     "/version" { 
@@ -632,6 +639,9 @@ Function Start-APIServer {
                 If ($Data -eq $null) { 
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
+
+                #Fix for Powershell 5.1, cannot handle NaN in Jason
+                If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { $Data = $Data  -replace 'NaN,', '"-",' }
 
                 # Send the response
                 $Response.Headers.Add("Content-Type", $ContentType)
