@@ -106,8 +106,8 @@
         <label style="margin-left:20px" title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" for="ProfitabilityThreshold">Profitability Threshold</label>
         <input title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" size=6>
         <br><br>
-        <label title="Mark pool as unavailable if the price reported by the pool &#10;is X times higher than the average price reported by all other pools &#10;(min=1, max=10)" for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
-        <input type="number" step="0.1" min="1" max="10" value=5 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor" title="Mark pool as unavailable if the price reported by the pool &#10;is X times higher than the average price reported by all other pools &#10;(min=1, max=10)">
+        <label title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency &#10;(min=1, max=10)" for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
+        <input type="number" step="0.1" min="1" max="10" value=2 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor" title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency &#10;(min=1, max=10)">
       </td>
 
       <td>
@@ -204,27 +204,29 @@
   const poolscontainer = document.getElementById('Pools');
   const regionscontainer = document.getElementById('Regions');
 
-  // Populate pool checkbox list
+  var config = {};
   var poolnames = [];
+  var regions = [];
+
+  // Populate pool checkbox list
   $.ajax({url: '/poolnames',
     success: function(result) {
       poolnames = result;
       $.each(poolnames, function (key, value) {
         $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value, title: title }).appendTo(poolscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "You cannot select multiple variants of the same pool" }).appendTo(poolscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (value), title: "You cannot select multiple variants of the same pool", style: "margin-left:4px"}).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }
   });
 
   // Fill region list
-  var regions = [];
   $.ajax({url: '/regions',
     success: function(result) {
       regions = result;
       $.each(regions, function (key, value) {
         $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value, name: "Region", title: "NemosMiner will prefer pools from the selected region"}).appendTo(regionscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (" " + value), title: "NemosMiner will prefer pools from the selected region" }).appendTo(regionscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (value), title: "NemosMiner will prefer pools from the selected region", style: "margin-left:4px"}).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
       })
     }
@@ -234,173 +236,171 @@
   $.ajax({url: '/configfile',
     success: function(result) {
       $('#configfilename').text("Current configuration file: '" + result + "'");
-    }
-  });
+      // Get current config
+      $.ajax({url: '/config',
+        success: function(result) {
+          config = result;
+          document.getElementById('Wallet').value = config.Wallet;
+          document.getElementById('WorkerName').value = config.WorkerName;
+          if (config.Interval == null) { 
+            document.getElementById('Interval').value = 90;
+          } else {
+            document.getElementById('Interval').value = parseInt(config.Interval);
+          }
+          if (config.Donate == null) { 
+            document.getElementById('Donate').value = 13;
+          } else {
+            document.getElementById('Donate').value = parseInt(config.Donate);
+          }
+          if (config.Algorithm) {
+            document.getElementById('Algorithm').value = (config.Algorithm).toString();
+          }
+          document.getElementById('Currency').value = config.Currency;
+          document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
+          document.getElementById('Proxy').value = config.Proxy;
+          if (config.RunningMinerGainPct == null) { 
+            document.getElementById('RunningMinerGainPct').value = 5;
+          } else {
+            document.getElementById('RunningMinerGainPct').value = parseInt(config.RunningMinerGainPct);
+          }
 
-  // Get current config
-  var config = {};
-  $.ajax({url: '/config',
-    success: function(result) {
-      config = result;
-      document.getElementById('Wallet').value = config.Wallet;
-      document.getElementById('WorkerName').value = config.WorkerName;
-      if (config.Interval == null) { 
-        document.getElementById('Interval').value = 90;
-      } else {
-        document.getElementById('Interval').value = parseInt(config.Interval);
-      }
-      if (config.Donate == null) { 
-        document.getElementById('Donate').value = 13;
-      } else {
-        document.getElementById('Donate').value = parseInt(config.Donate);
-      }
-      if (config.Algorithm) {
-        document.getElementById('Algorithm').value = (config.Algorithm).toString();
-      }
-      document.getElementById('Currency').value = config.Currency;
-      document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
-      document.getElementById('Proxy').value = config.Proxy;
-      if (config.RunningMinerGainPct == null) { 
-        document.getElementById('RunningMinerGainPct').value = 5;
-      } else {
-        document.getElementById('RunningMinerGainPct').value = parseInt(config.RunningMinerGainPct);
-      }
+          $.each(config.PoolName, function (key, value) {
+            document.getElementById((value).toString().toLowerCase()).checked = true;
+          });
+          if (document.getElementById(config.Region.toLowerCase())) {
+            document.getElementById(config.Region.toLowerCase()).checked = true;
+          }
+          if (config.CalculatePowerCost) {
+            document.getElementById('CalculatePowerCost').checked = true;
+          }
+          document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
+          if (config.IgnorePowerCost) {
+            document.getElementById('IgnorePowerCost').checked = true;
+          }
+          document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
+          document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
 
-      $.each(config.PoolName, function (key, value) {
-        document.getElementById((value).toString().toLowerCase()).checked = true;
+          if (config.IncludeOptionalMiners) {
+            document.getElementById('OptionalMiners').checked = true;
+          }
+          if (config.IncludeRegularMiners) {
+            document.getElementById('RegularMiners').checked = true;
+          }
+          if (config.MinerInstancePerDeviceModel) {
+            document.getElementById('MinerInstancePerDeviceModel').checked = true;
+          }
+          if (config.DisableMinerFees) {
+            document.getElementById('DisableMinerFees').checked = true;
+          }
+          if (config.DisableMinersWithFees) {
+            document.getElementById('DisableMinersWithFees').checked = true;
+          }
+          if (config.DisableDualAlgoMining) {
+            document.getElementById('DisableDualAlgoMining').checked = true;
+          }
+          if (config.DisableSingleAlgoMining) {
+            document.getElementById('DisableSingleAlgoMining').checked = true;
+          }
+          if (config.AutoStart) {
+            document.getElementById('AutoStart').checked = true;
+          } else {
+            document.getElementById('StartPaused').disabled = true;
+          }
+          if (config.StartPaused) {
+            document.getElementById('StartPaused').checked = true;
+          }
+          if (config.MineWhenIdle) {
+            document.getElementById('MineWhenIdle').checked = true;
+          } else {
+            document.getElementById('IdleSec').disabled = true;
+          }
+          if (config.IdleSec == null) { 
+            document.getElementById('IdleSec').value = 120;
+          } else {
+            document.getElementById('IdleSec').value = parseInt(config.IdleSec);
+          }
+          document.getElementById('BalancesTrackerPollInterval').value = config.BalancesTrackerPollInterval;
+          if (config.BalancesTrackerPollInterval == 0) {
+            document.getElementById('EnableBalancesTrackerLog').diabled = true;
+          }
+          if (config.EnableBalancesTrackerLog) {
+            document.getElementById('EnableBalancesTrackerLog').checked = true;
+          }
+          if (config.StartGUIMinimized) {
+            document.getElementById('StartGUIMinimized').checked = true;
+          }
+          if (config.ShowMinerWindows.toLowerCase() == "hidden") {
+            document.getElementById('ShowMinerWindowsHidden').checked = true;
+          }
+          if (config.ShowMinerWindows.toLowerCase() == "minimized") {
+            document.getElementById('ShowMinerWindowsMinimized').checked = true;
+          }
+          if (config.ShowMinerWindows.toLowerCase() == "normal") {
+            document.getElementById('ShowMinerWindowsNormal').checked = true;
+          }
+          if (config.AutoUpdate) {
+            document.getElementById('AutoUpdate').checked = true;
+          }
+          if (config.Watchdog) {
+            document.getElementById('Watchdog').checked = true;
+          } else {
+            document.getElementById('WatchdogMinerAlgorithmCount').disabled = true;
+            document.getElementById('WatchdogMinerCount').disabled = true;
+            document.getElementById('WatchdogPoolAlgorithmCount').disabled = true;
+            document.getElementById('WatchdogPoolCount').disabled = true;
+          }
+          if (config.WatchdogMinerAlgorithmCount == null) { 
+            document.getElementById('WatchdogMinerAlgorithmCount').value = 3;
+          } else {
+            document.getElementById('WatchdogMinerAlgorithmCount').value = parseInt(config.WatchdogMinerAlgorithmCount);
+          }
+          if (config.WatchdogMinerCount == null) { 
+            document.getElementById('WatchdogMinerCount').value = 6;
+          } else {
+            document.getElementById('WatchdogMinerCount').value = parseInt(config.WatchdogMinerCount);
+          }
+          if (config.WatchdogPoolAlgorithmCount == null) { 
+            document.getElementById('WatchdogPoolAlgorithmCount').value = 3;
+          } else {
+            document.getElementById('WatchdogPoolAlgorithmCount').value = parseInt(config.WatchdogPoolAlgorithmCount);
+          }
+          if (config.WatchdogPoolCount == null) { 
+            document.getElementById('WatchdogPoolCount').value = 7;
+          } else {
+            document.getElementById('WatchdogPoolCount').value = parseInt(config.WatchdogPoolCount);
+          }
+          if (config.EstimateCorrection) {
+            document.getElementById('EstimateCorrection').checked = true;
+          }
+          if (config.ApplyUnprofitableAlgorithmList) {
+            document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
+          }
+          //must be placed after pool loading
+          document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
+          document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
+          document.getElementById('MPHUserName').value = config.MPHUserName;
+          document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked);
+          document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
+          document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
+          document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
+          document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
+          document.getElementById('NiceHashWallet').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
+          document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
+          document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('prohashing24hr').checked);
+          document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
+          document.getElementById('ProHashingUserName').disabled = !(document.getElementById('prohashing24hr').checked);
+        }
       });
-      if (document.getElementById(config.Region.toLowerCase())) {
-        document.getElementById(config.Region.toLowerCase()).checked = true;
-      }
-      if (config.CalculatePowerCost) {
-        document.getElementById('CalculatePowerCost').checked = true;
-      }
-      document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
-      if (config.IgnorePowerCost) {
-        document.getElementById('IgnorePowerCost').checked = true;
-      }
-      document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
-      document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
-
-      if (config.IncludeOptionalMiners) {
-        document.getElementById('OptionalMiners').checked = true;
-      }
-      if (config.IncludeRegularMiners) {
-        document.getElementById('RegularMiners').checked = true;
-      }
-      if (config.MinerInstancePerDeviceModel) {
-        document.getElementById('MinerInstancePerDeviceModel').checked = true;
-      }
-      if (config.DisableMinerFees) {
-        document.getElementById('DisableMinerFees').checked = true;
-      }
-      if (config.DisableMinersWithFees) {
-        document.getElementById('DisableMinersWithFees').checked = true;
-      }
-      if (config.DisableDualAlgoMining) {
-        document.getElementById('DisableDualAlgoMining').checked = true;
-      }
-      if (config.DisableSingleAlgoMining) {
-        document.getElementById('DisableSingleAlgoMining').checked = true;
-      }
-      if (config.AutoStart) {
-        document.getElementById('AutoStart').checked = true;
-      } else {
-        document.getElementById('StartPaused').disabled = true;
-      }
-      if (config.StartPaused) {
-        document.getElementById('StartPaused').checked = true;
-      }
-      if (config.MineWhenIdle) {
-        document.getElementById('MineWhenIdle').checked = true;
-      } else {
-        document.getElementById('IdleSec').disabled = true;
-      }
-      if (config.IdleSec == null) { 
-        document.getElementById('IdleSec').value = 120;
-      } else {
-        document.getElementById('IdleSec').value = parseInt(config.IdleSec);
-      }
-      document.getElementById('BalancesTrackerPollInterval').value = config.BalancesTrackerPollInterval;
-      if (config.BalancesTrackerPollInterval == 0) {
-        document.getElementById('EnableBalancesTrackerLog').diabled = true;
-      }
-      if (config.EnableBalancesTrackerLog) {
-        document.getElementById('EnableBalancesTrackerLog').checked = true;
-      }
-      if (config.StartGUIMinimized) {
-        document.getElementById('StartGUIMinimized').checked = true;
-      }
-      if (config.ShowMinerWindows.toLowerCase() == "hidden") {
-        document.getElementById('ShowMinerWindowsHidden').checked = true;
-      }
-      if (config.ShowMinerWindows.toLowerCase() == "minimized") {
-        document.getElementById('ShowMinerWindowsMinimized').checked = true;
-      }
-      if (config.ShowMinerWindows.toLowerCase() == "normal") {
-        document.getElementById('ShowMinerWindowsNormal').checked = true;
-      }
-      if (config.AutoUpdate) {
-        document.getElementById('AutoUpdate').checked = true;
-      }
-      if (config.Watchdog) {
-        document.getElementById('Watchdog').checked = true;
-      } else {
-        document.getElementById('WatchdogMinerAlgorithmCount').disabled = true;
-        document.getElementById('WatchdogMinerCount').disabled = true;
-        document.getElementById('WatchdogPoolAlgorithmCount').disabled = true;
-        document.getElementById('WatchdogPoolCount').disabled = true;
-      }
-      if (config.WatchdogMinerAlgorithmCount == null) { 
-        document.getElementById('WatchdogMinerAlgorithmCount').value = 3;
-      } else {
-        document.getElementById('WatchdogMinerAlgorithmCount').value = parseInt(config.WatchdogMinerAlgorithmCount);
-      }
-      if (config.WatchdogMinerCount == null) { 
-        document.getElementById('WatchdogMinerCount').value = 6;
-      } else {
-        document.getElementById('WatchdogMinerCount').value = parseInt(config.WatchdogMinerCount);
-      }
-      if (config.WatchdogPoolAlgorithmCount == null) { 
-        document.getElementById('WatchdogPoolAlgorithmCount').value = 3;
-      } else {
-        document.getElementById('WatchdogPoolAlgorithmCount').value = parseInt(config.WatchdogPoolAlgorithmCount);
-      }
-      if (config.WatchdogPoolCount == null) { 
-        document.getElementById('WatchdogPoolCount').value = 7;
-      } else {
-        document.getElementById('WatchdogPoolCount').value = parseInt(config.WatchdogPoolCount);
-      }
-      if (config.EstimateCorrection) {
-        document.getElementById('EstimateCorrection').checked = true;
-      }
-      if (config.ApplyUnprofitableAlgorithmList) {
-        document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
-      }
-      //must be placed after pool loading
-      document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
-      document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
-      document.getElementById('MPHUserName').value = config.MPHUserName;
-      document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked);
-      document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
-      document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
-      document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
-      document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
-      document.getElementById('NiceHashWallet').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
-      document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('nicehash').checked);
-      document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
-      document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('prohashing24hr').checked);
-      document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
-      document.getElementById('ProHashingUserName').disabled = !(document.getElementById('prohashing24hr').checked);
     }
   });
 
   $('#save-button').click(function () {
-    config.PoolName = []
+    config.PoolName = [];
     if ((document.getElementById('Wallet').value).toString().trim() == "") {
       document.getElementById('Wallet').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
     };
