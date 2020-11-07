@@ -212,11 +212,16 @@ function formatBytes(bytes) {
 
 function formatTimeSpan(timespan) {
   var duration = '';
-  duration = timespan.Days + ' days ';
-  duration = duration + timespan.Hours + ' hrs ';
-  duration = duration + timespan.Minutes + ' min ';
-  duration = duration + timespan.Seconds + ' sec ';
-  return duration
+  if (timespan) {
+    duration = timespan.Days + ' days ';
+    duration = duration + timespan.Hours + ' hrs ';
+    duration = duration + timespan.Minutes + ' min ';
+    duration = duration + timespan.Seconds + ' sec ';
+    return duration
+  }
+  else {
+    return '-'
+  }
 }
 
 function createUUID() {
