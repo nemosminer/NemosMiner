@@ -3,19 +3,45 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 
 
-Changelog NemosMiner 3.9.9.7 Beta2 30.10.2020
+Changelog NemosMiner 3.9.9.7 Beta2 08.11.2020
 =============================================
 
+Fixes:
+- Balance Tracker not always reporting data for the last 30 days
+- Core: Config item 'DisableMinerFees' not working
+- lolMiner: Support for 9+ devices
+- lolMiner API: fix 
+- MPHCoins: Fix block height
+- Web GUI: Fixed incompatibilities when run under PowerShell 5.1
+  - Config editor not working
+  - Dashboard displaying wrong Balances 
+  - Miners not listed
+
+- KawpowMiner-v1.2.3 not creating miner objects
+- PhoenixMiner-v5.1c reporting type NVIDIA instead of AMD
+
+Improved:
+- 'Next Payout Date' prediction in Web GUI
+- Ignore pools with unreal price (See config item UnrealPoolPriceFactor)
+- Switching log has now more sortable columns, file name changed to 'SwitchingLog.csv'
+- Updated 7-Zip (7z.exe) to version 19.00
+
 Miner Updates:
+- Bminer-v16.3.4
 - MiniZ-v1.6w2
+- NanoMiner-v1.12.0
+- NBMiner-v33.3
 - lolMiner-v1.12
+- PhoenixMiner-v5.2a
+- SRBMminerMulti-v0.5.5
+- TeamRed-v0.7.17
+- Trex-v0.18.6
+- XmRig-v6.5.0
 
 New:
 - Auto repair for profit stats if margin of error exceeds 100%
 - Support for Ethash Classic ECIP-1099 “DAG Recalibration” 
 
-Fixes:
-- MPHCoins: Fix block height
 
 Changelog NemosMiner 3.9.9.7 Beta1 29.10.2020
 =============================================
