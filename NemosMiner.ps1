@@ -192,7 +192,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
-    [Double]$UnrealPoolPriceFactor = 3, #Mark pool as unavailable if price in pool API exceeds price average by UnrealPriceFactor
+    [Double]$UnrealPoolPriceFactor = 2, #Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
@@ -266,6 +266,9 @@ If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Nam
 New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
+
+$Variables.Miners = [Miner[]]
+$Variables.Pools = [Miner]::Pools
 
 #Expand paths
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
@@ -343,6 +346,10 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
     $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
     Write-Config $Variables.ConfigFile
     Write-Message "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())."
+    If (Test-Path -PathType Leaf  ".\Logs\switchinglog.csv") { 
+        Remove-Item -Path ".\Logs\switchinglog.csv" -Force
+        Write-Message "Cleared switching log file '.\Logs\switchinglog.csv' (Format is incompatible with version $($Variables.CurrentVersion.ToString()))."
+    }
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
@@ -528,7 +535,7 @@ Function Global:TimerUITick {
                         @{ Name = "Miner"; Expression = { $_.Name } }, 
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
-                        @{ Name = "Speed(s)"; Expression = { ($_.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
+                        @{ Name = "Speed(s)"; Expression = { ($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
                         @{ Name = "$DisplayCurrency/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.$EarningsCurrency).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "$($Config.Currency | Select-Object -Index 0)/Day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "$DisplayCurrency/GH/day"; Expression = { ($_.Workers.Pool.Price | ForEach-Object { ($_ * 1000000000 * $Variables.Rates.BTC.$EarningsCurrency).ToString("N5") }) -join ' + ' } }, 
@@ -1222,7 +1229,7 @@ Function CheckBoxSwitching_Click {
     }
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-    If (Test-Path ".\Logs\switching.log") { $Variables.SwitchingLog = @(Get-Content ".\Logs\switching.log" | ConvertFrom-Csv | Select-Object -Last 1000); [Array]::Reverse($Variables.SwitchingLog) }
+    If (Test-Path ".\Logs\switchinglog.csv") { $Variables.SwitchingLog = @(Get-Content ".\Logs\switchinglog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("Date", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog) }
     $SwitchingDGV.DataSource = [System.Collections.ArrayList]($Variables.SwitchingLog | Where-Object { $_.Type -in $SwitchingDisplayTypes })
 }
 
