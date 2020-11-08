@@ -19,7 +19,19 @@ class lolMiner : Miner {
         $Shares = [PSCustomObject]@{ }
 
         $HashRate_Name = [String]$this.Algorithm[0]
-        $HashRate_Value = [Double]$Data.Session.Performance_Summary
+        $HashRate_Unit = [Int64]1
+        Switch ($Data.Session.Performance_Unit) { 
+            "kh/s"  { $HashRate_Unit = [Math]::Pow(10,3) }
+            "Mh/s"  { $HashRate_Unit = [Math]::Pow(10,6) }
+            "GH/s"  { $HashRate_Unit = [Math]::Pow(10,9) }
+            "TH/s"  { $HashRate_Unit = [Math]::Pow(10,12) }
+            "PH/s"  { $HashRate_Unit = [Math]::Pow(10,15) }
+            "EH/s"  { $HashRate_Unit = [Math]::Pow(10,18) }
+            "ZH/s"  { $HashRate_Unit = [Math]::Pow(10,21) }
+            "ZH/s"  { $HashRate_Unit = [Math]::Pow(10,24) }
+            Default { $HashRate_Unit = 1 }
+        }
+        $HashRate_Value = [Double]($Data.Session.Performance_Summary * $HashRate_Unit)
 
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
