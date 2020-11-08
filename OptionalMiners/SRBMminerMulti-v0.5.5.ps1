@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.4/SRBMiner-Multi-0-5-4-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.5/SRBMiner-Multi-0-5-5-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
@@ -11,6 +11,7 @@ $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2d_dynamic" }
+    [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "CryptonightBbc";      Type = "AMD"; Fee = 0.02;   MinMemGb = 1; Command = " --algorithm cryptonight_bbc" }
@@ -20,22 +21,22 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_gpu" }
 #   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.16b is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" } 
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm eaglesong" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0085; MinMemGb = 4; Command = " --algorithm ethash" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
+#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #Bminer-v16.3.1 & PhoenixMiner-v5.2a are faster
     [PSCustomObject]@{ Algorithm = "Handshake";           Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "RainforestV2";        Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm rainforestv2" }
     [PSCustomObject]@{ Algorithm = "Tellor";              Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm tellor" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm ubqhash" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; Command = " --algorithm ubqhash" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMC"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm yescrypt" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_chukwa" }
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "CPU"; Fee = 0;      Command = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "CPU"; Fee = 0;      Command = " --algorithm blake2b" }
+    [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "CPU"; Fee = 0;      Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0;      Command = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "CpuPower";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm cpupower" }
@@ -48,18 +49,18 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_upx" }
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm eaglesong" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "CPU"; Fee = 0.0085; Command = " --algorithm ethash" } #Not profitable with CPU
-    [PSCustomObject]@{ Algorithm = "Handshake";           Type = "CPU"; Fee = 0.85;   Command = " --algorithm bl2bsha3" }
+#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "CPU"; Fee = 0.0065; Command = " --algorithm ethash" } #Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "Handshake";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "CPU"; Fee = 0.0085; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "CPU"; Fee = 0;      Command = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "RainforestV2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm rainforestv2" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.3.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.5.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomwow --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "Tellor";              Type = "CPU"; Fee = 0;      Command = " --algorithm tellor" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "CPU"; Fee = 0.85;   Command = " --algorithm ubqhash" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "CPU"; Fee = 0.0065; Command = " --algorithm ubqhash" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = "YescryptR8";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm yescryptr8" }
