@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/PhoenixMiner/PhoenixMiner_5.1c.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/PhoenixMiner/PhoenixMiner_5.2a_Windows.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
@@ -14,6 +14,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("UbqHash");           Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -coin ubq" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25 -dcoin blake2s" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -68,7 +70,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
                             #Extra Speed for Navi cards
-                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lots of bad shares :-(
+                            #$Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lots of bad shares :-(
                         }
                         If (($Miner_Devices.OpenCL.CodeName | Sort-Object -unique) -join '' -eq 'Ellesmere') { 
                             #Extra Speed for Ellesmere cards
@@ -83,7 +85,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $Miner_Devices.Name
-                        Type       = "NVIDIA"
+                        Type       = $_.Type
                         Path       = $Path
                         Arguments  = ("$Command -log 0 -wdog 0 -mport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
@@ -93,7 +95,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = 75 #Seconds
+                        WarmupTime = 120 #Seconds
                     }
                 }
             }
