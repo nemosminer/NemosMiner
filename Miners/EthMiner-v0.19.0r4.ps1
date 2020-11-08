@@ -7,8 +7,8 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinMemGB = 4;Command = " --opencl --opencl-devices" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinMemGB = 4;Command = " --cuda --cuda-devices" } #PhoenixMiner-v5.1c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinMemGB = 4;Command = " --opencl --opencl-devices" } #PhoenixMiner-v5.2a is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinMemGB = 4;Command = " --cuda --cuda-devices" } #PhoenixMiner-v5.2a is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 

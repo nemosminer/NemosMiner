@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "AstroBWT";             Type = "AMD"; MinMemGB = 0.02; Command = " --algo astrobwt" }
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "AMD"; MinMemGB = 1;    Command = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGB = 1;    Command = " --algo cn/ccx" } #SRBMminerMulti-v0.5.4 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGB = 1;    Command = " --algo cn/ccx" } #SRBMminerMulti-v0.5.5 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "AMD"; MinMemGB = 1;    Command = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "AMD"; MinMemGB = 1;    Command = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "AMD"; MinMemGB = 1;    Command = " --algo cn-lite/0" }
@@ -26,7 +26,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "AMD"; MinMemGB = 2;    Command = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "AMD"; MinMemGB = 4;    Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "AMD"; MinMemGB = 2;    Command = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "AMD"; MinMemGB = 3;    Command = " --algo kawpow" } #NBMiner-v32.1 is fastest, but has 1% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "AMD"; MinMemGB = 3;    Command = " --algo kawpow" } #NBMiner-v33.3 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "Randomx";              Type = "AMD"; MinMemGB = 2;    Command = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "AMD"; MinMemGB = 2;    Command = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "AMD"; MinMemGB = 1;    Command = " --algo rx/kev" }
@@ -57,10 +57,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "CPU"; Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Command = " --algo cn/zls" }
     [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Command = " --algo rx/0" }
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Command = " --algo rx/arq" } #SRBMminerMulti-v0.5.4 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Command = " --algo rx/arq" } #SRBMminerMulti-v0.5.5 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Command = " --algo rx/kev" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Command = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Command = " --algo rx/sfx" } #SRBMminerMulti-v0.5.4 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Command = " --algo rx/sfx" } #SRBMminerMulti-v0.5.5 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Command = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "AstroBWT";             Type = "NVIDIA"; MinMemGB = 0.02; Command = " --algo astrobwt" }
@@ -83,7 +83,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "NVIDIA"; MinMemGB = 2;    Command = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "NVIDIA"; MinMemGB = 4;    Command = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "NVIDIA"; MinMemGB = 2;    Command = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = 3;    Command = " --algo kawpow" } #Trex-v0.18.5 is fastest, but has 1% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = 3;    Command = " --algo kawpow" } #Trex-v0.18.6 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "Randomx";              Type = "NVIDIA"; MinMemGB = 2;    Command = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "NVIDIA"; MinMemGB = 2;    Command = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "NVIDIA"; MinMemGB = 1;    Command = " --algo rx/kev" }
