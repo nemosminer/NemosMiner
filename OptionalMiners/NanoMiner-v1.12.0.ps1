@@ -2,21 +2,23 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.11.0/nanominer-windows-1.11.0.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.12.0/nanominer-windows-1.12.0.zip"
 $DeviceEnumerator = "Type_Slot"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.02; MinMemGB = 16; Command = "Cuckaroo30" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Command = "Etchash" } #Ethereum Classic starting with epoch 390
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Command = "Ethash" } #PhoenixMiner-v5.2a is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  Command = "Kawpow" } #TeamRed-v0.7.16b is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Command = "Ubqhash" }
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    Command = "RandomHash2" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Command = "RandomX" } #XmRig-v6.3.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Command = "RandomX" } #XmRig-v6.5.0 is fastest
 
-#   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ethash" } #PhoenixMiner-v5.1c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Command = "Kawpow" } #Trex-v0.18.5 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Etchash" } #Ethereum Classic starting with epoch 390
+#   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ethash" } #TTMiner-v5.0.3 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Command = "Kawpow" } #Trex-v0.18.6 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ubqhash" }
 )
 
