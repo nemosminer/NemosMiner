@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.9.9.7
-version date:   05 November 2020
+version date:   10 November 2020
 #>
 
 New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true } -ErrorAction SilentlyContinue | Out-Null
@@ -237,7 +237,6 @@ Class Miner {
         If ($this.Process) { $this.Process = $null }
 
         If (-not $this.Process) { 
-            $this.CommandLIne = $this.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
             $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
             $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
 
