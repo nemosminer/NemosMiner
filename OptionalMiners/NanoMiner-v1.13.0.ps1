@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.12.0/nanominer-windows-1.12.0.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.13.0/nanominer-windows-1.13.0.zip"
 $DeviceEnumerator = "Type_Slot"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
@@ -19,6 +19,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Etchash" } #Ethereum Classic starting with epoch 390
 #   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ethash" } #TTMiner-v5.0.3 is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Command = "Kawpow" } #Trex-v0.18.6 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "CFX" }
     [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Command = "Ubqhash" }
 )
 
