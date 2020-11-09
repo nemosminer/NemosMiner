@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           core.ps1
 version:        3.9.9.7
-version date:   05 November 2020
+version date:   10 November 2020
 #>
 
 using module .\Include.psm1
@@ -587,6 +587,10 @@ Function Start-Cycle {
                 }
             }
 
+            $NewMiners | ForEach-Object { 
+                $_.CommandLine = $_.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
+            }
+
             $Variables.NewMiners_Jobs | ForEach-Object { $_.Dispose() }
             $Variables.Remove("NewMiners_Jobs")
         }
@@ -617,11 +621,12 @@ Function Start-Cycle {
         #Update existing miners
         $Variables.Miners | Select-Object | ForEach-Object { 
             If ($Miner = Compare-Object -PassThru ($NewMiners | Where-Object Name -EQ $_.Name | Where-Object Path -EQ $_.Path | Where-Object Type -EQ $_.Type | Select-Object) $_ -Property Algorithm -ExcludeDifferent -IncludeEqual) { 
-                $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments -or $_.Port -ne $Miner.Port)
+                $_.Restart = [Boolean]($_.CommandLine -ne $Miner.CommandLine)
                 $_.Arguments = $Miner.Arguments
                 $_.Workers = $Miner.Workers
                 $_.Port = $Miner.Port
                 $_.WarmupTime = $Miner.WarmupTime
+                $_.CommandLine = $Miner.CommandLine
             }
             $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
             $_.CalculatePowerCost = $Variables.CalculatePowerCost
