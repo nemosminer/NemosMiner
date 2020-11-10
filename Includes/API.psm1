@@ -569,7 +569,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/unprofitablealgorithms" { 
-                        $Data = ConvertTo-Json -Depth 10 @(Variables.UnprofitableAlgorithms | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.UnprofitableAlgorithms | Select-Object)
                         Break
                     }
                     "/watchdogtimers" { 
