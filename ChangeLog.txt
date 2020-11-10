@@ -3,6 +3,23 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 
 
+Changelog NemosMiner 3.9.9.7 Beta3 09.11.2020
+
+Fixes:
+- Web GUI: Replace double with single backslash ('\\' -> '\') to properly print file paths
+
+Improved:
+- CcminerLyra2z330-v8.21r9: Added intensity for Yescrypt
+
+Miner Updates:
+- NanoMiner-v1.13.0
+
+New:
+- Add property 'CommandLine' to all miner objects
+
+
+=============================================
+
 Changelog NemosMiner 3.9.9.7 Beta2 08.11.2020
 =============================================
 
