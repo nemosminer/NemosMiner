@@ -304,6 +304,7 @@ Class Miner {
         Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
         $this.StatusMessage = "Idle"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+        $this.CommandLIne = ""
         $this.Info = ""
         $this.Status = [MinerStatus]::Idle
     }
