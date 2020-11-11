@@ -825,9 +825,10 @@ Function Start-Cycle {
         # Is currently best miner AND
         # has been active before OR
         # Data collector has died OR
-        # Benchmark state changed 
-        # MeasurePowerUsage state changed
-        # CalculatePowerCost -> true -> done (to change data poll interval)
+        # Benchmark state changed OR
+        # MeasurePowerUsage state changed OR
+        # CalculatePowerCost -> true -> done (to change data poll interval) OR
+        # Miner windows invisibility changes
         $Variables.Miners | Where-Object Best -EQ $true | ForEach-Object { 
             If ($_.Activated -eq -1) {
                 #Re-benchmark triggered in Web GUI
