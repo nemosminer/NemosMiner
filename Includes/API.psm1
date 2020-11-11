@@ -641,7 +641,7 @@ Function Start-APIServer {
                 }
 
                 #Fix for Powershell 5.1, cannot handle NaN in Jason
-                If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { $Data = $Data  -replace ' NaN,', ' "-",' }
+                If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { $Data = $Data -replace '":\s*NaN,', '":  "-",' }
 
                 # Send the response
                 $Response.Headers.Add("Content-Type", $ContentType)
