@@ -7,8 +7,8 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinMemGB = 4;Command = " --opencl --opencl-devices" } #PhoenixMiner-v5.2a is fastest but has dev fee
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinMemGB = 4;Command = " --cuda --cuda-devices" } #PhoenixMiner-v5.2a is fastest but has dev fee
+#   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinMemGB = 4;Command = " --cl-devices" } #Not working on newer drivers
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinMemGB = 4;Command = " --cu-devices" } #PhoenixMiner-v5.2b is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -29,12 +29,8 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                 #Get commands for active miner devices
                 #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @() -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                Switch -Regex ($Pools.($_.Algorithm).Name) {
-                    "^ZergPool*|^Zpool*" { $Protocol = "stratum1+tcp://" }
-                    "^MPH*|^NiceHash*" { $Protocol = "stratum2+tcp://" }
-                    Default { $Protocol = "stratum+tcp://" }
-                }
-                If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "\+tcp\://$", "+ssl://" }
+                If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratums://" }
+                Else { $Protocol = "stratum://" }
 
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name
