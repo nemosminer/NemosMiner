@@ -610,6 +610,7 @@ Function Start-Cycle {
         [Miner[]]$Variables.Miners | Select-Object | ForEach-Object { 
             $_.CachedBenchmark = $_.Benchmark
             $_.CachedMeasurePowerUsage = $_.MeasurePowerusage
+            $_.CachedShowMinerWindows = $_.ShowMinerWindows
             $_.Reason = $null
         }
 
@@ -626,13 +627,13 @@ Function Start-Cycle {
                 $_.Port = $Miner.Port
                 $_.WarmupTime = $Miner.WarmupTime
                 $_.CommandLine = $Miner.CommandLine
+                $_.ShowMinerWindows = $Config.ShowMinerWindows
             }
             $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
             $_.CalculatePowerCost = $Variables.CalculatePowerCost
             $_.Refresh($Variables.PowerCostBTCperW) #To be done before MeasurePowerUsage evaluation
             $_.MinDataSamples = $Config.MinDataSamples * (1, @($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).maximum
             $_.MeasurePowerUsage = [Boolean]($Variables.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
-            $_.ShowMinerWindows = $Config.ShowMinerWindows
         }
         Remove-Variable Miner -ErrorAction Ignore
         Remove-Variable NewMiners -ErrorAction Ignore
@@ -837,7 +838,8 @@ Function Start-Cycle {
             ElseIf ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
             ElseIf ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
             ElseIf ($_.CalculatePowerCost -ne - $Variables.CalculatePowerCost) { $_.Restart = $true }
-            ElseIf ($_.ShowMinerWindows -ne $Config.ShowMinerWindows) { $_.Restart = $true }
+            ElseIf ($_.ShowMinerWindows -eq "hidden" -and $_.CachedShowMinerWindows -in @("normal", "minimized")) { $_.Restart = $true }
+            ElseIf ($_.ShowMinerWindows -in @("normal", "minimized") -and $_.CachedShowMinerWindows -eq "hidden") { $_.Restart = $true }
         }
 
         #Stop running miners
@@ -845,7 +847,7 @@ Function Start-Cycle {
             $Miner = $_
             $Miner_Info = $Miner.Info
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
-                Write-Message -Level ERROR "Miner '$($Miner.Info)' exited unexpectedly." 
+                Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly." 
                 $Miner.SetStatus([MinerStatus]::Failed)
                 $Miner.StatusMessage = "Exited unexpectedly."
             }
