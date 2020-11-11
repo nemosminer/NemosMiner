@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.6/t-rex-0.18.6-win-cuda11.1.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.8/t-rex-0.18.8-win-cuda11.1.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
@@ -13,7 +13,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    Fee = 0.01; MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";        Fee = 0.01; MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";      Fee = 0.01; MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.2a is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.2b is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" }
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
@@ -84,12 +85,21 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         }
                     }
 
+                    #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
+                    #From now on the username (-u) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
+                    If ($_.Algorithm -in @("Ethash", "KawPow", "ProgPoW") -and ($Pools.($_.Algorithm).User -split "\.").Count -eq 2) { 
+                        $User = " --user $($Pools.($_.Algorithm).User) --worker $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 1)"
+                    }
+                    Else { 
+                        $User = " --user $($Pools.($_.Algorithm).User)"
+                    }
+
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Command) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" })$Coin --no-watchdog --gpu-report-interval 1 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Command) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)$User --pass $($Pools.($_.Algorithm).Pass)$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" })$Coin --no-watchdog --gpu-report-interval 1 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "Trex"
                         Port            = $MinerAPIPort
