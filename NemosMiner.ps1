@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.7
-Version date:   29. October 2020
+Version date:   11 November 2020
 #>
 
 [CmdletBinding()]
@@ -1307,7 +1307,7 @@ $LabelMPHUserName.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ConfigPageControls += $LabelMPHUserName
 
 $TBMPHUserName = New-Object System.Windows.Forms.TextBox
-$TBMPHUserName.Tag = "UserName"
+$TBMPHUserName.Tag = "MPHUserName"
 $TBMPHUserName.MultiLine = $false
 $TBMPHUserName.Text = $Config.MPHUserName
 $TBMPHUserName.AutoSize = $false
