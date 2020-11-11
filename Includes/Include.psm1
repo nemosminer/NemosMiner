@@ -749,7 +749,7 @@ Function Start-BalancesTracker {
             $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
         }
         Catch { 
-            Write-Message -Level ERROR "Failed to start Balances Tracker [$Error[0]]."
+            Write-Message -Level Error "Failed to start Balances Tracker [$Error[0]]."
         }
     }
 }
@@ -1180,7 +1180,7 @@ Function Start-Mining {
         }
     }
     Else { 
-        Write-Message -Level ERROR "Corrupt installation. File '$($Variables.MainPath)\Includes\Core.ps1' is missing."
+        Write-Message -Level Error "Corrupt installation. File '$($Variables.MainPath)\Includes\Core.ps1' is missing."
     }
 }
 
@@ -1306,12 +1306,17 @@ Function Write-Config {
     )
 
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
-    If ($Global:Config -is [Hashtable]) { 
-        If (Test-Path $ConfigFile -PathType Leaf) {
-            Copy-Item -Path $ConfigFile "$($ConfigFile).backup" -Force
-        }
-        ($Global:Config | Select-Object -Property * -ExcludeProperty PoolsConfig) | Get-SortedObject | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8 -Force
+
+    If (Test-Path $ConfigFile -PathType Leaf) {
+        Copy-Item -Path $ConfigFile "$($ConfigFile).backup" -Force
     }
+
+    $SortedConfig = $Config | Get-SortedObject
+    $ConfigTmp = [Ordered]@{ }
+    $SortedConfig.Keys | Where-Object { $_ -notlike "PoolsConfig" } | ForEach-Object { 
+        $ConfigTmp[$_] = $SortedConfig.$_ 
+    }
+    $ConfigTmp | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8 -Force
 }
 
 Function Get-SortedObject { 
@@ -1330,7 +1335,7 @@ Function Get-SortedObject {
                 #Upper / lower case conversion (Web GUI is case sensitive)
                 $PropertyName = $_.Name
                 $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
-                If (-not $Propertyname) { $PropertyName = $_.Name }
+                If (-not $PropertyName) { $PropertyName = $_.Name }
 
                 If ($Object.$PropertyName -is [Hashtable] -or $Object.$PropertyName -is [PSCustomObject]) { 
                     $SortedObject[$PropertyName] = Get-SortedObject $Object.$PropertyName
@@ -1345,7 +1350,7 @@ Function Get-SortedObject {
                 #Upper / lower case conversion (Web GUI is case sensitive)
                 $PropertyName = $_.Name
                 $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
-                If (-not $Propertyname) { $PropertyName = $_.Name }
+                If (-not $PropertyName) { $PropertyName = $_.Name }
 
                 If ($Object.$PropertyName -is [Hashtable] -or $Object.$PropertyName -is [PSCustomObject]) { 
                     $SortedObject[$PropertyName] = Get-SortedObject $Object.$PropertyName
