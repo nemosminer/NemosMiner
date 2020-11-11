@@ -3,10 +3,36 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 
 
+Changelog NemosMiner 3.9.9.7 Beta3 09.11.2020
+
+Fixed:
+- EthMiner-v0.19.0r4
+- Function 'Write-Config' not working when run under PowerShell 5.1
+- Miner not restarted when miner window visibility changed to/from hidden
+- Watchdog timers disappearing under certain scenarios
+- Web GUI: Replace double with single backslash ('\\' -> '\') to properly print file paths
+- Web GUI: Devices configuration broken when run under PowerShell 5.1 (regression of 3.9.9.7 Beta2)
+- Web GUI: Unprofitable algorithm list not shown
+
+Improved:
+- CcminerLyra2z330-v8.21r9: Added intensity for Yescrypt
+
+Miner Updates:
+- Reverted Bminer-v16.3.1 (v16.3.4 & v16.3.5 are broken)
+- NanoMiner-v1.13
+- PhoenixMiner-v5.2b
+- Trex-v0.18.8
+
+New:
+- Add property 'CommandLine' to all miner objects
+
+
+=============================================
+
 Changelog NemosMiner 3.9.9.7 Beta2 08.11.2020
 =============================================
 
-Fixes:
+Fixed:
 - Balance Tracker not always reporting data for the last 30 days
 - Core: Config item 'DisableMinerFees' not working
 - lolMiner: Support for 9+ devices
@@ -178,7 +204,7 @@ Changelog NemosMiner 3.9.9.5 Beta2 03.10.2020
 Miner Updates:
 - lolMiner-v1.0.9
 
-Fixes:
+Fixed:
 - Fixed typo in configedit.html
 
 
@@ -552,7 +578,7 @@ Main improvements:
 What's still broken:
 - Idle detection (fixed since 27.07.2020)
 
-Fixes:
+Fixed:
 - algo selection does not seem to be working
 - running time starts at 12hour not 0
 - donation mining is not passing the c=BTC
