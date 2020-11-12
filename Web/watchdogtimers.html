@@ -1,14 +1,15 @@
 ﻿<!--#include file="/parts/head.html" -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1 id="title" data-navbaractive="navwatchdog" class="h2">Watchdog Timers</h1>
+  <h1 id="title" data-navbaractive="navwatchdogtimers" class="h2">Watchdog Timers</h1>
 </div>
-<div class="alert alert-info" role="alert">Shows all watchdog timers. </div>
+
+<div id="watchdog" class="alert alert-info" role="alert"></div>
 
 <div id="toolbar">
   <button id="resetwatchdog" class="btn btn-primary">Reset Watchdog Timers</button>
 </div>
 
-<table id="watchdog" class="table"
+<table id="watchdogtimers" class="table"
   data-icons="icons"
   data-toolbar="#toolbar"
   data-toggle="table"
@@ -43,6 +44,13 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
+  // Get watchdog expiry time
+  $.ajax({url: '/watchdogexpiration',
+    success: function(result) {
+      $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + result + ").");
+    }
+  });
+
   $(function () {
     $("#resetwatchdog").click(function () {
       $.ajax({

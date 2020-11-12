@@ -38,7 +38,7 @@ Function Start-Cycle {
         $Variables.StatEnd = $Variables.Timer.AddSeconds($Config.Interval)
         $Variables.StatSpan = New-TimeSpan $Variables.StatStart $Variables.StatEnd
         $Variables.WatchdogInterval = ($Variables.Strikes + 1) * $Variables.StatSpan.TotalSeconds
-        $Variables.WatchdogReset = ($Variables.Strikes + 1) * $Variables.Strikes * $Variables.StatSpan.TotalSeconds
+        $Variables.WatchdogReset = [math]::Floor(($Variables.Strikes + 1) * $Variables.Strikes * $Variables.StatSpan.TotalSeconds)
 
         $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
         $Variables.DecayExponent = [Int](($Variables.Timer - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)

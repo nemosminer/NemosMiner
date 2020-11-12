@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.7
+version:        3.9.9.8
 version date:   01 November 2020
 #>
 
@@ -451,16 +451,18 @@ Function Start-APIServer {
                     }
                     "/earnings" { 
                         #Format dates for powershell 5.1 compatiblity
-                        $Earnings = $Variables.Earnings
-                        $Earnings.GetEnumerator() | ForEach-Object { 
-                            Try {
-                                $_.Value.EstimatedPayDate = ([DateTime]($_.Value.EstimatedPayDate)).ToString("u")
+                        $Earnings = $Variables.Earnings | ConvertTo-Json | ConvertFrom-Json
+                        If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { 
+                            $Earnings | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+                                Try {
+                                    $Earnings.$_.EstimatedPayDate = ([DateTime]($Earnings.$_.EstimatedPayDate)).ToString("u")
+                                }
+                                Catch { }
+                                Try { 
+                                    $Earnings.$_.LastUpdated = ([DateTime]($Earnings.$_.LastUpdated)).ToString("u")
+                                }
+                                Catch { }
                             }
-                            Catch { }
-                            Try { 
-                                $_.Value.LastUpdated = ([DateTime]($_.Value.LastUpdated)).ToString("u")
-                            }
-                            Catch { }
                         }
                         $Data = ConvertTo-Json -Depth 10 ($Earnings | Select-Object)
                         Break
@@ -574,6 +576,10 @@ Function Start-APIServer {
                     }
                     "/watchdogtimers" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.WatchdogTimers | Select-Object)
+                        Break
+                    }
+                    "/watchdogexpiration" { 
+                        $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
                         Break
                     }
                     "/variables" { 
