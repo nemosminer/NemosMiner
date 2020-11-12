@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.7
+version:        3.9.9.8
 version date:   10 November 2020
 #>
 
@@ -181,6 +181,7 @@ Class Miner {
     [TimeSpan[]]$Intervals = @()
     [String]$LogFile
     [String]$ShowMinerWindows = "minimized"
+    [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
     [Int]$MinDataSamples #for safe hashrate values
     [Int]$WarmupTime
