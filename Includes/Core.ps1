@@ -506,7 +506,7 @@ Function Start-Cycle {
                             $Worker = $_
                             $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                             If ($WatchdogTimer) { 
-                                $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimer) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                                $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimer) -Property MinerName, PoolName, Algorithm, DeviceName -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
                             }
                         }
                     }
@@ -847,7 +847,6 @@ Function Start-Cycle {
         #Stop running miners
         $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
             $Miner = $_
-            $Miner_Info = $Miner.Info
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly." 
                 $Miner.SetStatus([MinerStatus]::Failed)
@@ -865,7 +864,7 @@ Function Start-Cycle {
                     If ($WatchdogTimer) { 
                         If ($WatchdogTimer.Kicked -ge $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval)) { 
                             #Remove watchdog timer(s)
-                            $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimer) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                            $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimer) -Property MinerName, PoolName, Algorithm, DeviceName -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
                         }
                     }
                 }
