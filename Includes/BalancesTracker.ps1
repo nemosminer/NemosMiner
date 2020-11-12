@@ -38,23 +38,19 @@ While ($true) {
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
         #Only on first run
-        If (-not $Now) { 
+        If (-not $AllBalanceObjects) { 
             Write-Message "Balances Tracker started."
             # Read existing earning data
-            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { $AllBalanceObjects = ((Get-Content ".\logs\BalancesTrackerData.json" | ConvertFrom-Json ) | Where-Object { $_.Balance -ne $null } | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)).ToUniversalTime(); $_ }) } Else { $AllBalanceObjects = @() }
+            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { $AllBalanceObjects = @((Get-Content ".\logs\BalancesTrackerData.json" | ConvertFrom-Json ) | Where-Object { $_.Balance -ne $null } | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)).ToUniversalTime(); $_ } | Select-Object) } Else { $AllBalanceObjects = @() }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
                 $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue)
                 Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
-            } 
+            }
             Else { $DailyEarnings = @() }
         }
 
-        $Now = Get-Date
-        $Date = $Now.ToString("yyyy-MM-dd")
-        $CurDateUxFormat = ([DateTimeOffset]$Now.Date).ToUnixTimeMilliseconds()
-
         # Get pools api ref
-        If (-not $PoolAPI -or ($LastAPIUpdateTime -le $Now.AddDays(-1))) { 
+        If (-not $PoolAPI -or ($LastAPIUpdateTime -le (Get-Date).AddDays(-1))) { 
             # Try { 
             #     $PoolAPI = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/poolapidata.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
             #     $LastAPIUpdateTime = $Now
@@ -71,6 +67,11 @@ While ($true) {
         Write-Message "Balances Tracker requesting data ($(($PoolsToTrack -replace "24hr$" -replace "Coins$") -join ', '))."
 
         $PoolsToTrack | ForEach-Object { 
+
+            $Now = Get-Date
+            $Date = $Now.ToString("yyyy-MM-dd")
+            $CurDateUxFormat = ([DateTimeOffset]$Now.Date).ToUnixTimeMilliseconds()
+
             $PoolNorm = $PoolName = $_ -replace "24hr$" -replace "Coins$"
             $API = $PoolAPI | Where-Object Name -EQ $PoolNorm
             $APIUri = $API.WalletUri
