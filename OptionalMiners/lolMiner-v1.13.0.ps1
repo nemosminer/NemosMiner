@@ -2,7 +2,7 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\lolminer.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.12/lolMiner_v1.12_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.13/lolMiner_v1.13_Win64.zip"
 $DeviceEnumerator = "Bus"
 $EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
@@ -25,7 +25,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" }
     [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" }
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007;  MinMemGB = 4.0; Command = " --algo ETCHASH --enable-ecip1099" } #Ethereum Classic starting with epoch 390
-#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007;  MinMemGB = 4.0; Command = " --algo ETHASH" } #Bminer-v16.3.1 & PhoenixMiner-v5.1c are faster
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007;  MinMemGB = 0;  Command = " --algo ETHASH" } #Bminer-v16.3.1 & PhoenixMiner-v5.2b are faster
 
 #   [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --algo BEAM-I" } #Algo is dead, needs pers
 #   [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --algo BEAM-II" } #Algo is dead
@@ -45,7 +45,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
 #   [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETCHASH --enable-ecip1099" } #Ethereum Classic starting with epoch 390
-#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETHASH" } #TTMiner-v5.0.3 is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 0;   Command = " --algo ETHASH" } #TTMiner-v5.0.3 is fastest
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -61,6 +61,12 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 $MinMemGB = $_.MinMemGB
                 If ($_.Algorithm -eq "Ethash") { 
                     $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                    If ($Pools.($_.Algorithm).Name -match "^NiceHash*$|^MPH*$") { 
+                        $_.Command += " --ethstratum ETHV1"
+                    }
+                    Else { 
+                        $_.Command += " --ethstratum ETHPROXY --worker $($Pools.($_.Algorithm).User -split '\.' | Select-Object -Last 1)"
+                    }
                 }
 
                 If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0")) { $MinMemGB += 1 }
@@ -77,7 +83,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName      = $Miner_Devices.Name
                         Type            = $_.Type
                         Path            = $Path
-                        Arguments       = ("$($_.Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).pass)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}:0' -f $_.$DeviceEnumerator }) -join ',')").trim()
+                        Arguments       = ("$($_.Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).pass)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')").trim()
                         Algorithm       = $_.Algorithm
                         API             = "lolMiner"
                         Port            = $MinerAPIPort
