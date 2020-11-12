@@ -15,7 +15,7 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2020-10-08.log</Title>
+      <Title>NemosMiner_2020-11-07.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
         <Width>979</Width>
@@ -142,16 +142,6 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started miner .*</Keyword>
-          <MatchCaseSensitive>false</MatchCaseSensitive>
-          <MatchRegularExpression>true</MatchRegularExpression>
-          <LogHitCounter>false</LogHitCounter>
-          <TextColoring>true</TextColoring>
-          <AlertHighlight>false</AlertHighlight>
-          <TextColor>#00E600</TextColor>
-          <BackColor>Black</BackColor>
-        </Keyword>
-        <Keyword>
           <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopped miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
@@ -159,6 +149,16 @@
           <TextColoring>true</TextColoring>
           <AlertHighlight>false</AlertHighlight>
           <TextColor>#00AC00</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started miner .*</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#00E600</TextColor>
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
@@ -185,7 +185,7 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>..\Logs\switching.log</FilePath>
+      <FilePath>..\Logs\switchinglog.csv</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
       <FileCheckInterval>10</FileCheckInterval>
@@ -198,7 +198,7 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>switching.log</Title>
+      <Title>switchinglog.csv</Title>
       <WindowState>Minimized</WindowState>
       <WindowSize>
         <Width>348</Width>
@@ -557,8 +557,8 @@
     <Height>700</Height>
   </WindowSize>
   <WindowPosition>
-    <X>20</X>
-    <Y>18</Y>
+    <X>0</X>
+    <Y>19</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>
