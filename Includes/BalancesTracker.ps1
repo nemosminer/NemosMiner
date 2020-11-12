@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTrackerJob.ps1
-version:        3.9.9.7
+version:        3.9.9.8
 version date:   01 November 2020
 #>
 
@@ -260,7 +260,7 @@ While ($true) {
                     AvgHourlyGrowth         = [Double]$AvgHourlyGrowth
                     DailyGrowth             = [Double]($AvgHourlyGrowth * 24)
                     EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHourlyGrowth -gt 0) { $Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.total_unpaid) / $AvgHourlyGrowth) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
+                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHourlyGrowth -gt 0) { [DateTime]($Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.total_unpaid) / $AvgHourlyGrowth)) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
                     TrustLevel              = [Double](((($Now - ($PoolBalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum)
                     TotalHours              = ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
