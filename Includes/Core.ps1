@@ -454,12 +454,12 @@ Function Start-Cycle {
                         $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                            $Miner.StatStart = $Miner.StatEnd
                             #Update watchdog timer
                             $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName | Sort-Object Kicked | Select-Object -Last 1
                             If ($WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
                                 $WatchdogTimer.Kicked = $Stat.Updated
                             }
-                            $Miner.StatStart = $Miner.StatEnd
                         }
                     }
                 }
@@ -505,8 +505,8 @@ Function Start-Cycle {
                         $Miner.Workers | ForEach-Object { 
                             $Worker = $_
                             $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
-                            If ($WatchdogTimer) { 
-                                $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimer) -Property MinerName, PoolName, Algorithm, DeviceName -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                            If ($WatchdogTimer) {
+                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
                             }
                         }
                     }
@@ -862,10 +862,8 @@ Function Start-Cycle {
                     $Worker = $_
                     $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                     If ($WatchdogTimer) { 
-                        If ($WatchdogTimer.Kicked -ge $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval)) { 
-                            #Remove watchdog timer(s)
-                            $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimer) -Property MinerName, PoolName, Algorithm, DeviceName -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
-                        }
+                        #Remove watchdog timer(s)
+                        $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
                     }
                 }
             }
