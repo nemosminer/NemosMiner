@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           core.ps1
-version:        3.9.9.7
+version:        3.9.9.8
 version date:   11 November 2020
 #>
 
@@ -634,6 +634,7 @@ Function Start-Cycle {
             $_.Refresh($Variables.PowerCostBTCperW) #To be done before MeasurePowerUsage evaluation
             $_.MinDataSamples = $Config.MinDataSamples * (1, @($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).maximum
             $_.MeasurePowerUsage = [Boolean]($Variables.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
+            If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
         }
         Remove-Variable Miner -ErrorAction Ignore
         Remove-Variable NewMiners -ErrorAction Ignore

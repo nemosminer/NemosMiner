@@ -165,6 +165,9 @@
           <label title="Miner windows are minimized (default), but accessible"for="ShowMinerWindowsMinimized">Minimized</label><br>
           <input title="Miner windows are shown normally on desktop" type="radio" id="ShowMinerWindowsNormal" name="ShowMinerWindows" value="Normal">
           <label title="Miner windows are shown normally on desktop" for="ShowMinerWindowsNormal">Normal</label>
+          <br>
+          <input type="checkbox" id="ShowMinerWindowsNormalWhenBenchmarking" name="ShowMinerWindowsNormalWhenBenchmarking">
+          <label for="ShowMinerWindowsNormalWhenBenchmarking" title="">Show Miner Windows Normal when Benchmarking</label>
           <br><br>
           <input type="checkbox" id="Watchdog" name="Watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">
           <label for="Watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">Watchdog</label>
@@ -338,6 +341,9 @@
           if (config.ShowMinerWindows.toLowerCase() == "normal") {
             document.getElementById('ShowMinerWindowsNormal').checked = true;
           }
+          if (config.ShowMinerWindowsNormalWhenBenchmarking) {
+            document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked = true;
+          }
           if (config.AutoUpdate) {
             document.getElementById('AutoUpdate').checked = true;
           }
@@ -490,6 +496,7 @@
     if (document.getElementById('ShowMinerWindowsNormal').checked) {
       config.ShowMinerWindows = "normal" 
     }
+    config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
     if (document.getElementById('WatchdogMinerAlgorithmCount').value == null) { 
       document.getElementById('WatchdogMinerAlgorithmCount').value = 120;
     };

@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.7
+Version:        3.9.9.8
 Version date:   11 November 2020
 #>
 
@@ -161,6 +161,8 @@ param(
     [Switch]$ShowMinerFee = $true, #Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
     [Parameter(Mandatory = $false)]
     [String]$ShowMinerWindows = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowMinerWindowsNormalWhenBenchmarking = $true, #If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolBalances = $true, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
