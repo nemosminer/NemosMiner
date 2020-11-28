@@ -244,15 +244,29 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1,10 = 452.06
+recommended/optimal Windows Nvidia driver for 30 series GPU's Windows 10 = 457.30
 
-https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Windows/452.06/452.06-desktop-win10-64bit-international-whql.exe&lang=us&type=TITAN
+https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Windows/457.30/457.30-desktop-win10-64bit-international-dch-whql.exe&lang=us&type=TITAN
+
+recommended/optimal Windows Nvidia driver Windows 7,8,8.1,10 = 441.41
+
+[DCH:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,2.html)
+
+[Standard:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,1.html)
+
+[Windows7, 8, 8.1](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,3.html)
+
+recommended/optimal Windows AMD GPU Driver 20.3.1
+
+[Win10:](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,1.html)
+
+[Windows7, 8, 8.1](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,2.html)
 
    NemosMiner is currently tested on the following Rigs: 
 
       windows10-1xGTX-1660Super/RYZEN-3700x (Test PC) 
 
-      windows10-9xGTX-1660ti/Octominer (test Rig 1)
+      windows10-9xAMD-5700XT/Octominer (test Rig 1)
       windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
       windows8.1-6xRTX-2080/RYZEN-3700x (test Rig 3)
       (users have reported up to 12cards are working, I have not tested myself)
