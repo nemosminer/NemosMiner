@@ -244,17 +244,10 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver for 30 series GPU's Windows 10 = 457.30
+recommended/optimal Windows Nvidia driver = 457.30
 
 https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Windows/457.30/457.30-desktop-win10-64bit-international-dch-whql.exe&lang=us&type=TITAN
 
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1,10 = 441.41
-
-[DCH:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,2.html)
-
-[Standard:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,1.html)
-
-[Windows7, 8, 8.1](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,3.html)
 
 recommended/optimal Windows AMD GPU Driver 20.3.1
 
