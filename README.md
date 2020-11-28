@@ -113,7 +113,7 @@ Easy configuration, easy start:
 
    GUI
 
-      Since version 4.0 NemosMiner has a Web GUI making it easy to configure and run.
+      Since version 3.0 NemosMiner has a Web GUI making it easy to configure and run.
       Relies on config files. No need to edit bat files. Simply run NemosMiner.bat 
       Set the config on the config tab, save, close, run NemosMiner.bat
 
