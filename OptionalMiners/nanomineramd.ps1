@@ -1,12 +1,9 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-nanominer194\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v1.9.4/nanominer-windows-1.9.4.zip"
+$Path = ".\Bin\CPU-nanominer312\nanominer.exe"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.1.2/nanominer-windows-3.1.2-cuda11.zip"
 $Commands = [PSCustomObject]@{ 
-    #"Ethash" = "" #GPU Only
-    #"Ubqhash" = "" #GPU Only
-    #"Cuckaroo30" = "" #GPU Only
-    #"RandomX" = "" #CPU only
-    #"RandomHash2" = "" #CPU only
+     "Ubqhash" = "" #
+  
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -27,7 +24,7 @@ mport=0
 noLog=true
 rigName=$($Config.WorkerName)
 watchdog=false
-webPort=$($Variables.CPUMinerAPITCPPort)
+webPort=$($Variables.AMDMinerAPITCPPort)
 
 [$($_)]
 pool1=$($Pools.$Algo.Host):$($Pools.$Algo.Port)
@@ -37,12 +34,12 @@ wallet=$($Pools.$Algo.User)"
     }
 
     [PSCustomObject]@{ 
-        Type      = "CPU"
+        Type      = "AMD"
         Path      = $Path
         Arguments = $Arguments
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * (1 - $Fee) } # substract devfee
         API       = "nanominer"
-        Port      = $Variables.CPUMinerAPITCPPort
+        Port      = $Variables.AMDMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
     }
