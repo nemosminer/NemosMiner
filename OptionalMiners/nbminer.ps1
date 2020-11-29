@@ -1,8 +1,15 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-nbminer341\nbminer.exe"
+$Path = ".\Bin\NVIDIA-nbminer341\nbminer.exe"
 $Uri = "https://github.com/NebuTech/NBMiner/releases/download/v34.1/NBMiner_34.1_Win.zip"
 $Commands = [PSCustomObject]@{ 
-     "octopus"   = "-a octopus --fee 1 -o nicehash+tcp://" #octopus
+    #"grincuckatoo31"   = "-a cuckatoo --fee 1 -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
+    #"grincuckarood29"  = "-a cuckarood --fee 1 -o nicehash+tcp://" #grincuckaroo29
+    #"grincuckaroo29"   = "-a cuckaroo --fee 1 -o nicehash+tcp://" #grincuckaroo29
+    #"cuckoocycle"      = "-a cuckoo_ae --fee 1 --cuckoo-intensity 0 -o nicehash+tcp://" #cuckoocycle
+    "eaglesong+ethash" = "-a eaglesong_ethash --fee 1 -di 24,24,24,24,24,24,24,24,24 -o stratum+tcp://" #eaglesong + ethash
+    "handshake+ethash" = "-a hns_ethash --fee 1 -di 4,4,4,4,4,4,4,4,4 -o stratum+tcp://" #handshake + ethash
+    "handshake"        = "-a hns -o stratum+tcp://" #handshake
+   #"kawpow"           = "-a kawpow -o stratum+tcp://" #kawpow
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
@@ -33,13 +40,13 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     If ($Pools.$Algo.SSL) { $_ = $_ -replace '\+tcp\://$', '+ssl://' }
 
     [PSCustomObject]@{ 
-        Type      = "AMD"
+        Type      = "NVIDIA"
         Name      = $Name
         Path      = $Path
-        Arguments = "$($Commands.$_)$($Pools.$Algo.Host):$($Pools.$Algo.Port) --api 127.0.0.1:$($Variables.AMDMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.$Algo.User):$($Pools.$Algo.Pass)$Algo2Parameter"
+        Arguments = "$($Commands.$_)$($Pools.$Algo.Host):$($Pools.$Algo.Port) -no-nvml --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.$Algo.User):$($Pools.$Algo.Pass)$Algo2Parameter"
         HashRates = $HashRates
         API       = "nbminer"
-        Port      = $Variables.AMDMinerAPITCPPort
+        Port      = $Variables.NVIDIAMinerAPITCPPort
         Wrap      = $false
         URI       = $Uri
     }
