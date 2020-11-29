@@ -7,7 +7,6 @@ $Commands = [PSCustomObject]@{
     "ethash" = " --algo ethash" #ethash
     "etchash"= " --algo etchash" #etchash
     "kawpow" = " --algo kawpow" #kawpow
-    "mtp"    = " --algo mtp" #mtp
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
