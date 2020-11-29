@@ -4,7 +4,6 @@ $Path = ".\Bin\AMD-teamred0718\teamredminer.exe"
 $Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.18/teamredminer-v0.7.18-win.zip"
 
 $Commands = [PSCustomObject]@{
-    "ethash" = " --algo ethash" #ethash
     "etchash"= " --algo etchash" #etchash
     "kawpow" = " --algo kawpow" #kawpow
 }
