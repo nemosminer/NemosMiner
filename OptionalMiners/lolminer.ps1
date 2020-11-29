@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\AMD-lolminer107\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.07/lolMiner_v1.07_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.16/lolMiner_v1.16a_Win64.zip"
 $Commands = [PSCustomObject]@{ 
      "grincuckatoo31"    = " -a C31" #grincuckatoo31
      "grincuckatoo32"    = " -a C32" #grincuckatoo32
@@ -10,6 +10,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckarood29"   = " -c MWC-C29D"  #grincuckarood29
      "cuckaroom"         = " -c GRIN-C29M"  #cuckaroom
      "beamv3"            = " -a BEAM-III"  #beamv3
+     "etchash"           = " -a ETCHASH"  #etchash
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
