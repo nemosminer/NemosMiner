@@ -5,7 +5,6 @@ $Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.28.1/wild
 
 $Commands = [PSCustomObject]@{
     "mtp"           = " --algo mtp" #Mtp
-    "kawpow"        = " --algo kawpow" #KawPow
     "megabtx"       = " --algo megabtx" #KawPow
     "megamec"       = " --algo megamec" #KawPow
 }
