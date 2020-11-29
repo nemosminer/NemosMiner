@@ -6,6 +6,8 @@ $Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.27.3/wild
 $Commands = [PSCustomObject]@{
     "mtp"           = " --algo mtp" #Mtp
     "kawpow"        = " --algo kawpow" #KawPow
+    "megabtx"       = " --algo megabtx" #KawPow
+    "megamec"       = " --algo megamec" #KawPow
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
