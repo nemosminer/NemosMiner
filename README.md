@@ -2,7 +2,7 @@
 
 NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 06 September 2020
+Updated 29 November 2020
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases) +
 [![Github All Releases](https://img.shields.io/github/downloads/Minerx117/Nemosminer/total.svg)](https://github.com/Minerx117/Nemosminer/releases)
@@ -215,33 +215,20 @@ NemosMiner Monitoring Server : https://nemosminer.com
    
       NemosMiner will notify new version availability
  
-If you have Windows 7, 8, or 8.1, please update PowerShell: 
- 
-[update PowerShell](https://www.microsoft.com/en-us/download/details.aspx?id=54616)
- 
+If you have Windows 7, 8, or 8.1, please update PowerShell (Version 7.x is highly recommeded): 
+
+[update PowerShell](https://github.com/PowerShell/PowerShell/releases)
+
 Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
- 
+
 [Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver Windows 10 = 441.34
+recommended/optimal Windows Nvidia driver = 457.30
 
-[DCH:](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win10-64bit-international-dch.hf.exe)
+https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Windows/457.30/457.30-desktop-win10-64bit-international-dch-whql.exe&lang=us&type=TITAN
 
-[Standard:](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win10-64bit-international.hf.exe)
-
-recommended/optimal Windows Nvidia driver Windows 7,8,8.1 = 441.34
-
-[Windows7, 8, 8.1](https://international.download.nvidia.com/Windows/441.34hf/441.34-desktop-notebook-win8-win7-64bit-international.hf.exe)
-
-GTX 1650 Super Driver
-
-[DCH:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,2.html)
-
-[Standard:](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,1.html)
-
-[Windows7, 8, 8.1](https://www.guru3d.com/files-get/geforce-441-41-whql-driver-download,3.html)
 
 recommended/optimal Windows AMD GPU Driver 20.3.1
 
@@ -249,21 +236,23 @@ recommended/optimal Windows AMD GPU Driver 20.3.1
 
 [Windows7, 8, 8.1](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,2.html)
 
-   NemosMiner is Currently Tested on the following Rigs: 
-      
-      windows10-1xGTX-1660Super/1xAMD-RX5600XT/1xAMD-RYZEN-3700x (Test Pc) 
-      
-      windows10-9xRX-5700XT/Octominer (test Rig 1)
-      windows10-6xRTX-2060/RYZEN-3700x  (test Rig 2)
-      windows8.1-6xRTX-2080/RYZEN-3700x   (test Rig 3)
-      (users have reported up to 12cards working have not tested myself)
-      Some miners do not support more that 9 cards
+   NemosMiner is currently tested on the following Rigs: 
+
+      windows10-1xGTX-1660Super/RYZEN-3700x (Test PC) 
+
+      windows10-9xAMD-5700XT/Octominer (test Rig 1)
+      windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
+      windows8.1-6xRTX-2080/RYZEN-3700x (test Rig 3)
+      (users have reported up to 12cards are working, I have not tested myself)
+      Some miners do not support more than 9 cards
 
       CPU miners are tested with AMD Ryzen 3700x CPU's
 
 *****
 
 Licensed under the GNU General Public License v3.0
-Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
+Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license.
+Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
+https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 
 Happy Mining
