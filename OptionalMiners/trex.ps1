@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\NVIDIA-trex0185\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.5/t-rex-0.18.5-win-cuda10.0.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.18.11/t-rex-0.18.11-win-cuda11.1.zip"
 $Commands = [PSCustomObject]@{ 
     "balloon"    = " -a balloon -i 23" #Balloon
    #"astralhash" = " -a astralhash -i 23" #Astralhash
@@ -32,7 +32,8 @@ $Commands = [PSCustomObject]@{
    #"kawpow"     = " -a kawpow" #kawpow 
    #"progpow"    = " -a progpow -i 21" #progpow 
     "x25x"       = " -a x25x -i 21" #x25x
-   #"honeycomb"  = " -a honeycomb -i 26" #Honeycomb
+    "ethash"     = " -a ethash -i 20" #Ethash
+    "etchash"    = " -a etchash -i 20" #Etchash
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
