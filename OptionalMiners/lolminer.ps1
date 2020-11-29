@@ -10,7 +10,6 @@ $Commands = [PSCustomObject]@{
     #"grincuckarood29"   = " -c MWC-C29D"  #grincuckarood29
      "cuckaroom"         = " -c GRIN-C29M"  #cuckaroom
      "beamv3"            = " -a BEAM-III"  #beamv3
-     "etchash"           = " -a ETCHASH"  #etchash
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
