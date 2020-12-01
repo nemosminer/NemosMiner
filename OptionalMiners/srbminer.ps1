@@ -11,6 +11,7 @@ $Commands = [PSCustomObject]@{
     "yescryptR16"        = " --algorithm yescryptR16" #yescryptR16  
     "yescryptR32"        = " --algorithm yescryptR32" #yescryptR32   
     "yespower"           = " --algorithm yespower" #yespower 
+    "curvehash"          = " --algorithm curvehash" #curvehash 
     "yespowerr16"        = " --algorithm yespowerr16" #yespowerr16 
     "cryptonight-monero" = " --algorithm randomx --randomx-use-1gb-pages" #randomx
 }
