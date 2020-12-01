@@ -1,5 +1,5 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-trex0185\t-rex.exe"
+$Path = ".\Bin\NVIDIA-trex0190\t-rex.exe"
 $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.19.0/t-rex-0.19.0-win-cuda11.1.zip"
 #$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.19.0/t-rex-0.19.0-win-cuda10.0.zip"
 $Commands = [PSCustomObject]@{ 
