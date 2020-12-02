@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           API.psm1
 version:        3.9.9.8
-version date:   01 November 2020
+version date:   01 December 2020
 #>
 
 Function Start-APIServer { 
@@ -386,8 +386,8 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
                         Break
                     }
-                    "/balancestrackerrunspace" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables.BalancesTrackerRunspace | Select-Object)
+                    "/balanceobjects" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BalanceObjects | Sort-Object DateTime -Descending)
                         Break
                     }
                     "/btcratefirstcurrency" { 
@@ -409,6 +409,10 @@ Function Start-APIServer {
                     "/currencies" { 
                         $Data = ConvertTo-Json -Depth 10 ($Config.Currency)
                         break
+                    }
+                    "/dagdata" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.DAGdata | Select-Object)
+                        Break
                     }
                     "/devices" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Select-Object)
