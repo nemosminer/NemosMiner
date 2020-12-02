@@ -41,9 +41,15 @@ While ($true) {
         If (-not $Now) { 
             Write-Message "Balances Tracker started."
             # Read existing earning data
-            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { $AllBalanceObjects = ((Get-Content ".\logs\BalancesTrackerData.json" | ConvertFrom-Json ) | Where-Object Balance -NE $null | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)).ToUniversalTime(); $_ }) } Else { $AllPoolEstimateBalanceObjects = @() }
+            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { 
+                $AllBalanceObjects = ((Get-Content ".\logs\BalancesTrackerData.json" | ConvertFrom-Json ) | Where-Object Balance -NE $null | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)).ToUniversalTime(); $_ })
+            } Else { 
+                $AllBalanceObjects = @()
+            }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
-                $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue) } Else { $DailyEarnings = @()
+                $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue) 
+            } Else { 
+                $DailyEarnings = @()
                 Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
             }
         }
@@ -366,7 +372,7 @@ While ($true) {
         } | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore
 
         #Keep only last 14 days
-        If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = $AllBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddDays( -14 ) } }
+        If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddDays( -14 ) }) }
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore }
         $Variables.BalanceObjects = $AllBalanceObjects
 
