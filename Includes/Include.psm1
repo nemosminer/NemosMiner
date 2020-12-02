@@ -75,12 +75,11 @@ Class Pool {
 
     [String]$Name
     [String]$Algorithm
-    [Int]$EthashEpoch = 0
-    [Int64]$EthashBlockHeight = 0
-    [Int64]$EthashDAGsize = 0
+    [Int]$BlockHeight = 0
+    [Int64]$DAGsize = 0
+    [Int]$Epoch = 0
     [String]$Currency = ""
     [String]$CoinName = ""
-    [String]$Protocol
     [String]$Host
     [UInt16]$Port
     [String]$User
@@ -191,7 +190,6 @@ Class Miner {
 
     [Double]$AllowedBadShareRatio = 0
     [String]$MinerUri = ""
-    [PSCustomObject]$SwitchingLogData = [PSCustomObject]@{ }
 
     [String[]]GetProcessNames() { 
         Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf -ErrorAction Ignore)).BaseName)
@@ -243,7 +241,8 @@ Class Miner {
 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } #When benchmarking clear data on each miner start
 
-            $this.SwitchingLogData = [PSCustomObject]@{ 
+            #Log switching information to .\Logs\SwitchingLog.csv
+            [PSCustomObject]@{ 
                 Date         = [String](Get-Date -Format o)
                 Action       = "Started"
                 Name         = $this.Name
@@ -258,9 +257,7 @@ Class Miner {
                 Profit       = [Double]$this.Profit
                 Profit_Bias  = [Double]$this.Profit_Bias
                 CommandLine  = $this.CommandLine
-            }
-            #Log switching information to .\Logs\switchinglog.csv
-            $this.SwitchingLogData | Export-Csv -Path ".\Logs\switchinglog.csv" -Append -NoTypeInformation -ErrorAction Ignore
+            } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
             If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId | Select-Object -Last 1)) { 
                 $this.Status = [MinerStatus]::Running
@@ -287,19 +284,23 @@ Class Miner {
             $this.Process = $null
         }
 
-        #Update switching log data
-        If ($this.Status -eq [MinerStatus]::Failed) { 
-            $this.SwitchingLogData.Action = "Failed"
-        }
-        Else { 
-            $this.SwitchingLogData.Action = "Stopped"
-        }
-        $this.SwitchingLogData.Date     = [String](Get-Date -Format o)
-        $this.SwitchingLogData.Duration = [String]($this.EndTime - $this.BeginTime) -Split '\.' | Select-Object -Index 0
-
-        #Log switching information to .\Logs\switchinglog.csv
-        $this.SwitchingLogData | Export-Csv -Path ".\Logs\switchinglog.csv" -Append -NoTypeInformation -ErrorAction Ignore
-        $this.SwitchingLogData = [PSCustomObject]@{ }
+        #Log switching information to .\Logs\SwitchingLog
+        [PSCustomObject]@{ 
+            Date         = [String](Get-Date -Format o)
+            Action       = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
+            Name         = $this.Name
+            Device       = ($this.Devices.Name | Sort-Object) -join "; "
+            Type         = ($this.Type -join " & ")
+            Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
+            Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+            Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
+            Duration     = [String]($this.EndTime - $this.BeginTime) -Split '\.' | Select-Object -Index 0
+            Earning      = [Double]$this.Earning
+            Earning_Bias = [Double]$this.Earning_Bias
+            Profit       = [Double]$this.Profit
+            Profit_Bias  = [Double]$this.Profit_Bias
+            CommandLine  = $this.CommandLine
+        } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
         #Stop Miner data reader
         Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
@@ -489,7 +490,7 @@ Class Miner {
         $PowerUsages_Averages = @{ }
         $PowerUsages_Variances = @{ }
 
-        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage) #Do not use 0 valued samples
+        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage | Sort-Object PowerUsage) #Do not use 0 valued samples
 
         #During power measuring strip some of the lowest and highest sample values
         If ($Safe) { 
@@ -497,7 +498,7 @@ Class Miner {
         }
         Else { $SkipSamples = 0 }
 
-        $PowerUsages_Samples | Sort-Object PowerUsage | Select-Object -Skip $SkipSamples | Select-Object -SkipLast $SkipSamples | ForEach-Object { 
+        $PowerUsages_Samples | Select-Object -Skip $SkipSamples | Select-Object -SkipLast $SkipSamples | ForEach-Object { 
             $Data_Devices = $_.Device
             If (-not $Data_Devices) { $Data_Devices = $PowerUsages_Devices }
 
@@ -1257,7 +1258,7 @@ Function Read-Config {
         Write-Message -Level WARN  "New configuration using default values has been created. Use the GUI to save the configuration, then start mining."
     }
 
-    #Build pools configuations
+    #Build pools configuation
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
         $PoolsConfig_Tmp = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($PoolsConfig_Tmp.PSObject.Properties.Count -eq 0 -or $PoolsConfig_Tmp -isnot [PSCustomObject]) { 
@@ -1267,7 +1268,7 @@ Function Read-Config {
 
     #Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
-    $Config.PoolName | ForEach-Object { 
+    (Get-ChildItem .\Pools\*.ps1 -File).BaseName | ForEach-Object { 
         $PoolName = $_ -replace "24hr" -replace "Coins"
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
@@ -2780,11 +2781,32 @@ Function Get-EthashSize {
         [Double]$Block
     )
 
-    If (-not $Block) { Return [Math]::Pow(2, 32) } # Default 4GB
+    If (-not $Block) { Return 4 * 1GB } # Default 4GB
 
     $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
     $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
     $EPOCH_LENGTH = 30000
+    $MIX_BYTES = 128
+
+    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
+    $Size -= $MIX_BYTES
+    While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
+
+    Return $Size
+}
+
+Function Get-EtcHashSize { 
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Block
+    )
+
+    If (-not $Block) { Return 3 * 1GB } # Default 3GB
+
+    $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
+    $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
+    $EPOCH_LENGTH = 60000
     $MIX_BYTES = 128
 
     $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
