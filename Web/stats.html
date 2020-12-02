@@ -5,58 +5,62 @@
 
 <div class="alert alert-info" role="alert">NemosMiner stores all profit, hashrate and power usage data in stat files.</div>
 
-<div class="card-group mb-4">
-  <div class="card m-2">
+<div class="card-deck">
+  <div class="card mt-3">
     <div class="card-header">
       <h5>Reset Benchmarks for 0H/s miners</h5>
     </div>
     <div class="card-body">
       <p>Clear the stats for miners that have a benchmarked hashrate of 0H/s.</p>
-      <p>These miners may have failed to benchmark properly, clearing their stats allows them to attempt benchmarking again.<br>You should watch closely for failed miners after doing this. </p>
+      <p>These miners may have failed to benchmark properly, clearing their stats allows them to attempt benchmarking again.<br>You should watch closely for failed miners after doing this.</p>
       <a href="#" id="showzerohashrateminers" class="btn btn-info">Show 0H/s miner stats</a>
       <p></p>
       <a href="#" id="resetzerohashrateminers" class="btn btn-primary">Reset 0H/s miner stats</a>
     </div>
   </div>
-  <div class="card m-2">
+  <div class="card mt-3">
     <div class="card-header">
       <h5>Reset PowerUsage for 0W miners</h5>
     </div>
     <div class="card-body">
       <p>Clear the stats for miners that have a measured power usage of 0W.</p>
-      <p>These miners may have failed to measure power usage properly, clearing their recorded value allows them to attempt measuring again. </p>
+      <p>These miners may have failed to measure power usage properly, clearing their recorded value allows them to attempt measuring again.</p>
       <a href="#" id="showzeropowerusageminers" class="btn btn-info">Show 0W power usage data</a>
       <p></p>
       <a href="#" id="resetzeropowerusageminers" class="btn btn-primary">Reset 0W power usage data</a>
     </div>
   </div>
-  <div class="card m-2 bg-info">
+  <div class="card mt-3">
     <div class="card-header">
       <h5>Reset Profit Data</h5>
-      </div>
-      <div class="card-body">
-        <p>Reset profit data.</p>
-        <p>To ensure your profit data is accurate, you should do this after hardware changes, changing overclock settings, driver updates, and miner updates. This will force profit data to start fresh. </p>
-      <a href="#" id="resetallprofit" class="btn btn-danger">Reset profit data</a>
-      </div>
     </div>
-    <div class="card m-2 bg-warning">
-      <div class="card-header">
+    <div class="card-body">
+      <p>Reset profit data.</p>
+      <p>To ensure your profit data is accurate, you should do this after hardware changes, changing overclock settings, driver updates, and miner updates.</p>
+      <a href="#" id="resetallprofit" class="btn btn-primary">Reset profit data</a>
+    </div>
+  </div>
+  <div class="card mt-3 bg-warning">
+    <div class="card-header">
       <h5>Reset All Benchmarks</h5>
-      </div>
-      <div class="card-body">
-        <p>Reset the stats for all miners.</p>
-        <p>To ensure your benchmarks are accurate, you should do this after hardware changes, changing overclock settings, driver updates, and miner updates. This will force benchmarking to start fresh. </p>
-        <a href="#" id="resetallbenchmarks" class="btn btn-danger">Reset all miner stats</a>
-      </div>
     </div>
-      <div class="card m-2 bg-warning">
-      <div class="card-header">
+    <div class="card-body">
+      <p>Reset the stats for all miners.</p>
+      <p>To ensure your benchmarks are accurate, you should do this after hardware changes, changing overclock settings, driver updates, and miner updates.</p>
+      <p></p>
+      <p>This will force all miners to benchmark again.</p>
+      <a href="#" id="resetallbenchmarks" class="btn btn-danger">Reset all miner stats</a>
+    </div>
+  </div>
+  <div class="card mt-3 bg-warning">
+    <div class="card-header">
       <h5>Reset All Power Usage</h5>
     </div>
     <div class="card-body">
       <p>Clear the power usage recordings for all miners.</p>
-      <p>To ensure your power usage recordings are accurate, you should do this after hardware changes, changing overclock settings, driver updates, and miner updates. This will force power usage measurements to start fresh. </p>
+      <p>To ensure your power usage recordings are accurate, you should do this after hardware changes, changing overclock settings, driver updates, and miner updates.</p>
+      <p></p>
+      <p>This will force all miners to measure power again.</p>
       <a href="#" id="resetallpowerusage" class="btn btn-danger">Reset all power usage data</a>
     </div>
   </div>

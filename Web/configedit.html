@@ -61,8 +61,8 @@
         <button type="button" id="defaultAlgorithm" name="defaultAlgorithm" title="Load the default algorithm list &#10;for the selected pools">Load default algorithms</button>
         <br><br>
 
-        <label for="Currency">Currencies</label>
-        <input type="text" id="Currency" name="Currency" value="mBTC" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main Currency" size=64>
+        <label for="Currency" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">Currencies</label>
+        <input type="text" id="Currency" name="Currency" value="mBTC" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency" size=64>
         <br>
 
         <label title="Default payout Currency for all pools &#10;Important: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information &#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')" for="PayoutCurrency">Default Payout Currency</label>
@@ -73,9 +73,9 @@
         <input type="text" id="Proxy" name="Proxy" title="Enter Proxy IP address and port &#10;e.g. 192.168.1.1:3128" size=24>
         <br><br>
 
-        <label title="As long as no other miner has earning/profit that are &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct" >Running Miner Gain</label>
-        <input title="As long as no other miner has earning/profit that are &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5>
-        <label title="As long as no other miner has earning/profit that are &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct" >%</label>
+        <label title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct" >Running Miner Gain</label>
+        <input title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5>
+        <label title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct" >%</label>
         <br>
       </td>
       <td>
@@ -122,8 +122,8 @@
             <br>
           </fieldset>
           <br>
-          <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel" title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070 &#10;This will increase profitability">
-          <label for="MinerInstancePerDeviceModel" title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070 &#10;This will increase profitability">Run miner instance per device model</label>
+          <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel" title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070.&#10;This will increase profitability.">
+          <label for="MinerInstancePerDeviceModel" title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070.&#10;This will increase profitability.">Run miner instance per device model</label>
           <br>
           <input type="checkbox" id="DisableMinerFees" name="DisableMinerFees" title="NemosMiner will disable miner fees &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate)">
           <label for="DisableMinerFees" title="NemosMiner will disable miner fees &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate)">Disable Miner Fees</label>
@@ -137,20 +137,20 @@
           <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining" title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">
           <label for="DisableSingleAlgoMining" title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">Disable Single Algorithm Miners</label>
           <br><br>
-          <input type="checkbox" id="AutoStart" name="AutoStart" title="Automatically start mining when NemosMiner is started">
-          <label for="AutoStart" title="Automatically start mining when NemosMiner is started">Auto Start</label>
+          <input type="checkbox" id="AutoStart" name="AutoStart" title="Initiate background processes and start mining when NemosMiner is launched">
+          <label for="AutoStart" title="Initiate background processes and start mining when NemosMiner is launched">Auto Start</label>
           <br>
-          <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px" title="Start background processes, but do no not start mining when NemosMiner is started">
-          <label for="StartPaused" title="Start background processes, but do no not start mining when NemosMiner is started">Pause mining on Auto Start</label>
+          <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px" title="Initiate background processes, but do no not start mining">
+          <label for="StartPaused" title="Initiate background processes, but do no not start mining">Pause mining on Auto Start</label>
           <br>
           <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle" title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
           <label for="MineWhenIdle" title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">Mine only when system is idle for</label>
           <input title="Seconds the system must be idle until mining starts" type="number" id="IdleSec" name="IdleSec" min="0" max="3600" value=120>
           <label for="IdleSec" title="Seconds the system must be idle until mining starts">seconds</label>
           <br><br>
-          <label for="BalancesTrackerPollInterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable">Poll Pools for Earnings & Balances every</label>
-          <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" value=15 length=3 min=0 max=60 title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable">
-          <label for="BalancesTrackerPollInterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable">minutes</label>
+          <label for="BalancesTrackerPollInterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable Balances Summary)">Poll Pools for Earnings & Balances every</label>
+          <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable Balances Summary)">
+          <label for="BalancesTrackerPollInterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable Balances Summary)">minutes</label>
           <br>
           <input type="checkbox" id="EnableBalancesTrackerLog" title="NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv" name="EnableBalancesTrackerLog" style="margin-left:20px">
           <label for="EnableBalancesTrackerLog" title="NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv">Earnings tracker Log</label>
@@ -158,16 +158,16 @@
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized">
           <label for="StartGUIMinimized" title="">Start Legacy GUI minimized</label>
           <br><br>
-          <legend class=h6>Show Miner Windows</legend>
+          <legend class=h6>Run Miners as</legend>
           <input title="Miners will run as a hidden background task and are not accessible (not recommended)" type="radio" id="ShowMinerWindowsHidden" name="ShowMinerWindows" value="Hidden">
-          <label title="Miners will run as a hidden background task and are not accessible (not recommended)" for="ShowMinerWindowsHidden">Hidden</label><br>
+          <label title="Miners will run as a hidden background task and are not accessible (not recommended)" for="ShowMinerWindowsHidden">Hidden background task</label><br>
           <input title="Miner windows are minimized (default), but accessible" type="radio" id="ShowMinerWindowsMinimized" name="ShowMinerWindows" value="Minimized">
-          <label title="Miner windows are minimized (default), but accessible"for="ShowMinerWindowsMinimized">Minimized</label><br>
+          <label title="Miner windows are minimized (default), but accessible"for="ShowMinerWindowsMinimized">Minimized window</label><br>
           <input title="Miner windows are shown normally on desktop" type="radio" id="ShowMinerWindowsNormal" name="ShowMinerWindows" value="Normal">
-          <label title="Miner windows are shown normally on desktop" for="ShowMinerWindowsNormal">Normal</label>
+          <label title="Miner windows are shown normally on desktop" for="ShowMinerWindowsNormal">Normal window</label>
           <br>
           <input type="checkbox" id="ShowMinerWindowsNormalWhenBenchmarking" name="ShowMinerWindowsNormalWhenBenchmarking">
-          <label for="ShowMinerWindowsNormalWhenBenchmarking" title="">Show Miner Windows Normal when Benchmarking</label>
+          <label for="ShowMinerWindowsNormalWhenBenchmarking" title="This is helpful to check the miner output for errors">When benchmarking run in normal window</label>
           <br><br>
           <input type="checkbox" id="Watchdog" name="Watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">
           <label for="Watchdog" title="Enable watchdog to suspend failing pools or miners for some cycles">Watchdog</label>
@@ -322,7 +322,7 @@
           } else {
             document.getElementById('IdleSec').value = parseInt(config.IdleSec);
           }
-          document.getElementById('BalancesTrackerPollInterval').value = config.BalancesTrackerPollInterval;
+          document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
           if (config.BalancesTrackerPollInterval == 0) {
             document.getElementById('EnableBalancesTrackerLog').diabled = true;
           }
@@ -383,9 +383,9 @@
           }
           //must be placed after pool loading
           document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
-          document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked);
+          document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked || document.getElementById('mphcoins').checked);
           document.getElementById('MPHUserName').value = config.MPHUserName;
-          document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked);
+          document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked || document.getElementById('mphcoins').checked);
           document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
           document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('nicehash').checked);
           document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
@@ -484,6 +484,13 @@
       document.getElementById('IdleSec').value = 120;
     };
     config.IdleSec = parseInt(document.getElementById('IdleSec').value);
+    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == null || isNaN(parseInt(document.getElementById('BalancesTrackerPollInterval').value))) { 
+      document.getElementById('BalancesTrackerPollInterval').value = 5;
+    } else if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) <= 0) { 
+      document.getElementById('BalancesTrackerPollInterval').value = 0;
+    } else if(parseInt(document.getElementById('BalancesTrackerPollInterval').value) >= 60) { 
+      document.getElementById('BalancesTrackerPollInterval').value = 60;
+    };
     config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
     config.EnableBalancesTrackerLog = document.getElementById('EnableBalancesTrackerLog').checked;
     config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
@@ -498,19 +505,19 @@
     }
     config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
     if (document.getElementById('WatchdogMinerAlgorithmCount').value == null) { 
-      document.getElementById('WatchdogMinerAlgorithmCount').value = 120;
+      document.getElementById('WatchdogMinerAlgorithmCount').value = 3;
     };
     config.WatchdogMinerAlgorithmCount = parseInt(document.getElementById('WatchdogMinerAlgorithmCount').value);
     if (document.getElementById('WatchdogMinerCount').value == null) { 
-      document.getElementById('WatchdogMinerCount').value = 120;
+      document.getElementById('WatchdogMinerCount').value = 6;
     };
     config.WatchdogMinerCount = parseInt(document.getElementById('WatchdogMinerCount').value);
     if (document.getElementById('WatchdogPoolAlgorithmCount').value == null) { 
-      document.getElementById('WatchdogPoolAlgorithmCount').value = 120;
+      document.getElementById('WatchdogPoolAlgorithmCount').value = 3;
     };
     config.WatchdogPoolAlgorithmCount = parseInt(document.getElementById('WatchdogPoolAlgorithmCount').value);
     if (document.getElementById('WatchdogPoolCount').value == null) { 
-      document.getElementById('WatchdogPoolCount').value = 120;
+      document.getElementById('WatchdogPoolCount').value = 7;
     };
     config.WatchdogPoolCount = parseInt(document.getElementById('WatchdogPoolCount').value);
     config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
@@ -548,7 +555,7 @@
       pool.checked = false;
     }
 
-    if (PoolName == 'mph') {
+    if (PoolName == 'mph' || PoolName == 'mphcoins') {
       document.getElementById('MPHUserName').disabled = !(document.getElementById(PoolName).checked);
       document.getElementById('MPHAPIKey').disabled = !(document.getElementById(PoolName).checked);
     }

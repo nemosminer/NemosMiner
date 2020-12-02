@@ -6,7 +6,7 @@
 <div id="watchdog" class="alert alert-info" role="alert"></div>
 
 <div id="toolbar">
-  <button id="resetwatchdog" class="btn btn-primary">Reset Watchdog Timers</button>
+  <button id="resetwatchdog" class="btn btn-primary" title="Clear all watchdog timers. They will get re-created on next cycle.">Clear Watchdog Timers</button>
 </div>
 
 <table id="watchdogtimers" class="table"
@@ -57,7 +57,7 @@
         url: '/functions/watchdogtimers/reset', success: function (result) {
           $('.modal-body').text('All watchdog timers will be reset on next cycle. ');
           $('#myModal').modal({ show: true });
-          $('#watchdog').bootstrapTable('removeAll');
+          $('#watchdogtimers').bootstrapTable('refresh');
         }
       })
     });
@@ -98,4 +98,4 @@
 </script>
 
 <!-- End of page scripts -->
-<!--#include file="/parts/foot.html" --> 
+<!--#include file="/parts/foot.html" -->

@@ -22,7 +22,7 @@ function formatMiners(data) {
         item.tDevices = item.DeviceName.toString();
       }
       else {
-        item.tDevices = "";
+        item.tDevices = '';
       }
 
       // Format the algorithm(s)
@@ -64,7 +64,7 @@ function formatMiners(data) {
         item.tReason = item.Reason.join('; ');
       }
       else {
-        item.Reason = "";
+        item.Reason = '';
       }
 
       // Format status
@@ -79,7 +79,7 @@ function formatTimeSince(value) {
   var localtime = new Date().getTime();
   var seconds = Math.floor((new Date() - date) / 1000);
   if (isNaN(seconds)) {
-      seconds = Math.floor((localtime - parseInt(value.replace("/Date(", "").replace(")/", ""))) / 1000);
+      seconds = Math.floor((localtime - parseInt(value.replace("/Date(", '').replace(")/", ''))) / 1000);
   }
   var interval = Math.floor(seconds / 31536000);
   if (interval > 1) {
@@ -120,6 +120,7 @@ function formatTimeSince(value) {
 
 function formatHashRateValue(value) {
   var sizes = ['H/s','kH/s','MH/s','GH/s','TH/s','PH/s','EH/s', 'ZH/s', 'YH/s'];
+  if (value == '') return ''
   if (isNaN(value)) return '-';
   if (value == "0.0") return '-';
   if (value > 0 && value <= 1) return value.toFixed(2) + ' H/s';
@@ -137,6 +138,7 @@ function formatHashRate(value) {
 }
 
 function formatmBTC(value) {
+  if (value == '') return "-";
   if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
   if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
@@ -144,6 +146,7 @@ function formatmBTC(value) {
 };
 
 function formatBTC(value) {
+  if (value == '') return "-";
   if (value > 0) return parseFloat(value * rate).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
   if (value < 0) return parseFloat(value * rate).toFixed(8);
@@ -151,6 +154,7 @@ function formatBTC(value) {
 };
 
 function formatDate(value) {
+  if (value == '') return "N/A";
   if (Date.parse(value )) { return (new Date(value).toLocaleString(navigator.language)) };
   if (value == "Unknown") { return "N/A" }
   if (value == null) { return "N/A" }
@@ -158,22 +162,26 @@ function formatDate(value) {
 };
 
 function formatWatt(value) {
+  if (value == '') return "-";
   if (value > 0) return parseFloat(value).toFixed(2) + ' W';
   if (value == 0) return parseFloat(0).toFixed(2) + ' W';
   return '-';
 };
 
 function formatPercent(value) {
+  if (value == '') return "-";
   if (isNaN(value)) return '-';
   return parseFloat(value * 100).toFixed(2) + ' %';
 };
 
 function formatPrices(value) {
+  if (value == '') return "-";
   if (isNaN(value)) return '-';
   return (value * 1000000000).toFixed(10);
 };
 
 function formatArrayAsString(value) {
+  if (value == '') return ''
   if (value == null) return '';
   return value.join('; ');
 };

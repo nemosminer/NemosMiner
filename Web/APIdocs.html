@@ -16,9 +16,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>. -->
 
 <!-- Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.5
-version date:   04 October 2020
- -->
+version:        3.9.9.8
+version date:   01 December 2020
+-->
 
 <html>
 
@@ -50,17 +50,13 @@ version date:   04 October 2020
   <a href="http://localhost:3999/btcratefirstcurrency">/btcratefirstcurrency</a>
   <p>Shows the curent BTC exchange rate for the first currency.</p>
 
-  <h3>BalancesTrackerRunspace</h3>
-  <a href="http://localhost:3999/balancestrackerrunspace">/balancestrackerrunspace</a>
-  <p>Returns the balancestrackerrunspace information.</p>
+  <h3>Balance Objects</h3>
+  <a href="http://localhost:3999/balanceobjects">/balanceobjects</a>
+  <p>Returns the balance objects data.</p>
 
   <h3>BrainJobs</h3>
   <a href="http://localhost:3999/brainjobs">/brainjobs</a>
   <p>Returns the brainjobs information.</p>
-
-  <h3>Config</h3>
-  <a href="http://localhost:3999/config">/config</a>
-  <p>Returns the current config.</p>
 
   <h3>ConfigFile</h3>
   <a href="http://localhost:3999/configfile">/configfile</a>
@@ -83,7 +79,7 @@ version date:   04 October 2020
   <p>Shows information about all enabled mining devices.</p>
 
   <h3>Get Running Configuration</h3>
-  <a href="http://localhost:3999/config/get">/config</a>
+  <a href="http://localhost:3999/config">/config</a>
   <p>Shows the full configuration for the running script, after all variable substitution.</p>
 
   <h3>Earnings</h3>
@@ -93,6 +89,10 @@ version date:   04 October 2020
   <h3>Earnings Chart Data</h3>
   <a href="http://localhost:3999/earningschartdata">/earningschartdata</a>
   <p>Returns the data required for earnings chart.</p>
+
+  <h3>DAG Data</h3>
+  <a href="http://localhost:3999/dagdata">/dagdata</a>
+  <p>Returns the DAG data (Ethash & EtcHash).</p>
 
   <h3>First currency</h3>
   <a href="http://localhost:3999/firstcurrency">/firstcurrency</a>
@@ -119,7 +119,7 @@ version date:   04 October 2020
   <p>Shows the running miners data, use for debugging.</p>
 
   <h3>Mining power cost</h3>
-  <a href="http://localhost:3999/miningcost">/miningpowercost</a>
+  <a href="http://localhost:3999/miningpowercost">/miningpowercost</a>
   <p>Shows current mining power cost.
 
   <h3>Mining earning</h3>
@@ -156,7 +156,7 @@ version date:   04 October 2020
 
   <h3>Regions</h3>
   <a href="http://localhost:3999/regions">/regions</a>
-  <p>Shows the supported regions (defined in Regions.txt).</p>
+  <p>Shows the region information (defined in Regions.txt).</p>
 
   <h3>Rig Monitor</h3>
   <a href="http://localhost:3999/displayworkers">/displayworkers</a>
