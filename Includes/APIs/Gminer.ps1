@@ -15,8 +15,6 @@ class Gminer : Miner {
         Catch { 
         }
 
-        $Data | ConvertTo-Json -Compress > ".\Debug\Gminer_$($this.algorithm -join '-').json"
-
         $HashRate = [PSCustomObject]@{ }
         $Shares = [PSCustomObject]@{ }
 
