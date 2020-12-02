@@ -6,7 +6,7 @@ $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpumi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; Command = " --algo cpupower" } #SRBMminerMulti-v0.5.5 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CpuPower"; Command = " --algo cpupower" } #SRBMminerMulti-v0.5.8 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Power2b";  Command = " --algo power2b" }
 )
 
@@ -24,12 +24,14 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 #Get commands for active miner devices
                 #$_.Command = Get-CommandPerDevice -Command $_ .Command-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
+                If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
+
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name
                     DeviceName = $Miner_Devices.Name
                     Type       = "CPU"
                     Path       = $Path
-                    Arguments  = ("$($_.Command) --url $($Pools.($_.Algorithm).Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-affinity AAAA --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                    Arguments  = ("$($_.Command) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-affinity AAAA --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
                     Algorithm  = $_.Algorithm
                     API        = "Ccminer"
                     Port       = $MinerAPIPort
