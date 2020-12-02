@@ -643,27 +643,18 @@ Function Global:TimerUITick {
             }
 
             Clear-Host
-            If ($Config.UIStyle -eq "Full" -and ([Array]$ProcessesIdle = $Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
-                Write-Host "Run Miners: " $ProcessesIdle.Count
-                $ProcessesIdle | Sort-Object { If ($null -eq $_.Process) { (Get-Date) } Else { $_.Process.ExitTime } } | Format-Table -Wrap (
-                    @{ Label = "Run  "; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $($_.GetCommandLineParameters())" } }  
-                ) | Out-Host
-            }
-
-            Write-Host "Exchange Rate: 1 $($Config.PayoutCurrency) = $($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0).ToString('n')) $($Config.Currency | Select-Object -Index 0)"
             # Get and display earnings stats
             If ($Variables.Earnings -and $Config.ShowPoolBalances) { 
                 $Variables.Earnings.Values | ForEach-Object { 
                     $EarningsCurrency = $_.Currency
                     If ("m$($EarningsCurrency)" -in $Config.Currency) { $EarningsCurrency = "m$($EarningsCurrency)" }
                     Write-Host "+++++ $($_.Wallet) +++++" -B DarkBlue -F DarkGray -NoNewline; Write-Host " $($_.Pool)"
-                    Write-Host "Trust Level:  `t$(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F DarkGray " (based on data from $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
-                    Write-Host "Average/Hour: `t$(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency ($(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0))"
-                    Write-Host "Average/Day:  `t" -NoNewline; Write-Host "$(($_.DailyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency ($(($_.DailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0))" -F Yellow
-                    Write-Host "Balance:      `t$(($_.Balance * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $($EarningsCurrency) ($(($_.Balance * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0))"
-                    Write-Host "$(($_.Balance / $_.PayoutThreshold * $Variables.Rates.BTC.($_.PayoutThresholdCurrency -replace "^m") * $Variables.Rates.($_.PayoutThresholdCurrency -replace "^m").($_.PayoutThresholdCurrency)).ToString('P0')) of $(($_.PayoutThreshold).ToString()) $($_.PayoutThresholdCurrency) ($($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($Config.Currency | Select-Object -Index 0).ToString()) $($Config.Currency | Select-Object -Index 0)) payment threshold"
-                    Write-Host "Estimated Payment Date:`t$(If ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString()} Else { $_.EstimatedPayDate })`n"
+                    Write-Host "Trust Level:            $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F DarkGray " (data of $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
+                    Write-Host "Average/hour:           $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
+                    Write-Host "Average/day:            " -NoNewline; Write-Host "$(($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -F Yellow
+                    Write-Host "Balance:                $(($_.Balance * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $($EarningsCurrency) / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
+                    Write-Host "                        $(($_.Balance / $_.PayoutThreshold * $Variables.Rates.BTC.($_.PayoutThresholdCurrency -replace "^m") * $Variables.Rates.($_.PayoutThresholdCurrency -replace "^m").($_.PayoutThresholdCurrency)).ToString('P1')) of $(($_.PayoutThreshold).ToString()) $($_.PayoutThresholdCurrency) payment threshold"
+                    Write-Host "Estimated Payment Date: $(If ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString()} Else { $_.EstimatedPayDate })`n"
                 }
             }
 
@@ -837,16 +828,17 @@ Function Global:TimerUITick {
             Remove-Variable Miner_Table -ErrorAction SilentlyContinue
 
             If ($Config.Watchdog -eq $true) { 
-                Write-Host "Watchdog Timers"
                 #Display watchdog timers
                 $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds( -$Variables.WatchdogReset) | Format-Table -Wrap (
-                    @{Label = "Miner"; Expression = { $_.MinerName } }, 
+                    @{Label = "Miner Watchdog Timers"; Expression = { $_.MinerName } }, 
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
                     @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
                     @{Label = "Device(s)"; Expression = { $_.DeviceName } }, 
                     @{Label = "Last Updated"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
                 ) | Out-Host
             }
+
+            Write-Host "$($Variables.Summary -replace '&ensp;', ' ' -replace '  +', '; ')"
 
             If (-not $Variables.Paused) { 
                 Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
