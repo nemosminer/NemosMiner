@@ -7,12 +7,12 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Command = " --par=beam3 --pers=Beam-PoW --ocX" }
-#   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --pers auto --ocX" } #Incorrect benchmark results (https://bitcointalk.org/index.php?topic=4767892.msg55733974#msg55733974)
-    [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Command = " --par=125,4 --pers auto --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Command = " --par=144,5 --pers auto --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --pers auto --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.0; Command = " --par=192,7 --pers auto --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Command = " --par=210,9 --pers auto --ocX" }
+#   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" } #Incorrect benchmark results (https://bitcointalk.org/index.php?topic=4767892.msg55733974#msg55733974)
+    [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Command = " --par=125,4 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Command = " --par=144,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.0; Command = " --par=192,7 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Command = " --par=210,9 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 2.0; Command = " --par=192,7 --pers ZcashPoW --ocX" }
 )
