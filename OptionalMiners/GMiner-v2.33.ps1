@@ -2,17 +2,20 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.29/gminer_2_29_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.33/gminer_2_33_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = @("Blake2s");             Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD";    Command = " --algo blake2s --cuda 0 --opencl 1" } #SRBMminerMulti-v0.5.5 is fastest
-    [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.03);    MinMemGB = 6.0; Type = "AMD";    Command = " --algo bfc --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");         Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD";    Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = @("Eaglesong");           Fee = @(0.02);    MinMemGB = 0.8; Type = "AMD";    Command = " --algo eaglesong --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445");        Fee = @(0.02);    MinMemGB = 1.8; Type = "AMD";    Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.13.0 is fastest
-    [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "AMD";    Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.13.0 is fastest
-    [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "AMD";    Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
+#   [PSCustomObject]@{ Algorithm = @("Blake2s");             Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD"; Command = " --algo blake2s --cuda 0 --opencl 1" } #SRBMminerMulti-v0.5.7 is fastest
+    [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.03);    MinMemGB = 6.0; Type = "AMD"; Command = " --algo bfc --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");         Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD"; Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = @("Eaglesong");           Fee = @(0.02);    MinMemGB = 0.8; Type = "AMD"; Command = " --algo eaglesong --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");        Fee = @(0.02);    MinMemGB = 1.8; Type = "AMD"; Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.16a is fastest
+    [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "AMD"; Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } #lolMiner-v1.16a is fastest
+    [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "AMD"; Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
+#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } #PhoenixMiner-v5.3b is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } #PhoenixMiner-v5.3b is fastest
 
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");              Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
     [PSCustomObject]@{ Algorithm = @("Blake2s");             Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" }
@@ -34,12 +37,13 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash2109");        Fee = @(0.02);    MinMemGB = 1.0; Type = "NVIDIA"; Command = " --algo equihash210_9 --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } #PhoenixMiner-v5.2b is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.2b is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v33.3 is fastest
+#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v34.4 is fastest
     [PSCustomObject]@{ Algorithm = @("Zilliqa");             Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo eth --cuda 1 --opencl 0" } #!ETH, see readme
     [PSCustomObject]@{ Algorithm = @("Handshake");           Fee = @(0.02);    MinMemGB = 0.8; Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.18.6 is fastest
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.19.0 is fastest
 #   [PSCustomObject]@{ Algorithm = @("Sero");                Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } #Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = @("Vollar");              Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo vollar --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("VeriBlock");           Fee = @(0.02);    MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
@@ -61,6 +65,9 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
+                If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) { 
+                    $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
+                }
 
                 #Windows 10 requires more memory on some algos
                 If ($_.Algorithm[0] -match "Cuckaroo*|Cuckoo*" -and [System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB += 1 }
@@ -75,7 +82,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     $Command += " --server $($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User) --pass $($Pools.($_.Algorithm[0]).Pass)"
 
                     # If ($Pools.($_.Algorithm[0]).SSL) { $Command += " --ssl true --ssl_verification false" }
-                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { $Command += " --proto stratum" }
+                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(Coins)$") { $Command += " --proto stratum" }
 
                     If ($_.Algorithm[1]) { 
                         #If ($Pools.($_.Algorithm[1]).SSL) { $Command += " --dssl true --dssl_verification false" }
