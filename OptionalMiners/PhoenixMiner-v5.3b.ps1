@@ -2,20 +2,24 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/PhoenixMiner/PhoenixMiner_5.2e_Windows.7z"
+$Uri = "https://github.com/Minerx117/miners/releases/download/PhoenixMiner/PhoenixMiner_5.3b_Windows.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
-$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Command = " -amd -eres 1 -mi 12" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 3.9; WarmupTime = 60; Command = " -amd -eres 1 -mi 12 -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("UbqHash");           Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Command = " -amd -eres 1 -mi 12 -coin ubq" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Command = " -amd -eres 1 -mi 12 -coin ETC" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Command = " -amd -eres 1 -mi 12" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 3.9; WarmupTime = 60; Command = " -amd -eres 1 -mi 12 -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 3.9; WarmupTime = 60; Command = " -amd -eres 1 -mi 12 -coin ETC -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.9; WarmupTime = 45; Command = " -amd -eres 1 -mi 12 -coin ubq" }
 
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("UbqHash");           Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -coin ubq" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4;   WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4;   WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25 -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4.0; WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -coin ETC" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4.0; WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4.0; WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -coin ETC -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4.0; WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4.0; WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -coin ubq" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4.0; WarmupTime = 45; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 4.0; WarmupTime = 60; Command = " -nvidia -eres 1 -mi 12 -vmt1 20 -vmt2 16 -vmt3 0 -vmr 25 -dcoin blake2s" }
 )
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -44,8 +48,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm[0] -eq "Ethash") { 
-                    $MinMemGB = ($Pools.($_.Algorithm[0]).EthashDAGSize + $EthashMemReserve) / 1GB
+                If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) { 
+                    $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -58,7 +62,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     $Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
                     If ($_.Algorithm[0] -like "Ethash*") {
-                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash*|^MPH*") { 
+                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(Coins)$") { 
                             $Command += " -proto 4"
                         }
                     }
@@ -87,7 +91,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$Command -log 0 -wdog 0 -mport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "EthMiner"
                         Port       = $MinerAPIPort
@@ -95,7 +99,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = 120 #Seconds
+                        WarmupTime = If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH*") { 120 } Else { 60 } #Seconds, longer for MPH because of long connect issue
                     }
                 }
             }

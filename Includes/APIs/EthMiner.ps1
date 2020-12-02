@@ -23,9 +23,10 @@ class EthMiner : Miner {
 
         $HashRate_Name = [String]($this.Algorithm[0])
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
-        If ($this.Algorithm -match '^(bitcoininterest(-.+|))$') { $HashRate_Value *= 1000 }
-        If ($this.Algorithm -match '^(ethash(-.+|))$' -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
-        If ($this.Algorithm -match '^(neoscrypt(-.+|))$') { $HashRate_Value *= 1000 }
+        If ($this.Algorithm -eq "EtcHash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
+        If ($this.Algorithm -eq "Ethash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
+        If ($this.Algorithm -eq "NeoScrypt") { $HashRate_Value *= 1000 }
+        If ($this.Algorithm -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
 
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
@@ -44,9 +45,8 @@ class EthMiner : Miner {
         If ($this.Algorithm -ne $HashRate_Name) { 
             $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
-            If ($this.Algorithm -match '^(ethash(-.+|))$') { $HashRate_Value *= 1000 }
-            If ($this.Algorithm -match '^(neoscrypt(-.+|))$') { $HashRate_Value *= 1000 }
-            If ($this.Algorithm -match '^(bitcoininterest(-.+|))$') { $HashRate_Value *= 1000 }
+
+            If ($this.Algorithm -eq "Blake2s") { $HashRate_Value *= 1000 }
 
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
