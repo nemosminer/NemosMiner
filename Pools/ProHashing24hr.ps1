@@ -19,7 +19,7 @@ If ($PoolConfig.UserName) {
     $PriceField = "actual_last24h"
     $PoolRegions = "US"
     
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.hashrate_last24h) -gt 0 } | ForEach-Object {
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
@@ -39,10 +39,9 @@ If ($PoolConfig.UserName) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Protocol           = "stratum+tcp"
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = "$($PoolConfig.UserName)"
+                User               = [String]$PoolConfig.UserName
                 Pass               = "a=$($Algorithm_Norm),n=$($PoolConfig.WorkerName)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false

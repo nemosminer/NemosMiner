@@ -21,10 +21,10 @@ If ($PoolConfig.Wallet) {
     $PoolRegions = "br", "eu", "hk", "in", "jp", "usa"
 
     If ($PoolConfig.NiceHashWalletIsInternal) { 
-        $Fee = 0.02
+        $Fee = [Decimal]0.02
     }
     Else { 
-        $Fee = 0.05
+        $Fee = [Decimal]0.05
     }
 
     $User = "$($PoolConfig.Wallet).$($($PoolConfig.WorkerName -replace "^ID="))"
@@ -49,10 +49,9 @@ If ($PoolConfig.Wallet) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]0
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Protocol           = "stratum+tcp"
                 Host               = [String]"$Algorithm.$Region.$PoolHost"
                 Port               = [UInt16]$PoolPort
-                User               = $User
+                User               = [String]$User
                 Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Boolean]$false
@@ -67,10 +66,9 @@ If ($PoolConfig.Wallet) {
                     StablePrice        = [Double]$Stat.Week
                     MarginOfError      = [Double]0
                     PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                    Protocol           = "stratum+ssl"
                     Host               = [String]"$Algorithm.$Region.$PoolHost"
                     Port               = [UInt16]$PoolPort
-                    User               = $User
+                    User               = [String]$User
                     Pass               = "x"
                     Region             = [String]$Region_Norm
                     SSL                = [Boolean]$true

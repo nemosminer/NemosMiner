@@ -15,7 +15,6 @@ If ($PoolConfig.UserName) {
 
     $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $PoolRegions = 'Asia', 'EU', 'US'
-    $Fee = 0.009
     $Divisor = 1000000000
 
     $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
@@ -24,19 +23,19 @@ If ($PoolConfig.UserName) {
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
-
-        $Block = $null
-        If ($Algorithm_Norm -eq "Ethash") { 
-            Try { 
-                $Block = (Invoke-RestMethod "http://$($_.coin_name).miningpoolhub.com/index.php?page=api&action=public" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop).last_block #correct
-            }
-            Catch { }
-            If ($Topcoin.symbol -eq "ETC" -and [Int]([Math]::Floor($Block / 30000)) -ge 390) { $Algorithm_Norm = "EtcHash" }
-        }
-
         $Coin = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-" -replace " ")
+        $Fee = [Decimal]($_.Fee / 100)
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
+
+        #Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676#msg55320676
+        If ($Algorithm_Norm -eq "Ethash") { 
+            # $Current.algo_switch_port = 20535
+            $PoolRegions = @("Asia", "US")
+        }
+        Else {
+            $PoolRegions = @("Asia", "EU", "US")
+        }
 
         $PoolRegions | ForEach-Object { 
             $Region = $_
@@ -50,16 +49,14 @@ If ($PoolConfig.UserName) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Protocol           = "stratum+tcp"
                 Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port               = [UInt16]$Current.port
-                User               = $User
+                User               = [String]$User
                 Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
-                Fee                = [Decimal]$Fee
+                Fee                = $Fee
                 EstimateFactor     = [Decimal]1
-                EthashBlockHeight  = [Int64]$Block
             }
 
             [PSCustomObject]@{ 
@@ -70,16 +67,14 @@ If ($PoolConfig.UserName) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Protocol           = "stratum+ssl"
                 Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port               = [UInt16]$Current.port
-                User               = $User
+                User               = [String]$User
                 Pass               = "x"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$true
-                Fee                = [Decimal]$Fee
+                Fee                = $Fee
                 EstimateFactor     = [Decimal]1
-                EthashBlockHeight  = [Int64]$Block
             }
         }
     }

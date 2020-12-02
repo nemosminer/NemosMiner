@@ -31,13 +31,6 @@ If ($PoolConfig.Wallet) {
         $Fee = [Decimal]($Request.$_.Fees / 100)
         $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
-        # Switch ($Algoritm_Norm) { 
-        #     "equihash125" { $Divisor *= 2 } #temp fix
-        #     "equihash144" { $Divisor *= 2 } #temp fix
-        #     "equihash192" { $Divisor *= 2 } #temp fix
-        #     "verushash"   { $Divisor *= 4 } #temp fix
-        # }
-
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
@@ -53,10 +46,9 @@ If ($PoolConfig.Wallet) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Protocol           = "stratum+tcp"
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = $PoolConfig.Wallet
+                User               = [String]$PoolConfig.Wallet
                 Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false

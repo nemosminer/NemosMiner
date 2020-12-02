@@ -44,10 +44,9 @@ If ($PoolConfig.Wallet) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Protocol           = "stratum+tcp"
                 Host               = "$($Algorithm).$($Region).$($HostSuffix)"
                 Port               = [UInt16]$PoolPort
-                User               = $PoolConfig.Wallet
+                User               = [String]$PoolConfig.Wallet
                 Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
