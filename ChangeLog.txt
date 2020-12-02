@@ -2,8 +2,45 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
+Changelog NemosMiner 3.9.9.8 Beta2 02.12.2020
+=============================================
 
-Changelog NemosMiner 3.9.9.8 Beta1 12.11.2020
+Changed:
+- Pools: Removed obsolete 'protocol' property
+- Web GUI: Changed menu item 'Monitoring' to 'Utilities'
+
+Fixed:
+- Core: Do not run donation if NemosMiner is started shortly before date change
+- MPH / MPHCoins pools: Disable EU Ethash pool (temp fix)
+- Web GUI: Clear Watchdog Timer list when clicking 'Rest Watchdog Timers'
+- Broken links in API Doc
+
+Improved:
+- Changed DAG data provider to "https://minerstat.com/dag-size-calculator" for more supported coins
+- Web GUI: Added 'Total 1 hour / 24hrs' information to balances
+
+Miner Updates:
+- Bminer-v16.3.6
+- GMiner-v2.33
+- lolMiner-v1.16a
+- miniZ-v1.6w4
+- NanoMiner-v3.1.2
+- NBMiner-v34.4
+- PhoenixMiner-v5.3b
+- SRBMminerMulti-v0.5.8
+- TeamRed-v0.7.18
+- Trex-v0.19.1
+- TTMiner-v6.1.0
+
+New:
+- Core: Support for EtcHash
+- Core: Create new switching log for each run
+- Web API: Added EthashDAGdata information
+- Web GUI: Added Balances Objects information
+
+
+Changelog NemosMiner 3.9.9.8 Beta1+ 12.11.2020
+==============================================
 
 Fixed:
 - EthMiner-v0.19.0r4
@@ -19,17 +56,16 @@ Improved:
 
 Miner Updates:
 - Reverted Bminer-v16.3.1 (v16.3.4 & v16.3.5 are broken)
-- lolMiner-v1.13
+- lolMiner-v1.15
 - NanoMiner-v1.13
-- PhoenixMiner-v5.2b
+- PhoenixMiner-v5.2c
 - Trex-v0.18.8
 
 New:
 - Add property 'CommandLine' to all miner objects
 - Add config item 'ShowMinerWindowsNormalWhenBenchmarking'
+  Benchmarking miners will be shown as normal windows to make it easier to monitor the miner output
 
-
-=============================================
 
 Changelog NemosMiner 3.9.9.7 Beta2 08.11.2020
 =============================================
@@ -68,7 +104,7 @@ Miner Updates:
 
 New:
 - Auto repair for profit stats if margin of error exceeds 100%
-- Support for Ethash Classic ECIP-1099 “DAG Recalibration” 
+- Support for Ethash Classic ECIP-1099 “DAG Recalibration”
 
 
 Changelog NemosMiner 3.9.9.7 Beta1 29.10.2020
