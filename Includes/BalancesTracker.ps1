@@ -113,16 +113,14 @@ While ($true) {
             }
             If (-not $PayoutThreshold) { $PayoutThreshold = $API.PayoutThreshold."*" }
 
-            Switch ($PoolNorm) { 
-                "MPH" { 
-                    Try { 
+            Try { 
+                Switch ($PoolNorm) { 
+                    "MPH" { 
                         $Wallet = $Config.MPHAPIKey
                         $BalanceData = (((Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
                     }
-                    Catch { }
-                }
-                "NiceHashInternal" { 
-                    Try { 
+                    "NiceHashInternal" { 
+                        $Wallet = "OrgID $($Config.NicehashOrganizationID)"
                         $Request_Balance = [PSCustomObject]@{ }
 
                         If ($Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
@@ -150,10 +148,7 @@ While ($true) {
                             $BalanceData = Invoke-RestMethod "https://api2.nicehash.com$EndPoint" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop -Method $Method -Headers $Headers
                         }
                     }
-                    Catch { }
-                }
-                "NiceHashExternal" { 
-                    Try { 
+                    "NiceHashExternal" { 
                         $TempBalance = 0
                         $Wallet = $PoolConfig.Wallet
                         $PayoutCurrency = "BTC"
@@ -173,26 +168,19 @@ While ($true) {
                         $BalanceData | Add-Member -NotePropertyName $BalanceJson -NotePropertyValue $NHTotalBalance -Force
                         $BalanceData | Add-Member -NotePropertyName $TotalJson -NotePropertyValue $NHTotalBalance -Force
                     }
-                    Catch { }
-                }
-                "ProHashing" { 
-                    Try { 
+                    "ProHashing" { 
                         $Wallet = $Config.ProHashingAPIKey
                         $BalanceData = (Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).data.balances."BTC"
                         $BalanceData | Add-Member "total_unpaid" $BalanceData.Unpaid -Force
                     }
-                    Catch { }
-                }
-                Default { 
-                    Try { 
+                    Default { 
                         $Wallet = $PoolConfig.Wallet
                         $BalanceData = Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }
                         $PoolAccountUri = "$($PoolAccountUri -replace '\[currency\]', $PayoutCurrency)$Wallet"
                     }
-                    Catch { }
                 }
             }
-            Remove-Variable Wallet -ErrorAction Ignore
+            Catch { }
 
             If ($Variables.Rates.($PoolConfig.PayoutCurrency).BTC -and $BalanceData.$BalanceJson) { 
 
@@ -269,8 +257,8 @@ While ($true) {
                     AvgDailyGrowth          = $AvgHourlyGrowth * 24
                     AvgWeeklyGrowth         = $AvgHourlyGrowth * 168
                     EstimatedEndDayGrowth   = If ((($Now - ($BalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHourlyGrowth -gt 0) { [DateTime]($Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.Balance) / $AvgHourlyGrowth)) } Else { "Unknown" } } Else { "Next Payout !" } } Else { "Unknown" }
-                    TrustLevel              = [Double](((($Now - ($BalanceObjects[0].DateTime)).TotalMinutes / 360), 1 | Measure-Object -Minimum).Minimum)
+                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHourlyGrowth -gt 0) { [DateTime]($Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.Balance) / $AvgHourlyGrowth)) } Else { "Unknown" } } Else { "Next Payout!" } } Else { "Unknown" }
+                    TrustLevel              = [Double](((($Now - ($BalanceObjects[0].DateTime)).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum)
                     TotalHours              = ($Now - ($BalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
                     PayoutThreshold         = [Double]$PayoutThreshold
@@ -330,6 +318,8 @@ While ($true) {
                 Remove-Variable BalanceObject
                 Remove-Variable EarningsObject
             }
+            Remove-Variable Wallet -ErrorAction Ignore
+
         }
 
         #Always keep pools sorted, even when new pools were added
