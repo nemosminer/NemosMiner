@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 23 October 2020
+Updated 02 December 2020
 
 
 Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
@@ -80,9 +80,11 @@ Easy configuration, easy start:
 
    Pools Variants
 
-      *24hr  - uses last 24hour Actual API too request profit (no estimates or advanced calculations)
+      *24hr  - uses last 24hour price data in pool API to calculate profit (no estimates or advanced calculations)
 
-      normal - uses advanced calculations to reduce uneeded switching
+      *Plus - uses advanced calculations to reduce uneeded switching
+
+      normal - uses current price data in pool API to calculate profit (no estimates or advanced calculations)
 
       *Coins - uses advanced calculations, mines only top paying coin in Algo (MiningPoolHub & ZergPool)
 
@@ -113,7 +115,7 @@ Easy configuration, easy start:
 
    GUI
 
-      Since version 3.0 NemosMiner has a Web GUI making it easy to configure and run.
+      Since version 3.9.9 (Beta) NemosMiner has a Web GUI making it easy to configure and run.
       Relies on config files. No need to edit bat files. Simply run NemosMiner.bat 
       Set the config on the config tab, save, close, run NemosMiner.bat
 
@@ -179,7 +181,7 @@ Easy configuration, easy start:
 
    Earnings Tracking
 
-      Displays BTC/H and BTC/D as well a estimation of when the pool payment threshold will be reached.
+      Displays BTC/h and BTC/d as well a estimation of when the pool payment threshold will be reached.
       Supported pools:
          - AHashPool
          - BlazePool
