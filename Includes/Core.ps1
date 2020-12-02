@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           core.ps1
 version:        3.9.9.8
-version date:   11 November 2020
+version date:   30 November 2020
 #>
 
 using module .\Include.psm1
@@ -53,62 +53,82 @@ Function Start-Cycle {
         $PoolsConfig = $Config.PoolsConfig
 
         # #Stuff to do once every 24hrs
-        If ($Variables.EthashData.Updated -lt (Get-Date).AddDays( -1 )) { 
+        If ($Variables.DAGdata.Updated -lt (Get-Date).AddDays( -1 )) { 
             #Get ethash DAG size and epoch
-            If ((-not (Test-Path -PathType Leaf ".\Includes\EthashData.json")) -or ([nullable[DateTime]]($EthashData = Get-Content -Path ".\Includes\EthashData.json" | ConvertFrom-Json -ErrorAction Ignore).Updated -lt (Get-Date).AddDays( +1 ))) { 
+            If ((-not (Test-Path -PathType Leaf ".\Includes\DAGdata.json")) -or ([nullable[DateTime]]($DAGdata = Get-Content -Path ".\Includes\DAGdata.json" | ConvertFrom-Json -ErrorAction Ignore).Updated -lt (Get-Date).AddDays( +1 ))) { 
 
-                $Url = "https://crypt0.zone/dag-file-size"
                 Try { 
-                    $BlockData = @((Invoke-WebRequest $Url -UseBasicParsing -ErrorAction SilentlyContinue).Links | Where-Object { $_.href -like "$Url/*" } | Sort-Object { $_."data-code" } | Sort-Object { $_."data-code" } | Select-Object data-code, data-block_number)
-                    Write-Message "Building ethash data (Block Height, DAG size & Epoch) from data provided by '$Url'..."
+                    $Uri = "https://minerstat.com/dag-size-calculator"
 
-                    $EthashData = [PSCustomObject][Ordered]@{ }
-                    $EthashData | Add-Member Currency ([Ordered]@{ })
-                    $EthashData | Add-Member Updated (Get-Date).ToUniversalTime()
+                    $DAGdata = [PSCustomObject][Ordered]@{ }
+                    $DAGdata | Add-Member Source $Uri
+                    $DAGdata | Add-Member Updated (Get-Date).ToUniversalTime()
+                    $DAGdata | Add-Member Currency ([Ordered]@{ })
+                    $BlockHeight = $Currency = $DAGsize = $Epoch = $null
 
-                    If ($LargestBlockHeight = ($BlockData."data-block_number" | Measure-Object -Maximum).Maximum) { 
-                        #Add default (equal to highest)
-                        $Data = [PSCustomObject][Ordered]@{ 
-                            BlockHeight = [Int]$LargestBlockHeight
-                            DAGsize     = (Get-EthashSize $LargestBlockHeight)
-                            Epoch       = [Math]::Floor($LargestBlockHeight / 30000)
-                        }
-                        $EthashData.Currency.Add("*", $Data)
+                    $Page = Invoke-WebRequest $Uri #PWSH 6+ no longer supports basic parsing -> parse text
+                    $Page.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
 
-                        $BlockData | ForEach-Object { 
-                            If ($_."data-block_number" -gt 0) { $BlockHeight = $_."data-block_number" } Else { $BlockHeight = $LargestBlockHeight }
-                            $Data = [PSCustomObject]@{ 
-                                BlockHeight = [Int]$BlockHeight
-                                DAGsize     = [Int64](Get-EthashSize $BlockHeight)
-                                Epoch       = [Int]([Math]::Floor($BlockHeight / 30000))
+                        If ($_ -like "<div class='block' title='Current block height of *") { 
+                            $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
+                            $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>$")
+                            #Epoch for EtcHash is twice as long
+                            If ($Currency -eq "ETC") { 
+                                $DAGsize = [Int64](Get-EtcHashSize $BlockHeight)
+                                $Epoch = [Int]([Math]::Floor($BlockHeight / 60000))
                             }
-                            $EthashData.Currency.Add($_."data-code", $Data)
+                            Else { 
+                                $DAGsize = [Int64](Get-EthashSize $BlockHeight)
+                                $Epoch = [Int]([Math]::Floor($BlockHeight / 30000))
+                            }
                         }
-                        $EthashData | ConvertTo-Json | Out-File -FilePath ".\Includes\EthashData.json" -Force -ErrorAction Ignore
+
+                        If ($BlockHeight -and $Currency -and $DAGsize -and $Epoch) { 
+                            $Data = [PSCustomObject]@{ 
+                                BlockHeight = $BlockHeight
+                                DAGsize     = $DAGsize
+                                Epoch       = $Epoch
+                            }
+
+                            $DAGdata.Currency.Add($Currency, $Data)
+
+                            $BlockHeight = $Currency = $DAGsize = $null
+                        }
                     }
-                }
-                Catch { 
-                }
 
-                If (-not $LargestBlockHeight) {
-                    $EthashData = [PSCustomObject][Ordered]@{ }
-                    $EthashData | Add-Member Currency ([Ordered]@{ })
+                    #Add default '*' (equal to highest)
+                    If ($DAGdata.Currency.Keys) { 
+                        $Data = [PSCustomObject][Ordered]@{ 
+                            BlockHeight = [Int]($DAGdata.Currency.Keys | ForEach-Object { $DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
+                            DAGsize     = [Int64]($DAGdata.Currency.Keys | ForEach-Object { $DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
+                            Epoch       = [Int]($DAGdata.Currency.Keys | ForEach-Object { $DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
+                        }
+                        $DAGdata.Currency.Add("*", $Data)
+                    }
+                    $DAGdata | ConvertTo-Json | Out-File -FilePath ".\Includes\DAGdata.json" -Force -ErrorAction Ignore
+                }
+                Catch { }
 
-                    $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6500
-                    Write-Message -Level Warn "Cannot retrieve ethash DAG size information from data provided by '$Url', calculated block height $BlockHeight based on 6500 blocks per day since 30 July 2015."
+                If (-not $DAGdata.Currency."*") {
+                    $DAGdata = [PSCustomObject][Ordered]@{ }
+                    $DAGdata | Add-Member Currency ([Ordered]@{ })
+
+                    $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
+                    Write-Message -Level Warn "Cannot retrieve ethash DAG size information from data provided by '$Uri', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
                     $Data = [PSCustomObject]@{ 
                         BlockHeight = [Int]$BlockHeight
                         DAGsize     = [Int64](Get-EthashSize $BlockHeight)
                         Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
                     }
-                    $EthashData.Currency.Add("*", $Data)
+                    $DAGdata.Currency.Add("*", $Data)
                 }
 
-                $Variables.EthashData = $EthashData
+                $Variables.DAGdata = $DAGdata
             }
+            Remove-Variable BlockHeight, Data, DAGSize, Epoch, DAGdata, Page, Table -ErrorAction Ignore
         }
 
-        If (($Variables.DonateStart).DayOfYear -ne (Get-Date).DayOfYear) { 
+        If (($Variables.DonateStart).DayOfYear -ne (Get-Date).DayOfYear -and (Get-Date).AddMinutes($Config.Donate).Date -eq (Get-Date).Date) { 
             #Re-Randomize donation start once per day
             $Variables.DonateStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donate -Maximum (1440 - $Config.Donate - (Get-Date).TimeOfDay.TotalMinutes)))
             $Variables.DonateEnd = $Variables.DonateStart
@@ -254,7 +274,7 @@ Function Start-Cycle {
         }
 
         #Load unprofitable algorithms
-        If ($Config.ApplyUnprofitableAlgorithmList -and (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore)) { 
+        If (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore) { 
             $Variables.UnprofitableAlgorithms = [String[]](Get-Content ".\Includes\UnprofitableAlgorithms.txt" | ConvertFrom-Json -ErrorAction SilentlyContinue | Sort-Object -Unique)
             Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) entr$(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "ies" } Else { "y" } ))."
         }
@@ -288,7 +308,7 @@ Function Start-Cycle {
         [Pool[]]$Variables.Pools = $Variables.Pools | Where-Object Name -in $Config.PoolName
 
         #Find new pools
-        [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, CoinName, Currency, Protocol, Host, Port, User, Pass, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
+        [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, CoinName, Currency, Host, Port, User, Pass, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
         
         $Variables.PoolsCount = $Variables.Pools.Count
 
@@ -298,7 +318,7 @@ Function Start-Cycle {
         }
 
         #Update existing pools
-        $Variables.Pools | ForEach-Object { 
+        $Variables.Pools | Select-Object | ForEach-Object { 
             [Pool]$Pool = $null
 
             $_.Available = $true
@@ -310,7 +330,6 @@ Function Start-Cycle {
             Where-Object Algorithm -EQ $_.Algorithm | 
             Where-Object CoinName -EQ $_.CoinName | 
             Where-Object Currency -EQ $_.Currency | 
-            Where-Object Protocol -EQ $_.Protocol | 
             Where-Object Host -EQ $_.Host | 
             Where-Object Port -EQ $_.Port | 
             Where-Object User -EQ $_.User | 
@@ -327,19 +346,20 @@ Function Start-Cycle {
                 $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
                 $_.MarginOfError = $Pool.MarginOfError
                 $_.Updated = $Pool.Updated
-                If ($_.Algorithm -EQ "Ethash") { 
-                    #Set EthashEpoch for ethash miners (add 1 to survive next epoch change)
-                    If (-not $_.EthashBlockHeight) { 
-                        If ($Variables.EthashData.Currency.($_.Currency).BlockHeight) { 
-                            $_.EthashBlockHeight = [Int]($Variables.EthashData.Currency.($_.Currency).BlockHeight)
-                        }
-                        Else {
-                            $_.EthashBlockHeight = [Int]($Variables.EthashData.Currency."*".BlockHeight)
-                        }
+                #Set EthashEpoch for ethash miners (add 1 to survive next epoch change)
+                If ($_.Algorithm -in @("EtcHash", "Ethash")) { 
+                    If ($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight) { 
+                        $_.BlockHeight = [Int]($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight + 30000)
+                        $_.Epoch = [Int]($Variables.DAGdata.Currency.($Pool.Currency).Epoch + 1)
+                        $_.DAGSize = [Int64]($Variables.DAGdata.Currency.($Pool.Currency).DAGsize + [Math]::Pow(2, 23))
                     }
-                    $_.EthashBlockHeight += 30000
-                    $_.EthashEpoch = [Int]([Math]::Floor($_.EthashBlockHeight / 30000))
-                    $_.EthashDAGsize = [Int64](Get-EthashSize $_.EthashBlockHeight)
+                    Else {
+                        $_.BlockHeight = [Int]($Variables.DAGdata.Currency."*".BlockHeight + 30000)
+                        $_.Epoch = [Int]($Variables.DAGdata.Currency."*".Epoch + 1)
+                        $_.DAGSize = [Int64]($Variables.DAGdata.Currency."*".DAGsize + [Math]::Pow(2, 23))
+                    }
+
+                    If ($_.Currency -eq "ETC") { $_.CoinName = "Ethereum Classic" }
                 }
             }
         }
@@ -350,9 +370,11 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Disabled -EQ $true | ForEach-Object { $_.Available = $false; $_.Reason += "Disabled (by Stat file)" }
         If ($Config.SSL -ne "Preferred") { $Variables.Pools | Where-Object { $_.SSL -ne [Boolean]$Config.SSL } | ForEach-Object { $_.Available = $false; $_.Reason += "Config item SSL -ne $([Boolean]$Config.SSL)" } }
         $Variables.Pools | Where-Object MarginOfError -GT (1 - $Config.MinAccuracy) | ForEach-Object { $_.Available = $false; $_.Reason += "MinAccuracy ($($Config.MinAccuracy * 100)%) exceeded" }
-        $Variables.Pools | Where-Object { "*:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Available = $false; $_.Reason += "Unprofitable Algorithm" }
-        $Variables.Pools | Where-Object { "1:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } #Keep available
-        $Variables.Pools | Where-Object { "2:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } #Keep available
+        If ($Config.ApplyUnprofitableAlgorithmList) {
+            $Variables.Pools | Where-Object { "*:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Available = $false; $_.Reason += "Unprofitable Algorithm" }
+            $Variables.Pools | Where-Object { "1:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } #Keep available
+            $Variables.Pools | Where-Object { "2:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } #Keep available
+        }
         $Variables.Pools | Where-Object { $_.Name -notin $Config.PoolName } | ForEach-Object { $_.Available = $false; $_.Reason += "Pool not configured" }
         $Variables.Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Price -eq 0" }
         $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
@@ -506,6 +528,7 @@ Function Start-Cycle {
                             $Worker = $_
                             $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                             If ($WatchdogTimer) {
+                                #Remove watchdog timer
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
                             }
                         }
@@ -600,8 +623,21 @@ Function Start-Cycle {
 
         #Stop runing miners where miner object is gone
         $Variables.Miners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq [MinerStatus]::Running } | ForEach-Object { 
-            Write-Message "Stopped miner '$($_.Info)'."
-            $_.SetStatus([MinerStatus]::Idle)
+            $Miner = $_
+            Write-Message "Stopped miner '$($Miner.Info)'."
+            $Miner.SetStatus([MinerStatus]::Idle)
+
+            #Remove all watchdog timer(s) for this miner
+            $Miner.Workers | ForEach-Object { 
+                $Worker = $_
+                $Variables.WatchdogTimers2minerobjectgone = $Variables.WatchdogTimers
+                $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
+                If ($WatchdogTimer) {
+                    #Remove watchdog timer
+                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
+                }
+
+            }
         }
 
         #Remove gone miners
@@ -862,7 +898,7 @@ Function Start-Cycle {
                     $Worker = $_
                     $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                     If ($WatchdogTimer) { 
-                        #Remove watchdog timer(s)
+                        #Remove watchdog timer
                         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
                     }
                 }
@@ -914,16 +950,22 @@ Function Start-Cycle {
                 $Miner.SetStatus([MinerStatus]::Running)
                 Write-Message "Started miner '$($Miner.Info)'."
                 Write-Message -Level Verbose $Miner.CommandLine
-                #Add watchdog timer
-                If ($Config.Watchdog) { 
-                    $Miner.Workers | ForEach-Object { 
-                        $Worker = $_
-                        $Variables.WatchdogTimers += [PSCustomObject]@{ 
-                            MinerName  = $Miner.Name
-                            PoolName   = $Worker.Pool.Name
-                            Algorithm  = $Worker.Pool.Algorithm
-                            DeviceName = $Miner.DeviceName
-                            Kicked     = $Variables.Timer
+            }
+
+            #Add watchdog timer
+            If ($Config.Watchdog) { 
+                $Miner.Workers | ForEach-Object { 
+                    $Worker = $_
+                    If (-not ($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
+                        $Miner.Workers | ForEach-Object { 
+                            $Worker = $_
+                            $Variables.WatchdogTimers += [PSCustomObject]@{ 
+                                MinerName  = $Miner.Name
+                                PoolName   = $Worker.Pool.Name
+                                Algorithm  = $Worker.Pool.Algorithm
+                                DeviceName = $Miner.DeviceName
+                                Kicked     = $Variables.Timer
+                            }
                         }
                     }
                 }
@@ -937,7 +979,7 @@ Function Start-Cycle {
             If ($_.MeasurePowerUsage -eq $true) { $Message = "$($Message)Power usage measurement " }
             If ($Message) { Write-Message -Level Verbose "$($Message)for miner '$($_.Info)' in progress [Attempt $($_.Activated)/3]..." }
         }
-        Remove-Variable Message
+        Remove-Variable Message -ErrorAction Ignore
 
         $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
             $MinersDeviceGroup = $_.Group
