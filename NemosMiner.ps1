@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.8
-Version date:   11 November 2020
+Version date:   01 December 2020
 #>
 
 [CmdletBinding()]
@@ -43,7 +43,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerEnableLog = $true, #If true NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
-    [UInt16]$BalancesTrackerPollInterval = 15, #minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
+    [UInt16]$BalancesTrackerPollInterval = 5, #minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
     [Parameter(Mandatory = $false)]
     [Switch]$CalculatePowerCost = $true, #If true, power usage will be read from miners and calculate power cost, required for true profit calculation
     [Parameter(Mandatory = $false)]
@@ -232,7 +232,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.7"
+    Version      = [System.Version]"3.9.9.8"
 }
 
 Try { 
@@ -304,6 +304,9 @@ If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Da
 Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($Variables.ConfigFile)'." }
 
+#Rename existing switching log
+If (Test-Path -Path ".\Logs\SwitchingLog.csv") { Get-ChildItem ".\Logs\SwitchingLog.csv" | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
+
 #Update config file to include all new config items
 If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion) { 
     #Changed config items
@@ -348,10 +351,6 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
     $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
     Write-Config $Variables.ConfigFile
     Write-Message "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())."
-    If (Test-Path -PathType Leaf  ".\Logs\switchinglog.csv") { 
-        Remove-Item -Path ".\Logs\switchinglog.csv" -Force
-        Write-Message "Cleared switching log file '.\Logs\switchinglog.csv' (Format is incompatible with version $($Variables.CurrentVersion.ToString()))."
-    }
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
@@ -377,6 +376,9 @@ $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
 $Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
 $Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
+$Variables.DriverVersion = @{ }
+$Variables.DriverVersion | Add-Member AMD ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -1231,7 +1233,7 @@ Function CheckBoxSwitching_Click {
     }
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-    If (Test-Path ".\Logs\switchinglog.csv") { $Variables.SwitchingLog = @(Get-Content ".\Logs\switchinglog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("Date", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog) }
+    If (Test-Path ".\Logs\SwitchingLog.csv") { $Variables.SwitchingLog = @(Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("Date", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog) }
     $SwitchingDGV.DataSource = [System.Collections.ArrayList]($Variables.SwitchingLog | Where-Object { $_.Type -in $SwitchingDisplayTypes })
 }
 
