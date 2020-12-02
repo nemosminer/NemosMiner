@@ -2,10 +2,10 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.5/SRBMiner-Multi-0-5-5-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.8/SRBMiner-Multi-0-5-8-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
-$EthashMemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
@@ -20,10 +20,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_gpu" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.16b is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.18 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" } 
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm eaglesong" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #Bminer-v16.3.1 & PhoenixMiner-v5.2a are faster
+#   [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm etchash" } #PhoenixMiner-v5.3b is faster
+#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #Bminer-v16.3.1 & PhoenixMiner-v5.3b are faster
     [PSCustomObject]@{ Algorithm = "Handshake";           Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
@@ -48,7 +49,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_gpu" }
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_upx" }
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_heavyx" }
+    [PSCustomObject]@{ Algorithm = "CurveHash";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm curvehash" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm eaglesong" }
+#   [PSCustomObject]@{ Algorithm = "Etchash";             Type = "CPU"; Fee = 0.0065; Command = " --algorithm etchash" } #Not profitable with CPU
 #   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "CPU"; Fee = 0.0065; Command = " --algorithm ethash" } #Not profitable with CPU
     [PSCustomObject]@{ Algorithm = "Handshake";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm k12" }
@@ -57,8 +60,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RainforestV2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm rainforestv2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } #XmRig-v6.5.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "RandomxHash2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomwow --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "ScryptN2";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm scryptn2" }
     [PSCustomObject]@{ Algorithm = "Tellor";              Type = "CPU"; Fee = 0;      Command = " --algorithm tellor" }
     [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "CPU"; Fee = 0.0065; Command = " --algorithm ubqhash" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm verushash" }
@@ -88,8 +93,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm -eq "Ethash") { 
-                    $MinMemGB = ($Pools.($_.Algorithm).EthashDAGSize + $EthashMemReserve) / 1GB
+                If ($_.Algorithm -in @("EtcHash", "Ethash")) { 
+                    $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
@@ -106,7 +111,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     }
 
                     If ($Pools.($_.Algorithm).SSL) { $Command += " --ssl true" }
-                    If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^NiceHash*|^MPH*") { $Command += " --nicehash true" }
+                    If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(Coins)$") { $Command += " --nicehash true" }
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
