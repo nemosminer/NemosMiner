@@ -136,7 +136,6 @@ Class Miner {
     [String]$Arguments
     [String]$CommandLine
     [UInt16]$Port
-    [Int32]$ProcessId = 0
     [String[]]$DeviceName = @() #derived from devices
     [String[]]$Algorithm = @() #derived from pool
     [Double[]]$Fee = @() #derived from miner
@@ -170,7 +169,9 @@ Class Miner {
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
-    hidden [System.Diagnostics.Process]$Process = $null
+    hidden [System.Management.Automation.Job]$Process = $null
+    [Int32]$ProcessId = 0
+
     [Int]$Activated = 0
     [MinerStatus]$Status = [MinerStatus]::Idle
     [String]$StatusMessage
@@ -226,20 +227,20 @@ Class Miner {
             $this.CreateConfigFiles()
         }
 
-        If ($this.ProcessId) { 
-            If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
-                Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
+        If ($this.Process) { 
+            If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
+                $this.Process | Remove-Job -Force
             }
-            $this.ProcessId = $null
+
+            If (-not ($this.Process | Get-Job -ErrorAction SilentlyContinue)) { 
+                $this.Active += $this.Process.PSEndTime - $this.Process.PSBeginTime
+                $this.Process = $null
+            }
         }
 
-        If ($this.Process) { $this.Process = $null }
-
         If (-not $this.Process) { 
-            $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
-            $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } #When benchmarking clear data on each miner start
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
             #Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -248,6 +249,8 @@ Class Miner {
                 Name         = $this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
                 Type         = ($this.Type -join " & ")
+
+
                 Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
                 Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
@@ -259,13 +262,24 @@ Class Miner {
                 CommandLine  = $this.CommandLine
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
-            If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId | Select-Object -Last 1)) { 
-                $this.Status = [MinerStatus]::Running
-                $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-                $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-                #Starting Miner Data reader
-                $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers | ConvertTo-Json) }
+
+            If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
+                For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
+                    If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
+                        $this.Status = [MinerStatus]::Running
+                        $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+                        #Starting Miner Data reader
+                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers | ConvertTo-Json) }
+                        Break
+                    }
+                    Start-Sleep -Milliseconds 100
+                }
             }
+
+            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+            $this.StatStart = (Get-Date).ToUniversalTime()
         }
     }
 
@@ -311,14 +325,26 @@ Class Miner {
     }
 
     [DateTime]GetActiveLast() { 
-        If ($this.BeginTime -and $this.EndTime) { 
-            Return  $this.EndTime.ToUniversalTime()
+        If ($this.Process.PSBeginTime -and $this.Process.PSEndTime) { 
+            Return $this.Process.PSEndTime.ToUniversalTime()
         }
-        ElseIf ($this.BeginTime) { 
+        ElseIf ($this.Process.PSBeginTime) { 
             Return [DateTime]::Now.ToUniversalTime()
         }
         Else { 
             Return [DateTime]::MinValue.ToUniversalTime()
+        }
+    }
+
+    [TimeSpan]GetActiveTime() { 
+        If ($this.Process.PSBeginTime -and $this.Process.PSEndTime) { 
+            Return $this.Active + ($this.Process.PSEndTime - $this.Process.PSBeginTime)
+        }
+        ElseIf ($this.Process.PSBeginTime) { 
+            Return $this.Active + ((Get-Date) - $this.Process.PSBeginTime)
+        }
+        Else { 
+            Return $this.Active
         }
     }
 
@@ -327,10 +353,14 @@ Class Miner {
     }
 
     [MinerStatus]GetStatus() { 
-        If ($this.Process.HasExited -eq $false) { 
+        If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { 
+            #Use ProcessName, some crashed miners are dead, but may still be found by their processId
             Return [MinerStatus]::Running
         }
-        ElseIf ($this.Status -eq [MinerStatus]::Running) { 
+        ElseIf ($this.Status -eq "Running") { 
+            $this.ProcessId = $null
+            #Stop Miner data reader
+            Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
             $this.Status = [MinerStatus]::Failed
             Return $this.Status
         }
@@ -2323,43 +2353,13 @@ Function Get-Combination {
     }
 }
 
-function Start-SubProcess { 
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$FilePath, 
-        [Parameter(Mandatory = $false)]
-        [String]$ArgumentList = "", 
-        [Parameter(Mandatory = $false)]
-        [String]$LogPath = "", 
-        [Parameter(Mandatory = $false)]
-        [String]$WorkingDirectory = "", 
-        [ValidateRange(-2, 3)]
-        [Parameter(Mandatory = $false)]
-        [Int]$Priority = 0, 
-        [Parameter(Mandatory = $false)]
-        [String[]]$EnvBlock
-    )
-
-    $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
-
-    $ScriptBlock = "Set-Location '$WorkingDirectory'; (Get-Process -Id `$PID).PriorityClass = '$(@{-2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime"}[$Priority])'; "
-    $ScriptBlock += "& '$FilePath'"
-    If ($ArgumentList) { $ScriptBlock += " $ArgumentList" }
-    $ScriptBlock += " *>&1"
-    $ScriptBlock += " | Write-Output"
-    If ($LogPath) { $ScriptBlock += " | Tee-Object '$LogPath'" }
-
-    Start-Job ([ScriptBlock]::Create($ScriptBlock))
-}
-
 Function Invoke-CreateProcess {
 
     #Based on https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Invoke-CreateProcess.ps1
 
     Param (
         [Parameter(Mandatory = $true)]
-        [String]$Binary,
+        [String]$BinaryPath,
         [Parameter(Mandatory = $false)]
         [String]$ArgumentList = $null,
         [Parameter(Mandatory = $false)]
@@ -2377,8 +2377,16 @@ Function Invoke-CreateProcess {
         [String]$StartF = 0x00000001 #STARTF_USESHOWWINDOW
     )
 
-    # Define all the structures for CreateProcess
-    Add-Type -TypeDefinition @"
+    $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
+
+    $Job = Start-Job -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $ShowMinerWindows, $StartF, $PID { 
+        Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $ShowMinerWindows, $StartF, $ControllerProcessID)
+
+        $ControllerProcess = Get-Process -Id $ControllerProcessID
+        If ($null -eq $ControllerProcess) { Return }
+
+        # Define all the structures for CreateProcess
+        Add-Type -TypeDefinition @"
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -2416,103 +2424,35 @@ public static class Kernel32
 }
 "@
 
-    $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
+        Switch ($ShowMinerWindows) {
+            "hidden" { $ShowWindow = "0x0000" } #SW_HIDE
+            "normal" { $ShowWindow = "0x0004" } #SW_SHOWNOACTIVATE
+            Default  { $ShowWindow = "0x0007" } #SW_SHOWMINNOACTIVE
+        }
 
-    Switch ($ShowMinerWindows) {
-        "hidden" { $ShowWindow = "0x0000" } #SW_HIDE
-        "normal" { $ShowWindow = "0x0004" } #SW_SHOWNOACTIVATE
-        Default  { $ShowWindow = "0x0007" } #SW_SHOWMINNOACTIVE
-    }
+        #Set local environment
+        $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
 
-    #Set local environment
-    $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
+        #StartupInfo Struct
+        $StartupInfo = New-Object STARTUPINFO
+        $StartupInfo.dwFlags = $StartF # StartupInfo.dwFlag
+        $StartupInfo.wShowWindow = $ShowWindow # StartupInfo.ShowWindow
+        $StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
 
-    #StartupInfo Struct
-    $StartupInfo = New-Object STARTUPINFO
-    $StartupInfo.dwFlags = $StartF # StartupInfo.dwFlag
-    $StartupInfo.wShowWindow = $ShowWindow # StartupInfo.ShowWindow
-    $StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
+        #ProcessInfo Struct
+        $ProcessInfo = New-Object PROCESS_INFORMATION
 
-    #ProcessInfo Struct
-    $ProcessInfo = New-Object PROCESS_INFORMATION
+        #SECURITY_ATTRIBUTES Struct (Process & Thread)
+        $SecAttr = New-Object SECURITY_ATTRIBUTES
+        $SecAttr.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($SecAttr)
 
-    #SECURITY_ATTRIBUTES Struct (Process & Thread)
-    $SecAttr = New-Object SECURITY_ATTRIBUTES
-    $SecAttr.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($SecAttr)
+        #CreateProcess --> lpCurrentDirectory
+        If (-not $WorkingDirectory) { $WorkingDirectory = [IntPtr]::Zero }
 
-    #CreateProcess --> lpCurrentDirectory
-    If (-not $WorkingDirectory) { $WorkingDirectory = [IntPtr]::Zero }
+        #Call CreateProcess
+        [Kernel32]::CreateProcess($BinaryPath, "$BinaryPath $ArgumentList", [ref]$SecAttr, [ref]$SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref]$StartupInfo, [ref]$ProcessInfo) | Out-Null
 
-    #Call CreateProcess
-    [Kernel32]::CreateProcess($Binary, "$Binary $ArgumentList", [ref] $SecAttr, [ref] $SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref] $StartupInfo, [ref] $ProcessInfo) | Out-Null
-
-    $Process = Get-Process | Where-Object Id -EQ $ProcessInfo.dwProcessId
-    If ($Process) { $Process.PriorityClass = $PriorityNames.$Priority }
-
-    Return $Process
-}
-
-Function Start-SubProcessWithoutStealingFocus { 
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$FilePath, 
-        [Parameter(Mandatory = $false)]
-        [String]$ArgumentList = "", 
-        [Parameter(Mandatory = $false)]
-        [String]$LogPath = "", 
-        [Parameter(Mandatory = $false)]
-        [String]$WorkingDirectory = "", 
-        [ValidateRange(-2, 3)]
-        [Parameter(Mandatory = $false)]
-        [Int]$Priority = 0, 
-        [Parameter(Mandatory = $false)]
-        [String[]]$EnvBlock
-    )
-
-    $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
-
-    $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
-
-    $Job = Start-Job -ArgumentList $PID, (Resolve-Path ".\Includes\CreateProcess.cs"), $FilePath, $ArgumentList, $WorkingDirectory { 
-        Param($ControllerProcessID, $CreateProcessPath, $FilePath, $ArgumentList, $WorkingDirectory)
-
-        $ControllerProcess = Get-Process -Id $ControllerProcessID
-        If ($null -eq $ControllerProcess) { Return }
-
-        #CreateProcess won't be usable inside this job if Add-Type is run outside the job
-        Add-Type -Path $CreateProcessPath
-
-        $lpApplicationName = $FilePath;
-
-        $lpCommandLine = '"' + $FilePath + '"' #Windows paths cannot contain ", so there is no need to escape
-        If ($ArgumentList -ne "") { $lpCommandLine += " " + $ArgumentList }
-
-        $lpProcessAttributes = New-Object SECURITY_ATTRIBUTES
-        $lpProcessAttributes.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($lpProcessAttributes)
-
-        $lpThreadAttributes = New-Object SECURITY_ATTRIBUTES
-        $lpThreadAttributes.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($lpThreadAttributes)
-
-        $bInheritHandles = $false
-
-        $dwCreationFlags = [CreationFlags]::CREATE_NEW_CONSOLE
-
-        $lpEnvironment = [IntPtr]::Zero
-
-        If ($WorkingDirectory -ne "") { $lpCurrentDirectory = $WorkingDirectory }
-        Else { $lpCurrentDirectory = [IntPtr]::Zero }
-
-        $lpStartupInfo = New-Object STARTUPINFO
-        $lpStartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($lpStartupInfo)
-        $lpStartupInfo.wShowWindow = [ShowWindow]::SW_SHOWMINNOACTIVE
-        $lpStartupInfo.dwFlags = [STARTF]::STARTF_USESHOWWINDOW
-
-        $lpProcessInformation = New-Object PROCESS_INFORMATION
-
-        [Kernel32]::CreateProcess($lpApplicationName, $lpCommandLine, [ref] $lpProcessAttributes, [ref] $lpThreadAttributes, $bInheritHandles, $dwCreationFlags, $lpEnvironment, $lpCurrentDirectory, [ref] $lpStartupInfo, [ref] $lpProcessInformation)
-
-        $Process = Get-Process -Id $lpProcessInformation.dwProcessId
+        $Process = Get-Process -Id $ProcessInfo.dwProcessId
         If ($null -eq $Process) { 
             [PSCustomObject]@{ ProcessId = $null }
             Return
