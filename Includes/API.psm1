@@ -345,18 +345,18 @@ Function Start-APIServer {
                     }
                     "/functions/stat/set" { 
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $Parameters.Value -ne $null) { 
-                            $Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object | ForEach-Object { 
-                                $Miners = @($Variables.Miners | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm)
-                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                    $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $Parameters.Value
-                                    $_.Speed = [Double]::Nan
-                                    $_.Data = @()
-                                    $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
-                                    ForEach ($Algorithm in $_.Algorithm) { 
-                                        $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
-                                        #Set stat value
-                                        Set-Stat -Name $StatName -Value ($Parameters.Value) -Duration 0
-                                    }
+                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Miners | Sort-Object Name, Algorithm | ForEach-Object {
+                                $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $Parameters.Value
+                                $_.Speed = [Double]::Nan
+                                $_.Data = @()
+                                If ($Parameters.Value -eq 0 -and $Parameters.Value -eq "Hashrate") { $_.Disabled = $true }
+                                $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
+                                ForEach ($Algorithm in $_.Algorithm) { 
+                                    $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
+                                    #Remove & set stat value
+                                    Remove-Stat -Name $StatName
+                                    Set-Stat -Name $StatName -Value ($Parameters.Value) -Duration 0
                                 }
                             }
                             If ($Miners.Count -gt 0) {
