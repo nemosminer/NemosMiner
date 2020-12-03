@@ -17,6 +17,7 @@ Fixed:
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
 - Web GUI: Clear Watchdog Timer list when clicking 'Reset Watchdog Timers'
 - Web GUI: 'Disable miner' not disabling miner
+- Web GUI: Rig Monitor not listing workers
 
 Improved:
 - Blockmasters pool: added support for Asia server
