@@ -11,7 +11,7 @@ class BMiner : Miner {
         $Request2 = "http://localhost:$($this.Port)/api/v1/status/stratum"
 
         Try { 
-            $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout #seconds
+            $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
         }
         Catch { 
             Return $null
@@ -27,6 +27,8 @@ class BMiner : Miner {
             }
         }
 
+        If (-not $Data.devices."0".solvers) { Return $null }
+
         $HashRate = [PSCustomObject]@{ }
         $Shares = [PSCustomObject]@{ }
 
@@ -35,18 +37,18 @@ class BMiner : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
-        $Stratum = @($Data.Stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name)
-        $Stratum | ForEach-Object { 
-            $HashRate_Name = [String]$this.Algorithm[$Stratum.IndexOf($_)]
-            $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.hash_rate } | Measure-Object -Sum).Sum
-            If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | Where-Object algorithm -EQ $_ | ForEach-Object { $_.speed_info.solution_rate } | Measure-Object -Sum).Sum }
-            If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | ForEach-Object { $_.speed_info.hash_rate } | Measure-Object -Sum).Sum }
-            If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers } | ForEach-Object { $_.speed_info.solution_rate } | Measure-Object -Sum).Sum }
+        [Int]$Index = 0
+
+        $Data.devices."0".solvers | ForEach-Object { 
+            $Index = $Data.devices."0".solvers.IndexOf($_)
+            $HashRate_Name = [String]$this.Algorithm[$Index]
+            $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] } ).speed_info.hash_rate | Measure-Object -Sum).Sum
+            If (-not $HashRate_Value) { $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] } ).speed_info.solution_rate | Measure-Object -Sum).Sum}
 
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
             If ($this.AllowedBadShareRatio) { 
-                $Shares_Accepted = [Int64]$Data.stratums.$_.accepted_shares
-                $Shares_Rejected = [Int64]$Data.stratums.$_.rejected_shares
+                $Shares_Accepted = [Int64]$Data.stratums.($Data.stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).accepted_shares
+                $Shares_Rejected = [Int64]$Data.stratums.($Data.stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).rejected_shares
                 $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
             }
         }
