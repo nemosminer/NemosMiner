@@ -1099,7 +1099,7 @@ While ($true) {
                     $Miner.SetStatus([MinerStatus]::Failed)
                     $Miner.StatusMessage = "Miner data reader exited unexpectedly."
                 }
-                ElseIf (((Get-Date) - $Miner.Process.StartTime).TotalSeconds -gt $Miner.WarmupTime -and ($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds( -$Miner.WarmupTime).ToUniversalTime()) { 
+                ElseIf (((Get-Date) - $Miner.Process.PSBeginTime).TotalSeconds -gt $Miner.WarmupTime -and ($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds(-$Miner.WarmupTime).ToUniversalTime()) { 
                     #Miner is stuck - no data for > $WarmupTime seconds
                     Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
                     $Miner.SetStatus([MinerStatus]::Failed)
