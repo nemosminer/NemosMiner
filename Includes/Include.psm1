@@ -873,9 +873,6 @@ Function Initialize-Application {
 
     $Variables.Strikes = 3
     $Variables.WatchdogTimers = @()
-
-    # Purge Logs more than 10 days
-    Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 }
 
 Function Get-Rate {
