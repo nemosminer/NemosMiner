@@ -62,7 +62,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     $Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
                     If ($_.Algorithm[0] -like "Ethash*") {
-                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(Coins)$") { 
+                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                             $Command += " -proto 4"
                         }
                     }

@@ -67,7 +67,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     }
                     ElseIf ($_.Algorithm -match "^Ethash*|^KawPow*") { 
                         $WarmupTime = 60
-                        If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(Coins)$") { $Command += " --eth_stratum_mode=nicehash" }
+                        If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --eth_stratum_mode=nicehash" }
                     }
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }

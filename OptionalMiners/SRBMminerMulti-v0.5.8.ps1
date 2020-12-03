@@ -111,7 +111,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     }
 
                     If ($Pools.($_.Algorithm).SSL) { $Command += " --ssl true" }
-                    If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(Coins)$") { $Command += " --nicehash true" }
+                    If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --nicehash true" }
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name

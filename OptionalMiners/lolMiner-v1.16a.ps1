@@ -65,7 +65,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 }
 
                 If ($_.Algorithm -eq "Ethash") { 
-                    If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(Coins)$") { 
+                    If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                         $Command += " --ethstratum ETHV1"
                     }
                     Else { 

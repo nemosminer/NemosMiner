@@ -52,7 +52,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                # If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH(Coins)$") { Return } #temp fix
+                # If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH(|Coins)$") { Return } #temp fix
 
                 $Command = $_.Command 
                 $MinMemGB = $_.MinMemGB
@@ -69,7 +69,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     If ($Pools.($_.Algorithm[0]).SSL) {
                         $Command += " -checkcert 0"
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(Coins)$") { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                             $Command += " -esm 3"
                             $Protocol = "stratum+ssl://"
                         }
@@ -78,7 +78,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         }
                     }
                     Else { 
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(Coins)$") { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                             $Command += " -esm 3"
                             $Protocol = "stratum+tcp://"
                         }

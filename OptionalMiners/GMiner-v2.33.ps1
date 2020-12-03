@@ -85,7 +85,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     $Command += " --server $($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User) --pass $($Pools.($_.Algorithm[0]).Pass)"
 
                     # If ($Pools.($_.Algorithm[0]).SSL) { $Command += " --ssl true --ssl_verification false" }
-                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(Coins)$") { $Command += " --proto stratum" }
+                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --proto stratum" }
 
                     If ($_.Algorithm[1]) { 
                         #If ($Pools.($_.Algorithm[1]).SSL) { $Command += " --dssl true --dssl_verification false" }
