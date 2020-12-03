@@ -2,7 +2,7 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
-Changelog NemosMiner 3.9.9.8 Beta2 02.12.2020
+Changelog NemosMiner 3.9.9.8 Beta2 03.12.2020
 =============================================
 
 Changed:
@@ -16,6 +16,7 @@ Fixed:
 - Broken links in API Doc
 
 Improved:
+- Blockmasters pool: added support for Asia server
 - Changed DAG data provider to "https://minerstat.com/dag-size-calculator" for more supported coins
 - Web GUI: Added 'Total 1 hour / 24hrs' information to balances
 
