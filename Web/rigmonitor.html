@@ -67,6 +67,14 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
+  // get BTC rate of first currency
+  var rate;
+
+  $.ajax({url: '/btcratefirstcurrency',
+    success: function(result) {
+      rate = result;
+    }
+  });
 
   // Get config file name
   $.ajax({url: '/configfile',
