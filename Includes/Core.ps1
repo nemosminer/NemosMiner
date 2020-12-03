@@ -54,6 +54,10 @@ Function Start-Cycle {
 
         # #Stuff to do once every 24hrs
         If ($Variables.DAGdata.Updated -lt (Get-Date).AddDays( -1 )) { 
+            # Keep only the last 10 logs
+            Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+            Get-ChildItem ".\Logs\SwitchingLog_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+
             #Get ethash DAG size and epoch
             If ((-not (Test-Path -PathType Leaf ".\Includes\DAGdata.json")) -or ([nullable[DateTime]]($DAGdata = Get-Content -Path ".\Includes\DAGdata.json" | ConvertFrom-Json -ErrorAction Ignore).Updated -lt (Get-Date).AddDays( +1 ))) { 
 
@@ -192,7 +196,7 @@ Function Start-Cycle {
                 ElseIf ($Variables.DonatePoolsConfig) { 
                     $Variables.DonatePoolNames = $null
                     $Variables.DonatePoolsConfig = $null
-                    Write-Message "Donation run complete. Mining for you."
+                    Write-Message "Donation run complete - thank you! Mining for you. :-)"
                 }
             }
         }
