@@ -43,7 +43,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v34.4 is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+hns --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+handshake --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Zilliqa");             Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo eth --cuda 1 --opencl 0" } #!ETH, see readme
     [PSCustomObject]@{ Algorithm = @("Handshake");           Fee = @(0.02);    MinMemGB = 0.8; Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } #Trex-v0.19.1 is fastest
@@ -89,7 +89,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     If ($_.Algorithm[1]) { 
                         #If ($Pools.($_.Algorithm[1]).SSL) { $Command += " --dssl true --dssl_verification false" }
-                        $Command += " --dserver $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --duser $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User):$($PoolsSecondaryAlgorithm.Algo2.Pass)"
+                        $Command += " --dserver $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --duser $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
                     }
 
                     [PSCustomObject]@{ 
