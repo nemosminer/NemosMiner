@@ -22,9 +22,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cuckarood29_grin" } #2GB is not enough
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cuckatoo31_grin" }
+   [PSCustomObject]@{ Algorithm = "EtcHash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=etchash" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=ethash" } #PhoenixMiner-v5.3b is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } #Wildrig-v0.28.1 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; Command = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.025; MinMemGB = 4.0; Command = " --algo=mtp" }
     [PSCustomObject]@{ Algorithm = "Nimiq";                Fee = 0.025; MinMemGB = 4.0; Command = " --algo=nimiq" }
     [PSCustomObject]@{ Algorithm = "Phi2";                 Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=phi2" }
@@ -44,7 +46,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                If ($_.Algorithm -notin @("Ethash", "Kawpow", "Nimiq", "MTP") -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Navi is not supported by other algorithms
+                If ($_.Algorithm -notin @("EtcHash", "Ethash", "Kawpow", "Nimiq", "MTP") -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } #Navi is not supported by other algorithms
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
@@ -64,7 +66,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     If ($_.Algorithm -like "Cryptonight*") { 
                         $WarmupTime = 90
                     }
-                    ElseIf ($_.Algorithm -match "^Ethash*|^KawPow*") { 
+                    ElseIf ($_.Algorithm -in @("EtcHash", "Ethash", "KawPow")) { 
                         $WarmupTime = 60
                         If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --eth_stratum_mode=nicehash" }
                     }
