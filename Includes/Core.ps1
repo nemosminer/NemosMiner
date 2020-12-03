@@ -947,6 +947,10 @@ Function Start-Cycle {
                         Start-Sleep -Seconds 2
                     }
                 }
+                #Add extra time when CPU mining and miner requires DAG creation
+                If ($Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
+                    $Miner.WarmupTime += 60 #seconds
+                }
                 $Miner.SetStatus([MinerStatus]::Running)
                 Write-Message "Started miner '$($Miner.Info)'."
                 Write-Message -Level Verbose $Miner.CommandLine
