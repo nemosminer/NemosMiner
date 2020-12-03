@@ -29,20 +29,20 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
-    #Intensities for 2. algorithm
-    $Intensities = [PSCustomObject]@{ 
-        "Tensority" = @($null, 10, 30, 60, 100, 150) #$null = Auto-Intensity
-        "Handshake" = @($null, 10, 30, 60, 100, 150) #$null = Auto-Intensity
-    }
+    # Does not seem to make any difference for Handshake
+    # #Intensities for 2. algorithm
+    # $Intensities = [PSCustomObject]@{ 
+    #     "Handshake" = @(0, 10, 30, 60, 100, 150, 210) #0 = Auto-Intensity
+    # }
 
-    # Build command sets for intensities
-    $Commands = $Commands | ForEach-Object { 
-        $_.PsObject.Copy()
-        ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
-            $_ | Add-Member Intensity ([Uint16]$Intensity) -Force
-            $_.PsObject.Copy()
-        }
-    }
+    # # Build command sets for intensities
+    # $Commands = $Commands | ForEach-Object { 
+    #     $_.PsObject.Copy()
+    #     ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
+    #         $_ | Add-Member Intensity ([Uint16]$Intensity) -Force
+    #         $_.PsObject.Copy()
+    #     }
+    # }
 
     $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -58,6 +58,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
+                $WarmupTime = 90
 
                 #Add 512 MB when GPU with connected monitor
                 If ($SelectedDevices | Where-Object { $_.CIM.CurrentRefreshRate }) { $MinMemGB += 0.5 }
@@ -78,18 +79,12 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
 
                     $Command += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
-                    If ($_.Algorithm[0] -like "Cuck*") { 
-                        $WarmupTime = 90
-                    }
-                    Else { 
-                        $WarmupTime = 60
-                    }
 
                     If ($_.Algorithm[1]) { 
                         $Protocol2 = $_.Protocol[1]
                         If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
                         $Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)"
-                        If ($_.Intensity -gt 0) { $Command += " -dual-intensity $($_.Intensity)" }
+                        If ($_.Intensity) { $Command += " -dual-subsolver -1 -dual-intensity $($_.Intensity)" }
                         $WarmupTime = 120
                     }
 
