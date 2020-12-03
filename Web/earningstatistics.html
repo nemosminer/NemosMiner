@@ -68,7 +68,7 @@
       console.log(earningsdata);
       var datasets = [];
       for (var pool in earningsdata.Pools) {
-        var label = pool;
+        var label = pool.replace('Internal', ' (Internal)').replace('External', ' (External)');
         var data = [];
         for (var index in earningsdata.Pools[pool]) {
           data.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
