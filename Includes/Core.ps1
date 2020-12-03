@@ -630,7 +630,6 @@ Function Start-Cycle {
             #Remove all watchdog timer(s) for this miner
             $Miner.Workers | ForEach-Object { 
                 $Worker = $_
-                $Variables.WatchdogTimers2minerobjectgone = $Variables.WatchdogTimers
                 $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
                 If ($WatchdogTimer) {
                     #Remove watchdog timer
