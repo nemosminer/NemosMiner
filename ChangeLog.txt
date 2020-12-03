@@ -10,10 +10,12 @@ Changed:
 - Web GUI: Changed menu item 'Monitoring' to 'Utilities'
 
 Fixed:
+- API documentation: Repair broken links
+- EtcHash / Ethash miner not initiating in time when CPU mineing is active
 - Core: Do not run donation if NemosMiner is started shortly before date change
-- MPH / MPHCoins pools: Disable EU Ethash pool (temp fix)
-- Web GUI: Clear Watchdog Timer list when clicking 'Rest Watchdog Timers'
-- Broken links in API Doc
+- MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
+- Web GUI: Clear Watchdog Timer list when clicking 'Reset Watchdog Timers'
+- Web GUI: 'Disable miner' not disabling miner
 
 Improved:
 - Blockmasters pool: added support for Asia server
