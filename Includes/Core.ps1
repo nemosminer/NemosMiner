@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           core.ps1
 version:        3.9.9.8
-version date:   30 November 2020
+version date:   03 December 2020
 #>
 
 using module .\Include.psm1
@@ -72,13 +72,12 @@ Function Start-Cycle {
                         If ($_ -like "<div class='block' title='Current block height of *") { 
                             $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
                             $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>$")
+                            $DAGsize = [Int64](Get-DAGsize $BlockHeight $Currency)
                             #Epoch for EtcHash is twice as long
                             If ($Currency -eq "ETC") { 
-                                $DAGsize = [Int64](Get-EtcHashSize $BlockHeight)
                                 $Epoch = [Int]([Math]::Floor($BlockHeight / 60000))
                             }
                             Else { 
-                                $DAGsize = [Int64](Get-EthashSize $BlockHeight)
                                 $Epoch = [Int]([Math]::Floor($BlockHeight / 30000))
                             }
                         }
@@ -117,7 +116,7 @@ Function Start-Cycle {
                     Write-Message -Level Warn "Cannot retrieve ethash DAG size information from data provided by '$Uri', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
                     $Data = [PSCustomObject]@{ 
                         BlockHeight = [Int]$BlockHeight
-                        DAGsize     = [Int64](Get-EthashSize $BlockHeight)
+                        DAGsize     = [Int64](Get-DAGSize $BlockHeight)
                         Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
                     }
                     $DAGdata.Currency.Add("*", $Data)
@@ -288,7 +287,7 @@ Function Start-Cycle {
             Write-Message "Requesting pool data ($(@($PoolNames) -join ', ')) - this usually takes less than $($Config.PoolTimeout) second$(If ($Config.PoolTimeout -ne 1) { "s" } )..."
             $Variables.NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
-                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ PoolConfig = $PoolsConfig.($_ -replace "24hr$" -replace "Coins$") } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" })
+                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{PoolConfig = $PoolsConfig.($_ -replace "24hr$" -replace "Coins$")} -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" })
                 }
             )
 
@@ -1047,9 +1046,6 @@ While ($true) {
         }
     }
     Else { 
-        # Purge logs more than 10 days
-        Get-ChildItem ".\Logs\CoreCyle-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-
         Start-Cycle
         Update-Monitoring
 
