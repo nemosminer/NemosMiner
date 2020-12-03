@@ -164,7 +164,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerWindowsNormalWhenBenchmarking = $true, #If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPoolBalances = $true, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
+    [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolFee = $true, #Show pool fee column in miner overview
     [Parameter(Mandatory = $false)]
@@ -411,7 +411,10 @@ If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerSta
     Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
 }
 
-If ($Config.WebGUI -eq $true) { Initialize-API }
+If ($Config.WebGUI -eq $true) { 
+    Write-Host "Initializing API & Web GUI on 'http:\\localhost:$($Config.APIPort)'..." -F Yellow
+    Initialize-API
+}
 
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $false
@@ -447,6 +450,7 @@ Function Global:TimerUITick {
                     Stop-IdleMining
                 }
                 Else { 
+                    Write-Host "Initializing application..." -F Yellow
                     Initialize-Application
                     Start-BrainJob
                     Start-BalancesTracker
@@ -469,6 +473,7 @@ Function Global:TimerUITick {
             $ButtonStart.Enabled = $false
             $ButtonPause.Enabled = $false
             If ($Variables.MiningStatus -ne "Running") { 
+                Write-Host "Initializing application..." -F Yellow
                 Initialize-Application
                 Start-BrainJob
                 Start-BalancesTracker
@@ -515,13 +520,13 @@ Function Global:TimerUITick {
             $EarningsCurrency = If ("m$($Config.PayoutCurrency)" -in $Config.Currency) { "m$($Config.PayoutCurrency)" } Else { $Config.PayoutCurrency }
             $DisplayCurrency = $EarningsCurrency -replace "BTC$", $([char]0x20BF)
 
-            If ($Variables.Earnings -and $Config.ShowPoolBalances) { 
+            If ($Variables.Earnings) { 
                 $DisplayEarnings = [System.Collections.ArrayList]@(
                     $Variables.Earnings.Values | Select-Object @(
                         @{ Name = "Pool"; Expression = { $_.Pool } }, 
                         @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } }, 
                         @{ Name = "Balance ($DisplayCurrency)"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.BTC.$EarningsCurrency) } }, 
-                        @{ Name = "$DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.DailyGrowth * $Variables.Rates.BTC.$EarningsCurrency) } }, 
+                        @{ Name = "Ø $DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency) } }, 
                         @{ Name = "$DisplayCurrency in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.BTC.$EarningsCurrency) } }, 
                         @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency) } }, 
                         @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.BTC.$EarningsCurrency) } }, 
@@ -1036,11 +1041,9 @@ $ShowHelp = {
     $ToolTip.SetToolTip($this, $Hint)
 } #end ShowHelp
 
-# $Logo = [System.Drawing.Image]::Fromfile('.\config\logo.png')
 $PictureBoxLogo = New-Object Windows.Forms.PictureBox
 $PictureBoxLogo.Width = 47 #$img.Size.Width
 $PictureBoxLogo.Height = 47 #$img.Size.Height
-# $PictureBoxLogo.Image = $Logo
 $PictureBoxLogo.SizeMode = 1
 $PictureBoxLogo.ImageLocation = $Branding.LogoPath
 $MainFormControls += $PictureBoxLogo
