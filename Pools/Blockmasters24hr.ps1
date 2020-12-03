@@ -19,7 +19,7 @@ If ($PoolConfig.Wallet) {
     # $PriceField = "estimate_current"
     $DivisorMultiplier = 1000000000
 
-    $PoolRegions = "eu", "us"
+    $PoolRegions = @("as", "eu", "us")
 
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
@@ -44,7 +44,7 @@ If ($PoolConfig.Wallet) {
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Host               = [String]"$(if ($Region -eq "eu") { "eu." })$HostSuffix"
+                Host               = [String]"$($Region).$($HostSuffix)" -replace "^us\."
                 Port               = [UInt16]$PoolPort
                 User               = [String]$PoolConfig.Wallet
                 Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
