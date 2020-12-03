@@ -2592,7 +2592,7 @@ Function Get-Algorithm {
         $Global:Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
     }
 
-    $Algorithm = (Get-Culture).TextInfo.ToTitleCase(($Algorithm.ToLower() -replace "-", " " -replace "_", " " -replace "/", " ")) -replace " "
+    $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-' -replace '_' -replace '/' -replace ' ')
 
     If ($Global:Algorithms.$Algorithm) { $Global:Algorithms.$Algorithm }
     Else { $Algorithm }
@@ -2608,7 +2608,7 @@ Function Get-Region {
         $Global:Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
     }
 
-    $Region = (Get-Culture).TextInfo.ToTitleCase(($Region -replace "-", " " -replace "_", " ")) -replace " "
+    $Region = (Get-Culture).TextInfo.ToTitleCase($Region -replace '-' -replace '_' -replace '/' -replace ' ')
 
     If ($Global:Regions.$Region) { $Global:Regions.$Region | Select-Object -Index 0 }
     Else { $Region }
