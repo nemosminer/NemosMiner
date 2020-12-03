@@ -11,6 +11,7 @@ Changed:
 
 Fixed:
 - API documentation: Repair broken links
+- BMiner API: workaround for broken miner API (https://bitcointalk.org/index.php?topic=2519271.msg55744602#msg55744602)
 - EtcHash / Ethash miner not initiating in time when CPU mineing is active
 - Core: Do not run donation if NemosMiner is started shortly before date change
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
