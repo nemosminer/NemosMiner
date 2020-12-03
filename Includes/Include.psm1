@@ -875,7 +875,7 @@ Function Initialize-Application {
     $Variables.WatchdogTimers = @()
 
     # Purge Logs more than 10 days
-    Get-ChildItem ".\Logs\miner-*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+    Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 }
 
 Function Get-Rate {
@@ -2426,7 +2426,7 @@ public static class Kernel32
 
         Switch ($ShowMinerWindows) {
             "hidden" { $ShowWindow = "0x0000" } #SW_HIDE
-            "normal" { $ShowWindow = "0x0004" } #SW_SHOWNOACTIVATE
+            "normal" { $ShowWindow = "0x0001" } #SW_SHOWNORMAL
             Default  { $ShowWindow = "0x0007" } #SW_SHOWMINNOACTIVE
         }
 
@@ -2516,7 +2516,7 @@ Function Expand-WebRequest {
             If (Test-Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
         }
         Else { 
-            Throw "Error: Cannot find $($Path). "
+            Throw "Error: Cannot find $($Path)."
         }
     }
 }
@@ -2555,6 +2555,7 @@ Function Get-Region {
 }
 
 Function Initialize-Autoupdate { 
+
     # GitHub only supporting TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
@@ -2714,39 +2715,22 @@ Function Test-Prime {
     Return $true
 }
 
-Function Get-EthashSize { 
+Function Get-DAGsize { 
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true)]
-        [Double]$Block
+        [Parameter(Mandatory = $false)]
+        [Double]$Block = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
+        [Parameter(Mandatory = $false)]
+        [String]$Coin
     )
 
-    If (-not $Block) { Return 4 * 1GB } # Default 4GB
+    Switch ($Coin) {
+        "ETC" { If ($Block -ge 11700000 ) { $Epoch_Length = 60000 } Else { $Epoch_Length = 30000 } }
+        default { $Epoch_Length = 30000 }
+    }
 
     $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
     $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
-    $EPOCH_LENGTH = 30000
-    $MIX_BYTES = 128
-
-    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
-    $Size -= $MIX_BYTES
-    While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
-
-    Return $Size
-}
-
-Function Get-EtcHashSize { 
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $true)]
-        [Double]$Block
-    )
-
-    If (-not $Block) { Return 3 * 1GB } # Default 3GB
-
-    $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
-    $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
-    $EPOCH_LENGTH = 60000
     $MIX_BYTES = 128
 
     $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
