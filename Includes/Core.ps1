@@ -470,16 +470,23 @@ Function Start-Cycle {
                 $Worker = $_
                 $Algorithm = $Worker.Pool.Algorithm
                 $Stat_Name = "$($Miner.Name)_$($Algorithm)_HashRate"
-                If ($Miner.Activated -ge 1 -or (Get-Stat $Stat_Name)) {
-                    #Do not save data if stat just got removed
-                    $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples)
-                    If ($Stat.Updated -gt $Miner.StatStart) { 
-                        Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
-                        $Miner.StatStart = $Miner.StatEnd
-                        #Update watchdog timer
-                        $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName | Sort-Object Kicked | Select-Object -Last 1
-                        If ($WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
-                            $WatchdogTimer.Kicked = $Stat.Updated
+                #Do not save data if stat just got removed
+                If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
+                    #Stop miner if new value is outside ± 200% of current value
+                    If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -ge ($Stat.Week * 2) -or $Miner_Speeds.$Algorithm -lt ($Stat.Week / 2))) {
+                        Write-Message -Level Warn "$($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
+                        $Miner.SetStatus([MinerStatus]::Idle)
+                    }
+                    Else { 
+                        $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples)
+                        If ($Stat.Updated -gt $Miner.StatStart) { 
+                            Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                            $Miner.StatStart = $Miner.StatEnd
+                            #Update watchdog timer
+                            $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName | Sort-Object Kicked | Select-Object -Last 1
+                            If ($WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
+                                $WatchdogTimer.Kicked = $Stat.Updated
+                            }
                         }
                     }
                 }
@@ -487,11 +494,18 @@ Function Start-Cycle {
 
             If ($Variables.CalculatePowerCost -and $PowerUsage -gt 0) {
                 $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
-                If ($Miner.Activated -ge 1 -or $Stats.$Stat_Name) {
-                    #Do not save data if stat just got removed
-                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples)
-                    If ($Stat.Updated -gt $Miner.StatStart) { 
-                        Write-Message "Saved power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
+                If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
+                    #Stop miner if new value is outside ±- 200% of current value
+                    If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt ($Stat.Week * 2) -or $PowerUsage -lt ($Stat.Week / 2))) {
+                        Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($(([Double]$PowerUsage).ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
+                        $Miner.SetStatus([MinerStatus]::Idle)
+                    }
+                    Else { 
+                        #Do not save data if stat just got removed
+                        $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples)
+                        If ($Stat.Updated -gt $Miner.StatStart) { 
+                            Write-Message "Saved power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
+                        }
                     }
                 }
             }
@@ -514,11 +528,11 @@ Function Start-Cycle {
                 $Variables.Miners | Where-Object { $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
                     $Miner = $_
                     If ($Miner.Status -eq [MinerStatus]::Running -and $Miner.GetStatus() -ne [MinerStatus]::Running) { 
-                        Write-Message -Level Error "Miner '$Miner.Info' exited unexpectedly." 
+                        Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly." 
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
                     Else { 
-                        Write-Message "Stopping miner '$Miner.Info' for update..."
+                        Write-Message "Stopping miner '$($Miner.Info)' for update..."
                         $Miner.SetStatus([MinerStatus]::Idle)
                     }
 
