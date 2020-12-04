@@ -132,3 +132,16 @@ body {
   display: table;
   clear: both;
 }
+
+/*
+* Modal
+*/
+.modal {
+  padding: 1%;
+  white-space: pre-wrap; /* allow \n for new line */
+}
+
+.modal-lg {
+  min-width: auto;
+  max-width: fit-content;
+}
