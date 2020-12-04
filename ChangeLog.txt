@@ -23,6 +23,7 @@ Fixed:
 Improved:
 - Blockmasters pool: added support for Asia server
 - Changed DAG data provider to "https://minerstat.com/dag-size-calculator" for more supported coins
+- Core: Detect and ignore unreal hashrate & power usage data from miner (±200% from existing values)
 - Web GUI: Added 'Total 1 hour / 24hrs' information to balances
 
 Miner Updates:
