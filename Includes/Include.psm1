@@ -1070,12 +1070,13 @@ namespace PInvoke.Win32 {
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
                 #Pause if system has become active
-                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CycleRunspace) { 
-                    Write-Message "System active, mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CoreRunspace) { 
+                    Write-Message "System activity detected. Stopping all running miners..."
                     Stop-Mining
+                    Write-Message "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
                 }
                 #Check if system has been idle long enough to unpause
-                If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CycleRunspace) { 
+                If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
                     Write-Message "System was idle for $IdleSeconds seconds, start mining..."
                     Start-Mining
                 }
