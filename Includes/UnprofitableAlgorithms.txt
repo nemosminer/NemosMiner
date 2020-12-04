@@ -22,6 +22,7 @@
     "*:Lyra2RE",
     "*:Lyra2RE2",
     "*:Lyra2z",
+    "*:MegaBtx",
     "*:MyriadGroestl",
     "1:Nist5",
     "*:Nist5",
