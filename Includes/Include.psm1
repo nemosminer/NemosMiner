@@ -854,6 +854,10 @@ Function Initialize-API {
 Function Initialize-Application { 
     Write-Message "Initializing mining environment..."
 
+    #Keep only the last 10 logs
+    Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+    Get-ChildItem ".\Logs\SwitchingLog_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+ 
     $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
     $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
@@ -867,6 +871,7 @@ Function Initialize-Application {
 
     If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
     Else { $PSDefaultParameterValues["*:Proxy"] = $Proxy }
+
     $Variables.DecayStart = (Get-Date).ToUniversalTime()
     $Variables.DecayPeriod = 60 #seconds
     $Variables.DecayBase = 1 - 0.1 #decimal percentage

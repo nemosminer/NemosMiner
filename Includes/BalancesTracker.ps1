@@ -11,7 +11,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -46,12 +46,14 @@ While ($true) {
             } Else { 
                 $AllBalanceObjects = @()
             }
-            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { 
+            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) {
                 $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue) 
+                Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
             } Else { 
                 $DailyEarnings = @()
-                Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
             }
+            #Keep only the last 10 logs 
+            Get-ChildItem ".\Logs\DailyEarnings_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
         }
 
         $Now = Get-Date

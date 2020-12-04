@@ -9,7 +9,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -52,11 +52,8 @@ Function Start-Cycle {
         $PoolNames = $Config.PoolName
         $PoolsConfig = $Config.PoolsConfig
 
-        # #Stuff to do once every 24hrs
+        #Do do once every 24hrs
         If ($Variables.DAGdata.Updated -lt (Get-Date).AddDays( -1 )) { 
-            # Keep only the last 10 logs
-            Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-            Get-ChildItem ".\Logs\SwitchingLog_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
 
             #Get ethash DAG size and epoch
             If ((-not (Test-Path -PathType Leaf ".\Includes\DAGdata.json")) -or ([nullable[DateTime]]($DAGdata = Get-Content -Path ".\Includes\DAGdata.json" | ConvertFrom-Json -ErrorAction Ignore).Updated -lt (Get-Date).AddDays( +1 ))) { 
