@@ -19,7 +19,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } #PhoenixMiner-v5.3b is fastest
 
-#   [PSCustomObject]@{ Algorithm = @("BeamV3");              Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
+#   [PSCustomObject]@{ Algorithm = @("BeamV3");              Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } #NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Blake2s");             Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo blake2s --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.03);    MinMemGB = 6.0; Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");         Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckaroo29b --cuda 1 --opencl 0" }
@@ -42,7 +42,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v34.4 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } #NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+handshake --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Zilliqa");             Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo eth --cuda 1 --opencl 0" } #!ETH, see readme
     [PSCustomObject]@{ Algorithm = @("Handshake");           Fee = @(0.02);    MinMemGB = 0.8; Type = "NVIDIA"; Command = " --algo handshake --cuda 1 --opencl 0" }

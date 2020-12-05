@@ -19,7 +19,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Etchash" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Ethash" } #TTMiner-v5.0.3 is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Coin = "Kawpow" } #Trex-v0.19.1 is fastest
-#   [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; Coin = "Octopus" } #NBMiner-v34.4 is faster
+#   [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; Coin = "Octopus" } #NBMiner-v34.5 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Ubqhash" }
 )
 
