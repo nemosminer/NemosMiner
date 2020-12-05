@@ -379,6 +379,7 @@ $Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv
 $Variables.DriverVersion = @{ }
 $Variables.DriverVersion | Add-Member AMD ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
 $Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.MiningStatus = $Variables.NewMiningStatus = "Stopped"
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -450,7 +451,6 @@ Function Global:TimerUITick {
                     Stop-IdleMining
                 }
                 Else { 
-                    Write-Host "Initializing application..." -F Yellow
                     Initialize-Application
                     Start-BrainJob
                     Start-BalancesTracker
@@ -473,7 +473,6 @@ Function Global:TimerUITick {
             $ButtonStart.Enabled = $false
             $ButtonPause.Enabled = $false
             If ($Variables.MiningStatus -ne "Running") { 
-                Write-Host "Initializing application..." -F Yellow
                 Initialize-Application
                 Start-BrainJob
                 Start-BalancesTracker
@@ -839,11 +838,11 @@ Function Global:TimerUITick {
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
                     @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
                     @{Label = "Device(s)"; Expression = { $_.DeviceName } }, 
-                    @{Label = "Last Updated"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
+                    @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
                 ) | Out-Host
             }
 
-            Write-Host "$($Variables.Summary -replace '&ensp;', ' ' -replace '  +', '; ')"
+            Write-Host "$($Variables.Summary -replace '^&ensp;&ensp;' -replace '&ensp;', ' ' -replace '  +', '; ')"
 
             If (-not $Variables.Paused) { 
                 Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
