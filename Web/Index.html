@@ -69,7 +69,7 @@
     <div class="card m-3 {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}">
       <div class="card-header text-center">
         {{#if total}}<h5>{{name}}</h5>last hour:<br>&#8776; {{growth1sum}} {{firstcurrency}}<br>&#8776; {{growth1summbtc}} mBTC<br><br>last 24 hours:<br>&#8776; {{growth24sum}} {{firstcurrency}}<br>&#8776; {{growth24summbtc}} mBTC
-        {{else}}<h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>{{lastupdated}}<br>avg. &#8776; {{avghourlygrowth}} {{thresholdcurrency}}/h
+        {{else}}<h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>{{updated}}<br>avg. &#8776; {{avghourlygrowth}} {{thresholdcurrency}}/h
         {{/if}}
       </div>
       <div class="card-body text-center">
@@ -191,7 +191,7 @@
                           growth1_sum = growth1_sum + item.Growth1;
                           growth24_sum = growth24_sum + item.Growth24;
                           if (!(footer.test(item.Pool))) {
-                            var data = {name: item.Pool.replace('Internal', ' (Internal)').replace('External', ' (External)'), lastupdated: formatDate(item.LastUpdated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avghourlygrowth: (item.AvgHourlyGrowth * 1000).toFixed(8)};
+                            var data = {name: item.Pool.replace('Internal', ' (Internal)').replace('External', ' (External)'), updated: formatDate(item.Updated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avghourlygrowth: (item.AvgHourlyGrowth * 1000).toFixed(8)};
                             $.each(currencies, function(cindex, currency) {
                               data["balances"][currency] = (item.Balance * rates['BTC'][currency]).toFixed(8);
                               if (!(data_sum["balances"][currency])) {data_sum["balances"][currency] = 0}
