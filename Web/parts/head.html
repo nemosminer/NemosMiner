@@ -44,15 +44,15 @@
         <nav class="d-none d-md-block bg-light sidebar nav-collapse" id="sidebar">
           <div class="sidebar-sticky">
             <ul class="nav flex-column">
-              <li class="nav-item">
+              <li class="nav-item" title="Shows information about the running miners as well as the reported earning data">
                 <a id="navdashboard" class="nav-link" href="/">
                   <span data-feather="home"></span>
                   <i class="fas fa-tachometer-alt" aria-hidden="true"></i> Dashboard
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Displays a bar graph of the reported earnings">
                 <a id="navearningstatistics" class="nav-link" href="earningstatistics.html">
-                  <i class="fas fa-chart-bar" aria-hidden="true"></i> Earnings statistics
+                  <i class="fas fa-chart-bar" aria-hidden="true"></i> Earnings Statitics
                 </a>
               </li>
             </ul>
@@ -61,17 +61,17 @@
               <span>Miners</span>
             </h6>
             <ul class="nav flex-column mb-2">
-              <li class="nav-item">
-                <a id="navminersfastest" class="nav-link" href="minersfastest.html">
+              <li class="nav-item" title="Shows a list of the miners that were calculated as the most profitable">
+                <a id="navminersbest" class="nav-link" href="minersbest.html">
                   <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(48, 192, 48);"></i> Best Miners
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of all unavailable miners">
                 <a id="navminersunavailable" class="nav-link" href="minersunavailable.html">
                   <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(224, 32, 32);"></i> Unavailable Miners
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of all miners">
                 <a id="navminers" class="nav-link" href="miners.html">
                   <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(0, 0, 0);"></i> All Miners
                 </a>
@@ -82,17 +82,17 @@
               <span>Pools</span>
             </h6>
             <ul class="nav flex-column mb-2">
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of the pools that were calculated as the most profitable">
                 <a id="navpoolsbest" class="nav-link" href="poolsbest.html">
                   <i class="fas fa-database" aria-hidden="true" style="color:rgb(48, 192, 48);"></i> Best Pools
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of all unavailable pools">
                 <a id="navpoolsunavailable" class="nav-link" href="poolsunavailable.html">
                   <i class="fas fa-database" aria-hidden="true" style="color:rgb(224, 32, 32);"></i> Unavailable Pools
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of all pools">
                 <a id="navallpools" class="nav-link" href="pools.html">
                   <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0);"></i> All Pools
                 </a>
@@ -103,27 +103,27 @@
               <span>Utilities</span>
             </h6>
             <ul class="nav flex-column mb-2">
-              <li class="nav-item">
+              <li class="nav-item" title="Rig Monitor configuration & Rig status">
                 <a id="navrigmonitor" class="nav-link" href="rigmonitor.html">
                   <i class="fas far fa-eye" aria-hidden="true"></i> Rig Monitor
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of the executed miners">
                 <a id="navswitchinglog" class="nav-link" href="switchinglog.html">
                   <i class="fas fa-random" aria-hidden="true"></i> Switching log
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows the last 40 lines of the NemosMiner log">
                 <a id="navtail" class="nav-link" href="logviewer.html">
                   <i class="fa fa-align-left" aria-hidden="true"></i> System Log
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Displays the watchdog timers information">
                 <a id="navwatchdogtimers" class="nav-link" href="watchdogtimers.html">
                   <i class="fas fa-dog" aria-hidden="true"></i> Watchdog Timers
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows a list of the balance data of the last 14 days">
                 <a id="navbalanceobjects" class="nav-link" href="balanceobjects.html">
                   <i class="fas fa-money-bill-alt" aria-hidden="true"></i> Balance Objects
                 </a>
@@ -134,27 +134,27 @@
               <span>Config</span>
             </h6>
             <ul class="nav flex-column mb-2">
-              <li class="nav-item">
+              <li class="nav-item" title="Display and configure the devices (GPUs and CPUs) detected by NemosMiner">
                 <a id="navdevices" class="nav-link" href="devices.html">
                   <i class="fa fa-microchip" aria-hidden="true"></i> Devices
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Simple configuration editor&#10;Allows you to edit the most common configuration items">
                 <a id="navconfigedit" class="nav-link" href="configedit.html">
                   <i class="fa fa-edit" aria-hidden="true"></i> Edit Configuration
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows the full configuration NemosMiner is currently using">
                 <a id="navconfigrunning" class="nav-link" href="configrunning.html">
                   <i class="fas fa-file-code" aria-hidden="true"></i> Running Configuration
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="View and reset common stat data">
                 <a id="navminerstats" class="nav-link" href="stats.html">
                   <i class="fa fa-list-ul" aria-hidden="true"></i> Manage Stats
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" title="Shows the list of unprofitable algorithms">
                 <a id="navunprofitablealgorithms" class="nav-link" href="unprofitablealgorithms.html">
                   <i class="fa fa-list-ol" aria-hidden="true"></i> Unprofitable Algorithms List
                 </a>
@@ -165,18 +165,18 @@
               <span>Links</span>
             </h6>
             <ul class="nav flex-column mb-2">
-              <li class="nav-item">
-                <a class="nav-link" href="https://nemosminer.com/">
+              <li class="nav-item" title="Open the NemosMiner homepage in a new browser window">
+                <a class="nav-link" href="https://nemosminer.com/" target="_blank">
                   <i class="fa fa-external-link-alt" aria-hidden="true"></i> Website
                 </a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="https://github.com/Minerx117/NemosMiner">
+              <li class="nav-item" title="Open the NemosMiner repository on Github in a new browser window">
+                <a class="nav-link" href="https://github.com/Minerx117/NemosMiner" target="_blank">
                   <i class="fab fa-github" aria-hidden="true"></i> Github
                 </a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="APIDocs.html">
+              <li class="nav-item" title="Open the NemosMiner API documentation in a new browser window">
+                <a class="nav-link" href="APIDocs.html" target="_blank">
                   <i class="fa fa-book" aria-hidden="true"></i> API Documentation
                 </a>
               </li>

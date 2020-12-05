@@ -9,193 +9,235 @@
   <div>
     <tr style="vertical-align: top;">
       <td>
-        <label title="Your Bitcoin address (must be 34 chars long). &#10;Do not enter a non-BTC address here. &#10; &#10;Payouts in other currencies must be configured as a per pool setting &#10;by editing '.\Config\PoolConfig.json'." for="Wallet">BTC wallet address</label>
-        <input title="Your Bitcoin address (must be 34 chars long). &#10;Do not enter a non-BTC address here. &#10; &#10;Payouts in other currencies must be configured as a per pool setting &#10;by editing '.\Config\PoolConfig.json'." type="text" id="Wallet" name="Wallet" pattern="[0-9A-Za-z\-]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" size=34>
-        <br><br>
-
-        <label title="Identifies your worker &#10;e.g. Computername" for="WorkerName">Worker name</label>
-        <input title="Identifies your worker &#10;e.g. Computername" type="text" id="WorkerName" name="WorkerName" size=32>
-        <br><br>
-
-        <label title="Your MiningPoolHub username &#10;Note: The username must be registered with MPH" for="MPHUserName">MPH user name</label>
-        <input title="Your MiningPoolHub username &#10;Note: The username must be registered with MPH" type="text" id="MPHUserName" name="MPHUserName" value="nemo">
-        <br>
-        <label title="Your MiningPoolHub API Key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" for="MPHAPIKey">MPH API Key</label>
-        <input title="Your MiningPoolHub API Key &#10;If left empty NemosMiner cannot retrieve balance data from MPH" type="text" pattern="[0-9A-Fa-f\-]{64}" id="MPHAPIKey" name="MPHAPIKey" size=64>
-        <br><br>
-
-        <label title="Your NiceHash Bitcoin address (must be 34 chars long) &#10;configure only if different from BTC Wallet Address &#10" for="NiceHashWallet">NiceHash BTC wallet address</label>
-        <input title="Your NiceHash Bitcoin address (must be 34 chars long) &#10;configure only if different from BTC Wallet Address &#10" type="text" id="NiceHashWallet" name="NiceHashWallet" pattern="[0-9][A-Z][a-z]{34}" value="" size=34>
-        <input title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal" title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)">
-        <label title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)" for="NiceHashWalletIsInternal" >is internal</label>
-        <br>
-        <label title="Your NiceHash API Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPIKey">NiceHash API Key</label>
-        <input title="Your NiceHash API Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" type="text" pattern="[0-9A-Fa-f\-]{36}" id="NiceHashAPIKey" name="NiceHashAPIKey" size=36>
-        <br>
-        <label title="Your NiceHash API Secret Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPISecret">NiceHash API Secret</label>
-        <input title="Your NiceHash API Secret Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" type="text" pattern="[0-9A-Fa-f\-]{72}" id="NiceHashAPISecret" name="NiceHashAPISecret" size=72>
-        <br>
-        <label title="Your NiceHash Organization Id (must be 36 chars long) &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashOrganizationId">NiceHash Organization Id</label>
-        <input title="Your NiceHash Organization Id (must be 36 chars long) &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" type="text" pattern="[0-9A-Fa-f\-]{36}" id="NiceHashOrganizationId" name="NiceHashOrganizationId" size=36>
-        <br><br>
-
-        <label title="Your ProHashing username &#10;Note: The username must be registered with ProHashing" for="ProHashingUserName">ProHashing user name</label>
-        <input title="Your ProHashing username &#10;Note: The username must be registered with ProHashing" type="text" id="ProHashingUserName" name="ProHashingUserName" value="nemos">
-        <br>
-        <label title="Your ProHashing API key &#10;If left empty NemosMiner cannot retrieve balance data from ProHashing" for="ProHashingAPIKey">ProHashing API key</label>
-        <input title="Your ProHashing API key &#10;If left empty NemosMiner cannot retrieve balance data from ProHashing" type="text" pattern="[0-9A-Fa-f\-]{64}" id="ProHashingAPIKey" name="ProHashingAPIKey" size=64>
-        <br><br>
-
-        <label title="Cycle duration (between 30 & 3600 seconds) &#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration</label>
-        <input title="Cycle duration (between 30 & 3600 seconds) &#10;This defines the approximate duration for one cycle." type="number" id="Interval" name="Interval" min="30" max="3600" value=90>
-        <label title="Cycle duration (between 30 & 3600 seconds) &#10;This defines the approximate duration for one cycle." for="Interval">seconds</label>
+        <div title="Your Bitcoin address (must be 34 chars long). &#10;Do not enter a non-BTC address here. &#10; &#10;Payouts in other currencies must be configured as a per pool setting &#10;by editing '.\Config\PoolConfig.json'.">
+          <label for="Wallet">BTC wallet address</label>
+          <input type="text" id="Wallet" name="Wallet" pattern="[0-9A-Za-z\-]{34}" value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" maxlength=34 size=40>
+        </div>
+        <div title="Identifies your worker &#10;e.g. Computername">
+          <labelfor="WorkerName">Worker name</label>
+          <input type="text" id="WorkerName" name="WorkerName" maxlength=32 size=38>
+        </div>
         <br>
 
-        <label title="(between 0 & 60 minutes) &#10;Default donation duration per day is 13 minutes (0.9%) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" for="Donate">Donation duration per day</label>
-        <input title="(between 0 & 60 minutes) &#10;Default donation duration per day is 13 minutes (0.9%) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" type="number" id="Donate" name="Donate" min="0" max="60" value=13>
-        <label title="(between 0 & 60 minutes) &#10;Default donation duration per day is 13 minutes (0.9%) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on" for="Donate">minutes</label>
-        <br><br>
-
-        <label for="Algorithm">Algorithms</label>
-        <input type="text" id="Algorithm" name="Algorithm" title="'+[Algorithm]' to enable algorithm &#10;'-[Algorithm]' to disable Algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled Algorithms are used &#10;If '-' is used, then all Algorithms are used except the disabled ones &#10;Leave empty to use ALL available Algorithms (not recommended as it may cause more switching) &#10;&#10;Do not combine '+' and '-' for the same Algorithm &#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')" size=64>
-        <button type="button" id="defaultAlgorithm" name="defaultAlgorithm" title="Load the default algorithm list &#10;for the selected pools">Load default algorithms</button>
-        <br><br>
-
-        <label for="Currency" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">Currencies</label>
-        <input type="text" id="Currency" name="Currency" value="mBTC" title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency" size=64>
+        <div title="Your MiningPoolHub username &#10;Note: The username must be registered with MPH">
+          <label for="MPHUserName">MPH user name</label>
+          <input type="text" id="MPHUserName" name="MPHUserName" value="nemo">
+        </div>
+        <div title="Your MiningPoolHub API Key &#10;If left empty NemosMiner cannot retrieve balance data from MPH">
+          <label for="MPHAPIKey">MPH API Key</label>
+          <input type="text" pattern="[0-9A-Fa-f\-]{64}" id="MPHAPIKey" name="MPHAPIKey" maxlength=64 size=70>
+        </div>
         <br>
 
-        <label title="Default payout Currency for all pools &#10;Important: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information &#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')" for="PayoutCurrency">Default Payout Currency</label>
-        <input title="Default payout Currency for all pools &#10;Important: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information &#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')" type="text" id="PayoutCurrency" name="PayoutCurrency" value="BTC" size=3>
-        <br><br>
-
-        <label title="Enter Proxy IP address and port &#10;e.g. 192.168.1.1:3128" for="Proxy">Proxy</label>
-        <input type="text" id="Proxy" name="Proxy" title="Enter Proxy IP address and port &#10;e.g. 192.168.1.1:3128" size=24>
-        <br><br>
-
-        <label title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct" >Running Miner Gain</label>
-        <input title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5>
-        <label title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct" >%</label>
+        <div title="Your NiceHash BitCoin Wallet address (must be 34 chars long) &#10;configure only if different from BTC Wallet Address &#10">
+          <label for="NiceHashWallet">NiceHash BTC wallet address</label>
+          <input type="text" id="NiceHashWallet" name="NiceHashWallet" pattern="[0-9][A-Z][a-z]{34}" value="" maxlength=34 size=40>
+          <input title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
+          <label title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)" for="NiceHashWalletIsInternal">is internal</label>
+        </div>
+        <div title="Your NiceHash API Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPIKey">
+          <label for="NiceHashAPIKey">NiceHash API Key</label>
+          <input type="text" pattern="[0-9A-Fa-f\-]{36}" id="NiceHashAPIKey" name="NiceHashAPIKey" maxlength=36 size=42>
+        </div>
+        <div title="Your NiceHash API Secret Key &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPISecret">
+          <label for="NiceHashAPISecret">NiceHash API Secret</label>
+          <input type="text" pattern="[0-9A-Fa-f\-]{72}" id="NiceHashAPISecret" name="NiceHashAPISecret" maxlength=72 size=78>
+        </div>
+        <div title="Your NiceHash Organization Id (must be 36 chars long) &#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashOrganizationId">
+          <label for="NiceHashOrganizationId">NiceHash Organization Id</label>
+          <input type="text" pattern="[0-9A-Fa-f\-]{36}" id="NiceHashOrganizationId" name="NiceHashOrganizationId" maxlength=36 size=42>
+        </div>
         <br>
-      </td>
+
+        <div title="Your ProHashing username &#10;Note: The username must be registered with ProHashing" for="ProHashingUserName">
+          <label for="ProHashingUserName">ProHashing user name</label>
+          <input type="text" id="ProHashingUserName" name="ProHashingUserName" value="nemos">
+        </div>
+        <div title="Your ProHashing API key &#10;If left empty NemosMiner cannot retrieve balance data from ProHashing" for="ProHashingAPIKey">
+          <label for="ProHashingAPIKey">ProHashing API key</label>
+          <input type="text" pattern="[0-9A-Fa-f\-]{64}" id="ProHashingAPIKey" name="ProHashingAPIKey" maxlength=64 size=70>
+        </div>
+        <br>
+
+        <div title="Fiat Currencies used for BTC conversion &#10;Values must be sparated by commas &#10;&#10;i.e. 'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid &#10;The first value is used as main currency">
+          <label for="Currency">Currencies</label>
+          <input type="text" id="Currency" name="Currency" value="mBTC" maxlength=64 size=70>
+        </div>
+        <div title="Default payout Currency for all pools &#10;Important: Not all pools allow payouts in other currencies than BTC. &#10;Consult the pool API information for more information &#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+          <label for="PayoutCurrency">Default Payout Currency</label>
+          <input type="text" id="PayoutCurrency" name="PayoutCurrency" value="BTC" size=3>
+        </div>
+        <br>
+
+        <div title="'+[Algorithm]' to enable algorithm &#10;'-[Algorithm]' to disable Algorithm &#10;Values must be sparated by commas &#10;&#10;If '+' is used, then only the explicitly enabled Algorithms are used &#10;If '-' is used, then all Algorithms are used except the disabled ones &#10;Leave empty to use ALL available Algorithms (not recommended as it may cause more switching) &#10;&#10;Do not combine '+' and '-' for the same Algorithm &#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">Algorithms
+          <input type="text" id="Algorithm" name="Algorithm"  size=64>
+          <button type="button" id="defaultAlgorithm" name="defaultAlgorithm" title="Load the default algorithm list &#10;for the selected pools">Load default algorithms</button>
+        </div>
+        <div title="NemosMiner will not mine algorithms listed in &#10;UnprofitableAlgorithms.txt (recommended)">
+          <input type="checkbox" id="ApplyUnprofitableAlgorithmList" name="ApplyUnprofitableAlgorithmList"> Do not mine algorithms in the Unprofitable Algorithms List
+        </div>
+        <br>
+
+        <div title="Cycle duration (between 30 & 3600 seconds) &#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration
+          <input type="number" id="Interval" name="Interval" min="30" max="3600" value=90> seconds
+        </div>
+        <br>
+
+        <div title="(between 0 - 60 minutes) &#10;Default donation duration per day is 13 minutes (0.9%) &#10;&#10;Please help support the great team behind NemosMiner &#10;by leaving mining donations turned on">Donation duration per day
+          <input type="number" id="Donate" name="Donate" min="0" max="60" value=13> minutes
+        </div>
+        <br>
+
+        <div title="Enter Proxy IP address and port &#10;e.g. 192.168.1.1:3128">Proxy
+          <input type="text" id="Proxy" name="Proxy" maxlength=24 size=30>
+        </div>
+        <br>
+
+        <div title="Initiate background processes and start mining when NemosMiner is launched">
+          <input type="checkbox" id="AutoStart" name="AutoStart"> Auto Start
+        </div>
+        <div title="Initiate background processes, but do no not start mining">
+          <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px"> Pause mining on Auto Start
+        </div>
+        <br>
+
+        <div title="Start the legacy GUI as minimized window">
+          <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
+        </div>
+        <br>
+    </td>
+
       <td>
         <div class="col-md-12">
-          <fieldset>
-            <legend class=h6 title="You cannot select multiple variants of the same pool">Select one or more pools</legend>
-            <div title="You cannot select multiple variants of the same pool" id="Pools"></div>
+          <fieldset title="You cannot select multiple variants of the same pool">
+            <legend class=h6><b>Select one or more pools</b></legend>
+            <div id="Pools"></div>
           </fieldset>
         </div>
         <br>
+
         <div class="col-md-12">
-          <fieldset>
-            <legend class=h6 title="NemosMiner will prefer pools from the selected region">Select the region closest to your location</legend>
+          <fieldset title="NemosMiner will prefer pools from the selected region">
+            <legend class=h6><b>Select the region closest to your location</b></legend>
             <div id="Regions"></div>
           </fieldset>
         </div>
         <br>
-        <input title="Calculate power cost, required for true profit calculation &#10;Requires extra configuration of HWiNFO64 &#10;(See ConfigHWinfo64.pdf)" type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost" title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)">
-        <label title="Calculate power cost, required for true profit calculation &#10;Requires extra configuration of HWiNFO64 &#10;(See ConfigHWinfo64.pdf)" for="CalculatePowerCost" >Calculate Power Cost</label>
-        <br>
-        <label style="margin-left:20px" title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: 0.26 USD per kW/h  &#10;from noon to midnight USD 0.30 per kW/h' for="PowerPricekWh">Power Price</label>
-        <input type="text" id="PowerPricekWh" name="PowerPricekWh" title='Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: USD 0.26 per kW/h  &#10;from noon to midnight USD 0.30 per kW/h' size=24>
-        <label title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: 0.26 USD per kW/h  &#10;from noon to midnight USD 0.30 per kW/h' for="PowerPricekWh">per kW/h</label>
-        <br>
-        <input style="margin-left:20px" title="NemosMiner will ignore power cost in best miner selection &#10;instead miners with best earnings will be selected" type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)">
-        <label title="NemosMiner will ignore power cost in best miner selection &#10;instead miners with best earnings will be selected" for="IgnorePowerCost" >Ignore Power Cost</label>
-        <br>
-        <label style="margin-left:20px" title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" for="ProfitabilityThreshold">Profitability Threshold</label>
-        <input title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss" type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" size=6>
-        <br><br>
-        <label title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency &#10;(min=1, max=10)" for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
-        <input type="number" step="0.1" min="1" max="10" value=2 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor" title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency &#10;(min=1, max=10)">
       </td>
 
       <td>
         <div class="col-md-12">
           <fieldset>
-            <legend class=h6>Miners selection</legend>
-            <input type="checkbox" id="RegularMiners" name="RegularMiners" title="Miner definition files in folder '.\Miners'">
-            <label for="RegularMiners" title="Miner definition files in folder '.\Miners'">Regular Miners</label>
-            <br>
-            <input type="checkbox" id="OptionalMiners" name="OptionalMiners" title="Miner definition files in folder '.\OptionalMiners'">
-            <label for="OptionalMiners" title="Miner definition files in folder '.\OptionalMiners'">Optional Miners</label>
-            <br>
+            <legend class=h6><b>Miners selection</b></legend>
+            <div title="Miner definition files in folder '.\OptionalMiners'">
+              <input type="checkbox" id="RegularMiners" name="RegularMiners"> Regular Miners
+            </div>
+            <div title="Miner definition files in folder '.\OptionalMiners'">
+              <input type="checkbox" id="OptionalMiners" name="OptionalMiners"> Optional Miners
+            </div>
           </fieldset>
           <br>
-          <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel" title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070.&#10;This will increase profitability.">
-          <label for="MinerInstancePerDeviceModel" title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070.&#10;This will increase profitability.">Run miner instance per device model</label>
+
+          <div title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070.&#10;This will increase profitability.">
+            <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run miner instance per device model
+          </div>
+          <div title="NemosMiner will disable miner fees &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate)">
+            <input type="checkbox" id="DisableMinerFees" name="DisableMinerFees"> Disable Miner Fees
+          </div>
+          <div title="NemosMiner will disable all miners which contain fees">
+            <input type="checkbox" id="DisableMinersWithFees" name="DisableMinersWithFees"> Do not use Miner which contain Fees
+          </div>
+          <div title="NemosMiner will disable all dual algorithm miners &#10;(Note: This will enable single algorithm mining)">
+            <input type="checkbox" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable Dual Algorithm Miners
+          </div>
+          <div title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">
+            <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable Single Algorithm Miners
+          </div>
           <br>
-          <input type="checkbox" id="DisableMinerFees" name="DisableMinerFees" title="NemosMiner will disable miner fees &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate)">
-          <label for="DisableMinerFees" title="NemosMiner will disable miner fees &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate)">Disable Miner Fees</label>
+
+          <legend class=h6><b>Run Miners as</b></legend>
+          <div title="Miners will run as a hidden background task and are not accessible (not recommended)">
+            <input type="radio" id="ShowMinerWindowsHidden" name="ShowMinerWindows" value="Hidden"> Hidden background task
+          </div>
+          <div title="Miner windows are minimized (default), but accessible">
+            <input type="radio" id="ShowMinerWindowsMinimized" name="ShowMinerWindows" value="Minimized"> Minimized window
+          </div>
+          <div title="Miner windows are shown normally on desktop">
+            <input type="radio" id="ShowMinerWindowsNormal" name="ShowMinerWindows" value="Normal"> Normal window
+          </div>
+          <div title="This is helpful to check the miner output for errors">
+            <input type="checkbox" id="ShowMinerWindowsNormalWhenBenchmarking" name="ShowMinerWindowsNormalWhenBenchmarking"> When benchmarking run in normal window
+          </div>
           <br>
-          <input type="checkbox" id="DisableMinersWithFees" name="DisableMinersWithFees" title="NemosMiner will disable all miners which contain fees">
-          <label for="DisableMinersWithFees" title="NemosMiner will disable all miners which contain fees">Do not use Miner which contain Fees</label>
+
+          <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
+            <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when system is idle for
+            <input title="Min: 0, max: 3600" type="number" id="IdleSec" name="IdleSec" min="0" max="3600" value=120 size=4> seconds
+          </div>
           <br>
-          <input type="checkbox" id="DisableDualAlgoMining" name="DisableDualAlgoMining" title="NemosMiner will disable all dual algorithm miners &#10;(Note: This will enable single algorithm mining)">
-          <label for="DisableDualAlgoMining" title="NemosMiner will disable all dual algorithm miners &#10;(Note: This will enable single algorithm mining)">Disable Dual Algorithm Miners</label>
+
+          <div title="Watchdog will monitor pool & miner for frequent failures &#10;and suspend failing pools or miners for some cycles.">
+            <input type="checkbox" id="Watchdog" name="Watchdog"> Activate Watchdog
+          </div>
+          <!-- <div title="Number of watchdog timers with same miner name & algorithm until miner/algorithm combination gets suspended">
+            <label for="WatchdogMinerAlgorithmCount" style="margin-left:20px">Watchdog (Miner & Algorithm) count</label>
+            <input type="number" id="WatchdogMinerAlgorithmCount" name="WatchdogMinerAlgorithmCount" min="0" max="10" value=3>
+          </div>
+          <div title="Number of watchdog timers with same miner name until miner gets suspended">
+            <label for="WatchdogMinerCount" style="margin-left:20px">Watchdog (Miner) count</label>
+            <input type="number" id="WatchdogMinerCount" name="WatchdogMinerCount" min="0" max="10" value=6>
+          </div>
+          <div title="Number of watchdog timers with same pool name & algorithm until pool/algorithm combination gets suspended">
+            <label for="WatchdogPoolAlgorithmCount" style="margin-left:20px">Watchdog (Pool & Algorithm) count</label>
+            <input type="number" id="WatchdogPoolAlgorithmCount" name="WatchdogPoolAlgorithmCount" min="0" max="100" value=3>
+          </div>
+          <div title="Number of watchdog timers with same pool name until pool gets suspended">
+            <label for="WatchdogPoolCount" style="margin-left:20px">Watchdog (Pool) count</label>
+            <input type="number" id="WatchdogPoolCount" name="WatchdogPoolCount" min="0" max="10" value=7>
+          </div> -->
           <br>
-          <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining" title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">
-          <label for="DisableSingleAlgoMining" title="NemosMiner will disable all single algorithm miners &#10;(Note: This will enable dual algorithm mining)">Disable Single Algorithm Miners</label>
-          <br><br>
-          <input type="checkbox" id="AutoStart" name="AutoStart" title="Initiate background processes and start mining when NemosMiner is launched">
-          <label for="AutoStart" title="Initiate background processes and start mining when NemosMiner is launched">Auto Start</label>
+
+          <div title="Calculate power cost, required for true profit calculation &#10;Requires extra configuration of HWiNFO64 &#10;(See ConfigHWinfo64.pdf)">
+            <input type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate Power Cost
+          </div>
+          <div  title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format) as compressed json &#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } &#10;From midnight to noon: 0.26 USD per kW/h  &#10;from noon to midnight USD 0.30 per kW/h'>
+            <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
+            <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24> per kW/h
+          </div>
+          <div title="NemosMiner will ignore power cost in best miner selection &#10;instead miners with best earnings will be selected">
+            <input style="margin-left:20px"  type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet &#10;(lower pool fees)"> Ignore Power Cost
+          </div>
+          <div title="If profit (earnings - power cost) is less than the configured value &#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop &#10;(except for benchmarking & power usage measuring) &#10;use negative numbers to allow mining at loss">
+            <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
+            <input type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 size=6>
+          </div>
+          <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency &#10;(min=1, max=10)">
+            <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
+            <input type="number" step="0.1" min="1" max="10" value=2 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+          </div>
+          <div title="NemosMiner will reduce the profitability (as reported by the pool) by &#10;a correction factor (actual_last24h / estimate_last24h) &#10;to counter pool overestimated profitability">
+            <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
+          </div>
           <br>
-          <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px" title="Initiate background processes, but do no not start mining">
-          <label for="StartPaused" title="Initiate background processes, but do no not start mining">Pause mining on Auto Start</label>
+          <div title="As long as no other miner has earning/profit that is &#10;n% higher than the current miner it will not switch &#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct">Running Miner Gain
+            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5> %
+          </div>
           <br>
-          <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle" title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
-          <label for="MineWhenIdle" title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">Mine only when system is idle for</label>
-          <input title="Seconds the system must be idle until mining starts" type="number" id="IdleSec" name="IdleSec" min="0" max="3600" value=120>
-          <label for="IdleSec" title="Seconds the system must be idle until mining starts">seconds</label>
-          <br><br>
-          <input type="checkbox" id="ShowPoolBalances" title="Pool balances are always available in Web GUI" name="ShowPoolBalances">
-          <label for="ShowPoolBalances" title="Pool balances are always available in Web GUI">Show pool balances in text window</label>
+  
+          <div title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable pool balances summary)">Poll Pools for Earnings & Balances every
+            <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60> minutes
+            <div title="NemosMiner will store all earning data in '.\Logs\BalancesTrackerLog.csv'">
+              <input type="checkbox" id="EnableBalancesTrackerLog" name="EnableBalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
+            </div>
+            <div title="This will not affect the information available in the in Web GUI">
+              <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances" style="margin-left:20px"> Show pool balances in main text window
+            </div>
+          </div>
           <br>
-          <label for="BalancesTrackerPollInterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable Balances Summary)">Poll Pools for Earnings & Balances every</label>
-          <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable Balances Summary)">
-          <label for="BalancesTrackerPollInterval" title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable Balances Summary)">minutes</label>
-          <br>
-          <input type="checkbox" id="EnableBalancesTrackerLog" title="NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv" name="EnableBalancesTrackerLog" style="margin-left:20px">
-          <label for="EnableBalancesTrackerLog" title="NemosMiner will store all earning data in .\Logs\EarningTrackerLog.csv">Write Earnings Tracker Log</label>
-          <br><br>
-          <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized">
-          <label for="StartGUIMinimized" title="">Start Legacy GUI minimized</label>
-          <br><br>
-          <legend class=h6>Run Miners as</legend>
-          <input title="Miners will run as a hidden background task and are not accessible (not recommended)" type="radio" id="ShowMinerWindowsHidden" name="ShowMinerWindows" value="Hidden">
-          <label title="Miners will run as a hidden background task and are not accessible (not recommended)" for="ShowMinerWindowsHidden">Hidden background task</label><br>
-          <input title="Miner windows are minimized (default), but accessible" type="radio" id="ShowMinerWindowsMinimized" name="ShowMinerWindows" value="Minimized">
-          <label title="Miner windows are minimized (default), but accessible"for="ShowMinerWindowsMinimized">Minimized window</label><br>
-          <input title="Miner windows are shown normally on desktop" type="radio" id="ShowMinerWindowsNormal" name="ShowMinerWindows" value="Normal">
-          <label title="Miner windows are shown normally on desktop" for="ShowMinerWindowsNormal">Normal window</label>
-          <br>
-          <input type="checkbox" id="ShowMinerWindowsNormalWhenBenchmarking" name="ShowMinerWindowsNormalWhenBenchmarking">
-          <label for="ShowMinerWindowsNormalWhenBenchmarking" title="This is helpful to check the miner output for errors">When benchmarking run in normal window</label>
-          <br><br>
-          <input type="checkbox" id="Watchdog" name="Watchdog" title="Watchdog will monitor pool & miner for frequent failures &#10;and suspend failing pools or miners for some cycles.">
-          <label for="Watchdog" title="Watchdog will monitor pool & miner for frequent failures &#10;and suspend failing pools or miners for some cycles.">Activate Watchdog</label>
-          <!-- <br>
-          <label for="WatchdogMinerAlgorithmCount" title="Number of watchdog timers with same miner name & algorithm until miner/algorithm combination gets suspended" style="margin-left:20px">Watchdog (Miner & Algorithm) count</label>
-          <input title="Number of watchdog timers with same miner name & algorithm until miner/algorithm combination gets suspended" type="number" id="WatchdogMinerAlgorithmCount" name="WatchdogMinerAlgorithmCount" min="0" max="10" value=3>
-          <br>
-          <label for="WatchdogMinerCount" title="Number of watchdog timers with same miner name until miner gets suspended" style="margin-left:20px">Watchdog (Miner) count</label>
-          <input title="Number of watchdog timers with same miner name until miner gets suspended" type="number" id="WatchdogMinerCount" name="WatchdogMinerCount" min="0" max="10" value=6>
-          <br>
-          <label for="WatchdogPoolAlgorithmCount" title="Number of watchdog timers with same pool name & algorithm until pool/algorithm combination gets suspended" style="margin-left:20px">Watchdog (Pool & Algorithm) count</label>
-          <input title="Number of watchdog timers with same pool name & algorithm until pool/algorithm combination gets suspended" type="number" id="WatchdogPoolAlgorithmCount" name="WatchdogPoolAlgorithmCount" min="0" max="100" value=3>
-          <br>
-          <label for="WatchdogPoolCount" title="Number of watchdog timers with same pool name until pool gets suspended" style="margin-left:20px">Watchdog (Pool) count</label>
-          <input title="Number of watchdog timers with same pool name until pool gets suspended" type="number" id="WatchdogPoolCount" name="WatchdogPoolCount" min="0" max="10" value=7> -->
-          <br><br>
-          <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection" title="NemosMiner will reduce the profitability (as reported by the pool) by &#10;a correction factor (actual_last24h / estimate_last24h) &#10;to counter pool overestimated profitability">
-          <label for="EstimateCorrection" title="NemosMiner will reduce the profitability (as reported by the pool) by &#10;a correction factor (actual_last24h / estimate_last24h) &#10;to counter pool overestimated profitability">Use Estimate Correction</label>
-          <br><br>
-          <input type="checkbox" id="ApplyUnprofitableAlgorithmList" name="ApplyUnprofitableAlgorithmList" title="NemosMiner will not mine algorithms listed in &#10;UnprofitableAlgorithms.txt (recommended)">
-          <label for="ApplyUnprofitableAlgorithmList" title="NemosMiner will not mine algorithms listed in &#10;UnprofitableAlgorithms.txt (recommended)">Do not mine algorithms in the Unprofitable Algorithms List</label>
-          <br><br>
-          <input type="checkbox" id="AutoUpdate" title="Automatically update to the latest realeased program version" name="AutoUpdate">
-          <label for="AutoUpdate" title="Automatically update to the latest realeased program version">Auto Update</label>
-          <br>
+
+          <div title="Automatically update to the latest realeased program version">
+            <input type="checkbox" id="AutoUpdate" name="AutoUpdate"> Auto Update
+          </div>
         </div>
       </td>
     </tr>
@@ -219,8 +261,8 @@
     success: function(result) {
       poolnames = result;
       $.each(poolnames, function (key, value) {
-        $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value, title: title }).appendTo(poolscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (value), title: "You cannot select multiple variants of the same pool", style: "margin-left:4px"}).appendTo(poolscontainer);
+        $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value }).appendTo(poolscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: (value), style: "margin-left:4px" }).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }
@@ -231,8 +273,8 @@
     success: function(result) {
       regions = result;
       $.each(regions, function (key, value) {
-        $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value, name: "Region", title: "NemosMiner will prefer pools from the selected region"}).appendTo(regionscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (value), title: "NemosMiner will prefer pools from the selected region", style: "margin-left:4px"}).appendTo(regionscontainer);
+        $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value }).appendTo(regionscontainer);
+        $('<label/>', { 'for': (value).toLowerCase(), text: value, style: "margin-left:4px" }).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
       })
     }
@@ -327,7 +369,7 @@
           }
           document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
           if (config.BalancesTrackerPollInterval == 0) {
-            document.getElementById('EnableBalancesTrackerLog').diabled = true;
+            document.getElementById('EnableBalancesTrackerLog').disabled = true;
           }
           if (config.ShowPoolBalances) {
             document.getElementById('ShowPoolBalances').checked = true;
@@ -611,8 +653,9 @@
     ProfitabilityThreshold
   });
 
-  //ShowPoolBalances
+  //BalancesTrackerPollInterval
   $(document.getElementById('BalancesTrackerPollInterval')).click(function(event) {
+    document.getElementById('EnableBalancesTrackerLog').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
     document.getElementById('ShowPoolBalances').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
   });
 
