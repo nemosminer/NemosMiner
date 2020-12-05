@@ -80,22 +80,20 @@ While ($true) {
         Write-Message "Balances Tracker requesting data ($($PoolsToTrack -join ', '))."
 
         $PoolsToTrack | ForEach-Object { 
-            $PoolNorm = $PoolName = $_
-            $API = $PoolAPI | Where-Object Name -EQ $PoolNorm
+            $PoolName = $_
+            $API = $PoolAPI | Where-Object Name -EQ $PoolName
             $APIUri = $API.WalletUri
             $BalanceData = [PSCustomObject]@{ }
             $BalanceJson = $API.Balance
             $TotalJson = $API.Total
             $PoolAccountUri = $API.AccountUri
-            $PoolConfig = $Config.PoolsConfig.$PoolNorm
-            If ($PoolNorm -eq "NiceHash") { 
+            $PoolConfig = $Config.PoolsConfig.$PoolName
+            If ($PoolName -eq "NiceHash") { 
                 If ($Config.NiceHashWalletIsInternal) { 
-                    $PoolName = "NiceHash`n(Internal Wallet)"
-                    $PoolNorm = "NiceHashInternal"
+                    $PoolName = "NiceHashInternal"
                 }
                 Else { 
-                    $PoolName = "NiceHash`n(External Wallet)"
-                    $PoolNorm = "NiceHashExternal"
+                    $PoolName = "NiceHashExternal"
                 }
             }
 
@@ -116,7 +114,7 @@ While ($true) {
             If (-not $PayoutThreshold) { $PayoutThreshold = $API.PayoutThreshold."*" }
 
             Try { 
-                Switch ($PoolNorm) { 
+                Switch ($PoolName) { 
                     "MPH" { 
                         $Wallet = $Config.MPHAPIKey
                         $BalanceData = (((Invoke-RestMethod -Uri "$APIUri$Wallet" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).getuserallbalances).data | Where-Object { $_.coin -eq "bitcoin" })
@@ -187,7 +185,7 @@ While ($true) {
             If ($Variables.Rates.($PoolConfig.PayoutCurrency).BTC -and $BalanceData.$BalanceJson) { 
 
                 $AllBalanceObjects += $BalanceObject = [PSCustomObject]@{ 
-                    Pool         = $PoolNorm
+                    Pool         = $PoolName
                     DateTime     = $Now
                     Balance      = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.$BalanceJson
                     Unsold       = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.unsold
@@ -202,7 +200,7 @@ While ($true) {
 
             If ($BalanceObject) { 
 
-                $BalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolNorm | Where-Object Currency -EQ $PoolConfig.PayoutCurrency | Sort-Object DateTime)
+                $BalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolName | Where-Object Currency -EQ $PoolConfig.PayoutCurrency | Sort-Object DateTime)
 
                 If ((($Now - ($BalanceObjects[0].DateTime)).TotalMinutes) -eq 0) { $Now = $Now.AddMinutes(1) }
 
@@ -238,8 +236,8 @@ While ($true) {
                     $AvgHourlyGrowth = [Double]($Growth168 / ($Now - ($BalanceObjects[0].DateTime)).TotalHours)
                 }
 
-                $Variables.Earnings.$PoolNorm = $EarningsObject = [PSCustomObject]@{ 
-                    Pool                    = $PoolNorm
+                $Variables.Earnings.$PoolName = $EarningsObject = [PSCustomObject]@{ 
+                    Pool                    = $PoolName
                     Wallet                  = $Wallet
                     Uri                     = $PoolAccountUri
                     Date                    = $Date
@@ -264,12 +262,12 @@ While ($true) {
                     TotalHours              = ($Now - ($BalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
                     PayoutThreshold         = [Double]$PayoutThreshold
-                    LastUpdated             = $BalanceObject.DateTime
+                    Updated                 = $BalanceObject.DateTime
                 }
 
-                If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolNorm | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLogDev.csv" -ErrorAction Ignore }
+                If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolName | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -ErrorAction Ignore }
 
-                If ($PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolNorm | Where-Object Date -EQ $Date ) { 
+                If ($PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolName | Where-Object Date -EQ $Date ) { 
                     #Pool may have reduced estimated balance, use new balance as start value to avoid negative values
                     If ($EarningsObject.total_earned -gt 0) { 
                         $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $EarningsObject.total_earned | Measure-Object -Minimum).Minimum
@@ -296,7 +294,7 @@ While ($true) {
                 Else { 
                     $DailyEarnings += [PSCustomObject]@{ 
                         Date               = $Date
-                        Pool               = $PoolNorm
+                        Pool               = $PoolName
                         DailyEarnings      = [Double]0
                         StartTime          = $Now.ToString("T")
                         StartValue         = [Double]$EarningsObject.total_earned
@@ -312,7 +310,7 @@ While ($true) {
                 # Results in showing bad negative earnings
                 # Detecting if current is more than 50% less than previous and reset history if so
                 If ($EarningsObject -and $EarningsObject.total_earned -lt ($BalanceObjects[$BalanceObjects.Count - 2].total_earned / 2)) { 
-                    $AllBalanceObjects = $AllBalanceObjects | Where-Object Pool -ne $PoolNorm
+                    $AllBalanceObjects = $AllBalanceObjects | Where-Object Pool -ne $PoolName
                     $AllBalanceObjects += $EarningsObject
                 }
 
