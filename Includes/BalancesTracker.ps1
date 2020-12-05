@@ -53,7 +53,7 @@ While ($true) {
                 $DailyEarnings = @()
             }
             #Keep only the last 10 logs 
-            Get-ChildItem ".\Logs\DailyEarnings_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+            Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
         }
 
         $Now = Get-Date
@@ -364,7 +364,7 @@ While ($true) {
         #Keep only last 14 days
         If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddDays( -14 ) }) }
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore }
-        $Variables.BalanceObjects = $AllBalanceObjects
+        $Variables.BalanceData = $AllBalanceObjects
 
     }
 

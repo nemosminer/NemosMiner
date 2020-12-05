@@ -1095,9 +1095,8 @@ While ($true) {
                 If ($Miner.Status -ne [MinerStatus]::Running) { 
                     #Miner crashed
                     Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
-                    $Miner.SetStatus([MinerStatus]::Failed)
                     $Miner.StatusMessage = "Failed $($Miner.StatusMessage)"
-                    $Miner.Devices | ForEach-Object { $_.Status = "Idle - $($Miner.StatusMessage)" }
+                    $Miner.SetStatus([MinerStatus]::Failed)
                 }
                 ElseIf ($Miner.DataReaderJob.State -ne "Running") { 
                     #Miner data reader process failed

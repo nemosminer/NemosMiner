@@ -1,7 +1,7 @@
 using module .\Includes\Include.psm1
 
 <#
-Copyright (c) 2018-2020 Nemo
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -10,7 +10,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.8
-Version date:   01 December 2020
+Version date:   03 December 2020
 #>
 
 [CmdletBinding()]
@@ -224,7 +224,7 @@ This is free software, and you are welcome to redistribute it
 under certain conditions.
 https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 "@
-Write-Host "`nCopyright and license notices must be preserved.`n" -F Yellow
+Write-Host "`nCopyright and license notices must be preserved.`n" -ForegroundColor Yellow
 
 # Load Branding
 $Global:Branding = [PSCustomObject]@{ 
@@ -363,10 +363,10 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
     }
 }
 
-Write-Host "Loading device information..." -F Yellow
+Write-Host "Loading device information..." -ForegroundColor Yellow
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
-Write-Host "Setting variables..." -F Yellow
+Write-Host "Setting variables..." -ForegroundColor Yellow
 $Variables.BrainJobs = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
@@ -400,7 +400,7 @@ If ($Config.AutoStart) {
     $Variables.RestartCycle = $true
 }
 
-Write-Host "Importing modules..." -F Yellow
+Write-Host "Importing modules..." -ForegroundColor Yellow
 Import-Module NetSecurity -ErrorAction SilentlyContinue
 Import-Module Defender -ErrorAction SilentlyContinue
 Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
@@ -413,7 +413,7 @@ If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerSta
 }
 
 If ($Config.WebGUI -eq $true) { 
-    Write-Host "Initializing API & Web GUI on 'http:\\localhost:$($Config.APIPort)'..." -F Yellow
+    Write-Host "Initializing API & Web GUI on 'http:\\localhost:$($Config.APIPort)'..." -ForegroundColor Yellow
     Initialize-API
 }
 
@@ -652,10 +652,10 @@ Function Global:TimerUITick {
                 $Variables.Earnings.Values | ForEach-Object { 
                     $EarningsCurrency = $_.Currency
                     If ("m$($EarningsCurrency)" -in $Config.Currency) { $EarningsCurrency = "m$($EarningsCurrency)" }
-                    Write-Host "+++++ $($_.Wallet) +++++" -B DarkBlue -F DarkGray -NoNewline; Write-Host " $($_.Pool)"
-                    Write-Host "Trust Level:            $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -F DarkGray " (data of $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
+                    Write-Host "+++++ $($_.Wallet) +++++" -B DarkBlue -ForegroundColor DarkGray -NoNewline; Write-Host " $($_.Pool)"
+                    Write-Host "Trust Level:            $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -ForegroundColor DarkGray " (data of $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
                     Write-Host "Average/hour:           $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
-                    Write-Host "Average/day:            " -NoNewline; Write-Host "$(($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -F Yellow
+                    Write-Host "Average/day:            " -NoNewline; Write-Host "$(($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -ForegroundColor Yellow
                     Write-Host "Balance:                $(($_.Balance * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $($EarningsCurrency) / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
                     Write-Host "                        $(($_.Balance / $_.PayoutThreshold * $Variables.Rates.BTC.($_.PayoutThresholdCurrency -replace "^m") * $Variables.Rates.($_.PayoutThresholdCurrency -replace "^m").($_.PayoutThresholdCurrency)).ToString('P1')) of $(($_.PayoutThreshold).ToString()) $($_.PayoutThresholdCurrency) payment threshold"
                     Write-Host "Estimated Payment Date: $(If ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString()} Else { $_.EstimatedPayDate })`n"
@@ -664,7 +664,7 @@ Function Global:TimerUITick {
 
             If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
                 Write-Host "`n"
-                Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -F Yellow
+                Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
             }
 
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { $Config.UIStyle = "Full" }
@@ -677,7 +677,7 @@ Function Global:TimerUITick {
             If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { 
                 $Miner_Table.AddRange(
                     @( <#Miner fees#>
-                        @{ Label = "Fee(s)"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -F [Double]$_ } } }
+                        @{ Label = "Fee(s)"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
                     )
                 )
             }
@@ -743,7 +743,7 @@ Function Global:TimerUITick {
             If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { 
                 $Miner_Table.AddRange(
                     @( <#Show pool fees#>
-                        @{ Label = "Fee(s)"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -F [Double]$_ } } }
+                        @{ Label = "Fee(s)"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
                     )
                 )
             }
@@ -787,7 +787,7 @@ Function Global:TimerUITick {
 
             Write-Host "`n"
 
-            If ($ProcessesRunning = @($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
+            If ($ProcessesRunning = @($Variables.Miners | Where-Object Status -eq "Running")) { 
                 Write-Host "Running miner$(If ($ProcessesRunning.Count -ne 1) { "s"}): $($ProcessesRunning.Count)" 
                 $ProcessesRunning | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                     @{ Label = "Speed(s)"; Expression = { If ($_.Speed_Live) { (($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ' ) -replace '\s+', ' ' } Else { "n/a" } }; Align = 'right' }, 
@@ -800,24 +800,24 @@ Function Global:TimerUITick {
             }
 
             If ($Config.UIStyle -eq "Full") { 
-                If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
+                If ($ProcessesIdle = @($Variables.Miners | Where-Object Activated -gt 0 | Where-Object Status -eq "Idle")) { 
                     Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s"}):"
                     $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
-                        @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
+                        @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date).ToUniversalTime() - $_.GetActiveLast()) } }, 
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                     ) | Out-Host
                 }
 
-                If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" })) { 
+                If ($ProcessesFailed = @($Variables.Miners | Where-Object Activated -gt 0 | Where-Object Status -eq "Failed")) { 
                     Write-Host -ForegroundColor Red "Failed miner$(If ($ProcessesFailed.Count -ne 1) { "s"}): $($ProcessesFailed.Count)"
                     $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
-                        @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
+                        @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date).ToUniversalTime() - $_.GetActiveLast()) } }, 
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
@@ -838,11 +838,11 @@ Function Global:TimerUITick {
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
                     @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
                     @{Label = "Device(s)"; Expression = { $_.DeviceName } }, 
-                    @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
+                    @{Label = "Last Updated"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = 'right' }
                 ) | Out-Host
             }
 
-            Write-Host "$($Variables.Summary -replace '^&ensp;&ensp;' -replace '&ensp;', ' ' -replace '  +', '; ')"
+            Write-Host "$($Variables.Summary -replace '&ensp;', ' ' -replace '  +', '; ')"
 
             If (-not $Variables.Paused) { 
                 Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."

@@ -280,10 +280,27 @@ Class Miner {
         }
     }
 
+    [MinerStatus]GetStatus() { 
+        If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { 
+            #Use ProcessName, some crashed miners are dead, but may still be found by their processId
+            Return [MinerStatus]::Running
+        }
+        ElseIf ($this.Status -eq "Running") { 
+            $this.ProcessId = $null
+            $this.Status = [MinerStatus]::Failed
+            Return $this.Status
+        }
+        Else { 
+            Return $this.Status
+        }
+    }
+
     hidden StopMining() { 
         $this.EndTime = (Get-Date).ToUniversalTime()
-        $this.StatusMessage = "Stopping..."
-        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+        If ($this.Status -eq [MinerStatus]::Running) { 
+            $this.StatusMessage = "Stopping..." 
+            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+        }
         If ($this.ProcessId) { 
             If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
                 Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
@@ -294,6 +311,9 @@ Class Miner {
         If ($this.Process) { 
             $this.Process = $null
         }
+
+        #Stop Miner data reader
+        Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
 
         #Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
@@ -313,19 +333,19 @@ Class Miner {
             CommandLine  = $this.CommandLine
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
-        #Stop Miner data reader
-        Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
-        $this.StatusMessage = "Idle"
+        If ($this.Status -eq [MinerStatus]::Running) { 
+            $this.Status = [MinerStatus]::Idle
+            $this.StatusMessage = "Idle"
+        }
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Info = ""
-        $this.Status = [MinerStatus]::Idle
     }
 
     [DateTime]GetActiveLast() { 
-        If ($this.Process.PSBeginTime -and $this.Process.PSEndTime) { 
-            Return $this.Process.PSEndTime.ToUniversalTime()
+        If ($this.BeginTime -and $this.EndTime) { 
+            Return $this.EndTime.ToUniversalTime()
         }
-        ElseIf ($this.Process.PSBeginTime) { 
+        ElseIf ($this.BeginTime) { 
             Return [DateTime]::Now.ToUniversalTime()
         }
         Else { 
@@ -334,11 +354,11 @@ Class Miner {
     }
 
     [TimeSpan]GetActiveTime() { 
-        If ($this.Process.PSBeginTime -and $this.Process.PSEndTime) { 
-            Return $this.Active + ($this.Process.PSEndTime - $this.Process.PSBeginTime)
+        If ($this.BeginTime -and $this.EndTime) { 
+            Return $this.Active + ($this.EndTime - $this.BeginTime)
         }
-        ElseIf ($this.Process.PSBeginTime) { 
-            Return $this.Active + ((Get-Date) - $this.Process.PSBeginTime)
+        ElseIf ($this.BeginTime) { 
+            Return $this.Active + ((Get-Date) - $this.BeginTime)
         }
         Else { 
             Return $this.Active
@@ -347,23 +367,6 @@ Class Miner {
 
     [Int]GetActivateCount() { 
         Return $this.Activated
-    }
-
-    [MinerStatus]GetStatus() { 
-        If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { 
-            #Use ProcessName, some crashed miners are dead, but may still be found by their processId
-            Return [MinerStatus]::Running
-        }
-        ElseIf ($this.Status -eq "Running") { 
-            $this.ProcessId = $null
-            #Stop Miner data reader
-            Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
-            $this.Status = [MinerStatus]::Failed
-            Return $this.Status
-        }
-        Else { 
-            Return $this.Status
-        }
     }
 
     [Double]GetPowerUsage() { 
@@ -854,7 +857,7 @@ Function Initialize-Application {
 
     #Keep only the last 10 logs
     Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-    Get-ChildItem ".\Logs\SwitchingLog_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+    Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
  
     $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
     $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
