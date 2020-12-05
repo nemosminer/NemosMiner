@@ -1140,10 +1140,15 @@ Function Update-Monitoring {
         $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON }
         Try { 
             $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            Write-Message -Level VERBOSE "Reported status to monitoring server '$($Config.MonitoringServer)' [$($Response)]."
+            If ($Response -eq "Success") { 
+                Write-Message -Level Verbose "Reported worker status to monitoring server '$($Config.MonitoringServer)'."
+            }
+            Else { 
+                Write-Message -Level Verbose "Reporting worker status to monitoring server '$($Config.MonitoringServer)' failed: [$($Response)]."
+            }
         }
         Catch { 
-            Write-Message -Level WARN "Monitoring: Unable to send status to $($Config.MonitoringServer)."
+            Write-Message -Level Warn "Monitoring: Unable to send status to $($Config.MonitoringServer)."
         }
     }
 
@@ -1175,10 +1180,10 @@ Function Update-Monitoring {
 
             $Variables | Add-Member -Force @{ Workers = $Workers }
             $Variables | Add-Member -Force @{ WorkersLastUpdated = (Get-Date) }
-            Write-Message -Level VERBOSE "Retrieved status for workers with ID '$($Config.MonitoringUser)'."
+            Write-Message -Level Verbose "Retrieved status for workers with ID '$($Config.MonitoringUser)'."
         }
         Catch { 
-            Write-Message -Level WARN "Monitoring: Unable to retrieve worker data from $($Config.MonitoringServer)."
+            Write-Message -Level Warn "Monitoring: Unable to retrieve worker data from $($Config.MonitoringServer)."
         }
     }
 }
@@ -1257,7 +1262,7 @@ Function Read-Config {
         $Config_Tmp = Get-Content $Variables.ConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
             Copy-Item -Path $Variables.ConfigFile "$($Variables.ConfigFile).corrupt" -Force
-            Write-Message -Level WARN "Configuration file '$($Variables.ConfigFile)' is corrupt."
+            Write-Message -Level Warn "Configuration file '$($Variables.ConfigFile)' is corrupt."
             $Config.ConfigFileVersionCompatibility = $null
         }
         Else { 
@@ -1274,7 +1279,7 @@ Function Read-Config {
         Remove-Variable Config_Tmp
     }
     Else { 
-        Write-Message -Level WARN "No valid configuration file found."
+        Write-Message -Level Warn "No valid configuration file found."
 
         #Prepare new config
         $Variables.FreshConfig = $true
@@ -1285,14 +1290,14 @@ Function Read-Config {
             $Global:Config.$_ = $Parameters.$_
         }
         $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
-        Write-Message -Level WARN  "New configuration using default values has been created. Use the GUI to save the configuration, then start mining."
+        Write-Message -Level Warn  "New configuration using default values has been created. Use the GUI to save the configuration, then start mining."
     }
 
     #Build pools configuation
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
         $PoolsConfig_Tmp = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($PoolsConfig_Tmp.PSObject.Properties.Count -eq 0 -or $PoolsConfig_Tmp -isnot [PSCustomObject]) { 
-            Write-Message -Level WARN "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
+            Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
         }
     }
 
