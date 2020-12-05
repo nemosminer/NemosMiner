@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v34.4/NBMiner_34.4_Win.zip"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v34.5/NBMiner_34.5_Win.zip"
 $DeviceEnumerator = "Type_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
@@ -10,13 +10,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Type = "AMD"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Command = " --algo eaglesong --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo etchash" } #PhoenixMiner-v5.3b is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo eaglesong_ethash --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo ethash" } #BMiner-v16.3.1 & PhoenixMiner-v5.3b are fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.3b are fastest
     [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "AMD"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Command = " --algo hns --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo hns_ethash --fee 1" }
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo hns_ethash --fee 1" } #BMiner-v16.3.6 is fastest
 #   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Command = " --algo kawpow --fee 1" } #Wildrig-v0.28.1 is fastest
     [PSCustomObject]@{ Algorithm = @("Octopus");             Type = "AMD"; Fee = @(0.03);       MinMemGB = 5.0; MinMemGBWin10 = 5.0; Command = " --algo octopus --fee 1" }
 
-#   [PSCustomObject]@{ Algorithm = @("BeamV3");              Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo beamv3 --fee 1" } #MiniZ-v1.6w2 is fastest
+    [PSCustomObject]@{ Algorithm = @("BeamV3");              Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo beamv3 --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo bfc --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("CuckarooD29");         Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckarood --fee 1" } #GMiner-v2.33 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29s");         Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckaroo_swap --fee 1" }
@@ -24,9 +24,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0; MinMemGBWin10 = 8.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckatoo32 --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckoo_ae --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo eaglesong --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("EtcHhash");            Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo etchash" } #PhoenixMiner-v5.3b is fastest
+#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo etchash" } #PhoenixMiner-v5.3b is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo eaglesong_ethash --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo ethash" } #BMiner-v16.3.1 & PhoenixMiner-v5.3b are fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo ethash" } #BMiner-v16.3.6 & TTMiner-v5.0.3 are fastest
 #   [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo hns --fee 1" } #SRBMminerMulti-v0.5.8 is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo hns_ethash --fee 1" }
     [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo kawpow --fee 1" }
@@ -80,7 +80,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    If ($_.Algorithm[0] -match "^Ethash*|^Cuck*") { 
+                    If ($_.Algorithm[0] -match "^EtcHash|^Ethash|^Cuck*") { 
                         If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                             $Protocol = "nicehash+tcp://"
                         }
