@@ -138,8 +138,6 @@ Class Miner {
     [UInt16]$Port
     [String[]]$DeviceName = @() #derived from devices
     [String[]]$Algorithm = @() #derived from pool
-    [Double[]]$Fee = @() #derived from miner
-    [Double[]]$Speed = @() #derived from stats
     [Double[]]$Speed_Live = @()
 
     [Double]$Earning #derived from pool and stats
@@ -179,7 +177,6 @@ Class Miner {
     [DateTime]$StatStart
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
-    [String]$LogFile
     [String]$ShowMinerWindows = "minimized"
     [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
