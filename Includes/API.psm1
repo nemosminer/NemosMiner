@@ -200,6 +200,9 @@ Function Start-APIServer {
                         If ($Variables.MiningStatus -eq $Variables.NewMiningStatus) { 
                             $Data = ConvertTo-Json ($Variables.MiningStatus)
                         }
+                        Else { 
+                            $Data = ConvertTo-Json ($Variables.NewMiningStatus)
+                        }
                         Break
                     }
                     "/functions/mining/pause" { 
@@ -241,9 +244,12 @@ Function Start-APIServer {
                         $TempStats | Sort-Object Name | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
                         If ($TempStats.Count -gt 0) { 
                             If ($Parameters.Value -eq 0) { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)$($Parameters.Unit) $($Parameters.Type)." }
-                            $Data = "<pre>$Data</pre>"
                         }
-                        Break
+                        Else { 
+                            $Data = "`nNo matching stats found."
+                        }
+                        $Data = "<pre>$Data</pre>"
+                    Break
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Pools) { 
@@ -264,8 +270,11 @@ Function Start-APIServer {
                                 $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
                                 Write-Message "Web GUI: $Message"
                                 $Data += "`n`n$Message"
-                                $Data = "<pre>$Data</pre>"
                             }
+                            Else { 
+                                $Data = "`nNo matching stats found."
+                            }
+                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
@@ -295,8 +304,11 @@ Function Start-APIServer {
                             If ($Miners.Count -gt 0) { 
                                 Write-Message "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
                                 $Data += "`n`nThe listed $(If ($Miners.Count -eq 1) { "miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
-                                $Data = "<pre>$Data</pre>"
                             }
+                            Else { 
+                                $Data = "`nNo matching stats found."
+                            }
+                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
@@ -322,8 +334,11 @@ Function Start-APIServer {
                             If ($Miners.Count -gt 0) { 
                                 Write-Message "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
                                 $Data += "`n`nThe listed $(If ($Miners.Count -eq 1) { "miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
-                                $Data = "<pre>$Data</pre>"
                             }
+                            Else { 
+                                $Data = "`nNo matching stats found."
+                            }
+                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                         If ($null -eq $Parameters.Value) {
@@ -386,8 +401,8 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
                         Break
                     }
-                    "/balanceobjects" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BalanceObjects | Sort-Object DateTime -Descending)
+                    "/balancedata" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BalanceData | Sort-Object DateTime -Descending)
                         Break
                     }
                     "/btcratefirstcurrency" { 
