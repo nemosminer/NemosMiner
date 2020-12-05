@@ -44,9 +44,9 @@ function formatMiners(data) {
       }
 
       // Format the fee(s)
-      item.tPrimaryFee = item.Workers[0].Fee;
+      item.tPrimaryFee = item.Workers[0].Pool.Fee;
       if (item.Workers[1]) {
-        item.tSecondaryFee = item.Workers[1].Fee;
+        item.tSecondaryFee = item.Workers[1].Pool.Fee;
       }
 
       // Format margin of error
