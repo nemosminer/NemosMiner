@@ -29,8 +29,7 @@ If ($PoolConfig.UserName) {
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
         #Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676#msg55320676
-        If ($Algorithm_Norm -eq "Ethash") { 
-            # $Current.algo_switch_port = 20535
+        If ($Algorithm_Norm -in @("EtcHash", "Ethash")) { 
             $PoolRegions = @("Asia", "US")
         }
         Else {
