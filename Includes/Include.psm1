@@ -849,6 +849,7 @@ Function Initialize-API {
 }
 
 Function Initialize-Application { 
+    Write-Host "Initializing mining environment..." -ForegroundColor Yellow
     Write-Message "Initializing mining environment..."
 
     #Keep only the last 10 logs
