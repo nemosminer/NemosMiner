@@ -560,7 +560,7 @@ Function Global:TimerUITick {
                     $Variables.Workers | Select-Object @(
                         @{ Name = "Worker"; Expression = { $_.worker } }, 
                         @{ Name = "Status"; Expression = { $_.status } }, 
-                        @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport.SubString(1))" } }, 
+                        @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport)" } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
                         @{ Name = "Est. Profit $EarningsCurrency/day"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
                         @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))) } }, 
