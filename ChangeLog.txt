@@ -2,30 +2,33 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
-Changelog NemosMiner 3.9.9.8 Beta2 05.12.2020
+Changelog NemosMiner 3.9.9.8 Beta2 06.12.2020
 =============================================
 
 Changed:
 - Pools: Removed obsolete 'protocol' property
+- Legacy GUI: Removed all config settings. Use Web GUI instead
 - Web GUI: Changed menu item 'Monitoring' to 'Utilities'
 
 Fixed:
 - API documentation: Repair broken links
 - BMiner API: workaround for broken miner API (https://bitcointalk.org/index.php?topic=2519271.msg55744602#msg55744602)
 - Core: Do not run donation if NemosMiner is started shortly before date change
+- Core: Temp fix for broken config file
 - Core: Idle detection not working
 - EtcHash / Ethash miner terminating while building DAG when CPU mining is active
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
 - Web GUI: Clear Watchdog Timer list when clicking 'Reset Watchdog Timers'
 - Web GUI: 'Disable miner' not disabling miner
 - Web GUI: Rig Monitor not listing workers
-- Web GIO: Miner fees not shown
+- Web GUI: Miner fees not shown
 
 Improved:
 - Blockmasters pool: added support for Asia server
 - Changed DAG data provider to "https://minerstat.com/dag-size-calculator" for more supported coins
 - Core: Detect and ignore unreal hashrate & power usage data from miner (±200% from existing values)
 - Web GUI: Added 'Total 1 hour / 24hrs' information to balances
+- Web GUI: Validate config data on save
 
 Miner Updates:
 - Bminer-v16.3.6
