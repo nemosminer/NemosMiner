@@ -33,13 +33,18 @@ Function Start-Cycle {
 
     #Set master timer
     $Variables.Timer = (Get-Date).ToUniversalTime()
+    If (-not $Variables.DecayStart) { 
+        $Variables.DecayStart = (Get-Date).ToUniversalTime()
+        $Variables.DecayPeriod = 60 #seconds
+        $Variables.DecayBase = 1 - 0.1 #decimal percentage
+    }
     $Variables.StatStart = If ($Variables.StatEnd) { $Variables.StatEnd } Else { $Variables.Timer }
     $Variables.StatEnd = $Variables.Timer.AddSeconds($Config.Interval)
     $Variables.StatSpan = New-TimeSpan $Variables.StatStart $Variables.StatEnd
     $Variables.WatchdogInterval = ($Variables.Strikes + 1) * $Variables.StatSpan.TotalSeconds
     $Variables.WatchdogReset = [math]::Floor(($Variables.Strikes + 1) * $Variables.Strikes * $Variables.StatSpan.TotalSeconds)
-
     $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
+
     $Variables.DecayExponent = [Int](($Variables.Timer - $Variables.DecayStart).TotalSeconds / $Variables.DecayPeriod)
 
     #Expire watchdog timers
