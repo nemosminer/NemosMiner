@@ -450,7 +450,7 @@
           document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
           document.getElementById('ProHashingUserName').disabled = !(document.getElementById('prohashing24hr').checked);
           if (parseInt(document.getElementById('Donate').value) <= 0) {
-            $('.modal-title').text('Donation set to 0 :-\)');
+            $('.modal-title').text('Donation set to 0   :-\(');
             $(".modal-body").text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
             $('#myModal').modal({show:true});
           };
@@ -690,7 +690,7 @@
   //Donation motivation
   $(document.getElementById('Donate')).click(function(event) {
     if (parseInt(document.getElementById('Donate').value) <= 0) {
-        $('.modal-title').text('Donation set to 0 :-\)');
+        $('.modal-title').text('Donation set to 0   :-\(');
         $(".modal-body").text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
         $('#myModal').modal({show:true});
       };
