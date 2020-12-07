@@ -50,14 +50,14 @@
     data-auto-refresh-interval="60"
     data-detail-formatter="detailFormatter"
     data-url="/displayworkers"
+    data-sort-name="LastSeen"
     data-sort-order="asc"
-    data-sort-name="MinerName"
     >
     <thead>
       <tr>
+        <th data-field="LastSeen" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatTimeSince">Last seen</th>
         <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
         <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
-        <th data-field="LastSeen" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatTimeSince">Last seen</th>
         <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
         <th data-field="EstimatedProfit" data-sortable="true" data-formatter="formatmBTC">Estimated Profit/day</th>
         <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>

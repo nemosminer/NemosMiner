@@ -105,7 +105,7 @@
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
         </div>
         <br>
-    </td>
+      </td>
 
       <td>
         <div class="col-md-12">
@@ -223,11 +223,11 @@
             <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5> %
           </div>
           <br>
-  
+
           <div title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable pool balances summary)">Poll Pools for Earnings & Balances every
             <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60> minutes
-            <div title="NemosMiner will store all earning data in '.\Logs\BalancesTrackerLog.csv'">
-              <input type="checkbox" id="EnableBalancesTrackerLog" name="EnableBalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
+            <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
+              <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
             </div>
             <div title="This will not affect the information available in the in Web GUI">
               <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances" style="margin-left:20px"> Show pool balances in main text window
@@ -369,13 +369,13 @@
           }
           document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
           if (config.BalancesTrackerPollInterval == 0) {
-            document.getElementById('EnableBalancesTrackerLog').disabled = true;
+            document.getElementById('BalancesTrackerLog').disabled = true;
           }
           if (config.ShowPoolBalances) {
             document.getElementById('ShowPoolBalances').checked = true;
           }
-          if (config.EnableBalancesTrackerLog) {
-            document.getElementById('EnableBalancesTrackerLog').checked = true;
+          if (config.BalancesTrackerLog) {
+            document.getElementById('BalancesTrackerLog').checked = true;
           }
           if (config.StartGUIMinimized) {
             document.getElementById('StartGUIMinimized').checked = true;
@@ -459,42 +459,69 @@
     }
   });
 
-  $('#save-button').click(function () {
+  $('#save-button').click(function () { 
     config.PoolName = [];
-    if ((document.getElementById('Wallet').value).toString().trim() == "") {
-      document.getElementById('Wallet').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
+
+    config.Wallet = document.getElementById('Wallet').value.toString().trim()
+    if ((document.getElementById('Wallet').value) == "") { 
+      config.Wallet = document.getElementById('Wallet').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
     };
-    config.Wallet = document.getElementById('Wallet').value;
-    config.WorkerName = document.getElementById('WorkerName').value;
-    if ((document.getElementById('MPHUserName').value).toString().trim() == "") {
-      document.getElementById('MPHUserName').value = 'Nemo';
+    config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
+    if ((document.getElementById('WorkerName').value) == "") { 
+      config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
     };
-    config.MPHAPIKey = document.getElementById('MPHAPIKey').value;
-    config.MPHUserName = document.getElementById('MPHUserName').value;
-    config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value;
-    config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value;
-    config.NiceHashWallet = document.getElementById('NiceHashWallet').value;
+
+    config.MPHUserName = document.getElementById('MPHUserName').value.toString().trim()
+    if ((document.getElementById('MPHUserName').value) == "") { 
+      config.MPHUserName = document.getElementById('MPHUserName').value = 'Nemo';
+    };
+    config.MPHAPIKey = document.getElementById('MPHAPIKey').value = document.getElementById('MPHAPIKey').value.toString().trim();
+
+    config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
+    config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value = document.getElementById('NiceHashAPISecret').value.toString().trim();
+    config.NiceHashWallet = document.getElementById('NiceHashWallet').value = document.getElementById('NiceHashWallet').value.toString().trim();
     config.NiceHashWalletIsInternal = document.getElementById('NiceHashWalletIsInternal').checked;
-    config.NiceHashOrganizationId = document.getElementById('NiceHashOrganizationId').value;
-    config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value;
-    config.ProHashingUserName = document.getElementById('ProHashingUserName').value;
+    config.NiceHashOrganizationId = document.getElementById('NiceHashOrganizationId').value = document.getElementById('NiceHashOrganizationId').value.toString().trim();
+  
+    config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
+    config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
+  
     if (document.getElementById('Interval').value == null) { 
-      document.getElementById('Interval').value = 90;
+      config.Interval = document.getElementById('Interval').value = 90;
+    } else { 
+      config.Interval = parseInt(document.getElementById('Interval').value);
     };
-    config.Interval = parseInt(document.getElementById('Interval').value);
     if (document.getElementById('Donate').value == null) { 
-      document.getElementById('Donate').value = 13;
+      config.Donate =  document.getElementById('Donate').value = 13;
+    } else {
+      config.Donate = parseInt(document.getElementById('Donate').value);
     };
-    config.Donate = parseInt(document.getElementById('Donate').value);
-    if (document.getElementById('Algorithm').value == null) {
-      document.getElementById('Algorithm').value = 'mBTC';
-    };
-    config.Algorithm = document.getElementById('Algorithm').value.split(',');
+
+    var algorithms = [];
+    var plusminus = '+';
+    $.each((document.getElementById('Algorithm').value.replace(/\s/g,',').split(',')), function (key, value) {
+      if (value.trim() != "") { 
+        if (/[+|-]/.test(value.substring(0, 1))) { 
+          plusminus = value.substring(0, 1);
+        } else {
+          value = plusminus + value;
+        };
+        algorithms.push(value);
+      };
+    });
+    document.getElementById('Algorithm').value = (config.Algorithm = algorithms).toString();
+
+    document.getElementById('Currency').value = (document.getElementById('Currency').value).toString().trim();
     if ((document.getElementById('Currency').value).toString().trim() == null) {
-      config.Currency = 'mBTC';
+      config.Currency = document.getElementById('Currency').value = 'mBTC';
+    } else {
+      config.Currency = document.getElementById('Currency').value.split(',')
     };
-    config.Currency = (document.getElementById('Currency').value).toString().split(',');
-    config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
+
+    config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
+    if (document.getElementById('PayoutCurrency').value == "null") {
+      config.PayoutCurrency =  document.getElementById('PayoutCurrency').value = 'mBTC';
+    };
     config.Proxy = document.getElementById('Proxy').value;
     if (document.getElementById('RunningMinerGainPct').value == null) {
       document.getElementById('RunningMinerGainPct').value = 5;
@@ -517,6 +544,7 @@
       };
     });
     config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
+    document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
     config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value);
     config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
     config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
@@ -547,7 +575,7 @@
     };
     config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
     config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
-    config.EnableBalancesTrackerLog = document.getElementById('EnableBalancesTrackerLog').checked;
+    config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
     config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
     if (document.getElementById('ShowMinerWindowsHidden').checked) {
       config.ShowMinerWindows = "hidden" 
@@ -655,7 +683,7 @@
 
   //BalancesTrackerPollInterval
   $(document.getElementById('BalancesTrackerPollInterval')).click(function(event) {
-    document.getElementById('EnableBalancesTrackerLog').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
+    document.getElementById('BalancesTrackerLog').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
     document.getElementById('ShowPoolBalances').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
   });
 

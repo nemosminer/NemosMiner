@@ -128,23 +128,27 @@ Function Start-APIServer {
                         $Parameters.Keys | ForEach-Object {
                             $Key = $_
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
-
-                                $Data = "`nDevice configuration changed`n`nOld values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
-                                $Data += "`n`nNew values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                Write-Config -ConfigFile $Variables.ConfigFile
-                                $Values | ForEach-Object { 
-                                    $DeviceName = $_
-                                    $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
-                                        $_.State = [DeviceState]::Disabled
-                                        $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
-                                        If ($_.Status -EQ [DeviceState]::Running) { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
+                                Try { 
+                                    $Data = "`nDevice configuration changed`n`nOld values:"
+                                    $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                    $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
+                                    $Data += "`n`nNew values:"
+                                    $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                    $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
+                                    Write-Config -ConfigFile $Variables.ConfigFile
+                                    $Values | ForEach-Object { 
+                                        $DeviceName = $_
+                                        $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
+                                            $_.State = [DeviceState]::Disabled
+                                            $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
+                                            If ($_.Status -EQ [DeviceState]::Running) { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
+                                        }
                                     }
+                                    Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
-                                Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
+                                Catch { 
+                                    $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
+                                }
                             }
                             Else { 
                                 $Data = "No configuration change"
@@ -157,15 +161,20 @@ Function Start-APIServer {
                         $Parameters.Keys | ForEach-Object {
                             $Key = $_
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -in $Config.ExcludeDeviceName })) { 
-                                $Data = "`nDevice configuration changed`n`nOld values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Values } | Sort-Object -Unique)
-                                $Data += "`n`nNew values:"
-                                $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
-                                $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                Write-Config -ConfigFile $Variables.ConfigFile
-                                $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
-                                Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
+                                Try { 
+                                    $Data = "`nDevice configuration changed`n`nOld values:"
+                                    $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                    $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Values } | Sort-Object -Unique)
+                                    $Data += "`n`nNew values:"
+                                    $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
+                                    $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
+                                    Write-Config -ConfigFile $Variables.ConfigFile
+                                    $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                                    Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
+                                }
+                                Catch { 
+                                    $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
+                                }
                             }
                             Else {
                                 $Data = "No configuration change"

@@ -25,9 +25,23 @@
         //Set mining button status
         $.ajax({url: '/functions/mining/getstatus',
           success: function(result) {
-            document.getElementById('miningstart').disabled = (result == "Running");
-            document.getElementById('miningstop').disabled = (result == "Stopped");
-            document.getElementById('miningpause').disabled = (result == "Paused");
+            switch (result) {
+              case "Stopped":
+                document.getElementById('miningstart').disabled = false;
+                document.getElementById('miningpause').disabled = true;
+                document.getElementById('miningstop').disabled = true;
+                break;
+              case "Paused":
+                document.getElementById('miningstart').disabled = false;
+                document.getElementById('miningpause').disabled = true;
+                document.getElementById('miningstop').disabled = false;
+                break;
+              case "Running": 
+                document.getElementById('miningstart').disabled = true;
+                document.getElementById('miningpause').disabled = false;
+                document.getElementById('miningstop').disabled = false;
+                break;
+            }
           }
         });
       }
