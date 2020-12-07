@@ -246,8 +246,6 @@ Class Miner {
                 Name         = $this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
                 Type         = ($this.Type -join " & ")
-
-
                 Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
                 Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
@@ -258,7 +256,6 @@ Class Miner {
                 Profit_Bias  = [Double]$this.Profit_Bias
                 CommandLine  = $this.CommandLine
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
-
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
@@ -622,6 +619,7 @@ Class Miner {
 }
 
 Function Get-DefaultAlgorithm {
+
     Try { 
         $PoolsAlgos = (Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
         $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
@@ -670,6 +668,7 @@ Function Get-TrendSign {
 }
 
 Function Get-Chart { 
+
     If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
         $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
         $Chart1.top = 2
@@ -688,6 +687,7 @@ Function Get-Chart {
 }
 
 Function Get-NMVersion { 
+
     # Check if new version is available
     Write-Message "Checking version..."
     Try { 
@@ -763,7 +763,7 @@ Function Stop-BrainJob {
 
 
 Function Start-BalancesTracker { 
-    
+
     If (-not $Variables.CycleRunspace) { 
 
         Try { 
@@ -787,7 +787,8 @@ Function Start-BalancesTracker {
 }
 
 
-Function Stop-BalancesTracker { 
+Function Stop-BalancesTracker {
+ 
     If ($Variables.BalancesTrackerRunspace) { 
         $Variables.BalancesTrackerRunspace.Close()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
@@ -852,15 +853,13 @@ Function Initialize-API {
 }
 
 Function Initialize-Application { 
+
     Write-Host "Initializing mining environment..." -ForegroundColor Yellow
     Write-Message "Initializing mining environment..."
 
     #Keep only the last 10 logs
     Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
     Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
- 
-    $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
-    $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -872,16 +871,10 @@ Function Initialize-Application {
 
     If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
     Else { $PSDefaultParameterValues["*:Proxy"] = $Proxy }
-
-    $Variables.DecayStart = (Get-Date).ToUniversalTime()
-    $Variables.DecayPeriod = 60 #seconds
-    $Variables.DecayBase = 1 - 0.1 #decimal percentage
-
-    $Variables.Strikes = 3
-    $Variables.WatchdogTimers = @()
 }
 
 Function Get-Rate {
+
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
@@ -996,7 +989,8 @@ Function Write-Message {
     End { }
 }
 
-Function Start-IdleMining { 
+Function Start-IdleMining {
+ 
     # Function tracks how long the system has been idle and controls the paused state
     $IdleRunspace = [runspacefactory]::CreateRunspace()
     $IdleRunspace.Open()
@@ -1013,7 +1007,7 @@ Function Start-IdleMining {
         { 
             # Set the starting directory
             Set-Location (Split-Path $MyInvocation.MyCommand.Path)
-            
+
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
 
             # No native way to check how long the system has been idle in PowerShell. Have to use .NET code.
@@ -1103,6 +1097,7 @@ Function Stop-IdleMining {
 }
 
 Function Update-Monitoring { 
+
     # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
 
     # Skip If server and user aren't filled out
@@ -1226,6 +1221,7 @@ Function Start-Mining {
 }
 
 Function Stop-Mining { 
+
     $Variables.Miners | Where-Object { $_.Status -EQ "Running" } | ForEach-Object { 
         Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
         $_.Status = "Idle"
@@ -1242,6 +1238,9 @@ Function Stop-Mining {
 }
 
 Function Update-Notifications ($Text) { 
+
+    Return
+
     $LabelNotifications.Lines += $Text
     If ($LabelNotifications.Lines.Count -gt 20) { $LabelNotifications.Lines = $LabelNotifications.Lines[($LabelNotifications.Lines.count - 10)..$LabelNotifications.Lines.Count] }
     $LabelNotifications.SelectionStart = $Variables.LabelStatus.TextLength;
@@ -1294,7 +1293,6 @@ Function Read-Config {
             $Global:Config.$_ = $Parameters.$_
         }
         $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
-        Write-Message -Level Warn  "New configuration using default values has been created. Use the GUI to save the configuration, then start mining."
     }
 
     #Build pools configuation
@@ -1336,7 +1334,41 @@ Function Read-Config {
         $PoolConfig.WorkerName = $PoolConfig.WorkerName -replace "^ID="
         $PoolsConfig.$PoolName = $PoolConfig
     }
+
     $Config.PoolsConfig = $PoolsConfig
+}
+
+Function Repair-Config {
+
+    $ConfigFixed = $Global:Config.Clone()
+
+    #Add +/- to all algorithms
+    $Algorithms = @()
+    ForEach ($Algorithm in $ConfigFixed.Algorithm) { 
+        $Algorithm = $Algorithm.Trim()
+        If ($PlusMinus -notmatch "\+|\-") { $PlusMinus = "+" }
+        If ($Algorithm.Substring(0, 1) -match "\+|\-") { 
+            $PlusMinus = $Algorithm.Substring(0, 1)
+            $Algorithms += $Algorithm
+        }
+        Else { 
+            $Algorithms += "$PlusMinus$Algorithm"
+        }
+    }
+    $ConfigFixed.Algorithm = $Algorithms
+
+    #Convert Arrays to HashTable
+    ForEach ($Property in @("MinDataSamplesAlgoMultiplier", "PowerPricekWh")) { 
+        If ($ConfigFixed.$Property -is [Array]) { 
+            $ConfigFixed.$Property = $ConfigFixed.$Property[0] | ConvertTo-Json | ConvertFrom-Json
+        }
+    }
+
+    If ($ConfigFixed -ne $Global:Config) { 
+        $Global:Config = $ConfigFixed
+        Write-Config -ConfigFile $Variables.ConfigFile
+        Write-Message -Level Warn "Configuration file fixed."
+    }
 }
 
 Function Write-Config { 
@@ -1355,7 +1387,7 @@ Function Write-Config {
     $SortedConfig = $Config | Get-SortedObject
     $ConfigTmp = [Ordered]@{ }
     $SortedConfig.Keys | Where-Object { $_ -notlike "PoolsConfig" } | ForEach-Object { 
-        $ConfigTmp[$_] = $SortedConfig.$_ 
+        $ConfigTmp[$_] = $SortedConfig.$_
     }
     $ConfigTmp | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8 -Force
 }
@@ -1795,7 +1827,7 @@ Function Get-ChildItemContent {
 }
 
 Function Invoke-TcpRequest { 
-     
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Server = "localhost", 
@@ -2202,7 +2234,7 @@ Function Get-Device {
                         If (-not $Type_Vendor_Id.($Device.Type)) { 
                             $Type_Vendor_Id.($Device.Type) = @{ }
                         }
-        
+
                         $Id++
                         $Vendor_Id.($Device.Vendor)++
                         $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
@@ -2284,7 +2316,8 @@ Filter ConvertTo-Hash {
     "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
 }
 
-Function Get-DigitsFromValue { 
+Function Get-DigitsFromValue {
+
     # To get same numbering scheme regardless of value base currency value (size) to determine formatting
 
     # Length is calculated as follows:
@@ -2586,7 +2619,7 @@ Function Initialize-Autoupdate {
             # Setting autostart to true
             If ($Variables.MiningStatus -eq "Running") { $Config.autostart = $true }
             Write-Config -ConfigFile $ConfigFile
-            
+
             # Download update file
             $UpdateFileName = ".\$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version)"
             Write-Message "Downloading version $($AutoupdateVersion.Version)"
@@ -2656,7 +2689,7 @@ Function Initialize-Autoupdate {
             If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
             If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
             Get-ChildItem "Initialize-AutoupdateBackup-*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup-*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
-            
+
             # Start new instance (Wait and confirm start)
             # Kill old instance
             If ($AutoupdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
@@ -2677,7 +2710,7 @@ Function Initialize-Autoupdate {
                 $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
                 $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-                
+
                 Write-Message "$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)"
                 Update-Notifications("$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)")
 
@@ -2688,7 +2721,7 @@ Function Initialize-Autoupdate {
                 $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
                 $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-                
+
                 Write-Message "Successfully updated to version $($AutoupdateVersion.Version)"
                 Update-Notifications("Successfully updated to version $($AutoupdateVersion.Version)")
                 $LabelNotifications.ForeColor = "Green"
