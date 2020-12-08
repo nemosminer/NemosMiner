@@ -47,13 +47,14 @@ While ($true) {
                 $AllBalanceObjects = @()
             }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) {
-                $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue) 
+                $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue)
+                Write-Message -Level Info "Balances Tracker loaded $($DailyEarnings.count) earnings data entries from '.\Logs\DailyEarnings.csv'."
                 Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
             } Else { 
                 $DailyEarnings = @()
             }
             #Keep only the last 10 logs 
-            Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+            Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
         }
 
         $Now = Get-Date
@@ -211,28 +212,28 @@ While ($true) {
                     $AvgHourlyGrowth = $Growth1
                 }
                 ElseIf ((($Now - ($BalanceObjects[0].DateTime)).TotalHours) -lt 6) { 
-                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -1 ) }).total_earned | Measure-Object -Minimum).Minimum)
                     $Growth6 = [Double]((($BalanceObject.total_earned - $BalanceObjects[0].total_earned) / ($Now - ($BalanceObjects[0].DateTime)).TotalHours) * 6)
                     $AvgHourlyGrowth = [Double]($Growth6 / ($Now - ($BalanceObjects[0].DateTime)).TotalHours)
                 }
                 ElseIf ((($Now - ($BalanceObjects[0].DateTime)).TotalHours) -lt 24) { 
-                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum)
-                    $Growth6 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -1 ) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth6 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -6 ) }).total_earned | Measure-Object -Minimum).Minimum)
                     $Growth24 = [Double]((($BalanceObject.total_earned - $BalanceObjects[0].total_earned) / ($Now - ($BalanceObjects[0].DateTime)).TotalHours) * 24)
                     $AvgHourlyGrowth = [Double]($Growth24 / ($Now - ($BalanceObjects[0].DateTime)).TotalHours)
                 }
                 ElseIf ((($Now - ($BalanceObjects[0].DateTime)).TotalHours) -lt 168) { 
-                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum)
-                    $Growth6 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) }).total_earned | Measure-Object -Minimum).Minimum)
-                    $Growth24 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -1 ) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth6 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -6 ) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth24 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -24 ) }).total_earned | Measure-Object -Minimum).Minimum)
                     $Growth168 = [Double]((($BalanceObject.total_earned - $BalanceObjects[0].total_earned) / ($Now - ($BalanceObjects[0].DateTime)).TotalHours) * 168)
                     $AvgHourlyGrowth = [Double]($Growth168 / ($Now - ($BalanceObjects[0].DateTime)).TotalHours)
                 }
                 Else { 
-                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) }).total_earned | Measure-Object -Minimum).Minimum)
-                    $Growth6 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) }).total_earned | Measure-Object -Minimum).Minimum)
-                    $Growth24 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) }).total_earned | Measure-Object -Minimum).Minimum)
-                    $Growth168 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth1 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -1 ) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth6 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -6 ) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth24 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -24 ) }).total_earned | Measure-Object -Minimum).Minimum)
+                    $Growth168 = [Double]($BalanceObject.total_earned - (($BalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours( -168 ) }).total_earned | Measure-Object -Minimum).Minimum)
                     $AvgHourlyGrowth = [Double]($Growth168 / ($Now - ($BalanceObjects[0].DateTime)).TotalHours)
                 }
 
@@ -329,7 +330,12 @@ While ($true) {
             $Variables.Earnings.$_ = $TempEarnings.$_
         }
 
-        $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
+        Try { 
+            $DailyEarnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
+        }
+        Catch { 
+            Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Logs\DailyEarnings.csv' (should have $($DailyEarnings.count) entries)."
+        }
 
         #Write chart data file (used in Web GUI)
         $ChartData = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 #days
