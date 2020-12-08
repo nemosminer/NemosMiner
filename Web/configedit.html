@@ -105,6 +105,14 @@
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
         </div>
         <br>
+
+        <div title="(Previously run & failed miners in addition to running miners) &#10;Can be toggled by pressing 's' while waiting for the next cycle &#10;&#10;This will not affect the information available in the in Web GUI">
+          <input type="checkbox" id="UIStyle" name="UIStyle"> Show full miner information in main text window
+        </div>
+        <div title="Can be toggled by pressing 'e' while waiting for the next cycle &#10;&#10;This will not affect the information available in the in Web GUI">
+          <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances"> Show pool balances in main text window
+        </div>
+        <br>
       </td>
 
       <td>
@@ -233,9 +241,6 @@
             <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
               <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
             </div>
-            <div title="This will not affect the information available in the in Web GUI">
-              <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances" style="margin-left:20px"> Show pool balances in main text window
-            </div>
           </div>
           <br>
 
@@ -352,6 +357,11 @@
             document.getElementById('AutoStart').checked = true;
           } else {
             document.getElementById('StartPaused').disabled = true;
+          }
+          if (config.UIStyle.trim().toLowerCase() == "full") {
+            document.getElementById('UIStyle').checked = true;
+          } else {
+            document.getElementById('UIStyle').checked = false;
           }
           if (config.StartPaused) {
             document.getElementById('StartPaused').checked = true;
@@ -571,6 +581,11 @@
     config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
     config.AutoStart = document.getElementById('AutoStart').checked;
+    if (document.getElementById('UIStyle').checked) { 
+      config.UIStyle = "Full"
+    } else { 
+      config.UIStyle = "Light"
+    }
     config.StartPaused = document.getElementById('StartPaused').checked;
     config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
     if (document.getElementById('IdleSec').value == null) { 
@@ -712,10 +727,10 @@
 
   // //Watchdog sub item
   // $(document.getElementById('Watchdog')).click(function(event) {
-  //   document.getElementById('WatchdogMinerAlgorithmCount').disabled = !(document.getElementById('Watchdog').checked);
-  //   document.getElementById('WatchdogMinerCount').disabled = !(document.getElementById('Watchdog').checked);
   //   document.getElementById('WatchdogPoolAlgorithmCount').disabled = !(document.getElementById('Watchdog').checked);
   //   document.getElementById('WatchdogPoolCount').disabled = !(document.getElementById('Watchdog').checked);
+  //   document.getElementById('WatchdogMinerAlgorithmCount').disabled = !(document.getElementById('Watchdog').checked);
+  //   document.getElementById('WatchdogMinerCount').disabled = !(document.getElementById('Watchdog').checked);
   // });
 
   //Load default Algorithm list
