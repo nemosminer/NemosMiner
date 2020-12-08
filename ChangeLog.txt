@@ -2,7 +2,7 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
-Changelog NemosMiner 3.9.9.8 Beta2 06.12.2020
+Changelog NemosMiner 3.9.9.8 Beta2 08.12.2020
 =============================================
 
 Changed:
@@ -18,6 +18,7 @@ Fixed:
 - Core: Idle detection not working
 - EtcHash / Ethash miner terminating while building DAG when CPU mining is active
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
+- Web GUI: Breaking config file on save
 - Web GUI: Clear Watchdog Timer list when clicking 'Reset Watchdog Timers'
 - Web GUI: 'Disable miner' not disabling miner
 - Web GUI: Rig Monitor not listing workers
@@ -34,7 +35,7 @@ Miner Updates:
 - Bminer-v16.3.6
 - GMiner-v2.33
 - lolMiner-v1.16a
-- miniZ-v1.6w4
+- miniZ-v1.6x
 - NanoMiner-v3.1.3
 - NBMiner-v34.5
 - PhoenixMiner-v5.3b
