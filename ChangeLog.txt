@@ -16,6 +16,8 @@ Fixed:
 - Core: Do not run donation if NemosMiner is started shortly before date change
 - Core: Temp fix for broken config file
 - Core: Idle detection not working
+- Core: Allow 0W power usage readout from miner (and do not loop forever)
+- Core: Fix watchdog dropping miners if there are many devices mining the same algo / pool
 - EtcHash / Ethash miner terminating while building DAG when CPU mining is active
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
 - Web GUI: Breaking config file on save
@@ -28,6 +30,7 @@ Improved:
 - Blockmasters pool: added support for Asia server
 - Changed DAG data provider to "https://minerstat.com/dag-size-calculator" for more supported coins
 - Core: Detect and ignore unreal hashrate & power usage data from miner (±200% from existing values)
+- Miner API's: Use HWiNFO to read power usage if it cannot be read directly from the miner
 - Web GUI: Added 'Total 1 hour / 24hrs' information to balances
 - Web GUI: Validate config data on save
 
