@@ -497,10 +497,10 @@ Function Start-Cycle {
                 }
             }
 
-            If ($Variables.CalculatePowerCost -and $PowerUsage -gt 0) {
+            If ($Variables.CalculatePowerCost) { 
                 $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
-                    #Stop miner if new value is outside ±- 200% of current value
+                    #Stop miner if new value is outside ± 200% of current value
                     If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt ($Stat.Week * 2) -or $PowerUsage -lt ($Stat.Week / 2))) {
                         Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($(([Double]$PowerUsage).ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Idle)
