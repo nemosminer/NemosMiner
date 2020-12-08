@@ -223,6 +223,10 @@
             <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5> %
           </div>
           <br>
+          <div title="Defines the minimum number of data samples collected from the miner &#10;when benchmarking before ending the cycle. Smaller numbers will &#10;cause faster benchmarking but the measured data will be less accurate &#10;(min=10, max=100)" for="MinDataSamples">Minimum data samples when benchmarking
+            <input type="number" id="MinDataSamples" name="MinDataSamples" min="10" max="100" value=20>
+          </div>
+          <br>
 
           <div title="Interval duration to run background task to periodically collect pool balances & earnings data &#10;1 - 60 minutes; 0 to disable (Note: this will also disable pool balances summary)">Poll Pools for Earnings & Balances every
             <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60> minutes
@@ -306,11 +310,6 @@
           document.getElementById('Currency').value = config.Currency;
           document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
           document.getElementById('Proxy').value = config.Proxy;
-          if (config.RunningMinerGainPct == null) { 
-            document.getElementById('RunningMinerGainPct').value = 5;
-          } else {
-            document.getElementById('RunningMinerGainPct').value = parseInt(config.RunningMinerGainPct);
-          }
 
           $.each(config.PoolName, function (key, value) {
             document.getElementById((value).toString().toLowerCase()).checked = true;
@@ -424,6 +423,19 @@
           // } else {
           //   document.getElementById('WatchdogPoolCount').value = parseInt(config.WatchdogPoolCount);
           // }
+
+          if (config.RunningMinerGainPct == null) { 
+            document.getElementById('RunningMinerGainPct').value = 5;
+          } else {
+            document.getElementById('RunningMinerGainPct').value = parseInt(config.RunningMinerGainPct);
+          }
+
+          if (config.MinDataSamples == null) { 
+            document.getElementById('MinDataSamples').value = 20;
+          } else {
+            document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
+          }
+
           if (config.EstimateCorrection) {
             document.getElementById('EstimateCorrection').checked = true;
           }
@@ -526,7 +538,6 @@
     if (document.getElementById('RunningMinerGainPct').value == null) {
       document.getElementById('RunningMinerGainPct').value = 5;
     };
-    config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
     config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
     if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
       config.UnrealPoolPriceFactor = 3;
@@ -604,6 +615,9 @@
     // };
     // config.WatchdogPoolCount = parseInt(document.getElementById('WatchdogPoolCount').value);
     config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
+    config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
+    config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
+
     config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
     config.AutoUpdate = document.getElementById('AutoUpdate').checked;
 
