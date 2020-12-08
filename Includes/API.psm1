@@ -185,7 +185,9 @@ Function Start-APIServer {
                     }
                     "/functions/config/set" { 
                         Try { 
-                            Set-Content -Path $Variables.ConfigFile -Value ($Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json) -Encoding UTF8 #Out-File produces emtpy {} file
+                            $TmpConfig = $Key | ConvertFrom-Json
+                            $TmpConfig.PSObject.Properties.Remove('PoolsConfig')
+                            $TmpConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                             Read-Config
                             $Variables.RestartCycle = $true
                             $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
