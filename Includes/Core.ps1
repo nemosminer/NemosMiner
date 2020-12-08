@@ -50,6 +50,12 @@ Function Start-Cycle {
     #Expire watchdog timers
     $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
+    #Allow at least one watchdog per device, otherwise high number of devices may trigger watchdog
+    $Variables.WatchdogPoolAlgorithmCount = $Config.WatchdogPoolAlgorithmCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
+    $Variables.WatchdogPoolCount = $Config.WatchdogPoolCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
+    $Variables.WatchdogMinerAlgorithmCount = $Config.WatchdogMinerAlgorithmCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
+    $Variables.WatchdogMinerCount = $Config.WatchdogMinerCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
+
     #Always get the latest config
     Read-Config
 
@@ -413,7 +419,7 @@ Function Start-Cycle {
     If ($Config.Watchdog) { 
         #Apply watchdog to pools
         $Message = @()
-        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogPoolAlgorithmCount } | ForEach-Object { 
+        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogPoolAlgorithmCount } | ForEach-Object { 
             $_.Available = $false
             $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
             $_.Reason += "Algorithm suspended by watchdog"
@@ -421,7 +427,7 @@ Function Start-Cycle {
         }
         $Message | Sort-Object -Unique | ForEach-Object { Write-Message -Level Warn $_ }
         $Message = @()
-        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogPoolCount } | ForEach-Object {
+        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogPoolCount } | ForEach-Object {
             $_.Available = $false
             $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
             $_.Reason += "Pool suspended by watchdog"
@@ -742,7 +748,7 @@ Function Start-Cycle {
     If ($Config.WatchDog) { 
         #Apply watchdog to miners
         $Message = @()
-        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerCount } | ForEach-Object { 
+        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogMinerCount } | ForEach-Object { 
             $_.Available = $false
             $_.Data = @()
             $_.Reason += "Miner (all algorithms) suspended by watchdog"
@@ -750,7 +756,7 @@ Function Start-Cycle {
         }
         $Message | Sort-Object -Unique | ForEach-Object { Write-Message -Level Warn $_ }
         $Message = @()
-        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Config.WatchdogMinerAlgorithmCount } | ForEach-Object {
+        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogMinerAlgorithmCount } | ForEach-Object {
             $_.Available = $false
             $_.Data = @()
             $_.Reason += "Miner suspended by watchdog"
@@ -805,7 +811,7 @@ Function Start-Cycle {
     Else { 
         #Get most profitable miner combination i.e. AMD+NVIDIA+CPU
         If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-        $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Algorithm.Count }, { $_.Data.Count }, { $_.MinDataSamples } #pre-sort
+        $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Algorithm.Count }, { $_.Data.Count }, { $_.MinDataSamples }, { $_.MinerName }, { $_.Algorithm } #pre-sort
         $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } #use a smaller subset of miners
         $BestMiners = @($FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
