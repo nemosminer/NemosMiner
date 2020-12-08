@@ -854,9 +854,6 @@ Function Initialize-API {
 
 Function Initialize-Application { 
 
-    Write-Host "Initializing mining environment..." -ForegroundColor Yellow
-    Write-Message "Initializing mining environment..."
-
     #Keep only the last 10 logs
     Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
     Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
@@ -1353,6 +1350,7 @@ Function Repair-Config {
         }
         Else { 
             $Algorithms += "$PlusMinus$Algorithm"
+            $Fixed = $true
         }
     }
     $ConfigFixed.Algorithm = $Algorithms
@@ -1361,10 +1359,11 @@ Function Repair-Config {
     ForEach ($Property in @("MinDataSamplesAlgoMultiplier", "PowerPricekWh")) { 
         If ($ConfigFixed.$Property -is [Array]) { 
             $ConfigFixed.$Property = $ConfigFixed.$Property[0] | ConvertTo-Json | ConvertFrom-Json
+            $Fixed = $true
         }
     }
 
-    If ($ConfigFixed -ne $Global:Config) { 
+    If ($Fixed -eq $true) { 
         $Global:Config = $ConfigFixed
         Write-Config -ConfigFile $Variables.ConfigFile
         Write-Message -Level Warn "Configuration file fixed."
