@@ -858,8 +858,8 @@ Function Initialize-Application {
     Write-Message "Initializing mining environment..."
 
     #Keep only the last 10 logs
-    Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
-    Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skip 10 | Remove-Item -Force -Recurse
+    Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
