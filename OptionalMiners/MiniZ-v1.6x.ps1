@@ -2,12 +2,12 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.6w4_cuda11_win-x64.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.6x_win-x64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Command = " --par=beam3 --pers=Beam-PoW --ocX" }
-#   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" } #Incorrect benchmark results (https://bitcointalk.org/index.php?topic=4767892.msg55733974#msg55733974)
+   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Command = " --par=125,4 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Command = " --par=144,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --smart-pers --ocX" }
@@ -19,7 +19,7 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-    $Devices | Where-Object Type -EQ "NVIDIA" | Where-Object { $_.OpenCL.ComputeCapability -ge 8.6 } | Select-Object Model -Unique | ForEach-Object { 
+    $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 

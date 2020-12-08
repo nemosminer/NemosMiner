@@ -18,7 +18,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo31");              Command = "" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo32");              Command = "" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; Protocol = @(" -uri aeternity");               Command = "" }
-#   [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -pers auto -uri equihash1445"); Command = "" } #MiniZ-v1.6w2 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -pers auto -uri equihash1445"); Command = "" } #MiniZ-v1.6x is fastest
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri zhash");                   Command = "" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 4.0; Protocol = @(" -uri ethproxy");                Command = "" }
 #   [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri conflux");                 Command = "" } #NBMiner-v34.5 is faster is faster but has 2% fee

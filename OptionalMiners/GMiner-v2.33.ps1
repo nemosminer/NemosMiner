@@ -34,11 +34,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckoo29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Fee = @(0.02);    MinMemGB = 0.8; Type = "NVIDIA"; Command = " --algo eaglesong --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Equihash965");         Fee = @(0.02);    MinMemGB = 0.8; Type = "NVIDIA"; Command = " --algo equihash96_5 --pers auto --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("Equihash1254");        Fee = @(0.02);    MinMemGB = 1.0; Type = "NVIDIA"; Command = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Equihash1445");        Fee = @(0.02);    MinMemGB = 1.8; Type = "NVIDIA"; Command = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
-#   [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Equihash1254");        Fee = @(0.02);    MinMemGB = 1.0; Type = "NVIDIA"; Command = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6x is fastest
+#   [PSCustomObject]@{ Algorithm = @("Equihash1445");        Fee = @(0.02);    MinMemGB = 1.8; Type = "NVIDIA"; Command = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6x is fastest
+#   [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } #MiniZ-v1.6x is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash2109");        Fee = @(0.02);    MinMemGB = 1.0; Type = "NVIDIA"; Command = " --algo equihash210_9 --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } #MiniZ-v1.6w2 is fastest
+#   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } #MiniZ-v1.6x is fastest
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } #PhoenixMiner-v5.3b is fastest

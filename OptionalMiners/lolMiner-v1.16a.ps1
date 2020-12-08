@@ -39,11 +39,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C32" }
-#   [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; Command = " --coin AUTO144_5" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
-#   [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin AUTO192_7" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; Command = " --coin AUTO144_5" } #MiniZ-v1.6x is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin AUTO192_7" } #MiniZ-v1.6x is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; Command = " --algo EQUI210_9" }
-#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
-#   [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" } #MiniZ-v1.6w2 is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" } #MiniZ-v1.6x is fastest, but has 2% miner fee
+#   [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" } #MiniZ-v1.6x is fastest, but has 2% miner fee
 #   [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETCHASH --coin ETC" } #Ethereum Classic starting with epoch 390, PhoenixMiner-v5.3b is faster
 #   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETHASH" } #TTMiner-v5.0.3 is fastest
 )
