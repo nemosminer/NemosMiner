@@ -429,6 +429,7 @@ Function Global:TimerUITick {
 
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
+
         If ($Variables.NewMiningStatus -eq "Stopped") { 
             $ButtonPause.Enabled = $false
             $ButtonStart.Enabled = $false
@@ -443,6 +444,8 @@ Function Global:TimerUITick {
             $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
             Write-Message "$($Branding.ProductLabel) is idle."
+            Clear-Host
+            Write-Host "$($Branding.ProductLabel) is idle."
 
             $ButtonPause.Enabled = $true
             $ButtonStart.Enabled = $true
@@ -463,6 +466,8 @@ Function Global:TimerUITick {
                     Start-BalancesTracker
                 }
                 Write-Message "Mining is paused. BrainPlus and Earning tracker running."
+                Clear-Host
+                Write-Host "Mining is paused. BrainPlus and Earning tracker running."
 
                 $ButtonStop.Enabled = $true
                 $ButtonStart.Enabled = $true
@@ -476,6 +481,10 @@ Function Global:TimerUITick {
             }
         }
         ElseIf ($Variables.NewMiningStatus -eq "Running") {
+
+            $Variables.UIStyle = $Config.UIStyle
+            $Variables.ShowPoolBalances = $Config.ShowPoolBalances
+
             $ButtonStop.Enabled = $true
             $ButtonStart.Enabled = $false
             $ButtonPause.Enabled = $true
@@ -560,7 +569,7 @@ Function Global:TimerUITick {
                     $Variables.Workers | Select-Object @(
                         @{ Name = "Worker"; Expression = { $_.worker } }, 
                         @{ Name = "Status"; Expression = { $_.status } }, 
-                        @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport)" } }, 
+                        @{ Name = "Last seen"; Expression = { "$($_.timesincelastreport -replace '^-')" } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
                         @{ Name = "Est. Profit $EarningsCurrency/day"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
                         @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))) } }, 
@@ -613,24 +622,13 @@ Function Global:TimerUITick {
                 Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoupdated)")
             }
 
-            #Display mining information
-            If ($host.UI.RawUI.KeyAvailable) { 
-                $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho, IncludeKeyDown, IncludeKeyUp"); Start-Sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
-                If ($KeyPressed.KeyDown) { 
-                    Switch ($KeyPressed.Character) { 
-                        "s" { If ($Config.UIStyle -eq "Light") { $Config.UIStyle = "Full" } Else { $Config.UIStyle = "Light" } }
-                        "e" { $Config.ShowPoolBalances = -not $Config.ShowPoolBalances }
-                    }
-                }
-            }
-
             Clear-Host
             # Get and display earnings stats
-            If ($Variables.Earnings -and $Config.ShowPoolBalances) { 
+            If ($Variables.Earnings -and $Variables.ShowPoolBalances) { 
                 $Variables.Earnings.Values | ForEach-Object { 
                     $EarningsCurrency = $_.Currency
                     If ("m$($EarningsCurrency)" -in $Config.Currency) { $EarningsCurrency = "m$($EarningsCurrency)" }
-                    Write-Host "+++++ $($_.Wallet) +++++" -B DarkBlue -ForegroundColor DarkGray -NoNewline; Write-Host " $($_.Pool)"
+                    Write-Host "+++++ $($_.Wallet) +++++" -B DarkBlue -ForegroundColor DarkGray -NoNewline; Write-Host " $($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)')"
                     Write-Host "Trust Level:            $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -ForegroundColor DarkGray " (data of $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
                     Write-Host "Average/hour:           $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
                     Write-Host "Average/day:            " -NoNewline; Write-Host "$(($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -ForegroundColor Yellow
@@ -645,7 +643,12 @@ Function Global:TimerUITick {
                 Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
             }
 
-            If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { $Config.UIStyle = "Full" }
+            If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { 
+                If ($Config.UIStyle -ne "Full") { 
+                    Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
+                    $Variables.UIStyle = "Full"
+                }
+            }
 
             #Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
@@ -775,7 +778,7 @@ Function Global:TimerUITick {
                 ) | Out-Host
             }
 
-            If ($Config.UIStyle -eq "Full") { 
+            If ($Variables.UIStyle -eq "Full") { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
                     Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s"}):"
                     $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table -Wrap (
@@ -807,7 +810,7 @@ Function Global:TimerUITick {
             Remove-Variable MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction SilentlyContinue
             Remove-Variable Miner_Table -ErrorAction SilentlyContinue
 
-            If ($Config.Watchdog -eq $true) { 
+            If ($Config.Watchdog -eq $true -and $Variables.UIStyle -eq "Full") { 
                 #Display watchdog timers
                 $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds( -$Variables.WatchdogReset) | Format-Table -Wrap (
                     @{Label = "Miner Watchdog Timers"; Expression = { $_.MinerName } }, 
@@ -818,7 +821,7 @@ Function Global:TimerUITick {
                 ) | Out-Host
             }
 
-            Write-Host "$($Variables.Summary -replace '&ensp;', ' ' -replace '  +', '; ')"
+            Write-Host "$($Variables.Summary -replace '&ensp;', ' ' -replace '  +', '; ' -replace '^; ')"
 
             If (-not $Variables.Paused) { 
                 Write-Host "Profit, Earning & Power cost are in $($Config.Currency | Select-Object -Index 0)/day. Power cost: $($Config.Currency | Select-Object -Index 0) $(($Variables.PowerPricekWh).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)"))/kWh; Mining power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningPowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day; Base power cost: $($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)/day."
@@ -836,10 +839,11 @@ Function Global:TimerUITick {
             }
 
             Write-Host "--------------------------------------------------------------------------------"
-            Write-Host -ForegroundColor Yellow "Last refresh: $((Get-Date).ToString('G'))   |   Next refresh: $(($Variables.EndLoopTime).ToString('G'))"
+            Write-Host -ForegroundColor Yellow "Last refresh: $(($Variables.Timer).ToString('G'))   |   Next refresh: $(($Variables.EndLoopTime).ToString('G'))"
         }
 
         $Variables.RefreshNeeded = $false
+
     }
     $TimerUI.Start()
 }
@@ -850,9 +854,35 @@ Function Form_Load {
     $MainForm.Number = 0
     $TimerUI.Add_Tick(
         { 
+            #Display mining information
+            If ($host.UI.RawUI.KeyAvailable) { 
+                $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho, IncludeKeyDown, IncludeKeyUp"); Start-Sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
+                If ($KeyPressed.KeyDown) { 
+                    Switch ($KeyPressed.Character) { 
+                        "s" { 
+                            If ($Variables.UIStyle -eq "Light") { 
+                                $Variables.UIStyle = "Full"
+                            } Else { 
+                                $Variables.UIStyle = "Light"
+                            }
+                            $Variables.RefreshNeeded = $true
+                            Write-Host "UI style set to $($Variables.UIStyle). (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)"
+                        }
+                        "e" { 
+                            $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
+                            $Variables.RefreshNeeded = $true
+                            Write-Host "Toggled displaying pool balances to $(If ($Variables.ShowPoolBalances) { "on"} Else { "off" } )."
+                        }
+                    }
+                }
+            }
+
+            $TimerUI.Interval = 50
+
             # Timer never disposes objects until it is disposed
             $MainForm.Number += 1
             $TimerUI.Stop()
+
             TimerUITick
             If ($MainForm.Number -gt 6000) { 
                 $MainForm.Number = 0
@@ -864,9 +894,10 @@ Function Form_Load {
             $TimerUI.Start()
         }
     )
+
     $TimerUI.Interval = 50
     $TimerUI.Stop()
-        
+
     If ($CheckBoxConsole.Checked) { 
         $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 0)
         Write-Message "Console window hidden"
