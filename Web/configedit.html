@@ -189,22 +189,6 @@
           <div title="Watchdog will monitor pool & miner for frequent failures &#10;and suspend failing pools or miners for some cycles.">
             <input type="checkbox" id="Watchdog" name="Watchdog"> Activate Watchdog
           </div>
-          <!-- <div title="Number of watchdog timers with same miner name & algorithm until miner/algorithm combination gets suspended">
-            <label for="WatchdogMinerAlgorithmCount" style="margin-left:20px">Watchdog (Miner & Algorithm) count</label>
-            <input type="number" id="WatchdogMinerAlgorithmCount" name="WatchdogMinerAlgorithmCount" min="0" max="10" value=3>
-          </div>
-          <div title="Number of watchdog timers with same miner name until miner gets suspended">
-            <label for="WatchdogMinerCount" style="margin-left:20px">Watchdog (Miner) count</label>
-            <input type="number" id="WatchdogMinerCount" name="WatchdogMinerCount" min="0" max="10" value=6>
-          </div>
-          <div title="Number of watchdog timers with same pool name & algorithm until pool/algorithm combination gets suspended">
-            <label for="WatchdogPoolAlgorithmCount" style="margin-left:20px">Watchdog (Pool & Algorithm) count</label>
-            <input type="number" id="WatchdogPoolAlgorithmCount" name="WatchdogPoolAlgorithmCount" min="0" max="100" value=3>
-          </div>
-          <div title="Number of watchdog timers with same pool name until pool gets suspended">
-            <label for="WatchdogPoolCount" style="margin-left:20px">Watchdog (Pool) count</label>
-            <input type="number" id="WatchdogPoolCount" name="WatchdogPoolCount" min="0" max="10" value=7>
-          </div> -->
           <br>
 
           <div title="Calculate power cost, required for true profit calculation &#10;Requires extra configuration of HWiNFO64 &#10;(See ConfigHWinfo64.pdf)">
@@ -408,32 +392,6 @@
           if (config.Watchdog) {
             document.getElementById('Watchdog').checked = true;
           } 
-          // else {
-          //   document.getElementById('WatchdogMinerAlgorithmCount').disabled = true;
-          //   document.getElementById('WatchdogMinerCount').disabled = true;
-          //   document.getElementById('WatchdogPoolAlgorithmCount').disabled = true;
-          //   document.getElementById('WatchdogPoolCount').disabled = true;
-          // }
-          // if (config.WatchdogMinerAlgorithmCount == null) { 
-          //   document.getElementById('WatchdogMinerAlgorithmCount').value = 3;
-          // } else {
-          //   document.getElementById('WatchdogMinerAlgorithmCount').value = parseInt(config.WatchdogMinerAlgorithmCount);
-          // }
-          // if (config.WatchdogMinerCount == null) { 
-          //   document.getElementById('WatchdogMinerCount').value = 6;
-          // } else {
-          //   document.getElementById('WatchdogMinerCount').value = parseInt(config.WatchdogMinerCount);
-          // }
-          // if (config.WatchdogPoolAlgorithmCount == null) { 
-          //   document.getElementById('WatchdogPoolAlgorithmCount').value = 3;
-          // } else {
-          //   document.getElementById('WatchdogPoolAlgorithmCount').value = parseInt(config.WatchdogPoolAlgorithmCount);
-          // }
-          // if (config.WatchdogPoolCount == null) { 
-          //   document.getElementById('WatchdogPoolCount').value = 7;
-          // } else {
-          //   document.getElementById('WatchdogPoolCount').value = parseInt(config.WatchdogPoolCount);
-          // }
 
           if (config.RunningMinerGainPct == null) { 
             document.getElementById('RunningMinerGainPct').value = 5;
@@ -614,22 +572,7 @@
       config.ShowMinerWindows = "normal" 
     }
     config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
-    // if (document.getElementById('WatchdogMinerAlgorithmCount').value == null) { 
-    //   document.getElementById('WatchdogMinerAlgorithmCount').value = 3;
-    // };
-    // config.WatchdogMinerAlgorithmCount = parseInt(document.getElementById('WatchdogMinerAlgorithmCount').value);
-    // if (document.getElementById('WatchdogMinerCount').value == null) { 
-    //   document.getElementById('WatchdogMinerCount').value = 6;
-    // };
-    // config.WatchdogMinerCount = parseInt(document.getElementById('WatchdogMinerCount').value);
-    // if (document.getElementById('WatchdogPoolAlgorithmCount').value == null) { 
-    //   document.getElementById('WatchdogPoolAlgorithmCount').value = 3;
-    // };
-    // config.WatchdogPoolAlgorithmCount = parseInt(document.getElementById('WatchdogPoolAlgorithmCount').value);
-    // if (document.getElementById('WatchdogPoolCount').value == null) { 
-    //   document.getElementById('WatchdogPoolCount').value = 7;
-    // };
-    // config.WatchdogPoolCount = parseInt(document.getElementById('WatchdogPoolCount').value);
+
     config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
     config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
     config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
@@ -725,14 +668,6 @@
         $('#myModal').modal({show:true});
       };
   });
-
-  // //Watchdog sub item
-  // $(document.getElementById('Watchdog')).click(function(event) {
-  //   document.getElementById('WatchdogPoolAlgorithmCount').disabled = !(document.getElementById('Watchdog').checked);
-  //   document.getElementById('WatchdogPoolCount').disabled = !(document.getElementById('Watchdog').checked);
-  //   document.getElementById('WatchdogMinerAlgorithmCount').disabled = !(document.getElementById('Watchdog').checked);
-  //   document.getElementById('WatchdogMinerCount').disabled = !(document.getElementById('Watchdog').checked);
-  // });
 
   //Load default Algorithm list
   $('#defaultAlgorithm').click(function () {
