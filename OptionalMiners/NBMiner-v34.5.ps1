@@ -3,7 +3,8 @@ using module ..\Includes\Include.psm1
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nbminer.exe"
 $Uri = "https://github.com/NebuTech/NBMiner/releases/download/v34.5/NBMiner_34.5_Win.zip"
-$DeviceEnumerator = "Index"
+$DeviceEnumerator = "Bus"
+$DevicesBus = ($Devices | Select-Object).Bus | Sort-Object
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
 $Commands = [PSCustomObject[]]@(
@@ -117,7 +118,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$Command --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($Miner_Devices.$DeviceEnumerator | Sort-Object | ForEach-Object { '{0:x}' -f $DevicesBus.IndexOf([Int]$_) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "NBMiner"
                         Port       = $MinerAPIPort
