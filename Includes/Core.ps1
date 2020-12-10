@@ -51,10 +51,10 @@ Function Start-Cycle {
     $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
     #Allow at least one watchdog per device, otherwise high number of devices may trigger watchdog
-    $Variables.WatchdogPoolAlgorithmCount = $Config.WatchdogPoolAlgorithmCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
-    $Variables.WatchdogPoolCount = $Config.WatchdogPoolCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
-    $Variables.WatchdogMinerAlgorithmCount = $Config.WatchdogMinerAlgorithmCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
-    $Variables.WatchdogMinerCount = $Config.WatchdogMinerCount + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count
+    $Variables.WatchdogPoolAlgorithmCount = 3 + 3 + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count - 1
+    $Variables.WatchdogPoolCount = 3 + 3 + 3 + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count - 1
+    $Variables.WatchdogMinerAlgorithmCount = 3
+    $Variables.WatchdogMinerCount = 3 + 3
 
     #Always get the latest config
     Read-Config
@@ -419,19 +419,19 @@ Function Start-Cycle {
     If ($Config.Watchdog) { 
         #Apply watchdog to pools
         $Message = @()
-        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogPoolAlgorithmCount } | ForEach-Object { 
+        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogPoolAlgorithmCount } | ForEach-Object { 
             $_.Available = $false
             $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
             $_.Reason += "Algorithm suspended by watchdog"
-            $Message += "Algorithm $($_.Algorithm)@$($_.Name) is suspended by watchdog."
+            $Message += "Algorithm $($_.Algorithm)@$($_.Name) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm).kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
         }
         $Message | Sort-Object -Unique | ForEach-Object { Write-Message -Level Warn $_ }
         $Message = @()
-        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogPoolCount } | ForEach-Object {
+        $Variables.Pools | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogPoolCount } | ForEach-Object {
             $_.Available = $false
             $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
             $_.Reason += "Pool suspended by watchdog"
-            $Message += "Pool $($_.Name) is suspended by watchdog."
+            $Message += "Pool $($_.Name) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name).kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
         }
         $Message | Sort-Object -Unique | ForEach-Object { Write-Message -Level Warn $_ }
         Remove-Variable Message
@@ -486,16 +486,16 @@ Function Start-Cycle {
                     #Stop miner if new value is outside ± 200% of current value
                     If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -ge ($Stat.Week * 2) -or $Miner_Speeds.$Algorithm -lt ($Stat.Week / 2))) {
                         Write-Message -Level Warn "$($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
-                        $Miner.SetStatus([MinerStatus]::Idle)
+                        $Miner.SetStatus([MinerStatus]::Failed)
                     }
                     Else { 
-                        $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples)
+                        $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogMinerAlgorithmCount + 1)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             $Miner.StatStart = $Miner.StatEnd
                             #Update watchdog timer
                             $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName | Sort-Object Kicked | Select-Object -Last 1
-                            If ($WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
+                            If ($Miner.Status -eq "Running" -and $WatchdogTimer -and $Stat.Updated -gt $WatchdogTimer.Kicked) { 
                                 $WatchdogTimer.Kicked = $Stat.Updated
                             }
                         }
@@ -509,11 +509,11 @@ Function Start-Cycle {
                     #Stop miner if new value is outside ± 200% of current value
                     If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt ($Stat.Week * 2) -or $PowerUsage -lt ($Stat.Week / 2))) {
                         Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($(([Double]$PowerUsage).ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
-                        $Miner.SetStatus([MinerStatus]::Idle)
+                        $Miner.SetStatus([MinerStatus]::Failed)
                     }
                     Else { 
                         #Do not save data if stat just got removed
-                        $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples)
+                        $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogMinerAlgorithmCount + 1)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message "Saved power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                         }
@@ -748,19 +748,19 @@ Function Start-Cycle {
     If ($Config.WatchDog) { 
         #Apply watchdog to miners
         $Message = @()
-        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogMinerCount } | ForEach-Object { 
+        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogMinerCount } | ForEach-Object { 
             $_.Available = $false
             $_.Data = @()
             $_.Reason += "Miner (all algorithms) suspended by watchdog"
-            $Message += "Miner $($_.BaseName)-$($_.Version) (all algorithms) is suspended by watchdog."
+            $Message += "Miner $($_.BaseName)-$($_.Version) (all algorithms) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName).kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
         }
         $Message | Sort-Object -Unique | ForEach-Object { Write-Message -Level Warn $_ }
         $Message = @()
-        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer.AddSeconds( - $Variables.WatchdogInterval) | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogMinerAlgorithmCount } | ForEach-Object {
+        $Variables.Miners | Select-Object | Where-Object { ($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Measure-Object | Select-Object -ExpandProperty Count) -ge $Variables.WatchdogMinerAlgorithmCount } | ForEach-Object {
             $_.Available = $false
             $_.Data = @()
             $_.Reason += "Miner suspended by watchdog"
-            $Message += "Miner $($_.Name) ($($_.Algorithm)) is suspended by watchdog."
+            $Message += "Miner $($_.Name) ($($_.Algorithm)) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm).kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
         }
         $Message | Sort-Object -Unique | ForEach-Object { Write-Message -Level Warn $_ }
         Remove-Variable Message
@@ -977,21 +977,21 @@ Function Start-Cycle {
             $Miner.SetStatus([MinerStatus]::Running)
             Write-Message "Started miner '$($Miner.Info)'."
             Write-Message -Level Verbose $Miner.CommandLine
-        }
 
-        #Add watchdog timer
-        If ($Config.Watchdog) { 
-            $Miner.Workers | ForEach-Object { 
-                $Worker = $_
-                If (-not ($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
-                    $Miner.Workers | ForEach-Object { 
-                        $Worker = $_
-                        $Variables.WatchdogTimers += [PSCustomObject]@{ 
-                            MinerName  = $Miner.Name
-                            PoolName   = $Worker.Pool.Name
-                            Algorithm  = $Worker.Pool.Algorithm
-                            DeviceName = $Miner.DeviceName
-                            Kicked     = $Variables.Timer
+            #Add watchdog timer
+            If ($Config.Watchdog) { 
+                $Miner.Workers | ForEach-Object { 
+                    $Worker = $_
+                    If (-not ($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
+                        $Miner.Workers | ForEach-Object { 
+                            $Worker = $_
+                            $Variables.WatchdogTimers += [PSCustomObject]@{ 
+                                MinerName  = $Miner.Name
+                                PoolName   = $Worker.Pool.Name
+                                Algorithm  = $Worker.Pool.Algorithm
+                                DeviceName = $Miner.DeviceName
+                                Kicked     = $Variables.Timer
+                            }
                         }
                     }
                 }
