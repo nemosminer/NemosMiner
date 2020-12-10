@@ -21,12 +21,12 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } #CryptoDredge-v0.25.1 is fastest
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } #Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } #TeamRed-v0.7.18 is fastest on Navi
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo lyra2v3" } #TeamRed-v0.7.18 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } #TeamRed-v0.7.19 is fastest on Navi
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo lyra2v3" } #TeamRed-v0.7.19 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1; Command = " --algo megamec" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Type = "AMD"; Fee = @(0.01); MinMemGB = 1; Command = " --algo minotaur" }
-#   [PSCustomObject]@{ Algorithm = "MTP";         Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp" } #TeamRed-v0.7.18 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";         Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp" } #TeamRed-v0.7.19 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-pawelhash" }
@@ -42,13 +42,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Timetravel";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo tribus" }
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x11k" }
-#   [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16r" } #TeamRed-v0.7.18 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16r" } #TeamRed-v0.7.19 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rt" }
-#   [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rv2" } #TeamRed-v0.7.18 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rv2" } #TeamRed-v0.7.19 is fastest
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x17r --protocol ufo2" }
-#   [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x21s" } #TeamRed-v0.7.18 is fastest
+#   [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x21s" } #TeamRed-v0.7.19 is fastest
     [PSCustomObject]@{ Algorithm = "X22i";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x22i" }
     [PSCustomObject]@{ Algorithm = "X33";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x33" }
 
