@@ -1486,7 +1486,6 @@ Function Set-Stat {
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
         If ($Value -and $Stat.Week_Fluctuation -lt 1 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
-            #Update immediately if stat value is 0
             If ($Name -match ".+_HashRate$") { 
                 Write-Message -Level Warn "Failed saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
             }
@@ -1495,8 +1494,7 @@ Function Set-Stat {
             }
         }
         Else { 
-            If ($Value -eq 0 -or $Stat.ToleranceExceeded -eq $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
-                #Update immediately if stat value is 0 or Week_Fluctuation greater 1
+            If ($Stat.ToleranceExceeded -eq $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value) { 
                     If ($Name -match ".+_HashRate$") { 
                         Write-Message -Level Warn "Saved hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
@@ -2013,7 +2011,7 @@ Function Get-Device {
     }
 
     If ($ExcludeName) { 
-        If (-not $DeviceList) { $DeviceList = Get-Content ".\Includes\Devices.txt" | ConvertFrom-Json }
+        If (-not $DeviceList) { $DeviceList = Get-Content -Path ".\Includes\Devices.txt" | ConvertFrom-Json }
         $ExcludeName_Devices = $ExcludeName | ForEach-Object { 
             $ExcludeName_Split = $_ -split '#'
             $ExcludeName_Split = @($ExcludeName_Split | Select-Object -Index 0) + @($ExcludeName_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
