@@ -14,11 +14,12 @@ Fixed:
 - API documentation: Repair broken links
 - BMiner API: workaround for broken miner API (https://bitcointalk.org/index.php?topic=2519271.msg55744602#msg55744602)
 - NBMiner: Fixed device selection
-- Core: Do not run donation if NemosMiner is started shortly before date change
-- Core: Temp fix for broken config file
-- Core: Idle detection not working
 - Core: Allow 0W power usage readout from miner (and do not loop forever)
+- Core: Do not run donation if NemosMiner is started shortly before date change
 - Core: Fix watchdog dropping miners if there are many devices mining the same algo / pool
+- Core: Idle detection not working
+- Core: IgnoreMinerFee not working
+- Core: Temp fix for broken config file
 - EtcHash / Ethash miner terminating while building DAG when CPU mining is active
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
 - Web GUI: Breaking config file on save
@@ -44,7 +45,7 @@ Miner Updates:
 - NBMiner-v34.5
 - PhoenixMiner-v5.3b
 - SRBMminerMulti-v0.5.8
-- TeamRed-v0.7.18
+- TeamRed-v0.7.19
 - Trex-v0.19.1
 - TTMiner-v6.1.0
 
