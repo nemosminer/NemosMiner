@@ -147,11 +147,11 @@
           <div title="NemosMiner will run separate miner instances per device model. &#10;Recommended for rigs with mixed GPU types per manufacturer installed &#10;e.g. GTX 1060 & GTX 1070.&#10;This will increase profitability.">
             <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run miner instance per device model
           </div>
-          <div title="NemosMiner will disable miner fees &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate)">
-            <input type="checkbox" id="DisableMinerFees" name="DisableMinerFees"> Disable Miner Fees
+          <div title="NemosMiner will disable developer fee mining &#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate.&#10;For miners that do not allow to disable miner fees the fee will still be shown in the miner list.)">
+            <input type="checkbox" id="DisableMinerFee" name="DisableMinerFee"> Disable Miner Fees
           </div>
           <div title="NemosMiner will disable all miners which contain fees">
-            <input type="checkbox" id="DisableMinersWithFees" name="DisableMinersWithFees"> Do not use Miner which contain Fees
+            <input type="checkbox" id="DisableMinersWithFee" name="DisableMinersWithFee"> Do not use miners which contain Fees
           </div>
           <div title="NemosMiner will disable all dual algorithm miners &#10;(Note: This will enable single algorithm mining)">
             <input type="checkbox" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable Dual Algorithm Miners
@@ -211,6 +211,12 @@
           </div>
           <div title="NemosMiner will reduce the profitability (as reported by the pool) by &#10;a correction factor (actual_last24h / estimate_last24h) &#10;to counter pool overestimated profitability">
             <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
+          </div>
+          <div title="NemosMiner will ignore the miner fee for earning & profit calculation">
+            <input type="checkbox" id="IgnoreMinerFee" name="IgnoreMinerFee"> Ignore Miner Fees
+          </div>
+          <div title="NemosMiner will ignore the pool fee for earning & profit calculation">
+            <input type="checkbox" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore Pool Fees
           </div>
           <br>
 
@@ -297,6 +303,9 @@
           if (config.Algorithm) {
             document.getElementById('Algorithm').value = (config.Algorithm).toString();
           }
+          if (config.ApplyUnprofitableAlgorithmList) {
+            document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
+          }
           document.getElementById('Currency').value = config.Currency;
           document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
           document.getElementById('Proxy').value = config.Proxy;
@@ -326,11 +335,11 @@
           if (config.MinerInstancePerDeviceModel) {
             document.getElementById('MinerInstancePerDeviceModel').checked = true;
           }
-          if (config.DisableMinerFees) {
-            document.getElementById('DisableMinerFees').checked = true;
+          if (config.DisableMinerFee) {
+            document.getElementById('DisableMinerFee').checked = true;
           }
-          if (config.DisableMinersWithFees) {
-            document.getElementById('DisableMinersWithFees').checked = true;
+          if (config.DisableMinersWithFee) {
+            document.getElementById('DisableMinersWithFee').checked = true;
           }
           if (config.DisableDualAlgoMining) {
             document.getElementById('DisableDualAlgoMining').checked = true;
@@ -408,8 +417,11 @@
           if (config.EstimateCorrection) {
             document.getElementById('EstimateCorrection').checked = true;
           }
-          if (config.ApplyUnprofitableAlgorithmList) {
-            document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
+          if (config.IgnoreMinerFee) {
+            document.getElementById('IgnoreMinerFee').checked = true;
+          }
+          if (config.IgnorePoolFee) {
+            document.getElementById('IgnorePoolFee').checked = true;
           }
           //must be placed after pool loading
           document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
@@ -534,8 +546,8 @@
     config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
     config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
     config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
-    config.DisableMinerFees = document.getElementById('DisableMinerFees').checked;
-    config.DisableMinersWithFees = document.getElementById('DisableMinersWithFees').checked;
+    config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
+    config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
     config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
     config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
@@ -574,6 +586,8 @@
     config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
 
     config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
+    config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
+    config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
     config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
     config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
 
