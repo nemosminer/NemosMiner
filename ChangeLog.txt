@@ -46,7 +46,7 @@ Miner Updates:
 - PhoenixMiner-v5.3b
 - SRBMminerMulti-v0.5.8
 - TeamRed-v0.7.19
-- Trex-v0.19.1
+- Trex-v0.19.3
 - TTMiner-v6.1.0
 
 New:
