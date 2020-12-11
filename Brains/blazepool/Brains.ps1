@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -23,6 +23,7 @@ version date:   12 November 2019
 #>
 
 Set-Location ($args[0])
+
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
@@ -181,7 +182,7 @@ While ($true) {
     If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
 
     $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-        If ([Double]($AlgoData.$_.actual_last24h_in_btc_per_hash_per_day) -gt 0.000000001) { 
+        If ([Double]($AlgoData.$_.actual_last24h) -gt 0.000000001) { 
             $AlgoData.$_ | Add-Member Updated $CurDate
         }
         Else { 

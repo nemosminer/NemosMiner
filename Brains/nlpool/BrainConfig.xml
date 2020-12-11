@@ -14,10 +14,10 @@
       <I32 N="AllowedAPIFailureCount">1</I32>
       <B N="UseFullTrust">false</B>
       <B N="EnableLog">false</B>
-      <S N="LogDataPath">.\BrainMemory-nlPool.csv</S>
+      <S N="LogDataPath">.\BrainMemory-NLPool.csv</S>
       <S N="TransferFile">.\nlpool.json</S>
-      <S N="PoolName">nlpool</S>
-      <S N="PoolStatusUri">http://www.nlpool.nl/api/status</S>
+      <S N="PoolName">blazepool</S>
+      <S N="PoolStatusUri">http://api.blazepool.com/status</S>
     </MS>
   </Obj>
 </Objs>
