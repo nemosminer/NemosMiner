@@ -1,9 +1,8 @@
 using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$PathCUDA10 = ".\Bin\$($Name)\t-rex_CUDA10.exe"
-$PathCUDA11 = ".\Bin\$($Name)\t-rex_CUDA11.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.1-win.zip"
+$Path = ".\Bin\$($Name)\t-rex.exe"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.19.3/t-rex-0.19.3-win-cuda10.0.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
@@ -14,15 +13,15 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    Fee = 0.01; MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";        Fee = 0.01; MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";      Fee = 0.01; MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } #PhoenixMiner-v5.3b is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.3b is fastest
+   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } #PhoenixMiner-v5.3b is fastest
+   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.3b is fastest
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow" } #NBMiner-v34.5 is fastest but has optional 1% fee
     [PSCustomObject]@{ Algorithm = "MegaBtx";    Fee = 0.01; MinMemGB = 2; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 2; Command = " --algo mtp --intensity 21" }
-#   [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" } #NBMiner-v34.5 is fastest
+   [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" } #NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = "PadiHash";   Fee = 0.01; MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  Fee = 0.01; MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
@@ -52,15 +51,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
     $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
-
-            #according to user reports CUDA 10.0 build is faster than CUDA 11.1 on octopus for 16 and 20 series cards
-            If ($_.Algorithm -eq "Octopus" -and ($SelectedDevices.OpenCL.ComputeCapability | Measure-Object -Minimum).Minimum -lt 8.6 -or (($SelectedDevices.OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0) -lt 450.0) { 
-                $Path = $PathCUDA10
-            }
-            Else { 
-                #RTX 3x series
-                $Path = $PathCUDA11
-            }
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
@@ -110,7 +100,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Command) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)$User --pass $($Pools.($_.Algorithm).Pass) --no-strict-ssl$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" })$Coin --no-watchdog --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Command) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)$User --pass $($Pools.($_.Algorithm).Pass) --no-strict-ssl$(If ($Variables.IsLocalAdmin -eq $true) { " --mt 3" })$Coin --no-watchdog --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --api-read-only --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --cpu-priority 4 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "Trex"
                         Port            = $MinerAPIPort
