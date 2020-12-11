@@ -106,7 +106,7 @@
     "Name": "ProHashing",
     "EarnTrackSupport": "yes",
     "PoolUri": "https://prohashing.com",
-    "AccountUri": "https://prohashing.com/dashboard.html",
+    "AccountUri": "https://prohashing.com/customer/dashboard",
     "WalletUri": "https://prohashing.com/api/v1/wallet?apiKey=",
     "StatusUri": "https://prohashing.com/api/v1/status",
     "CurrenciesUri": "https://prohashing.com/api/v1/currencies",
