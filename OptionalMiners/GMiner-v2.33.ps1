@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = @("Blake2s");             Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD"; Command = " --algo blake2s --cuda 0 --opencl 1" } #SRBMminerMulti-v0.5.8 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Blake2s");             Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD"; Command = " --algo blake2s --cuda 0 --opencl 1" } #SRBMminerMulti-v0.5.9 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");         Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD"; Command = " --algo cuckaroo29b --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.03);    MinMemGB = 6.0; Type = "AMD"; Command = " --algo bfc --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");         Fee = @(0.02);    MinMemGB = 4.0; Type = "AMD"; Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }

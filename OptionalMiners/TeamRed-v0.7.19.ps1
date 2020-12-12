@@ -9,7 +9,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; Command = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = "Chukwa2";              Fee = 0.025; MinMemGB = 2.0; Command = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" } #SRBMminerMulti-v0.5.8 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" } #SRBMminerMulti-v0.5.9 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.025; MinMemGB = 2.0; Command = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --rig_id $($Config.WorkerName)" }
