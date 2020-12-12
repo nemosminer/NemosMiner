@@ -55,9 +55,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$DisableDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableMinerFees = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
+    [Switch]$DisableMinerFee = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableMinersWithFees = $false, #Set to true to disable all miners which contain fees
+    [Switch]$DisableMinersWithFee = $false, #Set to true to disable all miners which contain fees
     [Parameter(Mandatory = $false)]
     [Switch]$DisableSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
     [Parameter(Mandatory = $false)]
@@ -98,7 +98,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$MinDataSamples = 20, #Minimum number of hash rate samples required to store hash rate
     [Parameter(Mandatory = $false)]
-    [Hashtable]$MinDataSamplesAlgoMultiplier = [Hashtable]@{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
+    [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
     [Switch]$MinerInstancePerDeviceModel = $true, #If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
     [Parameter(Mandatory = $false)]
@@ -132,7 +132,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$PoolTimeout = 30, #Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get any pool data
     [Parameter(Mandatory = $false)]
-    [Hashtable]$PowerPricekWh = [Hashtable]@{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
+    [Hashtable]$PowerPricekWh = @{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
     [Double]$PricePenaltyFactor = 1, #Estimated profit as projected by pool will be multiplied by this factor. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
@@ -384,6 +384,21 @@ $Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Objec
 $Variables.MiningStatus = $Variables.NewMiningStatus = "Stopped"
 $Variables.Strikes = 3
 $Variables.WatchdogTimers = @()
+
+#Load algorithm list
+$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Algorithms) { 
+    Write-Host "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Plese restore it from your original download." -ForegroundColor Red
+    Start-Sleep -Seconds 10
+    Exit
+}
+#Load regions list
+$Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Regions) { 
+    Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Plese restore it from your original download." -ForegroundColor Red
+    Start-Sleep -Seconds 10
+    Exit
+}
 
 $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
 $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
@@ -780,11 +795,11 @@ Function Global:TimerUITick {
 
             If ($Variables.UIStyle -eq "Full") { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" })) { 
-                    Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s"}):"
+                    Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s"}): $($ProcessesIdle.Count)"
                     $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
-                        @{ Label = "Time since run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
+                        @{ Label = "Time since last run"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
@@ -796,7 +811,7 @@ Function Global:TimerUITick {
                     $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                         @{ Label = "Speed(s)"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = 'right' }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = 'right' }, 
-                        @{ Label = "Time since fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
+                        @{ Label = "Time since last fail"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
                         @{ Label = "Active (total)"; Expression = { "{0:%h} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }, 
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
@@ -839,7 +854,7 @@ Function Global:TimerUITick {
             }
 
             Write-Host "--------------------------------------------------------------------------------"
-            Write-Host -ForegroundColor Yellow "Last refresh: $(($Variables.Timer).ToString('G'))   |   Next refresh: $(($Variables.EndLoopTime).ToString('G'))"
+            Write-Host -ForegroundColor Yellow "Last refresh: $(($Variables.Timer).ToLocalTime().ToString('G'))   |   Next refresh: $(($Variables.EndLoopTime).ToString('G'))"
         }
 
         $Variables.RefreshNeeded = $false
@@ -1338,9 +1353,9 @@ $MainForm.Add_Load(
     }
 )
 
-If ($Variables.FreshConfig -eq $true) { 
+If ($Variables.APIVersion -ne "" -and $Variables.FreshConfig -eq $true) { 
     $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start Mining'.`n`nHappy mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096)
+    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096) | Out-Null
     Remove-Variable wshell
 }
 
