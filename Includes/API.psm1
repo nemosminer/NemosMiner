@@ -135,7 +135,7 @@ Function Start-APIServer {
                                     $Data += "`n`nNew values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                    Write-Config -ConfigFile $Variables.ConfigFile
+                                    $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                                     $Values | ForEach-Object { 
                                         $DeviceName = $_
                                         $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
@@ -168,7 +168,7 @@ Function Start-APIServer {
                                     $Data += "`n`nNew values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                    Write-Config -ConfigFile $Variables.ConfigFile
+                                    $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                                     $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
                                     Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
@@ -185,10 +185,8 @@ Function Start-APIServer {
                     }
                     "/functions/config/set" { 
                         Try { 
-                            $TmpConfig = $Key | ConvertFrom-Json
-                            $TmpConfig.PSObject.Properties.Remove('PoolsConfig')
-                            $TmpConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
-                            Read-Config
+                            Copy-Item -Path $Variables.ConfigFile -Destination "$($Variables.ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").backup"
+                            $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                             $Variables.RestartCycle = $true
                             $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
                         }
@@ -425,12 +423,20 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" {
-                        $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
+                        $Data = Get-Content -Path $Variables.ConfigFile
+                        If (-not ($Data | ConvertFrom-Json).ConfigFileVersion) { 
+                            $Data = ConvertTo-Json -Depth 10 ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig)
+                        }
                         Break
                     }
                     "/configfile" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables.ConfigFile)
                         break
+                    }
+                    "/configrunning" {
+                        $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
+                        # $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
+                        Break
                     }
                     "/currencies" { 
                         $Data = ConvertTo-Json -Depth 10 ($Config.Currency)
@@ -612,6 +618,10 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
                         Break
                     }
+                    # "/watchdogexpiration" { 
+                    #     $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
+                    #     Break
+                    # }
                     "/variables" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables | Select-Object)
                         break
