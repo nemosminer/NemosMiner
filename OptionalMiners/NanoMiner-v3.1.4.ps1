@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.1.3/nanominer-windows-3.1.3.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.1.4/nanominer-windows-3.1.4.zip"
 $DeviceEnumerator = "Type_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
 
