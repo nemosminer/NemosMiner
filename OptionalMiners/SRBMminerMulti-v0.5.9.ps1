@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.8/SRBMiner-Multi-0-5-8-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.9/SRBMiner-Multi-0-5-9-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
@@ -14,14 +14,12 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2s" }
-    [PSCustomObject]@{ Algorithm = "CryptonightBbc";      Type = "AMD"; Fee = 0.02;   MinMemGb = 1; Command = " --algorithm cryptonight_bbc" }
     [PSCustomObject]@{ Algorithm = "CryptonightCache";    Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_cache" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCatalans"; Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm cryptonight_catalans" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_gpu" }
 #   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.19 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" } 
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm eaglesong" }
 #   [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm etchash" } #PhoenixMiner-v5.3b is faster
 #   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.3b are faster
@@ -41,9 +39,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "CPU"; Fee = 0;      Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0;      Command = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "CpuPower";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm cpupower" }
-    [PSCustomObject]@{ Algorithm = "CryptonightBbc";      Type = "CPU"; Fee = 0.02;   Command = " --algorithm cryptonight_bbc" }
     [PSCustomObject]@{ Algorithm = "CryptonightCache";    Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_cache" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCatalans"; Type = "CPU"; Fee = 0;      Command = " --algorithm cryptonight_catalans" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_gpu" }
