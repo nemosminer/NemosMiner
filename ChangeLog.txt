@@ -19,6 +19,7 @@ Fixed:
 - Core: Fix watchdog dropping miners if there are many devices mining the same algo / pool
 - Core: Idle detection not working
 - Core: IgnoreMinerFee not working
+- Core: Number of EtcHash pools increasing on each cycle
 - Core: Temp fix for broken config file
 - EtcHash / Ethash miner terminating while building DAG when CPU mining is active
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
