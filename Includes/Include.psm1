@@ -835,7 +835,10 @@ Function Initialize-API {
                     Try {
                         If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
                             Write-Message "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
-                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })" } # Start web gui
+                            # Start Web GUI
+                            If ($Config.WebGui) { 
+                                Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })"
+                            }
                             Break
                         }
                     }
@@ -854,9 +857,10 @@ Function Initialize-API {
 
 Function Initialize-Application { 
 
-    #Keep only the last 10 logs
+    #Keep only the last 10 files
     Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
     Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem "$($Variables.ConfigFile)_*.backup" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -1187,11 +1191,6 @@ Function Update-Monitoring {
 Function Start-Mining { 
 
     If (Test-Path -PathType Leaf "$($Variables.MainPath)\Includes\Core.ps1") { 
-        #Load algorithm list
-        $Variables.Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
-        #Load regions list
-        $Variables.Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
-
         If (-not $Variables.CoreRunspace) { 
             $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
             $Variables.Pools = $null
@@ -1397,6 +1396,8 @@ Function Get-SortedObject {
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [Object]$Object
     )
+
+    $Object = $Object | ConvertTo-Json | ConvertFrom-Json 
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
@@ -2615,7 +2616,7 @@ Function Initialize-Autoupdate {
             $LabelNotifications.Lines += "Starting Auto Update"
             # Setting autostart to true
             If ($Variables.MiningStatus -eq "Running") { $Config.autostart = $true }
-            Write-Config -ConfigFile $ConfigFile
+            Write-Config -ConfigFile $Variables.ConfigFile
 
             # Download update file
             $UpdateFileName = ".\$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version)"
