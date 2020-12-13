@@ -198,7 +198,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
-    [Int]$WarmupTime = 30, #Time the miner are allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
+    [Int]$WarmupTime = 30, #Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds).
     [Parameter(Mandatory = $false)]
     [Switch]$Watchdog = $true, #if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
     [Parameter(Mandatory = $false)]
@@ -388,14 +388,21 @@ $Variables.WatchdogTimers = @()
 #Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Host "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Plese restore it from your original download." -ForegroundColor Red
+    Write-Host "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
     Start-Sleep -Seconds 10
     Exit
 }
 #Load regions list
 $Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Plese restore it from your original download." -ForegroundColor Red
+    Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
+    Start-Sleep -Seconds 10
+    Exit
+}
+#Load warmup data
+$Variables.ExtraWarmupTime = Get-Content -Path ".\Includes\ExtraWarmupTimes.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.ExtraWarmupTime) { 
+    Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
     Start-Sleep -Seconds 10
     Exit
 }

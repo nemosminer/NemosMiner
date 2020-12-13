@@ -155,7 +155,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Port       = $MinerAPIPort
                         URI        = $Uri
                         Fees       = 0.02
-                        WarmupTime = $(If($Platform -eq "AMD") { 120 } else { 60 }) #seconds
+                        WarmupTime = $(If($Platform -eq "AMD") { 60 } else { 0 }) #seconds extra to allow for JIT compilation
                         MinerUri   = "http://localhost:$($MinerAPIPort)/h"
                     }
                 }

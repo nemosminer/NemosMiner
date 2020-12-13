@@ -58,7 +58,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
-                $WarmupTime = 90
 
                 #Add 512 MB when GPU with connected monitor
                 If ($SelectedDevices | Where-Object { $_.CIM.CurrentRefreshRate }) { $MinMemGB += 0.5 }
@@ -69,7 +68,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
 
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -DeviceIDs $Miner_Devices.$DeviceEnumerator
@@ -85,7 +84,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
                         $Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)"
                         If ($_.Intensity) { $Command += " -dual-subsolver -1 -dual-intensity $($_.Intensity)" }
-                        $WarmupTime = 120
                     }
 
                     #Optionally disable dev fee mining
@@ -105,7 +103,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         Port       = $MinerAPIPort
                         URI        = $URI
                         Fee        = $_.Fee
-                        WarmupTime = $WarmupTime #seconds
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
                     }
                 }

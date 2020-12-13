@@ -32,11 +32,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 #Get commands for active miner devices
                 #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
-                Switch ($_.Algorithm) { 
-                    "C11" { $WarmupTime = 60 }
-                    Default { $WarmupTime = 30 }
-                }
-
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
                 [PSCustomObject]@{ 
@@ -49,7 +44,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     API        = "Ccminer"
                     Port       = $MinerAPIPort
                     URI        = $Uri
-                    WarmupTime = $WarmupTime #seconds
                 }
             }
         }

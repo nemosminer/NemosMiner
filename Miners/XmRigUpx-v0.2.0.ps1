@@ -32,7 +32,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 API        = "XmRig"
                 Port       = $MinerAPIPort
                 URI        = $Uri
-                WarmupTime = 60 #seconds
             }
         }
     }

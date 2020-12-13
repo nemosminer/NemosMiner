@@ -57,7 +57,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         API             = "EthMiner"
                         Port            = $MinerAPIPort
                         URI             = $Uri
-                        WarmupTime      = 90 #seconds
                         PowerUsageInAPI = $true
                     }
                 }

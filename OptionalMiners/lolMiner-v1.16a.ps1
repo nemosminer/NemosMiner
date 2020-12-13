@@ -93,7 +93,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Port            = $MinerAPIPort
                         URI             = $Uri
                         Fee             = $_.Fee
-                        WarmupTime      = 45 #seconds
                         PowerUsageInAPI = $true
                     }
                 }

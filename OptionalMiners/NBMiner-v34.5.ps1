@@ -14,7 +14,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.3b are fastest
     [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "AMD"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Command = " --algo hns --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo hns_ethash --fee 1" } #BMiner-v16.3.6 is fastest
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Command = " --algo kawpow --fee 1" } #Wildrig-v0.28.1 is fastest
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Command = " --algo kawpow --fee 1" } #Wildrig-v0.28.2 is fastest
     [PSCustomObject]@{ Algorithm = @("Octopus");             Type = "AMD"; Fee = @(0.03);       MinMemGB = 5.0; MinMemGBWin10 = 5.0; Command = " --algo octopus --fee 1" }
 
     [PSCustomObject]@{ Algorithm = @("BeamV3");              Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo beamv3 --fee 1" }
@@ -76,7 +76,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.OpenCL.ComputeCapability -ge $MinComputeCapability })) { 
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @($_.Algorithm[1]) + @($_.Intensity) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
 
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
@@ -126,7 +126,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         URI        = $Uri
                         Fee        = $_.Fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        Warmuptime = 60 #seconds
                     }
                 }
             }

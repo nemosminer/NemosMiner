@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGB = 2; Command = " --algo lyra2v3 --intensity 24 --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 2; Command = " --algo lyra2z330 --timeout 1 --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 2; Command = " --algo lyra2z330 --intensity 13.2 --timeout 1 --statsavg 5" }
 #   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Command = " --algo yescrypt --statsavg 5" } #bad shares, CcminerLyra2z330-v8.21r9 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; Command = " --algo yescryptr16 --intensity 13.2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr32 --intensity 12.23 --statsavg 5" }
@@ -46,7 +46,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         API        = "Ccminer"
                         Port       = $MinerAPIPort
                         URI        = $Uri
-                        WarmupTime = 60 #seconds
                     }
                 }
             }

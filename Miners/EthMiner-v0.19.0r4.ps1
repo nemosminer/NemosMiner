@@ -40,7 +40,6 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                     Port       = $MinerAPIPort
                     Wrap       = $false
                     URI        = $Uri
-                    WarmupTime = 60 #seconds
                     MinerUri   = "http://localhost:$($MinerAPIPort)"
                 }
             }

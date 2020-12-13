@@ -30,9 +30,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     #Get commands for active miner devices
                     #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    If ($_.Algorithm -eq "KawPoW") { $WarmupTime = 120 }
-                    Else { $WarmupTime = $Config.WarmupTime }
-
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $Miner_Devices.Name
@@ -46,7 +43,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         URI        = $Uri
                         Fee        = 0.01 #dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = $WarmupTime # Seconds
                     }
                 }
             }

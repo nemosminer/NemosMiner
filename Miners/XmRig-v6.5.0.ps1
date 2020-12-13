@@ -123,7 +123,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         API        = "XmRig"
                         Port       = $MinerAPIPort
                         URI        = $Uri
-                        WarmupTime = 60 #seconds
+                        WarmupTime = 30 #seconds extra to allow for JIT compilation
                         MinerUri   = "http://workers.xmrig.info/worker?url=$([System.Web.HTTPUtility]::UrlEncode("http://localhost:$($MinerAPIPort)"))?Authorization=Bearer $([System.Web.HTTPUtility]::UrlEncode($Miner_Name))"
                     }
                 }

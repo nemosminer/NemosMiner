@@ -1379,7 +1379,7 @@ Function Write-Config {
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
 
     If (Test-Path $ConfigFile -PathType Leaf) {
-        Copy-Item -Path $ConfigFile "$($ConfigFile).backup" -Force
+        Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").backup"
     }
 
     $SortedConfig = $Config | Get-SortedObject
@@ -1387,7 +1387,7 @@ Function Write-Config {
     $SortedConfig.Keys | Where-Object { $_ -notlike "PoolsConfig" } | ForEach-Object { 
         $ConfigTmp[$_] = $SortedConfig.$_
     }
-    $ConfigTmp | ConvertTo-Json | Out-File $ConfigFile -Encoding UTF8 -Force
+    $ConfigTmp | ConvertTo-Json -Depth 10 | Out-File $ConfigFile -Encoding UTF8 -Force
 }
 
 Function Get-SortedObject { 

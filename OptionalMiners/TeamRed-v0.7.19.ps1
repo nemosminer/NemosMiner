@@ -24,7 +24,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cuckatoo31_grin" }
 #   [PSCustomObject]@{ Algorithm = "EtcHash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=etchash" }
 #   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=ethash --eth_dag_buf=A" } #PhoenixMiner-v5.3b is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } #Wildrig-v0.28.1 is fastest on Polaris
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } #Wildrig-v0.28.2 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; Command = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.025; MinMemGB = 4.0; Command = " --algo=mtp" }
@@ -61,15 +61,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     #Get commands for active miner devices
                     #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algo", "autotune") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
-                    $WarmupTime = 45
-
-                    If ($_.Algorithm -like "Cryptonight*") { 
-                        $WarmupTime = 90
-                    }
-                    ElseIf ($_.Algorithm -in @("EtcHash", "Ethash", "KawPow")) { 
-                        $WarmupTime = 60
-                        If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --eth_stratum_mode=nicehash" }
-                    }
+                    If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPow") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --eth_stratum_mode=nicehash" }
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
@@ -84,7 +76,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Port       = $MinerAPIPort
                         URI        = $Uri
                         Fee        = $_.Fee
-                        WarmupTime = $WarmupTime #seconds
+                        WarmupTime = If ($_.Algorithm -like "Cryptonight*") { $WarmupTime = 60 } Else { 0 } #extra seconds
                     }
                 }
             }

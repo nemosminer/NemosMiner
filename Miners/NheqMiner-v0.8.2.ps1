@@ -30,7 +30,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 API        = "Nheq"
                 Port       = $MinerAPIPort
                 URI        = $Uri
-                WarmupTime = 120
             }
         }
     }
