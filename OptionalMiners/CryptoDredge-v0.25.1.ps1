@@ -24,7 +24,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lux";                  Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lyra2vc0ban";          Fee = 0.01; MinMemGB = 2; Command = " --algo=lyra2vc0ban --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lyra2zz ";             Fee = 0.01; MinMemGB = 2; Command = " --algo=lyra2zz --intensity 8" }
-#   [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp --intensity 8" } #Trex-v0.19.3 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp --intensity 8" } #Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTcr";               Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp-tcr --intensity 8" }
     [PSCustomObject]@{ Algorithm = "NeoScrypt";            Fee = 0.01; MinMemGB = 2; Command = " --algo=neoscrypt --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Phi2";                 Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }

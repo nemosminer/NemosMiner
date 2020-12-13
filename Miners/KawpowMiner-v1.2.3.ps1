@@ -6,7 +6,7 @@ $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/ka
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 2; Command = "" } #Trex-v0.19.3 is fastest, but has 1% miner fee
+   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 2; Command = "" } #Trex-v0.19.4 is fastest, but has 1% miner fee
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
