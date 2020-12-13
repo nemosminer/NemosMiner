@@ -52,8 +52,9 @@ Miner Updates:
 - Wildrig-v0.28.2
 
 New:
-- Core: Support for EtcHash
 - Core: Create new switching log for each run
+- Core: Read extra warmup time needed from 'ExtraWarmupTimes.txt'
+- Core: Support for EtcHash
 - Web API: Added EthashDAGdata information
 - Web GUI: Added Balances Objects information
 
