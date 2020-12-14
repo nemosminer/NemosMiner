@@ -703,21 +703,21 @@ Function Global:TimerUITick {
                     )
                 )
             }
-            If ($Config.ShowPowerUsage) { 
+            If ($Config.CalculatePowerCost -and $Config.ShowPowerUsage) { 
                 $Miner_Table.AddRange(
                     @( <#Power Usage#>
                         @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" }
                     )
                 )
             }
-            If ($Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
+            If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
                 $Miner_Table.AddRange(
                     @( <#PowerCost#>
                         @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
                     )
                 )
             }
-            If ($Config.ShowProfit -and $Variables.PowerPricekWh) { 
+            If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
                     @( <#Mining Profit#>
                         @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
@@ -764,7 +764,7 @@ Function Global:TimerUITick {
                     )
                 )
             }
-            If ($Config.IgnorePowerCost) { $SortBy = "Earning" } Else { $SortBy = "Profit" }
+            If ($Config.CalculatePowerCost) { $SortBy = "Earning" } Else { $SortBy = "Profit" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
