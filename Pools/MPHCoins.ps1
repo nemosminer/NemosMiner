@@ -28,12 +28,18 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
-        #Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676#msg55320676
-        If ($Algorithm_Norm -in @("EtcHash", "Ethash")) { 
-            $PoolRegions = @("Asia", "US")
+        If ($Current.host -eq "hub.miningpoolhub.com") { 
+            $PoolRegions = @("US")
+            $Current.host_list = $Current.host
         }
-        Else {
-            $PoolRegions = @("Asia", "EU", "US")
+        Else { 
+            #Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676#msg55320676
+            If ($Algorithm_Norm -in @("EtcHash", "Ethash")) { 
+                $PoolRegions = @("Asia", "US")
+            }
+            Else {
+                $PoolRegions = @("Asia", "EU", "US")
+            }
         }
 
         $PoolRegions | ForEach-Object { 
