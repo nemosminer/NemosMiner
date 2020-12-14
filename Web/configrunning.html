@@ -12,7 +12,7 @@
 
 <script type="text/javascript">
   $(function() {
-    $.ajax({url: '/config',
+    $.ajax({url: '/configrunning',
       success: function(result) {
         $("#configrunning").empty();
         $("#configrunning").append(JSON.stringify(result, undefined, 4));
