@@ -26,7 +26,7 @@ If ($PoolConfig.Wallet) {
     ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
 
     #Uses BrainPlus calculated price
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.workers -ge $PoolConfig.MinWorker } | ForEach-Object { 
         $PoolHost = "$($HostSuffix)"
         $PoolPort = $Request.$_.port
         $Algorithm = $Request.$_.name

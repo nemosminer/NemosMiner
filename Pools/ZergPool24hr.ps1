@@ -19,7 +19,7 @@ If ($PoolConfig.Wallet) {
     # $PriceField = "estimate_current"
     $DivisorMultiplier = 1000000000
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.workers -ge $PoolConfig.MinWorker } | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolHost = "$($HostSuffix)"

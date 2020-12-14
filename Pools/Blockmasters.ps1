@@ -22,7 +22,7 @@ If ($PoolConfig.Wallet) {
 
     $PoolRegions = @("as", "eu", "us")
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.workers -ge $PoolConfig.MinWorker } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
