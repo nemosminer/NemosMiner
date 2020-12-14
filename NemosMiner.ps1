@@ -764,7 +764,7 @@ Function Global:TimerUITick {
                     )
                 )
             }
-            If ($Config.CalculatePowerCost) { $SortBy = "Earning" } Else { $SortBy = "Profit" }
+            If ($Config.CalculatePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
