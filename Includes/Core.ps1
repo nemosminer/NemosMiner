@@ -658,7 +658,6 @@ Function Start-Cycle {
                 #Remove watchdog timer
                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
             }
-
         }
     }
 
@@ -981,16 +980,14 @@ Function Start-Cycle {
             If ($Config.Watchdog) { 
                 $Miner.Workers | ForEach-Object { 
                     $Worker = $_
-                    If (-not ($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
-                        $Miner.Workers | ForEach-Object { 
-                            $Worker = $_
-                            $Variables.WatchdogTimers += [PSCustomObject]@{ 
-                                MinerName  = $Miner.Name
-                                PoolName   = $Worker.Pool.Name
-                                Algorithm  = $Worker.Pool.Algorithm
-                                DeviceName = $Miner.DeviceName
-                                Kicked     = $Variables.Timer
-                            }
+                    $Miner.Workers | ForEach-Object { 
+                        $Worker = $_
+                        $Variables.WatchdogTimers += [PSCustomObject]@{ 
+                            MinerName  = $Miner.Name
+                            PoolName   = $Worker.Pool.Name
+                            Algorithm  = $Worker.Pool.Algorithm
+                            DeviceName = $Miner.DeviceName
+                            Kicked     = $Variables.Timer
                         }
                     }
                 }
