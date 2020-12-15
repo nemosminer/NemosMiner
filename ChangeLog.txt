@@ -2,7 +2,7 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
-Changelog NemosMiner 3.9.9.8 Beta2 12.12.2020
+Changelog NemosMiner 3.9.9.8 Beta2 15.12.2020
 =============================================
 
 Changed:
@@ -23,6 +23,8 @@ Fixed:
 - Core: Temp fix for broken config file
 - EtcHash / Ethash miner terminating while building DAG when CPU mining is active
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
+- MPH / MPHCoins pools: Fix pool urls for some algorithms
+- Core: Sort miners by 'Earnings' when 'Calculate Power Cost' is disabled
 - Web GUI: Breaking config file on save
 - Web GUI: Clear Watchdog Timer list when clicking 'Reset Watchdog Timers'
 - Web GUI: 'Disable miner' not disabling miner
@@ -32,6 +34,7 @@ Fixed:
 Improved:
 - Blockmasters pool: added support for Asia server
 - Changed DAG data provider to "https://minerstat.com/dag-size-calculator" for more supported coins
+- Core: Support RVN (KawPow) DAG size calculation
 - Core: Detect and ignore unreal hashrate & power usage data from miner (±200% from existing values)
 - Miner API's: Use HWiNFO to read power usage if it cannot be read directly from the miner
 - Web GUI: Added 'Total 1 hour / 24hrs' information to balances
@@ -39,14 +42,14 @@ Improved:
 
 Miner Updates:
 - Bminer-v16.3.6
-- GMiner-v2.33
+- GMiner-v2.34
 - lolMiner-v1.16a
 - miniZ-v1.6x
 - NanoMiner-v3.1.4
-- NBMiner-v34.5
+- NBMiner-v35.0
 - PhoenixMiner-v5.4b
 - SRBMminerMulti-v0.5.9
-- TeamRed-v0.7.19
+- TeamRed-v0.7.20
 - Trex-v0.19.4
 - TTMiner-v6.1.0
 - Wildrig-v0.28.2
