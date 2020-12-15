@@ -10,7 +10,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 #Algorithm names are case sensitive!
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2id_chukwa" }
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2d_dynamic" }
+#   [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2d_dynamic" } #Does not start mining
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2s" }
@@ -18,11 +18,11 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_gpu" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.19 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_upx" } #TeamRed-v0.7.20 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm eaglesong" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm etchash" } #PhoenixMiner-v5.3b is faster
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.3b are faster
+#   [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm etchash" } #PhoenixMiner-v5.4b is faster
+#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.4b are faster
     [PSCustomObject]@{ Algorithm = "Handshake";           Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
@@ -34,6 +34,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm yescrypt" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_chukwa" }
+#   [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2d_dynamic" } #Does not start mining
     [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "CPU"; Fee = 0;      Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "CPU"; Fee = 0;      Command = " --algorithm blake2s" }

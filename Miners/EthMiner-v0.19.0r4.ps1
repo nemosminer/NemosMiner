@@ -8,7 +8,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
 $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";  ;Command = " --cl-devices" } #Not working on newer drivers
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA";Command = " --cu-devices" } #PhoenixMiner-v5.3b is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA";Command = " --cu-devices" } #PhoenixMiner-v5.4b is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 

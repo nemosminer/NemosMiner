@@ -8,7 +8,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; Command = " -algo EAGLESONG" }
-    [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } #PhoenixMiner-v5.3b is fastest but has 0.65% fee
+    [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } #PhoenixMiner-v5.4b is fastest but has 0.65% fee
 #   [PSCustomObject]@{ Algorithm = "KawPow";    MinMemGB = 2; Command = " -algo KAWPOW" } #Create new DAG for epoch -1 error
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";  MinMemGB = 2; Command = " -algo LYRA2V3" }
 #   [PSCustomObject]@{ Algorithm = "MTP";       MinMemGB = 2; Command = " -algo MTP -intensity 21" } #CcminerMTP-v1.3.2 is faster
