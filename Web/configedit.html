@@ -107,10 +107,10 @@
             <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
           </div>
         </div>
+        <br>
         <div title="Can be toggled by pressing 'e' in the text windows while waiting for the next cycle&#10;&#10;This will not affect the information available in the in Web GUI">
           <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances"> Show Pool Balances in main text window
         </div>
-        <br>
       </td>
 
       <td>
@@ -205,6 +205,16 @@
             <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
             <input type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 size=6>
           </div>
+          <div title="Show the 'Profit' column in the text window">
+            <input  style="margin-left:20px"type="checkbox" id="ShowProfit" name="ShowProfit"> Show Profit in main text window
+          </div>
+          <div title="Show the 'PowerCost' column in the text window">
+            <input  style="margin-left:20px"type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
+          </div>
+          <div title="Show the 'PowerUsage' column in the text window">
+            <input style="margin-left:20px" type="checkbox" id="ShowPowerUsage" name="ShowPowerUsage"> Show Power Usage in main text window
+          </div>
+          <br>
           <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency&#10;(min=1, max=10)">
             <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
             <input type="number" step="0.1" min="1" max="10" value=2 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
@@ -316,15 +326,6 @@
           if (document.getElementById(config.Region.toLowerCase())) {
             document.getElementById(config.Region.toLowerCase()).checked = true;
           }
-          if (config.CalculatePowerCost) {
-            document.getElementById('CalculatePowerCost').checked = true;
-          }
-          document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
-          if (config.IgnorePowerCost) {
-            document.getElementById('IgnorePowerCost').checked = true;
-          }
-          document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
-          document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
 
           if (config.IncludeOptionalMiners) {
             document.getElementById('OptionalMiners').checked = true;
@@ -347,6 +348,25 @@
           if (config.DisableSingleAlgoMining) {
             document.getElementById('DisableSingleAlgoMining').checked = true;
           }
+          if (config.CalculatePowerCost) {
+            document.getElementById('CalculatePowerCost').checked = true;
+          }
+          document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
+          if (config.IgnorePowerCost) {
+            document.getElementById('IgnorePowerCost').checked = true;
+          }
+          if (config.ShowProfit) {
+            document.getElementById('ShowProfit').checked = true;
+          }
+          if (config.ShowPowerCost) {
+            document.getElementById('ShowPowerCost').checked = true;
+          }
+          if (config.ShowPowerUsage) {
+            document.getElementById('ShowPowerUsage').checked = true;
+          }
+          document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
+          document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
+
           if (config.AutoStart) {
             document.getElementById('AutoStart').checked = true;
           } else {
@@ -535,6 +555,13 @@
         config.Region = value;
       };
     });
+    config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
+    config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
+    config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
+    config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
+    config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
+    config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
+    config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
     config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
     document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
     config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value);
@@ -543,13 +570,9 @@
     if (document.getElementById('ProfitabilityThreshold').value == null) { 
       document.getElementById('ProfitabilityThreshold').value = 0;
     };
-    config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
-    config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
-    config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
-    config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
-    config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
-    config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
-    config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+    config.ShowProfit = document.getElementById('ShowProfit').checked;
+    config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
+    config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
 
     config.AutoStart = document.getElementById('AutoStart').checked;
     if (document.getElementById('UIStyle').checked) { 
@@ -665,7 +688,9 @@
     document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
     document.getElementById('IgnorePowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
     document.getElementById('ProfitabilityThreshold').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    ProfitabilityThreshold
+    document.getElementById('ShowProfit').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ShowPowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ShowPowerUsage').disabled = !(document.getElementById('CalculatePowerCost').checked);
   });
 
   //BalancesTrackerPollInterval
