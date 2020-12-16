@@ -4,15 +4,15 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.3/ttminer503.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
-$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; Command = " -algo EAGLESONG" }
-    [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } #PhoenixMiner-v5.4b is fastest but has 0.65% fee
-#   [PSCustomObject]@{ Algorithm = "KawPow";    MinMemGB = 2; Command = " -algo KAWPOW" } #Create new DAG for epoch -1 error
+    [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.4b is fastest but has 0.65% fee
+#   [PSCustomObject]@{ Algorithm = "KawPow";    MinMemGB = 2; Command = " -algo KAWPOW" } # Create new DAG for epoch -1 error
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";  MinMemGB = 2; Command = " -algo LYRA2V3" }
-#   [PSCustomObject]@{ Algorithm = "MTP";       MinMemGB = 2; Command = " -algo MTP -intensity 21" } #CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";   MinMemGB = 2; Command = " -algo PROGPOW" } #Zano, Sero
+#   [PSCustomObject]@{ Algorithm = "MTP";       MinMemGB = 2; Command = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";   MinMemGB = 2; Command = " -algo PROGPOW" } # Zano, Sero
     [PSCustomObject]@{ Algorithm = "UbqHash";   MinMemGB = 2; Command = " -algo UBQHASH -intensity 15" }
 )
 
@@ -34,8 +34,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($_.Algorithm -eq "ProgPoW") { 
                         If ($Pools.($_.Algorithm).Currency -in @("EPIC", "ETHERCORE", "SERO", "RAVEN", "ZANO")) { 

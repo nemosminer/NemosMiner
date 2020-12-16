@@ -5,7 +5,7 @@ $Path = ".\Bin\$($Name)\nheqminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/0.8.2/nheqminer082.7z"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; Command = " -v" } #Does not work
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Command = " -v" } # Does not work
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
@@ -17,8 +17,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
         $Commands | ForEach-Object {
 
-            #Get commands for active miner devices
-            #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+            # Get commands for active miner devices
+            # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
             [PSCustomObject]@{ 
                 Name       = $Miner_Name

@@ -4,11 +4,11 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\ethminer.exe"
 $Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r4/ethminer0190r4.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
-$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";  ;Command = " --cl-devices" } #Not working on newer drivers
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA";Command = " --cu-devices" } #PhoenixMiner-v5.4b is fastest but has dev fee
+#   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";  ;Command = " --cl-devices" } # Not working on newer drivers
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA";Command = " --cu-devices" } # PhoenixMiner-v5.4b is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -23,8 +23,8 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
 
             If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.OpenCL.GlobalMemSize -ge $MinMem })) {
 
-                #Get commands for active miner devices
-                #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @() -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                # Get commands for active miner devices
+                # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @() -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratums://" }
                 Else { $Protocol = "stratum://" }

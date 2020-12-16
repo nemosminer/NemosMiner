@@ -20,8 +20,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                #Get commands for active miner devices
-                #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
+                # Get commands for active miner devices
+                # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).Name -match "NiceHash*|MPH*") { $Commands.$_ += " --nicehash" } 
 

@@ -4,14 +4,14 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $Uri = "https://github.com/Minerx117/miners/releases/download/TT-Miner/TT-Miner-v6.1.0.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
-$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "EtcHash";   Fee = 0.01; MinMemGB = 4; Command = " -algo ETHASH -coin ETC -intensity 15" } #PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";    Fee = 0.01; MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } #PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPow";    Fee = 0.01; MinMemGB = 2; Command = " -algo KAWPOW" } #Trex-v0.19.4 is fastest
-#   [PSCustomObject]@{ Algorithm = "MTP";       Fee = 0.01; MinMemGB = 2; Command = " -algo MTP -intensity 21" } #CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";   Fee = 0.01; MinMemGB = 2; Command = " -algo PROGPOW" } #Sero
+#   [PSCustomObject]@{ Algorithm = "EtcHash";   Fee = 0.01; MinMemGB = 4; Command = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";    Fee = 0.01; MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPow";    Fee = 0.01; MinMemGB = 2; Command = " -algo KAWPOW" } # Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";       Fee = 0.01; MinMemGB = 2; Command = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";   Fee = 0.01; MinMemGB = 2; Command = " -algo PROGPOW" } # Sero
     [PSCustomObject]@{ Algorithm = "Zano";      Fee = 0.01; MinMemGB = 2; Command = " -algo PROGPOWZ" }
     [PSCustomObject]@{ Algorithm = "UbqHash";   Fee = 0.01; MinMemGB = 2; Command = " -algo UBQHASH -intensity 15" }
 )
@@ -35,8 +35,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($_.Algorithm -eq "ProgPoW") { 
                         If ($Pools.($_.Algorithm).Currency -in @("EPIC", "ETHERCORE", "SERO", "RAVEN", "ZANO")) { 

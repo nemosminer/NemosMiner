@@ -9,7 +9,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Allium";               Fee = 0.01; MinMemGB = 2; Command = " --algo=allium --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2d250";           Fee = 0.01; MinMemGB = 2; Command = " --algo=argon2d250 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2d4096";          Fee = 0.01; MinMemGB = 2; Command = " --algo=argon2d4096 --intensity 8" }
-#   [PSCustomObject]@{ Algorithm = "Argon2dDyn";           Fee = 0.01; MinMemGB = 2; Command = " --algo=argon2d-dyn --intensity 6" } #CcminerDyn-v1.0.23 is fastest
+#   [PSCustomObject]@{ Algorithm = "Argon2dDyn";           Fee = 0.01; MinMemGB = 2; Command = " --algo=argon2d-dyn --intensity 6" } # CcminerDyn-v1.0.23 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightXeq";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cngpu --intensity 8" } # CryptonightGPU (XEQ Zergpool)
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnconceal --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.01; MinMemGB = 1; Command = " --algo=cnfast2 --intensity 8" }
@@ -19,12 +19,12 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.01; MinMemGB = 2; Command = " --algo=cnupx2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Fee = 0.01; MinMemGB = 1; Command = " --algo=cnzls --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CuckooD29";            Fee = 0.01; MinMemGB = 3; Command = " --algo aeternity" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.01; MinMemGB = 6; Command = " --algo cuckaroo29 --intensity 4" } #GMiner-v2.34 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.01; MinMemGB = 6; Command = " --algo cuckaroo29 --intensity 4" } # GMiner-v2.34 is fastest
     [PSCustomObject]@{ Algorithm = "Hmq1725";              Fee = 0.01; MinMemGB = 2; Command = " --algo=hmq1725 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lux";                  Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lyra2vc0ban";          Fee = 0.01; MinMemGB = 2; Command = " --algo=lyra2vc0ban --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Lyra2zz ";             Fee = 0.01; MinMemGB = 2; Command = " --algo=lyra2zz --intensity 8" }
-#   [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp --intensity 8" } #Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp --intensity 8" } # Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTcr";               Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp-tcr --intensity 8" }
     [PSCustomObject]@{ Algorithm = "NeoScrypt";            Fee = 0.01; MinMemGB = 2; Command = " --algo=neoscrypt --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Phi2";                 Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
@@ -46,8 +46,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name

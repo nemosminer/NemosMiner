@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGB = 2; Command = " --algo lyra2v3 --intensity 24 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 2; Command = " --algo lyra2z330 --intensity 13.2 --timeout 1 --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Command = " --algo yescrypt --statsavg 5" } #bad shares, CcminerLyra2z330-v8.21r9 is fastest
+#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Command = " --algo yescrypt --statsavg 5" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; Command = " --algo yescryptr16 --intensity 13.2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr32 --intensity 12.23 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGB = 2; Command = " --algo yescryptr8 --intensity 13.2 --statsavg 5" }
@@ -24,8 +24,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | Where-Object { -not $Pools.($_.Algorithm).SSL } | ForEach-Object {
 
-                If ($_.Algorithm -eq "Lyra2RE3" -and $Pools.($_.Algorithm).Name -like "MPH*") { Return } #Temp fix
-                If ($_.Algorithm -eq "Yescrypt" -and $Pools.($_.Algorithm).Currency -ne "BSTY") { Return } #Temp fix
+                If ($_.Algorithm -eq "Lyra2RE3" -and $Pools.($_.Algorithm).Name -like "MPH*") { Return } # Temp fix
+                If ($_.Algorithm -eq "Yescrypt" -and $Pools.($_.Algorithm).Currency -ne "BSTY") { Return } # Temp fix
 
                 $MinMemGB = $_.MinMemGB
 
@@ -33,8 +33,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "timeout") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "timeout") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name

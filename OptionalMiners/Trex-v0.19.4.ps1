@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.19.4/t-rex-0.19.4-win-cuda11.1.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
-$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs 
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "AstralHash"; Fee = 0.01; MinMemGB = 2; Command = " --algo astralhash --intensity 23" }
@@ -13,19 +13,19 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    Fee = 0.01; MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";        Fee = 0.01; MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";      Fee = 0.01; MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } #PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } #PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } # PhoenixMiner-v5.4b is fastest
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow" } #NBMiner-v34.5 is fastest but has optional 1% fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow" } # NBMiner-v34.5 is fastest but has optional 1% fee
     [PSCustomObject]@{ Algorithm = "MegaBtx";    Fee = 0.01; MinMemGB = 2; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 2; Command = " --algo mtp --intensity 21" }
-#   [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" } #NBMiner-v34.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" } # NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = "PadiHash";   Fee = 0.01; MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  Fee = 0.01; MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "ProgPoW";    Fee = 0.01; MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } #Sero, Zano
+    [PSCustomObject]@{ Algorithm = "ProgPoW";    Fee = 0.01; MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } # Sero, Zano
     [PSCustomObject]@{ Algorithm = "Sha256t";    Fee = 0.01; MinMemGB = 2; Command = " --algo sha256t --intensity 26" }
     [PSCustomObject]@{ Algorithm = "Sha256q";    Fee = 0.01; MinMemGB = 2; Command = " --algo sha256q --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Sonoa";      Fee = 0.01; MinMemGB = 2; Command = " --algo sonoa --intensity 23" }
@@ -65,8 +65,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                         $Stratum = "stratum2"
@@ -87,7 +87,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     }
 
                     #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
-                    #From now on the username (-u) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
+                    # From now on the username (-u) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                     If ($_.Algorithm -in @("Ethash", "KawPow", "ProgPoW") -and ($Pools.($_.Algorithm).User -split "\.").Count -eq 2) { 
                         $User = " --user $($Pools.($_.Algorithm).User) --worker $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 1)"
                     }
@@ -105,7 +105,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         API             = "Trex"
                         Port            = $MinerAPIPort
                         URI             = $Uri
-                        Fee             = $_.Fee #Dev fee
+                        Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
                         PowerUsageInAPI = $true
                     }

@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
 $Uri = "https://github.com/Minerx117/miners/releases/download/PhoenixMiner/PhoenixMiner_5.4b_Windows.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
-$DAGmemReserve = [Math]::Pow(2, 23) * 17 #Number of epochs
+$DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.9; Command = " -amd -eres 1 -mi 12 -coin ETC" }
@@ -22,9 +22,9 @@ $Commands = [PSCustomObject[]]@(
 
 If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
-    #Intensities for 2. algorithm
+    # Intensities for 2. algorithm
     $Intensities = [PSCustomObject]@{ 
-        "Blake2s" = @($null, 10, 20, 30, 40) #$null is for auto-tuning
+        "Blake2s" = @($null, 10, 20, 30, 40) # $null is for auto-tuning
     }
 
     # Build command sets for intensities
@@ -51,12 +51,12 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
-                    If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$')) { Return } #Dual mining not supported on Navi or GTX 1660
+                    If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$')) { Return } # Dual mining not supported on Navi or GTX 1660
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
                     If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) {
@@ -67,16 +67,16 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                     If ($Miner_Devices.Vendor -eq "AMD") { 
                         If (($_.OpenCL.GlobalMemSize / 1GB) -ge (2 * $MinMemGB)) { 
-                            #Faster AMD "turbo" kernels require twice as much VRAM
+                            # Faster AMD "turbo" kernels require twice as much VRAM
                             $Command += " -clkernel 3"
                         }
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
-                            #Extra Speed for Navi cards
-                            #$Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lots of bad shares :-(
+                            # Extra Speed for Navi cards
+                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" # Does not work, lots of bad shares :-(
                         }
                         If (($Miner_Devices.OpenCL.CodeName | Sort-Object -unique) -join '' -eq 'Ellesmere') { 
-                            #Extra Speed for Ellesmere cards
-                            #$Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" #Does not work, lots of bad shares :-(
+                            # Extra Speed for Ellesmere cards
+                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" # Does not work, lots of bad shares :-(
                         }
                     }
 
@@ -97,7 +97,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = If ($Pools.($_.Algorithm[0]).Name -match "^MPH*") { 30 } Else { 0 } #Seconds, longer for MPH because of long connect issue
+                        WarmupTime = If ($Pools.($_.Algorithm[0]).Name -match "^MPH*") { 30 } Else { 0 } # Seconds, longer for MPH because of long connect issue
                     }
                 }
             }

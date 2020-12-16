@@ -18,8 +18,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
         $Commands | ForEach-Object {
 
-            #Get commands for active miner devices
-            #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+            # Get commands for active miner devices
+            # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
             [PSCustomObject]@{ 
                 Name       = $Miner_Name

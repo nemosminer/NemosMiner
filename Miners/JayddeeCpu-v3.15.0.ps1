@@ -1,13 +1,13 @@
 using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
-$Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" #Intel
+$Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.15.0/cpuminer-opt-3.15.0-windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lyra2z330"; Command = " --algo lyra2z330" }
-#   [PSCustomObject]@{ Algorithm = "m7m";       Command = " --algo sha3d" } #NosuchCpu-v3.8.8.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "m7m";       Command = " --algo sha3d" } # NosuchCpu-v3.8.8.1 is fastest
     [PSCustomObject]@{ Algorithm = "Sha3d";     Command = " --algo scrypt:2048" }
     [PSCustomObject]@{ Algorithm = "ScryptN11"; Command = " --algo m7m" }
 )
@@ -29,8 +29,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                #Get commands for active miner devices
-                #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
+                # Get commands for active miner devices
+                # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 

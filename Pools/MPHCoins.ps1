@@ -33,7 +33,7 @@ If ($PoolConfig.UserName) {
             $Current.host_list = $Current.host
         }
         Else { 
-            #Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676#msg55320676
+            # Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676# msg55320676
             If ($Algorithm_Norm -in @("EtcHash", "Ethash")) { 
                 $PoolRegions = @("Asia", "US")
             }

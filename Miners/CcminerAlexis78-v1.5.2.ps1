@@ -9,7 +9,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; Command = " --algo c11 --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 2; Command = " --algo keccak --diff-multiplier 2 --intensity 29" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 2; Command = " --algo lyra2v2" }
-#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --algo neoscrypt --intensity 15.5" } #CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 2; Command = " --algo skein" }
     [PSCustomObject]@{ Algorithm = "Skein2";    MinMemGB = 2; Command = " --algo skein2 --intensity 31" }
     [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; Command = " --algo veltor --intensity 23" }
@@ -34,8 +34,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name

@@ -6,14 +6,14 @@ $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.5.11/
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Lyra2z330";    Command = " --algo lyra2z330" } #JayddeeCpu-v3.14.3 is fastest
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";    Command = " --algo lyra2z330" } # JayddeeCpu-v3.14.3 is fastest
     [PSCustomObject]@{ Algorithm = "YespowerIots"; Command = " --algo yespoweriots" }
     [PSCustomObject]@{ Algorithm = "Yespower";     Command = " --algo yespower" }
     [PSCustomObject]@{ Algorithm = "YespowerR16";  Command = " --algo yespowerr16" }
-#   [PSCustomObject]@{ Algorithm = "YescryptR8";   Command = " --algo yescryptr8" } #CcminerLyraYesscrypt-v8.21r18v5 is faster
+#   [PSCustomObject]@{ Algorithm = "YescryptR8";   Command = " --algo yescryptr8" } # CcminerLyraYesscrypt-v8.21r18v5 is faster
     [PSCustomObject]@{ Algorithm = "YescryptR8g";  Command = " --algo yescryptr8g" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";     Command = " --algo yescrypt" }
-    [PSCustomObject]@{ Algorithm = "YescryptR32";  Command = " --algo yescryptr32" } #SRBMminerMulti-v0.5.9 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YescryptR32";  Command = " --algo yescryptr32" } # SRBMminerMulti-v0.5.9 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerItc";  Command = " --algo yespoweritc" }
 )
 
@@ -28,8 +28,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                #Get commands for active miner devices
-                #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                # Get commands for active miner devices
+                # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 

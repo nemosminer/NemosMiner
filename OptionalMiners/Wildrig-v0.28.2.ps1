@@ -10,7 +10,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc"; Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo blake2b-btcc" }
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo blake2b-glt" }
-#   [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bmw512" } #CcminerBmw512-v2.2.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bmw512" } # CcminerBmw512-v2.2.5 is fastest
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bitcore" }
     [PSCustomObject]@{ Algorithm = "C11";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo c11" }
 #   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } # CryptoDredge-v0.25.1 is fastest
@@ -18,15 +18,15 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Geek";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo geek" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-globalhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hex" }
-    [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } #CryptoDredge-v0.25.1 is fastest
-#   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } #Algo broken
+    [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } # Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-jeonghash" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } #TeamRed-v0.7.20 is fastest on Navi
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo lyra2v3" } #TeamRed-v0.7.20 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } # TeamRed-v0.7.20 is fastest on Navi
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo lyra2v3" } # TeamRed-v0.7.20 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1; Command = " --algo megamec" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Type = "AMD"; Fee = @(0.01); MinMemGB = 1; Command = " --algo minotaur" }
-#   [PSCustomObject]@{ Algorithm = "MTP";         Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp" } #TeamRed-v0.7.20 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";         Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp" } # TeamRed-v0.7.20 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-pawelhash" }
@@ -42,13 +42,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Timetravel";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo tribus" }
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x11k" }
-#   [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16r" } #TeamRed-v0.7.20 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16r" } # TeamRed-v0.7.20 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rt" }
-#   [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rv2" } #TeamRed-v0.7.20 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rv2" } # TeamRed-v0.7.20 is fastest
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x17r --protocol ufo2" }
-#   [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x21s" } #TeamRed-v0.7.20 is fastest
+#   [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x21s" } # TeamRed-v0.7.20 is fastest
     [PSCustomObject]@{ Algorithm = "X22i";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x22i" }
     [PSCustomObject]@{ Algorithm = "X33";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x33" }
 
@@ -56,46 +56,46 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc"; Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo blake2b-btcc" }
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo blake2b-glt" }
-#   [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bmw512" } #CcminerBmw512-v2.2.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bmw512" } # CcminerBmw512-v2.2.5 is fastest
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bitcore" }
     [PSCustomObject]@{ Algorithm = "C11";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo c11" }
-#   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } #CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } # CryptoDredge-v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo exosis" }
     [PSCustomObject]@{ Algorithm = "Geek";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo geek" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-globalhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hex" }
-#   [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } #CryptoDredge-v0.25.1 is fastest
-#   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } #Algo broken
-    [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-jeonghash" } #Trex-v0.19.4 is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } #NBMiner-v34.5 is fastest
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo lyra2v3" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } # Algo broken
+    [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-jeonghash" } # Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } # NBMiner-v34.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo lyra2v3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; Command = " --algo megamec" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; Command = " --algo minotaur" }
-#   [PSCustomObject]@{ Algorithm = "MTP";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp" } #Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp" } # Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; Command = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-padihash" }
-    [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-pawelhash" } #Trex-v0.19.4 is fastest
+    [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-pawelhash" } # Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo phi" }
     [PSCustomObject]@{ Algorithm = "Polytimos";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo polytimos" }
     [PSCustomObject]@{ Algorithm = "Sha256csm";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256csm" }
     [PSCustomObject]@{ Algorithm = "Sha256t";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256t" }
     [PSCustomObject]@{ Algorithm = "Sha256q";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256q" }
     [PSCustomObject]@{ Algorithm = "Renesis";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo renesis" }
-#   [PSCustomObject]@{ Algorithm = "Skein2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skein2" } #CcminerAlexis78-v1.5.2 is fastest
-#   [PSCustomObject]@{ Algorithm = "SkunkHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skunkhash" } #CryptoDredge-v0.25.1 is fastest
-#   [PSCustomObject]@{ Algorithm = "Sonoa";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sonoa" } #Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "Skein2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skein2" } # CcminerAlexis78-v1.5.2 is fastest
+#   [PSCustomObject]@{ Algorithm = "SkunkHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skunkhash" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Sonoa";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sonoa" } # Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "Timetravel";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo tribus" }
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x11k" }
-#   [PSCustomObject]@{ Algorithm = "X16r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16r" } #Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16r" } # Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rt" }
-#   [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rv2" } #Trex-v0.19.4 is fastest
-#   [PSCustomObject]@{ Algorithm = "X16s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16s" } #Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16rv2" } # Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "X16s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x16s" } # Trex-v0.19.4 is fastest
 #   [PSCustomObject]@{ Algorithm = "X17";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x17r --protocol ufo2" }
-#   [PSCustomObject]@{ Algorithm = "X21s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x21s" } #Trex-v0.19.4 is fastest
-#   [PSCustomObject]@{ Algorithm = "X22i";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x22i" } #Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "X21s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x21s" } # Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = "X22i";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x22i" } # Trex-v0.19.4 is fastest
     [PSCustomObject]@{ Algorithm = "X33";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo x33" }
 )
 
@@ -115,8 +115,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{
                         Name       = $Miner_Name
@@ -129,7 +129,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Port       = $MinerAPIPort
                         Wrap       = $false
                         URI        = $Uri
-                        Fee        = $_.Fee #subtract devfee
+                        Fee        = $_.Fee # subtract devfee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
                     }
                 }

@@ -6,7 +6,7 @@ $Uri = "https://github.com/fireworm71/veriumMiner/releases/download/v1.4/cpumine
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "ScryptN2"; Command = "" } #Empty command
+    [PSCustomObject]@{ Algorithm = "ScryptN2"; Command = "" } # Empty command
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -20,8 +20,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                #Get commands for active miner devices
-                #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
+                # Get commands for active miner devices
+                # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name

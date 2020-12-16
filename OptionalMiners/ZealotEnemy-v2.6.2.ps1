@@ -9,7 +9,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Aergo";  MinMemGB = 1; Command = " --algo aergo --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 2; Command = " --algo xevan --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Hex";    MinMemGB = 1; Command = " --algo hex --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; Command = " --algo kawpow --intensity 23" } #NBMiner-v34.5 is fastest but has optional 1% fee
+#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; Command = " --algo kawpow --intensity 23" } # NBMiner-v34.5 is fastest but has optional 1% fee
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -27,8 +27,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
@@ -41,7 +41,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Port       = $MinerAPIPort
                         Wrap       = $false
                         URI        = $Uri
-                        Fee        = 0.01 #dev fee
+                        Fee        = 0.01 # dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
                     }
                 }

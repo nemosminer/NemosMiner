@@ -6,10 +6,10 @@ $Uri = "https://github.com/Minerx117/ccminer8.21r9-lyra2z330/releases/download/v
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 2; Command = " --algo lyra2z330  --intensity 12.5 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 2; Command = " --algo lyra2z330  --intensity 12.5 --statsavg 5" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Command = " --algo yescrypt  --intensity 15.2 --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; Command = " --algo yescryptr16 --intensity 13.4 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
-#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr32 --intensity 12.55 --statsavg 5" } #CcminerLyraYesscrypt-v8.21r18v5 is fastest
+#   [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; Command = " --algo yescryptr16 --intensity 13.4 --statsavg 5" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
+#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Command = " --algo yescryptr32 --intensity 12.55 --statsavg 5" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGB = 2; Command = " --algo yescryptr8 --statsavg 5" }
 )
 
@@ -29,8 +29,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "timeout") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "timeout") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name

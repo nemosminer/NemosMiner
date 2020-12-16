@@ -10,7 +10,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; Command = " --algo=exosis --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; Command = " --algo=dedal --intensity 8" }
 #   [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; Command = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
-#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; Command = " --algo=neoscrypt --intensity 6 " } #Cryptodredge v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; Command = " --algo=neoscrypt --intensity 6 " } # Cryptodredge v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; Command = " --algo=phi --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; Command = " --algo=pipe --intensity 8" }
@@ -31,8 +31,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    #Get commands for active miner devices
-                    #$_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get commands for active miner devices
+                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
