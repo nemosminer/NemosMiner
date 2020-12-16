@@ -99,8 +99,11 @@
         <div title="Initiate background processes, but do no not start mining">
           <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px"> Pause mining on Auto Start
         </div>
+        <div title="Start the legacy GUI as minimized window">
+          <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
+        </div>
         <br>
-  
+
         <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;1 - 60 minutes; 0 to disable (Note: this will also disable pool balances summary)">Poll Pools for Balances & Earnings every
           <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60> minutes
           <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
@@ -237,11 +240,6 @@
 
           <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100)" for="MinDataSamples">Minimum data samples when benchmarking
             <input type="number" id="MinDataSamples" name="MinDataSamples" min="10" max="100" value=20>
-          </div>
-          <br>
-
-          <div title="Start the legacy GUI as minimized window">
-            <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
           </div>
           <br>
 
