@@ -11,9 +11,9 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Type = "AMD"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Command = " --algo eaglesong --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo etchash" } #PhoenixMiner-v5.4b is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo eaglesong_ethash --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.4b are fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo ethash" } #BMiner-v16.3.7 & PhoenixMiner-v5.4b are fastest
     [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "AMD"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Command = " --algo hns --fee 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo hns_ethash --fee 1" } #BMiner-v16.3.6 is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo hns_ethash --fee 1" } #BMiner-v16.3.7 is fastest
 #   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Command = " --algo kawpow --fee 1" } #XmRig-v6.5.0 is almost as fast
     [PSCustomObject]@{ Algorithm = @("Octopus");             Type = "AMD"; Fee = @(0.03);       MinMemGB = 5.0; MinMemGBWin10 = 5.0; Command = " --algo octopus --fee 1" }
 
@@ -27,7 +27,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo eaglesong --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo etchash" } #PhoenixMiner-v5.4b is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo eaglesong_ethash --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo ethash" } #BMiner-v16.3.6 & TTMiner-v5.0.3 are fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo ethash" } #BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
 #   [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo hns --fee 1" } #SRBMminerMulti-v0.5.9 is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo hns_ethash --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo kawpow --fee 1" } #Trex-v0.19.4 is fastest

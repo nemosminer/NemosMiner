@@ -22,7 +22,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm eaglesong" }
 #   [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm etchash" } #PhoenixMiner-v5.4b is faster
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #BMiner-v16.3.6 & PhoenixMiner-v5.4b are faster
+#   [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; Command = " --algorithm ethash" } #BMiner-v16.3.7 & PhoenixMiner-v5.4b are faster
     [PSCustomObject]@{ Algorithm = "Handshake";           Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
