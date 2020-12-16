@@ -25,7 +25,7 @@ version:        3.9.9.8
 version date:   01 November 2020
 #>
 
-#Start the log
+# Start the log
 If ($Config.Transcript) { Start-Transcript -Path ".\Logs\BalancesTracker-$(Get-Date -Format "yyyy-MM-dd").log" -Append -Force | Out-Null }
 
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -37,7 +37,7 @@ $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
 While ($true) { 
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
-        #Only on first run
+        # Only on first run
         If (-not $Now) { 
             Write-Message "Balances Tracker started."
             # Read existing earning data
@@ -53,7 +53,7 @@ While ($true) {
             } Else { 
                 $DailyEarnings = @()
             }
-            #Keep only the last 10 logs 
+            # Keep only the last 10 logs 
             Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
         }
 
@@ -73,7 +73,7 @@ While ($true) {
             # }
         }
 
-        #Get pools to track
+        # Get pools to track
         $PoolsToTrack = @((Get-ChildItem .\Pools\*.ps1 -File).BaseName -replace "24hr$" -replace "Coins$" | Sort-Object -Unique | Where-Object { 
             $_ -in @($PoolAPI | Where-Object EarnTrackSupport -EQ "yes").Name
         })
@@ -156,7 +156,7 @@ While ($true) {
                         $NicehashData = ((Invoke-RestMethod -Uri "$APIUri$Wallet/rigs/stats/unpaid/" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).Data | Where-Object { $_[0] -gt $CurDateUxFormat } | Sort-Object { $_[0] } | Group-Object { $_[2] }).group
                         $NHTotalBalance = -$NicehashData[0][2]
                         $NicehashData | ForEach-Object {
-                            #Nicehash continously transfers balances to wallet
+                            # Nicehash continously transfers balances to wallet
                             If ($_[2] -gt $TempBalance) {
                                 $TempBalance = $_[2]
                             }
@@ -192,7 +192,7 @@ While ($true) {
                     Unsold       = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.unsold
                     Total_unpaid = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.total_unpaid
                     Total_paid   = $Variables.Rates.($PoolConfig.PayoutCurrency).BTC * $BalanceData.total_paid
-                    Total_earned = ($BalanceData.$BalanceJson, $BalanceData.$TotalJson | Measure-Object -Minimum).Minimum * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC #Pool reduced balance!
+                    Total_earned = ($BalanceData.$BalanceJson, $BalanceData.$TotalJson | Measure-Object -Minimum).Minimum * $Variables.Rates.($PoolConfig.PayoutCurrency).BTC # Pool reduced balance!
                     Currency     = $PoolConfig.PayoutCurrency
                 }
             }
@@ -269,7 +269,7 @@ While ($true) {
                 If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolName | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -ErrorAction Ignore }
 
                 If ($PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolName | Where-Object Date -EQ $Date ) { 
-                    #Pool may have reduced estimated balance, use new balance as start value to avoid negative values
+                    # Pool may have reduced estimated balance, use new balance as start value to avoid negative values
                     If ($EarningsObject.total_earned -gt 0) { 
                         $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $EarningsObject.total_earned | Measure-Object -Minimum).Minimum
                     }
@@ -279,11 +279,11 @@ While ($true) {
                     $PoolDailyEarning.DailyEarnings = (($EarningsObject.total_earned - $PoolDailyEarning.StartValue), 0 | Measure-Object -Maximum).Maximum
                     $PoolDailyEarning.EndTime = $Now.ToString("T")
                     $PoolDailyEarning.EndValue = $EarningsObject.total_earned
-                    #Payment occured?
+                    # Payment occured?
                     If ($EarningsObject.total_earned -lt ($BalanceObjects[$BalanceObjects.Count - 2].total_earned / 2)) { 
                         $PoolDailyEarning.PrePaymentDayValue = $BalanceObjects[$BalanceObjects.Count - 2].total_earned
                         If ($PoolDailyEarning.PrePaymentDayValue -gt 0) { 
-                            #Payment occured
+                            # Payment occured
                             $PoolDailyEarning.DailyEarnings += $PoolDailyEarning.PrePaymentDayValue
                         }
                     }
@@ -323,7 +323,7 @@ While ($true) {
 
         }
 
-        #Always keep pools sorted, even when new pools were added
+        # Always keep pools sorted, even when new pools were added
         $TempEarnings = $Variables.Earnings
         $Variables.Earnings = [Ordered]@{ }
         $TempEarnings.Keys | Sort-Object | ForEach-Object { 
@@ -337,17 +337,17 @@ While ($true) {
             Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Logs\DailyEarnings.csv' (should have $($DailyEarnings.count) entries)."
         }
 
-        #Write chart data file (used in Web GUI)
-        $ChartData = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 #days
+        # Write chart data file (used in Web GUI)
+        $ChartData = $DailyEarnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 # days
 
-        #One dataset per pool
+        # One dataset per pool
         $PoolData = [PSCustomObject]@{}
         $ChartData.Group.Pool | Sort-Object -Unique | ForEach-Object { 
             $PoolData | Add-Member @{ $_ = [Double[]]@() }
         }
 
         $CumulatedEarnings = [Double[]]@()
-        #Fill dataset
+        # Fill dataset
         ForEach ($PoolDailyEarning in $ChartData) { 
             $CumulatedEarnings += ([Double]($PoolDailyEarning.Group | Measure-Object DailyEarnings -Sum).Sum)
             $PoolData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
@@ -356,18 +356,18 @@ While ($true) {
         }
 
         [PSCustomObject]@{
-            CumulatedEarnings = $CumulatedEarnings #Dataset for cumulated earnings
+            CumulatedEarnings = $CumulatedEarnings # Dataset for cumulated earnings
             Currency = ($Config.Currency | Select-Object -Index 0)
             Labels = @(
                 $ChartData.Group.Date | Sort-Object -Unique | ForEach-Object { 
                     [DateTime]::parseexact($_, "yyyy-MM-dd", $null).ToShortDateString()
                 }
             )
-            #Use dates for x-axis label
+            # Use dates for x-axis label
             Pools = $PoolData
         } | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore
 
-        #Keep only last 14 days
+        # Keep only last 14 days
         If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddDays( -14 ) }) }
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore }
         $Variables.BalanceData = $AllBalanceObjects

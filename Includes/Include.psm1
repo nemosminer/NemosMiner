@@ -96,7 +96,7 @@ Class Pool {
     [String[]]$Reason = @("")
     [Boolean]$Best
 
-    #Stats
+    # Stats
     [Double]$Price
     [Double]$Price_Bias
     [Double]$StablePrice
@@ -136,17 +136,17 @@ Class Miner {
     [String]$Arguments
     [String]$CommandLine
     [UInt16]$Port
-    [String[]]$DeviceName = @() #derived from devices
-    [String[]]$Algorithm = @() #derived from pool
+    [String[]]$DeviceName = @() # derived from devices
+    [String[]]$Algorithm = @() # derived from pool
     [Double[]]$Speed_Live = @()
 
-    [Double]$Earning #derived from pool and stats
-    [Double]$Earning_Bias #derived from pool and stats
-    [Double]$Earning_Accuracy #derived from pool and stats
-    [Double]$Profit #derived from pool and stats
-    [Double]$Profit_Bias #derived from pool and stats
+    [Double]$Earning # derived from pool and stats
+    [Double]$Earning_Bias # derived from pool and stats
+    [Double]$Earning_Accuracy # derived from pool and stats
+    [Double]$Profit # derived from pool and stats
+    [Double]$Profit_Bias # derived from pool and stats
 
-    [Boolean]$Benchmark = $false #derived from stats
+    [Boolean]$Benchmark = $false # derived from stats
     [Boolean]$CachedBenchmark = $false
 
     [Double]$PowerUsage
@@ -155,7 +155,7 @@ Class Miner {
     [Boolean]$CalculatePowerCost = $false
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
-    [Boolean]$PowerUsageInAPI = $false #If true miner must expose power usage in its API
+    [Boolean]$PowerUsageInAPI = $false # If true miner must expose power usage in its API
 
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
@@ -163,7 +163,7 @@ Class Miner {
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
     [String[]]$Reason
-    [Boolean]$Restart = $false #stop and start miner even if best
+    [Boolean]$Restart = $false # stop and start miner even if best
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
@@ -180,11 +180,11 @@ Class Miner {
     [String]$ShowMinerWindows = "minimized"
     [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
-    [Int]$MinDataSamples #for safe hashrate values
+    [Int]$MinDataSamples # for safe hashrate values
     [Int]$WarmupTime
     [DateTime]$BeginTime
     [DateTime]$EndTime
-    [TimeSpan]$TotalMiningDuration #derived from pool and stats
+    [TimeSpan]$TotalMiningDuration # derived from pool and stats
 
     [Double]$AllowedBadShareRatio = 0
     [String]$MinerUri = ""
@@ -236,10 +236,10 @@ Class Miner {
         }
 
         If (-not $this.Process) { 
-            If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } #When benchmarking clear data on each miner start
+            If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
-            #Log switching information to .\Logs\SwitchingLog.csv
+            # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
                 Date         = [String](Get-Date -Format o)
                 Action       = "Started"
@@ -262,7 +262,7 @@ Class Miner {
                     If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                        #Starting Miner Data reader
+                        # Starting Miner Data reader
                         $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers | ConvertTo-Json) }
                         Break
                     }
@@ -279,7 +279,7 @@ Class Miner {
 
     [MinerStatus]GetStatus() { 
         If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { 
-            #Use ProcessName, some crashed miners are dead, but may still be found by their processId
+            # Use ProcessName, some crashed miners are dead, but may still be found by their processId
             Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq "Running") { 
@@ -309,10 +309,10 @@ Class Miner {
             $this.Process = $null
         }
 
-        #Stop Miner data reader
+        # Stop Miner data reader
         Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
 
-        #Log switching information to .\Logs\SwitchingLog
+        # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
             Date         = [String](Get-Date -Format o)
             Action       = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
@@ -372,7 +372,7 @@ Class Miner {
         $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
         $RegistryData = [PSCustomObject]@{ }
 
-        #Read power usage
+        # Read power usage
         If ((Test-Path $RegistryHive) -and $this.DeviceName) { 
             $RegistryData = Get-ItemProperty $RegistryHive
             $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($this.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
@@ -473,9 +473,9 @@ Class Miner {
         $HashRates_Averages = @{ }
         $HashRates_Variances = @{ }
 
-        $Hashrates_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm } | Sort-Object { $_.HashRate.$Algorithm }) #Do not use 0 valued samples
+        $Hashrates_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm } | Sort-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
 
-        #During benchmarking strip some of the lowest and highest sample values
+        # During benchmarking strip some of the lowest and highest sample values
         If ($Safe) { 
             $SkipSamples = [math]::Floor($HashRates_Samples.Count) * 0.1
         }
@@ -517,9 +517,9 @@ Class Miner {
         $PowerUsages_Averages = @{ }
         $PowerUsages_Variances = @{ }
 
-        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage | Sort-Object PowerUsage) #Do not use 0 valued samples
+        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage | Sort-Object PowerUsage) # Do not use 0 valued samples
 
-        #During power measuring strip some of the lowest and highest sample values
+        # During power measuring strip some of the lowest and highest sample values
         If ($Safe) { 
             $SkipSamples = [math]::Round($PowerUsages_Samples.Count * 0.1)
         }
@@ -751,7 +751,7 @@ Function Stop-BrainJob {
 
     $JobNames = @()
 
-    #Stop Brains if necessary
+    # Stop Brains if necessary
     $Jobs | ForEach-Object { 
         $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
         $Variables.BrainJobs.Remove($_)
@@ -803,7 +803,7 @@ Function Initialize-API {
         $Variables.Remove("APIVersion")
     }
 
-    #Initialize API & Web GUI
+    # Initialize API & Web GUI
     If ($Config.APIPort -and ($Config.APIPort -ne $Variables.APIRunspace.APIPort)) { 
         If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
             If ($Variables.APIRunspace) { 
@@ -822,13 +822,13 @@ Function Initialize-API {
             Else { 
                 Import-Module .\Includes\API.psm1
 
-                #Required for stat management
+                # Required for stat management
                 Get-Stat | Out-Null
 
-                #Start API server
+                # Start API server
                 Start-APIServer -Port $Config.APIPort
 
-                #Wait for API to get ready
+                # Wait for API to get ready
                 $RetryCount = 3
                 While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
                     Start-Sleep -Seconds 1
@@ -857,7 +857,7 @@ Function Initialize-API {
 
 Function Initialize-Application { 
 
-    #Keep only the last 10 files
+    # Keep only the last 10 files
     Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
     Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
     Get-ChildItem "$($Variables.ConfigFile)_*.backup" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
@@ -867,7 +867,7 @@ Function Initialize-Application {
         [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
     }
 
-    #Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
+    # Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
     If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
@@ -932,7 +932,7 @@ Function Write-Message {
 
         If ((-not $Config.LogToScreen) -or $Level -in $Config.LogToScreen) { 
 
-            #Update status text box in GUI
+            # Update status text box in GUI
             If ($Variables.LabelStatus) { 
                 $Variables.LabelStatus.Lines += $Message
                 $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
@@ -1056,7 +1056,7 @@ namespace PInvoke.Win32 {
 }
 '@
 
-            #Start transcript log
+            # Start transcript log
             If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\IdleMining.log" -Append -Force }
 
             $ProgressPreference = "SilentlyContinue"
@@ -1065,13 +1065,13 @@ namespace PInvoke.Win32 {
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
-                #Pause if system has become active
+                # Pause if system has become active
                 If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CoreRunspace) { 
                     Write-Message "System activity detected. Stopping all running miners..."
                     Stop-Mining
                     Write-Message "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
                 }
-                #Check if system has been idle long enough to unpause
+                # Check if system has been idle long enough to unpause
                 If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
                     Write-Message "System was idle for $IdleSeconds seconds, start mining..."
                     Start-Mining
@@ -1254,7 +1254,7 @@ Function Read-Config {
         New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
     }
 
-    #Load the configuration
+    # Load the configuration
     $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json
 
     If ($Variables.ConfigFile -and (Test-Path -PathType Leaf $Variables.ConfigFile)) { 
@@ -1265,7 +1265,7 @@ Function Read-Config {
             $Config.ConfigFileVersionCompatibility = $null
         }
         Else { 
-            #Fix upper / lower case (Web GUI is case sensitive)
+            # Fix upper / lower case (Web GUI is case sensitive)
             $Config_Tmp | ForEach-Object { 
                 $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
                     $PropertyName = $_.Name
@@ -1280,7 +1280,7 @@ Function Read-Config {
     Else { 
         Write-Message -Level Warn "No valid configuration file found."
 
-        #Prepare new config
+        # Prepare new config
         $Variables.FreshConfig = $true
         If (Test-Path ".\Config\PoolsConfig-Recommended.json" -PathType Leaf) { 
             $Parameters | Add-Member @{ PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } }) }
@@ -1291,7 +1291,7 @@ Function Read-Config {
         $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
     }
 
-    #Build pools configuation
+    # Build pools configuation
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
         $PoolsConfig_Tmp = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($PoolsConfig_Tmp.PSObject.Properties.Count -eq 0 -or $PoolsConfig_Tmp -isnot [PSCustomObject]) { 
@@ -1299,13 +1299,13 @@ Function Read-Config {
         }
     }
 
-    #Add pool config to config (in-memory only)
+    # Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | ForEach-Object { 
         $PoolName = $_ -replace "24hr" -replace "Coins"
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
-        If (-not "$PoolConfig") { #https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
+        If (-not "$PoolConfig") { # https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
             If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json }
         }
         If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
@@ -1338,7 +1338,7 @@ Function Repair-Config {
 
     $ConfigFixed = $Global:Config.Clone()
 
-    #Add +/- to all algorithms
+    # Add +/- to all algorithms
     $Algorithms = @()
     ForEach ($Algorithm in $ConfigFixed.Algorithm) { 
         $Algorithm = $Algorithm.Trim()
@@ -1354,7 +1354,7 @@ Function Repair-Config {
     }
     $ConfigFixed.Algorithm = $Algorithms
 
-    #Convert Arrays to HashTable
+    # Convert Arrays to HashTable
     ForEach ($Property in @("MinDataSamplesAlgoMultiplier", "PowerPricekWh")) { 
         If ($ConfigFixed.$Property -is [Array]) { 
             $ConfigFixed.$Property = $ConfigFixed.$Property[0] | ConvertTo-Json | ConvertFrom-Json
@@ -1405,7 +1405,7 @@ Function Get-SortedObject {
     Switch ($Object.GetType().Name) {
         "PSCustomObject" { 
             Get-Member -Type NoteProperty -InputObject $Object | Sort-Object Name | ForEach-Object { 
-                #Upper / lower case conversion (Web GUI is case sensitive)
+                # Upper / lower case conversion (Web GUI is case sensitive)
                 $PropertyName = $_.Name
                 $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
                 If (-not $PropertyName) { $PropertyName = $_.Name }
@@ -1420,7 +1420,7 @@ Function Get-SortedObject {
         }
         "SyncHashtable" { 
             $Object.GetEnumerator() | Sort-Object -Property Name | ForEach-Object { 
-                #Upper / lower case conversion (Web GUI is case sensitive)
+                # Upper / lower case conversion (Web GUI is case sensitive)
                 $PropertyName = $_.Name
                 $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
                 If (-not $PropertyName) { $PropertyName = $_.Name }
@@ -1625,7 +1625,7 @@ Function Get-Stat {
                 $Global:Stats = [Hashtable]::Synchronized(@{ })
             }
 
-            #Reduce number of errors
+            # Reduce number of errors
             If (-not (Test-Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
                 If (-not (Test-Path "Stats" -PathType Container)) { 
                     New-Item "Stats" -ItemType "directory" -Force | Out-Null
@@ -1707,16 +1707,16 @@ Function Get-CommandPerDevice {
         $ValueSeparator = ""
         $Values = ""
 
-        If ($Token -match "(?:^\s[-=]+)" <#supported prefix characters are listed in brackets [-=]#>) { 
+        If ($Token -match "(?:^\s[-=]+)" <# supported prefix characters are listed in brackets [-=]#>) { 
             $Prefix = "$($Token -split $Matches[0] | Select-Object -Index 0)$($Matches[0])"
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
-            If ($Token -match "(?:[ =]+)" <#supported separators are listed in brackets [ =]#>) { 
+            If ($Token -match "(?:[ =]+)" <# supported separators are listed in brackets [ =]#>) { 
                 $ParameterValueSeparator = $Matches[0]
                 $Parameter = $Token -split $ParameterValueSeparator | Select-Object -Index 0
                 $Values = $Token.Substring(("$Parameter$($ParameterValueSeparator)").length)
 
-                If ($Parameter -notin $ExcludeParameters -and $Values -match "(?:[,; ]{1})" <#supported separators are listed in brackets [,; ]#>) { 
+                If ($Parameter -notin $ExcludeParameters -and $Values -match "(?:[,; ]{1})" <# supported separators are listed in brackets [,; ]#>) { 
                     $ValueSeparator = $Matches[0]
                     $RelevantValues = @()
                     $DeviceIDs | ForEach-Object { 
@@ -1834,7 +1834,7 @@ Function Invoke-TcpRequest {
         [Parameter(Mandatory = $true)]
         [String]$Request, 
         [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 30 #seconds
+        [Int]$Timeout = 30 # seconds
     )
 
     Try { 
@@ -1864,13 +1864,13 @@ Function Get-CpuId {
 
     # Brief : gets CPUID (CPU name and registers)
 
-    #OS Features
-    $OS_x64 = "" #not implemented
-    $OS_AVX = "" #not implemented
-    $OS_AVX512 = "" #not implemented
+    # OS Features
+    $OS_x64 = "" # not implemented
+    $OS_AVX = "" # not implemented
+    $OS_AVX512 = "" # not implemented
 
-    #Vendor
-    $vendor = "" #not implemented
+    # Vendor
+    $vendor = "" # not implemented
 
     If ($vendor -eq "GenuineIntel") { 
         $Vendor_Intel = $true;
@@ -1880,7 +1880,7 @@ Function Get-CpuId {
     }
 
     $info = [CpuID]::Invoke(0)
-    #convert 16 bytes to 4 ints for compatibility with existing code
+    # convert 16 bytes to 4 ints for compatibility with existing code
     $info = [int[]]@(
         [BitConverter]::ToInt32($info, 0 * 4)
         [BitConverter]::ToInt32($info, 1 * 4)
@@ -1891,8 +1891,8 @@ Function Get-CpuId {
     $nIds = $info[0]
 
     $info = [CpuID]::Invoke(0x80000000)
-    $nExIds = [BitConverter]::ToUInt32($info, 0 * 4) #not sure as to why 'nExIds' is unsigned; may not be necessary
-    #convert 16 bytes to 4 ints for compatibility with existing code
+    $nExIds = [BitConverter]::ToUInt32($info, 0 * 4) # not sure as to why 'nExIds' is unsigned; may not be necessary
+    # convert 16 bytes to 4 ints for compatibility with existing code
     $info = [int[]]@(
         [BitConverter]::ToInt32($info, 0 * 4)
         [BitConverter]::ToInt32($info, 1 * 4)
@@ -1900,12 +1900,12 @@ Function Get-CpuId {
         [BitConverter]::ToInt32($info, 3 * 4)
     )
 
-    #Detect Features
+    # Detect Features
     $features = @{ }
     If ($nIds -ge 0x00000001) { 
 
         $info = [CpuID]::Invoke(0x00000001)
-        #convert 16 bytes to 4 ints for compatibility with existing code
+        # convert 16 bytes to 4 ints for compatibility with existing code
         $info = [int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
@@ -1932,7 +1932,7 @@ Function Get-CpuId {
     If ($nIds -ge 0x00000007) { 
 
         $info = [CpuID]::Invoke(0x00000007)
-        #convert 16 bytes to 4 ints for compatibility with existing code
+        # convert 16 bytes to 4 ints for compatibility with existing code
         $info = [int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
@@ -1963,7 +1963,7 @@ Function Get-CpuId {
     If ($nExIds -ge 0x80000001) { 
 
         $info = [CpuID]::Invoke(0x80000001)
-        #convert 16 bytes to 4 ints for compatibility with existing code
+        # convert 16 bytes to 4 ints for compatibility with existing code
         $info = [int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
@@ -2046,12 +2046,12 @@ Function Get-Device {
         $PlatformId_Index = @{ }
         $Type_PlatformId_Index = @{ }
 
-        #Get WDDM data
+        # Get WDDM data
         Try { 
             Get-CimInstance CIM_Processor | ForEach-Object { 
                 $Device_CIM = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                #Add normalised values
+                # Add normalised values
                 $Variables.Devices += $Device = [PSCustomObject]@{ 
                     Name   = $null
                     Model  = $Device_CIM.Name
@@ -2088,10 +2088,10 @@ Function Get-Device {
                 $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
                 $Type_Id.($Device.Type)++
 
-                #Read CPU features
+                # Read CPU features
                 $Device | Add-Member CpuFeatures ((Get-CpuId).Features | Sort-Object)
 
-                #Add raw data
+                # Add raw data
                 $Device | Add-Member @{ 
                     CIM = $Device_CIM
                 }
@@ -2107,7 +2107,7 @@ Function Get-Device {
 
                     $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                    #Add normalised values
+                    # Add normalised values
                     $Variables.Devices += $Device = [PSCustomObject]@{ 
                         Name   = $null
                         Model  = $Device_CIM.Name
@@ -2130,7 +2130,7 @@ Function Get-Device {
                     }
                 }
                 Else { 
-                    #Add normalised values
+                    # Add normalised values
                     $Variables.Devices += $Device = [PSCustomObject]@{ 
                         Name   = $null
                         Model  = $Device_CIM.Name
@@ -2167,7 +2167,7 @@ Function Get-Device {
                 $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
                 $Type_Id.($Device.Type)++
 
-                #Add raw data
+                # Add raw data
                 $Device | Add-Member @{ 
                     CIM = $Device_CIM
                     PNP = $Device_PNP
@@ -2179,13 +2179,13 @@ Function Get-Device {
             Write-Message -Level Warn "WDDM device detection has failed. "
         }
 
-        #Get OpenCL data
+        # Get OpenCL data
         Try { 
             [OpenCl.Platform]::GetPlatformIDs() | ForEach-Object { 
                 [OpenCl.Device]::GetDeviceIDs($_, [OpenCl.DeviceType]::All) | ForEach-Object { 
                     $Device_OpenCL = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                    #Add normalised values
+                    # Add normalised values
                     $Device = [PSCustomObject]@{ 
                         Name   = $null
                         Model  = $Device_OpenCL.Name
@@ -2239,7 +2239,7 @@ Function Get-Device {
                         $Type_Id.($Device.Type)++
                     }
 
-                    #Add OpenCL specific data
+                    # Add OpenCL specific data
                     $Device | Add-Member @{ 
                         Index                 = [Int]$Index
                         Type_Index            = [Int]$Type_Index.($Device.Type)
@@ -2250,7 +2250,7 @@ Function Get-Device {
                         Type_PlatformId_Index = [Int]$Type_PlatformId_Index.($Device.Type).($PlatformId)
                     }
 
-                    #Add raw data
+                    # Add raw data
                     $Device | Add-Member @{ 
                         OpenCL = $Device_OpenCL
                     }
@@ -2308,7 +2308,7 @@ Function Get-Device {
 
 Filter ConvertTo-Hash { 
     [CmdletBinding()]
-    $Units = " kMGTPEZY " #k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
+    $Units = " kMGTPEZY " # k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs([Double]$_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
     "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
@@ -2395,7 +2395,7 @@ Function Get-Combination {
 
 Function Invoke-CreateProcess {
 
-    #Based on https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Invoke-CreateProcess.ps1
+    # Based on https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Invoke-CreateProcess.ps1
 
     Param (
         [Parameter(Mandatory = $true)]
@@ -2406,15 +2406,15 @@ Function Invoke-CreateProcess {
         [String]$WorkingDirectory = "", 
         [Parameter(Mandatory = $false)]
         [ValidateRange(-2, 3)]
-        [Int]$Priority = 0, #NORMAL
+        [Int]$Priority = 0, # NORMAL
         [Parameter(Mandatory = $false)]
         [String[]]$EnvBlock = "",
         [Parameter(Mandatory = $false)]
-        [String]$CreationFlags = 0x00000010, #CREATE_NEW_CONSOLE
+        [String]$CreationFlags = 0x00000010, # CREATE_NEW_CONSOLE
         [Parameter(Mandatory = $false)]
         [String]$ShowMinerWindows = "minimized",
         [Parameter(Mandatory = $false)]
-        [String]$StartF = 0x00000001 #STARTF_USESHOWWINDOW
+        [String]$StartF = 0x00000001 # STARTF_USESHOWWINDOW
     )
 
     $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
@@ -2465,31 +2465,31 @@ public static class Kernel32
 "@
 
         Switch ($ShowMinerWindows) {
-            "hidden" { $ShowWindow = "0x0000" } #SW_HIDE
-            "normal" { $ShowWindow = "0x0001" } #SW_SHOWNORMAL
-            Default  { $ShowWindow = "0x0007" } #SW_SHOWMINNOACTIVE
+            "hidden" { $ShowWindow = "0x0000" } # SW_HIDE
+            "normal" { $ShowWindow = "0x0001" } # SW_SHOWNORMAL
+            Default  { $ShowWindow = "0x0007" } # SW_SHOWMINNOACTIVE
         }
 
-        #Set local environment
+        # Set local environment
         $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
 
-        #StartupInfo Struct
+        # StartupInfo Struct
         $StartupInfo = New-Object STARTUPINFO
         $StartupInfo.dwFlags = $StartF # StartupInfo.dwFlag
         $StartupInfo.wShowWindow = $ShowWindow # StartupInfo.ShowWindow
         $StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
 
-        #ProcessInfo Struct
+        # ProcessInfo Struct
         $ProcessInfo = New-Object PROCESS_INFORMATION
 
-        #SECURITY_ATTRIBUTES Struct (Process & Thread)
+        # SECURITY_ATTRIBUTES Struct (Process & Thread)
         $SecAttr = New-Object SECURITY_ATTRIBUTES
         $SecAttr.Length = [System.Runtime.InteropServices.Marshal]::SizeOf($SecAttr)
 
-        #CreateProcess --> lpCurrentDirectory
+        # CreateProcess --> lpCurrentDirectory
         If (-not $WorkingDirectory) { $WorkingDirectory = [IntPtr]::Zero }
 
-        #Call CreateProcess
+        # Call CreateProcess
         [Kernel32]::CreateProcess($BinaryPath, "$BinaryPath $ArgumentList", [ref]$SecAttr, [ref]$SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref]$StartupInfo, [ref]$ProcessInfo) | Out-Null
 
         $Process = Get-Process -Id $ProcessInfo.dwProcessId
@@ -2547,7 +2547,7 @@ Function Expand-WebRequest {
 
         If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
 
-        #use first (topmost) directory in case, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
+        # use first (topmost) directory in case, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
         $Path_Old = (Get-ChildItem $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -Index 0
 
         If ($Path_Old) { 
@@ -2680,7 +2680,7 @@ Function Initialize-Autoupdate {
                 Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
             }
 
-            #Remove temp files
+            # Remove temp files
             Write-Message "Removing temporary files..."
             Remove-Item .\$UpdateFileName -Force -Recurse
             Remove-Item ".\$($UpdateFileName).zip" -Force

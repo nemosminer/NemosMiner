@@ -5,10 +5,10 @@ param(
     [Parameter(Mandatory = $true)]
     [String]$MinerAPI,
     [Parameter(Mandatory = $true)]
-    [String]$MinerJSON #Must be JSON, workaround for 'InvalidOperation: Unable to find type [Miner].'
+    [String]$MinerJSON # Must be JSON, workaround for 'InvalidOperation: Unable to find type [Miner].'
 )
 
-#Load miner API file
+# Load miner API file
 . ".\Includes\APIs\$($MinerAPI).ps1"
 
 $Miner = ($MinerJSON | ConvertFrom-Json) -as $MinerAPI

@@ -27,190 +27,190 @@ Version date:   03 December 2020
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
-    [String[]]$Algorithm = @(), #i.e. @("Ethash", "Equihash", "Cryptonight") etc.
+    [String[]]$Algorithm = @(), # i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
-    [Double]$AllowedBadShareRatio = 0.1, #Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
+    [Double]$AllowedBadShareRatio = 0.1, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)]
-    [Switch]$AutoStart = $false, #If true NemosMiner will start mining automatically
+    [Switch]$AutoStart = $false, # If true NemosMiner will start mining automatically
     [Parameter(Mandatory = $false)] 
-    [String]$APILogfile = "", #API will log all requests to this file, to disable leave empty
+    [String]$APILogfile = "", # API will log all requests to this file, to disable leave empty
     [Parameter(Mandatory = $false)]
-    [Int]$APIPort = 3999, #TCP Port for API & Web GUI
+    [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
-    [Boolean]$ApplyUnprofitableAlgorithmList = $true, #NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt
+    [Boolean]$ApplyUnprofitableAlgorithmList = $true, # NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt
     [Parameter(Mandatory = $false)]
-    [Boolean]$AutoUpdate = $false, #Autoupdate
+    [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
-    [Switch]$BalancesTrackerLog = $false, #If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
+    [Switch]$BalancesTrackerLog = $false, # If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
-    [UInt16]$BalancesTrackerPollInterval = 5, #minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
+    [UInt16]$BalancesTrackerPollInterval = 5, # minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
     [Parameter(Mandatory = $false)]
-    [Switch]$CalculatePowerCost = $true, #If true, power usage will be read from miners and calculate power cost, required for true profit calculation
+    [Switch]$CalculatePowerCost = $true, # If true, power usage will be read from miners and calculate power cost, required for true profit calculation
     [Parameter(Mandatory = $false)]
-    [String]$ConfigFile = ".\Config\Config.json", #Config file name
+    [String]$ConfigFile = ".\Config\Config.json", # Config file name
     [Parameter(Mandatory = $false)]
-    [String[]]$Currency = @("USD", "mBTC"), #i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
+    [String[]]$Currency = @("USD", "mBTC"), # i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
     [Parameter(Mandatory = $false)]
-    [Int]$Delay = 1, #seconds between stop and start of miners, use only when getting blue screens on miner switches
+    [Int]$Delay = 1, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableDualAlgoMining = $false, #If true NemosMiner will not use any dual algo miners
+    [Switch]$DisableDualAlgoMining = $false, # If true NemosMiner will not use any dual algo miners
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableMinerFee = $false, #Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
+    [Switch]$DisableMinerFee = $false, # Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableMinersWithFee = $false, #Set to true to disable all miners which contain fees
+    [Switch]$DisableMinersWithFee = $false, # Set to true to disable all miners which contain fees
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableSingleAlgoMining = $false, #If true NemosMiner will not use any single algo miners
+    [Switch]$DisableSingleAlgoMining = $false, # If true NemosMiner will not use any single algo miners
     [Parameter(Mandatory = $false)]
-    [Int]$Donate = 13, #Minutes per Day
+    [Int]$Donate = 13, # Minutes per Day
     [Parameter(Mandatory = $false)]
-    [Switch]$EstimateCorrection = $false, #If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+    [Switch]$EstimateCorrection = $false, # If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
-    [String[]]$ExcludeDeviceName = @(), #Will replace old device selection, e.g. @("CPU#00", "GPU#02") (work in progress)
+    [String[]]$ExcludeDeviceName = @(), # Will replace old device selection, e.g. @("CPU# 00", "GPU# 02") (work in progress)
     [Parameter(Mandatory = $false)]
-    [Double]$IdlePowerUsageW = 60, #Powerusage of idle system in Watt. Part of profit calculation
+    [Double]$IdlePowerUsageW = 60, # Powerusage of idle system in Watt. Part of profit calculation
     [Parameter(Mandatory = $false)]
-    [Int]$IdleSec = 120, #seconds the system must be idle before mining starts (if MineWhenIdle -eq $true)
+    [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if MineWhenIdle -eq $true)
     [Parameter(Mandatory = $false)]
-    [Switch]$IgnoreMinerFee = $false, #If true, NM will ignore miner fee for earning & profit calculation
+    [Switch]$IgnoreMinerFee = $false, # If true, NM will ignore miner fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
-    [Switch]$IgnorePoolFee = $false, #If true NM will ignore pool fee for earning & profit calculation
+    [Switch]$IgnorePoolFee = $false, # If true NM will ignore pool fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
-    [Switch]$IgnorePowerCost = $false, #If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
+    [Switch]$IgnorePowerCost = $false, # If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
     [Parameter(Mandatory = $false)]
-    [Switch]$IncludeOptionalMiners = $true, #If true, use the miners in the 'OptionalMiners' directory
+    [Switch]$IncludeOptionalMiners = $true, # If true, use the miners in the 'OptionalMiners' directory
     [Parameter(Mandatory = $false)]
-    [Switch]$IncludeRegularMiners = $true, #If true, use the miners in the 'Miners' directory
+    [Switch]$IncludeRegularMiners = $true, # If true, use the miners in the 'Miners' directory
     [Parameter(Mandatory = $false)]
-    [Switch]$IncludeLegacyMiners = $true, #If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
+    [Switch]$IncludeLegacyMiners = $true, # If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
     [Parameter(Mandatory = $false)]
-    [Int]$Interval = 240, #seconds before between cycles after the first has passed 
+    [Int]$Interval = 240, # seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
-    [String[]]$LogToFile = @("Info", "Warn", "Error", "Verbose", "Debug"), #Log level detail to be written to log file, see Write-Message function
+    [String[]]$LogToFile = @("Info", "Warn", "Error", "Verbose", "Debug"), # Log level detail to be written to log file, see Write-Message function
     [Parameter(Mandatory = $false)]
-    [String[]]$LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug"), #Log level detail to be written to screen, see Write-Message function
+    [String[]]$LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug"), # Log level detail to be written to screen, see Write-Message function
     [Parameter(Mandatory = $false)]
-    [Double]$MarginOfError = 0, #0.4, # knowledge about the past won't help us to predict the future so don't pretend that Week_Fluctuation means something real
+    [Double]$MarginOfError = 0, # 0.4, # knowledge about the past won't help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
     [String[]]$MinerName = @(), 
     [Parameter(Mandatory = $false)]
     [ValidateRange(0, 1)]
-    [Double]$MinAccuracy = 0.5, #Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
+    [Double]$MinAccuracy = 0.5, # Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
     [Parameter(Mandatory = $false)]
-    [Int]$MinDataSamples = 20, #Minimum number of hash rate samples required to store hash rate
+    [Int]$MinDataSamples = 20, # Minimum number of hash rate samples required to store hash rate
     [Parameter(Mandatory = $false)]
-    [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, #Per algo multiply MinDataSamples by this value
+    [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, # Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
-    [Switch]$MinerInstancePerDeviceModel = $true, #If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
+    [Switch]$MinerInstancePerDeviceModel = $true, # If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
     [Parameter(Mandatory = $false)]
-    [Switch]$MineWhenIdle = $false, #If true, NemosMiner will start mining only if system is idle for $IdleSec seconds
+    [Switch]$MineWhenIdle = $false, # If true, NemosMiner will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
-    [String]$MonitoringServer = "", #Monitoring server hostname, default "https://nemosminer.com"
+    [String]$MonitoringServer = "", # Monitoring server hostname, default "https://nemosminer.com"
     [Parameter(Mandatory = $false)]
-    [String]$MonitoringUser = "", #Unique monitoring user ID 
+    [String]$MonitoringUser = "", # Unique monitoring user ID 
     [Parameter(Mandatory = $false)]
-    [String]$MPHAPIKey = "", #MPH API Key (required to retrieve balance information)
+    [String]$MPHAPIKey = "", # MPH API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$MPHUserName = "Nemo", #MPH UserName
+    [String]$MPHUserName = "Nemo", # MPH UserName
     [Parameter(Mandatory = $false)]
-    [String]$NiceHashAPIKey = "", #NiceHash API Key (required to retrieve balance information)
+    [String]$NiceHashAPIKey = "", # NiceHash API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$NiceHashAPISecret = "", #NiceHash API Secret (required to retrieve balance information)
+    [String]$NiceHashAPISecret = "", # NiceHash API Secret (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [Switch]$NiceHashWalletIsInternal = $false, #Set to $true if NiceHashWallet is a NiceHash internal wallet (lower pool fees)
+    [Switch]$NiceHashWalletIsInternal = $false, # Set to $true if NiceHashWallet is a NiceHash internal wallet (lower pool fees)
     [Parameter(Mandatory = $false)]
-    [String]$NiceHashWallet = "", #NiceHash wallet, if left empty $Wallet is used
+    [String]$NiceHashWallet = "", # NiceHash wallet, if left empty $Wallet is used
     [Parameter(Mandatory = $false)]
-    [String]$NiceHashOrganizationId = "", #NiceHash Organization Id (required to retrieve balance information)
+    [String]$NiceHashOrganizationId = "", # NiceHash Organization Id (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [Switch]$OpenFirewallPorts = $true, #If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
+    [Switch]$OpenFirewallPorts = $true, # If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
-    [String]$PayoutCurrency = "BTC", #i.e. BTC, LTC, ZEC, ETH etc., Default PayoutCurrency for all pools that have no other currency configured, PayoutCurrency is also a per pool setting (to be configured in PoolsConfig.json)
+    [String]$PayoutCurrency = "BTC", # i.e. BTC, LTC, ZEC, ETH etc., Default PayoutCurrency for all pools that have no other currency configured, PayoutCurrency is also a per pool setting (to be configured in PoolsConfig.json)
     [Parameter(Mandatory = $false)]
     [String[]]$PoolName = @("Blockmasters", "MPH", "NiceHash", "ZergPoolCoins", "ZPool"), 
     [Parameter(Mandatory = $false)]
-    [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", #PoolsConfig file name
+    [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", # PoolsConfig file name
     [Parameter(Mandatory = $false)]
-    [Int]$PoolTimeout = 30, #Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get any pool data
+    [Int]$PoolTimeout = 30, # Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get any pool data
     [Parameter(Mandatory = $false)]
-    [Hashtable]$PowerPricekWh = @{"00:00" = 0.26; "12:00" = 0.3 }, #Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
+    [Hashtable]$PowerPricekWh = @{"00:00" = 0.26; "12:00" = 0.3 }, # Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
-    [Double]$PricePenaltyFactor = 1, #Estimated profit as projected by pool will be multiplied by this factor. Allowed values: 0.0 - 1.0
+    [Double]$PricePenaltyFactor = 1, # Estimated profit as projected by pool will be multiplied by this factor. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
-    [Double]$ProfitabilityThreshold = -99, #Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+    [Double]$ProfitabilityThreshold = -99, # Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
     [Parameter(Mandatory = $false)]
-    [String]$ProHashingAPIKey = "", #ProHashing API Key (required to retrieve balance information)
+    [String]$ProHashingAPIKey = "", # ProHashing API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$ProHashingUserName = "nemos", #ProHashing UserName, if left empty then $UserName is used
+    [String]$ProHashingUserName = "nemos", # ProHashing UserName, if left empty then $UserName is used
     [Parameter(Mandatory = $false)]
-    [String]$Proxy = "", #i.e http://192.0.0.1:8080
+    [String]$Proxy = "", # i.e http://192.0.0.1:8080
     [Parameter(Mandatory = $false)]
-    [String]$Region = "Europe", #Used to determine pool nearest to you. Valid values are: Europe, US or Asia
+    [String]$Region = "Europe", # Used to determine pool nearest to you. Valid values are: Europe, US or Asia
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, 
     [Parameter(Mandatory = $false)]
-    [Double]$RunningMinerGainPct = 12, #As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
+    [Double]$RunningMinerGainPct = 12, # As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowAccuracy = $true, #Show pool data accuracy column in miner overview
+    [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowAllMiners = $false, #Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+    [Switch]$ShowAllMiners = $false, # Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowEarning = $true, #Show miner earning column in miner overview
+    [Switch]$ShowEarning = $true, # Show miner earning column in miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowEarningBias = $true, #Show miner earning bias column in miner overview
+    [Switch]$ShowEarningBias = $true, # Show miner earning bias column in miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowMinerFee = $true, #Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
+    [Switch]$ShowMinerFee = $true, # Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
     [Parameter(Mandatory = $false)]
     [String]$ShowMinerWindows = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowMinerWindowsNormalWhenBenchmarking = $true, #If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
+    [Switch]$ShowMinerWindowsNormalWhenBenchmarking = $true, # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPoolFee = $true, #Show pool fee column in miner overview
+    [Switch]$ShowPoolFee = $true, # Show pool fee column in miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPowerCost = $true, #Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowPowerCost = $true, # Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowProfit = $true, #Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowProfit = $true, # Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowProfitBias = $true, #Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowProfitBias = $true, # Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPowerUsage = $true, #Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowPowerUsage = $true, # Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
     [Switch]$ShowWorkerStatus = $true, 
     [Parameter(Mandatory = $false)]
-    [String]$SnakeTailExe = ".\Utils\SnakeTail.exe", #Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net], leave empty to disable
+    [String]$SnakeTailExe = ".\Utils\SnakeTail.exe", # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net], leave empty to disable
     [Parameter(Mandatory = $false)]
-    [String]$SnakeTailConfig = ".\Utils\NemosMiner_LogReader.xml", #Path to SnakeTail session config file
+    [String]$SnakeTailConfig = ".\Utils\NemosMiner_LogReader.xml", # Path to SnakeTail session config file
     [Parameter(Mandatory = $false)]
-    [Switch]$SSL = $false, #If true NemosMiner will only use pools which support SSL connections
+    [Switch]$SSL = $false, # If true NemosMiner will only use pools which support SSL connections
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
-    [Switch]$StartPaused = $false, #If true, NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
+    [Switch]$StartPaused = $false, # If true, NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
     [Parameter(Mandatory = $false)]
-    [Int]$SyncWindow = 5, #Minutes. Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used instead of the biased value and a warning will be shown
+    [Int]$SyncWindow = 5, # Minutes. Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used instead of the biased value and a warning will be shown
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
-    [Double]$UnrealPoolPriceFactor = 2, #Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
+    [Double]$UnrealPoolPriceFactor = 2, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
-    [Int]$WarmupTime = 30, #Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds).
+    [Int]$WarmupTime = 30, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds).
     [Parameter(Mandatory = $false)]
-    [Switch]$Watchdog = $true, #if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
+    [Switch]$Watchdog = $true, # if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
     [Parameter(Mandatory = $false)]
-    [Int]$WatchdogMinerAlgorithmCount = 3, #Number of watchdog timers with same miner name & algorithm until miner/algo combination gets suspended
+    [Int]$WatchdogMinerAlgorithmCount = 3, # Number of watchdog timers with same miner name & algorithm until miner/algo combination gets suspended
     [Parameter(Mandatory = $false)]
-    [Int]$WatchdogMinerCount = 6, #Number of watchdog timers with same miner name until miner gets suspended
+    [Int]$WatchdogMinerCount = 6, # Number of watchdog timers with same miner name until miner gets suspended
     [Parameter(Mandatory = $false)]
-    [Int]$WatchdogPoolAlgorithmCount = 3, #Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended
+    [Int]$WatchdogPoolAlgorithmCount = 3, # Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended
     [Parameter(Mandatory = $false)]
-    [Int]$WatchdogPoolCount = 7, #Number of watchdog timers with same pool name until pool gets suspended
+    [Int]$WatchdogPoolCount = 7, # Number of watchdog timers with same pool name until pool gets suspended
     [Parameter(Mandatory = $false)]
-    [Switch]$WebGUI = $true, #If true launch Web GUI (recommended)
+    [Switch]$WebGUI = $true, # If true launch Web GUI (recommended)
     [Parameter(Mandatory = $false)]
     [String]$WorkerName = "ID=testing"
 )
@@ -253,18 +253,18 @@ Catch {
     Add-Type -Path ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
-#Get command line parameters
+# Get command line parameters
 $AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
     $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
     If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
 }
 
-#Create directories
+# Create directories
 If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
 
-#Initialize global variables
+# Initialize global variables
 New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
@@ -272,7 +272,7 @@ New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Forc
 $Variables.Miners = [Miner[]]
 $Variables.Pools = [Miner]::Pools
 
-#Expand paths
+# Expand paths
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))"
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))"
@@ -288,30 +288,30 @@ Else {
     $Variables.CurrentVersion = $Branding.Version
 }
 
-#Get command line parameters, required in Read-Config
+# Get command line parameters, required in Read-Config
 $AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
     $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
     If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
 }
 
-#Read configuration
+# Read configuration
 Read-Config -Parameters $AllCommandLineParameters
 
-Repair-Config #temp fix
+Repair-Config # temp fix
 
-#Start transcript log
+# Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($Variables.ConfigFile)'." }
 
-#Rename existing switching log
+# Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv") { Get-ChildItem ".\Logs\SwitchingLog.csv" | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
 
-#Update config file to include all new config items
+# Update config file to include all new config items
 If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion) { 
-    #Changed config items
+    # Changed config items
     $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
     $Changed_Config_Items | ForEach-Object { 
         Switch ($_) { 
@@ -336,12 +336,12 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
                 $Config.Remove($_)
             }
-            Default { $Config.Remove($_) } #Remove unsupported config item
+            Default { $Config.Remove($_) } # Remove unsupported config item
         }
     }
     Remove-Variable Changed_Config_Items -ErrorAction Ignore
 
-    #Add new config items
+    # Add new config items
     If ($New_Config_Items = $AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
         $New_Config_Items | Sort-Object Name | ForEach-Object { 
             $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
@@ -356,7 +356,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
-#Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+# Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
     $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
     $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
@@ -385,21 +385,21 @@ $Variables.MiningStatus = $Variables.NewMiningStatus = "Stopped"
 $Variables.Strikes = 3
 $Variables.WatchdogTimers = @()
 
-#Load algorithm list
+# Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
     Write-Host "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
     Start-Sleep -Seconds 10
     Exit
 }
-#Load regions list
+# Load regions list
 $Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
     Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
     Start-Sleep -Seconds 10
     Exit
 }
-#Load warmup data
+# Load warmup data
 $Variables.ExtraWarmupTime = Get-Content -Path ".\Includes\ExtraWarmupTimes.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.ExtraWarmupTime) { 
     Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
@@ -425,7 +425,7 @@ If ($Config.AutoStart) {
     Else { 
         $Variables.NewMiningStatus = "Running"
     }
-    #Trigger start mining in TimerUITick
+    # Trigger start mining in TimerUITick
     $Variables.RestartCycle = $true
 }
 
@@ -435,7 +435,7 @@ Import-Module Defender -ErrorAction SilentlyContinue
 Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
 Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
 
-#Unblock files
+# Unblock files
 If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
 If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
     Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
@@ -540,7 +540,7 @@ Function Global:TimerUITick {
 
         If ($Variables.EndLoop) { 
 
-            #Refresh selected tab
+            # Refresh selected tab
             Switch ($TabControl.SelectedTab.Text) { 
                 "Earnings"  { Get-Chart }
                 "Switching" { CheckBoxSwitching_Click }
@@ -672,94 +672,94 @@ Function Global:TimerUITick {
                 }
             }
 
-            #Display available miners list
+            # Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Miner"; Expression = { $_.Name } }, 
                 @{ Label = "Algorithm(s)"; Expression = { $_.Workers.Pool.Algorithm } }
             )
             If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { 
                 $Miner_Table.AddRange(
-                    @( <#Miner fees#>
+                    @( <# Miner fees#>
                         @{ Label = "Fee(s)"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
                     )
                 )
             }
             $Miner_Table.AddRange(
-                @( <#Miner speed#>
+                @( <# Miner speed#>
                     @{ Label = "Speed(s)"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = 'right' }
                 )
             )
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(
-                    @( <#Miner Earning#>
+                    @( <# Miner Earning#>
                        @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowEarningBias) { 
                 $Miner_Table.AddRange(
-                    @( <#Miner EarningsBias#>
+                    @( <# Miner EarningsBias#>
                         @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.CalculatePowerCost -and $Config.ShowPowerUsage) { 
                 $Miner_Table.AddRange(
-                    @( <#Power Usage#>
+                    @( <# Power Usage#>
                         @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" }
                     )
                 )
             }
             If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
                 $Miner_Table.AddRange(
-                    @( <#PowerCost#>
+                    @( <# PowerCost#>
                         @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
                     )
                 )
             }
             If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
-                    @( <#Mining Profit#>
+                    @( <# Mining Profit#>
                         @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowProfitBias -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
-                    @( <#Mining ProfitBias#>
+                    @( <# Mining ProfitBias#>
                         @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowAccuracy) { 
                 $Miner_Table.AddRange(
-                    @( <#Accuracy#>
+                    @( <# Accuracy#>
                         @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = 'right' }
                     )
                 )
             }
             $Miner_Table.AddRange(
-                @( <#Pools#>
+                @( <# Pools#>
                     @{ Label = "Pool(s)"; Expression = { $_.Workers.Pool.Name | ForEach-Object { $_ } } }
                 )
             )
             If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { 
                 $Miner_Table.AddRange(
-                    @( <#Show pool fees#>
+                    @( <# Show pool fees#>
                         @{ Label = "Fee(s)"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
                     )
                 )
             }
             If ($Variables.Miners.Workers.Pool.Coin) { 
                 $Miner_Table.AddRange(
-                    @( <#Coin#>
+                    @( <# Coin#>
                         @{ Label = "Coin(s)"; Expression = { $_.Workers.Pool.Coin | Foreach-Object { [String]$_ } } }
                     )
                 )
             }
             If ($Variables.Miners.Workers.Pool.CoinName) { 
                 $Miner_Table.AddRange(
-                    @( <#CoinName#>
+                    @( <# CoinName#>
                         @{ Label = "CoinName(s)"; Expression = { $_.Workers.Pool.CoinName | Foreach-Object { [String]$_ } } }
                     )
                 )
@@ -771,18 +771,18 @@ Function Global:TimerUITick {
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
                 $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
-                    $Config.ShowAllMiners -or <#List all miners#>
-                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum -1)) -or <#Always list at least the top 5 miners per device group#>
-                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% miners per device group#>
-                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
-                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <#List all miners when measuring power usage#>
+                    $Config.ShowAllMiners -or <# List all miners#>
+                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum -1)) -or <# Always list at least the top 5 miners per device group#>
+                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <# Always list the better 50% miners per device group#>
+                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking#>
+                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <# List all miners when measuring power usage#>
                 } | Sort-Object DeviceName, @{ Expression = { $_.$SortBy } ; Descending = $true }, @{ Expression = { $_.Workers.Pool.Name } } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -eq $_.DeviceName).Model -join ', ')]" } } | Out-Host
 
-                #Display benchmarking progress
+                # Display benchmarking progress
                 If ($MinersDeviceGroupNeedingBenchmark) { 
                     "Benchmarking for device$(If (($MinersDeviceGroup | Select-Object -Unique).Count -ne 1) { " group" } ) ($(($MinersDeviceGroup.DeviceName | Select-Object -Unique ) -join '; ')) in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1){ 's' }) left to complete benchmark." | Out-Host
                 }
-                #Display power usage measurement progress
+                # Display power usage measurement progress
                 If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
                     "Power usage measurement for device$(If (($MinersDeviceGroup | Select-Object -Unique).Count -ne 1) { " group" } ) ($(($MinersDeviceGroup.DeviceName | Select-Object -Unique ) -join '; ')) in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                 }
@@ -833,7 +833,7 @@ Function Global:TimerUITick {
             Remove-Variable Miner_Table -ErrorAction SilentlyContinue
 
             If ($Config.Watchdog -eq $true -and $Variables.UIStyle -eq "Full") { 
-                #Display watchdog timers
+                # Display watchdog timers
                 $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds( -$Variables.WatchdogReset) | Format-Table -Wrap (
                     @{Label = "Miner Watchdog Timers"; Expression = { $_.MinerName } }, 
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
@@ -850,11 +850,11 @@ Function Global:TimerUITick {
 
                 If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
                     If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
-                        #Mining causes a loss
+                        # Mining causes a loss
                         Write-Host -ForegroundColor Red "Mining is currently NOT profitable and causes a loss of $($Config.Currency | Select-Object -Index 0) $((($Variables.MiningProfit - $Variables.BasePowerCost) * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0) -Offset 1)"))/day (including Base Power Cost)."
                     }
                     If (($Variables.MiningEarning - $Variables.MiningPowerCost) -lt $Config.ProfitabilityThreshold) { 
-                        #Mining profit is below the configured threshold
+                        # Mining profit is below the configured threshold
                         Write-host -ForegroundColor Blue "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value ($Variables.MiningProfit - $Variables.BasePowerCost) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
                     }
                 }
@@ -876,7 +876,7 @@ Function Form_Load {
     $MainForm.Number = 0
     $TimerUI.Add_Tick(
         { 
-            #Display mining information
+            # Display mining information
             If ($host.UI.RawUI.KeyAvailable) { 
                 $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho, IncludeKeyDown, IncludeKeyUp"); Start-Sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
                 If ($KeyPressed.KeyDown) { 
@@ -1057,11 +1057,11 @@ $MainForm.Controls.Add($TabControl)
 # Form Controls
 $MainFormControls = @()
 
-#Tooltip
+# Tooltip
 $ToolTip = New-Object System.Windows.Forms.ToolTip
 $ShowHelp = { 
-    #Display popup help
-    #Each value is the name of a control on the form. 
+    # Display popup help
+    # Each value is the name of a control on the form. 
     Switch ($this) {
         $CheckedListBoxPools { $Hint = "You cannot select multiple variants of the same pool" }
         $LabelCurrency { $Hint = "You can define multiple currencies, if so separate values with commas." }
@@ -1085,7 +1085,7 @@ $LabelEarningsDetails.MultiLine = $true
 $LabelEarningsDetails.Text = ""
 $LabelEarningsDetails.AutoSize = $false
 $LabelEarningsDetails.Width = 382
-$LabelEarningsDetails.Height = 77 #62
+$LabelEarningsDetails.Height = 77 # 62
 $LabelEarningsDetails.Location = [System.Drawing.Point]::new(57, 2)
 $LabelEarningsDetails.Font = [System.Drawing.Font]::new("Lucida Console", 10)
 $LabelEarningsDetails.BorderStyle = 'None'
