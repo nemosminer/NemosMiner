@@ -2,7 +2,7 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
-Changelog NemosMiner 3.9.9.8 Beta2 15.12.2020
+Changelog NemosMiner 3.9.9.8 Beta2 16.12.2020
 =============================================
 
 Changed:
@@ -41,7 +41,7 @@ Improved:
 - Web GUI: Validate config data on save
 
 Miner Updates:
-- Bminer-v16.3.6
+- Bminer-v16.3.7
 - GMiner-v2.34
 - lolMiner-v1.16a
 - miniZ-v1.6x
