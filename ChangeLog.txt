@@ -42,7 +42,7 @@ Improved:
 
 Miner Updates:
 - Bminer-v16.3.7
-- GMiner-v2.34
+- GMiner-v2.35
 - lolMiner-v1.16a
 - miniZ-v1.6x
 - NanoMiner-v3.1.4
