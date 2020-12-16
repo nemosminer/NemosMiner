@@ -258,7 +258,7 @@ While ($true) {
                     AvgDailyGrowth          = $AvgHourlyGrowth * 24
                     AvgWeeklyGrowth         = $AvgHourlyGrowth * 168
                     EstimatedEndDayGrowth   = If ((($Now - ($BalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHourlyGrowth -gt 0) { [DateTime]($Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.Balance) / $AvgHourlyGrowth)) } Else { "Unknown" } } Else { "Next Payout!" } } Else { "Unknown" }
+                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If ($AvgHourlyGrowth -gt 1E-8) { [DateTime]($Now.AddHours(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.Balance) / $AvgHourlyGrowth)) } Else { "Unknown" } } Else { "Next Payout!" } } Else { "Unknown" }
                     TrustLevel              = [Double](((($Now - ($BalanceObjects[0].DateTime)).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum)
                     TotalHours              = ($Now - ($BalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
