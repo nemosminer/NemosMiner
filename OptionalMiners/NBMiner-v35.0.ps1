@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\nbminer.exe"
 $Uri = "https://github.com/NebuTech/NBMiner/releases/download/v35.0/NBMiner_35.0_Win.zip"
 $DeviceEnumerator = "Bus"
-$DevicesBus = ($Devices | Select-Object).Bus | Sort-Object
+$DevicesBus = @(($Devices | Select-Object).Bus | Sort-Object)
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $Commands = [PSCustomObject[]]@(
