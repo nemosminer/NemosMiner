@@ -55,6 +55,7 @@ Miner Updates:
 - Wildrig-v0.28.2
 
 New:
+- Core: Monitor pool data age and decay prices / remove pool data when old
 - Core: Create new switching log for each run
 - Core: Read extra warmup time needed from 'ExtraWarmupTimes.txt'
 - Core: Support for EtcHash
