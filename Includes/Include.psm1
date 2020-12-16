@@ -123,6 +123,7 @@ enum MinerStatus {
 Class Miner { 
     static [Pool[]]$Pools = @()
     [Worker[]]$Workers = @()
+    [Worker[]]$WorkersRunning = @()
     [Device[]]$Devices = @()
 
     [String[]]$Type
@@ -137,7 +138,7 @@ Class Miner {
     [String]$CommandLine
     [UInt16]$Port
     [String[]]$DeviceName = @() # derived from devices
-    [String[]]$Algorithm = @() # derived from pool
+    [String[]]$Algorithm = @() # derived from workers
     [Double[]]$Speed_Live = @()
 
     [Double]$Earning # derived from pool and stats
@@ -239,6 +240,8 @@ Class Miner {
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
+            $this.WorkersRunning = $this.Workers
+
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
                 Date         = [String](Get-Date -Format o)
@@ -246,9 +249,9 @@ Class Miner {
                 Name         = $this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
                 Type         = ($this.Type -join " & ")
-                Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
-                Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-                Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
+                Account      = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
+                Pool         = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+                Algorithm    = ($this.WorkersRunning.Pool.Algorithm) -join "; "
                 Duration     = ""
                 Earning      = [Double]$this.Earning
                 Earning_Bias = [Double]$this.Earning_Bias
@@ -263,14 +266,14 @@ Class Miner {
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
                         # Starting Miner Data reader
-                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers | ConvertTo-Json) }
+                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
                         Break
                     }
                     Start-Sleep -Milliseconds 100
                 }
             }
 
-            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.Info = "$($this.Name) {$(($this.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = (Get-Date).ToUniversalTime()
@@ -319,9 +322,9 @@ Class Miner {
             Name         = $this.Name
             Device       = ($this.Devices.Name | Sort-Object) -join "; "
             Type         = ($this.Type -join " & ")
-            Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
-            Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
+            Account      = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
+            Pool         = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+            Algorithm    = ($this.WorkersRunning.Pool.Algorithm) -join "; "
             Duration     = [String]($this.EndTime - $this.BeginTime) -Split '\.' | Select-Object -Index 0
             Earning      = [Double]$this.Earning
             Earning_Bias = [Double]$this.Earning_Bias
@@ -1224,6 +1227,7 @@ Function Stop-Mining {
         $_.Best = $false
         Write-Message "Stopped miner '$($_.Info)'."
     }
+    $Variables.WatchdogTimers = @()
 
     If ($Variables.CoreRunspace) { 
         $Variables.CoreRunspace.Close()
@@ -2766,6 +2770,7 @@ Function Get-DAGsize {
 
     Switch ($Coin) {
         "ETC" { If ($Block -ge 11700000 ) { $Epoch_Length = 60000 } Else { $Epoch_Length = 30000 } }
+        "RVN" { $Epoch_Length = 7500 }
         default { $Epoch_Length = 30000 }
     }
 
