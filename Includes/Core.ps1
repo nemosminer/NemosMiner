@@ -49,11 +49,17 @@ Function Start-Cycle {
     # Expire watchdog timers
     $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
+    # Prepare devices
+    $EnabledDevices = $Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+    # For GPUs set type AMD or NVIDIA
+    $EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
+    If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } # Remove Model information from devices -> will create only one miner instance
+
     # Allow at least one watchdog per device, otherwise high number of devices may trigger watchdog
-    $Variables.WatchdogPoolAlgorithmCount = 3 + 3 + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count - 1
-    $Variables.WatchdogPoolCount = 3 + 3 + 3 + @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object).Count - 1
+    $Variables.WatchdogPoolAlgorithmCount = 3 + 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
+    $Variables.WatchdogPoolCount = 3 + 3 + 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
     $Variables.WatchdogMinerAlgorithmCount = 3
-    $Variables.WatchdogMinerCount = 3 + 3
+    $Variables.WatchdogMinerCount = 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
 
     # Always get the latest config
     Read-Config
@@ -501,13 +507,15 @@ Function Start-Cycle {
             # Collect hashrate from miner
             $Miner_Speeds = [Hashtable]@{}
             $Miner.Algorithm | ForEach-Object { 
-                $Miner.Speed_Live += [Double]($Miner.CollectHashRate($_, $false))
-                $Miner_Speeds.$_ = ([Double]($Miner.CollectHashRate($_, ($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))))
+                $CollectedHashRate = $Miner.CollectHashRate($_, ($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
+                $Miner.Speed_Live += [Double]($CollectedHashRate[1])
+                $Miner_Speeds.$_ = [Double]($CollectedHashRate[0])
             }
             If ($Variables.CalculatePowerCost) {
                 # Collect power usage from miner
-                $Miner.PowerUsage_Live = ([Double]($Miner.CollectPowerUsage($false)))
-                $PowerUsage = [Double]($Miner.CollectPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
+                $CollectedPowerUsage = $Miner.CollectPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples))
+                $Miner.PowerUsage_Live = [Double]($CollectedPowerUsage[1])
+                $PowerUsage = [Double]($CollectedPowerUsage[0])
             }
             # Reduce data to MinDataSamples * 5
             If (($Miner.Data).Count -gt ($Miner.MinDataSamples * 5)) { 
@@ -528,7 +536,7 @@ Function Start-Cycle {
                 # Do not save data if stat just got removed
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
                     # Stop miner if new value is outside ±200% of current value
-                    If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -ge ($Stat.Week * 2) -or $Miner_Speeds.$Algorithm -lt ($Stat.Week / 2))) {
+                    If ($Miner_Speeds.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -ge ($Stat.Week * 2) -or $Miner_Speeds.$Algorithm -lt ($Stat.Week / 2))) {
                         Write-Message -Level Warn "$($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
@@ -551,7 +559,7 @@ Function Start-Cycle {
                 $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
                     # Stop miner if new value is outside ±200% of current value
-                    If ($Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt ($Stat.Week * 2) -or $PowerUsage -lt ($Stat.Week / 2))) {
+                    If ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt ($Stat.Week * 2) -or $PowerUsage -lt ($Stat.Week / 2))) {
                         Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($(([Double]$PowerUsage).ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
@@ -623,12 +631,6 @@ Function Start-Cycle {
         If ($_.Reason -ne "Unprofitable Primary Algorithm") { $PoolsPrimaryAlgorithm | Add-Member $_.Algorithm $_ } # Allow unprofitable algos for primary algorithm
         If ($_.Reason -ne "Unprofitable Secondary Algorithm") { $PoolsSecondaryAlgorithm | Add-Member $_.Algorithm $_ } # Allow unprofitable algos for secondary algorithm
     }
-
-    # Prepare devices
-    $EnabledDevices = $Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
-    # For GPUs set type AMD or NVIDIA
-    $EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
-    If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } # Remove Model information from devices -> will create only one miner instance
 
     # Load miners
     $Variables.NewMiners_Jobs = @(
@@ -1031,6 +1033,21 @@ Function Start-Cycle {
                 }
             }
         }
+        Else { 
+            #Recreate removed watchdog timers
+            $Miner.WorkersRunning | ForEach-Object { 
+                $Worker = $_
+                If (-not ($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
+                    $Variables.WatchdogTimers += [PSCustomObject]@{ 
+                        MinerName  = $Miner.Name
+                        PoolName   = $Worker.Pool.Name
+                        Algorithm  = $Worker.Pool.Algorithm
+                        DeviceName = $Miner.DeviceName
+                        Kicked     = $Variables.Timer
+                    }
+                }
+            }
+        }
     }
 
     $Variables.Miners | Where-Object Best -EQ $true | ForEach-Object { 
@@ -1123,7 +1140,8 @@ While ($true) {
                 If ($Miner.GetStatus() -eq [MinerStatus]::Running -and $Miner.DataReaderJob.HasMoreData) { 
                     $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                     $Sample = @($Samples) | Select-Object -Last 1
-                    If ($Sample.Shares) { 
+
+                    If ($Sample.HashRate) { 
                         Write-Message -Level Verbose "$($Miner.Name) data sample retrieved: [$(($Miner.Workers.Pool | Select-Object -ExpandProperty Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
                         If ($Miner.AllowedBadShareRatio) { 
                             $Miner.Workers.Pool | Select-Object -ExpandProperty Algorithm | ForEach-Object { 
