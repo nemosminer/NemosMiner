@@ -187,6 +187,7 @@ Function Start-APIServer {
                         Try { 
                             Copy-Item -Path $Variables.ConfigFile -Destination "$($Variables.ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").backup"
                             $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                            Read-Config
                             $Variables.RestartCycle = $true
                             $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
                         }
@@ -296,7 +297,7 @@ Function Start-APIServer {
                                 If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
-                                $_.Activated = -1 #To allow 3 attempts
+                                $_.Activated = -1 # To allow 3 attempts
                                 $_.Benchmark = $true
                                 $_.Accuracy = $null
                                 $_.Data = @()
@@ -306,7 +307,7 @@ Function Start-APIServer {
                                 ForEach ($Algorithm in $_.Algorithm) { 
                                     Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                 }
-                                #Also clear power usage
+                                # Also clear power usage
                                 Remove-Stat -Name "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_PowerUsage"
                                 $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                             }
@@ -332,7 +333,7 @@ Function Start-APIServer {
                                 }
                                 $_.PowerUsage = [Double]::Nan
                                 $_.MeasurePowerUsage = $true
-                                $_.Activated = -1 #To allow 3 attempts
+                                $_.Activated = -1 # To allow 3 attempts
                                 $_.Accuracy = 1
                                 $_. Benchmark = $true
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
@@ -378,7 +379,7 @@ Function Start-APIServer {
                                 $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                 ForEach ($Algorithm in $_.Algorithm) { 
                                     $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
-                                    #Remove & set stat value
+                                    # Remove & set stat value
                                     Remove-Stat -Name $StatName
                                     Set-Stat -Name $StatName -Value ($Parameters.Value) -Duration 0
                                 }
@@ -486,7 +487,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/earnings" { 
-                        #Format dates for powershell 5.1 compatiblity
+                        # Format dates for powershell 5.1 compatiblity
                         $Earnings = $Variables.Earnings | ConvertTo-Json | ConvertFrom-Json
                         If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { 
                             $Earnings | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
@@ -505,7 +506,7 @@ Function Start-APIServer {
                     }
                     "/earningschartdata" { 
                         $ChartData = Get-Content ".\Logs\EarningsChartData.json" | ConvertFrom-Json
-                        #Add BTC rate to avoid blocking NaN errors
+                        # Add BTC rate to avoid blocking NaN errors
                         $ChartData | Add-Member BTCrate ([Double]($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)))
                         $Data = $ChartData | ConvertTo-Json
                         Break
@@ -515,31 +516,31 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name, SwitchingLogData, WorkersRunning)
                         Break
                     }
                     "/miners/available" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData | SortObject DeviceName, EndTime)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | SortObject DeviceName, EndTime)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/running" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, Workers | ConvertTo-Json -Depth 10 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning) 
                         Break
                     }
                     "/miners/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
                         Break
                     }
                     "/miningpowercost" { 
@@ -686,7 +687,7 @@ Function Start-APIServer {
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
 
-                #Fix for Powershell 5.1, cannot handle NaN in Jason
+                # Fix for Powershell 5.1, cannot handle NaN in Jason
                 If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { $Data = $Data -replace '":\s*NaN,', '":  "-",' }
 
                 # Send the response
@@ -702,7 +703,7 @@ Function Start-APIServer {
             $Server.Stop()
             $Server.Close()
         }
-    ) #end of $APIServer
+    ) # end of $APIServer
     $AsyncObject = $PowerShell.BeginInvoke()
 
     $Variables.APIRunspace = $APIRunspace
