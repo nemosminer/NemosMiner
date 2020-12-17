@@ -468,7 +468,8 @@ Class Miner {
         Return $null
     }
 
-    [Double]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
+    [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
+        # Returns an array of two values (safe, unsafe)
         $HashRates_Devices = @($this.Data | Where-Object Devices | Select-Object -ExpandProperty Device -Unique)
         If (-not $HashRates_Devices) { $HashRates_Devices = @("Device") }
 
@@ -501,18 +502,19 @@ Class Miner {
 
         If ($Safe) { 
             If ($HashRates_Count -lt 3 -or $HashRates_Variance -gt 0.05) { 
-                Return 0
+                Return @(0, $HashRates_Average)
             }
             Else { 
-                Return $HashRates_Average * (1 + ($HashRates_Variance / 2))
+                Return @(($HashRates_Average * (1 + ($HashRates_Variance / 2))), $HashRates_Average)
             }
         }
         Else { 
-            Return $HashRates_Average
+            Return @($HashRates_Average, $HashRates_Average)
         }
     }
 
-    [Double]CollectPowerUsage([Boolean]$Safe = $this.New) { 
+    [Double[]]CollectPowerUsage([Boolean]$Safe = $this.New) { 
+        # Returns an array of two values (safe, unsafe)
         $PowerUsages_Devices = @($this.Data | Where-Object Devices | Select-Object -ExpandProperty Device -Unique)
         If (-not $PowerUsages_Devices) { $PowerUsages_Devices = @("Device") }
 
@@ -545,14 +547,14 @@ Class Miner {
 
         If ($Safe) { 
             If ($PowerUsages_Count -lt 3 -or $PowerUsages_Variance -gt 0.1) { 
-                Return 0
+                Return @(0, $PowerUsages_Average)
             }
             Else { 
-                Return $PowerUsages_Average * (1 + ($PowerUsages_Variance / 2))
+                Return @(($PowerUsages_Average * (1 + ($PowerUsages_Variance / 2))), $PowerUsages_Average)
             }
         }
         Else { 
-            Return $PowerUsages_Average
+            Return @($PowerUsages_Average, $PowerUsages_Average)
         }
     }
 
