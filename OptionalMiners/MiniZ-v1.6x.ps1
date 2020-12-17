@@ -12,7 +12,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.0; Command = " --par=192,7 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Command = " --par=210,9 --smart-pers --ocX" }
-#    [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323# msg55832323)
+#   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323# msg55832323)
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 2.0; Command = " --par=192,7 --pers ZcashPoW --ocX" }
 )
@@ -41,7 +41,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Command) --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" })$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim() #--oc1 --oc2 --f11=0
+                        Arguments       = ("$($_.Command) --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" })$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "MiniZ"
                         Port            = $MinerAPIPort
@@ -50,6 +50,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         Fee             = 0.02 # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
                         PowerUsageInAPI = $true
+                        WarmupTime      = 30
                     }
                 }
             }
