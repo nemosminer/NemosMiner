@@ -188,7 +188,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$StartPaused = $false, # If true, NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
     [Parameter(Mandatory = $false)]
-    [Int]$SyncWindow = 5, # Minutes. Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used instead of the biased value and a warning will be shown
+    [Int]$SyncWindow = 3, # Cycles. Pool prices must all be all have been collected within the last 'SyncWindow' cycles, otherwise the biased value of older poll price data will get reduced more the older the data is
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
@@ -384,6 +384,7 @@ $Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Objec
 $Variables.MiningStatus = $Variables.NewMiningStatus = "Stopped"
 $Variables.Strikes = 3
 $Variables.WatchdogTimers = @()
+$Variables.StatStarts = @()
 
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
@@ -560,7 +561,7 @@ Function Global:TimerUITick {
                         @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency) } }, 
                         @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.BTC.$EarningsCurrency) } }, 
                         @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is [DateTime]) { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } }, 
-                        @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P0}' -f $($_.Balance / $_.PayoutThreshold)))" } }
+                        @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance * $Variables.Rates.BTC.$EarningsCurrency / $_.PayoutThreshold)))"  } }
                     )
                 ) | Sort-Object "$DisplayCurrency in 1h", "$DisplayCurrency in 6h", "$DisplayCurrency in 24h" -Descending
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
@@ -645,6 +646,7 @@ Function Global:TimerUITick {
             }
 
             Clear-Host
+
             # Get and display earnings stats
             If ($Variables.Earnings -and $Variables.ShowPoolBalances) { 
                 $Variables.Earnings.Values | ForEach-Object { 
