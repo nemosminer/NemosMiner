@@ -1,7 +1,8 @@
 {
   "_Extra warmup time to be added for listed algorithms": "in Seconds",
-  "Argon2dDyn": 60,
+  "Argon2dDyn": 90,
   "C11": 30,
+  "Cuckatoo32": 30,
   "Ethash": 30,
   "Ethash&Blake2s": 60,
   "Ethash&Decred": 60,

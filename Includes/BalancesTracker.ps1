@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           BalancesTracker.ps1
 version:        3.9.9.8
-version date:   01 November 2020
+version date:   18 November 2020
 #>
 
 # Start the log
@@ -346,17 +346,17 @@ While ($true) {
             $PoolData | Add-Member @{ $_ = [Double[]]@() }
         }
 
-        $CumulatedEarnings = [Double[]]@()
+        # $CumulatedEarnings = [Double[]]@()
         # Fill dataset
         ForEach ($PoolDailyEarning in $ChartData) { 
-            $CumulatedEarnings += ([Double]($PoolDailyEarning.Group | Measure-Object DailyEarnings -Sum).Sum)
+            # $CumulatedEarnings += ([Double]($PoolDailyEarning.Group | Measure-Object DailyEarnings -Sum).Sum)
             $PoolData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
                 $PoolData.$_ += [Double]($PoolDailyEarning.Group | Where-Object Pool -EQ $_).DailyEarnings
             }
         }
 
         [PSCustomObject]@{
-            CumulatedEarnings = $CumulatedEarnings # Dataset for cumulated earnings
+            # CumulatedEarnings = $CumulatedEarnings # Dataset for cumulated earnings
             Currency = ($Config.Currency | Select-Object -Index 0)
             Labels = @(
                 $ChartData.Group.Date | Sort-Object -Unique | ForEach-Object { 

@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:          NemosMiner
 File:             Charting.ps1
 version:          3.9.9.8
-version date:     03 December 2020
+version date:     18 December 2020
 #>
 
 param(
@@ -52,7 +52,7 @@ Switch ($ChartType) {
         $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
         $Chart.Height = $Height
-        $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"# F0F0F0"
+        $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $ChartTitle.Text = ("Earnings Tracker: Earnings of the past 7 active days")
@@ -62,14 +62,14 @@ Switch ($ChartType) {
 
         $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $ChartArea.Name = "ChartArea1"
-        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"# 2B3232"
-        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"# 777E7E"
+        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"#2B3232"
+        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
         $ChartArea.BackGradientStyle = 3
         $ChartArea.AxisX.labelStyle.Enabled = $false
         $ChartArea.AxisX.Enabled = 2
         $ChartArea.AxisX.MajorGrid.Enabled = $false
         $ChartArea.AxisY.MajorGrid.Enabled = $true
-        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"# FFFFFF"
+        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
         $ChartArea.AxisY.labelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
         $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object Date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * 1000 / 4, 3)
         $Chart.ChartAreas.Add($ChartArea)
@@ -79,8 +79,8 @@ Switch ($ChartType) {
         $Chart.Series["TotalEarning"].BorderWidth = 3
         $Chart.Series["TotalEarning"].ChartArea = "ChartArea1"
         $Chart.Series["TotalEarning"].Color = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"FFFFFF"
-        $Chart.Series["TotalEarning"].label = "# VALY{N3}"
-        $Chart.Series["TotalEarning"].ToolTip = "# VALX: # VALY $($Currency)"
+        $Chart.Series["TotalEarning"].label = "#VALY{N3}"
+        $Chart.Series["TotalEarning"].ToolTip = "#VALX: #VALY $($Currency)"
         $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series["TotalEarning"].Points.addxy( $_.Date.ToShortDateString() , ("{0:N5}" -f ([Decimal]$_.DaySum * $Variables.Rates.BTC.$Currency))) | Out-Null }
     }
     "Front7DaysEarningsWithPoolSplit" {
@@ -92,7 +92,7 @@ Switch ($ChartType) {
         $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
         $Chart.Height = $Height
-        $Chart.BackColor = [System.Drawing.Color]::FromArgb(0, 240, 240, 240) #"# F0F0F0"
+        $Chart.BackColor = [System.Drawing.Color]::FromArgb(0, 240, 240, 240) #"#F0F0F0"
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $ChartTitle.Text = ("Earnings Tracker: Earnings of the past 7 active days")
@@ -102,14 +102,14 @@ Switch ($ChartType) {
 
         $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $ChartArea.Name = "ChartArea1"
-        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"# 2B3232"
-        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"# 777E7E"
+        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"#2B3232"
+        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
         $ChartArea.BackGradientStyle = 3
         $ChartArea.AxisX.labelStyle.Enabled = $false
         $ChartArea.AxisX.Enabled = 2
         $ChartArea.AxisX.MajorGrid.Enabled = $false
         $ChartArea.AxisY.MajorGrid.Enabled = $true
-        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"# FFFFFF"
+        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
         $ChartArea.AxisY.labelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
         $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * $Variables.Rates.BTC.$Currency / 4, 3)
         $Chart.ChartAreas.Add($ChartArea)
@@ -124,7 +124,7 @@ Switch ($ChartType) {
             $Chart.Series[$Pool].BorderWidth = 3
             $Chart.Series[$Pool].ChartArea = "ChartArea1"
             $Chart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Colors[0], $Colors[1], $Colors[2], $Colors[3])
-            $Chart.Series[$Pool].ToolTip = "# SERIESNAME: # VALY $($Currency)"
+            $Chart.Series[$Pool].ToolTip = "#SERIESNAME: #VALY $($Currency)"
             $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Date.ToShortDateString() , ("{0:N3}" -f ([Decimal]$_.DailyEarnings * $Variables.Rates.BTC.$Currency))) | Out-Null }
         }
 
@@ -132,8 +132,8 @@ Switch ($ChartType) {
         $Chart.Series["Total"].ChartType = "Column"
         $Chart.Series["Total"].BorderWidth = 3
         $Chart.Series["Total"].ChartArea = "ChartArea1"
-        $Chart.Series["Total"].Color = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"# 777E7E"
-        $Chart.Series["Total"].ToolTip = "# SERIESNAME: # VALY $($Currency)"
+        $Chart.Series["Total"].Color = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
+        $Chart.Series["Total"].ToolTip = "#SERIESNAME: #VALY $($Currency)"
         $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Date , ("{0:N3}" -f ([Decimal]$_.DaySum * $Variables.Rates.BTC.$Currency))) | Out-Null }
 
         $Chart.Series | ForEach-Object { $_.CustomProperties = "DrawSideBySide=True" }
@@ -145,7 +145,7 @@ Switch ($ChartType) {
         $Chart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
         $Chart.Width = $Width
         $Chart.Height = $Height
-        $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"# F0F0F0"
+        $Chart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $ChartTitle.Text = ("Todays earnings per pool")
@@ -155,14 +155,14 @@ Switch ($ChartType) {
 
         $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $ChartArea.Name = "ChartArea1"
-        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"# 2B3232"
-        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"# 777E7E"
+        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"#2B3232"
+        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
         $ChartArea.BackGradientStyle = 3
         $ChartArea.AxisX.LabelStyle.Enabled = $false
         $ChartArea.AxisX.Enabled = 2
         $ChartArea.AxisX.MajorGrid.Enabled = $false
         $ChartArea.AxisY.MajorGrid.Enabled = $true
-        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"# FFFFFF"
+        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
         $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
         $ChartArea.AxisY.Interval = [Math]::Round(($Datasource | Group-Object date | ForEach-Object { ($_.group.DailyEarnings | Measure-Object -sum).sum } | Measure-Object -maximum).maximum * $Variables.Rates.BTC.$Currency / 4, 3)
         $Chart.ChartAreas.Add($ChartArea)
@@ -174,10 +174,10 @@ Switch ($ChartType) {
             [void]$Chart.Series.Add($Pool)
             $Chart.Series[$Pool].ChartType = "StackedColumn"
             $Chart.Series[$Pool].BorderWidth = 1
-            $Chart.Series[$Pool].BorderColor = [System.Drawing.Color]::FromArgb(255, 119, 126 ,126) #"# FFFFFF"
+            $Chart.Series[$Pool].BorderColor = [System.Drawing.Color]::FromArgb(255, 119, 126 ,126) #"#FFFFFF"
             $Chart.Series[$Pool].ChartArea = "ChartArea1"
             $Chart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Colors[0], $Colors[1], $Colors[2], $Colors[3])
-            $Chart.Series[$Pool].ToolTip = "# SERIESNAME: # VALY $($Currency)"
+            $Chart.Series[$Pool].ToolTip = "#SERIESNAME: #VALY $($Currency)"
             $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $Chart.Series[$Pool].Points.addxy( $_.Pool , ("{0:N3}" -f ([Decimal]$_.DailyEarnings * $Variables.Rates.BTC.$Currency))) | Out-Null }
         }
     }

@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.8
-Version date:   03 December 2020
+Version date:   18 December 2020
 #>
 
 [CmdletBinding()]
