@@ -11,7 +11,10 @@
 
 <script type="text/javascript">
 
-  function HslColor (saturation, lightness, amount, item) {
+  Chart.defaults.global.defaultFontColor = "black";
+  Chart.defaults.global.defaultFontSize = 16;
+
+  function HslColor (amount, item, saturation, lightness) {
     let huedelta = Math.trunc(360 / amount)
     let hue = item * huedelta
     return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
@@ -28,36 +31,45 @@
       options: {
         legend: {
           labels: {
-            fontColor: 'black',
-            fontSize: 18
+            // fontSize: 18
           }
         },
         scales: {
-          xAxes: [{
-            ticks: {
-              fontColor: 'black',
-              fontSize: 16
-            },
-            stacked: true
-          }],
-          yAxes: [{
-            stacked: true,
-            ticks: {
-              fontColor: 'black',
-              fontSize: 16
+          xAxes: [
+            {
+              scaleLabel: {
+                fontSize: 20,
+                labelString: 'Date'
+              },
+              ticks: {
+                // fontSize: 16
+              },
+              stacked: true
             }
-          }]
+          ],
+          yAxes: [
+            {
+              scaleLabel: {
+                display: 'true',
+                fontSize: 20,
+                labelString: currency
+              },
+              stacked: true,
+              ticks: {
+                // fontSize: 16
+              }
+            }
+          ]
         },
         title: {
           display: true,
           fontSize: 32,
           fontStyle: 'normal',
-          fontColor: 'black',
-          text: 'Mining Earnings in ' + currency
+          text: 'Mining Earnings per Pool'
         },
         tooltips: {
-          titleFontSize: 16,
-          bodyFontSize: 16
+          // titleFontSize: 16,
+          // bodyFontSize: 16
         }
       }
     });
@@ -65,23 +77,28 @@
 
   $.ajax({url: '/earningschartdata', 
     success: function (earningsdata) {
-      console.log(earningsdata);
       var datasets = [];
+
       for (var pool in earningsdata.Pools) {
-        var label = pool.replace('Internal', ' (Internal)').replace('External', ' (External)');
-        var data = [];
+        var BTCvalue = [];
+        var BTCRate = [];
         for (var index in earningsdata.Pools[pool]) {
-          data.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
+          BTCvalue.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
+          BTCRate.push(earningsdata.Pools[pool][index]);
         };
 
-        var dataset = {
-          label: label,
-          data: data,
-          backgroundColor: HslColor(50, 66, Object.keys(earningsdata.Pools).length, (datasets.length + 1))
+        var earnings = {
+          label: pool.replace('Internal', ' (Internal)').replace('External', ' (External)'),
+          data: BTCvalue,
+          backgroundColor: HslColor(Object.keys(earningsdata.Pools).length, (datasets.length + 1), 50, 60)
         };
-        datasets.push(dataset);
+
+        datasets.push(earnings);
+
       }
+
       renderChart(earningsdata.Labels, datasets, earningsdata.Currency);
+
     }
   });
 
