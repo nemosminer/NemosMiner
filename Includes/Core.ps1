@@ -75,7 +75,6 @@ Function Start-Cycle {
 
             If (-not $Variables.DAGdata.Currency) { 
                 $DAGdata = [PSCustomObject][Ordered]@{ }
-                $DAGdata | Add-Member Source $Uri
                 $DAGdata | Add-Member Updated (Get-Date).ToUniversalTime()
             }
 
@@ -86,7 +85,7 @@ Function Start-Cycle {
                     $Uri = "https://minerstat.com/dag-size-calculator"
 
                     $DAGdata | Add-Member Currency ([Ordered]@{ })
-                    $BlockHeight = $Currency = $DAGsize = $Epoch = $null
+                    $BlockHeight, $Currency, $DAGsize, $Epoch = $null
 
                     $Page = Invoke-WebRequest $Uri # PWSH 6+ no longer supports basic parsing -> parse text
                     $Page.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
