@@ -2,6 +2,13 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
+Changelog NemosMiner 3.9.9.8 Beta3 18.12.2020
+=============================================
+
+Miner Updates:
+- PhoenixMiner-v5.4c
+
+
 Changelog NemosMiner 3.9.9.8 Beta2 17.12.2020
 =============================================
 
