@@ -8,15 +8,15 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.02; MinMemGB = 16; Coin = "Cuckaroo30" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Etchash" } # PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Ethash" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Etchash" } # PhoenixMiner-v5.4c is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Ethash" } # PhoenixMiner-v5.4c is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  Coin = "Kawpow" } # TeamRed-v0.7.21 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Ubqhash" }
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    Coin = "RandomHash2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Coin = "RandomX" } # XmRig-v6.5.0 is fastest
 
-#   [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Etchash" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Etchash" } # PhoenixMiner-v5.4c is fastest
 #   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Ethash" } # TTMiner-v5.0.3 is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Coin = "Kawpow" } # Trex-v0.19.4 is fastest
 #   [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; Coin = "Octopus" } # NBMiner-v34.5 is faster

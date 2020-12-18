@@ -13,8 +13,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    Fee = 0.01; MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";        Fee = 0.01; MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";      Fee = 0.01; MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } # PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } # PhoenixMiner-v5.4c is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }

@@ -13,8 +13,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Equihash1445");        Fee = @(0.02);    MinMemGB = 1.8; Type = "AMD"; Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.16a is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "AMD"; Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.16a is fastest
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "AMD"; Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
-#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
 
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");              Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Fee = @(0.03);    MinMemGB = 6.0; Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
@@ -32,9 +32,9 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Equihash1927");        Fee = @(0.02);    MinMemGB = 2.8; Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash2109");        Fee = @(0.02);    MinMemGB = 1.0; Type = "NVIDIA"; Command = " --algo equihash210_9 --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = @("EquihashBTG");         Fee = @(0.02);    MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
-#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4b is fastest
-#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = @("EtcHash");             Fee = @(0.0065);  MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash");              Fee = @(0.0065);  MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
+#   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } # NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Zilliqa");             Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo eth --cuda 1 --opencl 0" } #!ETH, see readme
 #   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # Trex-v0.19.4 is fastest

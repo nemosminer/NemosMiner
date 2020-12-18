@@ -23,7 +23,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; Command = " --algo=cuckarood29_grin" } # 2GB is not enough
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; Command = " --algo=cuckatoo31_grin" }
 #   [PSCustomObject]@{ Algorithm = "EtcHash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=etchash" }
-#   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=ethash --eth_dag_buf=A" } # PhoenixMiner-v5.4b is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; Command = " --algo=ethash --eth_dag_buf=A" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; Command = " --algo=kawpow" } # Wildrig-v0.28.2 is fastest on Polaris
 #   [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; Command = " --algo=lyra2z" } # XmRig-v6.5.0 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; Command = " --algo=lyra2rev3" }
