@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\ethminer.exe"
-$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r4/ethminer0190r4.7z"
+$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r5/ethminer0190r5.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
