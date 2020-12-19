@@ -9,11 +9,11 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; Command = " -algo EAGLESONG" }
     [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.4c is fastest but has 0.65% fee
-   [PSCustomObject]@{ Algorithm = "KawPow";    MinMemGB = 2; Command = " -algo KAWPOW" } # Create new DAG for epoch -1 error
+    [PSCustomObject]@{ Algorithm = "KawPow";    MinMemGB = 2; Command = " -algo KAWPOW" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";  MinMemGB = 2; Command = " -algo LYRA2V3" }
 #   [PSCustomObject]@{ Algorithm = "MTP";       MinMemGB = 2; Command = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
     [PSCustomObject]@{ Algorithm = "ProgPoW";   MinMemGB = 2; Command = " -algo PROGPOW" } # Zano, Sero
-    [PSCustomObject]@{ Algorithm = "UbqHash";   MinMemGB = 2; Command = " -algo UBQHASH -intensity 15" } # 
+    [PSCustomObject]@{ Algorithm = "UbqHash";   MinMemGB = 2; Command = " -algo UBQHASH -intensity 15" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -26,7 +26,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                # If ($Pools.($_.Algorithm).EthashEpoch -gt 384) { Return }
+                # If ($Pools.($_.Algorithm).Epoch -gt 384) { Return }
 
                 $MinMemGB = $_.MinMemGB
 
@@ -37,12 +37,12 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     # Get commands for active miner devices
                     # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
+                    $Coin = ""
                     If ($_.Algorithm -eq "ProgPoW") { 
                         If ($Pools.($_.Algorithm).Currency -in @("EPIC", "ETHERCORE", "SERO", "RAVEN", "ZANO")) { 
                             $Coin = " -coin $($Pools.($_.Algorithm).Currency)"
                         }
                         Else { 
-                            $Coin = ""
                             Return
                         }
                     }

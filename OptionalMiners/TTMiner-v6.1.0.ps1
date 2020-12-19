@@ -27,7 +27,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $Commands | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm -in @("EtcHash", "Ethash")) { 
+                If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
                     $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
                 }
 
@@ -38,12 +38,12 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     # Get commands for active miner devices
                     # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
+                    $Coin = ""
                     If ($_.Algorithm -eq "ProgPoW") { 
                         If ($Pools.($_.Algorithm).Currency -in @("EPIC", "ETHERCORE", "SERO", "RAVEN", "ZANO")) { 
                             $Coin = " -coin $($Pools.($_.Algorithm).Currency)"
                         }
                         Else { 
-                            $Coin = ""
                             Return
                         }
                     }
