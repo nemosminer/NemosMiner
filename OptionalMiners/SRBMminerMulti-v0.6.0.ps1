@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.5.9/SRBMiner-Multi-0-5-9-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.0/SRBMiner-Multi-0-6-0-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
@@ -27,9 +27,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "RainforestV2";        Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm rainforestv2" }
-    [PSCustomObject]@{ Algorithm = "Tellor";              Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm tellor" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; Command = " --algorithm ubqhash" }
+#   [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; Command = " --algorithm ubqhash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMC"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm yescrypt" }
 
@@ -54,15 +52,13 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "CPU"; Fee = 0.0085; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "CPU"; Fee = 0;      Command = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "RainforestV2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm rainforestv2" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.5.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxHash2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomwow --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "ScryptN2";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm scryptn2" }
-    [PSCustomObject]@{ Algorithm = "Tellor";              Type = "CPU"; Fee = 0;      Command = " --algorithm tellor" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "CPU"; Fee = 0.0065; Command = " --algorithm ubqhash" }
+#   [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "CPU"; Fee = 0.0065; Command = " --algorithm ubqhash" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "CPU"; Fee = 0.0085; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = "YescryptR8";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm yescryptr8" }
@@ -115,7 +111,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$($Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User) --password $($Pools.($_.Algorithm).Pass) --worker $($Config.Workername) --api-enable --api-port $($MinerAPIPort)$DeviceCommand" -replace "\s+", " ").trim()
+                        Arguments  = ("$($Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User) --password $($Pools.($_.Algorithm).Pass) --worker $($Config.Workername) --disable-workers-ramp-up --api-enable --api-port $($MinerAPIPort)$DeviceCommand" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "SRBMiner"
                         Port       = $MinerAPIPort

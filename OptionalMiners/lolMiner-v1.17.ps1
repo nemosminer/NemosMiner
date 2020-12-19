@@ -81,7 +81,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName      = $Miner_Devices.Name
                         Type            = $_.Type
                         Path            = $Path
-                        Arguments       = ("$($Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).pass)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --shortstats=2  --longstats=10 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')").trim()
+                        Arguments       = ("$($Command) --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).pass)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --shortstats=2 --longstats=10 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')").trim()
                         Algorithm       = $_.Algorithm
                         API             = "lolMiner"
                         Port            = $MinerAPIPort

@@ -12,7 +12,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Command = " --par=150,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.0; Command = " --par=192,7 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Command = " --par=210,9 --smart-pers --ocX" }
-#   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323# msg55832323)
+   [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Command = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323)
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Command = " --par=144,5 --pers BgoldPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 2.0; Command = " --par=192,7 --pers ZcashPoW --ocX" }
 )
