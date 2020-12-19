@@ -25,6 +25,7 @@ class EthMiner : Miner {
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
         If ($this.Algorithm -eq "EtcHash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
         If ($this.Algorithm -eq "Ethash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
+        If ($this.Algorithm -eq "UbqHash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
         If ($this.Algorithm -eq "NeoScrypt") { $HashRate_Value *= 1000 }
         If ($this.Algorithm -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
 
@@ -47,6 +48,7 @@ class EthMiner : Miner {
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
 
             If ($this.Algorithm -eq "Blake2s") { $HashRate_Value *= 1000 }
+            If ($this.Algorithm -eq "Keccak") { $HashRate_Value *= 1000 }
 
             If ($this.AllowedBadShareRatio) { 
                 $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
