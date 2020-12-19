@@ -506,6 +506,7 @@ Function Global:TimerUITick {
         ElseIf ($Variables.NewMiningStatus -eq "Running") {
 
             $Variables.UIStyle = $Config.UIStyle
+            $Variables.ShowAllMiners = $Config.ShowAllMiners
             $Variables.ShowPoolBalances = $Config.ShowPoolBalances
 
             $ButtonStop.Enabled = $true
@@ -553,17 +554,16 @@ Function Global:TimerUITick {
             If ($Variables.Earnings) { 
                 $DisplayEarnings = [System.Collections.ArrayList]@(
                     $Variables.Earnings.Values | Select-Object @(
-                        @{ Name = "Pool"; Expression = { $_.Pool } }, 
-                        @{ Name = "Trust"; Expression = { "{0:P0}" -f $_.TrustLevel } }, 
+                        @{ Name = "Pool"; Expression = { $_.Pool -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)' } }, 
                         @{ Name = "Balance ($DisplayCurrency)"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.BTC.$EarningsCurrency) } }, 
-                        @{ Name = "Ø $DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency) } }, 
+                        @{ Name = "Avg. $DisplayCurrency/day"; Expression = { "{0:N8}" -f ($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency) } }, 
                         @{ Name = "$DisplayCurrency in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.BTC.$EarningsCurrency) } }, 
-                        @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.($Config.PayoutCurrency).$EarningsCurrency) } }, 
+                        @{ Name = "$DisplayCurrency in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.BTC.$EarningsCurrency) } }, 
                         @{ Name = "$DisplayCurrency in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.BTC.$EarningsCurrency) } }, 
                         @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is [DateTime]) { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } }, 
                         @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance * $Variables.Rates.BTC.$EarningsCurrency / $_.PayoutThreshold)))"  } }
                     )
-                ) | Sort-Object "$DisplayCurrency in 1h", "$DisplayCurrency in 6h", "$DisplayCurrency in 24h" -Descending
+                ) | Sort-Object Pool
                 $EarningsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEarnings)
                 $EarningsDGV.ClearSelection()
             }
@@ -597,7 +597,7 @@ Function Global:TimerUITick {
                         @{ Name = "Est. Profit $EarningsCurrency/day"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
                         @{ Name = "Est. Profit $($Config.Currency | Select-Object -Index 0)/day"; Expression = { [decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0))) } }, 
                         @{ Name = "Miner"; Expression = { $_.data.name -join ',' } }, 
-                        @{ Name = "Pool(s)"; Expression = { $_.data.pool -join ',' } }, 
+                        @{ Name = "Pool(s)"; Expression = { $_.data.pool -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)' -join ',' } }, 
                         @{ Name = "Algo(s)"; Expression = { $_.data.algorithm -join ',' } }, 
                         @{ Name = "Speed(s)"; Expression = { If ($_.data.currentspeed) { ($_.data.currentspeed | ConvertTo-Hash) -join ',' } Else { "" } } }, 
                         @{ Name = "Benchmark Speed(s)"; Expression = { If ($_.data.estimatedspeed) { ($_.data.estimatedspeed | ConvertTo-Hash) -join ',' } Else { "" } }
@@ -652,13 +652,13 @@ Function Global:TimerUITick {
                 $Variables.Earnings.Values | ForEach-Object { 
                     $EarningsCurrency = $_.Currency
                     If ("m$($EarningsCurrency)" -in $Config.Currency) { $EarningsCurrency = "m$($EarningsCurrency)" }
-                    Write-Host "+++++ $($_.Wallet) +++++" -B DarkBlue -ForegroundColor DarkGray -NoNewline; Write-Host " $($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)')"
-                    Write-Host "Trust Level:            $(($_.TrustLevel).ToString('P0'))" -NoNewline; Write-Host -ForegroundColor DarkGray " (data of $(([DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) - [DateTime]$_.StartTime).ToString('%d\ \d\a\y\s\ hh\ \h\r\s\ mm\ \m\i\n\s')))"
-                    Write-Host "Average/hour:           $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
-                    Write-Host "Average/day:            " -NoNewline; Write-Host "$(($_.AvgDailyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -ForegroundColor Yellow
-                    Write-Host "Balance:                $(($_.Balance * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $($EarningsCurrency) / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
+                    Write-Host "$($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)') [$($_.Wallet)]" -B Green -ForegroundColor Black
+                    Write-Host "Earned last hour:       $(($_.Growth1 * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.Growth1 * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
+                    Write-Host "Earned last 24 hours:   $(($_.Growth24 * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.Growth24 * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
+                    Write-Host "≈ average/hour:         $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $EarningsCurrency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)"
+                    Write-Host "Balance:                " -NoNewline; Write-Host "$(($_.Balance * $Variables.Rates.BTC.$EarningsCurrency).ToString('N8')) $($EarningsCurrency) / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)).ToString('N8')) $($Config.Currency | Select-Object -Index 0)" -ForegroundColor Yellow
                     Write-Host "                        $(($_.Balance / $_.PayoutThreshold * $Variables.Rates.BTC.($_.PayoutThresholdCurrency -replace "^m") * $Variables.Rates.($_.PayoutThresholdCurrency -replace "^m").($_.PayoutThresholdCurrency)).ToString('P1')) of $(($_.PayoutThreshold).ToString()) $($_.PayoutThresholdCurrency) payment threshold"
-                    Write-Host "Estimated Payment Date: $(If ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToShortDateString()} Else { $_.EstimatedPayDate })`n"
+                    Write-Host "Estimated Payment Date: $(If ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToString("G")} Else { $_.EstimatedPayDate })`n"
                 }
             }
 
@@ -771,9 +771,9 @@ Function Global:TimerUITick {
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
-                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Config.ShowAllMiners -or $_.Fastest -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
+                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.Fastest -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
-                    $Config.ShowAllMiners -or <# List all miners#>
+                    $Variables.ShowAllMiners -or <# List all miners#>
                     $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum -1)) -or <# Always list at least the top 5 miners per device group#>
                     $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <# Always list the better 50% miners per device group#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking#>
@@ -883,19 +883,24 @@ Function Form_Load {
                 $KeyPressed = $host.UI.RawUI.ReadKey("NoEcho, IncludeKeyDown, IncludeKeyUp"); Start-Sleep -Milliseconds 300; $host.UI.RawUI.FlushInputBuffer()
                 If ($KeyPressed.KeyDown) { 
                     Switch ($KeyPressed.Character) { 
-                        "s" { 
-                            If ($Variables.UIStyle -eq "Light") { 
-                                $Variables.UIStyle = "Full"
-                            } Else { 
-                                $Variables.UIStyle = "Light"
-                            }
+                        "a" { 
+                            $Variables.ShowAllMiners = -not $Variables.ShowAllMiners
+                            Write-Host "Toggled displaying all available miners to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
-                            Write-Host "UI style set to $($Variables.UIStyle). (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)"
+                            Start-Sleep -Seconds 2
                         }
                         "e" { 
                             $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
+                            Write-Host "Toggled displaying pool balances to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
-                            Write-Host "Toggled displaying pool balances to $(If ($Variables.ShowPoolBalances) { "on"} Else { "off" } )."
+                            Start-Sleep -Seconds 2
+                        }
+                        "s" { 
+                            If ($Variables.UIStyle -eq "Light") { $Variables.UIStyle = "Full" }
+                            Else { $Variables.UIStyle = "Light" }
+                            Write-Host "UI style set to " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewLine; Write-Host " (Information about miners run in the past, failed miners & watchdog timers will " -NoNewLine; If ($Variables.UIStyle -eq "Light") { Write-Host "not" -ForegroundColor Red -NoNewLine; Write-Host " " -NoNewLine }; Write-Host "be shown)."
+                            $Variables.RefreshNeeded = $true
+                            Start-Sleep -Seconds 2
                         }
                     }
                 }
