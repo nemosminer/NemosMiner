@@ -64,9 +64,6 @@ Function Start-Cycle {
     # Always get the latest config
     Read-Config
 
-    $PoolNames = $Config.PoolName
-    $PoolsConfig = $Config.PoolsConfig
-
     # Do do once every 24hrs
     If ($Variables.DAGdata.Updated -lt (Get-Date).AddDays( -1 )) { 
 
@@ -173,72 +170,85 @@ Function Start-Cycle {
         Remove-Variable BlockHeight, Data, DAGSize, Epoch, DAGdata, Page, Table -ErrorAction Ignore
     }
 
-    If (($Variables.DonateStart).DayOfYear -ne (Get-Date).DayOfYear -and (Get-Date).AddMinutes($Config.Donate).Date -eq (Get-Date).Date) { 
-        # Re-Randomize donation start once per day
-        $Variables.DonateStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donate -Maximum (1440 - $Config.Donate - (Get-Date).TimeOfDay.TotalMinutes)))
-        $Variables.DonateEnd = $Variables.DonateStart
-    }
 
-    If ($Config.Donate) { 
-        If ((Get-Date) -ge $Variables.DonateStart) { 
-            If ($Variables.DonateEnd -eq $Variables.DonateStart) { 
-                # We get here only once per donation period
-                $Variables.DonateStart = (Get-Date)
-                $Variables.DonateEnd = $Variables.DonateStart.AddMinutes($Config.Donate)
-                $Variables.EndLoopTime = $Variables.DonateEnd
+    # Use non-donate pool config
+    $PoolNames = $Config.PoolName
+    $PoolsConfig = $Config.PoolsConfig
 
-                # Get donation addresses randomly from agreed developers list
-                # This will fairly distribute donations to developers
-                # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
-                Try { 
-                    $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-                }
-                Catch { 
-                    $DonationData = @(
-                        [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PayoutCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
-                    )
-                }
-                $Variables.DonateRandom = $DonationData | Get-Random # Use same donation data for the entire donation period to reduce switching
+    If ($Config.Donate -gt 0) { 
+        # Re-Randomize donation start once per day, do not donate if remaing time for today is less than donation duration
+        If (($Variables.DonateStart).Date -ne (Get-Date).Date -and (Get-Date).AddMinutes($Config.Donate).Date -eq (Get-Date).Date) { 
+            $Variables.DonateStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donate -Maximum (1440 - $Config.Donate - (Get-Date).TimeOfDay.TotalMinutes)))
+            $Variables.DonateEnd = $null
+        }
 
-                # Add pool config to config (in-memory only)
-                $Variables.DonatePoolNames = @($Config.PoolName -replace "24hr$" -replace "Coins$" | Where-Object { $_ -notlike "ProHashing*" }) # No all devs have a known ProHashing account
-                $Variables.DonatePoolsConfig = [Ordered]@{ }
-                $Variables.DonatePoolNames | ForEach-Object { 
-                    $PoolConfig = [PSCustomObject]@{ }
-                    $PoolConfig | Add-Member PricePenaltyFactor 1
-                    $PoolConfig | Add-Member WorkerName "NemosMiner-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
-                    Switch -Regex ($_) { 
-                        "MPH" { 
-                            $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
-                        }
-                        "NiceHash" { 
-                            $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
-                        }
-                        # "ProHashing*" { 
-                        #     $PoolConfig | Add-Member PayoutCurrency $Variables.DonateRandom.PayoutCurrency
-                        #     $PoolConfig | Add-Member UserName $Variables.DonateRandom.ProHashingUserName
-                        # }
-                        Default { 
-                            $PoolConfig | Add-Member PayoutCurrency $Variables.DonateRandom.PayoutCurrency
-                            $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
-                        }
-                    }
-                    $Variables.DonatePoolsConfig.$_ = $PoolConfig
-                }
+        If ((Get-Date) -ge $Variables.DonateStart -and $Variables.DonateEnd -eq $null) { 
+            # We get here only once per day, ensure full donation period
+            $Variables.DonateStart = (Get-Date)
+            $Variables.DonateEnd = $Variables.DonateStart.AddMinutes($Config.Donate)
+
+            # Get donation addresses randomly from agreed developers list
+            # This will fairly distribute donations to developers
+            # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
+            Try { 
+                $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 10 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
             }
-            If ((Get-Date) -lt $Variables.DonateEnd) { 
+            Catch { 
+                $DonationData = @(
+                    [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
+                    [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PayoutCurrency = "BTC" }, 
+                    [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
+                    [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PayoutCurrency = "BTC" },
+                    [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
+                )
+            }
+            $Variables.DonateRandom = $DonationData | Get-Random
+
+            # Use all available pools for donation, except ProHashing. Not all devs have a known ProHashing account
+            $Variables.DonatePoolNames = @((Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | Where-Object { $_ -notlike "ProHashing*" })
+
+            # Add pool config to config (in-memory only)
+            $Variables.DonatePoolsConfig = [Ordered]@{ }
+            $Variables.DonatePoolNames -replace "24hr$" -replace "Coins$" | Sort-Object -Unique | ForEach-Object { 
+                $PoolConfig = [PSCustomObject]@{ }
+                $PoolConfig | Add-Member PricePenaltyFactor 1
+                $PoolConfig | Add-Member WorkerName "NemosMiner-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
+                Switch ($_) { 
+                    "MPH" { 
+                        $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
+                    }
+                    "NiceHash" { 
+                        $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
+                    }
+                    Default { 
+                        $PoolConfig | Add-Member PayoutCurrency $(If ($Variables.DonateRandom.PayoutCurrency) { $Variables.DonateRandom.PayoutCurrency } Else { "BTC" })
+                        $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
+                    }
+                }
+                $Variables.DonatePoolsConfig.$_ = $PoolConfig
+            }
+
+            # Clear all pools
+            $Variables.Pools = [Pool[]]@()
+        }
+
+        If ($Variables.DonateRandom) { 
+            If ((Get-Date) -ge $Variables.DonateStart -and (Get-Date) -lt $Variables.DonateEnd) { 
+                # Ensure full donation period
+                $Variables.EndLoopTime = $Variables.DonateEnd
+                # Activate donation
                 $PoolNames = $Variables.DonatePoolNames
                 $PoolsConfig = $Variables.DonatePoolsConfig
                 Write-Message "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" })."
             }
-            ElseIf ($Variables.DonatePoolsConfig) { 
+            ElseIf ((Get-Date) -gt $Variables.DonateEnd) { 
                 $Variables.DonatePoolNames = $null
                 $Variables.DonatePoolsConfig = $null
+                $Variables.DonateRandom = $null
                 Write-Message "Donation run complete - thank you! Mining for you. :-)"
+
+                # Clear all pools
+                $Variables.Pools = [Pool[]]@()
             }
         }
     }
@@ -353,7 +363,7 @@ Function Start-Cycle {
     [Pool[]]$Variables.Pools = $Variables.Pools | Where-Object Name -in $Config.PoolName
 
     # Find new pools
-    [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, Currency, Host, Port, User, Pass, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
+    [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, Currency, Host, Port, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
     
     $Variables.PoolsCount = $Variables.Pools.Count
 
@@ -376,8 +386,6 @@ Function Start-Cycle {
         Where-Object Currency -EQ $_.Currency | 
         Where-Object Host -EQ $_.Host | 
         Where-Object Port -EQ $_.Port | 
-        Where-Object User -EQ $_.User | 
-        Where-Object Pass -EQ $_.Pass | 
         Where-Object SSL -EQ $_.SSL | 
         Select-Object -First 1
 
@@ -389,8 +397,8 @@ Function Start-Cycle {
             $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
             $_.MarginOfError = $Pool.MarginOfError
             $_.Updated = $Pool.Updated
-            # Set EthashEpoch for ethash miners (add 1 to survive next epoch change)
-            If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
+            # Set Epoch for ethash miners (add 1 to survive next epoch change)
+            If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW")) { 
                 If ($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight) { 
                     $_.BlockHeight = [Int]($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight + 30000)
                     $_.Epoch = [Int]($Variables.DAGdata.Currency.($Pool.Currency).Epoch + 1)
