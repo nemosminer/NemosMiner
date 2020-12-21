@@ -52,7 +52,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                # If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH(|Coins)$") { Return } # temp fix
+                If ($Pools.($_.Algorithm[0]).Epoch -ge 383) { Return }
 
                 $Command = $_.Command 
                 $MinMemGB = $_.MinMemGB
