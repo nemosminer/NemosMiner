@@ -252,6 +252,10 @@
             <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
             <input type="number" step="0.1" min="1" max="10" value=2 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
           </div>
+          <div title="Minimum workers mining the algorithm at the pool&#10;(min=1, max=25).&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'">
+            <label for="MinWorker">Minimum Workers at Pool</label>
+            <input type="number" step="1" min="0" max="25" value=10 id="MinWorker" name="MinWorker">
+          </div>
           <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / estimate_last24h)&#10;to counter pool overestimated profitability">
             <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
           </div>
@@ -429,6 +433,8 @@
           }
           document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
           document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
+          document.getElementById('MinWorker').value = parseFloat(config.MinWorker);
+          MinWorker
           if (config.OpenFirewallPorts) {
             document.getElementById('OpenFirewallPorts').checked = true;
           }
@@ -659,6 +665,12 @@
       config.UnrealPoolPriceFactor = 3;
       document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
     }
+    config.MinWorker = parseFloat(document.getElementById('MinWorker').value);
+    if (config.MinWorker <= 0 || config.MinWorker >= 25) { 
+      config.MinWorker = 10;
+      document.getElementById('MinWorker').value = config.MinWorker;
+    }
+    MinWorker
     config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
     config.StartPaused = document.getElementById('StartPaused').checked;
     config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
