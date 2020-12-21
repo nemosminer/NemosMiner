@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.35/gminer_2_35_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.36/gminer_2_36_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -59,7 +59,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) { 
+                If ($_.Algorithm[0] -in @("EtcHash", "Ethash", "KawPoW")) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
                 }
 
@@ -76,7 +76,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     $Command += " --server $($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User) --pass $($Pools.($_.Algorithm[0]).Pass)"
 
                     # If ($Pools.($_.Algorithm[0]).SSL) { $Command += " --ssl true --ssl_verification false" }
-                    If ($_.Algorithm[0] -in @("EtcHash", "Ethash") -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --proto stratum" }
+                    If ($_.Algorithm[0] -in @("EtcHash", "Ethash", "KawPoW") -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --proto stratum" }
 
                     If ($_.Algorithm[1]) { 
                         # If ($Pools.($_.Algorithm[1]).SSL) { $Command += " --dssl true --dssl_verification false" }

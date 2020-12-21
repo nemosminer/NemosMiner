@@ -36,7 +36,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
 
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm -in @("EtcHash", "Ethash")) { 
+                If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
                     $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
                 }
 

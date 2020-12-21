@@ -13,7 +13,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; Protocol = @(" -uri beam") } # NBMiner-v34.5 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; Protocol = @(" -uri cuckaroo29m") }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.35 is fastest
+#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.36 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; Protocol = @(" -uri aeternity") }
@@ -61,7 +61,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                 # Add 512 MB when GPU with connected monitor
                 If ($SelectedDevices | Where-Object { $_.CIM.CurrentRefreshRate }) { $MinMemGB += 0.5 }
 
-                If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) { 
+                If ($_.Algorithm[0] -in @("EtcHash", "Ethash", "KawPoW")) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
                 }
 

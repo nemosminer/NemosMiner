@@ -57,7 +57,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $Commands | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm -in @("EtcHash", "Ethash")) { 
+                If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
                     $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
                 }
 
