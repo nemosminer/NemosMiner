@@ -1,6 +1,6 @@
 if (!(IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\AMD-teamred0718\teamredminer.exe"
+$Path = ".\Bin\AMD-teamred0721\teamredminer.exe"
 $Uri = "https://github.com/todxx/teamredminer/releases/download/0.7.21/teamredminer-v0.7.21-win.zip"
 
 $Commands = [PSCustomObject]@{
