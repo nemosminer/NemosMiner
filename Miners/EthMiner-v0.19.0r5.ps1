@@ -3,12 +3,12 @@ using module ..\Includes\Include.psm1
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\ethminer.exe"
 $Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r5/ethminer0190r5.7z"
-$DeviceEnumerator = "Type_Vendor_Index"
+$DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";  ;Command = " --cl-devices" } # Not working on newer drivers
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA";Command = " --cu-devices" } # PhoenixMiner-v5.4c is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    Command = " --opencl --cl-devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; Command = " --cuda --cu-devices" } # PhoenixMiner-v5.4c is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
