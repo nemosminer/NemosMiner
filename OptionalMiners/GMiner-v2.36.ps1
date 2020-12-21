@@ -37,7 +37,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");   Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+blake2s --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
 #   [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash+eaglesong --cuda 1 --opencl 0" } # NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Zilliqa");             Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo eth --cuda 1 --opencl 0" } #!ETH, see readme
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # Trex-v0.19.4 is fastest
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # Trex-v0.19.5 is fastest
 #   [PSCustomObject]@{ Algorithm = @("Sero");                Fee = @(0.02);    MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } # Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = @("Vollar");              Fee = @(0.03, 0); MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo vollar --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("VeriBlock");           Fee = @(0.02);    MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
