@@ -20,7 +20,8 @@ Miner Updates:
 - SRBMminerMulti-v0.6.0
 
 New:
-- WebGUI (Config Editor): Added Mining device selection
+- WebGUI (Config Editor): Added 'Select Mining Devices' item
+- WebGUI (Config Editor): Added 'Open Firewall Ports' item
 
 
 Changelog NemosMiner 3.9.9.8 Beta2 17.12.2020
