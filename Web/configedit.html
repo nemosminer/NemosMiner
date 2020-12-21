@@ -132,8 +132,16 @@
           </fieldset>
         </div>
         <br>
-      </td>
 
+        <div class="col-md-12">
+          <fieldset title="Enable / disable devices&#10;&#10;Unsupported devices are greyed out and cannot be enabled.">
+            <legend class=h6><b>Select mining devices</b></legend>
+            <div id="Devices"></div>
+          </fieldset>
+        </div>
+        <br>
+
+      </td>
       <td>
         <div class="col-md-12">
           <fieldset>
@@ -273,18 +281,20 @@
 <script type="text/javascript">
   const poolscontainer = document.getElementById('Pools');
   const regionscontainer = document.getElementById('Regions');
+  const devicescontainer = document.getElementById('Devices');
 
   var config = {};
   var poolnames = [];
   var regions = [];
+  var devicenames = [];
 
   // Populate pool checkbox list
   $.ajax({url: '/poolnames',
     success: function(result) {
       poolnames = result;
       $.each(poolnames, function (key, value) {
-        $('<input/>', { type: 'checkbox', id: (value).toLowerCase(), value: value }).appendTo(poolscontainer);
-        $('<label/>', { 'for': (value).toLowerCase(), text: (value), style: "margin-left:4px" }).appendTo(poolscontainer);
+        $('<input/>', { type: 'checkbox', id: ('pool-' + value).toLowerCase(), value: value }).appendTo(poolscontainer);
+        $('<label/>', { 'for': ('pool-' + value).toLowerCase(), text: (value), style: "margin-left:4px" }).appendTo(poolscontainer);
         $('<br>').appendTo(poolscontainer);
       })
     }
@@ -298,6 +308,20 @@
         $('<input/>', { type: 'radio', id: (value).toLowerCase(), value: value }).appendTo(regionscontainer);
         $('<label/>', { 'for': (value).toLowerCase(), text: value, style: "margin-left:4px" }).appendTo(regionscontainer);
         $('<br>').appendTo(regionscontainer);
+      })
+    }
+  });
+
+  // Fill devices list
+  $.ajax({url: '/devices',
+    success: function(result) {
+      devices = result;
+      $.each(devices, function (key, value) {
+        $('<input/>', { type: 'checkbox', id: ('device-' + value.Name).toLowerCase(), value: value.Name }).appendTo(devicescontainer);
+        $('<label/>', { 'for': ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model + ' (Id ' + value.Id + ')'), style: "margin-left:4px" }).appendTo(devicescontainer);
+        $('<br>').appendTo(devicescontainer);
+        if (value.State == 0) { document.getElementById(('device-' + value.Name).toLowerCase()).checked = true };
+        if (value.State == 2) { document.getElementById(('device-' + value.Name).toLowerCase()).disabled = true };
       })
     }
   });
@@ -333,11 +357,21 @@
           document.getElementById('Proxy').value = config.Proxy;
 
           $.each(config.PoolName, function (key, value) {
-            document.getElementById((value).toString().toLowerCase()).checked = true;
+            document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
           });
           if (document.getElementById(config.Region.toLowerCase())) {
             document.getElementById(config.Region.toLowerCase()).checked = true;
           }
+          // $.each(devicenames, function (key, value) {
+          //   if (!(config.ExcludeDeviceName.includes(value))) {
+          //     document.getElementById(('device-' + value).toString().toLowerCase()).checked = true;
+          //   };
+          // });
+          // $.each(devicenames, function (key, value) {
+          //   if (!(config.ExcludeDeviceName.includes(value))) {
+          //     document.getElementById(('device-' + value).toString().toLowerCase()).checked = true;
+          //   };
+          // });
 
           if (config.IncludeOptionalMiners) {
             document.getElementById('OptionalMiners').checked = true;
@@ -469,23 +503,23 @@
           }
           //must be placed after pool loading
           document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
-          document.getElementById('MPHAPIKey').disabled = !(document.getElementById('mph').checked || document.getElementById('mphcoins').checked);
+          document.getElementById('MPHAPIKey').disabled = !(document.getElementById('pool-mph').checked || document.getElementById('pool-mphcoins').checked);
           document.getElementById('MPHUserName').value = config.MPHUserName;
-          document.getElementById('MPHUserName').disabled = !(document.getElementById('mph').checked || document.getElementById('mphcoins').checked);
+          document.getElementById('MPHUserName').disabled = !(document.getElementById('pool-mph').checked || document.getElementById('pool-mphcoins').checked);
           document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
-          document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('pool-nicehash').checked);
           document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
-          document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('pool-nicehash').checked);
           document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
-          document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('pool-nicehash').checked);
           document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
-          document.getElementById('NiceHashWallet').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashWallet').disabled = !(document.getElementById('pool-nicehash').checked);
           document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
-          document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('nicehash').checked);
+          document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('pool-nicehash').checked);
           document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
-          document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('prohashing24hr').checked);
+          document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('pool-prohashing24hr').checked);
           document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
-          document.getElementById('ProHashingUserName').disabled = !(document.getElementById('prohashing24hr').checked);
+          document.getElementById('ProHashingUserName').disabled = !(document.getElementById('pool-prohashing24hr').checked);
           if (parseInt(document.getElementById('Donate').value) <= 0) {
             $('.modal-title').text('Donation duration set to 0   :-\(');
             $(".modal-body").text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
@@ -498,6 +532,7 @@
 
   $('#save-button').click(function () { 
     config.PoolName = [];
+    config.ExcludeDeviceName = [];
 
     config.Wallet = document.getElementById('Wallet').value.toString().trim()
     if ((document.getElementById('Wallet').value) == "") { 
@@ -570,13 +605,18 @@
     }
 
     $.each(poolnames, function (key, value) {
-      if (document.getElementById(value.toLowerCase()).checked == true) {
+      if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) {
         (config.PoolName).push(value);
       };
     });
     $.each(regions, function (key, value) {
       if (document.getElementById(value.toLowerCase()).checked == true) {
         config.Region = value;
+      };
+    });
+    $.each(devices, function (key, value) {
+      if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false) {
+        (config.ExcludeDeviceName).push(value.Name);
       };
     });
     config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;

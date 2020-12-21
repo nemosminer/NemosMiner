@@ -15,7 +15,7 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2020-12-05.log</Title>
+      <Title>NemosMiner_2020-12-21.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
         <Width>1395</Width>
@@ -132,7 +132,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopped miner .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopping miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -142,7 +142,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started miner .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -305,7 +305,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopped miner .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopping miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -315,7 +315,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started miner .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -478,7 +478,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopped miner .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopping miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -488,7 +488,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started miner .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting miner .*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -527,8 +527,8 @@
     <Height>700</Height>
   </WindowSize>
   <WindowPosition>
-    <X>45</X>
-    <Y>31</Y>
+    <X>15</X>
+    <Y>24</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>

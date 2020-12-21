@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.9.9.8
-version date:   10 November 2020
+version date:   21 November 2020
 #>
 
 New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true } -ErrorAction SilentlyContinue | Out-Null
@@ -337,7 +337,10 @@ Class Miner {
             $this.Status = [MinerStatus]::Idle
             $this.StatusMessage = "Idle"
         }
-        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+        $this.Devices | ForEach-Object { 
+            If ($_.State -eq [DeviceState]::Disabled) { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
+            Else { $_.Status = $this.StatusMessage }
+        }
         $this.Info = ""
     }
 
@@ -386,13 +389,18 @@ Class Miner {
     }
 
     SetStatus([MinerStatus]$Status) { 
+        If ($Status -eq $this.GetStatus()) { Return }
+
         Switch ($Status) { 
             "Running" { 
                 $this.StartMining()
             }
-            Default { 
-                $this.Status = $Status
+            "Idle" { 
                 $this.StopMining()
+            }
+            Default { 
+                $this.StopMining()
+                $this.Status = $Status
             }
         }
     }
@@ -1308,7 +1316,7 @@ Function Read-Config {
     # Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | ForEach-Object { 
-        $PoolName = $_ -replace "24hr" -replace "Coins"
+        $PoolName = $_ -replace "24hr$" -replace "Coins$"
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
         If (-not "$PoolConfig") { # https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject

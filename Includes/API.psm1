@@ -136,12 +136,10 @@ Function Start-APIServer {
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
                                     $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
-                                    $Values | ForEach-Object { 
-                                        $DeviceName = $_
+                                    ForEach ($DeviceName in $Values) { 
                                         $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
                                             $_.State = [DeviceState]::Disabled
-                                            $_.Status = "Disabled (ExcludeDeviceName: '$DeviceName')"
-                                            If ($_.Status -EQ [DeviceState]::Running) { Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore }
+                                            If ($_.Status -like "Mining *}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
                                         }
                                     }
                                     Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
@@ -169,7 +167,11 @@ Function Start-APIServer {
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
                                     $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
-                                    $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { $_.State = [DeviceState]::Enabled; $_.Status = "Idle" }
+                                    $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { 
+                                        $_.State = [DeviceState]::Enabled
+                                        If ($_.Status -like "*; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
+                                        Else { $_.Status = "Idle" }
+                                    }
                                     Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
                                 Catch { 
@@ -188,6 +190,18 @@ Function Start-APIServer {
                             Copy-Item -Path $Variables.ConfigFile -Destination "$($Variables.ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").backup"
                             $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                             Read-Config
+                            $Variables.Devices | Select-Object | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { 
+                                If ($_.Name -in @($Config.ExcludeDeviceName)) { 
+                                    $_.State = [DeviceState]::Disabled
+                                    # $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')"
+                                    If ($_.Status -like "Mining *}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
+                                }
+                                Else { 
+                                    $_.State = [DeviceState]::Enabled
+                                    If ($_.Status -like "*; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" } 
+                                    If ($_.Status -like "Disabled *") { $_.Status = "Idle" }
+                                }
+                            }
                             $Variables.RestartCycle = $true
                             $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
                         }

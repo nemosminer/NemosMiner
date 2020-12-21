@@ -2,19 +2,25 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 
-Changelog NemosMiner 3.9.9.8 Beta3 19.12.2020
+Changelog NemosMiner 3.9.9.8 Beta3 21.12.2020
 =============================================
 
+Fixed:
+- Core: Mining to donation address for too long (thanks to emike09)
+- EthMiner API: reported UbqHash hash rate with PhoenixMiner 1000x to low
+
 Improved:
+- Added more configuration options for text window content
 - Earnings: Predicted Payout date is more accurate
 
 Miner Updates:
 - EthMiner-v0.19.0r5
+- GMiner-v2.36
 - PhoenixMiner-v5.4c
 - SRBMminerMulti-v0.6.0
 
-Fixed:
-- EthMiner API: reported UbqHash hash rate with PhoenixMiner 1000x to low
+New:
+- WebGUI (Config Editor): Added Mining device selection
 
 
 Changelog NemosMiner 3.9.9.8 Beta2 17.12.2020
@@ -40,7 +46,7 @@ Fixed:
 - MPH / MPHCoins pools: Disable EU EtcHash & Ethash pool (temp fix)
 - MPH / MPHCoins pools: Fix pool urls for some algorithms
 - Core: Sort miners by 'Earnings' when 'Calculate Power Cost' is disabled
-- Web GUI: Breaking config file on save
+- Web GUI (Config Editor): Breaking config file on save
 - Web GUI: Clear Watchdog Timer list when clicking 'Reset Watchdog Timers'
 - Web GUI: 'Disable miner' not disabling miner
 - Web GUI: Rig Monitor not listing workers

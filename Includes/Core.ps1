@@ -697,7 +697,7 @@ Function Start-Cycle {
     # Stop runing miners where miner object is gone
     $Variables.Miners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq [MinerStatus]::Running } | ForEach-Object { 
         $Miner = $_
-        Write-Message "Stopped miner '$($Miner.Info)'."
+        Write-Message "Stopping miner '$($Miner.Info)'..."
         $Miner.SetStatus([MinerStatus]::Idle)
 
         # Remove all watchdog timer(s) for this miner
@@ -859,7 +859,7 @@ Function Start-Cycle {
     Else { 
         # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
         If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-        $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Algorithm.Count }, { $_.Activated }, { $_.MinDataSamples }, { $_.MinerName }, { $_.Algorithm } # pre-sort
+        $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Descending { $_.Benchmark -eq $true }, { $_.MeasurePowerUsage -eq $true }, { $_."$($SortBy)_Bias" }, { $_.Activated }, { $_.MinerName }, { $_.MinDataSamples }, { $_.Algorithm } # pre-sort
         $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } # use a smaller subset of miners
         $BestMiners = @($FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
@@ -960,7 +960,7 @@ Function Start-Cycle {
             $Miner.StatusMessage = "Exited unexpectedly."
         }
         ElseIf ($_.Best -eq $false -or $_.Restart -eq $true) { 
-            Write-Message "Stopped miner '$($Miner.Info)'."
+            Write-Message "Stopping miner '$($Miner.Info)'..."
 
             $Miner.SetStatus([MinerStatus]::Idle)
             If ($Miner.ProcessId) { Stop-Process -Id $Miner.ProcessId -Force -ErrorAction Ignore }
@@ -1022,8 +1022,8 @@ Function Start-Cycle {
             If ($Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
                 $Miner.WarmupTime += 60 # seconds
             }
+            Write-Message "Starting miner '$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
             $Miner.SetStatus([MinerStatus]::Running)
-            Write-Message "Started miner '$($Miner.Info)'."
             Write-Message -Level Verbose $Miner.CommandLine
 
             # Add watchdog timer
