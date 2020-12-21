@@ -73,6 +73,8 @@
           <input type="text" id="Algorithm" name="Algorithm"  size=64>
           <button type="button" id="defaultAlgorithm" name="defaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
         </div>
+        <br>
+
         <div title="NemosMiner will not mine algorithms listed in&#10;UnprofitableAlgorithms.txt (recommended)">
           <input type="checkbox" id="ApplyUnprofitableAlgorithmList" name="ApplyUnprofitableAlgorithmList"> Do not mine algorithms in the Unprofitable Algorithms List (recommended)
         </div>
@@ -90,6 +92,12 @@
 
         <div title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128">Proxy
           <input type="text" id="Proxy" name="Proxy" maxlength=24 size=30>
+        <br>
+        </div>
+        <br>
+
+        <div title="If ticked NemosMiner will open firewall ports for all miners&#10;Admin rights required (or you must accept the UAC prompts)">
+          <input type="checkbox" id="OpenFirewallPorts" name="OpenFirewallPorts"> Open Firewall Ports
         </div>
         <br>
 
@@ -421,7 +429,9 @@
           }
           document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
           document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
-
+          if (config.OpenFirewallPorts) {
+            document.getElementById('OpenFirewallPorts').checked = true;
+          }
           if (config.AutoStart) {
             document.getElementById('AutoStart').checked = true;
           } else {
@@ -598,10 +608,12 @@
     if (document.getElementById('RunningMinerGainPct').value == null) {
       document.getElementById('RunningMinerGainPct').value = 5;
     };
-    config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
-    if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
-      config.UnrealPoolPriceFactor = 3;
-      document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
+    config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
+    config.AutoStart = document.getElementById('AutoStart').checked;
+    if (document.getElementById('UIStyle').checked) { 
+      config.UIStyle = "Full"
+    } else { 
+      config.UIStyle = "Light"
     }
 
     $.each(poolnames, function (key, value) {
@@ -642,12 +654,10 @@
     config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
     config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
     config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
-
-    config.AutoStart = document.getElementById('AutoStart').checked;
-    if (document.getElementById('UIStyle').checked) { 
-      config.UIStyle = "Full"
-    } else { 
-      config.UIStyle = "Light"
+    config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
+    if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
+      config.UnrealPoolPriceFactor = 3;
+      document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
     }
     config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
     config.StartPaused = document.getElementById('StartPaused').checked;
