@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\Nvidia-XMRigv650\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/xmrig/XMRigv650.7z"
+$Path = ".\Bin\Nvidia-XMRigv670\xmrig.exe"
+$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v6.7.0/xmrig-6.7.0.7z"
 $Commands = [PSCustomObject]@{ 
      "kawpow" = " -a kawpow --nicehash" #kawpow
 }
