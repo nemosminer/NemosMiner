@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           core.ps1
 version:        3.9.9.8
-version date:   18 December 2020
+version date:   23 December 2020
 #>
 
 using module .\Include.psm1
@@ -56,10 +56,10 @@ Function Start-Cycle {
     If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } # Remove Model information from devices -> will create only one miner instance
 
     # Allow at least one watchdog per device, otherwise high number of devices may trigger watchdog
-    $Variables.WatchdogPoolAlgorithmCount = 3 + 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
+    $Variables.WatchdogPoolAlgorithmCount = 4 + 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
     $Variables.WatchdogPoolCount = 3 + 3 + 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
-    $Variables.WatchdogMinerAlgorithmCount = 3
-    $Variables.WatchdogMinerCount = 3 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
+    $Variables.WatchdogMinerAlgorithmCount = 4
+    $Variables.WatchdogMinerCount = 4 + @($EnabledDevices.Model | Sort-Object -Unique).Count - 1
 
     # Always get the latest config
     Read-Config
@@ -172,7 +172,7 @@ Function Start-Cycle {
 
 
     # Use non-donate pool config
-    $PoolNames = $Config.PoolName
+    $PoolNames = @($Config.PoolName)
     $PoolsConfig = $Config.PoolsConfig
 
     If ($Config.Donate -gt 0) { 
@@ -254,7 +254,7 @@ Function Start-Cycle {
     }
 
     # Stop BrainJobs for deconfigured pools
-    Stop-BrainJob @($Variables.BrainJobs.Keys | Where-Object { $_ -notin $Config.PoolName })
+    Stop-BrainJob @($Variables.BrainJobs.Keys | Where-Object { $_ -notin @($Config.PoolName) })
 
     # Start Brain jobs (will pick up all newly added pools)
     Start-BrainJob
@@ -360,7 +360,7 @@ Function Start-Cycle {
     }
 
     # Remove de-configured pools
-    [Pool[]]$Variables.Pools = $Variables.Pools | Where-Object Name -in $Config.PoolName
+    [Pool[]]$Variables.Pools = $Variables.Pools | Where-Object Name -in @($PoolNames)
 
     # Find new pools
     [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, Currency, Host, Port, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
@@ -396,7 +396,9 @@ Function Start-Cycle {
             $_.Price = $Pool.Price * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
             $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
             $_.MarginOfError = $Pool.MarginOfError
+            $_.Pass = $Pool.Pass
             $_.Updated = $Pool.Updated
+            $_.User = $Pool.User
             # Set Epoch for ethash miners (add 1 to survive next epoch change)
             If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW")) { 
                 If ($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight) { 
@@ -433,7 +435,7 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object { "1:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } # Keep available
         $Variables.Pools | Where-Object { "2:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } # Keep available
     }
-    $Variables.Pools | Where-Object { $_.Name -notin $Config.PoolName } | ForEach-Object { $_.Available = $false; $_.Reason += "Pool not configured" }
+    $Variables.Pools | Where-Object { $_.Name -notin $PoolNames } | ForEach-Object { $_.Available = $false; $_.Reason += "Pool not configured" }
     $Variables.Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Price -eq 0" }
     $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
     If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
@@ -739,7 +741,7 @@ Function Start-Cycle {
         $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
         $_.CalculatePowerCost = $Variables.CalculatePowerCost
         $_.Refresh($Variables.PowerCostBTCperW) # To be done before MeasurePowerUsage evaluation
-        $_.MinDataSamples = $Config.MinDataSamples * (1, @($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).maximum
+        $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
         $_.MeasurePowerUsage = [Boolean]($Variables.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
         If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
     }
@@ -962,9 +964,6 @@ Function Start-Cycle {
         ElseIf ($_.Best -eq $false -or $_.Restart -eq $true) { 
             Write-Message "Stopping miner '$($Miner.Info)'..."
 
-            $Miner.SetStatus([MinerStatus]::Idle)
-            If ($Miner.ProcessId) { Stop-Process -Id $Miner.ProcessId -Force -ErrorAction Ignore }
-
             $Miner.WorkersRunning | ForEach-Object { 
                 $Worker = $_
                 $WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName
@@ -973,6 +972,10 @@ Function Start-Cycle {
                     $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
                 }
             }
+
+            $Miner.SetStatus([MinerStatus]::Idle)
+            If ($Miner.ProcessId) { Stop-Process -Id $Miner.ProcessId -Force -ErrorAction Ignore }
+
         }
     }
 
