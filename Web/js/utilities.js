@@ -68,7 +68,7 @@ function formatMiners(data) {
         item.tReason = item.Reason.join('; ');
       }
       else {
-        item.Reason = '';
+        item.tReason = '';
       }
 
       // Format status
