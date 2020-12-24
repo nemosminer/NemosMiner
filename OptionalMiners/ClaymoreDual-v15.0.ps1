@@ -96,7 +96,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     # Optionally disable dev fee mining
-                    If ($Config.DisableMinerFees) { 
+                    If ($Config.DisableMinerFee) { 
                         $Command += " -nofee 1"
                         $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
                     }
