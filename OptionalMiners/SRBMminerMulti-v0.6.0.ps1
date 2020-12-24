@@ -28,7 +28,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm keccak" }
 #   [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; Command = " --algorithm ubqhash" } # PhoenixMiner-v5.4c is fastest
-    [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMC"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm verushash" }
+    [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm yescrypt" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_chukwa" }
