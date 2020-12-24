@@ -25,32 +25,30 @@ function formatMiners(data) {
         item.tDevices = '';
       }
 
-      // Format the algorithm(s)
-      item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
-      if (item.Workers[1]) {
-        item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
+      // Format the algorithm data
+      if (item.Algorithm.length > 0) {
+        item.tPrimaryAlgorithm = item.Algorithm[0];
+      }
+      if (item.Algorithm.length > 1) {
+        item.tSecondaryAlgorithm = item.Algorithm[1];
       }
 
-      // Format the speed(s)
-      item.tPrimarySpeed = item.Workers[0].Speed;
-      if (item.Workers[1]) {
-        item.tSecondarySpeed = item.Workers[1].Speed;
+      // Format the pool data
+      if (item.Workers.length > 0) {
+        item.tPrimaryMinerFee = item.Workers[0].Fee;
+        item.tPrimarySpeed = item.Workers[0].Speed;
+        if (item.Workers[0].Pool) {
+          item.tPrimaryPool = item.Workers[0].Pool.Name;
+          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+        }
       }
-
-      // Format the pool name(s)
-      item.tPrimaryPool = item.Workers[0].Pool.Name;
-      if (item.Workers[1]) {
-        item.tSecondaryPool = item.Workers[1].Pool.Name;
-      }
-
-      // Format the fee(s)
-      item.tPrimaryMinerFee = item.Workers[0].Fee;
-      if (item.Workers[1]) {
+      if (item.Workers.length > 1) {
         item.tSecondaryMinerFee = item.Workers[1].Fee;
-      }
-      item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
-      if (item.Workers[1]) {
-        item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+        item.tSecondarySpeed = item.Workers[1].Speed;
+        if (item.Workers[1].Pool) {
+          item.tSecondaryPool = item.Workers[1].Pool.Name;
+          item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+        }
       }
 
       // Format margin of error
