@@ -52,7 +52,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "CPU"; Fee = 0.0085; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "CPU"; Fee = 0;      Command = " --algorithm keccak" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.5.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.7.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxHash2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomsfx --randomx-use-1gb-pages" }
