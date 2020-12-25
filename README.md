@@ -236,8 +236,9 @@ Easy configuration, easy start:
 
       NemosMiner will notify new version availability
 
-If you have Windows 7, 8, or 8.1, please update PowerShell (Version 7.x is highly recommeded): 
+please update PowerShell (Version 7.x is required): 
 
+[recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.0/PowerShell-7.1.0-win-x64.msi)
 [update PowerShell](https://github.com/PowerShell/PowerShell/releases)
 
 Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
