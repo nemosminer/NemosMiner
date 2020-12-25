@@ -573,7 +573,18 @@
   
     config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
     config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
-  
+
+    document.getElementById('Currency').value = (document.getElementById('Currency').value).toString().trim();
+    if ((document.getElementById('Currency').value).toString().trim() == null) {
+      config.Currency = document.getElementById('Currency').value = 'mBTC';
+    } else {
+      config.Currency = document.getElementById('Currency').value.split(',')
+    };
+    config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
+    if (document.getElementById('PayoutCurrency').value == "null") {
+      config.PayoutCurrency =  document.getElementById('PayoutCurrency').value = 'mBTC';
+    };
+
     if (document.getElementById('Interval').value == null) { 
       config.Interval = document.getElementById('Interval').value = 90;
     } else { 
@@ -598,29 +609,30 @@
       };
     });
     document.getElementById('Algorithm').value = (config.Algorithm = algorithms).toString();
+    config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
 
-    document.getElementById('Currency').value = (document.getElementById('Currency').value).toString().trim();
-    if ((document.getElementById('Currency').value).toString().trim() == null) {
-      config.Currency = document.getElementById('Currency').value = 'mBTC';
-    } else {
-      config.Currency = document.getElementById('Currency').value.split(',')
-    };
-
-    config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
-    if (document.getElementById('PayoutCurrency').value == "null") {
-      config.PayoutCurrency =  document.getElementById('PayoutCurrency').value = 'mBTC';
-    };
     config.Proxy = document.getElementById('Proxy').value;
     if (document.getElementById('RunningMinerGainPct').value == null) {
       document.getElementById('RunningMinerGainPct').value = 5;
     };
+
     config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
+
     config.AutoStart = document.getElementById('AutoStart').checked;
-    if (document.getElementById('UIStyle').checked) { 
-      config.UIStyle = "Full"
-    } else { 
-      config.UIStyle = "Light"
-    }
+    config.StartPaused = document.getElementById('StartPaused').checked;
+    config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
+
+    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == null || isNaN(parseInt(document.getElementById('BalancesTrackerPollInterval').value))) { 
+      document.getElementById('BalancesTrackerPollInterval').value = 5;
+    } else if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) <= 0) { 
+      document.getElementById('BalancesTrackerPollInterval').value = 0;
+    } else if(parseInt(document.getElementById('BalancesTrackerPollInterval').value) >= 60) { 
+      document.getElementById('BalancesTrackerPollInterval').value = 60;
+    };
+    config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
+    config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
+
+    config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
 
     $.each(poolnames, function (key, value) {
       if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) {
@@ -639,68 +651,13 @@
     });
     config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
     config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
+
     config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
     config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
     config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
     config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
     config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
-    config.ShowEarning = document.getElementById('ShowEarning').checked;
-    config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
-
-    config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
-    document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
-
-    if (document.getElementById('PowerPricekWh').value.toString().trim() === "") {
-      document.getElementById('PowerPricekWh').value = '{"00:00":0.0}'
-    }
-    if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) {
-      config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
-    } else {
-      $('.modal-title').text('Invalid Power Price data');
-      $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
-      $('#myModal').modal({show:true});
-      return false;
-    };
-
-    config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
-    config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
-    if (document.getElementById('ProfitabilityThreshold').value == null) { 
-      document.getElementById('ProfitabilityThreshold').value = 0;
-    };
-    config.ShowProfit = document.getElementById('ShowProfit').checked;
-    config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
-    config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
-    config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
-    config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
-    if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
-      config.UnrealPoolPriceFactor = 3;
-      document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
-    }
-    config.MinWorker = parseFloat(document.getElementById('MinWorker').value);
-    if (config.MinWorker <= 0 || config.MinWorker >= 25) { 
-      config.MinWorker = 10;
-      document.getElementById('MinWorker').value = config.MinWorker;
-    }
-    MinWorker
-    config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
-    config.StartPaused = document.getElementById('StartPaused').checked;
-    config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
-    if (document.getElementById('IdleSec').value == null) { 
-      document.getElementById('IdleSec').value = 120;
-    };
-    config.IdleSec = parseInt(document.getElementById('IdleSec').value);
-    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == null || isNaN(parseInt(document.getElementById('BalancesTrackerPollInterval').value))) { 
-      document.getElementById('BalancesTrackerPollInterval').value = 5;
-    } else if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) <= 0) { 
-      document.getElementById('BalancesTrackerPollInterval').value = 0;
-    } else if(parseInt(document.getElementById('BalancesTrackerPollInterval').value) >= 60) { 
-      document.getElementById('BalancesTrackerPollInterval').value = 60;
-    };
-    config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
-    config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
-    config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
-    config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
     if (document.getElementById('ShowMinerWindowsHidden').checked) {
       config.ShowMinerWindows = "hidden" 
     }
@@ -712,13 +669,66 @@
     }
     config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
 
+    config.Watchdog = document.getElementById('Watchdog').checked;
+
+    config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
+    if (document.getElementById('IdleSec').value == null) { 
+      document.getElementById('IdleSec').value = 120;
+    };
+    config.IdleSec = parseInt(document.getElementById('IdleSec').value);
+
+    config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
+    if (document.getElementById('UIStyle').checked) { 
+      config.UIStyle = "Full"
+    } else { 
+      config.UIStyle = "Light"
+    }
+    config.ShowEarning = document.getElementById('ShowEarning').checked;
+    config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
+
+    config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
+    document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
+    if (document.getElementById('PowerPricekWh').value.toString().trim() === "") {
+      document.getElementById('PowerPricekWh').value = '{"00:00":0.0}'
+    }
+    if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) {
+      config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
+    } else {
+      $('.modal-title').text('Invalid Power Price data');
+      $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
+      $('#myModal').modal({show:true});
+      return false;
+    };
+    config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
+    config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
+    if (document.getElementById('ProfitabilityThreshold').value == null) { 
+      document.getElementById('ProfitabilityThreshold').value = 0;
+    };
+    config.ShowProfit = document.getElementById('ShowProfit').checked;
+    config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
+    config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
+    config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
+
+    config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
+    if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
+      config.UnrealPoolPriceFactor = 3;
+      document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
+    }
+
+    config.MinWorker = parseFloat(document.getElementById('MinWorker').value);
+    if (config.MinWorker <= 0 || config.MinWorker >= 25) { 
+      config.MinWorker = 10;
+      document.getElementById('MinWorker').value = config.MinWorker;
+    }
+
     config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
     config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
     config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
+
     config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
+
     config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
 
-    config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
     config.AutoUpdate = document.getElementById('AutoUpdate').checked;
 
     //Write current config
