@@ -658,7 +658,7 @@
       config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
     } else {
       $('.modal-title').text('Invalid Power Price data');
-      $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26; "12:00":0.3}');
+      $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
       $('#myModal').modal({show:true});
       return false;
     };
