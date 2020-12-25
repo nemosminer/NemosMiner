@@ -232,7 +232,7 @@
           </div>
           <div title="If profit (earnings - power cost) is less than the configured value&#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
             <label style='margin-left:20px' for="ProfitabilityThreshold">Profitability Threshold</label>
-            <input type="text" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 size=6>
+            <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8>
           </div>
           <div title="Show the 'PowerCost' column in the text window">
             <input style='margin-left:20px' type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
@@ -538,7 +538,7 @@
           document.getElementById('ProHashingUserName').disabled = !(document.getElementById('pool-prohashing24hr').checked);
           if (parseInt(document.getElementById('Donate').value) <= 0) {
             $('.modal-title').text('Donation duration set to 0   :-\(');
-            $(".modal-body").text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
+            $('.modal-body').text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
             $('#myModal').modal({show:true});
           };
         }
@@ -650,7 +650,19 @@
 
     config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
     document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
-    config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value);
+
+    if (document.getElementById('PowerPricekWh').value.toString().trim() === "") {
+      document.getElementById('PowerPricekWh').value = '{"00:00":0.0}'
+    }
+    if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:;"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) {
+      config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
+    } else {
+      $('.modal-title').text('Invalid Power Price data');
+      $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26; "12:00":0.3}');
+      $('#myModal').modal({show:true});
+      return false;
+    };
+
     config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
     config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
     if (document.getElementById('ProfitabilityThreshold').value == null) { 
@@ -774,6 +786,10 @@
   $(document.getElementById('MineWhenIdle')).click(function(event) {
     document.getElementById('IdleSec').disabled = !(document.getElementById('MineWhenIdle').checked);
   });
+  $(document.getElementById('IdleSec')).focusout(function(event) {
+    if (parseInt(document.getElementById('IdleSec').value) <= 0) {document.getElementById('IdleSec').value = 0};
+    if (parseInt(document.getElementById('IdleSec').value) >= 3600) {document.getElementById('IdleSec').value = 3600};
+  });
 
   //Power Cost Settings
   $(document.getElementById('CalculatePowerCost')).click(function(event) {
@@ -787,18 +803,55 @@
   });
 
   //BalancesTrackerPollInterval
-  $(document.getElementById('BalancesTrackerPollInterval')).click(function(event) {
+  $(document.getElementById('BalancesTrackerPollInterval')).focusout(function(event) {
+    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) < 0) {document.getElementById('BalancesTrackerPollInterval').value = 0};
+    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) > 60) {document.getElementById('BalancesTrackerPollInterval').value = 60};
     document.getElementById('BalancesTrackerLog').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
     document.getElementById('ShowPoolBalances').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
   });
 
-  //Donation motivation
+  // Cycle duration
+  $(document.getElementById('Interval')).focusout(function(event) {
+    if (parseInt(document.getElementById('Interval').value) < 60) {document.getElementById('Interval').value = 60};
+    if (parseInt(document.getElementById('Interval').value) > 3600) {document.getElementById('Interval').value = 3600};
+  });
+
+  // Unreal Pool Price Factor
+  $(document.getElementById('UnrealPoolPriceFactor')).focusout(function(event) {
+    if (parseInt(document.getElementById('UnrealPoolPriceFactor').value) < 1) {document.getElementById('UnrealPoolPriceFactor').value = 1};
+    if (parseInt(document.getElementById('UnrealPoolPriceFactor').value) > 10) {document.getElementById('UnrealPoolPriceFactor').value = 10};
+  });
+
+  // MinWorker
+  $(document.getElementById('MinWorker')).focusout(function(event) {
+    if (parseInt(document.getElementById('MinWorker').value) < 1) {document.getElementById('MinWorker').value = 1};
+    if (parseInt(document.getElementById('MinWorker').value) > 25) {document.getElementById('MinWorker').value = 25};
+  });
+
+  // RunningMinerGainPct
+  $(document.getElementById('RunningMinerGainPct')).focusout(function(event) {
+    if (parseInt(document.getElementById('RunningMinerGainPct').value) < 0) {document.getElementById('RunningMinerGainPct').value = 0};
+    if (parseInt(document.getElementById('RunningMinerGainPct').value) > 100) {document.getElementById('RunningMinerGainPct').value = 100};
+  });
+
+  // MinDataSamples
+  $(document.getElementById('MinDataSamples')).focusout(function(event) {
+    if (parseInt(document.getElementById('MinDataSamples').value) < 10) {document.getElementById('MinDataSamples').value = 10};
+    if (parseInt(document.getElementById('MinDataSamples').value) > 100) {document.getElementById('MinDataSamples').value = 100};
+  });
+
+  // Donation
+  $(document.getElementById('Donate')).focusout(function(event) {
+    if (parseInt(document.getElementById('Donate').value) < 0) {document.getElementById('Donate').value = 0};
+    if (parseInt(document.getElementById('Donate').value) > 60) {document.getElementById('Donate').value = 60};
+  });
   $(document.getElementById('Donate')).click(function(event) {
-    if (parseInt(document.getElementById('Donate').value) <= 0) {
-        $('.modal-title').text('Donation duration set to 0   :-\(');
-        $(".modal-body").text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
-        $('#myModal').modal({show:true});
-      };
+    if (parseInt(document.getElementById('Donate').value) < 0) {
+      document.getElementById('Donate').value = 0;
+      $('.modal-title').text('Donation duration set to 0   :-\(');
+      $('.modal-body').text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
+      $('#myModal').modal({show:true});
+    };
   });
 
   //Load default Algorithm list
