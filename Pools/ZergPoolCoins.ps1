@@ -26,12 +26,13 @@ If ($PoolConfig.Wallet) {
     ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
 
     # Uses BrainPlus calculated price
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.workers -ge $PoolConfig.MinWorker } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
         $PoolHost = "$($HostSuffix)"
         $PoolPort = $Request.$_.port
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Updated = $Request.$_.Updated
+        $Workers = $Request.$_.workers
 
         # Find best coin for algo
         If ($TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ((Get-Algorithm $_.algo) -eq $Algorithm_Norm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | Select-Object -first 1) { 
@@ -64,6 +65,7 @@ If ($PoolConfig.Wallet) {
                 Fee                = [Decimal]$Fee
                 EstimateFactor     = [Decimal]$EstimateFactor
                 Updated            = [DateTime]$Updated
+                Workers            = [Int]$Workers
             }
         }
     }

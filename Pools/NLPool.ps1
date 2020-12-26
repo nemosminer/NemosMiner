@@ -21,12 +21,13 @@ If ($PoolConfig.Wallet) {
     
     $PoolRegions = "US"
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.workers -ge $PoolConfig.MinWorker } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolHost = $HostSuffix
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
+        $Workers = $Request.$_.workers
 
         $Fee = [Decimal]($Request.$_.Fees / 100)
         $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
@@ -55,6 +56,7 @@ If ($PoolConfig.Wallet) {
                 Fee                = [Decimal]$Fee
                 EstimateFactor     = [Decimal]$EstimateFactor
                 Updated            = [DateTime]$Updated
+                Workers            = [Int]$Workers
             }
         }
     }
