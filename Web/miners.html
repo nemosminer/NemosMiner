@@ -99,6 +99,21 @@
     height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985,
   })
 
+  $(function(){
+    var $table = $('#miners');
+    if (config.CalculatePowerCost == true) {
+      $table.bootstrapTable('showColumn', 'Profit');
+      $table.bootstrapTable('showColumn', 'Profit_Bias');
+      $table.bootstrapTable('showColumn', 'PowerUsage');
+      $table.bootstrapTable('showColumn', 'PowerCost');
+    } else {
+      $table.bootstrapTable('hideColumn', 'Profit');
+      $table.bootstrapTable('hideColumn', 'Profit_Bias');
+      $table.bootstrapTable('hideColumn', 'PowerUsage');
+      $table.bootstrapTable('hideColumn', 'PowerCost');
+    }
+  });
+
   $('#re-benchmark').click(function () {
     var $data = $table.bootstrapTable('getSelections');
     if ($data.length >= 1) {

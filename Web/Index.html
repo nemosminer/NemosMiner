@@ -106,6 +106,21 @@
     }
   });
 
+  $(function(){
+    var $table = $('#miners');
+    if (config.CalculatePowerCost == true) {
+      $table.bootstrapTable('showColumn', 'Profit');
+      $table.bootstrapTable('showColumn', 'Profit_Bias');
+      $table.bootstrapTable('showColumn', 'PowerUsage');
+      $table.bootstrapTable('showColumn', 'PowerCost');
+    } else {
+      $table.bootstrapTable('hideColumn', 'Profit');
+      $table.bootstrapTable('hideColumn', 'Profit_Bias');
+      $table.bootstrapTable('hideColumn', 'PowerUsage');
+      $table.bootstrapTable('hideColumn', 'PowerCost');
+    }
+  });
+
   document.getElementById("balances").style.display = "none";
 
   $('#re-benchmark').click(function () {
