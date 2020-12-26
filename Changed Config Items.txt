@@ -19,6 +19,9 @@ New Config Items
 #If true, power usage will be read from miners and calculate power cost, required for true profit calculation
   "CalculatePowerCost": true,
 
+# Process priority for CPU miners
+  "CPUMinerProcessPriority": -2,
+
 #If true NemosMiner will not use any single algo miners
   "DisableSingleAlgoMining": false,
 
@@ -39,6 +42,9 @@ New Config Items
     "CPU#00",
     "GPU#02"
   ],
+
+# Process priority for GPU miners
+  "GPUMinerProcessPriority": -1,
 
 #Powerusage of idle system in Watt. Part of profit calculation
   "IdlePowerUsageW": 60,
