@@ -13,14 +13,14 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; Protocol = @(" -uri beam") } # NBMiner-v34.5 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; Protocol = @(" -uri cuckaroo29m") }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.36 is fastest
+#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.38 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; Protocol = @(" -uri aeternity") }
 #   [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -pers auto -uri equihash1445") } # MiniZ-v1.6x is fastest
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri zhash") }
 #   [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 4.0; Protocol = @(" -uri ethproxy") } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = @("KawPoW");         Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri raven") }
+    [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri raven") }
 #   [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri conflux") } # NBMiner-v34.5 is faster is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Qitmeer");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri qitmeer") }
     [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri sero") }
@@ -86,7 +86,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     # Optionally disable dev fee mining
-                    If ($Config.DisableMinerFees) { 
+                    If ($Config.DisableMinerFee) { 
                         $Command += " -nofee"
                         $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
                     }

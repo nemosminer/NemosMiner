@@ -97,7 +97,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     # $Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("algorithm") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If (($Miner_Devices.Type | Select-Object -Unique) -eq "CPU") { 
-                        $DeviceCommand = " --cpu-threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --miner-priority 2 --disable-gpu"
+                        $DeviceCommand = " --cpu-threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --disable-gpu"
                     }
                     Else { 
                         $DeviceCommand = " --gpu-id $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',') --disable-cpu"

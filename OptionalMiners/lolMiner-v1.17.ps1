@@ -19,10 +19,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C31" } # TeamRed-v0.7.21 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; Command = " --coin AUTO144_5" } # GMiner-v2.36 is fastest, but des not support Navi
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin AUTO192_7" } # GMiner-v2.36 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; Command = " --coin AUTO144_5" } # GMiner-v2.38 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin AUTO192_7" } # GMiner-v2.38 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; Command = " --algo EQUI210_9" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" } # GMiner-v2.36 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin BTG" } # GMiner-v2.38 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; Command = " --coin ZCL" }
 #   [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.4c is faster
 #   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007; MinMemGB = 4.0; Command = " --algo ETHASH" } # BMiner-v16.3.7 & PhoenixMiner-v5.4c are faster
@@ -35,7 +35,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 8.0; Command = " --algo C30CTX" }
-#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C29D" } # GMiner-v2.36 is fastest
+#   [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C29D" } # GMiner-v2.38 is fastest
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; Command = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; Command = " --algo C32" }

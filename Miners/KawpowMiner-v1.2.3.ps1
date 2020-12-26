@@ -6,7 +6,7 @@ $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/ka
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Commands = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 2; Command = "" } # XmRig-v6.5.0 is faster
+#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 2; Command = "" } # XmRig-v6.7.0 is faster
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

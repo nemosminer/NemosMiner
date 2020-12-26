@@ -14,7 +14,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Ubqhash" } # PhoenixMiner-v5.4c is fastest
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    Coin = "RandomHash2" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Coin = "RandomX" } # XmRig-v6.5.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Coin = "RandomX" } # XmRig-v6.7.0 is fastest
 
 #   [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Etchash" } # PhoenixMiner-v5.4c is fastest
 #   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Ethash" } # TTMiner-v5.0.3 is fastest
