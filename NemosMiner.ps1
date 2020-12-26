@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.8
-Version date:   21 December 2020
+Version date:   26 December 2020
 #>
 
 [CmdletBinding()]
@@ -49,6 +49,8 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\Config.json", # Config file name
     [Parameter(Mandatory = $false)]
+    [Int]$CPUMinerProcessPriority = "-2", # Process priority for CPU miners
+    [Parameter(Mandatory = $false)]
     [String[]]$Currency = @("USD", "mBTC"), # i.e. GBP, USD, AUD, NZD ect., mBTC (milli BTC) is also valid
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, # seconds between stop and start of miners, use only when getting blue screens on miner switches
@@ -66,6 +68,8 @@ param(
     [Switch]$EstimateCorrection = $false, # If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), # Will replace old device selection, e.g. @("CPU# 00", "GPU# 02") (work in progress)
+    [Parameter(Mandatory = $false)]
+    [Int]$GPUMinerProcessPriority = "-1", # Process priority for GPU miners
     [Parameter(Mandatory = $false)]
     [Double]$IdlePowerUsageW = 60, # Powerusage of idle system in Watt. Part of profit calculation
     [Parameter(Mandatory = $false)]
