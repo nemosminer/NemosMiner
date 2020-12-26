@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v35.0/NBMiner_35.0_Win.zip"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v35.2/NBMiner_35.2_Win.zip"
 $DeviceEnumerator = "Bus"
 $DevicesBus = @(($Devices | Select-Object).Bus | Sort-Object)
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
@@ -14,23 +14,23 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo ethash" } # BMiner-v16.3.7 & PhoenixMiner-v5.4c are fastest
     [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "AMD"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1; Command = " --algo hns --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0; Command = " --algo hns_ethash --fee 1" } # BMiner-v16.3.7 is fastest
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Command = " --algo kawpow --fee 1" } # XmRig-v6.5.0 is almost as fast
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0; Command = " --algo kawpow --fee 1" } # XmRig-v6.7.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = @("Octopus");             Type = "AMD"; Fee = @(0.03);       MinMemGB = 5.0; MinMemGBWin10 = 5.0; Command = " --algo octopus --fee 1" }
 
     [PSCustomObject]@{ Algorithm = @("BeamV3");              Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo beamv3 --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc");       Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo bfc --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooD29");         Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckarood --fee 1" } # GMiner-v2.36 is fastest
+#   [PSCustomObject]@{ Algorithm = @("CuckarooD29");         Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckarood --fee 1" } # GMiner-v2.38 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29s");         Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckaroo_swap --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");          Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 8.0; MinMemGBWin10 = 10.0; MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckatoo --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");          Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0; MinMemGBWin10 = 8.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckatoo32 --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckoo_ae --fee 1" } # GMiner-v2.36 is fastest
+#   [PSCustomObject]@{ Algorithm = @("Cuckoo29");            Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo cuckoo_ae --fee 1" } # GMiner-v2.38 is fastest
     [PSCustomObject]@{ Algorithm = @("Eaglesong");           Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo eaglesong --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("EtcHash");             Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo etchash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Eaglesong"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo eaglesong_ethash --fee 1" }
 #   [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "NVIDIA"; Fee = @(0.0065);     MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo ethash" } # BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
 #   [PSCustomObject]@{ Algorithm = @("Handshake");           Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.0; Command = " -mt 1 --algo hns --fee 1" } # SRBMminerMulti-v0.5.9 is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo hns_ethash --fee 1" }
-#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo kawpow --fee 1" } # Trex-v0.19.5 is fastest
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo kawpow --fee 1" } # XmRig-v6.7.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = @("Sero");                Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 2.0; MinMemGBWin10 = 2.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo progpow_sero --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Sipc");                Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 1.0; MinMemGBWin10 = 1.0;  MinComputeCapability = 6.0; Command = " -mt 1 --algo sipc --fee 1" }
     [PSCustomObject]@{ Algorithm = @("Tensority");           Type = "NVIDIA"; Fee = @(0.01)      ; MinMemGB = 0.1; MinMemGBWin10 = 0.1;  MinComputeCapability = 6.1; Command = " -mt 1 --algo tensority --fee 1" }
@@ -109,7 +109,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     # Optionally disable dev fee mining
-                    If ($Config.DisableMinerFees) { 
+                    If ($Config.DisableMinerFee) { 
                         $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
                     }
 
