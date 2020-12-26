@@ -1,12 +1,16 @@
 Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
+- PowerShell 7.x is required, older PowerShell versions are not longer supported
 
-Changelog NemosMiner 3.9.9.8 Beta3 21.12.2020
+Changelog NemosMiner 3.9.9.8 Beta3 26.12.2020
 =============================================
 
 Fixed:
+- Core: MinDataSamplesAlgoMultiplier not working if more than one algorithm is configured
 - Core: Mining to donation address for too long (thanks to emike09)
+- Core: Pool data still not removed after pool got deconfigured
+- Core: Watchdogs not always expiring pools and algorithms
 - EthMiner API: reported UbqHash hash rate with PhoenixMiner 1000x to low
 
 Improved:
@@ -15,9 +19,12 @@ Improved:
 
 Miner Updates:
 - EthMiner-v0.19.0r5
-- GMiner-v2.36
+- GMiner-v2.38
+- NBMiner-v35.2
 - PhoenixMiner-v5.4c
 - SRBMminerMulti-v0.6.0
+- TeamRed-v0.7.22
+- XmRig-v6.7.0
 
 New:
 - WebGUI (Config Editor): Added 'Select Mining Devices' item
