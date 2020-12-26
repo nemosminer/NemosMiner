@@ -510,6 +510,27 @@ Function Start-Cycle {
             }
         }
 
+        #Update watchdog timers
+        $Miner.WorkersRunning | ForEach-Object { 
+            $Worker = $_
+            If ($Miner.Status -eq [MinerStatus]::Running) { 
+                # Update watchdog timers
+                If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName) { 
+                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
+                }
+                Remove-Variable WatchdogTimer
+                $Variables.WatchdogTimers += [PSCustomObject]@{ 
+                    MinerName     = $Miner.Name
+                    MinerBaseName = $Miner.BaseName
+                    MinerVersion  = $Miner.Version
+                    PoolName      = $Worker.Pool.Name
+                    Algorithm     = $Worker.Pool.Algorithm
+                    DeviceName    = $Miner.DeviceName
+                    Kicked        = $Variables.Timer
+                }
+            }
+        }
+
         # We don't want to store hashrates if we have less than $MinDataSamples
         If (($Miner.GetStatus() -eq [MinerStatus]::Running -and ($Miner.Data).Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
             $Miner.StatEnd = (Get-Date).ToUniversalTime()
@@ -531,24 +552,8 @@ Function Start-Cycle {
                         If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             $Miner.StatStart = $Miner.StatEnd
-                            If ($Stat.Live -eq 0 -and $Stat.Duration -eq $Stat_Span) { $PowerUsage = 0 } # Do not save measured power usage when benchmarking failed
-                            If ($Miner.Status -eq [MinerStatus]::Running) { 
-                                # Update watchdog timers
-                                If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName) { 
-                                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
-                                }
-                                Remove-Variable WatchdogTimer
-                                $Variables.WatchdogTimers += [PSCustomObject]@{ 
-                                    MinerName     = $Miner.Name
-                                    MinerBaseName = $Miner.BaseName
-                                    MinerVersion  = $Miner.Version
-                                    PoolName      = $Worker.Pool.Name
-                                    Algorithm     = $Worker.Pool.Algorithm
-                                    DeviceName    = $Miner.DeviceName
-                                    Kicked        = $Variables.Timer
-                                }
-                            }
                         }
+                        If ($Stat.Week -eq 0) { $PowerUsage = 0 } # Save 0 instead of measured power usage when stat contains no data
                     }
                 }
             }
@@ -1211,7 +1216,7 @@ While ($true) {
                 $Message = "Miner failed. "
                 Break
             }
-            ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt ($Config.MinDataSamples) }))) { 
+            ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt (($Config.MinDataSamples , ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
                 # Enough samples collected for this loop, exit loop immediately
                 $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle."
                 Break
