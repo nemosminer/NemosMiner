@@ -15,7 +15,9 @@ Fixed:
 
 Improved:
 - Added more configuration options for text window content
+- Added config item for CPU / GPU miners process priority
 - Earnings: Predicted Payout date is more accurate
+- Web GUI: Hide colums 'Profit' / 'Profit Bias' / 'PowerUsage' & 'Power Cost' if not calculating power cost
 
 Miner Updates:
 - EthMiner-v0.19.0r5
