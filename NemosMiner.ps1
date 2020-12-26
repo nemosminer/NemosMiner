@@ -45,7 +45,7 @@ param(
     [Parameter(Mandatory = $false)]
     [UInt16]$BalancesTrackerPollInterval = 5, # minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
     [Parameter(Mandatory = $false)]
-    [Switch]$CalculatePowerCost = $true, # If true, power usage will be read from miners and calculate power cost, required for true profit calculation
+    [Switch]$CalculatePowerCost = $true, # If true power usage will be read from miners and calculate power cost, required for true profit calculation
     [Parameter(Mandatory = $false)]
     [String]$ConfigFile = ".\Config\Config.json", # Config file name
     [Parameter(Mandatory = $false)]
@@ -71,17 +71,17 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if MineWhenIdle -eq $true)
     [Parameter(Mandatory = $false)]
-    [Switch]$IgnoreMinerFee = $false, # If true, NM will ignore miner fee for earning & profit calculation
+    [Switch]$IgnoreMinerFee = $false, # If true NM will ignore miner fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
     [Switch]$IgnorePoolFee = $false, # If true NM will ignore pool fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
-    [Switch]$IgnorePowerCost = $false, # If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
+    [Switch]$IgnorePowerCost = $false, # If true NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
     [Parameter(Mandatory = $false)]
-    [Switch]$IncludeOptionalMiners = $true, # If true, use the miners in the 'OptionalMiners' directory
+    [Switch]$IncludeOptionalMiners = $true, # If true use the miners in the 'OptionalMiners' directory
     [Parameter(Mandatory = $false)]
-    [Switch]$IncludeRegularMiners = $true, # If true, use the miners in the 'Miners' directory
+    [Switch]$IncludeRegularMiners = $true, # If true use the miners in the 'Miners' directory
     [Parameter(Mandatory = $false)]
-    [Switch]$IncludeLegacyMiners = $true, # If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
+    [Switch]$IncludeLegacyMiners = $true, # If true use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 240, # seconds before between cycles after the first has passed 
     [Parameter(Mandatory = $false)]
@@ -102,7 +102,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$MinerInstancePerDeviceModel = $true, # If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
     [Parameter(Mandatory = $false)]
-    [Switch]$MineWhenIdle = $false, # If true, NemosMiner will start mining only if system is idle for $IdleSec seconds
+    [Int]$MinWorker = 10, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per-pool setting configurable in 'PoolsConfig.json'
+    [Parameter(Mandatory = $false)]
+    [Switch]$MineWhenIdle = $false, # If true NemosMiner will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
     [String]$MonitoringServer = "", # Monitoring server hostname, default "https://nemosminer.com"
     [Parameter(Mandatory = $false)]
@@ -122,7 +124,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$NiceHashOrganizationId = "", # NiceHash Organization Id (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [Switch]$OpenFirewallPorts = $true, # If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
+    [Switch]$OpenFirewallPorts = $true, # If true NemosMiner will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
     [String]$PayoutCurrency = "BTC", # i.e. BTC, LTC, ZEC, ETH etc., Default PayoutCurrency for all pools that have no other currency configured, PayoutCurrency is also a per pool setting (to be configured in PoolsConfig.json)
     [Parameter(Mandatory = $false)]
@@ -186,7 +188,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
-    [Switch]$StartPaused = $false, # If true, NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
+    [Switch]$StartPaused = $false, # If true NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
     [Parameter(Mandatory = $false)]
     [Int]$SyncWindow = 3, # Cycles. Pool prices must all be all have been collected within the last 'SyncWindow' cycles, otherwise the biased value of older poll price data will get reduced more the older the data is
     [Parameter(Mandatory = $false)]
@@ -297,8 +299,6 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 
 # Read configuration
 Read-Config -Parameters $AllCommandLineParameters
-
-Repair-Config # temp fix
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
@@ -669,8 +669,8 @@ Function Global:TimerUITick {
 
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { 
                 If ($Config.UIStyle -ne "Full") { 
-                    Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
                     $Variables.UIStyle = "Full"
+                    Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
                 }
             }
 
@@ -681,88 +681,88 @@ Function Global:TimerUITick {
             )
             If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { 
                 $Miner_Table.AddRange(
-                    @( <# Miner fees#>
+                    @( <#Miner fees#>
                         @{ Label = "Fee(s)"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
                     )
                 )
             }
             $Miner_Table.AddRange(
-                @( <# Miner speed#>
+                @( <#Miner speed#>
                     @{ Label = "Speed(s)"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = 'right' }
                 )
             )
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(
-                    @( <# Miner Earning#>
+                    @( <#Miner Earning#>
                        @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowEarningBias) { 
                 $Miner_Table.AddRange(
-                    @( <# Miner EarningsBias#>
+                    @( <#Miner EarningsBias#>
                         @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.CalculatePowerCost -and $Config.ShowPowerUsage) { 
                 $Miner_Table.AddRange(
-                    @( <# Power Usage#>
+                    @( <#Power Usage#>
                         @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" }
                     )
                 )
             }
             If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
                 $Miner_Table.AddRange(
-                    @( <# PowerCost#>
+                    @( <#PowerCost#>
                         @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
                     )
                 )
             }
             If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
-                    @( <# Mining Profit#>
+                    @( <#Mining Profit#>
                         @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowProfitBias -and $Variables.PowerPricekWh) { 
                 $Miner_Table.AddRange(
-                    @( <# Mining ProfitBias#>
+                    @( <#Mining ProfitBias#>
                         @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowAccuracy) { 
                 $Miner_Table.AddRange(
-                    @( <# Accuracy#>
+                    @( <#Accuracy#>
                         @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = 'right' }
                     )
                 )
             }
             $Miner_Table.AddRange(
-                @( <# Pools#>
+                @( <#Pools#>
                     @{ Label = "Pool(s)"; Expression = { $_.Workers.Pool.Name | ForEach-Object { $_ } } }
                 )
             )
             If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { 
                 $Miner_Table.AddRange(
-                    @( <# Show pool fees#>
+                    @( <#Show pool fees#>
                         @{ Label = "Fee(s)"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
                     )
                 )
             }
-            If ($Variables.Miners.Workers.Pool.Coin) { 
+            If ($Variables.Miners.Workers.Pool.Currency) { 
                 $Miner_Table.AddRange(
-                    @( <# Coin#>
-                        @{ Label = "Coin(s)"; Expression = { $_.Workers.Pool.Coin | Foreach-Object { [String]$_ } } }
+                    @( <#Currency#>
+                        @{ Label = "Currency"; Expression = { $_.Workers.Pool.Currency | ForEach-Object { [String]$_ } } }
                     )
                 )
             }
             If ($Variables.Miners.Workers.Pool.CoinName) { 
                 $Miner_Table.AddRange(
-                    @( <# CoinName#>
-                        @{ Label = "CoinName(s)"; Expression = { $_.Workers.Pool.CoinName | Foreach-Object { [String]$_ } } }
+                    @( <#CoinName#>
+                        @{ Label = "CoinName(s)"; Expression = { $_.Workers.Pool.CoinName | ForEach-Object { [String]$_ } } }
                     )
                 )
             }
@@ -773,12 +773,12 @@ Function Global:TimerUITick {
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
                 $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.Fastest -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
-                    $Variables.ShowAllMiners -or <# List all miners#>
-                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum -1)) -or <# Always list at least the top 5 miners per device group#>
-                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <# Always list the better 50% miners per device group#>
-                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking#>
-                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <# List all miners when measuring power usage#>
-                } | Sort-Object DeviceName, @{ Expression = { $_.$SortBy } ; Descending = $true }, @{ Expression = { $_.Workers.Pool.Name } } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -eq $_.DeviceName).Model -join ', ')]" } } | Out-Host
+                    $Variables.ShowAllMiners -or <#List all miners#>
+                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum -1)) -or <#Always list at least the top 5 miners per device group#>
+                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% miners per device group#>
+                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
+                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <#List all miners when measuring power usage#>
+                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -eq $_.DeviceName).Model -join ', ')]" } } | Out-Host
 
                 # Display benchmarking progress
                 If ($MinersDeviceGroupNeedingBenchmark) { 
