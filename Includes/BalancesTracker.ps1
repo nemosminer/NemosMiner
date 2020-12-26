@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           BalancesTracker.ps1
 version:        3.9.9.8
-version date:   18 November 2020
+version date:   26 November 2020
 #>
 
 # Start the log
@@ -34,26 +34,46 @@ $TrustLevel = 0
 $Variables.Earnings = [Ordered]@{ }
 $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
 
+$AllBalanceObjects = @()
+$DailyEarnings = @()
+
 While ($true) { 
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
         # Only on first run
         If (-not $Now) { 
             Write-Message "Balances Tracker started."
-            # Read existing earning data
-            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { 
-                $AllBalanceObjects = ((Get-Content ".\logs\BalancesTrackerData.json" | ConvertFrom-Json ) | Where-Object Balance -NE $null | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)).ToUniversalTime(); $_ })
-            } Else { 
+            # Read existing earning data, use data from last file
+            @(Get-ChildItem ".\Logs\BalancesTrackerData*.json" | Sort-Object LastWriteTime) | ForEach-Object { 
+                $FileName = $_
+                If ($AllBalanceObjects.Count -lt 2) { $AllBalanceObjects = ((Get-Content $FileName | ConvertFrom-Json ) | Where-Object Balance -NE $null | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)).ToUniversalTime(); $_ }) }
+            }
+            If ($AllBalanceObjects.Count -gt 0) { 
+                Write-Message -Level Info "Balances Tracker loaded $($AllBalanceObjects.Count) balance entries from '$FileName'."
+            }
+            Else { 
                 $AllBalanceObjects = @()
             }
-            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) {
-                $DailyEarnings = @(Import-Csv ".\Logs\DailyEarnings.csv" -ErrorAction SilentlyContinue)
-                Write-Message -Level Info "Balances Tracker loaded $($DailyEarnings.count) earnings data entries from '.\Logs\DailyEarnings.csv'."
-                Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv"
-            } Else { 
+
+            # Read existing earning data, use data from last file
+            @(Get-ChildItem ".\Logs\DailyEarnings*.csv" | Sort-Object LastWriteTime) | ForEach-Object { 
+                $FileName = $_
+                If ($DailyEarnings.Count -lt 2) { $DailyEarnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue) }
+            }
+            If ($DailyEarnings.Count -gt 0) { 
+                Write-Message -Level Info "Balances Tracker loaded $($DailyEarnings.Count) daily earnings data entries from '$FileName'."
+            }
+            Else { 
                 $DailyEarnings = @()
             }
+        }
+
+        If ($Now.Date -ne (Get-Date).Date) {
+            # Keep a copy at each start and date change
+            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").json" }
+            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").csv" }
             # Keep only the last 10 logs 
+            Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
             Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
         }
 
