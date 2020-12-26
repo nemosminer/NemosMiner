@@ -452,8 +452,8 @@ Function Start-Cycle {
     $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
     If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.Default.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in default pool config)" } }
 
-    $Variables.Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker in generic config)" } 
-    $Variables.Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
+    $Variables.Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.MinWorker)' in generic config)" } 
+    $Variables.Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)' in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
     $Variables.Pools | Where-Object { $Config.Pools.($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
@@ -702,6 +702,7 @@ Function Start-Cycle {
                     PrerequisitePath = [String]$_.Content.PrerequisitePath
                     WarmupTime       = [Int]([Int]$Config.WarmupTime + [Int]($Variables.ExtraWarmupTime.($_.Content.Algorithm -join '&')) + [Int]$_.Content.WarmupTime)
                     MinerUri         = [String]$_.Content.MinerUri
+                    ProcessPriority  = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
                 } -as "$($_.Content.API)"
             }
         }
@@ -752,13 +753,14 @@ Function Start-Cycle {
     # Update existing miners
     $Variables.Miners | Select-Object | ForEach-Object { 
         If ($Miner = Compare-Object -PassThru ($NewMiners | Where-Object Name -EQ $_.Name | Where-Object Path -EQ $_.Path | Where-Object Type -EQ $_.Type | Select-Object) $_ -Property Algorithm -ExcludeDifferent -IncludeEqual) { 
-            $_.Restart = [Boolean]($_.CommandLine -ne $Miner.CommandLine)
             $_.Arguments = $Miner.Arguments
-            $_.Workers = $Miner.Workers
-            $_.Port = $Miner.Port
-            $_.WarmupTime = $Miner.WarmupTime
             $_.CommandLine = $Miner.CommandLine
+            $_.Port = $Miner.Port
+            $_.ProcessPriority = $Miner.ProcessPriority
+            $_.Restart = [Boolean]($_.CommandLine -ne $Miner.CommandLine)
             $_.ShowMinerWindows = $Config.ShowMinerWindows
+            $_.WarmupTime = $Miner.WarmupTime
+            $_.Workers = $Miner.Workers
         }
         $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
         $_.CalculatePowerCost = $Variables.CalculatePowerCost
@@ -941,11 +943,11 @@ Function Start-Cycle {
         Write-Message "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
     }
 
-    $Variables.Summary = ""
     If ($Variables.Rates."BTC") { 
+        $Variables.Summary = ""
         If (-not [Double]::IsNaN($Variables.MiningEarning)) { 
             $Variables.Summary = "Estimated Earning/day: {0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
-            If (-not [Double]::IsNaN($Variables.MiningPowerCost)) { 
+            If (($Config.CalculatePowerCost -EQ $true) -and (-not [Double]::IsNaN($Variables.MiningPowerCost))) { 
                 $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Profit/day: {0:N} $($Config.Currency | Select-Object -Index 0)" -f ($Variables.MiningProfit * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
             }
             $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;"
@@ -963,7 +965,8 @@ Function Start-Cycle {
     # MeasurePowerUsage state changed OR
     # CalculatePowerCost -> true -> done (to change data poll interval) OR
     # Miner windows invisibility changes
-    $Variables.Miners | Where-Object Best -EQ $true | ForEach-Object { 
+    # Miner Priority changes
+    $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
         If ($_.Activated -eq -1) {
             # Re-benchmark triggered in Web GUI
             $_.Restart = $true
@@ -975,6 +978,8 @@ Function Start-Cycle {
         ElseIf ($_.CalculatePowerCost -ne - $Variables.CalculatePowerCost) { $_.Restart = $true }
         ElseIf ($_.ShowMinerWindows -eq "hidden" -and $_.CachedShowMinerWindows -in @("normal", "minimized")) { $_.Restart = $true }
         ElseIf ($_.ShowMinerWindows -in @("normal", "minimized") -and $_.CachedShowMinerWindows -eq "hidden") { $_.Restart = $true }
+        ElseIf ($_.Type -eq "CPU" -and  $_.ProcessPriority -ne $Config.CPUProcessPriority) { $_.Restart = $true }
+        ElseIf ($_.Type -ne "CPU" -and  $_.ProcessPriority -ne $Config.GPUProcessPriority) { $_.Restart = $true }
     }
 
     # Stop running miners
