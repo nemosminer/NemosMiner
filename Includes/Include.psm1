@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.9.9.8
-version date:   21 November 2020
+version date:   26 November 2020
 #>
 
 New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true } -ErrorAction SilentlyContinue | Out-Null
@@ -81,6 +81,7 @@ Class Pool {
     [String]$Currency = ""
     [String]$CoinName = ""
     [String]$Host
+    [String[]]$Hosts
     [UInt16]$Port
     [String]$User
     [String]$Pass
@@ -90,7 +91,7 @@ Class Pool {
     [Double]$PricePenaltyfactor = 1
     [Double]$EstimateFactor = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
-    [Int]$Workers
+    [System.Nullable[Int]]$Workers
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
     [String[]]$Reason = @("")
@@ -169,6 +170,7 @@ Class Miner {
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
+    hidden [TimeSpan]$Active = [TimeSpan]::Zero
     [Int32]$ProcessId = 0
 
     [Int]$Activated = 0
@@ -336,6 +338,7 @@ Class Miner {
         If ($this.Status -eq [MinerStatus]::Running) { 
             $this.Status = [MinerStatus]::Idle
             $this.StatusMessage = "Idle"
+            $this.WorkersRunning = @()
         }
         $this.Devices | ForEach-Object { 
             If ($_.State -eq [DeviceState]::Disabled) { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
@@ -570,7 +573,6 @@ Class Miner {
         $this.Available = $true
         $this.Benchmark = $false
         $this.Best = $false
-        $this.Reason = [String[]]@()
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
@@ -1123,7 +1125,7 @@ Function Update-Monitoring {
         $Status = If ($Variables.Paused) { "Paused" } Else { "Running" }
         $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq "Running" }
         # Add the associated object from $Variables.Miners since we need data from that too
-        $RunningMiners | Foreach-Object { 
+        $RunningMiners | ForEach-Object { 
             $RunningMiner = $_
             $Miner = $Variables.Miners | Where-Object { $_.Name -eq $RunningMiner.Name -and $_.Path -eq $RunningMiner.Path -and $_.Arguments -eq $RunningMiner.Arguments }
         }
@@ -1169,7 +1171,7 @@ Function Update-Monitoring {
         Try { 
             $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{ user = $Config.MonitoringUser } -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
             # Calculate some additional properties and format others
-            $Workers | Foreach-Object { 
+            $Workers | ForEach-Object { 
                 # Convert the unix timestamp to a datetime object, taking into account the local time zone
                 $_ | Add-Member -Force @{ date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen)) }
 
@@ -1322,6 +1324,7 @@ Function Read-Config {
         If (-not "$PoolConfig") { # https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
             If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json }
         }
+        If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
         If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
@@ -1346,41 +1349,6 @@ Function Read-Config {
     }
 
     $Config.PoolsConfig = $PoolsConfig
-}
-
-Function Repair-Config {
-
-    $ConfigFixed = $Global:Config.Clone()
-
-    # Add +/- to all algorithms
-    $Algorithms = @()
-    ForEach ($Algorithm in $ConfigFixed.Algorithm) { 
-        $Algorithm = $Algorithm.Trim()
-        If ($PlusMinus -notmatch "\+|\-") { $PlusMinus = "+" }
-        If ($Algorithm.Substring(0, 1) -match "\+|\-") { 
-            $PlusMinus = $Algorithm.Substring(0, 1)
-            $Algorithms += $Algorithm
-        }
-        Else { 
-            $Algorithms += "$PlusMinus$Algorithm"
-            $Fixed = $true
-        }
-    }
-    $ConfigFixed.Algorithm = $Algorithms
-
-    # Convert Arrays to HashTable
-    ForEach ($Property in @("MinDataSamplesAlgoMultiplier", "PowerPricekWh")) { 
-        If ($ConfigFixed.$Property -is [Array]) { 
-            $ConfigFixed.$Property = $ConfigFixed.$Property[0] | ConvertTo-Json | ConvertFrom-Json
-            $Fixed = $true
-        }
-    }
-
-    If ($Fixed -eq $true) { 
-        $Global:Config = $ConfigFixed
-        Write-Config -ConfigFile $Variables.ConfigFile
-        Write-Message -Level Warn "Configuration file fixed."
-    }
 }
 
 Function Write-Config { 
@@ -1500,7 +1468,7 @@ Function Set-Stat {
         }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.Week_Fluctuation -lt 1 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.Week -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded) { 
+        If ($Value -and $Stat.Week_Fluctuation -lt 1 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_HashRate$") { 
                 Write-Message -Level Warn "Failed saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
             }
@@ -1721,16 +1689,16 @@ Function Get-CommandPerDevice {
         $ValueSeparator = ""
         $Values = ""
 
-        If ($Token -match "(?:^\s[-=]+)" <# supported prefix characters are listed in brackets [-=]#>) { 
+        If ($Token -match "(?:^\s[-=]+)" <#supported prefix characters are listed in brackets [-=]#>) { 
             $Prefix = "$($Token -split $Matches[0] | Select-Object -Index 0)$($Matches[0])"
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
-            If ($Token -match "(?:[ =]+)" <# supported separators are listed in brackets [ =]#>) { 
+            If ($Token -match "(?:[ =]+)" <#supported separators are listed in brackets [ =]#>) { 
                 $ParameterValueSeparator = $Matches[0]
                 $Parameter = $Token -split $ParameterValueSeparator | Select-Object -Index 0
                 $Values = $Token.Substring(("$Parameter$($ParameterValueSeparator)").length)
 
-                If ($Parameter -notin $ExcludeParameters -and $Values -match "(?:[,; ]{1})" <# supported separators are listed in brackets [,; ]#>) { 
+                If ($Parameter -notin $ExcludeParameters -and $Values -match "(?:[,; ]{1})" <#supported separators are listed in brackets [,; ]#>) { 
                     $ValueSeparator = $Matches[0]
                     $RelevantValues = @()
                     $DeviceIDs | ForEach-Object { 
@@ -2595,7 +2563,9 @@ Function Get-Algorithm {
 Function Get-Region { 
     Param(
         [Parameter(Mandatory = $true)]
-        [String]$Region
+        [String]$Region,
+        [Parameter(Mandatory = $false)]
+        [Switch]$List = $false
     )
 
     If (-not (Test-Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
@@ -2604,7 +2574,10 @@ Function Get-Region {
 
     $Region = (Get-Culture).TextInfo.ToTitleCase($Region -replace '-' -replace '_' -replace '/' -replace ' ')
 
-    If ($Global:Regions.$Region) { $Global:Regions.$Region | Select-Object -Index 0 }
+    If ($Global:Regions.$Region) { 
+        If ($List) { $Global:Regions.$Region }
+        Else { $Global:Regions.$Region | Select-Object -Index 0 } 
+    }
     Else { $Region }
 }
 
