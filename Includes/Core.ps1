@@ -983,8 +983,8 @@ Function Start-Cycle {
         ElseIf ($_.CalculatePowerCost -ne - $Variables.CalculatePowerCost) { $_.Restart = $true }
         ElseIf ($_.ShowMinerWindows -eq "hidden" -and $_.CachedShowMinerWindows -in @("normal", "minimized")) { $_.Restart = $true }
         ElseIf ($_.ShowMinerWindows -in @("normal", "minimized") -and $_.CachedShowMinerWindows -eq "hidden") { $_.Restart = $true }
-        ElseIf ($_.Type -eq "CPU" -and  $_.ProcessPriority -ne $Config.CPUProcessPriority) { $_.Restart = $true }
-        ElseIf ($_.Type -ne "CPU" -and  $_.ProcessPriority -ne $Config.GPUProcessPriority) { $_.Restart = $true }
+        ElseIf ($_.Type -eq "CPU" -and  $_.ProcessPriority -ne $Config.CPUMinerProcessPriority) { $_.Restart = $true }
+        ElseIf ($_.Type -ne "CPU" -and  $_.ProcessPriority -ne $Config.GPUMinerProcessPriority) { $_.Restart = $true }
     }
 
     # Stop running miners
