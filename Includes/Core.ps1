@@ -1086,7 +1086,7 @@ Function Start-Cycle {
         If ($_.Benchmark -eq $true) { $Message = "Benchmark " }
         If ($_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true) { $Message = "$($Message)and " }
         If ($_.MeasurePowerUsage -eq $true) { $Message = "$($Message)Power usage measurement " }
-        If ($Message) { Write-Message -Level Verbose "$($Message)for miner '$($_.Info)' in progress [Attempt $($_.Activated)/3]..." }
+        If ($Message) { Write-Message -Level Verbose "$($Message)for miner '$($_.Info)' in progress [Attempt $($_.Activated)/3; min. $($_.MinDataSamples) Samples]..." }
     }
     Remove-Variable Message -ErrorAction Ignore
 
@@ -1216,9 +1216,9 @@ While ($true) {
                 $Message = "Miner failed. "
                 Break
             }
-            ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt (($Config.MinDataSamples , ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
+            ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -le (($Config.MinDataSamples , ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
                 # Enough samples collected for this loop, exit loop immediately
-                $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle."
+                $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. "
                 Break
             }
             ElseIf ($InitialRunningMiners -and (-not $RunningMiners)) { 
@@ -1230,7 +1230,7 @@ While ($true) {
 
             While ((Get-Date) -le $NextLoop) { Start-Sleep -Milliseconds 100 }
         }
-        Write-Message "$($Message)Ending cycle."
+        Write-Message -Level Info "$($Message)Ending cycle."
         Remove-Variable Message -ErrorAction SilentlyContinue
         Remove-Variable RunningMiners -ErrorAction SilentlyContinue
         Remove-Variable InitialRunningMiners -ErrorAction SilentlyContinue
