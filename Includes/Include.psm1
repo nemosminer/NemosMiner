@@ -1362,7 +1362,7 @@ Function Write-Config {
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
 
     If (Test-Path $ConfigFile -PathType Leaf) {
-        Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").backup"
+        Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
     }
 
     $SortedConfig = $Config | Get-SortedObject
@@ -1380,7 +1380,7 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json | ConvertFrom-Json 
+    $Object = $Object | ConvertTo-Json -Depth 10 | ConvertFrom-Json 
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
