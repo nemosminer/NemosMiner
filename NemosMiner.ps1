@@ -279,20 +279,14 @@ $Variables.Miners = [Miner[]]
 $Variables.Pools = [Miner]::Pools
 
 # Expand paths
+$Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))"
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))"
 $Variables.LogFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"))"
 
-If (Test-Path ".\Config\Version.json" -PathType Leaf) { 
-    $Variables.CurrentProduct = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Product
-    $Variables.CurrentVersion = [Version](Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Version
-    $Variables.CurrentVersionAutoupdated = (Get-Content .\Config\Version.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).Autoupdated.Value
-}
-Else { 
-    $Variables.CurrentProduct = $Branding.ProductLabel
-    $Variables.CurrentVersion = $Branding.Version
-}
+$Variables.CurrentProduct = $Branding.ProductLabel
+$Variables.CurrentVersion = $Branding.Version
 
 # Get command line parameters, required in Read-Config
 $AllCommandLineParameters = [Ordered]@{ }
@@ -447,7 +441,7 @@ If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerSta
 }
 
 If ($Config.WebGUI -eq $true) { 
-    Write-Host "Initializing API & Web GUI on 'http:\\localhost:$($Config.APIPort)'..." -ForegroundColor Yellow
+    Write-Host "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..." -ForegroundColor Yellow
     Initialize-API
 }
 
