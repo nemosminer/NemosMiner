@@ -17,6 +17,8 @@ class BMiner : Miner {
             Return $null
         }
 
+        If (-not ($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers })) { Return $null }
+
         If ($this.AllowedBadShareRatio) { 
             #Read stratum info from API
             Try { 
@@ -26,8 +28,6 @@ class BMiner : Miner {
                 Return $null
             }
         }
-
-        If (-not $Data.devices."0".solvers) { Return $null }
 
         $HashRate = [PSCustomObject]@{ }
         $Shares = [PSCustomObject]@{ }
@@ -39,11 +39,11 @@ class BMiner : Miner {
 
         [Int]$Index = 0
 
-        $Data.devices."0".solvers | ForEach-Object { 
-            $Index = $Data.devices."0".solvers.IndexOf($_)
-            $HashRate_Name = [String]$this.Algorithm[$Index]
-            $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] } ).speed_info.hash_rate | Measure-Object -Sum).Sum
-            If (-not $HashRate_Value) { $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] } ).speed_info.solution_rate | Measure-Object -Sum).Sum}
+        $this.Algorithm | ForEach-Object {
+            $Index = $this.Algorithm.IndexOf($_)
+            $HashRate_Name = $_
+            $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.hash_rate | Measure-Object -Sum).Sum
+            If (-not $HashRate_Value) { $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.solution_rate | Measure-Object -Sum).Sum}
 
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
             If ($this.AllowedBadShareRatio) { 
