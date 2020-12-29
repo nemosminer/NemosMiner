@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.1.0"
+    $APIVersion = "0.3.1.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -311,7 +311,7 @@ Function Start-APIServer {
                                 If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
-                                $_.Activated = -1 # To allow 3 attempts
+                                $_.Activated = 0 # To allow 3 attempts
                                 $_.Benchmark = $true
                                 $_.Accuracy = $null
                                 $_.Data = @()
@@ -347,9 +347,9 @@ Function Start-APIServer {
                                 }
                                 $_.PowerUsage = [Double]::Nan
                                 $_.MeasurePowerUsage = $true
-                                $_.Activated = -1 # To allow 3 attempts
+                                $_.Activated = 0 # To allow 3 attempts
                                 $_.Accuracy = 1
-                                $_. Benchmark = $true
+                                $_.Benchmark = $true
                                 $StatName = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
                                 $Data += "`n$StatName"
                                 Remove-Stat -Name "$($StatName)_PowerUsage"
