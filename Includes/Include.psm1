@@ -702,27 +702,6 @@ Function Get-Chart {
     }
 }
 
-Function Get-NMVersion { 
-
-    # Check if new version is available
-    Write-Message "Checking version..."
-    Try { 
-        $Version = Invoke-WebRequest "https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-    }
-    Catch { 
-        $Version = Get-Content ".\Config\version.json" | ConvertFrom-Json
-    }
-    If ($Version.Version -gt $Variables.CurrentVersion) { $Version | ConvertTo-Json | Out-File ".\Config\version.json" }
-    If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
-        Write-Message "Version $($Version.Version) available. (You are running $($Variables.CurrentVersion))"
-        # If ([Version](Get-NVIDIADriverVersion) -ge [Version]$Version.MinNVIDIADriverVersion){ 
-        $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
-        $LabelNotifications.Lines += "Version $([Version]$Version.Version) available"
-        $LabelNotifications.Lines += $Version.Message
-        If ($Config.Autoupdate -and (-not $Config.ManualConfig)) { Initialize-Autoupdate }
-    }
-}
-
 Function Get-CommandLineParameters { 
     [CmdletBinding()]
     Param(
@@ -952,26 +931,6 @@ Function Write-Message {
 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
-                Switch ($Level) { 
-                    'Error' { 
-                        $LabelNotifications.ForeColor = "Red"
-                    }
-                    'Warn' { 
-                        $LabelNotifications.ForeColor = "Magenta"
-                    }
-                    'Info' { 
-                        $LabelNotifications.ForeColor = "White"
-                    }
-                    'Verbose' { 
-                        $LabelNotifications.ForeColor = "Yellow"
-                    }
-                    'Debug' { 
-                        $LabelNotifications.ForeColor = "Blue"
-                    }
-                    Default { 
-                        $LabelNotifications.ForeColor = "White"
-                    }
-                }
                 $Variables.LabelStatus.Lines += $Message
                 $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
                 $Variables.LabelStatus.ScrollToCaret()
@@ -1267,17 +1226,6 @@ Function Stop-Mining {
     }
 }
 
-Function Update-Notifications ($Text) { 
-
-    Return
-
-    $LabelNotifications.Lines += $Text
-    If ($LabelNotifications.Lines.Count -gt 20) { $LabelNotifications.Lines = $LabelNotifications.Lines[($LabelNotifications.Lines.count - 10)..$LabelNotifications.Lines.Count] }
-    $LabelNotifications.SelectionStart = $Variables.LabelStatus.TextLength;
-    $LabelNotifications.ScrollToCaret();
-    $Variables.LabelStatus.Refresh | Out-Null
-}
-
 Function Read-Config { 
     Param(
         [Parameter(Mandatory = $false)]
@@ -1397,12 +1345,14 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json -Depth 10 | ConvertFrom-Json 
+    If ($Object -is [String]) { Return $Object }
+
+    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json 
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
 
-    Switch ($Object.GetType().Name) {
+    Switch -Regex ($Object.GetType().Name) {
         "PSCustomObject" { 
             Get-Member -Type NoteProperty -InputObject $Object | Sort-Object Name | ForEach-Object { 
                 # Upper / lower case conversion (Web GUI is case sensitive)
@@ -1418,18 +1368,18 @@ Function Get-SortedObject {
                 }
             }
         }
-        "SyncHashtable" { 
-            $Object.GetEnumerator() | Sort-Object -Property Name | ForEach-Object { 
+        "Hashtable|SyncHashtable" { 
+           $Object.Keys | Sort-Object | ForEach-Object { 
                 # Upper / lower case conversion (Web GUI is case sensitive)
-                $PropertyName = $_.Name
-                $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
-                If (-not $PropertyName) { $PropertyName = $_.Name }
+                $Key = $_
+                $Key = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $Key }
+                If (-not $Key) { $Key = $_ }
 
-                If ($Object.$PropertyName -is [Hashtable] -or $Object.$PropertyName -is [PSCustomObject]) { 
-                    $SortedObject[$PropertyName] = Get-SortedObject $Object.$PropertyName
+                If ($Object.$Key -is [Hashtable] -or $Object.$Key -is [PSCustomObject]) { 
+                    $SortedObject[$Key] = Get-SortedObject $Object.$Key
                 }
                 Else { 
-                    $SortedObject[$PropertyName] = $Object.$PropertyName
+                    $SortedObject[$PropKeyertyName] = $Object.$Key
                 }
             }
         }
@@ -2597,6 +2547,25 @@ Function Get-Region {
         Else { $Global:Regions.$Region | Select-Object -Index 0 } 
     }
     Else { $Region }
+}
+
+Function Get-NMVersion { 
+
+    # Check if new version is available
+    Write-Message -Level Verbose "Checking for new version..." -Console
+
+    Try { 
+        $Version = Invoke-WebRequest "_https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+    }
+    Catch { 
+        $Version = Get-Content ".\Config\webversion.json" | ConvertFrom-Json
+    }
+    If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
+        Write-Message -Level Verbose "New Version $($Version.Version) is available." -Console
+        If ($Config.Autoupdate -and (-not $Config.ManualConfig)) { 
+            Initialize-Autoupdate
+        }
+    }
 }
 
 Function Initialize-Autoupdate { 
