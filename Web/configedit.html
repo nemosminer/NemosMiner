@@ -81,12 +81,12 @@
         <br>
 
         <div title="Cycle duration (between 30 & 3600 seconds [default 90])&#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration
-          <input type="number" id="Interval" name="Interval" min="30" max="3600" value=90> seconds
+          <input type="number" id="Interval" name="Interval" min=30 max=3600 value=90> seconds
         </div>
         <br>
 
         <div title="Default donation duration per day (between 0 - 60 minutes [default 13 &#8792; 0.9%])&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on">Donation duration per day
-          <input type="number" id="Donate" name="Donate" min="0" max="60" value=13> minutes
+          <input type="number" id="Donate" name="Donate" min=0 max=60 value=13> minutes
         </div>
         <br>
 
@@ -109,6 +109,11 @@
         </div>
         <div title="Start the legacy GUI as minimized window">
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
+        </div>
+        <br>
+
+        <div title="Automatically update NemosMiner to the latest realeased program version">
+          <input type="checkbox" id="AutoUpdate" name="AutoUpdate"> Auto Update
         </div>
         <br>
 
@@ -222,7 +227,7 @@
 
           <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
             <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when system is idle for
-            <input title="Min: 0, max: 3600" type="number" id="IdleSec" name="IdleSec" min="0" max="3600" value=120 size=4> seconds
+            <input title="Min: 0, max: 3600" type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> seconds
           </div>
           <br>
 
@@ -252,7 +257,7 @@
           </div>
           <div title="If profit (earnings - power cost) is less than the configured value&#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
             <label style='margin-left:20px' for="ProfitabilityThreshold">Profitability Threshold</label>
-            <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 value=0.0>
+            <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 value=0.0 size=5>
           </div>
           <div title="Show the 'PowerCost' column in the text window">
             <input style='margin-left:20px' type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
@@ -270,11 +275,14 @@
 
           <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency&#10;(min=1, max=10)">
             <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
-            <input type="number" step="0.1" min="1" max="10" value=2 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+            <input type="number" step=0.1 min=1 max=10 value=2 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
           </div>
           <div title="Minimum workers mining the algorithm at the pool&#10;(min=1, max=25).&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'">
             <label for="MinWorker">Minimum Workers at Pool</label>
-            <input type="number" step="1" min="0" max="25" value=10 id="MinWorker" name="MinWorker">
+            <input type="number" step=1 min=0 max=25 value=10 size=3 id="MinWorker" name="MinWorker">
+          </div>
+          <div title="Allowed ratio of bad shares (total / bad) as reported by the miner.&#10;If the ratio exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])">Allowed ratio of bad shares
+            <input type="number" step=1 min=0 max=99 value=10 size=3 id="AllowedBadShareRatio" name="AllowedBadShareRatio"> %
           </div>
           <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / estimate_last24h)&#10;to counter pool overestimated profitability">
             <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
@@ -287,18 +295,13 @@
           </div>
           <br>
 
-          <div title="As long as no other miner has earning/profit that is&#10;n% higher than the current miner it will not switch&#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct">Running Miner Gain
-            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5 step="0.1"> %
+          <div title="As long as no other miner has earning/profit that is&#10;n% higher than the current miner it will not switch.&#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct">Running Miner Gain
+            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min=0 max=100 value=5 step=0.1 size=5> %
           </div>
           <br>
 
           <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100)" for="MinDataSamples">Minimum data samples when benchmarking
-            <input type="number" id="MinDataSamples" name="MinDataSamples" min="10" max="100" value=20>
-          </div>
-          <br>
-
-          <div title="Automatically update NemosMiner to the latest realeased program version">
-            <input type="checkbox" id="AutoUpdate" name="AutoUpdate"> Auto Update
+            <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 size=4>
           </div>
         </div>
       </td>
@@ -365,31 +368,27 @@
     success: function(result) {
       $('#configfilename').text("Current configuration file: '" + result + "'");
 
-      document.getElementById('Wallet').value = config.Wallet;
-      document.getElementById('WorkerName').value = config.WorkerName;
+      document.getElementById('Wallet').value = config.Wallet.trim();
+      document.getElementById('WorkerName').value = config.WorkerName.trim();
 
-      document.getElementById('Currency').value = config.Currency;
-      document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
+      document.getElementById('Currency').value = config.Currency.toString().trim();
+      document.getElementById('PayoutCurrency').value = config.PayoutCurrency.trim();
       if (config.Algorithm) {
-        document.getElementById('Algorithm').value = (config.Algorithm).toString();
+        document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
       };
       if (config.ApplyUnprofitableAlgorithmList) {
         document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
       };
 
-      if (config.Interval == null) { 
-        document.getElementById('Interval').value = 90;
-      } else {
+      if (parseInt(config.Interval)) { 
         document.getElementById('Interval').value = parseInt(config.Interval);
       };
 
-      if (config.Donate == null) { 
-        document.getElementById('Donate').value = 13;
-      } else {
+      if (Number.isInteger(config.Donate)) { 
         document.getElementById('Donate').value = parseInt(config.Donate);
       };
 
-      document.getElementById('Proxy').value = config.Proxy;
+      document.getElementById('Proxy').value = config.Proxy.trim();
 
       if (config.OpenFirewallPorts) {
         ;document.getElementById('OpenFirewallPorts').checked = true;
@@ -406,9 +405,14 @@
       if (config.StartGUIMinimized) {
         document.getElementById('StartGUIMinimized').checked = true;
       };
+      if (config.AutoUpdate) {
+        document.getElementById('AutoUpdate').checked = true;
+      };
 
-      document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
-      if (config.BalancesTrackerPollInterval == 0) {
+      if (parseInt(config.BalancesTrackerPollInterval)) {
+        document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
+      }
+      if (parseInt(config.BalancesTrackerPollInterval) == 0) {
         document.getElementById('BalancesTrackerLog').disabled = true;
       };
       if (config.BalancesTrackerLog) {
@@ -479,9 +483,7 @@
       } else {
         document.getElementById('IdleSec').disabled = true;
       };
-      if (config.IdleSec == null) { 
-        document.getElementById('IdleSec').value = 120;
-      } else {
+      if (parseInt(config.IdleSec)) { 
         document.getElementById('IdleSec').value = parseInt(config.IdleSec);
       };
 
@@ -520,8 +522,16 @@
       if (config.ShowProfitBias) {
         document.getElementById('ShowProfitBias').checked = true;
       };
-      document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
-      document.getElementById('MinWorker').value = parseFloat(config.MinWorker);
+      if (parseFloat(config.UnrealPoolPriceFactor)) {
+        document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
+      };
+      if (parseInt(config.MinWorker)) {
+        document.getElementById('MinWorker').value = parseInt(config.MinWorker);
+      };
+      if (parseFloat(config.AllowedBadShareRatio)) {
+        document.getElementById('AllowedBadShareRatio').value = parseFloat(config.AllowedBadShareRatio) * 100;
+      };
+
       if (config.EstimateCorrection) {
         document.getElementById('EstimateCorrection').checked = true;
       };
@@ -532,20 +542,12 @@
         document.getElementById('IgnorePoolFee').checked = true;
       };
 
-      if (config.RunningMinerGainPct == null) { 
-        document.getElementById('RunningMinerGainPct').value = 5;
-      } else {
-        document.getElementById('RunningMinerGainPct').value = parseInt(config.RunningMinerGainPct);
+      if (parseFloat(config.RunningMinerGainPctparseFloat)) { 
+        document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
       };
 
-      if (config.MinDataSamples == null) { 
-        document.getElementById('MinDataSamples').value = 20;
-      } else {
+      if (parseInt(config.MinDataSamples)) { 
         document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
-      };
-
-      if (config.AutoUpdate) {
-        document.getElementById('AutoUpdate').checked = true;
       };
 
       // Must be placed after pool loading
@@ -670,46 +672,46 @@
       },
       messages: {
         Wallet: {
-          pattern: "Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+          pattern: "<br>Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
         },
         WorkerName: {
-          pattern:"Workername must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+          pattern:"<br>Workername must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
         },
         MPHUserName: {
-          pattern:"MPH user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+          pattern:"<br>MPH user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
         },
         MPHAPIKey: {
-          pattern: "MPH API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+          pattern: "<br>MPH API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
         },
         NiceHashWallet: {
-          pattern: "NiceHash internal Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+          pattern: "<br>NiceHash internal Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
         },
         NiceHashAPIKey: {
-          pattern: "NiceHash internal Bitcoin address must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+          pattern: "<br>NiceHash internal Bitcoin address must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
         },
         NiceHashAPISecret: {
-          pattern: "NiceHash API secret must be exactly 72 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+          pattern: "<br>NiceHash API secret must be exactly 72 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
         },
         NiceHashOrganizationId: {
-          pattern: "NiceHash Organisation ID must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+          pattern: "<br>NiceHash Organisation ID must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
         },
         ProHashingUserName: {
-          pattern:"ProHashing user name must be between 1 and 32 characters long"
+          pattern:"<br>ProHashing user name must be between 1 and 32 characters long"
         },
         ProHashingAPIKey: {
-          pattern: "ProHashing API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+          pattern: "<br>ProHashing API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
         },
         Currency: {
-          pattern: "Currencies must be entered as 3-4 characters, separated by commas"
+          pattern: "<br>Currencies must be entered as 3-4 characters, separated by commas"
         },
         PayoutCurrency: {
-          pattern: "Default payout currency must be between 3 and 4 charaters long<br>and may only contain upper case letters and digits"
+          pattern: "<br>Default payout currency must be between 3 and 4 charaters long<br>and may only contain upper case letters and digits"
         },
         Algorithm: {
-          pattern: "All algorithms must be prefixed with '+' or '-' and separated by commas"
+          pattern: "<br> algorithms must be prefixed with '+' or '-' and separated by commas"
         },
         Proxy: {
-          pattern: "Enter Proxy IP V4 address and port<br>;e.g. 192.168.1.1:3128"
+          pattern: "<br>Enter Proxy IP V4 address and port<br>;e.g. 192.168.1.1:3128"
         }
       },
       submitHandler: function(form) {
@@ -743,10 +745,12 @@
         config.Currency = document.getElementById('Currency').value.split(',');
         config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
 
-        config.Interval = document.getElementById('Interval').value;
+        config.Interval = parseInt(document.getElementById('Interval').value);
 
         config.Algorithm = (document.getElementById('Algorithm').value).toString();
         config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
+
+        config.Donate = parseInt(document.getElementById('Donate').value);
 
         config.Proxy = document.getElementById('Proxy').value;
         config.RunningMinerGainPct = document.getElementById('RunningMinerGainPct').value;
@@ -757,7 +761,9 @@
         config.StartPaused = document.getElementById('StartPaused').checked;
         config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
 
-        config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
+        config.AutoUpdate = document.getElementById('AutoUpdate').checked;
+
+        config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
         config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
 
         config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
@@ -798,8 +804,8 @@
         }
         config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
 
-        config.CPUMinerProcessPriority = document.getElementById('CPUMinerProcessPriority').value;
-        config.GPUMinerProcessPriority = document.getElementById('GPUMinerProcessPriority').value;
+        config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
+        config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
 
         config.Watchdog = document.getElementById('Watchdog').checked;
 
@@ -838,7 +844,9 @@
 
         config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
 
-        config.MinWorker = parseFloat(document.getElementById('MinWorker').value);
+        config.MinWorker = parseInt(document.getElementById('MinWorker').value);
+
+        config.AllowedBadShareRatio = parseFloat(document.getElementById('AllowedBadShareRatio').value / 100);
 
         config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
         config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
@@ -848,15 +856,13 @@
 
         config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
 
-        config.AutoUpdate = document.getElementById('AutoUpdate').checked;
-
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#save-button').text());
           $('#myModal').modal({show:true});
         });
-        }
+      }
     });
   });
 
@@ -877,65 +883,8 @@
   $(document.getElementById('MineWhenIdle')).click(function(event) {
     document.getElementById('IdleSec').disabled = !(document.getElementById('MineWhenIdle').checked);
   });
-  $(document.getElementById('IdleSec')).focusout(function(event) {
-    if (parseInt(document.getElementById('IdleSec').value) <= 0) {document.getElementById('IdleSec').value = 0};
-    if (parseInt(document.getElementById('IdleSec').value) >= 3600) {document.getElementById('IdleSec').value = 3600};
-  });
 
-  // Power Cost Settings
-  $(document.getElementById('CalculatePowerCost')).click(function(event) {
-    document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    document.getElementById('IgnorePowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    document.getElementById('ProfitabilityThreshold').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    document.getElementById('ShowProfit').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    document.getElementById('ShowProfitBias').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    document.getElementById('ShowPowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
-    document.getElementById('ShowPowerUsage').disabled = !(document.getElementById('CalculatePowerCost').checked);
-  });
-
-  // BalancesTrackerPollInterval
-  $(document.getElementById('BalancesTrackerPollInterval')).focusout(function(event) {
-    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) < 0) {document.getElementById('BalancesTrackerPollInterval').value = 0};
-    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) > 60) {document.getElementById('BalancesTrackerPollInterval').value = 60};
-    document.getElementById('BalancesTrackerLog').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
-    document.getElementById('ShowPoolBalances').disabled = !(document.getElementById('BalancesTrackerPollInterval').value != 0);
-  });
-
-  // Cycle duration
-  $(document.getElementById('Interval')).focusout(function(event) {
-    if (parseInt(document.getElementById('Interval').value) < 60) {document.getElementById('Interval').value = 60};
-    if (parseInt(document.getElementById('Interval').value) > 3600) {document.getElementById('Interval').value = 3600};
-  });
-
-  // Unreal Pool Price Factor
-  $(document.getElementById('UnrealPoolPriceFactor')).focusout(function(event) {
-    if (parseInt(document.getElementById('UnrealPoolPriceFactor').value) < 1) {document.getElementById('UnrealPoolPriceFactor').value = 1};
-    if (parseInt(document.getElementById('UnrealPoolPriceFactor').value) > 10) {document.getElementById('UnrealPoolPriceFactor').value = 10};
-  });
-
-  // MinWorker
-  $(document.getElementById('MinWorker')).focusout(function(event) {
-    if (parseInt(document.getElementById('MinWorker').value) < 1) {document.getElementById('MinWorker').value = 1};
-    if (parseInt(document.getElementById('MinWorker').value) > 25) {document.getElementById('MinWorker').value = 25};
-  });
-
-  // RunningMinerGainPct
-  $(document.getElementById('RunningMinerGainPct')).focusout(function(event) {
-    if (parseInt(document.getElementById('RunningMinerGainPct').value) < 0) {document.getElementById('RunningMinerGainPct').value = 0};
-    if (parseInt(document.getElementById('RunningMinerGainPct').value) > 100) {document.getElementById('RunningMinerGainPct').value = 100};
-  });
-
-  // MinDataSamples
-  $(document.getElementById('MinDataSamples')).focusout(function(event) {
-    if (parseInt(document.getElementById('MinDataSamples').value) < 10) {document.getElementById('MinDataSamples').value = 10};
-    if (parseInt(document.getElementById('MinDataSamples').value) > 100) {document.getElementById('MinDataSamples').value = 100};
-  });
-
-  // Donation
-  $(document.getElementById('Donate')).focusout(function(event) {
-    if (parseInt(document.getElementById('Donate').value) < 0) {document.getElementById('Donate').value = 0};
-    if (parseInt(document.getElementById('Donate').value) > 60) {document.getElementById('Donate').value = 60};
-  });
+  // Donation nag
   $(document.getElementById('Donate')).click(function(event) {
     if (parseInt(document.getElementById('Donate').value) < 0) {
       document.getElementById('Donate').value = 0;
