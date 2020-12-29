@@ -3,6 +3,8 @@
     </div>
   </body>
 
+  <div class="footer" id="footer">Test</div>
+
   <!-- Start of page scripts -->
 
   <script type="text/javascript">
@@ -10,6 +12,14 @@
     // Set the active sidebar item
     $(function() {
       $('#'+$('#title').data('navbaractive')).addClass('active');
+    });
+
+    // set the footer
+    $.ajax({
+      url: '/version',
+      success: function(result) {
+        $("#footer").empty().append(result.join('&nbsp;/&nbsp;'));
+      }
     });
 
   </script>

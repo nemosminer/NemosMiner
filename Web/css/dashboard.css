@@ -168,3 +168,12 @@ form .error {
   color: #ff0000;
   display: inline;
 }
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  padding-right: 40px;
+}

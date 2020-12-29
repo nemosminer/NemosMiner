@@ -33,6 +33,7 @@
   <script type="text/javascript">
 
     // Get current config
+    var config = {};
     $.ajax({url: '/config',
       success: function(result) {
         config = result;
