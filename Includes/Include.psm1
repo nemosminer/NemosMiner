@@ -940,7 +940,9 @@ Function Write-Message {
         [String]$Message, 
         [Parameter(Mandatory = $false)]
         [ValidateSet("Error", "Warn", "Info", "Verbose", "Debug")]
-        [String]$Level = "Info"
+        [String]$Level = "Info", 
+        [Parameter(Mandatory = $false)]
+        [Switch]$Console = $false
     )
 
     Begin { }
@@ -950,37 +952,52 @@ Function Write-Message {
 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
+                Switch ($Level) { 
+                    'Error' { 
+                        $LabelNotifications.ForeColor = "Red"
+                    }
+                    'Warn' { 
+                        $LabelNotifications.ForeColor = "Magenta"
+                    }
+                    'Info' { 
+                        $LabelNotifications.ForeColor = "White"
+                    }
+                    'Verbose' { 
+                        $LabelNotifications.ForeColor = "Yellow"
+                    }
+                    'Debug' { 
+                        $LabelNotifications.ForeColor = "Blue"
+                    }
+                    Default { 
+                        $LabelNotifications.ForeColor = "White"
+                    }
+                }
                 $Variables.LabelStatus.Lines += $Message
                 $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
                 $Variables.LabelStatus.ScrollToCaret()
                 $Variables.LabelStatus.Refresh()
             }
 
-            # Inherit the same verbosity settings as the script importing this
-            If (-not $PSBoundParameters.ContainsKey('InformationPreference')) { $InformationPreference = $PSCmdlet.GetVariableValue('InformationPreference') }
-            If (-not $PSBoundParameters.ContainsKey('Verbose')) { $VerbosePreference = $PSCmdlet.GetVariableValue('VerbosePreference') }
-            If (-not $PSBoundParameters.ContainsKey('Debug')) { $DebugPreference = $PSCmdlet.GetVariableValue('DebugPreference') }
-
             Switch ($Level) { 
                 'Error' { 
                     $LevelText = 'ERROR:'
-                    Write-Warning -Message $Message
+                    Write-Host $Message -ForegroundColor "Red"
                 }
                 'Warn' { 
                     $LevelText = 'WARNING:'
-                    Write-Warning -Message $Message
+                    Write-Host $Message -ForegroundColor "Magenta"
                 }
                 'Info' { 
                     $LevelText = 'INFO:'
-                    Write-Information -MessageData $Message
+                    If ($Console) { Write-Host $Message -ForegroundColor "White" }
                 }
                 'Verbose' { 
                     $LevelText = 'VERBOSE:'
-                    Write-Verbose -Message $Message
+                    If ($Console) { Write-Host $Message -ForegroundColor "Yello" }
                 }
                 'Debug' { 
                     $LevelText = 'DEBUG:'
-                    Write-Debug -Message $Message
+                    If ($Console) { Write-Host $Message -ForegroundColor "Blue" }
                 }
             }
         }
@@ -2593,7 +2610,7 @@ Function Initialize-Autoupdate {
     Try { 
         $AutoupdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
-    Catch { $AutoupdateVersion = Get-content ".\Config\Initialize-AutoupdateVersion.json" | Convertfrom-json }
+    Catch { $AutoupdateVersion = Get-Content ".\Config\Initialize-AutoupdateVersion.json" | Convertfrom-json }
     If ($AutoupdateVersion -ne $null) { $AutoupdateVersion | ConvertTo-Json | Out-File ".\Config\Initialize-AutoupdateVersion.json" }
     If ($AutoupdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoupdateVersion.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Autoupdate) { 
         Write-Message "Version $($AutoupdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
@@ -2639,7 +2656,7 @@ Function Initialize-Autoupdate {
             # Pre update specific actions if any
             # Use PreUpdateActions.ps1 in new release to place code
             If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1" -PathType Leaf) { 
-                Invoke-Expression (get-content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
+                Invoke-Expression (Get-Content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
             }
 
             # Empty OptionalMiners - Get rid of Obsolete ones
@@ -2665,7 +2682,7 @@ Function Initialize-Autoupdate {
             # Post update specific actions if any
             # Use PostUpdateActions.ps1 in new release to place code
             If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1" -PathType Leaf) { 
-                Invoke-Expression (get-content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
+                Invoke-Expression (Get-Content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
             }
 
             # Remove temp files
@@ -2708,13 +2725,11 @@ Function Initialize-Autoupdate {
                 $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
 
-                Write-Message "Successfully updated to version $($AutoupdateVersion.Version)"
                 Update-Notifications("Successfully updated to version $($AutoupdateVersion.Version)")
                 $LabelNotifications.ForeColor = "Green"
             }
         }
         ElseIf (-not ($Config.Autostart)) { 
-            UpdateStatus("Cannot Auto Update as autostart not selected")
             Update-Notifications("Cannot Auto Update as autostart not selected")
             $LabelNotifications.ForeColor = "Red"
         }
