@@ -307,6 +307,9 @@ If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($V
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv") { Get-ChildItem ".\Logs\SwitchingLog.csv" | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
 
+# Check if new version is available
+Get-NMVersion
+
 # Update config file to include all new config items
 If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion) { 
     # Changed config items
@@ -350,7 +353,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
     }
     $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
     Write-Config $Variables.ConfigFile
-    Write-Message "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())."
+    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())." -Console
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
@@ -363,13 +366,12 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
     }
 }
 
-Write-Host "Loading device information..." -ForegroundColor Yellow
+Write-Message -Level Verbose "Loading device information..." -Console
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
 Write-Host "Setting variables..." -ForegroundColor Yellow
 $Variables.BrainJobs = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
-$Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
 $Variables.Miners = [Miner[]]@()
 $Variables.Pools = [Pool[]]@()
 $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
@@ -387,21 +389,21 @@ $Variables.StatStarts = @()
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Host "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
 $Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
+    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load warmup data
 $Variables.ExtraWarmupTime = Get-Content -Path ".\Includes\ExtraWarmupTimes.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.ExtraWarmupTime) { 
-    Write-Host "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download." -ForegroundColor Red
+    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -441,7 +443,7 @@ If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerSta
 }
 
 If ($Config.WebGUI -eq $true) { 
-    Write-Host "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..." -ForegroundColor Yellow
+    Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..." -Console
     Initialize-API
 }
 
@@ -637,11 +639,6 @@ Function Global:TimerUITick {
             $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
             $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
             $Variables | Add-Member -Force @{ Autoupdated = (Get-Content .\Version.json | ConvertFrom-Json).Autoupdated.Value }
-            If ((Test-Path ".\Version.json" -PathType Leaf -ErrorAction Ignore) -and (Get-Content ".\Version.json" | ConvertFrom-Json -ErrorAction Ignore).Autoupdated -and $LabelNotifications.Lines[$LabelNotifications.Lines.Count - 1] -ne "Auto Updated on $($Variables.CurrentVersionAutoupdated)") { 
-                $LabelNotifications.ForeColor = [System.Drawing.Color]::Green
-                Update-Notifications("Running $($Variables.CurrentProduct) Version $([Version]$Variables.CurrentVersion)")
-                Update-Notifications("Auto Updated on $($Variables.CurrentVersionAutoupdated)")
-            }
 
             Clear-Host
 
@@ -1001,9 +998,6 @@ If ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.F
 
 $MainForm.Add_Shown(
     { 
-        # Check if new version is available
-        Get-NMVersion
-
         # TimerCheckVersion
         $TimerCheckVersion = New-Object System.Windows.Forms.Timer
         $TimerCheckVersion.Enabled = $true
