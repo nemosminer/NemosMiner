@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.0/SRBMiner-Multi-0-6-0-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.1/SRBMiner-Multi-0-6-1-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
@@ -30,6 +30,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; Command = " --algorithm ubqhash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm yescrypt" }
+    [PSCustomObject]@{ Algorithm = "Zentoshi";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm balloon_zentoshi" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_chukwa" }
 #   [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2d_dynamic" } # Does not start mining
@@ -72,6 +73,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerR16";         Type = "CPU"; Fee = 0.0085; Command = " --algorithm yespowerr16" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar";       Type = "CPU"; Fee = 0.0085; Command = " --algorithm yespowersugar" }
     [PSCustomObject]@{ Algorithm = "YespowerUrx";         Type = "CPU"; Fee = 0;      Command = " --algorithm yespowerurx" }
+    [PSCustomObject]@{ Algorithm = "Zentoshi";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm balloon_zentoshi" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
