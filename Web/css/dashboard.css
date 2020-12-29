@@ -160,3 +160,11 @@ body {
   min-width: auto;
   max-width: fit-content;
 }
+
+/*
+* Form
+*/
+form .error {
+  color: #ff0000;
+  display: inline;
+}

@@ -3,75 +3,75 @@
   <h1 id="title" data-navbaractive="navconfigedit" class="h2">Edit Configuration</h1>
 </div>
 
-<div id="configfilename" class="alert alert-info" role="alert"></div>
+<div id="configfilename" class="alert alert-info" role="alert">&ensp;</div>
 
-<table>
-  <div>
+<form id="configuration">
+  <table>
     <tr style="vertical-align: top;">
       <td>
-        <div title="Your Bitcoin address (must be 34 chars long).&#10;Do not enter a non-BTC address here.&#10;&#10;Payouts in other currencies must be configured as a per pool setting&#10;by editing '.\Config\PoolConfig.json'.">
-          <label for="Wallet">BTC wallet address</label>
-          <input type="text" id="Wallet" name="Wallet" pattern="[0-9A-Za-z\-]{34}" maxlength=34 size=40>
+        <div title="Your Bitcoin address&#10;Do not enter a non-BTC address here.&#10;(34 characters)&#10;&#10;Payouts in other currencies must be configured as a per pool setting&#10;by editing '.\Config\PoolConfig.json'.">
+          <label for="Wallet">Bitcoin wallet address</label>
+          <input type="text" id="Wallet" name="Wallet" maxlength=35 size=40 value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE">
         </div>
-        <div title="Identifies your worker&#10;e.g. Computername">
+        <div title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
           <labelfor="WorkerName">Worker name</label>
-          <input type="text" id="WorkerName" name="WorkerName" maxlength=32 size=38>
+          <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
         </div>
         <br>
 
-        <div title="Your MiningPoolHub username&#10;Note: The username must be registered with MPH">
+        <div title="Your MiningPoolHub username&#10;Note: The username must be registered with MPH&#10;(min. 2 and max. 32 characters)">
           <label for="MPHUserName">MPH user name</label>
-          <input type="text" id="MPHUserName" name="MPHUserName">
+          <input type="text" id="MPHUserName" name="MPHUserName" maxlength=33 size=38>
         </div>
         <div title="Your MiningPoolHub API Key&#10;taken from your MPH account settings&#10;If left empty NemosMiner cannot retrieve balance data from MPH">
           <label for="MPHAPIKey">MPH API Key</label>
-          <input type="text" pattern="[0-9A-Fa-f\-]{64}" id="MPHAPIKey" name="MPHAPIKey" maxlength=64 size=70>
+          <input type="text" id="MPHAPIKey" name="MPHAPIKey" maxlength=65 size=70>
         </div>
         <br>
 
-        <div title="Your NiceHash BitCoin Wallet address (must be 34 chars long)&#10;configure only if different from BTC Wallet Address &#10">
-          <label for="NiceHashWallet">NiceHash BTC wallet address</label>
-          <input type="text" id="NiceHashWallet" name="NiceHashWallet" pattern="[0-9][A-Z][a-z]{34}"  maxlength=34 size=40>
+        <div title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from Bitcoin wallet address &#10">
+          <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
+          <input type="text" id="NiceHashWallet" name="NiceHashWallet" maxlength=35 size=40>
           <input title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
           <label title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" for="NiceHashWalletIsInternal">is internal</label>
         </div>
         <div title="Your NiceHash API Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPIKey">
           <label for="NiceHashAPIKey">NiceHash API Key</label>
-          <input type="text" pattern="[0-9A-Fa-f\-]{36}" id="NiceHashAPIKey" name="NiceHashAPIKey" maxlength=36 size=42>
+          <input type="text" id="NiceHashAPIKey" name="NiceHashAPIKey" maxlength=37 size=42>
         </div>
         <div title="Your NiceHash API Secret Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPISecret">
           <label for="NiceHashAPISecret">NiceHash API Secret</label>
-          <input type="text" pattern="[0-9A-Fa-f\-]{72}" id="NiceHashAPISecret" name="NiceHashAPISecret" maxlength=72 size=78>
+          <input type="text" id="NiceHashAPISecret" name="NiceHashAPISecret" maxlength=73 size=78>
         </div>
         <div title="Your NiceHash Organization Id (must be 36 chars long)&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashOrganizationId">
           <label for="NiceHashOrganizationId">NiceHash Organization Id</label>
-          <input type="text" pattern="[0-9A-Fa-f\-]{36}" id="NiceHashOrganizationId" name="NiceHashOrganizationId" maxlength=36 size=42>
+          <input type="text" id="NiceHashOrganizationId" name="NiceHashOrganizationId" maxlength=37 size=42>
         </div>
         <br>
 
         <div title="Your ProHashing username&#10;Note: The username must be registered with ProHashing" for="ProHashingUserName">
           <label for="ProHashingUserName">ProHashing user name</label>
-          <input type="text" id="ProHashingUserName" name="ProHashingUserName">
+          <input type="text" id="ProHashingUserName" name="ProHashingUserName" maxlength=37 size=42>
         </div>
         <div title="Your ProHashing API key&#10;taken from your ProHashing account settings&#10;If left empty NemosMiner cannot retrieve balance data from ProHashing" for="ProHashingAPIKey">
           <label for="ProHashingAPIKey">ProHashing API key</label>
-          <input type="text" pattern="[0-9A-Fa-f\-]{64}" id="ProHashingAPIKey" name="ProHashingAPIKey" maxlength=64 size=70>
+          <input type="text" id="ProHashingAPIKey" name="ProHashingAPIKey" maxlength=65 size=70>
         </div>
         <br>
 
         <div title="Fiat Currencies used for BTC conversion&#10;You must include all pool payout currencies!&#10;&#10;Values must be sparated by commas, i.e.&#10;'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid&#10;The first value is used as main currency">
           <label for="Currency">Currencies</label>
-          <input type="text" id="Currency" name="Currency" maxlength=64 size=70>
+          <input type="text" id="Currency" name="Currency" maxlength=65 size=70 value="mBTC">
         </div>
-        <div title="Default payout Currency for all pools&#10;Important: Not all pools allow payouts in other currencies than BTC.&#10;Consult the pool API information for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
-          <label for="PayoutCurrency">Default Payout Currency</label>
-          <input type="text" id="PayoutCurrency" name="PayoutCurrency"  size=3>
+        <div title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in other currencies than BTC.&#10;Consult the pool API information for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+          <label for="PayoutCurrency">Default payout currency</label>
+          <input type="text" id="PayoutCurrency" name="PayoutCurrency" maxlength=5 size=3 value = "mBTC">
         </div>
         <br>
 
         <div title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable Algorithm&#10;Values must be sparated by commas&#10;&#10;If '+' is used, then only the explicitly enabled Algorithms are used&#10;If '-' is used, then all Algorithms are used except the disabled ones&#10;Leave empty to use ALL available Algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same Algorithm&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">Algorithms
           <input type="text" id="Algorithm" name="Algorithm"  size=64>
-          <button type="button" id="defaultAlgorithm" name="defaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
+          <button type="button" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
         </div>
         <br>
 
@@ -80,18 +80,18 @@
         </div>
         <br>
 
-        <div title="Cycle duration (between 30 & 3600 seconds)&#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration
+        <div title="Cycle duration (between 30 & 3600 seconds [default 90])&#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration
           <input type="number" id="Interval" name="Interval" min="30" max="3600" value=90> seconds
         </div>
         <br>
 
-        <div title="(between 0 - 60 minutes)&#10;Default donation duration per day is 13 minutes (0.9%)&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on">Donation duration per day
+        <div title="Default donation duration per day (between 0 - 60 minutes [default 13 &#8792; 0.9%])&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on">Donation duration per day
           <input type="number" id="Donate" name="Donate" min="0" max="60" value=13> minutes
         </div>
         <br>
 
         <div title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128">Proxy
-          <input type="text" id="Proxy" name="Proxy" maxlength=24 size=30>
+          <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
         <br>
         </div>
         <br>
@@ -112,8 +112,8 @@
         </div>
         <br>
 
-        <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;1 - 60 minutes; 0 to disable (Note: this will also disable pool balances summary)">Poll Pools for Balances & Earnings every
-          <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60> minutes
+        <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(1 - 60 minutes; 0 to disable [default: 15]) Note: this will also disable pool balances summary">Poll Pools for Balances & Earnings every
+          <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 value=15> minutes
           <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
             <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style='margin-left:20px'> Write Balances Tracker Log
           </div>
@@ -245,14 +245,14 @@
           </div>
           <div  title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format)&#10;compressed json, e.g. { "00:00":0.26; "12:00":0.3 }&#10;From midnight to noon: 0.26 USD per kW/h &#10;from noon to midnight USD 0.30 per kW/h'>
             <label style='margin-left:20px' for="PowerPricekWh">Power Price</label>
-            <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24> per kW/h
+            <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'> per kW/h>
           </div>
           <div title="NemosMiner will ignore power cost in best miner selection&#10;instead miners with best earnings will be selected">
             <input style='margin-left:20px'  type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet&#10;(lower pool fees)"> Ignore Power Cost
           </div>
           <div title="If profit (earnings - power cost) is less than the configured value&#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
             <label style='margin-left:20px' for="ProfitabilityThreshold">Profitability Threshold</label>
-            <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8>
+            <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 value=0.0>
           </div>
           <div title="Show the 'PowerCost' column in the text window">
             <input style='margin-left:20px' type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
@@ -288,7 +288,7 @@
           <br>
 
           <div title="As long as no other miner has earning/profit that is&#10;n% higher than the current miner it will not switch&#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct">Running Miner Gain
-            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5> %
+            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min="0" max="100" value=5 step="0.1"> %
           </div>
           <br>
 
@@ -303,19 +303,21 @@
         </div>
       </td>
     </tr>
-  </div>
-</table>
+  </table>
+  <input name="submit" type="submit" id="save-button" value="Apply Configuration" class="btn btn-primary" alt="Submit" title="Submit">
+</form>
 
-<button id="save-button" class="btn btn-primary">Apply Configuration</button>
+<!-- <input name="submit" type="submit" id="submit" value="Submit" class="submitbutton" alt="Submit" title="Submit"> -->
+<!-- <button id="save-button" class="btn btn-primary">Apply Configuration</button> -->
 
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
+
   const poolscontainer = document.getElementById('Pools');
   const regionscontainer = document.getElementById('Regions');
   const devicescontainer = document.getElementById('Devices');
 
-  // var config = {};
   var poolnames = [];
   var regions = [];
   var devicenames = [];
@@ -546,7 +548,7 @@
         document.getElementById('AutoUpdate').checked = true;
       };
 
-      //must be placed after pool loading
+      // Must be placed after pool loading
       document.getElementById('MPHAPIKey').value = config.MPHAPIKey;
       document.getElementById('MPHAPIKey').disabled = !(document.getElementById('pool-mph').checked || document.getElementById('pool-mphcoins').checked);
       document.getElementById('MPHUserName').value = config.MPHUserName;
@@ -565,6 +567,7 @@
       document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('pool-prohashing24hr').checked);
       document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
       document.getElementById('ProHashingUserName').disabled = !(document.getElementById('pool-prohashing24hr').checked);
+
       if (parseInt(document.getElementById('Donate').value) <= 0) {
         $('.modal-title').text('Donation duration set to 0   :-\(');
         $('.modal-body').text('Please help support the great team behind NemosMiner by leaving mining donations turned on.\n\nThank you!');
@@ -573,244 +576,291 @@
     }
   });
 
-  $('#save-button').click(function () { 
-    config.PoolName = [];
-    config.ExcludeDeviceName = [];
+  $(document).ready(function() {
+    $("#configuration").validate({
+      rules: {
+        Wallet: {
+          required: false,
+          minlength: 34,
+          maxlength: 34,
+          pattern: "^[0-9A-Za-z]{34}$"
+        },
+        WorkerName: {
+          required: true,
+          minlength: 2,
+          maxlength: 32,
+          pattern: "^[0-9A-Za-z]{2,32}$"
+        },
+        MPHUserName: {
+          required: false,
+          minlength: 2,
+          maxlength: 32,
+          pattern: "^[0-9A-Za-z]{2,32}$"
+        },
+        MPHAPIKey: {
+          required: false,
+          minlength: 64,
+          maxlength: 64,
+          pattern: "^[0-9a-f]{64}$"
+        },
+        NiceHashWallet: {
+          required: false,
+          minlength: 34,
+          maxlength: 34,
+          pattern: "^[0-9A-Za-z]{34}$"
+        },
+        NiceHashAPIKey: {
+          required: false,
+          minlength: 36,
+          maxlength: 36,
+          pattern: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+        },
+        NiceHashAPISecret: {
+          required: false,
+          minlength: 72,
+          maxlength: 72,
+          pattern: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+        },
+        NiceHashOrganizationId: {
+          required: false,
+          minlength: 36,
+          maxlength: 36,
+          pattern: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+        },
+        ProHashingUserName: {
+          required: false,
+          minlength: 1,
+          maxlength: 32,
+          pattern: "^.{1,32}$"
+        },
+        ProHashingAPIKey: {
+          required: false,
+          minlength: 64,
+          maxlength: 64,
+          pattern: "^[0-9a-f]{64}$"
+        },
+        Currency: {
+          required: true,
+          minlength: 3,
+          maxlength: 64,
+          pattern: "^([A-Za-z0-9]{3,4}?)+(?:,([A-Za-z0-9]{3,4})+)*$"
+        },
+        PayoutCurrency: {
+          required: true,
+          pattern: "^[A-Z0-9]{3,4}"
+        },
+        Algorithm: {
+          required: false,
+          minlength: 3,
+          maxlength: 64,
+          pattern: "^[+|-]([A-Za-z0-9]{2,}?)+(?:,[+|-]([A-Za-z0-9]{2,})+)*$"
+        },
+        Proxy: {
+          required: false,
+          pattern: "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+        },
+        RunningMinerGainPct: {
+          required: true,
+          step: "0.1"
+        },
+        ProfitabilityThreshold: {
+          required: true,
+          step: "0.001"
+        }
+      },
+      messages: {
+        Wallet: {
+          pattern: "Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+        },
+        WorkerName: {
+          pattern:"Workername must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+        },
+        MPHUserName: {
+          pattern:"MPH user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+        },
+        MPHAPIKey: {
+          pattern: "MPH API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+        },
+        NiceHashWallet: {
+          pattern: "NiceHash internal Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+        },
+        NiceHashAPIKey: {
+          pattern: "NiceHash internal Bitcoin address must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+        },
+        NiceHashAPISecret: {
+          pattern: "NiceHash API secret must be exactly 72 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+        },
+        NiceHashOrganizationId: {
+          pattern: "NiceHash Organisation ID must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+        },
+        ProHashingUserName: {
+          pattern:"ProHashing user name must be between 1 and 32 characters long"
+        },
+        ProHashingAPIKey: {
+          pattern: "ProHashing API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+        },
+        Currency: {
+          pattern: "Currencies must be entered as 3-4 characters, separated by commas"
+        },
+        PayoutCurrency: {
+          pattern: "Default payout currency must be between 3 and 4 charaters long<br>and may only contain upper case letters and digits"
+        },
+        Algorithm: {
+          pattern: "All algorithms must be prefixed with '+' or '-' and separated by commas"
+        },
+        Proxy: {
+          pattern: "Enter Proxy IP V4 address and port<br>;e.g. 192.168.1.1:3128"
+        }
+      },
+      submitHandler: function(form) {
+        config.PoolName = [];
+        config.ExcludeDeviceName = [];
 
-    config.Wallet = document.getElementById('Wallet').value.toString().trim()
-    if ((document.getElementById('Wallet').value) == "") { 
-      config.Wallet = document.getElementById('Wallet').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
-    };
-    config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
-    if ((document.getElementById('WorkerName').value) == "") { 
-      config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
-    };
-
-    config.MPHUserName = document.getElementById('MPHUserName').value.toString().trim()
-    if ((document.getElementById('MPHUserName').value) == "") { 
-      config.MPHUserName = document.getElementById('MPHUserName').value = 'Nemo';
-    };
-    config.MPHAPIKey = document.getElementById('MPHAPIKey').value = document.getElementById('MPHAPIKey').value.toString().trim();
-
-    config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
-    config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value = document.getElementById('NiceHashAPISecret').value.toString().trim();
-    config.NiceHashWallet = document.getElementById('NiceHashWallet').value = document.getElementById('NiceHashWallet').value.toString().trim();
-    config.NiceHashWalletIsInternal = document.getElementById('NiceHashWalletIsInternal').checked;
-    config.NiceHashOrganizationId = document.getElementById('NiceHashOrganizationId').value = document.getElementById('NiceHashOrganizationId').value.toString().trim();
-  
-    config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
-    config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
-
-    document.getElementById('Currency').value = (document.getElementById('Currency').value).toString().trim();
-    if ((document.getElementById('Currency').value).toString().trim() == null) {
-      config.Currency = document.getElementById('Currency').value = 'mBTC';
-    } else {
-      config.Currency = document.getElementById('Currency').value.split(',')
-    };
-    config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
-    if (document.getElementById('PayoutCurrency').value == "null") {
-      config.PayoutCurrency =  document.getElementById('PayoutCurrency').value = 'mBTC';
-    };
-
-    if (document.getElementById('Interval').value == null) { 
-      config.Interval = document.getElementById('Interval').value = 90;
-    } else { 
-      config.Interval = parseInt(document.getElementById('Interval').value);
-    };
-    if (document.getElementById('Donate').value == null) { 
-      config.Donate =  document.getElementById('Donate').value = 13;
-    } else {
-      config.Donate = parseInt(document.getElementById('Donate').value);
-    };
-
-    var algorithms = [];
-    var plusminus = '+';
-    $.each((document.getElementById('Algorithm').value.replace(/\s/g,',').split(',')), function (key, value) {
-      if (value.trim() != "") { 
-        if (/[+|-]/.test(value.substring(0, 1))) { 
-          plusminus = value.substring(0, 1);
-        } else {
-          value = plusminus + value;
+        config.Wallet = document.getElementById('Wallet').value.toString().trim()
+        if ((document.getElementById('Wallet').value) === "") { 
+          config.Wallet = document.getElementById('Wallet').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
         };
-        algorithms.push(value);
-      };
-    });
-    document.getElementById('Algorithm').value = (config.Algorithm = algorithms).toString();
-    config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
+        config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
+        if ((document.getElementById('WorkerName').value) == "") { 
+          config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
+        };
 
-    config.Proxy = document.getElementById('Proxy').value;
-    if (document.getElementById('RunningMinerGainPct').value == null) {
-      document.getElementById('RunningMinerGainPct').value = 5;
-    };
+        config.MPHUserName = document.getElementById('MPHUserName').value.toString().trim()
+        if ((document.getElementById('MPHUserName').value) == "") { 
+          config.MPHUserName = document.getElementById('MPHUserName').value = 'Nemo';
+        };
+        config.MPHAPIKey = document.getElementById('MPHAPIKey').value = document.getElementById('MPHAPIKey').value.toString().trim();
 
-    config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
+        config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
+        config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value = document.getElementById('NiceHashAPISecret').value.toString().trim();
+        config.NiceHashWallet = document.getElementById('NiceHashWallet').value = document.getElementById('NiceHashWallet').value.toString().trim();
+        config.NiceHashWalletIsInternal = document.getElementById('NiceHashWalletIsInternal').checked;
+        config.NiceHashOrganizationId = document.getElementById('NiceHashOrganizationId').value = document.getElementById('NiceHashOrganizationId').value.toString().trim();
 
-    config.AutoStart = document.getElementById('AutoStart').checked;
-    config.StartPaused = document.getElementById('StartPaused').checked;
-    config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
+        config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
+        config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
 
-    if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == null || isNaN(parseInt(document.getElementById('BalancesTrackerPollInterval').value))) { 
-      document.getElementById('BalancesTrackerPollInterval').value = 5;
-    } else if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) <= 0) { 
-      document.getElementById('BalancesTrackerPollInterval').value = 0;
-    } else if(parseInt(document.getElementById('BalancesTrackerPollInterval').value) >= 60) { 
-      document.getElementById('BalancesTrackerPollInterval').value = 60;
-    };
-    config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
-    config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
+        config.Currency = document.getElementById('Currency').value.split(',');
+        config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
 
-    config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
+        config.Interval = document.getElementById('Interval').value;
 
-    $.each(poolnames, function (key, value) {
-      if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) {
-        (config.PoolName).push(value);
-      };
-    });
-    $.each(regions, function (key, value) {
-      if (document.getElementById(value.toLowerCase()).checked == true) {
-        config.Region = value;
-      };
-    });
-    $.each(devices, function (key, value) {
-      if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false) {
-        (config.ExcludeDeviceName).push(value.Name);
-      };
-    });
+        config.Algorithm = (document.getElementById('Algorithm').value).toString();
+        config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
 
-    config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
-    config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
+        config.Proxy = document.getElementById('Proxy').value;
+        config.RunningMinerGainPct = document.getElementById('RunningMinerGainPct').value;
 
-    config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
-    config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
-    config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
-    config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
-    config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+        config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
 
-    if (document.getElementById('ShowMinerWindowsHidden').checked) {
-      config.ShowMinerWindows = "hidden" 
-    }
-    if (document.getElementById('ShowMinerWindowsMinimized').checked) {
-      config.ShowMinerWindows = "minimized" 
-    }
-    if (document.getElementById('ShowMinerWindowsNormal').checked) {
-      config.ShowMinerWindows = "normal" 
-    }
-    config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
+        config.AutoStart = document.getElementById('AutoStart').checked;
+        config.StartPaused = document.getElementById('StartPaused').checked;
+        config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
 
-    config.CPUMinerProcessPriority = document.getElementById('CPUMinerProcessPriority').value;
-    config.GPUMinerProcessPriority = document.getElementById('GPUMinerProcessPriority').value;
+        config.BalancesTrackerPollInterval = document.getElementById('BalancesTrackerPollInterval').value;
+        config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
 
-    config.Watchdog = document.getElementById('Watchdog').checked;
+        config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
 
-    config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
-    if (document.getElementById('IdleSec').value == null) { 
-      document.getElementById('IdleSec').value = 120;
-    };
-    config.IdleSec = parseInt(document.getElementById('IdleSec').value);
+        $.each(poolnames, function (key, value) {
+          if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) {
+            (config.PoolName).push(value);
+          };
+        });
+        $.each(regions, function (key, value) {
+          if (document.getElementById(value.toLowerCase()).checked == true) {
+            config.Region = value;
+          };
+        });
+        $.each(devices, function (key, value) {
+          if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false) {
+            (config.ExcludeDeviceName).push(value.Name);
+          };
+        });
 
-    config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
-    if (document.getElementById('UIStyle').checked) { 
-      config.UIStyle = "Full"
-    } else { 
-      config.UIStyle = "Light"
-    };
-    config.ShowEarning = document.getElementById('ShowEarning').checked;
-    config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
+        config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
+        config.IncludeOptionalMiners = document.getElementById('OptionalMiners').checked;
 
-    config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
-    document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
-    if (document.getElementById('PowerPricekWh').value.toString().trim() === "") {
-      document.getElementById('PowerPricekWh').value = '{"00:00":0.0}'
-    };
-    if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) {
-      config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
-    } else {
-      $('.modal-title').text('Invalid Power Price data');
-      $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
-      $('#myModal').modal({show:true});
-      return false;
-    };
-    config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
-    config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
-    if (document.getElementById('ProfitabilityThreshold').value == null) { 
-      document.getElementById('ProfitabilityThreshold').value = 0;
-    };
-    config.ShowProfit = document.getElementById('ShowProfit').checked;
-    config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
-    config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
-    config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
+        config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
+        config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
+        config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
+        config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
+        config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
-    config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
-    if (config.UnrealPoolPriceFactor <= 1 || config.UnrealPoolPriceFactor >= 10) { 
-      config.UnrealPoolPriceFactor = 3;
-      document.getElementById('UnrealPoolPriceFactor').value = config.UnrealPoolPriceFactor;
-    };
+        if (document.getElementById('ShowMinerWindowsHidden').checked) {
+          config.ShowMinerWindows = "hidden" 
+        }
+        if (document.getElementById('ShowMinerWindowsMinimized').checked) {
+          config.ShowMinerWindows = "minimized" 
+        }
+        if (document.getElementById('ShowMinerWindowsNormal').checked) {
+          config.ShowMinerWindows = "normal" 
+        }
+        config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
 
-    config.MinWorker = parseFloat(document.getElementById('MinWorker').value);
-    if (config.MinWorker <= 0 || config.MinWorker >= 25) { 
-      config.MinWorker = 10;
-      document.getElementById('MinWorker').value = config.MinWorker;
-    };
+        config.CPUMinerProcessPriority = document.getElementById('CPUMinerProcessPriority').value;
+        config.GPUMinerProcessPriority = document.getElementById('GPUMinerProcessPriority').value;
 
-    config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
-    config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
-    config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
+        config.Watchdog = document.getElementById('Watchdog').checked;
 
-    config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
+        config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
+        config.IdleSec = parseInt(document.getElementById('IdleSec').value);
 
-    config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
+        config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
+        if (document.getElementById('UIStyle').checked) { 
+          config.UIStyle = "Full"
+        } else { 
+          config.UIStyle = "Light"
+        };
+        config.ShowEarning = document.getElementById('ShowEarning').checked;
+        config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
 
-    config.AutoUpdate = document.getElementById('AutoUpdate').checked;
+        config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
+        document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
+        if (document.getElementById('PowerPricekWh').value.toString().trim() === "") {
+          document.getElementById('PowerPricekWh').value = '{"00:00":0.0}'
+        };
+        if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) {
+          config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
+        } else {
+          $('.modal-title').text('Invalid Power Price data');
+          $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
+          $('#myModal').modal({show:true});
+          return false;
+        };
+        config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
+        config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
 
-    //Write current config
-    var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
-    $('.modal-body').load($command, function() {
-      $('.modal-title').text($('#save-button').text());
-      $('#myModal').modal({show:true});
+        config.ShowProfit = document.getElementById('ShowProfit').checked;
+        config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
+        config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
+        config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
+
+        config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
+
+        config.MinWorker = parseFloat(document.getElementById('MinWorker').value);
+
+        config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
+        config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
+        config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
+
+        config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
+
+        config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
+
+        config.AutoUpdate = document.getElementById('AutoUpdate').checked;
+
+        //Write current config
+        var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#save-button').text());
+          $('#myModal').modal({show:true});
+        });
+        }
     });
   });
 
-  // Only one pool variant can be checked
-  const Pools = document.getElementById('Pools');
-  $(Pools).click(function(event) {
-    if ((event.target).value) {
-      var PoolName = (event.target).id.toLowerCase();
-    };
-    var basePoolName = (PoolName.replace('24hr', '')).replace('coins', '');
-
-    var pool = document.getElementById(basePoolName);
-    if (pool && PoolName != pool.id) {
-      pool.checked = false;
-    };
-
-    var pool = document.getElementById(basePoolName + '24hr');
-    if (pool && PoolName != pool.id) {
-      pool.checked = false;
-    };
-
-    var pool = document.getElementById(basePoolName + 'coins');
-    if (pool && PoolName != pool.id) {
-      pool.checked = false;
-    };
-
-    if (PoolName == 'mph' || PoolName == 'mphcoins') {
-      document.getElementById('MPHUserName').disabled = !(document.getElementById(PoolName).checked);
-      document.getElementById('MPHAPIKey').disabled = !(document.getElementById(PoolName).checked);
-    };
-    if (PoolName == 'nicehash') {
-      document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById(PoolName).checked);
-      document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById(PoolName).checked);
-      document.getElementById('NiceHashWallet').disabled = !(document.getElementById(PoolName).checked);
-      document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById(PoolName).checked);
-      document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById(PoolName).checked);
-    };
-    if (PoolName == 'prohashing24hr') {
-      document.getElementById('ProHashingUserName').disabled = !(document.getElementById(PoolName).checked);
-      document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById(PoolName).checked);
-    };
-  });
-
-  //dual AND single algo mining cannot be disabled at the same time
+  // Dual AND single algo mining cannot be disabled at the same time
   $(document.getElementById('DisableDualAlgoMining')).click(function(event) {
     if (document.getElementById('DisableDualAlgoMining').checked) { document.getElementById('DisableSingleAlgoMining').checked = false }
   });
@@ -818,12 +868,12 @@
     if (document.getElementById('DisableSingleAlgoMining').checked) { document.getElementById('DisableDualAlgoMining').checked = false }
   });
 
-  //StartPaused
+  // StartPaused
   $(document.getElementById('AutoStart')).click(function(event) {
     document.getElementById('StartPaused').disabled = !(document.getElementById('AutoStart').checked);
   });
 
-  //IdleSec
+  // IdleSec
   $(document.getElementById('MineWhenIdle')).click(function(event) {
     document.getElementById('IdleSec').disabled = !(document.getElementById('MineWhenIdle').checked);
   });
@@ -832,7 +882,7 @@
     if (parseInt(document.getElementById('IdleSec').value) >= 3600) {document.getElementById('IdleSec').value = 3600};
   });
 
-  //Power Cost Settings
+  // Power Cost Settings
   $(document.getElementById('CalculatePowerCost')).click(function(event) {
     document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
     document.getElementById('IgnorePowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
@@ -843,7 +893,7 @@
     document.getElementById('ShowPowerUsage').disabled = !(document.getElementById('CalculatePowerCost').checked);
   });
 
-  //BalancesTrackerPollInterval
+  // BalancesTrackerPollInterval
   $(document.getElementById('BalancesTrackerPollInterval')).focusout(function(event) {
     if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) < 0) {document.getElementById('BalancesTrackerPollInterval').value = 0};
     if (parseInt(document.getElementById('BalancesTrackerPollInterval').value) > 60) {document.getElementById('BalancesTrackerPollInterval').value = 60};
@@ -902,6 +952,46 @@
         Algorithm.value = "+" + result.join(",+");
       }
     });
+  });
+
+  // Only one pool variant can be checked
+  const Pools = document.getElementById('Pools');
+  $(Pools).click(function(event) {
+    if ((event.target).value) {
+      var PoolName = (event.target).id.toLowerCase();
+    };
+    var basePoolName = (PoolName.replace('24hr', '')).replace('coins', '');
+
+    var pool = document.getElementById(basePoolName);
+    if (pool && PoolName != pool.id) {
+      pool.checked = false;
+    };
+
+    var pool = document.getElementById(basePoolName + '24hr');
+    if (pool && PoolName != pool.id) {
+      pool.checked = false;
+    };
+
+    var pool = document.getElementById(basePoolName + 'coins');
+    if (pool && PoolName != pool.id) {
+      pool.checked = false;
+    };
+
+    if (PoolName == 'pool-mph' || PoolName == 'pool-mphcoins') {
+      document.getElementById('MPHUserName').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('MPHAPIKey').disabled = !(document.getElementById(PoolName).checked);
+    };
+    if (PoolName == 'pool-nicehash') {
+      document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('NiceHashWallet').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById(PoolName).checked);
+    };
+    if (PoolName == 'pool-prohashing24hr') {
+      document.getElementById('ProHashingUserName').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById(PoolName).checked);
+    };
   });
 
   </script>
