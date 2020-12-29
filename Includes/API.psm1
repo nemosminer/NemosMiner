@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           API.psm1
 version:        3.9.9.8
-version date:   26 December 2020
+version date:   29 December 2020
 #>
 
 Function Start-APIServer { 
@@ -31,12 +31,12 @@ Function Start-APIServer {
             $Variables.APIRunspace.Dispose()
             $Variables.Remove("APIRunspace")
             $Variables.Remove("APIVersion")
-            Write-Message "Restarting API."
+            Write-Message -Level Verbose "Restarting API." -Console
             Start-Sleep -Seconds 2
         }
     }
 
-    $APIVersion = "0.3.0.0"
+    $APIVersion = "0.3.1.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -111,7 +111,7 @@ Function Start-APIServer {
                 Switch ($Path) { 
                     "/functions/api/stop" { 
                         If ($Variables.APIRunspace) { 
-                            Write-Message "Web GUI: Stopping API."
+                            Write-Message -Level Verbose "Web GUI: Stopping API." -Console
                             $Variables.APIRunspace.APIPort = $null
                             $Response.Headers.Add("Content-Type", $ContentType)
                             $Response.StatusCode = $StatusCode
@@ -142,7 +142,7 @@ Function Start-APIServer {
                                             If ($_.Status -like "Mining *}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
                                         }
                                     }
-                                    Write-Message "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
+                                    Write-Message -Level Verbose "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated." -Console
                                 }
                                 Catch { 
                                     $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
@@ -172,7 +172,7 @@ Function Start-APIServer {
                                         If ($_.Status -like "*; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
                                         Else { $_.Status = "Idle" }
                                     }
-                                    Write-Message "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated."
+                                    Write-Message -Level Verbose "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated." -Console
                                 }
                                 Catch { 
                                     $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
@@ -292,7 +292,7 @@ Function Start-APIServer {
                             }
                             If ($Pools.Count -gt 0) { 
                                 $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
-                                Write-Message "Web GUI: $Message"
+                                Write-Message -Level Verbose "Web GUI: $Message" -Console
                                 $Data += "`n`n$Message"
                             }
                             Else { 
@@ -326,7 +326,7 @@ Function Start-APIServer {
                                 $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                             }
                             If ($Miners.Count -gt 0) { 
-                                Write-Message "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
+                                Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Console
                                 $Data += "`n`nThe listed $(If ($Miners.Count -eq 1) { "miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
                             }
                             Else { 
@@ -356,7 +356,7 @@ Function Start-APIServer {
                                 $_.PowerUsage = $_.PowerCost = [Double]::Nan
                             }
                             If ($Miners.Count -gt 0) { 
-                                Write-Message "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
+                                Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose
                                 $Data += "`n`nThe listed $(If ($Miners.Count -eq 1) { "miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
                             }
                             Else { 
@@ -399,7 +399,7 @@ Function Start-APIServer {
                                 }
                             }
                             If ($Miners.Count -gt 0) {
-                                Write-Message "Web GUI: Disabled $(If ($Miners.Count -eq 1) { "miner" } else { "$($Miners.Count) miners" })."
+                                Write-Message -Level Verbose "Web GUI: Disabled $(If ($Miners.Count -eq 1) { "miner" } else { "$($Miners.Count) miners" })." -Verbose
                                 $Data += "`n`nThe listed $(If ($Miners.Count -eq 1) { "miner is" } else { "$($Miners.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "disabled" } else { "set to value $($Parameters.Value)" } )." 
                                 $Data = "<pre>$Data</pre>"
                             }
@@ -409,6 +409,15 @@ Function Start-APIServer {
                     "/functions/switchinglog/clear" { 
                         Get-ChildItem ".\Logs\switchinglog.csv" | Remove-Item -Force
                         $Data = "<pre>Switching log '.\Logs\switchinglog.csv' cleared.</pre>"
+                        Break
+                    }
+                    "/functions/variables/get" { 
+                        If ($Key) { 
+                            $Data = $Variables.($Key -Replace '\\|/','.' -split '\.' | Select-Object -Last 1) | Get-SortedObject | ConvertTo-Json -Depth 10
+                        }
+                        Else { 
+                            $Data = $Variables.Keys | Sort-Object | ConvertTo-Json -Depth 1
+                        }
                         Break
                     }
                     "/functions/watchdogtimers/reset" { 
