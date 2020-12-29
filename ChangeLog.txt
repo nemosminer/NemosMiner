@@ -6,6 +6,9 @@ Breaking changes (from main code base):
 Changelog NemosMiner 3.9.9.8 Beta4 29.12.2020
 =============================================
 
+Fixed:
+- Core: DAG data not refreshing after minerstat failure
+
 Improved:
 - Web GUI / Config editor now has complete input validator
 

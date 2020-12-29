@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           core.ps1
 version:        3.9.9.8
-version date:   26 December 2020
+version date:   29 December 2020
 #>
 
 using module .\Include.psm1
@@ -66,21 +66,16 @@ Function Start-Cycle {
         # Get ethash DAG size and epoch
         If ((-not (Test-Path -PathType Leaf ".\Includes\DAGdata.json")) -or $Variables.DAGdata.Currency.Count -lt 10 -or (-not $Variables.DAGdata.Currency.RVN) -or ([nullable[DateTime]]($DAGdata = Get-Content -Path ".\Includes\DAGdata.json" | ConvertFrom-Json -ErrorAction Ignore).Updated -lt (Get-Date).AddDays( +1 ))) { 
 
-            If (-not $Variables.DAGdata.Currency) { 
-                $DAGdata = [PSCustomObject][Ordered]@{ }
-                $DAGdata | Add-Member Updated (Get-Date).ToUniversalTime()
-            }
+            $DAGdata = [PSCustomObject][Ordered]@{ }
 
             If ($Variables.DAGdata.Currency.Count -lt 10) { 
                 Try { 
                     Write-Message -Level Info "Retrieving DAG block data from 'https://minerstat.com'..."
 
-                    $Uri = "https://minerstat.com/dag-size-calculator"
-
-                    $DAGdata | Add-Member Currency ([Ordered]@{ })
+                    $DAGdata | Add-Member Currency ([Ordered]@{ }) -Force
                     $BlockHeight, $Currency, $DAGsize, $Epoch = $null
 
-                    $Page = Invoke-WebRequest $Uri # PWSH 6+ no longer supports basic parsing -> parse text
+                    $Page = Invoke-WebRequest "https://minerstat.com/dag-size-calculator" # PWSH 6+ no longer supports basic parsing -> parse text
                     $Page.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
 
                         If ($_ -like "<div class='block' title='Current block height of *") { 
@@ -108,6 +103,7 @@ Function Start-Cycle {
                             $BlockHeight = $Currency = $DAGsize = $null
                         }
                     }
+                    $DAGdata | Add-Member Updated (Get-Date).ToUniversalTime()
                 }
                 Catch { 
                     Write-Message -Level Warn "Cannot retrieve DAG block data from 'https://minerstat.com'."
@@ -151,7 +147,7 @@ Function Start-Cycle {
                 $DAGdata | Add-Member Currency ([Ordered]@{ })
 
                 $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
-                Write-Message -Level Warn "Cannot retrieve ethash DAG size information from data provided by '$Uri', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
+                Write-Message -Level Warn "Cannot retrieve ethash DAG size information from data provided by 'https://minerstat.com', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
                 $Data = [PSCustomObject]@{ 
                     BlockHeight = [Int]$BlockHeight
                     DAGsize     = [Int64](Get-DAGSize $BlockHeight)
@@ -466,11 +462,11 @@ Function Start-Cycle {
             $Pool = $_.Group | Sort-Object -Property Updated -Descending | Select-Object -Index 0
             $PoolAge = [Math]::Floor((($Variables.CycleStarts[-1]) - $Pool.Updated).TotalMinutes)
             If ($Pool.Updated -lt $Variables.Timer.AddHours( -1 * $Config.SyncWindow)) { 
-                Write-Message -Level Warn "Could not retrieve pool data for pool ($($Pool.Name)) for more than $([Math]::Floor((($Variables.CycleStarts[-1]) - $Pool.Updated).TotalMinutes)) minutes. Pool data removed."
+                Write-Message -Level Verbose "Could not retrieve pool data for pool ($($Pool.Name)) for more than $([Math]::Floor((($Variables.CycleStarts[-1]) - $Pool.Updated).TotalMinutes)) minutes. Pool data removed."
                 $Variables.Pools = $Variables.Pools | Where-Object Name -ne $Pool.Name | Where-Object Updated -ge $Variables.Timer.AddHours( -1 * $Config.SyncWindow)
             }
             ElseIf ($PoolAge -gt 0 -and $Pool.Updated -lt $Variables.CycleStarts[0]) { 
-                Write-Message -Level Warn "Pool data for pool ($($Pool.Name)) is older than $PoolAge minutes. Pool prices will decay over time until pool data gets updated again."
+                Write-Message -Level Verbose "Pool data for pool ($($Pool.Name)) is older than $PoolAge minutes. Pool prices will decay over time until pool data gets updated again."
             }
         }
         Remove-Variable Group, Pool, PoolAge -ErrorAction Ignore
