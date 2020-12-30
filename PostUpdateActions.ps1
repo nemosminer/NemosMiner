@@ -1,9 +1,9 @@
  # Update config file to include all new config items
 
- $Config = $arg[0]
- $Variables = $arg[1]
- $Version = $arg[2]
- $AllCommandLineParameters = $arg[3]
+ $Config = $args[0]
+ $Variables = $args[1]
+ $Version = $args[2]
+ $AllCommandLineParameters = $args[3]
 
  If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Version) { 
     # Changed config items
