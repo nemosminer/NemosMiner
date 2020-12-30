@@ -542,7 +542,7 @@
         document.getElementById('IgnorePoolFee').checked = true;
       };
 
-      if (parseFloat(config.RunningMinerGainPctparseFloat)) { 
+      if (parseFloat(config.RunningMinerGainPct)) { 
         document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
       };
 
@@ -753,7 +753,6 @@
         config.Donate = parseInt(document.getElementById('Donate').value);
 
         config.Proxy = document.getElementById('Proxy').value;
-        config.RunningMinerGainPct = document.getElementById('RunningMinerGainPct').value;
 
         config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
 
@@ -852,9 +851,9 @@
         config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
         config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
 
-        config.RunningMinerGainPct = parseInt(document.getElementById('RunningMinerGainPct').value);
-
         config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
+
+        config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
 
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
