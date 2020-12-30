@@ -2612,7 +2612,7 @@ Function Initialize-Autoupdate {
     # Backup current version folder in zip file
     $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
     Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
-    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait -WindowStyle hidden
+    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait #-WindowStyle hidden
     If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
         Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
         Return
@@ -2631,7 +2631,7 @@ Function Initialize-Autoupdate {
 
     # Unzip in child folder excluding config
     Write-Message -Level Verbose "Unzipping update..."
-    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
+    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait #-WindowStyle hidden
 
     # Copy files
     Write-Message -Level Verbose "Copying files..."
@@ -2652,10 +2652,10 @@ Function Initialize-Autoupdate {
     # Get all miner names
     $MinerNames = @( )
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem ".\OptionalMiners\" | ForEach-Object { $MinerNames =+ $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem ".\OptionalMiners\" | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem ".\Miners\" | ForEach-Object { $MinerNames =+ $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem ".\Miners\" | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
     # Remove obsolete stat files from miners that no longer exist
     Get-ChildItem -Path ".\Stats\*_HashRate.txt" | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
