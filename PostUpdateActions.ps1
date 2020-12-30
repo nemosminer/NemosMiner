@@ -2,10 +2,10 @@
 
  $Config = $arg[0]
  $Variables = $arg[1]
- $UpdateVersion = $arg[2]
+ $Version = $arg[2]
  $AllCommandLineParameters = $arg[3]
 
- If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version) { 
+ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Version) { 
     # Changed config items
     $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
     $Changed_Config_Items | ForEach-Object { 
@@ -41,8 +41,8 @@
         }
         Remove-Variable Value -ErrorAction Ignore
     }
-    $Config.ConfigFileVersion = $UpdateVersion.Version.ToString()
+    $Config.ConfigFileVersion = $Version.ToString()
     Write-Config -ConfigFile $Variables.ConfigFile
-    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())."
+    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($Version.ToString())."
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
