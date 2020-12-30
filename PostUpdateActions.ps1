@@ -1,10 +1,5 @@
  # Update config file to include all new config items
 
- $Config = $args[0]
- $ConfigFile = $args[1]
- $Version = $args[2]
- $AllCommandLineParameters = $args[3]
-
  If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Version) { 
     # Changed config items
     $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
