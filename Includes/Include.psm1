@@ -2635,7 +2635,7 @@ Function Initialize-Autoupdate {
     Write-Message -Level Verbose "Unzipping update..."
     Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
 
-    # copy files
+    # Copy files
     Write-Message -Level Verbose "Copying files..."
     # Stop snaketail
     If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
@@ -2651,20 +2651,20 @@ Function Initialize-Autoupdate {
         }
     }
 
-    # # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
+    # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
     # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
-    # # Update Optional Miners to Miners if in use
+    # Update Optional Miners to Miners if in use
     # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
 
-    # # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
+    # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
     # Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
-    # Post update specific actions if any
+    # Post update actions if any
     # Use PostUpdateActions.ps1 in new release to place code
     If (Test-Path ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1" -PathType Leaf) { 
         Write-Message -Level Verbose  "Running post update actions..."
-        Invoke-Expression ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1 $Config $variables $UpdateVersion"
+        Invoke-Expression ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1 $Config $Variables $UpdateVersion"
     }
 
     # Remove temp files
