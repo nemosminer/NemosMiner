@@ -2610,7 +2610,7 @@ Function Initialize-Autoupdate {
     }
 
     # Backup current version folder in zip file; exclude existing zip files and download folder
-    $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
+    $BackupFileName = "AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
     Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
     Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait #-WindowStyle hidden
     If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
@@ -2625,9 +2625,9 @@ Function Initialize-Autoupdate {
     }
 
     # Empty folders
-    Get-ChildItem -Path ".\Brains" -Directory | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-    Get-ChildItem -Path ".\Pools\" -Directory | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-    Get-ChildItem -Path ".\Web" -Directory | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Force -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Force -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
 
     # Unzip in child folder excluding config
     Write-Message -Level Verbose "Unzipping update..."
@@ -2666,8 +2666,8 @@ Function Initialize-Autoupdate {
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
-    Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
-    Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
+    Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
+    Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
     Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
     Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
 
