@@ -853,9 +853,9 @@ Function Initialize-API {
 Function Initialize-Application { 
 
     # Keep only the last 10 files
-    Get-ChildItem ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
-    Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
-    Get-ChildItem "$($Variables.ConfigFile)_*.backup" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -1556,7 +1556,7 @@ Function Get-Stat {
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
             & { 
-                [String[]]$StatFiles = (Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
             }
@@ -1616,7 +1616,7 @@ Function Remove-Stat {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
-        [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+        [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem -Path "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
     )
 
     $Name | Sort-Object -Unique | ForEach-Object { 
@@ -2609,7 +2609,7 @@ Function Initialize-Autoupdate {
         Return
     }
 
-    # Backup current version folder in zip file
+    # Backup current version folder in zip file; exclude existing zip files and download folder
     $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
     Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
     Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait #-WindowStyle hidden
@@ -2620,25 +2620,31 @@ Function Initialize-Autoupdate {
 
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
-    If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1" -PathType Leaf) { 
-        Invoke-Expression (Get-Content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
+    If (Test-Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
+        Invoke-Expression (Get-Content ".\$UpdateFilePath\PreUpdateActions.ps1" -Raw)
     }
 
     # Empty folders
-    Get-ChildItem .\Brains\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-    Get-ChildItem .\Pools\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-    Get-ChildItem .\Web\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem -Path ".\Brains" -Directory | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem -Path ".\Pools\" -Directory | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem -Path ".\Web" -Directory | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
     # Unzip in child folder excluding config
     Write-Message -Level Verbose "Unzipping update..."
     Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait #-WindowStyle hidden
+
+    #Testing files are in a subdirectory
+    $UpdateFilePath = $UpdateFileName
+    If ((Get-ChildItem -Path $UpdateFileName -Directory).Count -eq 1) { 
+        $UpdateFilePath = "$UpdateFileName\$((Get-ChildItem -Path $UpdateFileName -Directory).Name)"
+    }
 
     # Copy files
     Write-Message -Level Verbose "Copying files..."
     # Stop Snaketail
     If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
 
-    Copy-Item .\$UpdateFileName\NemosMiner-Testing\* .\ -Force -Recurse -ErrorAction Ignore
+    Copy-Item -Path ".\$UpdateFilePath\*" .\ -Recurse -Force -ErrorAction Ignore
 
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
     If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
@@ -2649,23 +2655,27 @@ Function Initialize-Autoupdate {
         }
     }
 
-    # Get all miner names
-    $MinerNames = @( )
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem ".\OptionalMiners\" | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem -Path ".\OptionalMiners" -Directory | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners").name } | ForEach-Object { Remove-Item -Recurse $_.FullName -Force }
+
+    # Update Optional Miners to Miners If in use
+    Get-ChildItem -Path ".\OptionalMiners" -Directory | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners").name } | ForEach-Object { Copy-Item $_.FullName ".\Miners" -Force }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem ".\Miners\" | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem -Path ".\Miners\" -Directory | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners").name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners").name } | ForEach-Object { Remove-Item -Recurse $_.FullName -Force }
 
-    # Remove obsolete stat files from miners that no longer exist
-    Get-ChildItem -Path ".\Stats\*_HashRate.txt" | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
-    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
-    
+    # Get all miner names and remove obsolete stat files from miners that no longer exist
+    $MinerNames = @( )
+    Get-ChildItem -Path ".\Miners" -Directory | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
+    Get-ChildItem -Path ".\OptionalMiners" -Directory | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
+    Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
+    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
+
     # Post update actions if any
     # Use PostUpdateActions.ps1 in new release to place code
-    If (Test-Path ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1" -PathType Leaf) { 
+    If (Test-Path ".\$UpdateFilePath\PostUpdateActions.ps1" -PathType Leaf) { 
         Write-Message -Level Verbose  "Running post update actions..."
-        Invoke-Expression ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1 $Config $Variables $UpdateVersion $AllCommandLineParameters"
+        Invoke-Expression ".\$UpdateFilePath\PostUpdateActions.ps1 $Config $Variables $UpdateVersion $AllCommandLineParameters"
     }
 
     # Remove temp files
@@ -2674,7 +2684,7 @@ Function Initialize-Autoupdate {
     Remove-Item ".\$($UpdateFileName).zip" -Force
     If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
     If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
-    Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
+    Get-ChildItem -Path "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem -Path "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
 
     # Start new instance (Wait and confirm start)
     # Kill old instance
