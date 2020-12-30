@@ -29,7 +29,9 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
     # Build command sets for intensities
     $Commands = $Commands | ForEach-Object { 
         $_.PsObject.Copy()
-        ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
+        $Command = $_.Command
+        ForEach ($Intensity in ($Intensities.($_.Algorithm[1]) | Select-Object)) { 
+            $_ | Add-Member Command "$Command -sci $Intensity" -Force
             $_ | Add-Member Intensity $Intensity -Force
             $_.PsObject.Copy()
         }
@@ -80,7 +82,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass) -sci $([Int]$_.Intensity)"
+                        $Command += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
                     }
 
                     [PSCustomObject]@{ 

@@ -38,8 +38,10 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
     # Build command sets for intensities
     $Commands = $Commands | ForEach-Object { 
         $_.PsObject.Copy()
+        $Command = $_.Command
         ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
-            $_ | Add-Member Intensity ([Uint16]$Intensity) -Force
+            $_ | Add-Member Command "$Command -dcri $Intensity" -Force
+            $_ | Add-Member Intensity $Intensity -Force
             $_.PsObject.Copy()
         }
     }
@@ -88,11 +90,8 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     }
 
                     If ($_.Algorithm[1]) { 
-
                         If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660.*GB$') { Return } # No dual mining for Navi or GTX1660 cards
-
                         $Command += " -dpool $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpsw $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
-                        If ($_.Intensity -ge 0) { $Command += " -dcri $($_.Intensity)" }
                     }
 
                     # Optionally disable dev fee mining

@@ -13,8 +13,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1445";        Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.17 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1927";        Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.17 is fastest
     [PSCustomObject]@{ Algorithm = "EquihashBTG";         Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
+   [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
+   [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
 
 #   [PSCustomObject]@{ Algorithm = "BeamV3";              Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc";       Fee = 0.03;   MinMemGB = 6.0; Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
@@ -32,8 +32,8 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Equihash1927";        Fee = 0.02;   MinMemGB = 2.8; Type = "NVIDIA"; Command = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
     [PSCustomObject]@{ Algorithm = "Equihash2109";        Fee = 0.02;   MinMemGB = 1.0; Type = "NVIDIA"; Command = " --algo equihash210_9 --cuda 1 --opencl 0" }
 #   [PSCustomObject]@{ Algorithm = "EquihashBTG";         Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
-#   [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
+   [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
+   [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";              Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.7.0 is almost as fast but has no fee
 #   [PSCustomObject]@{ Algorithm = "Sero";                Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } # Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = "VeriBlock";           Fee = 0.02;   MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
@@ -50,7 +50,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$|^Eaglesong$" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } # Algo not supported on Navi
+                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } # Algo not supported on Navi
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
@@ -70,7 +70,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
                     $Command += " --server $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)"
 
-                    # If ($Pools.($_.Algorithm).SSL) { $Command += " --ssl true --ssl_verification false" }
+                    If ($Pools.($_.Algorithm).SSL) { $Command += " --ssl true --ssl_verification false" }
                     If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { $Command += " --proto stratum" }
 
                     [PSCustomObject]@{ 

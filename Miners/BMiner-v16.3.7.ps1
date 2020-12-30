@@ -30,18 +30,20 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
     # Does not seem to make any difference for Handshake
     # Intensities for 2. algorithm
-    # $Intensities = [PSCustomObject]@{ 
-    #     "Handshake" = @(0, 10, 30, 60, 100, 150, 210) # 0 = Auto-Intensity
-    # }
+    $Intensities = [PSCustomObject]@{ 
+        "Handshake" = @(0, 10, 30, 60, 100, 150, 210) # 0 = Auto-Intensity
+    }
 
-    # # Build command sets for intensities
-    # $Commands = $Commands | ForEach-Object { 
-    #     $_.PsObject.Copy()
-    #     ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
-    #         $_ | Add-Member Intensity ([Uint16]$Intensity) -Force
-    #         $_.PsObject.Copy()
-    #     }
-    # }
+    # Build command sets for intensities
+    $Commands = $Commands | ForEach-Object { 
+        $_.PsObject.Copy()
+        $Command = $_.Command
+        ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
+            $_ | Add-Member Command "$Command -dual-subsolver -1 -dual-intensity $Intensity" -Force
+            $_ | Add-Member Intensity $Intensity -Force
+            $_.PsObject.Copy()
+        }
+    }
 
     $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -82,7 +84,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         $Protocol2 = $_.Protocol[1]
                         If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
                         $Command += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)"
-                        If ($_.Intensity) { $Command += " -dual-subsolver -1 -dual-intensity $($_.Intensity)" }
                     }
 
                     # Optionally disable dev fee mining

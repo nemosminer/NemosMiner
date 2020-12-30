@@ -30,7 +30,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | ForEach-Object {
 
-                # If ($Pools.($_.Algorithm).Epoch -gt 384) { Return }
+                If ($Pools.($_.Algorithm).Epoch -gt 384) { Return }
 
                 $MinMemGB = $_.MinMemGB
 
