@@ -206,15 +206,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$WarmupTime = 30, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API reads before it get marked as failed. Default 30 (seconds).
     [Parameter(Mandatory = $false)]
-    [Switch]$Watchdog = $true, # if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail 3 times in row
+    [Switch]$Watchdog = $true, # if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail a few times in row
     [Parameter(Mandatory = $false)]
-    [Int]$WatchdogMinerAlgorithmCount = 3, # Number of watchdog timers with same miner name & algorithm until miner/algo combination gets suspended
-    [Parameter(Mandatory = $false)]
-    [Int]$WatchdogMinerCount = 6, # Number of watchdog timers with same miner name until miner gets suspended
-    [Parameter(Mandatory = $false)]
-    [Int]$WatchdogPoolAlgorithmCount = 3, # Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended
-    [Parameter(Mandatory = $false)]
-    [Int]$WatchdogPoolCount = 7, # Number of watchdog timers with same pool name until pool gets suspended
+    [Int]$WatchdogCount = 3, # Number of watchdog timers
     [Parameter(Mandatory = $false)]
     [Switch]$WebGUI = $true, # If true launch Web GUI (recommended)
     [Parameter(Mandatory = $false)]
@@ -310,52 +304,52 @@ If (Test-Path -Path ".\Logs\SwitchingLog.csv") { Get-ChildItem ".\Logs\Switching
 # Check if new version is available
 Get-NMVersion
 
-# Update config file to include all new config items
-If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion) { 
-    # Changed config items
-    $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
-    $Changed_Config_Items | ForEach-Object { 
-        Switch ($_) { 
-            "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
-            "APIKEY" { 
-                $Config.MPHAPIKey = $Config.$_
-                $Config.ProHashingAPIKey = $Config.$_
-                $Config.Remove($_)
-            }
-            "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
-            "HideMinerWindow" { $Config.Remove($_) }
-            "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
-            "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
-            "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
-            "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
-            "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
-            "SelGPUCC" { $Config.Remove($_) }
-            "SelGPUDSTM" { $Config.Remove($_) }
-            "ShowMinerWindow" { $Config.Remove($_) }
-            "UserName" { 
-                If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
-                If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
-                $Config.Remove($_)
-            }
-            Default { $Config.Remove($_) } # Remove unsupported config item
-        }
-    }
-    Remove-Variable Changed_Config_Items -ErrorAction Ignore
+# # Update config file to include all new config items
+# If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion) { 
+#     # Changed config items
+#     $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
+#     $Changed_Config_Items | ForEach-Object { 
+#         Switch ($_) { 
+#             "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+#             "APIKEY" { 
+#                 $Config.MPHAPIKey = $Config.$_
+#                 $Config.ProHashingAPIKey = $Config.$_
+#                 $Config.Remove($_)
+#             }
+#             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
+#             "HideMinerWindow" { $Config.Remove($_) }
+#             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+#             "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
+#             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
+#             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
+#             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
+#             "SelGPUCC" { $Config.Remove($_) }
+#             "SelGPUDSTM" { $Config.Remove($_) }
+#             "ShowMinerWindow" { $Config.Remove($_) }
+#             "UserName" { 
+#                 If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
+#                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
+#                 $Config.Remove($_)
+#             }
+#             Default { $Config.Remove($_) } # Remove unsupported config item
+#         }
+#     }
+#     Remove-Variable Changed_Config_Items -ErrorAction Ignore
 
-    # Add new config items
-    If ($New_Config_Items = $AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
-        $New_Config_Items | Sort-Object Name | ForEach-Object { 
-            $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
-            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Global:Config.$_ = $Value
-        }
-        Remove-Variable Value -ErrorAction Ignore
-    }
-    $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
-    Write-Config $Variables.ConfigFile
-    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())." -Console
-    Remove-Variable New_Config_Items -ErrorAction Ignore
-}
+#     # Add new config items
+#     If ($New_Config_Items = $AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
+#         $New_Config_Items | Sort-Object Name | ForEach-Object { 
+#             $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+#             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+#             $Global:Config.$_ = $Value
+#         }
+#         Remove-Variable Value -ErrorAction Ignore
+#     }
+#     $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
+#     Write-Config $Variables.ConfigFile
+#     Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($Variables.CurrentVersion.ToString())."
+#     Remove-Variable New_Config_Items -ErrorAction Ignore
+# }
 
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
@@ -366,7 +360,7 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
     }
 }
 
-Write-Message -Level Verbose "Loading device information..." -Console
+Write-Message -Level Verbose "Loading device information..."
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
 Write-Host "Setting variables..." -ForegroundColor Yellow
@@ -389,21 +383,21 @@ $Variables.StatStarts = @()
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
 $Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load warmup data
 $Variables.ExtraWarmupTime = Get-Content -Path ".\Includes\ExtraWarmupTimes.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.ExtraWarmupTime) { 
-    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
@@ -443,7 +437,7 @@ If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerSta
 }
 
 If ($Config.WebGUI -eq $true) { 
-    Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..." -Console
+    Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..."
     Initialize-API
 }
 
