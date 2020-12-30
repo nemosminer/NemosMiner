@@ -11,15 +11,11 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
                 $Config.Remove($_)
             }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
-            "HideMinerWindow" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
-            "SelGPUCC" { $Config.Remove($_) }
-            "SelGPUDSTM" { $Config.Remove($_) }
-            "ShowMinerWindow" { $Config.Remove($_) }
             "UserName" { 
                 If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
@@ -41,6 +37,6 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
     }
     $Config.ConfigFileVersion = $UpdateVersion.Version.ToString()
     Write-Config $Variables.ConfigFile
-    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.CurrentVersion.ToString())."
+    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())."
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
