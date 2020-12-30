@@ -1,4 +1,9 @@
  # Update config file to include all new config items
+
+ $Config = $arg[0]
+ $Variables = $arg[1]
+ $UpdateVersion = $arg[2]
+
  If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version) { 
     # Changed config items
     $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
@@ -31,7 +36,7 @@
         $New_Config_Items | Sort-Object Name | ForEach-Object { 
             $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Global:Config.$_ = $Value
+            $Config.$_ = $Value
         }
         Remove-Variable Value -ErrorAction Ignore
     }
