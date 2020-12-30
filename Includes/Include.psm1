@@ -2664,7 +2664,7 @@ Function Initialize-Autoupdate {
     # Use PostUpdateActions.ps1 in new release to place code
     If (Test-Path ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1" -PathType Leaf) { 
         Write-Message -Level Verbose  "Running post update actions..."
-        Invoke-Expression ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1 $Config $Variables $UpdateVersion"
+        Invoke-Expression ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1 $Config $Variables $UpdateVersion $AllCommandLineParameters"
     }
 
     # Remove temp files
