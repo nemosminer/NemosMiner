@@ -3,7 +3,7 @@
  $Config = $arg[0]
  $Variables = $arg[1]
  $UpdateVersion = $arg[2]
- AllCommandLineParameters = $arg[4]
+ $AllCommandLineParameters = $arg[4]
 
  If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version) { 
     # Changed config items
