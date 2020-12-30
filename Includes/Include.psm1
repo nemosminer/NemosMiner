@@ -2547,7 +2547,6 @@ Function Get-Region {
 Function Get-NMVersion { 
 
     # Check if new version is available
-    Write-Message -Level Verbose "Checking for new version..."
 
     Try { 
         # $UpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
@@ -2565,12 +2564,15 @@ Function Get-NMVersion {
                 Initialize-Autoupdate -UpdateVersion $UpdateVersion
             }
             Else { 
-                Write-Message -Level Verbose "New Version $($UpdateVersion.Version) is available. Auto Update is disabled in config - You must update manually."
+                Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Auto Update is disabled in config - You must update manually."
             }
         }
         Else { 
             Write-Message -Level Verbose "$($UpdateVersion.Product) $($UpdateVersion.Version) does not support auto-update. You must update manually."
         }
+    }
+    Else { 
+        Write-Message -Level Verbose "Version checker: $($UpdateVersion.Product) $($UpdateVersion.Version) is current - no update available."
     }
 }
 
