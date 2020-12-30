@@ -479,7 +479,7 @@ Function Start-Cycle {
             $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
         }
         If ($Miner.Status -eq [MinerStatus]::Running -and $Miner.GetStatus() -ne [MinerStatus]::Running) { 
-            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly." 
+            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
             $Miner.SetStatus([MinerStatus]::Failed)
             $Miner.StatusMessage = "Exited unexpectedly."
         }
@@ -588,7 +588,7 @@ Function Start-Cycle {
                 $Variables.Miners | Where-Object { $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
                     $Miner = $_
                     If ($Miner.Status -eq [MinerStatus]::Running -and $Miner.GetStatus() -ne [MinerStatus]::Running) { 
-                        Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly." 
+                        Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
                     Else { 
@@ -623,7 +623,7 @@ Function Start-Cycle {
                     $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
                     $_.Reason += "Pool suspended by watchdog"
                 }
-                Write-Message -Level Verbose "Pool ($($_.Name)) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))." -Console
+                Write-Message -Level Verbose "Pool ($($_.Name)) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
             }
         }
         $Variables.Pools | Where-Object Available -EQ $true | Group-Object -Property Algorithm, Name | ForEach-Object { 
@@ -635,7 +635,7 @@ Function Start-Cycle {
                     $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
                     $_.Reason += "Algorithm suspended by watchdog"
                 }
-                Write-Message -Level Verbose "Algorithm ($($_.Group[0].Algorithm)@$($_.Group[0].Name)) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Group[0].Algorithm | Where-Object PoolName -EQ $_.Group[0].Name | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))." -Console
+                Write-Message -Level Verbose "Algorithm ($($_.Group[0].Algorithm)@$($_.Group[0].Name)) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Group[0].Algorithm | Where-Object PoolName -EQ $_.Group[0].Name | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
             }
         }
         Remove-Variable WatchdogCount -ErrorAction Ignore
@@ -755,7 +755,7 @@ Function Start-Cycle {
         Where-Object Name -EQ $_.Name | 
         Where-Object Path -EQ $_.Path | 
         Where-Object DeviceName -EQ $_.DeviceName | 
-        Where-Object Arguments -EQ $_.Arguments
+        Where-Object Algorithm -EQ $_.Algorithm
 
         If ($Miner) { 
             $_.ProcessPriority = $Miner.ProcessPriority
@@ -763,6 +763,8 @@ Function Start-Cycle {
             $_.WarmupTime = $Miner.WarmupTime
             $_.URI = $Miner.URI
             $_.Workers = $Miner.Workers
+            $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments)
+            $_.Arguments = $Miner.Arguments
         }
         $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
         $_.CalculatePowerCost = $Variables.CalculatePowerCost
@@ -832,12 +834,12 @@ Function Start-Cycle {
                     $_.Data = @()
                     $_.Reason += "Miner suspended by watchdog (all algorithms)"
                 }
-                Write-Message -Level Verbose  "Miner ($($_.Group[0].BaseName)-$($_.Group[0].Version) [all algorithms]) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerBaseName -EQ $_.Group[0].BaseName | Where-Object MinerVersion -EQ $_.Group[0].Version | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))." -Console
+                Write-Message -Level Verbose  "Miner ($($_.Group[0].BaseName)-$($_.Group[0].Version) [all algorithms]) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerBaseName -EQ $_.Group[0].BaseName | Where-Object MinerVersion -EQ $_.Group[0].Version | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
             }
             Remove-Variable MinersToSuspend
         }
         $Variables.Miners | Where-Object Available -EQ $true | Where-Object { @($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer).Count -ge $Variables.WatchdogCount } | ForEach-Object {
-            Write-Message -Level Verbose "Miner ($($_.Name) [$($_.Algorithm)]) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))." -Console
+            Write-Message -Level Verbose "Miner ($($_.Name) [$($_.Algorithm)]) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -lt $Variables.Timer).Kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
             $_.Available = $false
             $_.Data = @()
             $_.Reason += "Miner suspended by watchdog (Algorithm $($_.Algorithm))"
@@ -942,7 +944,7 @@ Function Start-Cycle {
         $BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
     }
     Else { 
-        Write-Message -Level Warn "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached." -Console
+        Write-Message -Level Warn "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
     }
 
     If ($Variables.Rates."BTC") { 
@@ -987,7 +989,7 @@ Function Start-Cycle {
     $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
         $Miner = $_
         If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
-            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly." 
+            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
             $Miner.SetStatus([MinerStatus]::Failed)
             $Miner.StatusMessage = "Exited unexpectedly."
         }
@@ -1188,7 +1190,7 @@ While ($true) {
                 }
                 ElseIf ($Miner.DataReaderJob.State -ne "Running") { 
                     # Miner data reader process failed
-                    Write-Message -Level Error "Miner data reader '$($Miner.Info)' exited unexpectedly." 
+                    Write-Message -Level Error "Miner data reader '$($Miner.Info)' exited unexpectedly."
                     $Miner.SetStatus([MinerStatus]::Failed)
                     $Miner.StatusMessage = "Miner data reader exited unexpectedly."
                 }
