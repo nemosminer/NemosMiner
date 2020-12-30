@@ -185,7 +185,7 @@ function formatPrices(value) {
 function formatArrayAsString(value) {
   if (value == '') return ''
   if (value == null) return '';
-  return value.join('; ');
+  return value.sort().join('; <br>');
 };
 
 function formatMinerHashRatesAlgorithms(value) {
