@@ -2656,18 +2656,18 @@ Function Initialize-Autoupdate {
     }
 
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem -Path ".\OptionalMiners" -Directory | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners").name } | ForEach-Object { Remove-Item -Recurse $_.FullName -Force }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force }
 
     # Update Optional Miners to Miners If in use
-    Get-ChildItem -Path ".\OptionalMiners" -Directory | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners").name } | ForEach-Object { Copy-Item $_.FullName ".\Miners" -Force }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem -Path ".\Miners\" -Directory | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners").name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners").name } | ForEach-Object { Remove-Item -Recurse $_.FullName -Force }
+    Get-ChildItem -Path ".\Miners\" -Directory | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force }
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
-    Get-ChildItem -Path ".\Miners" -Directory | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
-    Get-ChildItem -Path ".\OptionalMiners" -Directory | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
+    Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
+    Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension; $_ }
     Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
     Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
 
