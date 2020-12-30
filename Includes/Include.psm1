@@ -2560,17 +2560,16 @@ Function Get-NMVersion {
     }
 
      If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
-        Write-Message -Level Verbose "New Version $($UpdateVersion.Version) is available."
         If ($UpdateVersion.AutoUpdate -eq $true) { 
             If ($Config.Autoupdate) { 
                 Initialize-Autoupdate -UpdateVersion $UpdateVersion
             }
             Else { 
-                Write-Message -Level Verbose "Auto Update is disabled in config. You must update manually."
+                Write-Message -Level Verbose "New Version $($UpdateVersion.Version) is available. Auto Update is disabled in config - You must update manually."
             }
         }
         Else { 
-            Write-Message -Level Verbose "$($UpdateVersion.Product)$($UpdateVersion.Version) does not support auto-update. You must update manually."
+            Write-Message -Level Verbose "$($UpdateVersion.Product) $($UpdateVersion.Version) does not support auto-update. You must update manually."
         }
     }
 }
