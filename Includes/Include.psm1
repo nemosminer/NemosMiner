@@ -2550,20 +2550,27 @@ Function Get-NMVersion {
     Write-Message -Level Verbose "Checking for new version..."
 
     Try { 
-        # $AutoupdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        $AutoupdateVersion = Invoke-WebRequest "https://github.com/Minerx117/NemosMiner/blob/testing/Config/Initialize-AutoupdateVersion.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        # $UpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Config/Initialize-UpdateVersion.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
     Catch { 
-        $AutoupdateVersion = Get-Content ".\Config\Initialize-AutoupdateVersion.json" | ConvertFrom-Json
+        If (Test-Path -Path ".\Config\Initialize-UpdateVersion.json") { 
+            $UpdateVersion = Get-Content ".\Config\Initialize-UpdateVersion.json" | ConvertFrom-Json
+        }
     }
 
-     If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Update) { 
-        Write-Message -Level Verbose "New Version $($Version.Version) is available."
-        If ($Config.Autoupdate) { 
-            Initialize-Autoupdate -AutoupdateVersion $AutoupdateVersion
+     If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
+        Write-Message -Level Verbose "New Version $($UpdateVersion.Version) is available."
+        If ($UpdateVersion.AutoUpdate -eq $true) { 
+            If ($Config.Autoupdate) { 
+                Initialize-Autoupdate -UpdateVersion $UpdateVersion
+            }
+            Else { 
+                Write-Message -Level Verbose "Auto Update is disabled in config. You must update manually."
+            }
         }
         Else { 
-            Write-Message -Level Verbose "Auto Update is disabled in config."
+            Write-Message -Level Verbose "$($UpdateVersion.Product)$($UpdateVersion.Version) does not support auto-update. You must update manually."
         }
     }
 }
@@ -2571,7 +2578,7 @@ Function Get-NMVersion {
 Function Initialize-Autoupdate { 
     Param(
         [Parameter(Mandatory = $true)]
-        [PSCustomObject]$AutoupdateVersion
+        [PSCustomObject]$UpdateVersion
     )
 
     Set-Location $Variables.MainPath
@@ -2581,130 +2588,122 @@ Function Initialize-Autoupdate {
 
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
 
-    If ($AutoupdateVersion -ne $null) { $AutoupdateVersion | ConvertTo-Json -Depth 10 | Out-File ".\Config\Initialize-AutoupdateVersion.json" }
-    If ($AutoupdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoupdateVersion.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Autoupdate) { 
-        If ($AutoupdateVersion.Autoupdate) { 
-            Write-Message -Level Verbose "Starting Auto Update to version $($AutoupdateVersion.Version)..."
+    Write-Message -Level Verbose "Starting Auto Update to version $($UpdateVersion.Version)..."
 
-            # Setting autostart to true
-            If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
+    # Setting autostart to true
+    If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
 
-            # Download update file
-            $UpdateFileName = ".\$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version)"
-            Write-Message -Level Verbose "Downloading new version..."
-            Try { 
-                Invoke-WebRequest $AutoupdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing$
-            }
-            Catch { 
-                Write-Message -Level Error "Downloading failed. Cannot complete auto-update :-("
-                Return
-            }
-            If (-not (Test-Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
-                Write-Message -Level Error "Cannot find update file. Cannot complete auto-update :-("
-                Return
-            }
+    # Download update file
+    $UpdateFileName = ".\$($UpdateVersion.Product)-$($UpdateVersion.Version)"
+    Write-Message -Level Verbose "Downloading new version..."
+    Try { 
+        Invoke-WebRequest $UpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+    }
+    Catch { 
+        Write-Message -Level Error "Downloading failed. Cannot complete auto-update :-("
+        Return
+    }
+    If (-not (Test-Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
+        Write-Message -Level Error "Cannot find update file. Cannot complete auto-update :-("
+        Return
+    }
 
-            # Backup current version folder in zip file
-            $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
-            Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
-            Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
-            If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
-                Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
-                Return
-            }
+    # Backup current version folder in zip file
+    $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
+    Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
+    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
+    If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
+        Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
+        Return
+    }
 
-            # Pre update specific actions if any
-            # Use PreUpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1" -PathType Leaf) { 
-                Invoke-Expression (Get-Content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
-            }
+    # Pre update specific actions if any
+    # Use PreUpdateActions.ps1 in new release to place code
+    If (Test-Path ".\$UpdateFileName\PreUpdateActions.ps1" -PathType Leaf) { 
+        Invoke-Expression (Get-Content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
+    }
 
-            # Empty folders
-            Get-ChildItem .\Brains\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-            Get-ChildItem .\Miners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-            Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-            Get-ChildItem .\Pools\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-            Get-ChildItem .\Web\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    # Empty folders
+    Get-ChildItem .\Brains\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem .\Miners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem .\Pools\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem .\Web\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
-            # unzip in child folder excluding config
-            Write-Message -Level Verbose "Unzipping update..."
-            Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
+    # unzip in child folder excluding config
+    Write-Message -Level Verbose "Unzipping update..."
+    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
 
-            # copy files
-            Write-Message -Level Verbose "Copying files..."
-            # Stop snaketail
-            If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
+    # copy files
+    Write-Message -Level Verbose "Copying files..."
+    # Stop snaketail
+    If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
 
-            Copy-Item .\$UpdateFileName\NemosMiner-Testing\* .\ -Force -Recurse -ErrorAction Ignore
+    Copy-Item .\$UpdateFileName\NemosMiner-Testing\* .\ -Force -Recurse -ErrorAction Ignore
 
-            # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-            If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
-                $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
-                $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
-                If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe)) { 
-                    & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
-                }
-            }
-
-            # # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-            # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-
-            # # Update Optional Miners to Miners if in use
-            # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
-
-            # # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-            # Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-
-            # Post update specific actions if any
-            # Use PostUpdateActions.ps1 in new release to place code
-            If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1" -PathType Leaf) { 
-                Invoke-Expression (Get-Content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
-            }
-
-            # Remove temp files
-            Write-Message -Level Verbose  "Removing temporary files..."
-            Remove-Item .\$UpdateFileName -Force -Recurse
-            Remove-Item ".\$($UpdateFileName).zip" -Force
-            If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
-            If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
-            Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
-
-            # Start new instance (Wait and confirm start)
-            # Kill old instance
-            If ($AutoupdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
-                Write-Message -Level Verbose "Starting updated version..."
-                $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
-                $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
-                # Giving 10 seconds for process to start
-                $Waited = 0
-                Start-Sleep 10
-                While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
-                If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
-                    Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
-                    Return
-                }
-
-                $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-                $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
-                $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-
-                Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)."
-
-                Write-Message -Level Verbose "Killing myself in 5 seconds..."
-                Start-Sleep -Seconds 5
-                If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
-            }
-            Else { 
-                $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-                $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
-                $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-
-                Write-Message -Level Verbose "Successfully updated $($AutoupdateVersion.Product) to version $($AutoupdateVersion.Version)."
-            }
+    # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+    If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
+        $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
+        $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
+        If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe)) { 
+            & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
         }
     }
+
+    # # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
+    # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+
+    # # Update Optional Miners to Miners if in use
+    # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
+
+    # # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
+    # Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+
+    # Post update specific actions if any
+    # Use PostUpdateActions.ps1 in new release to place code
+    If (Test-Path ".\$UpdateFileName\PostUpdateActions.ps1" -PathType Leaf) { 
+        Invoke-Expression (Get-Content ".\$UpdateFileName\PostUpdateActions.ps1" -Raw)
+    }
+
+    # Remove temp files
+    Write-Message -Level Verbose  "Removing temporary files..."
+    Remove-Item .\$UpdateFileName -Force -Recurse
+    Remove-Item ".\$($UpdateFileName).zip" -Force
+    If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
+    If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
+    Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
+
+    # Start new instance (Wait and confirm start)
+    # Kill old instance
+    If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
+        Write-Message -Level Verbose "Starting updated version..."
+        $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
+        $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
+        # Giving 10 seconds for process to start
+        $Waited = 0
+        Start-Sleep 10
+        While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
+        If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
+            Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
+            Return
+        }
+
+        $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
+        $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
+        $TempVerObject | ConvertTo-Json | Out-File .\Version.json
+
+        Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($UpdateVersion.Version)."
+
+        Write-Message -Level Verbose "Killing myself in 5 seconds..."
+        Start-Sleep -Seconds 5
+        If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
+    }
     Else { 
-        Write-Message -Level Verbose "$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Running version is not a a candidate for Auto Update."
+        $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
+        $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
+        $TempVerObject | ConvertTo-Json | Out-File .\Version.json
+
+        Write-Message -Level Verbose "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)."
     }
 }
 
