@@ -18,6 +18,7 @@ Miner Updates:
 - SRBMminerMulti-v0.6.1
 
 New:
+- Auto Update
 - Web GUI: Added footer with version information
 
 
