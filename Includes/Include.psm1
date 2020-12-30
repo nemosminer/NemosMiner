@@ -2625,8 +2625,8 @@ Function Initialize-Autoupdate {
     }
 
     # Empty folders
-    Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Force -Path $_.FullName -Force }
-    Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Force -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
     Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
 
     # Unzip in child folder excluding config
