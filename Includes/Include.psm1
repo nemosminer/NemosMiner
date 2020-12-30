@@ -2612,7 +2612,7 @@ Function Initialize-Autoupdate {
     # Backup current version folder in zip file
     $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
     Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
-    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
+    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait -WindowStyle hidden
     If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
         Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
         Return
@@ -2626,18 +2626,16 @@ Function Initialize-Autoupdate {
 
     # Empty folders
     Get-ChildItem .\Brains\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-    Get-ChildItem .\Miners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-    Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
     Get-ChildItem .\Pools\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
     Get-ChildItem .\Web\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
-    # unzip in child folder excluding config
+    # Unzip in child folder excluding config
     Write-Message -Level Verbose "Unzipping update..."
     Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
 
     # Copy files
     Write-Message -Level Verbose "Copying files..."
-    # Stop snaketail
+    # Stop Snaketail
     If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
 
     Copy-Item .\$UpdateFileName\NemosMiner-Testing\* .\ -Force -Recurse -ErrorAction Ignore
@@ -2651,15 +2649,18 @@ Function Initialize-Autoupdate {
         }
     }
 
+    # Get all miner names
+    $MinerNames = @( )
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
-
-    # Update Optional Miners to Miners if in use
-    # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
+    Get-ChildItem ".\OptionalMiners\" | ForEach-Object { $MinerNames =+ $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    # Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Get-ChildItem ".\Miners\" | ForEach-Object { $MinerNames =+ $_.Name -replace $_.Extension; $_ } | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
+    # Remove obsolete stat files from miners that no longer exist
+    Get-ChildItem -Path ".\Stats\*_HashRate.txt" | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
+    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
+    
     # Post update actions if any
     # Use PostUpdateActions.ps1 in new release to place code
     If (Test-Path ".\$UpdateFileName\NemosMiner-Testing\PostUpdateActions.ps1" -PathType Leaf) { 
@@ -2681,9 +2682,9 @@ Function Initialize-Autoupdate {
         Write-Message -Level Verbose "Starting updated version..."
         $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
         $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
+
         # Giving 10 seconds for process to start
         $Waited = 0
-        Start-Sleep 10
         While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
         If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
             Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
@@ -2696,9 +2697,8 @@ Function Initialize-Autoupdate {
 
         Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($UpdateVersion.Version)."
 
-        Write-Message -Level Verbose "Killing myself in 5 seconds..."
-        Start-Sleep -Seconds 5
-        If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
+        Write-Message -Level Verbose "Killing myself!"
+        # If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
     Else { 
         $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
