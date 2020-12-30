@@ -927,7 +927,7 @@ Function Write-Message {
     Begin { }
     Process { 
 
-        If ((-not $Config.LogToScreen) -or $Level -in $Config.LogToScreen) { 
+        If ($Level -in $Config.LogToScreen) { 
 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
@@ -939,34 +939,47 @@ Function Write-Message {
 
             Switch ($Level) { 
                 'Error' { 
-                    $LevelText = 'ERROR:'
                     Write-Host $Message -ForegroundColor "Red"
                 }
                 'Warn' { 
-                    $LevelText = 'WARNING:'
                     Write-Host $Message -ForegroundColor "Magenta"
                 }
                 'Info' { 
-                    $LevelText = 'INFO:'
-                    If ($Console) { Write-Host $Message -ForegroundColor "White" }
+                    Write-Host $Message -ForegroundColor "White"
                 }
                 'Verbose' { 
-                    $LevelText = 'VERBOSE:'
-                    If ($Console) { Write-Host $Message -ForegroundColor "Yello" }
+                    Write-Host $Message -ForegroundColor "Yello"
                 }
                 'Debug' { 
-                    $LevelText = 'DEBUG:'
-                    If ($Console) { Write-Host $Message -ForegroundColor "Blue" }
+                    Write-Host $Message -ForegroundColor "Blue"
                 }
             }
         }
         If ($Variables.LogFile) { 
-            If ((-not $Config.LogToFile) -or $Level -in $Config.LogToFile) { 
+            If ($Level -in $Config.LogToFile) { 
                 # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
                 # This lets us ensure only one thread is trying to write to the file at a time. 
                 $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteLog")
 
                 $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+                Switch ($Level) { 
+                    'Error' { 
+                        $LevelText = 'ERROR:'
+                    }
+                    'Warn' { 
+                        $LevelText = 'WARNING:'
+                    }
+                    'Info' { 
+                        $LevelText = 'INFO:'
+                    }
+                    'Verbose' { 
+                        $LevelText = 'VERBOSE:'
+                    }
+                    'Debug' { 
+                        $LevelText = 'DEBUG:'
+                    }
+                }
 
                 # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
                 If ($Mutex.WaitOne(1000)) { 
@@ -1415,28 +1428,29 @@ Function Set-Stat {
     $Path = "Stats\$Name.txt"
     $SmallestValue = 1E-20
 
-    $Stat = Get-Stat $Name
+    $Stat = Get-Stat -Name $Name
 
     If ($Stat -is [Hashtable] -and $Stat.IsSynchronized) { 
         If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
         If ($Duration -le 0) { Return $Stat }
 
-        $ToleranceMin = $ToleranceMax = $Value
-
         If ($FaultDetection) { 
             $ToleranceMin = $Stat.Week * (1 - [Math]::Min([Math]::Max($Stat.Week_Fluctuation * 2, 0.1), 0.9))
             $ToleranceMax = $Stat.Week * (1 + [Math]::Min([Math]::Max($Stat.Week_Fluctuation * 2, 0.1), 0.9))
         }
+        Else { 
+            $ToleranceMin = $ToleranceMax = $Value
+        }
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
-        If ($Stat.Week_Fluctuation -lt 1 -and ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax)) { 
+        If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { 
             $Stat.ToleranceExceeded ++
         }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.Week_Fluctuation -lt 1 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
+        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_HashRate$") { 
                 Write-Message -Level Warn "Failed saving hash rate ($($Name): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
             }
@@ -1455,28 +1469,8 @@ Function Set-Stat {
                     }
                 }
 
-                $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
-                    @{ 
-                        Name                  = [String]$Name
-                        Live                  = [Double]$Value
-                        Minute                = [Double]$Value
-                        Minute_Fluctuation    = [Double]0
-                        Minute_5              = [Double]$Value
-                        Minute_5_Fluctuation  = [Double]0
-                        Minute_10             = [Double]$Value
-                        Minute_10_Fluctuation = [Double]0
-                        Hour                  = [Double]$Value
-                        Hour_Fluctuation      = [Double]0
-                        Day                   = [Double]$Value
-                        Day_Fluctuation       = [Double]0
-                        Week                  = [Double]$Value
-                        Week_Fluctuation      = [Double]0
-                        Duration              = [TimeSpan]::FromMinutes(1)
-                        Updated               = [DateTime]$Updated
-                        ToleranceExceeded     = [UInt16]0
-                        Timer                 = [DateTime]$Timer
-                    }
-                )
+                Remove-Stat -Name $Name
+                $Stat = Set-Stat -Name $Name -Value $Value
             }
             Else { 
                 $Span_Minute = [Math]::Min($Duration.TotalMinutes / [Math]::Min($Stat.Duration.TotalMinutes, 1), 1)
@@ -1508,30 +1502,31 @@ Function Set-Stat {
         }
     }
     Else { 
-        If (-not $Duration) { $Duration = [TimeSpan]::FromMinutes(1) }
 
-        $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
-            @{ 
-                Name                  = [String]$Name
-                Live                  = [Double]$Value
-                Minute                = [Double]$Value
-                Minute_Fluctuation    = [Double]0
-                Minute_5              = [Double]$Value
-                Minute_5_Fluctuation  = [Double]0
-                Minute_10             = [Double]$Value
-                Minute_10_Fluctuation = [Double]0
-                Hour                  = [Double]$Value
-                Hour_Fluctuation      = [Double]0
-                Day                   = [Double]$Value
-                Day_Fluctuation       = [Double]0
-                Week                  = [Double]$Value
-                Week_Fluctuation      = [Double]0
-                Duration              = [TimeSpan]$Duration
-                Updated               = [DateTime]$Updated
-                ToleranceExceeded     = [UInt16]0
-                Timer                 = [DateTime]$Timer
-            }
-        )
+       If (-not $Duration) { $Duration = [TimeSpan]::FromMinutes(1) }
+
+       $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
+           @{ 
+               Name                  = [String]$Name
+               Live                  = [Double]$Value
+               Minute                = [Double]$Value
+               Minute_Fluctuation    = [Double]0
+               Minute_5              = [Double]$Value
+               Minute_5_Fluctuation  = [Double]0
+               Minute_10             = [Double]$Value
+               Minute_10_Fluctuation = [Double]0
+               Hour                  = [Double]$Value
+               Hour_Fluctuation      = [Double]0
+               Day                   = [Double]$Value
+               Day_Fluctuation       = [Double]0
+               Week                  = [Double]$Value
+               Week_Fluctuation      = [Double]0
+               Duration              = [TimeSpan]$Duration
+               Updated               = [DateTime]$Updated
+               ToleranceExceeded     = [UInt16]0
+               Timer                 = [DateTime]$Timer
+           }
+       )
     }
 
     @{ 
@@ -1560,7 +1555,7 @@ Function Get-Stat {
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
-            & {
+            & { 
                 [String[]]$StatFiles = (Get-ChildItem "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
@@ -2552,73 +2547,69 @@ Function Get-Region {
 Function Get-NMVersion { 
 
     # Check if new version is available
-    Write-Message -Level Verbose "Checking for new version..." -Console
+    Write-Message -Level Verbose "Checking for new version..."
 
     Try { 
-        $Version = Invoke-WebRequest "_https://nemosminer.com/data/version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        # $AutoupdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $AutoupdateVersion = Invoke-WebRequest "https://github.com/Minerx117/NemosMiner/blob/testing/Config/Initialize-AutoupdateVersion.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
     Catch { 
-        $Version = Get-Content ".\Config\webversion.json" | ConvertFrom-Json
+        $AutoupdateVersion = Get-Content ".\Config\Initialize-AutoupdateVersion.json" | ConvertFrom-Json
     }
-    If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $Version.Update) { 
-        Write-Message -Level Verbose "New Version $($Version.Version) is available." -Console
-        If ($Config.Autoupdate -and (-not $Config.ManualConfig)) { 
-            Initialize-Autoupdate
+
+     If ($Version.Product -eq $Variables.CurrentProduct -and [Version]$Version.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Update) { 
+        Write-Message -Level Verbose "New Version $($Version.Version) is available."
+        If ($Config.Autoupdate) { 
+            Initialize-Autoupdate -AutoupdateVersion $AutoupdateVersion
+        }
+        Else { 
+            Write-Message -Level Verbose "Auto Update is disabled in config."
         }
     }
 }
 
 Function Initialize-Autoupdate { 
+    Param(
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$AutoupdateVersion
+    )
 
-    # GitHub only supporting TLSv1.2 since feb 22 2018
+    Set-Location $Variables.MainPath
+
+    # GitHub only suppors TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-    Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
-    Write-Message "Checking Autoupdate"
-    Update-Notifications("Checking Auto Update")
-    $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
-    Try { 
-        $AutoupdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-    }
-    Catch { $AutoupdateVersion = Get-Content ".\Config\Initialize-AutoupdateVersion.json" | Convertfrom-json }
-    If ($AutoupdateVersion -ne $null) { $AutoupdateVersion | ConvertTo-Json | Out-File ".\Config\Initialize-AutoupdateVersion.json" }
-    If ($AutoupdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoupdateVersion.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Autoupdate) { 
-        Write-Message "Version $($AutoupdateVersion.Version) available. (You are running $($Variables.CurrentVersion))"
-        $LabelNotifications.ForeColor = "Green"
-        $LabelNotifications.Lines += "Version $([Version]$AutoupdateVersion.Version) available"
 
+    $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
+
+    If ($AutoupdateVersion -ne $null) { $AutoupdateVersion | ConvertTo-Json -Depth 10 | Out-File ".\Config\Initialize-AutoupdateVersion.json" }
+    If ($AutoupdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$AutoupdateVersion.Version -gt $Variables.CurrentVersion -and $AutoupdateVersion.Autoupdate) { 
         If ($AutoupdateVersion.Autoupdate) { 
-            $LabelNotifications.Lines += "Starting Auto Update"
+            Write-Message -Level Verbose "Starting Auto Update to version $($AutoupdateVersion.Version)..."
+
             # Setting autostart to true
-            If ($Variables.MiningStatus -eq "Running") { $Config.autostart = $true }
-            Write-Config -ConfigFile $Variables.ConfigFile
+            If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
 
             # Download update file
             $UpdateFileName = ".\$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version)"
-            Write-Message "Downloading version $($AutoupdateVersion.Version)"
-            Update-Notifications("Downloading version $($AutoupdateVersion.Version)")
+            Write-Message -Level Verbose "Downloading new version..."
             Try { 
-                Invoke-WebRequest $AutoupdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+                Invoke-WebRequest $AutoupdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing$
             }
             Catch { 
-                Write-Message "Update download failed"
-                Update-Notifications("Update download failed")
-                $LabelNotifications.ForeColor = "Red"
+                Write-Message -Level Error "Downloading failed. Cannot complete auto-update :-("
                 Return
             }
             If (-not (Test-Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
-                Write-Message "Cannot find update file"
-                Update-Notifications("Cannot find update file")
-                $LabelNotifications.ForeColor = "Red"
+                Write-Message -Level Error "Cannot find update file. Cannot complete auto-update :-("
                 Return
             }
 
             # Backup current version folder in zip file
-            Write-Message "Backing up current version..."
-            Update-Notifications("Backing up current version...")
-            $BackupFileName = ("Initialize-AutoupdateBackup-$(Get-Date -Format u).zip").replace(" ", "_").replace(":", "")
+            $BackupFileName = "Initialize-AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
+            Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
             Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip" -Wait -WindowStyle hidden
             If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
-                Write-Message "Backup failed"
+                Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
                 Return
             }
 
@@ -2628,25 +2619,41 @@ Function Initialize-Autoupdate {
                 Invoke-Expression (Get-Content ".\$UpdateFileName\PreUpdateActions.ps1" -Raw)
             }
 
-            # Empty OptionalMiners - Get rid of Obsolete ones
+            # Empty folders
+            Get-ChildItem .\Brains\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+            Get-ChildItem .\Miners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
             Get-ChildItem .\OptionalMiners\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+            Get-ChildItem .\Pools\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+            Get-ChildItem .\Web\ | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
             # unzip in child folder excluding config
-            Write-Message "Unzipping update..."
-            Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\ -y -spe -xr!config" -Wait -WindowStyle hidden
+            Write-Message -Level Verbose "Unzipping update..."
+            Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
 
-            # copy files 
-            Write-Message "Copying files..."
-            Copy-Item .\$UpdateFileName\* .\ -force -Recurse
+            # copy files
+            Write-Message -Level Verbose "Copying files..."
+            # Stop snaketail
+            If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
 
-            # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-            Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+            Copy-Item .\$UpdateFileName\NemosMiner-Testing\* .\ -Force -Recurse -ErrorAction Ignore
 
-            # Update Optional Miners to Miners if in use
-            Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
+            # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+            If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
+                $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
+                $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
+                If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe)) { 
+                    & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
+                }
+            }
 
-            # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-            Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+            # # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
+            # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+
+            # # Update Optional Miners to Miners if in use
+            # Get-ChildItem .\OptionalMiners\ | Where-Object { $_.name -in (Get-ChildItem .\Miners\).name } | ForEach-Object { Copy-Item -Force $_.FullName .\Miners\ }
+
+            # # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
+            # Get-ChildItem .\Miners\ | Where-Object { $_.name -notin (Get-ChildItem .\$UpdateFileName\Miners\).name -and $_.name -notin (Get-ChildItem .\$UpdateFileName\OptionalMiners\).name } | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
 
             # Post update specific actions if any
             # Use PostUpdateActions.ps1 in new release to place code
@@ -2655,27 +2662,25 @@ Function Initialize-Autoupdate {
             }
 
             # Remove temp files
-            Write-Message "Removing temporary files..."
+            Write-Message -Level Verbose  "Removing temporary files..."
             Remove-Item .\$UpdateFileName -Force -Recurse
             Remove-Item ".\$($UpdateFileName).zip" -Force
             If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
             If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
-            Get-ChildItem "Initialize-AutoupdateBackup-*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup-*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
+            Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
 
             # Start new instance (Wait and confirm start)
             # Kill old instance
             If ($AutoupdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
-                Write-Message "Starting my brother"
-                $StartCommand = ((Get-CimInstance win32_process -filter "ProcessID=$PID" | Select-Object commandline).CommandLine)
-                $NewKid = Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList @($StartCommand, (Split-Path $script:MyInvocation.MyCommand.Path))
+                Write-Message -Level Verbose "Starting updated version..."
+                $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
+                $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
                 # Giving 10 seconds for process to start
                 $Waited = 0
                 Start-Sleep 10
                 While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
                 If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
-                    Write-Message "Failed to start new instance of $($Variables.CurrentProduct)"
-                    Update-Notifications("$($Variables.CurrentProduct) auto updated to version $($AutoupdateVersion.Version) but failed to restart.")
-                    $LabelNotifications.ForeColor = "Red"
+                    Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
                     Return
                 }
 
@@ -2683,10 +2688,10 @@ Function Initialize-Autoupdate {
                 $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
 
-                Write-Message "$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)"
-                Update-Notifications("$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)")
+                Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($AutoupdateVersion.Version)."
 
-                Write-Message "Killing myself"
+                Write-Message -Level Verbose "Killing myself in 5 seconds..."
+                Start-Sleep -Seconds 5
                 If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
             }
             Else { 
@@ -2694,24 +2699,12 @@ Function Initialize-Autoupdate {
                 $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
                 $TempVerObject | ConvertTo-Json | Out-File .\Version.json
 
-                Update-Notifications("Successfully updated to version $($AutoupdateVersion.Version)")
-                $LabelNotifications.ForeColor = "Green"
+                Write-Message -Level Verbose "Successfully updated $($AutoupdateVersion.Product) to version $($AutoupdateVersion.Version)."
             }
-        }
-        ElseIf (-not ($Config.Autostart)) { 
-            Update-Notifications("Cannot Auto Update as autostart not selected")
-            $LabelNotifications.ForeColor = "Red"
-        }
-        Else { 
-            UpdateStatus("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
-            Update-Notifications("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
-            $LabelNotifications.ForeColor = "Red"
         }
     }
     Else { 
-        Write-Message "$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update"
-        Update-Notifications("$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Not candidate for Auto Update")
-        $LabelNotifications.ForeColor = "Green"
+        Write-Message -Level Verbose "$($AutoupdateVersion.Product)-$($AutoupdateVersion.Version). Running version is not a a candidate for Auto Update."
     }
 }
 
