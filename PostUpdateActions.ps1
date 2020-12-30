@@ -1,7 +1,7 @@
  # Update config file to include all new config items
 
  $Config = $args[0]
- $Variables = $args[1]
+ $ConfigFile = $args[1]
  $Version = $args[2]
  $AllCommandLineParameters = $args[3]
 
@@ -42,7 +42,7 @@
         Remove-Variable Value -ErrorAction Ignore
     }
     $Config.ConfigFileVersion = $Version.ToString()
-    Write-Config -ConfigFile $Variables.ConfigFile
-    Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($Version.ToString())."
+    Write-Config -ConfigFile $ConfigFile
+    Write-Message -Level Verbose "Updated configuration file '$ConfigFile' to version $($Version.ToString())."
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
