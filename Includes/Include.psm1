@@ -2655,6 +2655,7 @@ Function Initialize-Autoupdate {
         }
     }
 
+    # Post update actions
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
     Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force }
 
@@ -2670,8 +2671,8 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
     Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
     Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
+    Write-Message -Level Verbose "Removed obsolete stat files from miners that no longer exist."
 
-    # Post update actions
     # Update config file to include all new config items
     If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version) { 
         # Changed config items
