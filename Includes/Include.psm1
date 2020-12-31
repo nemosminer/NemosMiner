@@ -2675,7 +2675,7 @@ Function Initialize-Autoupdate {
     # Use PostUpdateActions.ps1 in new release to place code, use dot sourcing to have access to all variables
     If (Test-Path ".\$UpdateFilePath\PostUpdateActions.ps1" -PathType Leaf) { 
         Write-Message -Level Verbose  "Running post update actions..."
-        . "$UpdateFilePath\PostUpdateActions.ps1"
+        . "$UpdateFilePath\PostUpdateActions.ps1" -Config $Config -Variables $Variables -UpdateVersion $UpdateVersion -AllCommandLineParameters $AllCommandLineParameters
     }
 
     # Remove temp files
