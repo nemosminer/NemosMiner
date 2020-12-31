@@ -2674,9 +2674,9 @@ Function Initialize-Autoupdate {
     Write-Message -Level Verbose "Removed obsolete stat files from miners that no longer exist."
 
     # Update config file to include all new config items
-    If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version) { 
+    If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version)) { 
         # Changed config items
-        $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
+        $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
         $Changed_Config_Items | ForEach-Object { 
             Switch ($_) { 
                 "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
@@ -2702,7 +2702,7 @@ Function Initialize-Autoupdate {
         Remove-Variable Changed_Config_Items -ErrorAction Ignore
 
         # Add new config items
-        If ($New_Config_Items = $AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
+        If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
             $New_Config_Items | Sort-Object Name | ForEach-Object { 
                 $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
                 If ($Value -is [Switch]) { $Value = [Boolean]$Value }
