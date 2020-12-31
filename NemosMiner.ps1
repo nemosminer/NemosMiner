@@ -577,10 +577,6 @@ Function Global:TimerUITick {
 
             $LabelEarningsDetails.Lines = @($Variables.Summary -replace '(&ensp;)+', '`n' -split '`n')
 
-            $Variables | Add-Member -Force @{ CurrentProduct = (Get-Content .\Version.json | ConvertFrom-Json).Product }
-            $Variables | Add-Member -Force @{ CurrentVersion = [Version](Get-Content .\Version.json | ConvertFrom-Json).Version }
-            $Variables | Add-Member -Force @{ Autoupdated = (Get-Content .\Version.json | ConvertFrom-Json).Autoupdated.Value }
-
             Clear-Host
 
             # Get and display earnings stats
