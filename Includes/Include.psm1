@@ -2671,17 +2671,48 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
     Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
 
-    # Post update actions if any
-    # Use PostUpdateActions.ps1 in new release to place code, use dot sourcing to have access to all variables
-    If (Test-Path ".\$UpdateFilePath\PostUpdateActions.ps1" -PathType Leaf) { 
-        Write-Message -Level Verbose  "Running post update actions..."
-        Try { 
-            . "$UpdateFilePath\PostUpdateActions.ps1" -Config $Config -Variables $Variables -UpdateVersion $UpdateVersion -AllCommandLineParameters $AllCommandLineParameters
+    # Post update actions
+    # Update config file to include all new config items
+    If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version) { 
+        # Changed config items
+        $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($AllCommandLineParameters.Keys) + @("PoolsConfig")) }
+        $Changed_Config_Items | ForEach-Object { 
+            Switch ($_) { 
+                "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+                "APIKEY" { 
+                    $Config.MPHAPIKey = $Config.$_
+                    $Config.ProHashingAPIKey = $Config.$_
+                    $Config.Remove($_)
+                }
+                "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
+                "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+                "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
+                "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
+                "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
+                "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
+                "UserName" { 
+                    If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
+                    If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
+                    $Config.Remove($_)
+                }
+                Default { $Config.Remove($_) } # Remove unsupported config item
+            }
         }
-        Catch { 
-            Write-Message -Level Error "Updating the config file failed."
-            Start-Sleep 5
+        Remove-Variable Changed_Config_Items -ErrorAction Ignore
+
+        # Add new config items
+        If ($New_Config_Items = $AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
+            $New_Config_Items | Sort-Object Name | ForEach-Object { 
+                $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+                If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+                $Config.$_ = $Value
+            }
+            Remove-Variable Value -ErrorAction Ignore
         }
+        $Config | Add-Member ConfigFileVersion ($UpdateVersion.Version.ToString()) -Force
+        Write-Config -ConfigFile $Variables.ConfigFile
+        Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())."
+        Remove-Variable New_Config_Items -ErrorAction Ignore
     }
 
     # Remove temp files
