@@ -80,43 +80,10 @@
       }, 10000);
     });
 
-    $('#miningpause').click(function () {
-      $command = '/functions/mining/pause';
-      $('.modal-body').load($command, function() {
-        $('.modal-title').text($('#miningpause').text());
-        $('#myModal').modal({show:true});
-      });
-      document.getElementById('miningpause').disabled = true;
-      document.getElementById('miningstart').disabled = true;
-      document.getElementById('miningstop').disabled = true;
-    });
-
-    $('#miningstart').click(function () {
-      $command = '/functions/mining/start';
-      $('.modal-body').load($command, function() {
-        $('.modal-title').text($('#miningstart').text());
-        $('#myModal').modal({show:true});
-      });
-      document.getElementById('miningpause').disabled = true;
-      document.getElementById('miningstart').disabled = true;
-      document.getElementById('miningstop').disabled = true;
-    });
-
-    $('#miningstop').click(function () {
-      $command = '/functions/mining/stop';
-      $('.modal-body').load($command, function() {
-        $('.modal-title').text($('#miningstop').text());
-        $('#myModal').modal({show:true});
-      });
-      document.getElementById('miningpause').disabled = true;
-      document.getElementById('miningstart').disabled = true;
-      document.getElementById('miningstop').disabled = true;
-    });
-
   </script>
   <!-- End of page scripts -->
 
-<body>
+  <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
       <div justify-content-space-between>
         <a class="navbar-brand" href="/"><h5>NemosMiner</h5></a>
