@@ -2612,7 +2612,7 @@ Function Initialize-Autoupdate {
     # Backup current version folder in zip file; exclude existing zip files and download folder
     $BackupFileName = "AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
     Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
-    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait #-WindowStyle hidden
+    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait -WindowStyle hidden
     If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
         Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
         Return
@@ -2631,7 +2631,7 @@ Function Initialize-Autoupdate {
 
     # Unzip in child folder excluding config
     Write-Message -Level Verbose "Unzipping update..."
-    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait #-WindowStyle hidden
+    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
 
     #Testing files are in a subdirectory
     $UpdateFilePath = $UpdateFileName
@@ -2675,8 +2675,9 @@ Function Initialize-Autoupdate {
     # Use PostUpdateActions.ps1 in new release to place code
     If (Test-Path ".\$UpdateFilePath\PostUpdateActions.ps1" -PathType Leaf) { 
         Write-Message -Level Verbose  "Running post update actions..."
-        $Parameters = @{ Config = $Config; ConfigFile = $($Variables.ConfigFile); Version = $($UpdateVersion.Version); AllCommandLieParameters = $AllCommandLineParameters }
-        Invoke-Expression "$UpdateFilePath\PostUpdateActions.ps1 @Parameters"
+        # $Parameters = @{ Config = $Config; ConfigFile = $($Variables.ConfigFile); Version = $($UpdateVersion.Version); AllCommandLieParameters = $AllCommandLineParameters }
+        # Invoke-Expression "$UpdateFilePath\PostUpdateActions.ps1 @Parameters"
+        . "$UpdateFilePath\PostUpdateActions.ps1"
     }
 
     # Remove temp files
@@ -2709,7 +2710,7 @@ Function Initialize-Autoupdate {
         Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($UpdateVersion.Version)."
 
         Write-Message -Level Verbose "Killing myself!"
-        # If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
+        If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
     Else { 
         $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
