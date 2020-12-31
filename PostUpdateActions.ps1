@@ -35,7 +35,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
         }
         Remove-Variable Value -ErrorAction Ignore
     }
-    $Config.ConfigFileVersion = $UpdateVersion.Version.ToString()
+    $Config | Add-Member ConfigFileVersion ($UpdateVersion.Version.ToString()) -Force
     Write-Config -ConfigFile $Variables.ConfigFile
     Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())."
     Remove-Variable New_Config_Items -ErrorAction Ignore
