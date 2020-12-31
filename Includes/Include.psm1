@@ -2686,8 +2686,7 @@ Function Initialize-Autoupdate {
     If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
     Get-ChildItem -Path "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem -Path "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
 
-    # Start new instance (Wait and confirm start)
-    # Kill old instance
+    # Start new instance
     If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
         Write-Message -Level Verbose "Starting updated version..."
         $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
@@ -2695,6 +2694,7 @@ Function Initialize-Autoupdate {
 
         # Giving 10 seconds for process to start
         $Waited = 0
+        Start-Sleep 10
         While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
         If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
             Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
@@ -2707,7 +2707,9 @@ Function Initialize-Autoupdate {
 
         Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($UpdateVersion.Version)."
 
-        Write-Message -Level Verbose "Killing myself!"
+        # Kill old instance
+        Write-Message -Level Verbose "Killing old instance..."
+        Start-Sleep -Seconds 5
         If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
     Else { 
