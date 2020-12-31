@@ -3,7 +3,7 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 
-Changelog NemosMiner 3.9.9.8 Beta4 30.12.2020
+Changelog NemosMiner 3.9.9.9 Beta1 31.12.2020
 =============================================
 
 Fixed:
@@ -18,7 +18,7 @@ Miner Updates:
 - SRBMminerMulti-v0.6.1
 
 New:
-- Auto Update
+- Auto Update (experimental)
 - Web GUI: Added footer with version information
 
 
