@@ -71,7 +71,7 @@ While ($true) {
                 $DailyEarnings = @()
             }
 
-            # Keep a copy at each start and date change
+            # Keep a copy at each start
             If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
         }
@@ -108,6 +108,7 @@ While ($true) {
             $TotalJson = $API.Total
             $PoolAccountUri = $API.AccountUri
             $PoolConfig = $Config.PoolsConfig.$PoolName
+
             If ($PoolName -eq "NiceHash") { 
                 If ($Config.NiceHashWalletIsInternal) { 
                     $PoolName = "NiceHashInternal"
@@ -277,7 +278,7 @@ While ($true) {
                     AvgDailyGrowth          = $AvgHourlyGrowth * 24
                     AvgWeeklyGrowth         = $AvgHourlyGrowth * 168
                     EstimatedEndDayGrowth   = If ((($Now - ($BalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If (($AvgHourlyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-8) { [DateTime]($Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.Balance) / ((($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum))) } Else { "Unknown" } } Else { "Next Payout!" } } Else { "Unknown" }
+                    EstimatedPayDate        = If ($PayoutThreshold) { If ($BalanceObject.balance -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC)) { If (($AvgDailyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-8) { [DateTime]($Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.BTC - $BalanceObject.Balance) / ((($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum))) } Else { "Unknown" } } Else { "Next Payout!" } } Else { "Unknown" }
                     TrustLevel              = [Double](((($Now - ($BalanceObjects[0].DateTime)).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum)
                     TotalHours              = ($Now - ($BalanceObjects[0].DateTime)).TotalHours
                     PayoutThresholdCurrency = $PayoutThresholdCurrency
@@ -310,11 +311,12 @@ While ($true) {
                     }
                     $PoolDailyEarning.Balance = $EarningsObject.balance
                     $PoolDailyEarning.DailyGrowth = $EarningsObject.Growth24
+
+                    Remove-Variable PoolDailyEarning
                 }
                 Else { 
                     If ($PoolDailyEarning) { 
                         $StartValue = $PoolDailyEarning.EndValue
-                        $EarningsObject.total_earned = $PoolDailyEarning.total_earned
                         $Earnings = $EarningsObject.balance - $PoolDailyEarning.Balance
                     }
                     Else {
@@ -344,10 +346,9 @@ While ($true) {
                     $AllBalanceObjects += $EarningsObject
                 }
 
-                Remove-Variable BalanceData -ErrroAction Ignore
-                Remove-Variable BalanceObject -ErrroAction Ignore
-                Remove-Variable EarningsObject -ErrroAction Ignore
-                Remove-Variable PoolDailyEarning -ErrroAction Ignore
+                Remove-Variable BalanceData
+                Remove-Variable BalanceObject
+                Remove-Variable EarningsObject
             }
             Remove-Variable Wallet -ErrorAction Ignore
 
@@ -397,9 +398,8 @@ While ($true) {
             Pools = $PoolData
         } | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore
 
-
         If ($Now.Date -ne (Get-Date).Date) {
-            # Keep a copy at each date change
+            # Keep a copy at date change
             If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
             # Keep only the last 10 logs 
