@@ -2729,10 +2729,10 @@ Function Initialize-Autoupdate {
         Write-Message -Level Verbose "Starting updated version..."
         $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
         $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
+        Start-Sleep 5
 
         # Giving 10 seconds for process to start
         $Waited = 0
-        Start-Sleep 10
         While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
         If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
             Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
@@ -2747,7 +2747,7 @@ Function Initialize-Autoupdate {
 
         # Kill old instance
         Write-Message -Level Verbose "Killing old instance..."
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 2
         If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
     Else { 
