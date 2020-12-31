@@ -2672,11 +2672,9 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
 
     # Post update actions if any
-    # Use PostUpdateActions.ps1 in new release to place code
+    # Use PostUpdateActions.ps1 in new release to place code, use dot sourcing to have access to all variables
     If (Test-Path ".\$UpdateFilePath\PostUpdateActions.ps1" -PathType Leaf) { 
         Write-Message -Level Verbose  "Running post update actions..."
-        # $Parameters = @{ Config = $Config; ConfigFile = $($Variables.ConfigFile); Version = $($UpdateVersion.Version); AllCommandLieParameters = $AllCommandLineParameters }
-        # Invoke-Expression "$UpdateFilePath\PostUpdateActions.ps1 @Parameters"
         . "$UpdateFilePath\PostUpdateActions.ps1"
     }
 
