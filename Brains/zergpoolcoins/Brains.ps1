@@ -197,5 +197,3 @@ While ($true) {
     $MathObject = @()
     Start-Sleep ($Interval + $RetryInterval - (Get-Date).Second)
 }
-
-

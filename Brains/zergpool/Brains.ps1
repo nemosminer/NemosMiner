@@ -182,7 +182,7 @@ While ($true) {
     If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
 
     $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-        If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
+        If ([Double]($AlgoData.$_.estimate_last24h) -gt 0) { 
             $AlgoData.$_ | Add-Member Updated $CurDate
         }
         Else { 
@@ -197,5 +197,3 @@ While ($true) {
     $MathObject = @()
     Start-Sleep ($Interval + $RetryInterval - (Get-Date).Second)
 }
-
-
