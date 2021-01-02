@@ -2715,17 +2715,20 @@ Function Initialize-Autoupdate {
             "Failed to start new instance of $($Variables.CurrentProduct)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
             Return
         }
-
-        # Kill old instance
-        "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        Start-Sleep -Seconds 2
-        If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
+
     $TempVerObject = ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json)
     $TempVerObject | Add-Member @{ AutoUpdated = (Get-Date) } -Force
     $TempVerObject | ConvertTo-Json | Out-File ".\Version.txt"
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+
+    If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
+        # Kill old instance
+        "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+        Start-Sleep -Seconds 2
+        If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
+    }
 }
 
 Function Test-Prime { 
