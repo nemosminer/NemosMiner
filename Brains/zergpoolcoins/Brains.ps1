@@ -18,11 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        3.8.1.3
-version date:   12 November 2019
+version:        3.9.9.10
+version date:   02 January 2021
 #>
 
 Set-Location ($args[0])
+
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
@@ -181,7 +182,7 @@ While ($true) {
     If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
 
     $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-        If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
+        If ([Double]($AlgoData.$_.estimate_last24h) -gt 0) { 
             $AlgoData.$_ | Add-Member Updated $CurDate
         }
         Else { 
