@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:          NemosMiner
 File:             Charting.ps1
-version:          3.9.9.8
-version date:     18 December 2020
+version:          3.9.9.10
+version date:     01 January 2021
 #>
 
 param(
@@ -34,6 +34,20 @@ param(
 
 [void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 $ScriptPath = Split-Path -parent $MyInvocation.MyCommand.Definition
+
+Function Get-NextColor {
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Byte[]]$Colors, 
+        [Parameter(Mandatory = $true)]
+        [Int[]]$Factors
+    )
+    # Apply change Factor
+    0, 1, 2, 3 | ForEach-Object { 
+        $Colors[$_] = [math]::Abs(($Colors[$_] + $Factors[$_]) % 256)
+    }
+    $Colors
+}
 
 # Defined Charts list
 # Front7DaysEarnings
