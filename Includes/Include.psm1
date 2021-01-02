@@ -2704,7 +2704,7 @@ Function Initialize-Autoupdate {
         Start-Sleep -Seconds 2
         If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
-    $TempVerObject = ((Get-Content -Path ".\Version.txt".trim() | ConvertFrom-Json)
+    $TempVerObject = ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json)
     $TempVerObject | Add-Member @{ AutoUpdated = (Get-Date) } -Force
     $TempVerObject | ConvertTo-Json | Out-File ".\Version.txt"
 
