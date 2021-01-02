@@ -2718,7 +2718,7 @@ Function Initialize-Autoupdate {
     }
 
     $TempVerObject = ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json)
-    $TempVerObject | Add-Member @{ AutoUpdated = (Get-Date) } -Force
+    $TempVerObject | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force
     $TempVerObject | ConvertTo-Json | Out-File ".\Version.txt"
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
