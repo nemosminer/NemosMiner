@@ -2528,7 +2528,7 @@ Function Initialize-Autoupdate {
     )
 
     Set-Location $Variables.MainPath
-    $UpdateLog = ".\Logs\AutoupdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
+    $UpdateLog = "$($Variables.MainPath)\Logs\AutoupdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
     $BackupFile = "AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
 
     # GitHub only suppors TLSv1.2 since feb 22 2018
@@ -2537,7 +2537,7 @@ Function Initialize-Autoupdate {
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
 
     "Version checker: New version $($UpdateVersion.Version) found. " | Tee-Object $UpdateLog | Write-Message -Level Verbose
-    "Starting auto update... Writing changes to '$UpdateLog'" | Tee-Object $UpdateLog | Write-Message -Level Verbose
+    "Starting auto update - Writing changes to '$UpdateLog'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
 
     # Setting autostart to true
     If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
@@ -2563,7 +2563,6 @@ Function Initialize-Autoupdate {
     Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
     Remove-Item -Path "$($UpdateLog)_tmp" -Force
 
-
     If (-not (Test-Path .\$BackupFile -PathType Leaf)) { 
         "Backup failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
         Return
@@ -2577,8 +2576,8 @@ Function Initialize-Autoupdate {
 
     # Empty folders
     If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
-    If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
-    If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Web" -File | ForEach-Object {Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+    If (Test-Path -Path ".\Pools") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+    If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object {Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
 
     # Unzip in child folder excluding config
     "Unzipping update..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
@@ -2600,7 +2599,19 @@ Function Initialize-Autoupdate {
 
     # Copy files
     "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { Copy-Item -Path '$_' .\ -Force -ErrorAction Ignore; "Copied '$($_.Name)' to '$(($_.FullName -split '\\' | Select-Object -SkipLast 2) -join '\')'" | Out-File -FilePath $UpdateLog -Append}
+    Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
+        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.','')
+        If ($_.Attributes -eq "Directory") { 
+            If (-not (Test-Path -Path $DestPath -PathType Container)) { 
+                New-Item -Path $DestPath -ItemType Directory -Force
+                "Created directory '$DestPath'"
+            }
+        }
+        Else { 
+            Copy-Item -Path $_ -Destination $DestPath -Force -ErrorAction Ignore
+            "Copied '$($_.Name)' to '$Destpath'" | Out-File -FilePath $UpdateLog -Append
+        }
+    }
 
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
     If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
@@ -2610,21 +2621,27 @@ Function Initialize-Autoupdate {
 
     # Post update actions
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force; "Removed $_" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
 
     # Update Optional Miners to Miners If in use
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $_ to .\Miners" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force; "Removed $_" | Out-File -FilePath $UpdateLog -Append}
+    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append}
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
     Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
     Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
-    Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed $_" | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed $_" | Out-File -FilePath $UpdateLog -Append }
-    "Removed obsolete stat files from miners that no longer exist." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    If ($ObsoleteStatFiles.Count -gt 0) { 
+        "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+        $ObsoleteStatFiles | ForEach-Object { 
+            Remove-Item -Path $_ -Force
+            "Removed '$_'" | Out-File -FilePath $UpdateLog -Append
+        }
+    }
 
     # Update config file to include all new config items
     If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version)) { 
