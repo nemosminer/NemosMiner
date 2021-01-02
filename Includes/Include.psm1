@@ -2599,7 +2599,7 @@ Function Initialize-Autoupdate {
     }
 
     # Copy files
-    "Copying files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { Copy-Item -Path '$_' .\ -Force -ErrorAction Ignore; "Copied '$($_.Name)' to '$(($_.FullName -split '\\' | Select-Object -SkipLast 2) -join '\')'" | Out-File -FilePath $UpdateLog -Append}
 
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
