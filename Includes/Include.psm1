@@ -2558,7 +2558,11 @@ Function Initialize-Autoupdate {
 
     # Backup current version folder in zip file; exclude existing zip files and download folder
     "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput $UpdateLog -Wait -WindowStyle Hidden
+    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
+    Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
+    Remove-Item -Path "$($UpdateLog)_tmp" -Force
+
+
     If (-not (Test-Path .\$BackupFile -PathType Leaf)) { 
         "Backup failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
         Return
@@ -2577,7 +2581,9 @@ Function Initialize-Autoupdate {
 
     # Unzip in child folder excluding config
     "Unzipping update..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config -bb1 -bd" -RedirectStandardOutput $UpdateLog -Wait -WindowStyle Hidden
+    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
+    Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
+    Remove-Item -Path "$($UpdateLog)_tmp" -Force
 
     #Testing files are in a subdirectory
     $UpdateFilePath = $UpdateFileName
