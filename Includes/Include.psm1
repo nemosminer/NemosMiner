@@ -19,12 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.9
-version date:   31 November 2020
+version:        3.9.9.10
+version date:   02 January 2021
 #>
-
-New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true } -ErrorAction SilentlyContinue | Out-Null
-Get-Item function::"$((Get-FileHash $MyInvocation.MyCommand.path).Hash)" | Add-Member @{ "File" = $MyInvocation.MyCommand.path} -ErrorAction SilentlyContinue
 
 Class Device { 
     [String]$Name
@@ -647,42 +644,6 @@ Function Get-DefaultAlgorithm {
     }
 }
 
-Function Get-NextColor {
-    Param(
-        [Parameter(Mandatory = $true)]
-        [Byte[]]$Colors, 
-        [Parameter(Mandatory = $true)]
-        [Int[]]$Factors
-    )
-    # Apply change Factor
-    0, 1, 2, 3 | ForEach-Object { 
-        $Colors[$_] = [math]::Abs(($Colors[$_] + $Factors[$_]) % 256)
-    }
-    $Colors
-}
-
-Function Get-TrendSign { 
-    Param(
-        [Parameter(Mandatory = $true)]
-        [Double]$Value
-    )
-
-    If ($PSVersionTable.PSVersion -ge 6.0.0.0) { 
-        Switch ($Value) { 
-            { $_ -eq 0 } { "`u{21D2}" }
-            { $_ -gt 0 } { "`u{21D7}" }
-            { $_ -lt 0 } { "`u{21D8}" }
-        }
-    }
-    Else { 
-        Switch ($Value) { 
-            { $_ -eq 0 } { "=" }
-            { $_ -gt 0 } { ">" }
-            { $_ -lt 0 } { "<" }
-        }
-    }
-}
-
 Function Get-Chart { 
 
     If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
@@ -703,7 +664,6 @@ Function Get-Chart {
 }
 
 Function Get-CommandLineParameters { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Arguments
@@ -738,7 +698,6 @@ Function Start-BrainJob {
 }
 
 Function Stop-BrainJob { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Jobs = $Variables.BrainJobs.Keys
@@ -914,7 +873,7 @@ Function Get-Rate {
 Function Write-Message { 
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Message, 
         [Parameter(Mandatory = $false)]
@@ -1182,9 +1141,11 @@ Function Update-Monitoring {
                     $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds }
                 }
             }
-
             $Variables | Add-Member -Force @{ Workers = $Workers }
             $Variables | Add-Member -Force @{ WorkersLastUpdated = (Get-Date) }
+
+            Remove-Variable Workers
+
             Write-Message -Level Verbose "Retrieved status for workers with ID '$($Config.MonitoringUser)'."
         }
         Catch { 
@@ -1331,7 +1292,6 @@ Function Read-Config {
 }
 
 Function Write-Config { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
@@ -1352,7 +1312,6 @@ Function Write-Config {
 }
 
 Function Get-SortedObject { 
-    [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [Object]$Object
@@ -1405,7 +1364,6 @@ Function Get-SortedObject {
 }
 
 Function Set-Stat { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Name, 
@@ -1551,7 +1509,6 @@ Function Set-Stat {
 }
 
 Function Get-Stat { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
@@ -1613,7 +1570,6 @@ Function Get-Stat {
 }
 
 Function Remove-Stat { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem -Path "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
@@ -1632,7 +1588,6 @@ Function Get-CommandPerDevice {
     # parameters with a single value are valid for all devices and remain untouched
     # excluded parameters are passed unmodified
 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
@@ -1679,7 +1634,6 @@ Function Get-CommandPerDevice {
 }
 
 Function Get-ChildItemContent { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Path, 
@@ -1932,7 +1886,6 @@ Function Get-CpuId {
 }
 
 Function Get-Device { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = @(), 
@@ -2252,7 +2205,6 @@ Function Get-Device {
 }
 
 Filter ConvertTo-Hash { 
-    [CmdletBinding()]
     $Units = " kMGTPEZY " # k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs([Double]$_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
@@ -2269,7 +2221,6 @@ Function Get-DigitsFromValue {
     # The bigger the number, the more decimal digits
     # Use $Offset to add/remove decimal places
 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
@@ -2289,7 +2240,6 @@ Function ConvertTo-LocalCurrency {
     # To get same numbering scheme regardless of value
     # Use $Offset to add/remove decimal places
 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
@@ -2461,7 +2411,6 @@ public static class Kernel32
 }
 
 Function Expand-WebRequest { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Uri, 
@@ -2507,7 +2456,6 @@ Function Expand-WebRequest {
 }
 
 Function Get-Algorithm { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
         [String]$Algorithm = ""
@@ -2550,17 +2498,14 @@ Function Get-NMVersion {
 
     Try { 
         # $UpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Config/Initialize-UpdateVersion.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
     Catch { 
-        If (Test-Path -Path ".\Config\Initialize-UpdateVersion.json") { 
-            $UpdateVersion = Get-Content ".\Config\Initialize-UpdateVersion.json" | ConvertFrom-Json
-        }
     }
 
-     If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
+    If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
         If ($UpdateVersion.AutoUpdate -eq $true) { 
-            If ($Config.Autoupdate) { 
+            If ($Config.AutoUpdate) { 
                 Initialize-Autoupdate -UpdateVersion $UpdateVersion
             }
             Else { 
@@ -2572,7 +2517,7 @@ Function Get-NMVersion {
         }
     }
     Else { 
-        Write-Message -Level Verbose "Version checker: $($UpdateVersion.Product) $($UpdateVersion.Version) is current - no update available."
+        Write-Message -Level Verbose "Version checker: $($Variables.CurrentProduct) $($Variables.CurrentVersion) is current - no update available."
     }
 }
 
@@ -2583,25 +2528,27 @@ Function Initialize-Autoupdate {
     )
 
     Set-Location $Variables.MainPath
+    $UpdateLog = ".\Logs\AutoupdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
+    $BackupFile = "AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
 
     # GitHub only suppors TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
 
-    Write-Message -Level Verbose "Version checker: New version $($UpdateVersion.Version) found. Starting auto update..."
+    "Version checker: New version $($UpdateVersion.Version) found. Starting auto update... (Log: $($LogFile))" | Tee-Object $UpdateLog | Write-Message -Level Verbose
 
     # Setting autostart to true
     If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
 
     # Download update file
     $UpdateFileName = ".\$($UpdateVersion.Product)-$($UpdateVersion.Version)"
-    Write-Message -Level Verbose "Downloading new version..."
+    "Downloading new version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
     Try { 
         Invoke-WebRequest $UpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
     }
     Catch { 
-        Write-Message -Level Error "Downloading failed. Cannot complete auto-update :-("
+        "Downloading failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
         Return
     }
     If (-not (Test-Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
@@ -2610,28 +2557,27 @@ Function Initialize-Autoupdate {
     }
 
     # Backup current version folder in zip file; exclude existing zip files and download folder
-    $BackupFileName = "AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
-    Write-Message -Level Verbose "Backing up current version as '$($BackupFileName)'..."
-    Start-Process ".\Utils\7z" "a $($BackupFileName) .\* -x!*.zip -x!downloads" -Wait -WindowStyle hidden
-    If (-not (Test-Path .\$BackupFileName -PathType Leaf)) { 
-        Write-Message -Level Error "Backup failed. Cannot complete auto-update :-("
+    "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput $UpdateLog -Wait -WindowStyle Hidden
+    If (-not (Test-Path .\$BackupFile -PathType Leaf)) { 
+        "Backup failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
         Return
     }
 
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
-    If (Test-Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
-        Invoke-Expression (Get-Content ".\$UpdateFilePath\PreUpdateActions.ps1" -Raw)
-    }
+    # If (Test-Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
+    #     Invoke-Expression (Get-Content ".\$UpdateFilePath\PreUpdateActions.ps1" -Raw)
+    # }
 
     # Empty folders
-    Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
-    Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
-    Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Brains" -File | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Recurse -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Recurse -Path $_.FullName -Force }
+    Get-ChildItem -Path ".\Web" -File | ForEach-Object {"Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Recurse -Path $_.FullName -Force }
 
     # Unzip in child folder excluding config
-    Write-Message -Level Verbose "Unzipping update..."
-    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config" -Wait -WindowStyle hidden
+    "Unzipping update..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config -bb1 -bd" -RedirectStandardOutput $UpdateLog -Wait -WindowStyle Hidden
 
     #Testing files are in a subdirectory
     $UpdateFilePath = $UpdateFileName
@@ -2639,17 +2585,18 @@ Function Initialize-Autoupdate {
         $UpdateFilePath = "$UpdateFileName\$((Get-ChildItem -Path $UpdateFileName -Directory).Name)"
     }
 
-    # Copy files
-    Write-Message -Level Verbose "Copying files..."
     # Stop Snaketail
-    If ($Variables.SnakeTailExe) { (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ } }
+    If ($Variables.SnakeTailExe) { 
+        "Stopping SnakeTail..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+        (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ }
+    }
 
+    # Copy files
+    "Copying files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Copy-Item -Path ".\$UpdateFilePath\*" .\ -Recurse -Force -ErrorAction Ignore
 
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
     If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
-        $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
-        $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
         If (-not (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe)) { 
             & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
         }
@@ -2657,21 +2604,21 @@ Function Initialize-Autoupdate {
 
     # Post update actions
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Path -Recurse $_.FullName -Force }
 
     # Update Optional Miners to Miners If in use
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { "Copying $_ to .\Miners" | Out-File -FilePath $UpdateLog -Append;  Copy-Item -Path $_.FullName -Destination ".\Miners" -Force }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force }
+    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Path -Recurse $_.FullName -Force }
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
     Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
     Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
-    Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
-    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force }
-    Write-Message -Level Verbose "Removed obsolete stat files from miners that no longer exist."
+    Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Path $_ -Force }
+    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Path $_ -Force }
+    "Removed obsolete stat files from miners that no longer exist." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
     # Update config file to include all new config items
     If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version)) { 
@@ -2712,21 +2659,22 @@ Function Initialize-Autoupdate {
         }
         $Config | Add-Member ConfigFileVersion ($UpdateVersion.Version.ToString()) -Force
         Write-Config -ConfigFile $Variables.ConfigFile
-        Write-Message -Level Verbose "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())."
+        "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
         Remove-Variable New_Config_Items -ErrorAction Ignore
     }
 
     # Remove temp files
-    Write-Message -Level Verbose  "Removing temporary files..."
+    "Removing temporary files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Remove-Item .\$UpdateFileName -Force -Recurse
     Remove-Item ".\$($UpdateFileName).zip" -Force
     If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PreUpdateActions.ps1" -Force }
     If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { Remove-Item ".\PostUpdateActions.ps1" -Force }
-    Get-ChildItem -Path "Initialize-AutoupdateBackup_*.zip" | Where-Object { $_.name -notin (Get-ChildItem -Path "Initialize-AutoupdateBackup_*.zip" | Sort-Object  LastWriteTime -Descending | Select-Object -First 2).name } | Remove-Item -Force -Recurse
+    Get-ChildItem -Path "AutoupdateBackup_*.zip" | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Path $_ -Force -Recurse }
+    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { "Removing $_" | Out-File -FilePath $UpdateLog -Append; Remove-Item -Path $_ -Force -Recurse }
 
     # Start new instance
     If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
-        Write-Message -Level Verbose "Starting updated version..."
+        "Starting updated version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
         $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
         Start-Sleep 5
@@ -2735,32 +2683,23 @@ Function Initialize-Autoupdate {
         $Waited = 0
         While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
         If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
-            Write-Message -Level Error "Failed to start new instance of $($Variables.CurrentProduct)."
+            "Failed to start new instance of $($Variables.CurrentProduct)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
             Return
         }
 
-        $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-        $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
-        $TempVerObject | ConvertTo-Json | Out-File .\Version.json
-
-        Write-Message -Level Verbose "$($Variables.CurrentProduct) successfully updated to version $($UpdateVersion.Version)."
-
         # Kill old instance
-        Write-Message -Level Verbose "Killing old instance..."
+        "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         Start-Sleep -Seconds 2
         If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
-    Else { 
-        $TempVerObject = (Get-Content .\Version.json | ConvertFrom-Json)
-        $TempVerObject | Add-Member -Force @{ Autoupdated = (Get-Date) }
-        $TempVerObject | ConvertTo-Json | Out-File .\Version.json
+    $TempVerObject = (Get-Content -Path ".\Version.txt" | ConvertFrom-Json)
+    $TempVerObject | Add-Member @{ AutoUpdated = (Get-Date) } -Force
+    $TempVerObject | ConvertTo-Json | Out-File ".\Version.txt"
 
-        Write-Message -Level Verbose "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)."
-    }
+    "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 }
 
 Function Test-Prime { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [Double]$Number
@@ -2772,7 +2711,6 @@ Function Test-Prime {
 }
 
 Function Get-DAGsize { 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
         [Double]$Block = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
