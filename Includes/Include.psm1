@@ -2536,7 +2536,7 @@ Function Initialize-Autoupdate {
 
     $NemosMinerFileHash = (Get-FileHash ".\NemosMiner.ps1").Hash
 
-    "Version checker: New version $($UpdateVersion.Version) found. Starting auto update... (Log: $($LogFile))" | Tee-Object $UpdateLog | Write-Message -Level Verbose
+    "Version checker: New version $($UpdateVersion.Version) found. Starting auto update... (Log: $UpdateLog" | Tee-Object $UpdateLog | Write-Message -Level Verbose
 
     # Setting autostart to true
     If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
