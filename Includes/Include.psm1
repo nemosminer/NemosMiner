@@ -2498,7 +2498,7 @@ Function Get-NMVersion {
 
     Try { 
         # $UpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
     Catch { 
     }
