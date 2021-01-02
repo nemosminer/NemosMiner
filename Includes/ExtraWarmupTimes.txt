@@ -24,6 +24,7 @@
   "EtcHash&Sia": 60,
   "EtcHash&Tensority": 60,
   "KawPow": 90,
+  "MegaBtx": 188,
   "MTP": 30,
   "ProgPoW": 30,
   "ScryptN2": 60,
