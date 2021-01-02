@@ -15,6 +15,7 @@ Improved:
 
 Miner Updates:
 - GMiner-v2.39
+- SRBMminerMulti-v0.6.2
 
 
 Changelog NemosMiner 3.9.9.9 31.12.2020
