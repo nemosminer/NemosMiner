@@ -5,7 +5,7 @@ NemosMiner monitors mining pools in real-time in order to find the most profitab
 Updated 02 January 2021
 
 
-Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
 
 This is free software, and you are welcome to redistribute it
 under certain conditions.
