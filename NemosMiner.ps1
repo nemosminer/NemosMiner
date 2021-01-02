@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.9
-Version date:   31 December 2020
+Version:        3.9.9.10
+Version date:   02 January 2021
 #>
 
 [CmdletBinding()]
@@ -232,7 +232,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.9"
+    Version      = [System.Version]"3.9.9.10"
 }
 
 Try { 
@@ -280,6 +280,7 @@ $AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
     $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
     If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
+    Remove-Variable $_ -ErrorAction SilentlyContinue
 }
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
@@ -295,9 +296,6 @@ If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($V
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv") { Get-ChildItem ".\Logs\SwitchingLog.csv" | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
 
-# Check if new version is available
-Get-NMVersion
-
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
     $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
@@ -306,6 +304,9 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
         & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
     }
 }
+
+# Check if new version is available
+Get-NMVersion
 
 Write-Message -Level Verbose "Loading device information..."
 $Variables.Devices = [Device[]](Get-Device -Refresh)
@@ -337,14 +338,14 @@ If (-not $Variables.Algorithms) {
 # Load regions list
 $Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load warmup data
 $Variables.ExtraWarmupTime = Get-Content -Path ".\Includes\ExtraWarmupTimes.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.ExtraWarmupTime) { 
-    Write-Message -Level Error "Treminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\ExtraWarmupTimes.txt'))' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
