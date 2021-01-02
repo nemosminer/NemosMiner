@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.38/gminer_2_38_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.39/gminer_2_39_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -13,8 +13,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1445";        Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.17 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1927";        Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.17 is fastest
     [PSCustomObject]@{ Algorithm = "EquihashBTG";         Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
-   [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
-   [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is maybe faster, bit I see lower sppeed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c is maybe faster, bit I see lower sppeed at the pool
 
 #   [PSCustomObject]@{ Algorithm = "BeamV3";              Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v34.5 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc";       Fee = 0.03;   MinMemGB = 6.0; Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
@@ -34,7 +34,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "EquihashBTG";         Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
    [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
    [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";              Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.7.0 is almost as fast but has no fee
+   [PSCustomObject]@{ Algorithm = "KawPoW";              Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.7.0 is almost as fast but has no fee
 #   [PSCustomObject]@{ Algorithm = "Sero";                Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } # Sero != ProgPoW on ZergPool
     [PSCustomObject]@{ Algorithm = "VeriBlock";           Fee = 0.02;   MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "ProgPoWZ";            Fee = 0.02;   MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo ProgPoWZ --cuda 1 --opencl 0" }
@@ -49,6 +49,8 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
+
+                If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH(|Coins)$") { Return } # Temp fix (https://github.com/develsoftware/GMinerRelease/issues/113)
 
                 If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } # Algo not supported on Navi
 

@@ -9,7 +9,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; Command = " -algo EAGLESONG" }
     [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.4c is fastest but has 0.65% fee
-    [PSCustomObject]@{ Algorithm = "KawPow";    MinMemGB = 2; Command = " -algo KAWPOW" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";    MinMemGB = 2; Command = " -algo KAWPOW" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";  MinMemGB = 2; Command = " -algo LYRA2V3" }
     [PSCustomObject]@{ Algorithm = "ProgPoW";   MinMemGB = 2; Command = " -algo PROGPOW" } # Zano, Sero
     [PSCustomObject]@{ Algorithm = "UbqHash";   MinMemGB = 2; Command = " -algo UBQHASH -intensity 15" }
