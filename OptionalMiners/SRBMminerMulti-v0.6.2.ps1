@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.1/SRBMiner-Multi-0-6-1-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.2/SRBMiner-Multi-0-6-2-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
@@ -14,6 +14,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "AMD"; Fee = 0.0085; MinMemGB = 1; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm blake2s" }
+    [PSCustomObject]@{ Algorithm = "CircCash";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm circcash" }
     [PSCustomObject]@{ Algorithm = "CryptonightCache";    Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_cache" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_ccx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm cryptonight_xhv" }
@@ -28,6 +29,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGb = 1; Command = " --algorithm keccak" }
 #   [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; Command = " --algorithm ubqhash" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "Phi5";                Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm phi5" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = "Zentoshi";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; Command = " --algorithm balloon_zentoshi" }
@@ -38,6 +40,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "CPU"; Fee = 0.0085; Command = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "CPU"; Fee = 0;      Command = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0;      Command = " --algorithm argon2id_chukwa" }
+    [PSCustomObject]@{ Algorithm = "CircCash";            Type = "AMD"; Fee = 0.0085; Command = " --algorithm circcash" }
     [PSCustomObject]@{ Algorithm = "CpuPower";            Type = "CPU"; Fee = 0.0085; Command = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = "CryptonightCache";    Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_cache" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "CPU"; Fee = 0.0085; Command = " --algorithm cryptonight_ccx" }
@@ -53,6 +56,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "CPU"; Fee = 0.0085; Command = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "CPU"; Fee = 0;      Command = " --algorithm keccak" }
+    [PSCustomObject]@{ Algorithm = "Phi5";                Type = "COU"; Fee = 0.0085; Command = " --algorithm phi5" }
 #   [PSCustomObject]@{ Algorithm = "Randomx";             Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.7.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";          Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxHash2";        Type = "CPU"; Fee = 0.0085; Command = " --algorithm randomarq --randomx-use-1gb-pages" }
