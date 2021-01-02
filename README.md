@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 02 December 2020
+Updated 02 January 2021
 
 
 Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
@@ -37,6 +37,7 @@ NemosMiner will automatically convert an existing configuration file.
    - Auto Downloads Miners
    - Auto Updates
    - Monitoring
+   - Earnings graph
 
 *****
 
@@ -228,15 +229,16 @@ Easy configuration, easy start:
 
    In session console display toggle
 
+      Press key a in the window to show/hide all avaialable miners 
+      Press key e in the window to show/hide pool balances
       Press key s in the window to switch between light and full display
-      Press key e in the window to show/hide earnings 
       Will toggle display at next refresh
 
-   New version notification (currently not available in this beta - will be implemented later)
+   New version notification (Available since version 3.9.9.10)
 
       NemosMiner will notify new version availability
 
-please update PowerShell (Version 7.x is required): 
+Please update PowerShell (Version 7.x is required): 
 
 [recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.0/PowerShell-7.1.0-win-x64.msi)
 [update PowerShell](https://github.com/PowerShell/PowerShell/releases)
@@ -265,10 +267,11 @@ recommended/optimal Windows AMD GPU Driver 20.3.1
       windows10-9xAMD-5700XT/Octominer (test Rig 1)
       windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
       windows8.1-6xRTX-2080/RYZEN-3700x (test Rig 3)
+      windows10-1xGTX-1060Super/1xRX580-8GB/RX5700/Inteli5-8600K (test Rig 4)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
 
-      CPU miners are tested with AMD Ryzen 3700x CPU's
+      CPU miners are tested with AMD Ryzen 3700x & Inteli5-8600K CPUs
 
 *****
 
