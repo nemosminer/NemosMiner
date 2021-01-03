@@ -307,7 +307,8 @@
       </td>
     </tr>
   </table>
-  <input name="submit" type="submit" id="save-button" value="Apply Configuration" class="btn btn-primary" alt="Submit" title="Submit">
+  <input name="submit" type="submit" id="save-button" value="Apply Configuration" class="btn btn-primary" alt="Submit" title="Save configuration.&#10;It will become active in next cycle.">
+  <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-secondary" alt="Reset" title="Reset data to previous values">
 </form>
 
 <!-- Start of page scripts -->
@@ -572,6 +573,11 @@
           $('#myModal').modal({show:true});
         };
       }
+    });
+
+    $("#configuration").bind("reset", function() {
+      location.reload(true);
+      return;
     });
 
     $("#configuration").validate({
