@@ -47,8 +47,10 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) { 
+                If ($_.Algorithm[0] -in @("EtcHash", "Ethash", "UbqHash")) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
+
+                    If ($Pools.($_.Algorithm[0]).Epoch -gt 384 -and $_.Algorithm[1] -and $_.Type -eq "AMD") { Return } # Temp fix, dual mininig with AMD is broken (https://bitcointalk.org/index.php?topic=2647654.msg56002212#msg56002212)
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -60,7 +62,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     # $Command = Get-CommandPerDevice -Command $Command -ExcludeParameters @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Command += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $($Pools.($_.Algorithm[0]).Pass)"
-                    If ($_.Algorithm[0] -in @("EtcHash", "Ethash")) {
+                    If ($_.Algorithm[0] -in @("EtcHash", "Ethash", "UbqHash")) {
                         If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                             $Command += " -proto 4"
                         }
@@ -70,14 +72,6 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         If (($_.OpenCL.GlobalMemSize / 1GB) -ge (2 * $MinMemGB)) { 
                             # Faster AMD "turbo" kernels require twice as much VRAM
                             $Command += " -clkernel 3"
-                        }
-                        If (($Miner_Devices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$') { 
-                            # Extra Speed for Navi cards
-                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" # Does not work, lots of bad shares :-(
-                        }
-                        If (($Miner_Devices.OpenCL.CodeName | Sort-Object -unique) -join '' -eq 'Ellesmere') { 
-                            # Extra Speed for Ellesmere cards
-                            # $Command += " -openclLocalWork 128 -openclGlobalMultiplier 4096" # Does not work, lots of bad shares :-(
                         }
                     }
 
