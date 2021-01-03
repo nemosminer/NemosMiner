@@ -13,6 +13,7 @@ Fixed:
 
 New:
 - Web GUI / Configuration editor: Reset-button added
+- Web GUI / Configuration editor: Config item 'Prefer SSL connections' added
 
 
 Changelog NemosMiner 3.9.9.10 02.01.2021
