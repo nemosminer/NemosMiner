@@ -92,7 +92,11 @@
 
         <div title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128">Proxy
           <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
+        </div>
         <br>
+
+        <div title="If ticked NemosMiner prefers pools which support SSL connections">
+          <input type="checkbox" id="SSL" name="SSL"> Prefer SSL connections
         </div>
         <br>
 
@@ -388,6 +392,10 @@
         };
 
         document.getElementById('Proxy').value = config.Proxy.trim();
+
+        if (config.SSL) {
+          ;document.getElementById('SSL').checked = true;
+        };
 
         if (config.OpenFirewallPorts) {
           ;document.getElementById('OpenFirewallPorts').checked = true;
@@ -754,6 +762,8 @@
         config.Donate = parseInt(document.getElementById('Donate').value);
 
         config.Proxy = document.getElementById('Proxy').value;
+
+        config.SSL = document.getElementById('SSL').checked;
 
         config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
 
