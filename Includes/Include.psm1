@@ -2633,7 +2633,7 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append}
+    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append}
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
