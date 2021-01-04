@@ -980,7 +980,7 @@ Function Start-Cycle {
             $Miner.SetStatus([MinerStatus]::Failed)
             $Miner.StatusMessage = "Exited unexpectedly."
         }
-        ElseIf ($_.Best -eq $false -or $_.Restart -eq $true) { 
+        ElseIf ($Miner.Best -eq $false -or $Miner.Restart -eq $true) { 
             Write-Message "Stopping miner '$($Miner.Info)'..."
 
             ForEach ($Worker in $Miner.WorkersRunning) { 
