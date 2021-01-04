@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.10.0
+version:        3.9.9.11
 version date:   04 January 2021
 #>
 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.1.2"
+    $APIVersion = "0.3.2.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -191,7 +191,6 @@ Function Start-APIServer {
                             $Variables.Devices | Select-Object | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { 
                                 If ($_.Name -in @($Config.ExcludeDeviceName)) { 
                                     $_.State = [DeviceState]::Disabled
-                                    # $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')"
                                     If ($_.Status -like "Mining *}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
                                 }
                                 Else { 
@@ -405,7 +404,7 @@ Function Start-APIServer {
                         }
                     }
                     "/functions/switchinglog/clear" { 
-                        Get-ChildItem ".\Logs\switchinglog.csv" | Remove-Item -Force
+                        Get-ChildItem -Path ".\Logs\switchinglog.csv" -File | Remove-Item -Force
                         $Data = "<pre>Switching log '.\Logs\switchinglog.csv' cleared.</pre>"
                         Break
                     }
@@ -457,7 +456,6 @@ Function Start-APIServer {
                     }
                     "/configrunning" {
                         $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
-                        # $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
                         Break
                     }
                     "/currencies" { 
@@ -589,7 +587,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/poolnames" { 
-                        $Data = ConvertTo-Json -Depth 10 @((Get-ChildItem ".\Pools" -File).BaseName | Sort-Object -Unique)
+                        $Data = ConvertTo-Json -Depth 10 @((Get-ChildItem -Path ".\Pools" -File).BaseName | Sort-Object -Unique)
                         Break
                     }
                     "/pools" { 
@@ -640,10 +638,6 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
                         Break
                     }
-                    # "/watchdogexpiration" { 
-                    #     $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
-                    #     Break
-                    # }
                     "/variables" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables | Select-Object)
                         break
@@ -663,13 +657,13 @@ Function Start-APIServer {
                         If (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
                             # If the file is a PowerShell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
-                            $File = Get-ChildItem $Filename -File
+                            $File = Get-ChildItem -Path $Filename -File
 
                             If ($File.Extension -eq ".ps1") { 
                                 $Data = & $File.FullName -Parameters $Parameters
                             }
                             Else { 
-                                $Data = Get-Content $Filename -Raw
+                                $Data = Get-Content -Path $Filename -File -Raw
 
                                 # Process server side includes for html files
                                 # Includes are in the traditional '<!-- #include file="/path/filename.html" -->' format used by many web servers
@@ -677,8 +671,8 @@ Function Start-APIServer {
                                     $IncludeRegex = [regex]'<!-- *#include *file="(.*)" *-->'
                                     $IncludeRegex.Matches($Data) | Foreach-Object { 
                                         $IncludeFile = $BasePath + '/' + $_.Groups[1].Value
-                                        if (Test-Path $IncludeFile -PathType Leaf) { 
-                                            $IncludeData = Get-Content $IncludeFile -Raw
+                                        If (Test-Path -Path $IncludeFile -PathType Leaf) { 
+                                            $IncludeData = Get-Content -Path $IncludeFile -File -Raw
                                             $Data = $Data -replace $_.Value, $IncludeData
                                         }
                                     }
@@ -708,7 +702,7 @@ Function Start-APIServer {
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
 
-                # Fix for Powershell 5.1, cannot handle NaN in Jason
+                # Fix for Powershell 5.1, cannot handle NaN in Json
                 If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { $Data = $Data -replace '":\s*NaN,', '":  "-",' }
 
                 # Send the response
@@ -724,7 +718,7 @@ Function Start-APIServer {
             $Server.Stop()
             $Server.Close()
         }
-    ) # end of $APIServer
+    ) # End of $APIServer
     $AsyncObject = $PowerShell.BeginInvoke()
 
     $Variables.APIRunspace = $APIRunspace
