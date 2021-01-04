@@ -3,7 +3,7 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 
-Changelog NemosMiner 3.9.9.11 03.01.2021
+Changelog NemosMiner 3.9.9.11 04.01.2021
 ========================================
 
 Fixed:
@@ -14,6 +14,7 @@ Fixed:
 New:
 - Web GUI / Configuration editor: Reset-button added
 - Web GUI / Configuration editor: Config item 'Prefer SSL connections' added
+- Web GUI / Configuration editor: Config item 'Powerusage of idle system' added
 
 
 Changelog NemosMiner 3.9.9.10 02.01.2021
