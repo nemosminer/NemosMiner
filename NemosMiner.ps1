@@ -71,7 +71,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$GPUMinerProcessPriority = "-1", # Process priority for GPU miners
     [Parameter(Mandatory = $false)]
-    [Double]$IdlePowerUsageW = 60, # Powerusage of idle system in Watt. Part of profit calculation
+    [Double]$IdlePowerUsageW = 60, # Watt, Powerusage of idle system. Part of profit calculation.
     [Parameter(Mandatory = $false)]
     [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if MineWhenIdle -eq $true)
     [Parameter(Mandatory = $false)]
@@ -188,7 +188,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$SnakeTailConfig = ".\Utils\NemosMiner_LogReader.xml", # Path to SnakeTail session config file
     [Parameter(Mandatory = $false)]
-    [Switch]$SSL = $false, # If true NemosMiner will only use pools which support SSL connections
+    [Switch]$SSL = $false, # If true NemosMiner will prefer pools which support SSL connections
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
@@ -232,7 +232,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.10"
+    Version      = [System.Version]"3.9.9.11"
 }
 
 Try { 
@@ -293,9 +293,6 @@ If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Da
 Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($Variables.ConfigFile)'." }
 
-# Rename existing switching log
-If (Test-Path -Path ".\Logs\SwitchingLog.csv") { Get-ChildItem ".\Logs\SwitchingLog.csv" | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
-
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
     $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
@@ -350,6 +347,9 @@ If (-not $Variables.ExtraWarmupTime) {
     Exit
 }
 
+# Rename existing switching log
+If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File| Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
+
 $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
 $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
@@ -379,7 +379,7 @@ Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\N
 Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
 
 # Unblock files
-If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem . -Recurse | Unblock-File }
+If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
 If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
     Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
 }
@@ -408,9 +408,8 @@ Function Global:TimerUITick {
             $Variables.Summary = ""
             $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
-            Write-Message "$($Branding.ProductLabel) is idle."
+            Write-Message -Level Info "$($Branding.ProductLabel) is idle."
             Clear-Host
-            Write-Host "$($Branding.ProductLabel) is idle."
 
             $ButtonPause.Enabled = $true
             $ButtonStart.Enabled = $true
@@ -430,9 +429,8 @@ Function Global:TimerUITick {
                     Start-BrainJob
                     Start-BalancesTracker
                 }
-                Write-Message "Mining is paused. BrainPlus and Earning tracker running."
+                Write-Message -Level Info "Mining is paused. BrainPlus and Earning tracker running."
                 Clear-Host
-                Write-Host "Mining is paused. BrainPlus and Earning tracker running."
 
                 $ButtonStop.Enabled = $true
                 $ButtonStart.Enabled = $true
@@ -1190,13 +1188,13 @@ $CheckShowSwitchingAMD | ForEach-Object { $_.Add_Click( { CheckBoxSwitching_Clic
 
 Function CheckBoxSwitching_Click { 
     If (-not $SwitchingDGV.DataSource) { 
-        $CheckShowSwitchingAMD.Checked = ($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | Where-Object Type -EQ "GPU" | Where-Object Vendor -EQ "AMD")
-        $CheckShowSwitchingCPU.Checked = ($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | Where-Object Name -like "CPU#*")
-        $CheckShowSwitchingNVIDIA.Checked = ($Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | Where-Object Type -EQ "GPU"| Where-Object Vendor -EQ "NVIDIA")
+        $CheckShowSwitchingAMD.Checked = ($Variables.Devices | Where-Object { $_.State -eq [DeviceState]::Enabled } | Where-Object Type -EQ "GPU" | Where-Object Vendor -EQ "AMD")
+        $CheckShowSwitchingCPU.Checked = ($Variables.Devices | Where-Object { $_.State -eq [DeviceState]::Enabled } | Where-Object Name -like "CPU#*")
+        $CheckShowSwitchingNVIDIA.Checked = ($Variables.Devices | Where-Object { $_.State -eq [DeviceState]::Enabled } | Where-Object Type -EQ "GPU"| Where-Object Vendor -EQ "NVIDIA")
     }
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-    If (Test-Path ".\Logs\SwitchingLog.csv") { $Variables.SwitchingLog = @(Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("Date", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog) }
+    If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { $Variables.SwitchingLog = @(Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("Date", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog) }
     $SwitchingDGV.DataSource = [System.Collections.ArrayList]($Variables.SwitchingLog | Where-Object { $_.Type -in $SwitchingDisplayTypes })
 }
 
