@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.10
-version date:   02 January 2021
+version:        3.9.9.11
+version date:   04 January 2021
 #>
 
 Class Device { 
@@ -241,6 +241,7 @@ Class Miner {
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment
 
             $this.WorkersRunning = $this.Workers
+            $this.CommandLine = $this.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -286,12 +287,28 @@ Class Miner {
             Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq "Running") { 
-            $this.ProcessId = $null
             $this.Status = [MinerStatus]::Failed
             Return $this.Status
         }
         Else { 
             Return $this.Status
+        }
+    }
+
+    SetStatus([MinerStatus]$Status) { 
+
+        Switch ($Status) { 
+            "Running" { 
+                If ($Status -eq $this.GetStatus()) { Return }
+                $this.StartMining()
+            }
+            "Idle" { 
+                $this.StopMining()
+            }
+            Default { 
+                $this.StopMining()
+                $this.Status = $Status
+            }
         }
     }
 
@@ -336,12 +353,14 @@ Class Miner {
         If ($this.Status -eq [MinerStatus]::Running) { 
             $this.Status = [MinerStatus]::Idle
             $this.StatusMessage = "Idle"
-            $this.WorkersRunning = @()
         }
         $this.Devices | ForEach-Object { 
             If ($_.State -eq [DeviceState]::Disabled) { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
             Else { $_.Status = $this.StatusMessage }
         }
+
+        $this.WorkersRunning = @()
+        $this.CommandLine = $null
         $this.Info = ""
     }
 
@@ -387,23 +406,6 @@ Class Miner {
             }
         }
         Return $PowerUsage_Value
-    }
-
-    SetStatus([MinerStatus]$Status) { 
-        If ($Status -eq $this.GetStatus()) { Return }
-
-        Switch ($Status) { 
-            "Running" { 
-                $this.StartMining()
-            }
-            "Idle" { 
-                $this.StopMining()
-            }
-            Default { 
-                $this.StopMining()
-                $this.Status = $Status
-            }
-        }
     }
 
     [String[]]UpdateMinerData () { 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           core.ps1
-version:        3.9.9.10
-version date:   02 Januar 2021
+version:        3.9.9.11
+version date:   04 Januar 2021
 #>
 
 using module .\Include.psm1
@@ -703,10 +703,6 @@ Function Start-Cycle {
                     ProcessPriority  = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
                 } -as "$($_.Content.API)"
             }
-        }
-
-        $NewMiners | ForEach-Object { 
-            $_.CommandLine = $_.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
         }
 
         $Variables.NewMiners_Jobs | ForEach-Object { $_.Dispose() }
