@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.11
+version:        3.9.10.0
 version date:   04 January 2021
 #>
 
@@ -125,8 +125,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/config/device/disable" { 
-                        $Parameters.Keys | ForEach-Object {
-                            $Key = $_
+                        ForEach ($Key in $Parameters.Keys) {
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
                                 Try { 
                                     $Data = "`nDevice configuration changed`n`nOld values:"
@@ -156,8 +155,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/config/device/enable" { 
-                        $Parameters.Keys | ForEach-Object {
-                            $Key = $_
+                        ForEach ($Key in $Parameters.Keys) {
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -in $Config.ExcludeDeviceName })) { 
                                 Try { 
                                     $Data = "`nDevice configuration changed`n`nOld values:"
