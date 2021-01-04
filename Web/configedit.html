@@ -59,7 +59,7 @@
         </div>
         <br>
 
-        <div title="Fiat Currencies used for BTC conversion&#10;You must include all pool payout currencies!&#10;&#10;Values must be sparated by commas, i.e.&#10;'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid&#10;The first value is used as main currency">
+        <div title="Fiat Currencies used for BTC conversion&#10;You must include all pool payout currencies!&#10;&#10;Values must be separated by commas, i.e.&#10;'GBP, USD, AUD, NZD' ect.&#10;mBTC (milli BTC) is also valid&#10;The first value is used as main currency">
           <label for="Currency">Currencies</label>
           <input type="text" id="Currency" name="Currency" maxlength=65 size=70 value="mBTC">
         </div>
@@ -254,18 +254,19 @@
           </div>
           <div  title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format)&#10;compressed json, e.g. { "00:00":0.26; "12:00":0.3 }&#10;From midnight to noon: 0.26 USD per kW/h &#10;from noon to midnight USD 0.30 per kW/h'>
             <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
-            <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'> per kW/h>
+            <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'> per kW/h
           </div>
           <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999)">
-            <label style="margin-left:20px" for="IdlePowerUsageW">Power usage of idle system</label>
+            <label style="margin-left:20px" for="IdlePowerUsageW">Power Usage of idle system</label>
             <input type="number" step=1 min=0 max=999 value=60 size=3 id="IdlePowerUsageW" name="IdlePowerUsageW"> W
           </div>
           <div title="NemosMiner will ignore power cost in best miner selection&#10;instead miners with best earnings will be selected">
             <input style="margin-left:20px" type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet&#10;(lower pool fees)"> Ignore Power Cost
           </div>
-          <div title="If profit (earnings - power cost) is less than the configured value&#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
+          <div title="If profit (earnings - power cost) is less than the configured value&#10;(e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
             <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
-            <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 value=0.0 size=5>
+            <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold" name="ProfitabilityThreshold" value=0.0>
+            <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
           </div>
           <div title="Show the 'PowerCost' column in the text window">
             <input style="margin-left:20px" type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
@@ -522,6 +523,7 @@
           document.getElementById('IdlePowerUsageW').value = parseInt(config.IdlePowerUsageW);
         };
         document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
+        document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
         if (config.ShowPowerCost) {
           document.getElementById('ShowPowerCost').checked = true;
         };
@@ -924,13 +926,18 @@
     document.getElementById('ShowProfitBias').disabled = !(document.getElementById('CalculatePowerCost').checked);
   });
 
-//Load default Algorithm list
+  //Load default Algorithm list
   $('#defaultAlgorithm').click(function () {
     $.ajax({url: '/defaultAlgorithm',
       success: function(result) {
         Algorithm.value = "+" + result.join(",+");
       }
     });
+  });
+
+  // ProfitabilityThreshold
+  $(document.getElementById('Currency')).change(function(event) {
+    document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
   });
 
   // Only one pool variant can be checked
@@ -940,22 +947,18 @@
       var PoolName = (event.target).id.toLowerCase();
     };
     var basePoolName = (PoolName.replace('24hr', '')).replace('coins', '');
-
     var pool = document.getElementById(basePoolName);
     if (pool && PoolName != pool.id) {
       pool.checked = false;
     };
-
     var pool = document.getElementById(basePoolName + '24hr');
     if (pool && PoolName != pool.id) {
       pool.checked = false;
     };
-
     var pool = document.getElementById(basePoolName + 'coins');
     if (pool && PoolName != pool.id) {
       pool.checked = false;
     };
-
     if (PoolName == 'pool-mph' || PoolName == 'pool-mphcoins') {
       document.getElementById('MPHUserName').disabled = !(document.getElementById(PoolName).checked);
       document.getElementById('MPHAPIKey').disabled = !(document.getElementById(PoolName).checked);
