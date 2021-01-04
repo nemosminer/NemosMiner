@@ -320,9 +320,9 @@ Function Start-Cycle {
     }
 
     # Load unprofitable algorithms
-    If (Test-Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore) { 
+    If (Test-Path -Path ".\Includes\UnprofitableAlgorithms.txt" -PathType Leaf -ErrorAction Ignore) { 
         $Variables.UnprofitableAlgorithms = [String[]](Get-Content ".\Includes\UnprofitableAlgorithms.txt" | ConvertFrom-Json -ErrorAction SilentlyContinue | Sort-Object -Unique)
-        Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) entr$(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "ies" } Else { "y" } ))."
+        Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) $(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "entries" } Else { "entry" } ))."
     }
     Else {
         $Variables.UnprofitableAlgorithms = $null
@@ -330,7 +330,7 @@ Function Start-Cycle {
 
     # Load information about the pools
     $Variables.NewPools_Jobs = @()
-    If ($PoolNames -and (Test-Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
+    If ($PoolNames -and (Test-Path -Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
         Write-Message "Requesting pool data ($(@($PoolNames) -join ', ')) - this usually takes less than $($Config.PoolTimeout) second$(If ($Config.PoolTimeout -ne 1) { "s" } )..."
         $Variables.NewPools_Jobs = @(
             $PoolNames | ForEach-Object { 
@@ -473,7 +473,7 @@ Function Start-Cycle {
     }
 
     # Ensure we get the hashrate for running miners prior looking for best miner
-    ForEach ($Miner in ($Variables.Miners | Where-Object Best)) {
+    ForEach ($Miner in ($Variables.Miners | Where-Object Best)) { 
         If ($Miner.DataReaderJob.HasMoreData) { 
             $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
         }
@@ -575,43 +575,8 @@ Function Start-Cycle {
         }
     }
 
-    # Stop running miner for binary update
-    If ((Test-Path .\Miners -PathType Container) -and (Test-Path ".\Config\MinersHash.json" -PathType Leaf)) { 
-        Write-Message "Looking for miner files changes..."
-        $Variables.MinersHash = Get-Content ".\Config\MinersHash.json" | ConvertFrom-Json
-        Compare-Object @($Variables.MinersHash | Select-Object) @(Get-ChildItem .\Miners\ -Filter "*.ps1" | Get-FileHash | Select-Object) -Property "Hash", "Path" | Sort-Object "Path" -Unique | ForEach-Object { 
-            If (Test-Path $_.Path -PathType Leaf) { 
-                Write-Message "Miner Updated: $($_.Path)"
-                $UpdatedMiner = &$_.path
-                $UpdatedMiner.Name = (Get-Item $_.Path).BaseName
-                ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Path -eq (Resolve-Path $UpdatedMiner.Path) })) { 
-                    If ($Miner.Status -eq [MinerStatus]::Running -and $Miner.GetStatus() -ne [MinerStatus]::Running) { 
-                        Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
-                        $Miner.SetStatus([MinerStatus]::Failed)
-                    }
-                    Else { 
-                        Write-Message "Stopping miner '$($Miner.Info)' for update..."
-                        $Miner.SetStatus([MinerStatus]::Idle)
-                    }
-
-                    # Remove all watchdog timer(s) for this miner
-                    If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name) {
-                        # Remove watchdog timer
-                        $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
-                    }
-                }
-                # Remove old binaries
-                Remove-Item -Force -Recurse (Split-Path $UpdatedMiner.Path)
-                # Trigger benchmark
-                Get-ChildItem -Path ".\Stats\" -Filter "$($UpdatedMiner.Name)_*.txt" | ForEach-Object { Remove-Stat ($_ -replace ".txt") } 
-            }
-            $Variables.MinersHash = Get-ChildItem .\Miners\ -Filter "*.ps1" | Get-FileHash
-            $Variables.MinersHash | ConvertTo-Json | Out-File ".\Config\MinersHash.json"
-        }
-    }
-
-    If ($Config.Watchdog) { 
     # Apply watchdog to pools
+    If ($Config.Watchdog) { 
         $Variables.Pools | Where-Object Available -EQ $true | Group-Object -Property Name | ForEach-Object { 
             # Suspend pool if > 50% of all algos@pool failed
             $WatchdogCount = ($Variables.WatchdogCount, ($Variables.WatchdogCount * $_.Group.Count / 2) | Measure-Object -Maximum).Maximum
@@ -661,9 +626,9 @@ Function Start-Cycle {
     # Get new miners
     Write-Message -Level Verbose "Loading miners..."
     $Variables.NewMiners_Jobs = @(
-        If ($Config.IncludeRegularMiners -and (Test-Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" }) }
-        If ($Config.IncludeOptionalMiners -and (Test-Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
-        If (Test-Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+        If ($Config.IncludeRegularMiners -and (Test-Path -Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" }) }
+        If ($Config.IncludeOptionalMiners -and (Test-Path -Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+        If (Test-Path -Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
     )
 
     If ($Variables.NewMiners_Jobs) { 
@@ -758,7 +723,7 @@ Function Start-Cycle {
         $_.CalculatePowerCost = $Variables.CalculatePowerCost
         $_.Refresh($Variables.PowerCostBTCperW) # To be done before MeasurePowerUsage evaluation
         $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
-        $_.MeasurePowerUsage = [Boolean]($Variables.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
+        $_.MeasurePowerUsage = [Boolean]($_.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
         If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
     }
     Remove-Variable Miner -ErrorAction Ignore
@@ -811,8 +776,8 @@ Function Start-Cycle {
         }
     }
 
+    # Apply watchdog to miners
     If ($Config.Watchdog) { 
-        # Apply watchdog to miners
         $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { "$($_.BaseName)-$($_.Version)" } | ForEach-Object { 
             # Suspend miner if > 50% of all available algorithms failed
             $WatchdogMinerCount = ($Variables.WatchdogCount, [Math]::Ceiling($Variables.WatchdogCount * $_.Group.Count / 2) | Measure-Object -Maximum).Maximum
@@ -836,9 +801,8 @@ Function Start-Cycle {
 
     Write-Message "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
 
+    # Open firewall ports for all miners
     If ($Config.OpenFirewallPorts) { 
-        # Open firewall ports for all miners
-        # temp fix, needs removing from loop as it requires admin rights
         If (Get-Command "Get-MpPreference" -ErrorAction Ignore) { 
             $ProgressPreferenceBackup = $ProgressPreference
             $ProgressPreference = "SilentlyContinue"
@@ -1009,13 +973,13 @@ Function Start-Cycle {
     ForEach ($Miner in ($Variables.Miners | Where-Object Best -EQ $true)) { 
         If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
             # Launch prerun if exists
-            If ($Miner.Type -eq "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
+            If ($Miner.Type -eq "AMD" -and (Test-Path -Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
                 Start-Process ".\Utils\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
             }
-            If ($Miner.Type -eq "NVIDIA" -and (Test-Path ".\Utils\Prerun\NVIDIAPrerun.bat" -PathType Leaf)) { 
+            If ($Miner.Type -eq "NVIDIA" -and (Test-Path -Path ".\Utils\Prerun\NVIDIAPrerun.bat" -PathType Leaf)) { 
                 Start-Process ".\Utils\Prerun\NVIDIAPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
             }
-            If ($Miner.Type -eq "CPU" -and (Test-Path ".\Utils\Prerun\CPUPrerun.bat" -PathType Leaf)) { 
+            If ($Miner.Type -eq "CPU" -and (Test-Path -Path ".\Utils\Prerun\CPUPrerun.bat" -PathType Leaf)) { 
                 Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
             }
             If ($Miner.Type -ne "CPU") { 
@@ -1103,7 +1067,7 @@ Function Start-Cycle {
 
 $ProgressPreference = "SilentlyContinue"
 
-If (Test-Path ".\Includes\APIs" -PathType Container -ErrorAction Ignore) { Get-ChildItem ".\Includes\APIs" -File | ForEach-Object { . $_.FullName } }
+If (Test-Path -Path ".\Includes\APIs" -PathType Container -ErrorAction Ignore) { Get-ChildItem -Path ".\Includes\APIs" -File | ForEach-Object { . $_.FullName } }
 
 While ($true) { 
     If ($Variables.MiningStatus -eq "Paused") { 
