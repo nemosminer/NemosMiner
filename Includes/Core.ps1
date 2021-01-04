@@ -473,8 +473,7 @@ Function Start-Cycle {
     }
 
     # Ensure we get the hashrate for running miners prior looking for best miner
-    $Variables.Miners | Where-Object Best | ForEach-Object { 
-        $Miner = $_
+    ForEach ($Miner in ($Variables.Miners | Where-Object Best)) {
         If ($Miner.DataReaderJob.HasMoreData) { 
             $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
         }
@@ -488,10 +487,10 @@ Function Start-Cycle {
             $PowerUsage = 0
             # Collect hashrate from miner
             $Miner_Speeds = [Hashtable]@{}
-            $Miner.Algorithm | ForEach-Object { 
-                $CollectedHashRate = $Miner.CollectHashRate($_, ($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
+            ForEach ($Algorithm in $Miner.Algorithm) { 
+                $CollectedHashRate = $Miner.CollectHashRate($Algorithm, ($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
                 $Miner.Speed_Live += [Double]($CollectedHashRate[1])
-                $Miner_Speeds.$_ = [Double]($CollectedHashRate[0])
+                $Miner_Speeds.$Algorithm = [Double]($CollectedHashRate[0])
             }
             If ($Variables.CalculatePowerCost) {
                 # Collect power usage from miner
@@ -585,8 +584,7 @@ Function Start-Cycle {
                 Write-Message "Miner Updated: $($_.Path)"
                 $UpdatedMiner = &$_.path
                 $UpdatedMiner.Name = (Get-Item $_.Path).BaseName
-                $Variables.Miners | Where-Object { $_.Path -eq (Resolve-Path $UpdatedMiner.Path) } | ForEach-Object { 
-                    $Miner = $_
+                ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Path -eq (Resolve-Path $UpdatedMiner.Path) })) { 
                     If ($Miner.Status -eq [MinerStatus]::Running -and $Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
                         $Miner.SetStatus([MinerStatus]::Failed)
@@ -714,8 +712,7 @@ Function Start-Cycle {
     $CompareMiners = Compare-Object -PassThru @($Variables.Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Path, DeviceName, Algorithm -IncludeEqual
 
     # Stop runing miners where miner object is gone
-    $Variables.Miners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq [MinerStatus]::Running } | ForEach-Object { 
-        $Miner = $_
+    ForEach ($Miner in ($Variables.Miners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq [MinerStatus]::Running })) { 
         Write-Message "Stopping miner '$($Miner.Info)'..."
         $Miner.SetStatus([MinerStatus]::Idle)
 
@@ -977,8 +974,7 @@ Function Start-Cycle {
     }
 
     # Stop running miners
-    $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
-        $Miner = $_
+    ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running })) { 
         If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
             Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
             $Miner.SetStatus([MinerStatus]::Failed)
@@ -1010,8 +1006,7 @@ Function Start-Cycle {
     # Optional delay to avoid blue screens
     Start-Sleep -Seconds $Config.Delay -ErrorAction Ignore
 
-    $Variables.Miners | Where-Object Best -EQ $true | ForEach-Object { 
-        $Miner = $_
+    ForEach ($Miner in ($Variables.Miners | Where-Object Best -EQ $true)) { 
         If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
             # Launch prerun if exists
             If ($Miner.Type -eq "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
@@ -1153,8 +1148,7 @@ While ($true) {
 
         While ((Get-Date) -le $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners)) {
             $NextLoop = (Get-Date).AddSeconds($Interval)
-            $RunningMiners | ForEach-Object { 
-                $Miner = $_
+            ForEach ($Miner in $RunningMiners) { 
                 If ($Miner.GetStatus() -eq [MinerStatus]::Running -and $Miner.DataReaderJob.HasMoreData) { 
                     $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                     $Sample = @($Samples) | Select-Object -Last 1
