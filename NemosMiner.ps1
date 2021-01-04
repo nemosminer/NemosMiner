@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.10
-Version date:   02 January 2021
+Version:        3.9.9.11
+Version date:   04 January 2021
 #>
 
 [CmdletBinding()]
