@@ -657,13 +657,13 @@ Function Start-APIServer {
                         If (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
                             # If the file is a PowerShell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
-                            $File = Get-ChildItem -Path $Filename -File
+                            $File = Get-ChildItem $Filename -File
 
                             If ($File.Extension -eq ".ps1") { 
                                 $Data = & $File.FullName -Parameters $Parameters
                             }
                             Else { 
-                                $Data = Get-Content -Path $Filename -File -Raw
+                                $Data = Get-Content $Filename -Raw
 
                                 # Process server side includes for html files
                                 # Includes are in the traditional '<!-- #include file="/path/filename.html" -->' format used by many web servers
@@ -671,8 +671,8 @@ Function Start-APIServer {
                                     $IncludeRegex = [regex]'<!-- *#include *file="(.*)" *-->'
                                     $IncludeRegex.Matches($Data) | Foreach-Object { 
                                         $IncludeFile = $BasePath + '/' + $_.Groups[1].Value
-                                        If (Test-Path -Path $IncludeFile -PathType Leaf) { 
-                                            $IncludeData = Get-Content -Path $IncludeFile -File -Raw
+                                        If (Test-Path $IncludeFile -PathType Leaf) { 
+                                            $IncludeData = Get-Content $IncludeFile -Raw
                                             $Data = $Data -replace $_.Value, $IncludeData
                                         }
                                     }
