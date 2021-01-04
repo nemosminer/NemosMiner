@@ -14,12 +14,11 @@ If ($PoolConfig.UserName) {
     If (-not $Request) { Return }
 
     $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-    $PoolRegions = 'Asia', 'EU', 'US'
     $Fee = [Decimal]0.009
     $Divisor = 1000000000
 
     $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
-    
+
     $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
         $Algorithm = $_.algo -replace "-"
@@ -34,7 +33,7 @@ If ($PoolConfig.UserName) {
         }
         Else { 
             # Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676# msg55320676
-            If ($Algorithm_Norm -in @("EtcHash", "Ethash")) { 
+            If ($Algorithm_Norm -in @("EtcHash", "Ethash", "KawPow")) { 
                 $PoolRegions = @("Asia", "US")
             }
             Else {
