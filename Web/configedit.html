@@ -109,7 +109,7 @@
           <input type="checkbox" id="AutoStart" name="AutoStart"> Auto Start
         </div>
         <div title="Initiate background processes, but do no not start mining">
-          <input type="checkbox" id="StartPaused" name="StartPaused" style='margin-left:20px'> Pause mining on Auto Start
+          <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px"> Pause mining on Auto Start
         </div>
         <div title="Start the legacy GUI as minimized window">
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
@@ -124,7 +124,7 @@
         <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(1 - 60 minutes; 0 to disable [default: 15]) Note: this will also disable pool balances summary">Poll Pools for Balances & Earnings every
           <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 value=15> minutes
           <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
-            <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style='margin-left:20px'> Write Balances Tracker Log
+            <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
           </div>
         </div>
         <br>
@@ -253,27 +253,31 @@
             <input type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate Power Cost
           </div>
           <div  title='Price of power per kW⋅h (in $Currency[0], e.g. USD), valid from HH:mm (24hr format)&#10;compressed json, e.g. { "00:00":0.26; "12:00":0.3 }&#10;From midnight to noon: 0.26 USD per kW/h &#10;from noon to midnight USD 0.30 per kW/h'>
-            <label style='margin-left:20px' for="PowerPricekWh">Power Price</label>
+            <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
             <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'> per kW/h>
           </div>
+          <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999)">
+            <label style="margin-left:20px" for="IdlePowerUsageW">Powerusage of idle system</label>
+            <input type="number" step=1 min=0 max=999 value=60 size=3 id="IdlePowerUsageW" name="IdlePowerUsageW"> W
+          </div>
           <div title="NemosMiner will ignore power cost in best miner selection&#10;instead miners with best earnings will be selected">
-            <input style='margin-left:20px'  type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet&#10;(lower pool fees)"> Ignore Power Cost
+            <input style="margin-left:20px" type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet&#10;(lower pool fees)"> Ignore Power Cost
           </div>
           <div title="If profit (earnings - power cost) is less than the configured value&#10;(in $Currency, e.g. CHF, e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
-            <label style='margin-left:20px' for="ProfitabilityThreshold">Profitability Threshold</label>
+            <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
             <input type="number" step="0.001" id="ProfitabilityThreshold" name="ProfitabilityThreshold" maxlenght=8 value=0.0 size=5>
           </div>
           <div title="Show the 'PowerCost' column in the text window">
-            <input style='margin-left:20px' type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
+            <input style="margin-left:20px" type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in main text window
           </div>
           <div title="Show the 'PowerUsage' column in the text window">
-            <input style='margin-left:20px' type="checkbox" id="ShowPowerUsage" name="ShowPowerUsage"> Show Power Usage in main text window
+            <input style="margin-left:20px" type="checkbox" id="ShowPowerUsage" name="ShowPowerUsage"> Show Power Usage in main text window
           </div>
           <div title="Show the 'Profit' column in the text window">
-            <input style='margin-left:20px' type="checkbox" id="ShowProfit" name="ShowProfit"> Show Profit in main text window
+            <input style="margin-left:20px" type="checkbox" id="ShowProfit" name="ShowProfit"> Show Profit in main text window
           </div>
           <div title="Show the 'Profit Bias' column in the text window">
-            <input style='margin-left:20px' type="checkbox" id="ShowProfitBias" name="ShowProfitBias"> Show Profit Bias in main text window
+            <input style="margin-left:20px" type="checkbox" id="ShowProfitBias" name="ShowProfitBias"> Show Profit Bias in main text window
           </div>
           <br>
 
@@ -513,6 +517,9 @@
         document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
         if (config.IgnorePowerCost) {
           document.getElementById('IgnorePowerCost').checked = true;
+        };
+        if (parseInt(config.IdlePowerUsageW)) {
+          document.getElementById('IdlePowerUsageW').value = parseInt(config.IdlePowerUsageW);
         };
         document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
         if (config.ShowPowerCost) {
@@ -844,6 +851,7 @@
           $('#myModal').modal({show:true});
           return false;
         };
+        config.IdlePowerUsageW = parseInt(document.getElementById('IdlePowerUsageW').value);
         config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
         config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
 
@@ -904,7 +912,19 @@
     };
   });
 
-  //Load default Algorithm list
+  // CalculatePowerCost
+  $(document.getElementById('CalculatePowerCost')).click(function(event) {
+    document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('IdlePowerUsageW').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('IgnorePowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ProfitabilityThreshold').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ShowPowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ShowPowerUsage').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ShowProfit').disabled = !(document.getElementById('CalculatePowerCost').checked);
+    document.getElementById('ShowProfitBias').disabled = !(document.getElementById('CalculatePowerCost').checked);
+  });
+
+//Load default Algorithm list
   $('#defaultAlgorithm').click(function () {
     $.ajax({url: '/defaultAlgorithm',
       success: function(result) {
