@@ -435,7 +435,7 @@ Class Miner {
                                 $HashRate_Unit = ($Words | Select-Object -Index $Words.IndexOf($_))
                             }
 
-                            switch -wildcard ($HashRate_Unit) { 
+                            Switch -wildcard ($HashRate_Unit) { 
                                 "kh/s*" { $HashRate *= [Math]::Pow(1000, 1) }
                                 "mh/s*" { $HashRate *= [Math]::Pow(1000, 2) }
                                 "gh/s*" { $HashRate *= [Math]::Pow(1000, 3) }
@@ -639,7 +639,11 @@ Function Get-DefaultAlgorithm {
         $PoolsAlgos = (Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
         $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
     }
-    Catch { $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json }
+    Catch { 
+        If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType File) { 
+            $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
+        }
+    }
     If ($PoolsAlgos) { 
         $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in $Config.PoolName }
         Return  $PoolsAlgos.Value | Sort-Object -Unique
@@ -648,7 +652,7 @@ Function Get-DefaultAlgorithm {
 
 Function Get-Chart { 
 
-    If ((Test-Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
+    If ((Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) -and (Test-Path -Path ".\Includes\Charting.ps1" -PathType Leaf)) { 
         $Chart1 = Invoke-Expression -Command ".\Includes\Charting.ps1 -Chart 'Front7DaysEarnings' -Width 505 -Height 150"
         $Chart1.top = 2
         $Chart1.left = 0
@@ -814,9 +818,9 @@ Function Initialize-API {
 Function Initialize-Application { 
 
     # Keep only the last 10 files
-    Get-ChildItem -Path ".\Logs\NemosMiner_*.log" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
-    Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
-    Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\NemosMiner_*.log" -File | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -1240,7 +1244,7 @@ Function Read-Config {
 
         # Prepare new config
         $Variables.FreshConfig = $true
-        If (Test-Path ".\Config\PoolsConfig-Recommended.json" -PathType Leaf) { 
+        If (Test-Path -Path ".\Config\PoolsConfig-Recommended.json" -PathType Leaf) { 
             $Parameters | Add-Member @{ PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } }) }
         }
         $Parameters.Keys | Sort-Object | ForEach-Object { 
@@ -1259,7 +1263,7 @@ Function Read-Config {
 
     # Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
-    (Get-ChildItem .\Pools\*.ps1 -File).BaseName | ForEach-Object { 
+    (Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName | ForEach-Object { 
         $PoolName = $_ -replace "24hr$" -replace "Coins$"
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
@@ -1515,7 +1519,7 @@ Function Get-Stat {
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
             & { 
-                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -Directory -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
             }
@@ -1530,8 +1534,8 @@ Function Get-Stat {
             }
 
             # Reduce number of errors
-            If (-not (Test-Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
-                If (-not (Test-Path "Stats" -PathType Container)) { 
+            If (-not (Test-Path -Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
+                If (-not (Test-Path -Path "Stats" -PathType Container)) { 
                     New-Item "Stats" -ItemType "directory" -Force | Out-Null
                 }
                 Return
@@ -1574,7 +1578,7 @@ Function Get-Stat {
 Function Remove-Stat { 
     Param(
         [Parameter(Mandatory = $false)]
-        [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem -Path "Stats" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+        [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem -Path "Stats" -Directory -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
     )
 
     $Name | Sort-Object -Unique | ForEach-Object { 
@@ -1677,7 +1681,7 @@ Function Get-ChildItemContent {
             Return $Expression
         }
 
-        Get-ChildItem $Path -File -ErrorAction SilentlyContinue | ForEach-Object { 
+        Get-ChildItem -Path $Path -File -ErrorAction SilentlyContinue | ForEach-Object { 
             $Name = $_.BaseName
             $Content = @()
             If ($_.Extension -eq ".ps1") { 
@@ -2424,7 +2428,7 @@ Function Expand-WebRequest {
     [Environment]::CurrentDirectory = $ExecutionContext.SessionState.Path.CurrentFileSystemLocation
 
     If (-not $Path) { $Path = Join-Path ".\Downloads" ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName }
-    If (-not (Test-Path ".\Downloads" -PathType Container)) { New-Item "Downloads" -ItemType "directory" | Out-Null }
+    If (-not (Test-Path -Path ".\Downloads" -PathType Container)) { New-Item "Downloads" -ItemType "directory" | Out-Null }
     $FileName = Join-Path ".\Downloads" (Split-Path $Uri -Leaf)
 
     If (Test-Path $FileName -PathType Leaf) { Remove-Item $FileName }
@@ -2444,15 +2448,15 @@ Function Expand-WebRequest {
         If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
 
         # use first (topmost) directory in case, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
-        $Path_Old = (Get-ChildItem $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -Index 0
+        $Path_Old = (Get-ChildItem -Path $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -Index 0
 
         If ($Path_Old) { 
             Move-Item $Path_Old $Path_New -PassThru | ForEach-Object -Process { $_.LastWriteTime = Get-Date }
             $Path_Old = (Join-Path (Split-Path (Split-Path $Path)) ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName)
-            If (Test-Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
+            If (Test-Path $Path_Old -PathType Container) { Remove-Item -Path $Path_Old -Recurse -Force }
         }
         Else { 
-            Throw "Error: Cannot find $($Path)."
+            Throw "Error: Cannot find '$Path'."
         }
     }
 }
@@ -2554,7 +2558,7 @@ Function Initialize-Autoupdate {
         "Downloading failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
         Return
     }
-    If (-not (Test-Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
+    If (-not (Test-Path -Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
         Write-Message -Level Error "Cannot find update file. Cannot complete auto-update :-("
         Return
     }
@@ -2572,7 +2576,7 @@ Function Initialize-Autoupdate {
 
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
-    # If (Test-Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
+    # If (Test-Path -Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
     #     Invoke-Expression (Get-Content ".\$UpdateFilePath\PreUpdateActions.ps1" -Raw)
     # }
 
@@ -2636,7 +2640,7 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
     Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
     Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File| Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
     If ($ObsoleteStatFiles.Count -gt 0) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteStatFiles | ForEach-Object { 
@@ -2692,16 +2696,16 @@ Function Initialize-Autoupdate {
     "Removing temporary files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Remove-Item .\$UpdateFileName -Force -Recurse
     Remove-Item ".\$($UpdateFileName).zip" -Force
-    If (Test-Path ".\PreUpdateActions.ps1" -PathType Leaf) { 
+    If (Test-Path -Path ".\PreUpdateActions.ps1" -PathType Leaf) { 
         Remove-Item ".\PreUpdateActions.ps1" -Force
         "Removed '.\PreUpdateActions.ps1'."
     }
-    If (Test-Path ".\PostUpdateActions.ps1" -PathType Leaf) { 
+    If (Test-Path -Path ".\PostUpdateActions.ps1" -PathType Leaf) { 
         Remove-Item ".\PostUpdateActions.ps1" -Force
         "Removed '.\PostUpdateActions.ps1'."
     }
-    Get-ChildItem -Path "AutoupdateBackup_*.zip" | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse;"Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse;"Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
 
     # Start new instance
     If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
