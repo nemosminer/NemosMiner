@@ -41,7 +41,7 @@ If ($PoolConfig.UserName) {
             }
         }
 
-        $PoolRegions | ForEach-Object { 
+        ForEach ($Region in $PoolRegions) { 
             $Region = $_
             $Region_Norm = Get-Region $Region
 
@@ -63,23 +63,23 @@ If ($PoolConfig.UserName) {
                 EstimateFactor     = [Decimal]1
             }
 
-            [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                CoinName           = [String]$Coin
-                Currency           = [String]$Current.symbol
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                Port               = [UInt16]$Current.port
-                User               = [String]$User
-                Pass               = "x"
-                Region             = [String]$Region_Norm
-                SSL                = [Bool]$true
-                Fee                = $Fee
-                EstimateFactor     = [Decimal]1
-            }
+            # [PSCustomObject]@{ 
+            #     Algorithm          = [String]$Algorithm_Norm
+            #     CoinName           = [String]$Coin
+            #     Currency           = [String]$Current.symbol
+            #     Price              = [Double]$Stat.Live
+            #     StablePrice        = [Double]$Stat.Week
+            #     MarginOfError      = [Double]$Stat.Week_Fluctuation
+            #     PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+            #     Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+            #     Port               = [UInt16]$Current.port
+            #     User               = [String]$User
+            #     Pass               = "x"
+            #     Region             = [String]$Region_Norm
+            #     SSL                = [Bool]$true
+            #     Fee                = $Fee
+            #     EstimateFactor     = [Decimal]1
+            # }
         }
     }
 }
