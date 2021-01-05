@@ -50,9 +50,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                # If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH(|Coins)$") { Return } # Temp fix (https://github.com/develsoftware/GMinerRelease/issues/113)
-
-                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$')) { Return } # Algo not supported on Navi
+                If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH(|Coins)$") { Return } # Temp fix (https://github.com/develsoftware/GMinerRelease/issues/113)
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
@@ -63,7 +61,10 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                 # Windows 10 requires more memory on some algos
                 If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and [System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB += 1 }
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+                $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
+                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Algos not supported on Navi
+
+                If ($Miner_Devices) { 
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
