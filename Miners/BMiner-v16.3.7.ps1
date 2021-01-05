@@ -97,7 +97,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$Command -watchdog=false -api 127.0.0.1:$($MinerAPIPort) -devices $(If ($Miner_Devices.Vendor -eq "AMD") { "amd:" })$(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command -watchdog=false -api 127.0.0.1:$($MinerAPIPort) -devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '$(If ($Miner_Devices.Vendor -eq "AMD") { "amd:" }){0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "Bminer"
                         Port       = $MinerAPIPort
