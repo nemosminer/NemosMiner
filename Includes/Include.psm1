@@ -306,8 +306,8 @@ Class Miner {
                 $this.StopMining()
             }
             Default { 
-                $this.StopMining()
                 $this.Status = $Status
+                $this.StopMining()
             }
         }
     }
@@ -921,7 +921,7 @@ Function Write-Message {
             }
         }
         If ($Variables.LogFile) { 
-            If ((-not $Config.LogToScreen) -or ($Level -in $Config.LogToFile)) { 
+            If ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile)) { 
                 # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
                 # This lets us ensure only one thread is trying to write to the file at a time. 
                 $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteLog")
