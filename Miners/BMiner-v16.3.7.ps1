@@ -1,5 +1,7 @@
 using module ..\Includes\Include.psm1
 
+Return #too many bad shares
+
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\bminer.exe"
 $Uri = "https://www.bminercontent.com/releases/bminer-v16.3.7-d9521d5-amd64.zip"
@@ -13,13 +15,13 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; Protocol = @(" -uri beam") } # NBMiner-v34.5 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; Protocol = @(" -uri cuckaroo29m") }
-#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.39 is fastest
+#   [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.40 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; Protocol = @(" -uri aeternity") }
 #   [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -pers auto -uri equihash1445") } # MiniZ-v1.6x is fastest
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri zhash") }
-#   [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 4.0; Protocol = @(" -uri ethproxy") } # TTMiner-v5.0.3 is fastest
+   [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 4.0; Protocol = @(" -uri ethproxy") } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri raven") }
 #   [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; Protocol = @(" -uri conflux") } # NBMiner-v34.5 is faster is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Qitmeer");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; Protocol = @(" -uri qitmeer") }
@@ -53,21 +55,20 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH*") { Return } # temp fix
-                # If ($_.Algorithm[0] -eq "Ethash" -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^GTX1660SUPER\d+GB$')) { Return } # Ethash not supported GTX1660 Super
-                If ($_.Algorithm[1] -and (($SelectedDevices.Model | Sort-Object -unique) -join '' -match '^RadeonRX(5300|5500|5600|5700).*\d.*GB$|^GTX1660\d+GB$')) { Return } # Dual mining not supported on Navi or GTX1660
+                # If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^MPH(Coins)$") { Return } # temp fix
 
                 $Command = ""
                 $MinMemGB = $_.MinMemGB
 
-                # Add 512 MB when GPU with connected monitor
-                If ($SelectedDevices | Where-Object { $_.CIM.CurrentRefreshRate }) { $MinMemGB += 0.5 }
-
-                If ($_.Algorithm[0] -in @("EtcHash", "Ethash", "KawPoW")) { 
+                If ($_.Algorithm[0] -in @("Ethash", "KawPoW")) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
                 }
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+                $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )
+                $Miner_Devices = @($Miner_Devices | Where-Object { (-not $_.CIM.CurrentRefreshRate) -or (($_.OpenCL.GlobalMemSize - 0.5) / 1GB) -ge $MinMemGB } ) # Reserve 512 MB when GPU with connected monitor
+                If ($_.Algorithm[1]) { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
+
+                If ($Miner_Devices) { 
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
 
@@ -75,7 +76,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                     # $Command = Get-CommandPerDevice -Command $Command -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Protocol = $_.Protocol[0]
-                    If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -like "NiceHash*") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
+                    If ($_.Algorithm[0] -in @("Ethash", "KawPoW") -and $Pools.($_.Algorithm[0]).Name -match "$NiceHash^|$MPH(Coins)^") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
 
                     $Command += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
@@ -97,7 +98,7 @@ If ($Commands = $Commands | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$Command -watchdog=false -api 127.0.0.1:$($MinerAPIPort) -devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '$(If ($Miner_Devices.Vendor -eq "AMD") { "amd:" }){0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Command -watchdog=false -api 127.0.0.1:$($MinerAPIPort) -devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { "$(If ($Miner_Devices.Vendor -eq "AMD") { "amd:" }){0:x}" -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API        = "Bminer"
                         Port       = $MinerAPIPort
