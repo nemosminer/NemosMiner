@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-version:        3.9.9.10
-version date:   01 January 2021
+version:        3.9.9.12
+version date:   06 January 2021
 #>
 
 # Start the log
@@ -31,7 +31,7 @@ If ($Config.Transcript) { Start-Transcript -Path ".\Logs\BalancesTracker-$(Get-D
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
 $TrustLevel = 0
-$Variables.Earnings = [Ordered]@{ }
+$Earnings = [Ordered]@{ }
 $LastAPIUpdateTime = (Get-Date).ToUniversalTime()
 
 $AllBalanceObjects = @()
@@ -81,15 +81,11 @@ While ($true) {
             Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
         }
 
-        $Now = Get-Date
-        $DateString = $Now.ToString("yyyy-MM-dd")
-        $CurDateUxFormat = ([DateTimeOffset]$Now.Date).ToUnixTimeMilliseconds()
-
         # Get pools api ref
-        If (-not $PoolAPI -or ($LastAPIUpdateTime -le $Now.AddDays(-1))) { 
+        If (-not $PoolAPI -or ($LastAPIUpdateTime -le (Get-Date).AddDays(-1))) { 
             # Try { 
             #     $PoolAPI = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/poolapidata.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-            #     $LastAPIUpdateTime = $Now
+            #     $LastAPIUpdateTime = (Get-Date)
             #     $PoolAPI | ConvertTo-Json | Out-File ".\Config\PoolApiData.json" -Force
             # }
             # Catch { 
@@ -139,6 +135,9 @@ While ($true) {
             }
             If (-not $PayoutThreshold) { $PayoutThreshold = $API.PayoutThreshold."*" }
 
+            $Now = Get-Date
+            $DateString = $Now.ToString("yyyy-MM-dd")
+
             Try { 
                 Switch ($PoolName) { 
                     "MPH" { 
@@ -178,7 +177,7 @@ While ($true) {
                         $TempBalance = 0
                         $Wallet = $PoolConfig.Wallet
                         $PayoutCurrency = "BTC"
-                        $NicehashData = ((Invoke-RestMethod -Uri "$APIUri$Wallet/rigs/stats/unpaid/" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).Data | Where-Object { $_[0] -gt $CurDateUxFormat } | Sort-Object { $_[0] } | Group-Object { $_[2] }).group
+                        $NicehashData = ((Invoke-RestMethod -Uri "$APIUri$Wallet/rigs/stats/unpaid/" -TimeoutSec 15 -Headers @{ "Cache-Control" = "no-cache" }).Data | Where-Object { $_[0] -gt ([DateTimeOffset]$Now.Date).ToUnixTimeMilliseconds() } | Sort-Object { $_[0] } | Group-Object { $_[2] }).group
                         $NHTotalBalance = -$NicehashData[0][2]
                         $NicehashData | ForEach-Object {
                             # Nicehash continously transfers balances to wallet
@@ -262,7 +261,7 @@ While ($true) {
                     $AvgHourlyGrowth = [Double]($Growth168 / ($Now - ($BalanceObjects[0].DateTime)).TotalHours)
                 }
 
-                $Variables.Earnings.$PoolName = $EarningsObject = [PSCustomObject]@{ 
+                $Earnings.$PoolName = $EarningsObject = [PSCustomObject]@{ 
                     Pool                    = $PoolName
                     Wallet                  = $Wallet
                     Uri                     = $PoolAccountUri
@@ -291,7 +290,7 @@ While ($true) {
                     Updated                 = $BalanceObject.DateTime
                 }
 
-                If ($BalancesTrackerConfig.EnableLog) { $Variables.Earnings.$PoolName | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLogDev.csv" -ErrorAction Ignore }
+                If ($BalancesTrackerConfig.EnableLog) { $Earnings.$PoolName | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLogDev.csv" -ErrorAction Ignore }
 
                 $PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolName | Select-Object -Last 1
 
@@ -328,7 +327,7 @@ While ($true) {
                         $StartValue = $EarningsObject.total_earned
                         $Earnings = 0
                     }
-                    
+
                     $DailyEarnings += [PSCustomObject]@{ 
                         Date               = $DateString
                         Pool               = $PoolName
@@ -360,10 +359,9 @@ While ($true) {
         }
 
         # Always keep pools sorted, even when new pools were added
-        $TempEarnings = $Variables.Earnings
         $Variables.Earnings = [Ordered]@{ }
-        $TempEarnings.Keys | Sort-Object | ForEach-Object { 
-            $Variables.Earnings.$_ = $TempEarnings.$_
+        $Earnings.Keys | Sort-Object | ForEach-Object { 
+            $Variables.Earnings.$_ = $Earnings.$_
         }
 
         Try { 
