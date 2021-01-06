@@ -9,7 +9,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Aergo";  MinMemGB = 1; Command = " --algo aergo --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 2; Command = " --algo xevan --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Hex";    MinMemGB = 1; Command = " --algo hex --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; Command = " --algo kawpow --intensity 23" } # NBMiner-v34.5 is fastest but has optional 1% fee
+#   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; Command = " --algo kawpow --intensity 23" } # NBMiner-v36.0 is fastest but has optional 1% fee
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 

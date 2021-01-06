@@ -16,7 +16,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
 
-#   [PSCustomObject]@{ Algorithm = "BeamV3";              Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v34.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "BeamV3";              Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v36.0 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc";       Fee = 0.03;   MinMemGB = 6.0; Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";         Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckaroo29b --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";         Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckaroo29s --cuda 1 --opencl 0" }
