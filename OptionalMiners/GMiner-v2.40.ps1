@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.39/gminer_2_39_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.40/gminer_2_40_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -20,8 +20,6 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc";       Fee = 0.03;   MinMemGB = 6.0; Type = "NVIDIA"; Command = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";         Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckaroo29b --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";         Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckaroo29s --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29";         Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckarood29 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29V";        Fee = 0.10;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckarood29v --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "CuckarooZ29";         Fee = 0.03;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo cuckarooz29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX";       Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; Command = " --algo C30CTX --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";          Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; Command = " --algo cuckatoo31 --cuda 1 --opencl 0" }
@@ -35,9 +33,6 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Command = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "KawPoW";              Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.7.0 is almost as fast but has no fee
-#   [PSCustomObject]@{ Algorithm = "Sero";                Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Command = " --algo sero --cuda 1 --opencl 0" } # Sero != ProgPoW on ZergPool
-    [PSCustomObject]@{ Algorithm = "VeriBlock";           Fee = 0.02;   MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo VProgPoW --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "ProgPoWZ";            Fee = 0.02;   MinMemGB = 2.0; Type = "NVIDIA"; Command = " --algo ProgPoWZ --cuda 1 --opencl 0" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -50,7 +45,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH(|Coins)$") { Return } # Temp fix (https://github.com/develsoftware/GMinerRelease/issues/113)
+                # If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH(|Coins)$") { Return } # Temp fix (https://github.com/develsoftware/GMinerRelease/issues/113)
 
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
