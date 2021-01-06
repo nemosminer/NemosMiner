@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.28.2/wildrig-multi-windows-0.28.2.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.28.3/wildrig-multi-windows-0.28.3.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Commands = [PSCustomObject[]]@(
@@ -31,6 +31,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-pawelhash" }
     [PSCustomObject]@{ Algorithm = "Phi";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo phi" }
+    [PSCustomObject]@{ Algorithm = "Phi5";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo phi5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo polytimos" }
     [PSCustomObject]@{ Algorithm = "Sha256csm";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256csm" }
     [PSCustomObject]@{ Algorithm = "Sha256t";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256t" }
@@ -77,6 +78,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-pawelhash" } # Trex-v0.19.5 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo phi" }
+    [PSCustomObject]@{ Algorithm = "Phi5";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo phi5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo polytimos" }
     [PSCustomObject]@{ Algorithm = "Sha256csm";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256csm" }
     [PSCustomObject]@{ Algorithm = "Sha256t";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256t" }
