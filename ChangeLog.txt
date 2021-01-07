@@ -3,6 +3,13 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 
+Changelog NemosMiner 3.9.9.13 08.01.2021
+========================================
+
+Fixed:
+- Web GUI / Dashboard: Hide 'Profit_Bias' column
+
+
 Changelog NemosMiner 3.9.9.12 06.01.2021
 ========================================
 
@@ -22,9 +29,6 @@ Improved:
 Miner Updates:
 - GMiner-v2.40
 - Wildrig-v0.28.3
-
-New:
-- Added config item 'BenchmarkAll' (If true NemosMiner will benchmark all miners (and not just the best known ones))
 
 
 Changelog NemosMiner 3.9.9.11 04.01.2021
