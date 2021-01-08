@@ -6,8 +6,16 @@ Breaking changes (from main code base):
 Changelog NemosMiner 3.9.9.13 08.01.2021
 ========================================
 
+Changed:
+- Core: Reduced auto update check to approx 24hrs
+- Core: Bad / share ratio calulation not working
+
 Fixed:
 - Web GUI / Dashboard: Hide 'Profit_Bias' column
+
+Miner Updates:
+- GMiner-v2.41
+- lolMiner-v1.18a
 
 
 Changelog NemosMiner 3.9.9.12 06.01.2021
@@ -150,7 +158,7 @@ Improved:
 Miner Updates:
 - Bminer-v16.3.7
 - GMiner-v2.35
-- lolMiner-v1.1
+- lolMiner-v1.17
 - miniZ-v1.6x
 - NanoMiner-v3.1.4
 - NBMiner-v35.0
