@@ -13,12 +13,12 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bmw512" } # CcminerBmw512-v2.2.5 is fastest
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bitcore" }
     [PSCustomObject]@{ Algorithm = "C11";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo c11" }
-#   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo exosis" } 
     [PSCustomObject]@{ Algorithm = "Geek";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo geek" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-globalhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hex" }
-    [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } # CryptoDredge-v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } # Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-jeonghash" }
 #   [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } # TeamRed-v0.7.21 is fastest on Navi
@@ -60,12 +60,12 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bmw512" } # CcminerBmw512-v2.2.5 is fastest
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo bitcore" }
     [PSCustomObject]@{ Algorithm = "C11";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo c11" }
-#   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Dedal";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo dedal" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo exosis" }
     [PSCustomObject]@{ Algorithm = "Geek";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo geek" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-globalhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hex" }
-#   [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
 #   [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo honeycomb" } # Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo glt-jeonghash" } # Trex-v0.19.5 is fastest
 #   [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; Command = " --algo kawpow" } # NBMiner-v36.0 is fastest
@@ -85,7 +85,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Sha256q";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sha256q" }
     [PSCustomObject]@{ Algorithm = "Renesis";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo renesis" }
 #   [PSCustomObject]@{ Algorithm = "Skein2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skein2" } # CcminerAlexis78-v1.5.2 is fastest
-#   [PSCustomObject]@{ Algorithm = "SkunkHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skunkhash" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "SkunkHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo skunkhash" } # CryptoDredge-v0.26.0 is fastest
 #   [PSCustomObject]@{ Algorithm = "Sonoa";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo sonoa" } # Trex-v0.19.5 is fastest
     [PSCustomObject]@{ Algorithm = "Timetravel";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; Command = " --algo tribus" }

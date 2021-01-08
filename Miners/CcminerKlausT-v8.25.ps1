@@ -9,7 +9,7 @@ $Commands = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; Command = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
     [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 2; Command = " --algo keccak --diff-multiplier 2 --intensity 29" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 2; Command = " --algo lyra2v2" }
-#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.25.1 is fastest
+#   [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; Command = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
 #   [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 2; Command = " --algo skein" } # CcminerAlexis78-v1.5.2 is fastest
     [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; Command = " --algo veltor --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Whirlcoin"; MinMemGB = 2; Command = " --algo whirlcoin" }
