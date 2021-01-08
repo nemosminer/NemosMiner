@@ -2722,7 +2722,7 @@ Function Initialize-Autoupdate {
 
         # Giving 10 seconds for process to start
         $Waited = 0
-        While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep 1; $waited++ }
+        While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
         If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
             "Failed to start new instance of $($Variables.CurrentProduct)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
             Return
