@@ -13,8 +13,14 @@ Changed:
 
 Fixed:
 - Web GUI / Dashboard: Hide 'Profit_Bias' column
+- Web GUI / Dashboard: Profit is earnings less all power costs
+
+
+Improved:
+- Web GUI / Dashboard: Add power usage information to summary
 
 Miner Updates:
+- CryptoDredge-v0.26.0
 - GMiner-v2.41
 - lolMiner-v1.18a
 
