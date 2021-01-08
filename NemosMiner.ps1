@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.12
-Version date:   06 January 2021
+Version:        3.9.9.13
+Version date:   08 January 2021
 #>
 
 [CmdletBinding()]
@@ -937,7 +937,7 @@ $MainForm.Add_Shown(
         # TimerCheckVersion
         $TimerCheckVersion = New-Object System.Windows.Forms.Timer
         $TimerCheckVersion.Enabled = $true
-        $TimerCheckVersion.Interval = 700 * 60 * 1000
+        $TimerCheckVersion.Interval = 1 / 55 <#timer resolution in ms#> * 1000 <#milliseconds#> * 60 <#seconds#> * 60 <#minutes#> * 24 <#hours#>
         $TimerCheckVersion.Add_Tick(
             { 
                 Get-NMVersion
