@@ -2574,6 +2574,12 @@ Function Initialize-Autoupdate {
         Return
     }
 
+    #Stop all background processes
+    Stop-Mining
+    Stop-IdleMining
+    Stop-BrainJob
+    Stop-BalancesTracker
+
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
     # If (Test-Path -Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
