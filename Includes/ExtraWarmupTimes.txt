@@ -23,7 +23,7 @@
   "EtcHash&Pascal": 60,
   "EtcHash&Sia": 60,
   "EtcHash&Tensority": 60,
-  "KawPow": 90,
+  "KawPoW": 90,
   "MegaBtx": 188,
   "MTP": 30,
   "ProgPoW": 30,
