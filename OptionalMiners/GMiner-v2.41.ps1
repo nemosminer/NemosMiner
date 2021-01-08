@@ -45,8 +45,6 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                # If ($_.Algorithm -eq "KawPoW" -and $Pools.($_.Algorithm).Name -match "^MPH(|Coins)$") { Return } # Temp fix (https://github.com/develsoftware/GMinerRelease/issues/113)
-
                 $Command = $_.Command
                 $MinMemGB = $_.MinMemGB
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
