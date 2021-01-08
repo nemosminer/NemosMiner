@@ -9,6 +9,7 @@ Changelog NemosMiner 3.9.9.13 08.01.2021
 Changed:
 - Core: Reduced auto update check to approx 24hrs
 - Core: Bad / share ratio calulation not working
+- Auto-Update: Stop all running background processes
 
 Fixed:
 - Web GUI / Dashboard: Hide 'Profit_Bias' column
