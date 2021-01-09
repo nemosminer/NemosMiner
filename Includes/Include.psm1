@@ -712,13 +712,13 @@ Function Stop-BrainJob {
     $JobNames = @()
 
     # Stop Brains if necessary
-    $Jobs | ForEach-Object { 
+    $Jobs | Select-Object | ForEach-Object { 
         $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
         $Variables.BrainJobs.Remove($_)
         $JobNames += $_
     }
 
-    If ($JobNames -gt 0) { Write-Message "Stopped Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ', '))." }
+    If ($JobNames.Count -gt 0) { Write-Message "Stopped Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ', '))." }
 }
 
 
