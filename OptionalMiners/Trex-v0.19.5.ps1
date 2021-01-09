@@ -2,7 +2,9 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.19.5/t-rex-0.19.5-win-cuda11.1.zip"
+$PathCUDA10 = ".\Bin\$($Name)\t-rex_CUDA10.exe"
+$PathCUDA11 = ".\Bin\$($Name)\t-rex_CUDA11.exe"
+$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.5.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -18,10 +20,10 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; Command = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow" } # XmRig-v6.7.0 is almost as fast but has no fee
+#  [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow" } # XmRig-v6.7.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = "MegaBtx";    Fee = 0.01; MinMemGB = 2; Command = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 2; Command = " --algo mtp --intensity 21" }
-#   [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" } # NBMiner-v36.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" }
     [PSCustomObject]@{ Algorithm = "PadiHash";   Fee = 0.01; MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  Fee = 0.01; MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
@@ -53,6 +55,15 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
         If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+
+            #according to user reports Octopus for 16 and 20 series cards is faster on CUDA 10.0 build is faster than CUDA 11.1
+            If ($_Algorithm -eq "Octopus" -and ($SelectedDevices.OpenCL.ComputeCapability | Measure-Object -Minimum).Minimum -lt 8.6) { 
+                $Path = $PathCUDA10
+            }
+            Else { 
+                #RTX 3x series
+                $Path = $PathCUDA11
+            }
 
             $Commands | ForEach-Object {
 

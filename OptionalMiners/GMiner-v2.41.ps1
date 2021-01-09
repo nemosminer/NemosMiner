@@ -10,8 +10,8 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";         Fee = 0.02;   MinMemGB = 4.0; Type = "AMD"; Command = " --algo cuckaroo29b --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";         Fee = 0.02;   MinMemGB = 4.0; Type = "AMD"; Command = " --algo cuckaroo29s --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = "Equihash1254";        Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; Command = " --algo equihash125_4 --pers auto --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";        Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.17 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1927";        Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.17 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1445";        Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; Command = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.18a is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927";        Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; Command = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.18a is fastest
     [PSCustomObject]@{ Algorithm = "EquihashBTG";         Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; Command = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";             Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; Command = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";              Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; Command = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
