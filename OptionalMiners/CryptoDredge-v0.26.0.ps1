@@ -23,7 +23,7 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightZls";    Fee = 0.01; MinMemGB = 1; Command = " --algo=cnzls --intensity 8" }
 #   [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.01; MinMemGB = 2; Command = " --algo=kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "Lux";               Fee = 0.01; MinMemGB = 2; Command = " --algo=phi2 --intensity 8" }
-#   [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp --intensity 8" } # Trex-v0.19.5 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp --intensity 8" } # Trex-v0.19.7 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTcr";            Fee = 0.02; MinMemGB = 5; Command = " --algo=mtp-tcr --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ninja";             Fee = 0.01; MinMemGB = 6; Command = " --algo ninja --intensity 4" }
 )
