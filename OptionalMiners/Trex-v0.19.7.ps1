@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $PathCUDA10 = ".\Bin\$($Name)\t-rex_CUDA10.exe"
 $PathCUDA11 = ".\Bin\$($Name)\t-rex_CUDA11.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.5.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.7.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -15,37 +15,44 @@ $Commands = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    Fee = 0.01; MinMemGB = 2; Command = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";        Fee = 0.01; MinMemGB = 2; Command = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";      Fee = 0.01; MinMemGB = 2; Command = " --algo dedal --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash" } # PhoenixMiner-v5.4c is fastest
+#   [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; Command = " --algo etchash --intensity 24" } # GMiner-v2.41 is fastest
+#   [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; Command = " --algo ethash --intensity 24" } # GMiner-v2.41 is fastest
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; Command = " --algo geek --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 26" }
+    [PSCustomObject]@{ Algorithm = "Hmq1725";    Fee = 0.01; MinMemGB = 2; Command = " --algo hmq1725 --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; Command = " --algo honeycomb --intensity 25" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo jeonghash --intensity 23" }
-#  [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow" } # XmRig-v6.7.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = "MegaBtx";    Fee = 0.01; MinMemGB = 2; Command = " --algo megabtx" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; Command = " --algo kawpow --intensity 25" } # XmRig-v6.7.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "Lyra2Z";     Fee = 0.01; MinMemGB = 3; Command = " --algo lyra2z --intensity 24.75" }
+    [PSCustomObject]@{ Algorithm = "MegaBtx";    Fee = 0.01; MinMemGB = 2; Command = " --algo megabtx --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "MegaMec";    Fee = 0.01; MinMemGB = 2; Command = " --algo megamec --intensity 25" }
     [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 2; Command = " --algo mtp --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "MTPTcr";     Fee = 0.01; MinMemGB = 2; Command = " --algo mtp-tcr --intensity 21" }
     [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; Command = " --algo octopus --intensity 25" }
     [PSCustomObject]@{ Algorithm = "PadiHash";   Fee = 0.01; MinMemGB = 2; Command = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo pawelhash --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Phi";        Fee = 0.01; MinMemGB = 2; Command = " --algo phi --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  Fee = 0.01; MinMemGB = 2; Command = " --algo polytimos --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "ProgPoW";    Fee = 0.01; MinMemGB = 2; Command = " --algo progpow --intensity 21 --mt 2" } # Sero, Zano
-    [PSCustomObject]@{ Algorithm = "Sha256t";    Fee = 0.01; MinMemGB = 2; Command = " --algo sha256t --intensity 26" }
+    [PSCustomObject]@{ Algorithm = "Sha256t";    Fee = 0.01; MinMemGB = 2; Command = " --algo sha256t --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Sha256q";    Fee = 0.01; MinMemGB = 2; Command = " --algo sha256q --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "SkunkHash";  Fee = 0.01; MinMemGB = 2; Command = " --algo sonoa --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Sonoa";      Fee = 0.01; MinMemGB = 2; Command = " --algo sonoa --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Tensority";  Fee = 0.03; MinMemGB = 2; Command = " --algo tensority" }
+    [PSCustomObject]@{ Algorithm = "Tensority";  Fee = 0.03; MinMemGB = 2; Command = " --algo tensority --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Timetravel"; Fee = 0.01; MinMemGB = 2; Command = " --algo timetravel --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Tribus";     Fee = 0.01; MinMemGB = 2; Command = " --algo tribus --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Veil";       Fee = 0.01; MinMemGB = 2; Command = " --algo x16rt --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "Veil";       Fee = 0.01; MinMemGB = 2; Command = " --algo progpow-veil --intensity 24" }
     [PSCustomObject]@{ Algorithm = "VeriBlock";  Fee = 0.01; MinMemGB = 2; Command = " --algo progpow-veriblock" }
+    [PSCustomObject]@{ Algorithm = "X11r";       Fee = 0.01; MinMemGB = 2; Command = " --algo x11r --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X17";        Fee = 0.01; MinMemGB = 2; Command = " --algo x17 --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "X16s";       Fee = 0.01; MinMemGB = 2; Command = " --algo x16s --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16r";       Fee = 0.01; MinMemGB = 2; Command = " --algo x16r --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "X16rv2";     Fee = 0.01; MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16rt";      Fee = 0.01; MinMemGB = 2; Command = " --algo x16rt --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "X21s";       Fee = 0.01; MinMemGB = 2; Command = " --algo x21s --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "X16rv2";     Fee = 0.01; MinMemGB = 2; Command = " --algo x16rv2 --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "X16s";       Fee = 0.01; MinMemGB = 2; Command = " --algo x16s --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "X17";        Fee = 0.01; MinMemGB = 2; Command = " --algo x17 --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X22i";       Fee = 0.01; MinMemGB = 2; Command = " --algo x22i --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "X21s";       Fee = 0.01; MinMemGB = 2; Command = " --algo x21s --intensity 23" }
     [PSCustomObject]@{ Algorithm = "X25x";       Fee = 0.01; MinMemGB = 2; Command = " --algo x25x --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "X33";        Fee = 0.01; MinMemGB = 2; Command = " --algo x33" }
-    [PSCustomObject]@{ Algorithm = "Zano";       Fee = 0.01; MinMemGB = 2; Command = " --algo progpowz" }
+    [PSCustomObject]@{ Algorithm = "X33";        Fee = 0.01; MinMemGB = 2; Command = " --algo x33 --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "Zano";       Fee = 0.01; MinMemGB = 2; Command = " --algo progpowz --intensity 25" }
 )
 
 If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -56,7 +63,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            #according to user reports Octopus for 16 and 20 series cards is faster on CUDA 10.0 build is faster than CUDA 11.1
+            #according to user reports Octopus on 16 and 20 series cards is faster with CUDA 10.0 than CUDA 11.1
             If ($_Algorithm -eq "Octopus" -and ($SelectedDevices.OpenCL.ComputeCapability | Measure-Object -Minimum).Minimum -lt 8.6) { 
                 $Path = $PathCUDA10
             }
