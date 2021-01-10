@@ -5,6 +5,10 @@ Breaking changes (from main code base):
 
 Changelog NemosMiner 3.9.9.14 10.01.2021
 ========================================
+
+Fixes:
+- CryptoDredge-v0.26.0: Fix broken download link
+
 Miner Updates:
 - Trex-v0.19.7
 
