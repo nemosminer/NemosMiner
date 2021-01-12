@@ -59,23 +59,23 @@ If ($PoolConfig.Wallet) {
                 EstimateFactor     = [Decimal]1
             }
 
-            If ($Algorithm_Norm -match "CryptonightR|Equihash1445|Randomx") { 
-                [PSCustomObject]@{ 
-                    Algorithm          = [String]$Algorithm_Norm
-                    Price              = [Double]$Stat.Live
-                    StablePrice        = [Double]$Stat.Week
-                    MarginOfError      = [Double]0
-                    PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                    Host               = [String]"$Algorithm.$Region.$PoolHost"
-                    Port               = [UInt16]$PoolPort
-                    User               = [String]$User
-                    Pass               = "x"
-                    Region             = [String]$Region_Norm
-                    SSL                = [Boolean]$true
-                    Fee                = [Decimal]$Fee
-                    EstimateFactor     = [Decimal]1
-                }
-            }
+            # If ($Algorithm_Norm -match "CryptonightR|Equihash1445|Randomx") { 
+            #     [PSCustomObject]@{ 
+            #         Algorithm          = [String]$Algorithm_Norm
+            #         Price              = [Double]$Stat.Live
+            #         StablePrice        = [Double]$Stat.Week
+            #         MarginOfError      = [Double]0
+            #         PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+            #         Host               = [String]"$Algorithm.$Region.$PoolHost"
+            #         Port               = [UInt16]$PoolPort
+            #         User               = [String]$User
+            #         Pass               = "x"
+            #         Region             = [String]$Region_Norm
+            #         SSL                = [Boolean]$true
+            #         Fee                = [Decimal]$Fee
+            #         EstimateFactor     = [Decimal]1
+            #     }
+            # }
         }
     }
 }
