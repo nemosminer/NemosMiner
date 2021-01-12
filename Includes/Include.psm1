@@ -131,6 +131,7 @@ Class Miner {
     [String]$Version
     [String]$Path
     [String]$PrerequisitePath
+    [String]$PrerequisiteURI
     [String]$URI
     [String]$Arguments
     [String]$CommandLine
