@@ -254,7 +254,7 @@
           <div title="Calculate power cost, required for true profit calculation&#10;Requires extra configuration of HWiNFO64&#10;(See ConfigHWinfo64.pdf)">
             <input type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate Power Cost
           </div>
-          <div title='Price of power per kW⋅h, valid from HH:mm (24hr format)&#10;&#10;e.g. { "00:00":0.26; "12:00":0.3 } =&#10;From midnight to noon: [Currency] 0.26 per kW/h &#10;from noon to midnight [Currency] 0.30 per kW/h&#10;&#10;(compressed JSON)'>
+          <div id=PowerPricekWhTitle title='Price of power per kW⋅h, valid from HH:mm (24hr format)&#10;&#10;e.g. {"00:00":0.26; "12:00":0.3} means&#10;from midnight to noon: [Currency] 0.26 per kW/h &#10;from noon to midnight: [Currency] 0.30 per kW/h&#10;&#10;(compressed JSON)'>
             <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
             <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
             <label id="PowerPricekWhCurrency" for="PowerPricekWh">
@@ -530,7 +530,8 @@
         };
         document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
         document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
-        document.getElementById('PowerPricekWhCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0] + ' per kW/h';
+        document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
+        document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. { "00:00":0.26; "12:00":0.3 } means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
         if (config.ShowPowerCost) {
           document.getElementById('ShowPowerCost').checked = true;
         };
@@ -945,7 +946,8 @@
   // ProfitabilityThreshold
   $(document.getElementById('Currency')).change(function(event) {
     document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
-    document.getElementById('PowerPricekWhCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0] + ' per kW/h';
+    document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
+    document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
   });
 
   // Only one pool variant can be checked
