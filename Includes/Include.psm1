@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.13
-version date:   09 January 2021
+version:        3.9.9.14
+version date:   12 January 2021
 #>
 
 Class Device { 
@@ -868,9 +868,11 @@ Function Get-Rate {
             }
             $Variables.Rates = $Rates
         }
+        Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
+
     }
     Catch { 
-        Write-Message -Level Warn "Could not get exchange rates from CryptoCompare."
+        Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
     }
 
     $Variables.RateFirstCurrency = $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)
@@ -1587,7 +1589,7 @@ Function Remove-Stat {
     }
 }
 
-Function Get-CommandPerDevice { 
+Function Get-ArgumentsPerDevice { 
 
     # filters the command to contain only parameter values for present devices
     # if a parameter has multiple values, only the values for the available devices are included

@@ -75,11 +75,6 @@
         </div>
         <br>
 
-        <div title="NemosMiner will not mine algorithms listed in&#10;UnprofitableAlgorithms.txt (recommended)">
-          <input type="checkbox" id="ApplyUnprofitableAlgorithmList" name="ApplyUnprofitableAlgorithmList"> Do not mine algorithms in the Unprofitable Algorithms List (recommended)
-        </div>
-        <br>
-
         <div title="Cycle duration (between 30 & 3600 seconds [default 90])&#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration
           <input type="number" id="Interval" name="Interval" min=30 max=3600 value=90> seconds
         </div>
@@ -111,12 +106,18 @@
         <div title="Initiate background processes, but do no not start mining">
           <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px"> Pause mining on Auto Start
         </div>
+        <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
+          <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when system is idle for
+          <input title="Min: 0, max: 3600" type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> seconds
+        </div>
+        <br>
+
         <div title="Start the legacy GUI as minimized window">
           <input type="checkbox" id="StartGUIMinimized" name="StartGUIMinimized"> Start Legacy GUI minimized
         </div>
         <br>
 
-        <div title="Automatically update NemosMiner to the latest realeased program version">
+        <div title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
           <input type="checkbox" id="AutoUpdate" name="AutoUpdate"> Auto Update
         </div>
         <br>
@@ -187,6 +188,13 @@
           <div title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
             <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable Single Algorithm Miners
           </div>
+          <div title="Select miner set to be used by NemosMiner">Use
+            <select name="" id="MinerSet">
+              <option title="The best miners chosen by the developers may not be the best miners for you" value=0>only best miner per algorithm and per device</option>
+              <option title="recommended, select to ensure best profitability" value=1>optimal miners (more than one per algorithm and per device)</option>
+              <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all miners per algorithm and per device (incl. those in UnprofitableAlgorithms.txt)</option>
+            </select>
+          </div>
           <br>
 
           <legend class=h6><b>Run Miners as</b></legend>
@@ -205,20 +213,20 @@
           <div title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hash rates with GPU miners">
             <label for="CPUMinerProcessPriority">Run CPU miners with</label>
             <select name="" id="CPUMinerProcessPriority">
-              <option value="1">Above Normal</option>
-              <option value="0">Normal</option>
-              <option value="-1">Below Normal</option>
-              <option value="-2">Low</option>
+              <option value=1>Above Normal</option>
+              <option value=0>Normal</option>
+              <option value=-1>Below Normal</option>
+              <option value=-2>Low</option>
             </select>
             <label for="CPUMinerProcessPriority">process priority</label>
           </div>
           <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hash rates with CPU miners">
             <label for="GPUMinerProcessPriority">Run GPU miners with</label>
             <select name="" id="GPUMinerProcessPriority">
-              <option value="1">Above Normal</option>
-              <option value="0">Normal</option>
-              <option value="-1">Below Normal</option>
-              <option value="-2">Low</option>
+              <option value=1>Above Normal</option>
+              <option value=0>Normal</option>
+              <option value=-1>Below Normal</option>
+              <option value=-2></option>Low</option>
             </select>
             <label for="GPUMinerProcessPriority">process priority</label>
           </div>
@@ -226,12 +234,6 @@
 
           <div title="Watchdog will monitor pool & miner for frequent failures&#10;and suspend failing pools or miners for some cycles.">
             <input type="checkbox" id="Watchdog" name="Watchdog"> Activate Watchdog (recommended)
-          </div>
-          <br>
-
-          <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
-            <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when system is idle for
-            <input title="Min: 0, max: 3600" type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> seconds
           </div>
           <br>
 
@@ -385,9 +387,6 @@
         if (config.Algorithm) {
           document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
         };
-        if (config.ApplyUnprofitableAlgorithmList) {
-          document.getElementById('ApplyUnprofitableAlgorithmList').checked = true;
-        };
 
         if (parseInt(config.Interval)) { 
           document.getElementById('Interval').value = parseInt(config.Interval);
@@ -411,6 +410,14 @@
           document.getElementById('AutoStart').checked = true;
         } else {
           document.getElementById('StartPaused').disabled = true;
+        };
+        if (config.MineWhenIdle) {
+          document.getElementById('MineWhenIdle').checked = true;
+        } else {
+          document.getElementById('IdleSec').disabled = true;
+        };
+        if (parseInt(config.IdleSec)) { 
+          document.getElementById('IdleSec').value = parseInt(config.IdleSec);
         };
         if (config.StartPaused) {
           document.getElementById('StartPaused').checked = true;
@@ -462,6 +469,12 @@
         if (config.DisableSingleAlgoMining) {
           document.getElementById('DisableSingleAlgoMining').checked = true;
         };
+        if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 2) {
+          document.getElementById('MinerSet').value = config.MinerSet;
+        } else { 
+          document.getElementById('MinerSet').value = 1;
+        };
+
         if (config.ShowMinerWindows.toLowerCase() == "hidden") {
           document.getElementById('ShowMinerWindowsHidden').checked = true;
         };
@@ -475,12 +488,12 @@
           document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked = true;
         };
 
-        if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority <= 1)) {
+        if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority) <= 1) {
           document.getElementById('CPUMinerProcessPriority').value = config.CPUMinerProcessPriority;
         } else { 
           document.getElementById('CPUMinerProcessPriority').value = -2;
         };
-        if (parseInt(config.GPUMinerProcessPriority) >= -2 && parseInt(config.GPUMinerProcessPriority <= 1)) {
+        if (parseInt(config.GPUMinerProcessPriority) >= -2 && parseInt(config.GPUMinerProcessPriority) <= 1) {
           document.getElementById('GPUMinerProcessPriority').value = config.GPUMinerProcessPriority;
         } else { 
           document.getElementById('GPUMinerProcessPriority').value = -1;
@@ -488,14 +501,6 @@
 
         if (config.Watchdog) {
           document.getElementById('Watchdog').checked = true;
-        };
-        if (config.MineWhenIdle) {
-          document.getElementById('MineWhenIdle').checked = true;
-        } else {
-          document.getElementById('IdleSec').disabled = true;
-        };
-        if (parseInt(config.IdleSec)) { 
-          document.getElementById('IdleSec').value = parseInt(config.IdleSec);
         };
 
         if (config.ShowAllMiners) {
@@ -768,7 +773,6 @@
         config.Interval = parseInt(document.getElementById('Interval').value);
 
         config.Algorithm = (document.getElementById('Algorithm').value).toString();
-        config.ApplyUnprofitableAlgorithmList = document.getElementById('ApplyUnprofitableAlgorithmList').checked;
 
         config.Donate = parseInt(document.getElementById('Donate').value);
 
@@ -781,6 +785,9 @@
         config.AutoStart = document.getElementById('AutoStart').checked;
         config.StartPaused = document.getElementById('StartPaused').checked;
         config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
+
+        config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
+        config.IdleSec = parseInt(document.getElementById('IdleSec').value);
 
         config.AutoUpdate = document.getElementById('AutoUpdate').checked;
 
@@ -813,6 +820,7 @@
         config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
         config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
         config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+        config.MinerSet = parseInt(document.getElementById('MinerSet').value);
 
         if (document.getElementById('ShowMinerWindowsHidden').checked) {
           config.ShowMinerWindows = "hidden" 
@@ -829,9 +837,6 @@
         config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
 
         config.Watchdog = document.getElementById('Watchdog').checked;
-
-        config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
-        config.IdleSec = parseInt(document.getElementById('IdleSec').value);
 
         config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
         if (document.getElementById('UIStyle').checked) { 
@@ -874,9 +879,9 @@
         config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
         config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
 
-        config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
-
         config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
+
+        config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
 
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));

@@ -6,17 +6,17 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/TT-Miner/TT-Miner-
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
-$Commands = [PSCustomObject[]]@(
-   [PSCustomObject]@{ Algorithm = "EtcHash";   Fee = 0.01; MinMemGB = 4; Command = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v5.4c is fastest
-   [PSCustomObject]@{ Algorithm = "Ethash";    Fee = 0.01; MinMemGB = 4; Command = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPow";    Fee = 0.01; MinMemGB = 2; Command = " -algo KAWPOW" } # Trex-v0.19.7 is fastest
-#   [PSCustomObject]@{ Algorithm = "MTP";       Fee = 0.01; MinMemGB = 2; Command = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";   Fee = 0.01; MinMemGB = 2; Command = " -algo PROGPOW" } # Sero
-    [PSCustomObject]@{ Algorithm = "Zano";      Fee = 0.01; MinMemGB = 2; Command = " -algo PROGPOWZ" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";   Fee = 0.01; MinMemGB = 2; Command = " -algo UBQHASH -intensity 15" }
+$AlgorithmDefinitions = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "EtcHash";   Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPow";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " -algo KAWPOW" } # Trex-v0.19.7 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";       Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";   Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " -algo PROGPOW" } # Sero
+    [PSCustomObject]@{ Algorithm = "Zano";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " -algo PROGPOWZ" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";   Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " -algo UBQHASH -intensity 15" }
 )
 
-If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
+If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
     $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
@@ -24,7 +24,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $Commands | ForEach-Object {
+            $AlgorithmDefinitions | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
@@ -36,7 +36,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                     # Get commands for active miner devices
-                    # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Coin = ""
                     If ($_.Algorithm -eq "ProgPoW") { 
@@ -53,7 +53,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Command) -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -work-timeout 500000 -user $($Pools.($_.Algorithm).User) -pass $($Pools.($_.Algorithm).Pass)$Coin -api-bind 127.0.0.1:$($MinerAPIPort) -poolinfo -device $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments) -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -work-timeout 500000 -user $($Pools.($_.Algorithm).User) -pass $($Pools.($_.Algorithm).Pass)$Coin -api-bind 127.0.0.1:$($MinerAPIPort) -poolinfo -device $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "EthMiner"
                         Port            = $MinerAPIPort

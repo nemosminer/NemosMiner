@@ -5,14 +5,14 @@ $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.15.0/cpuminer-opt-3.15.0-windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
-$Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Lyra2z330"; Command = " --algo lyra2z330" }
-#   [PSCustomObject]@{ Algorithm = "m7m";       Command = " --algo sha3d" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Sha3d";     Command = " --algo scrypt:2048" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11"; Command = " --algo m7m" }
+$AlgorithmDefinitions = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; Arguments = " --algo sha3d" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; Arguments = " --algo scrypt:2048" }
+    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; Arguments = " --algo m7m" }
 )
 
-If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
+If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
     If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 
     
@@ -27,10 +27,10 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
             $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
             $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-            $Commands | ForEach-Object {
+            $AlgorithmDefinitions | ForEach-Object {
 
                 # Get commands for active miner devices
-                # $_.Command = Get-CommandPerDevice -Command $_.Command -ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
+                # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
@@ -39,7 +39,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
                     DeviceName = $Miner_Devices.Name
                     Type       = "CPU"
                     Path       = $Path
-                    Arguments  = ("$($_.Command) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                    Arguments  = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
                     Algorithm  = $_.Algorithm
                     API        = "Ccminer"
                     Port       = $MinerAPIPort

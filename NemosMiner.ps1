@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.13
-Version date:   09 January 2021
+Version:        3.9.9.14
+Version date:   12 January 2021
 #>
 
 [CmdletBinding()]
@@ -36,8 +36,6 @@ param(
     [String]$APILogfile = "", # API will log all requests to this file, to disable leave empty
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
-    [Parameter(Mandatory = $false)]
-    [Boolean]$ApplyUnprofitableAlgorithmList = $true, # NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt
     [Parameter(Mandatory = $false)]
     [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
@@ -105,6 +103,8 @@ param(
     [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, # Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
     [Switch]$MinerInstancePerDeviceModel = $true, # If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
+    [Parameter(Mandatory = $false)]
+    [Int]$MinerSet = 1, # 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device;
     [Parameter(Mandatory = $false)]
     [Int]$MinWorker = 10, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per-pool setting configurable in 'PoolsConfig.json'
     [Parameter(Mandatory = $false)]
@@ -232,7 +232,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.13"
+    Version      = [System.Version]"3.9.9.14"
 }
 
 Try { 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           core.ps1
-version:        3.9.9.13
-version date:   08 Januar 2021
+version:        3.9.9.14
+version date:   12 Januar 2021
 #>
 
 using module .\Include.psm1
@@ -70,8 +70,6 @@ Function Start-Cycle {
 
             If ($Variables.DAGdata.Currency.Count -lt 10) { 
                 Try { 
-                    Write-Message -Level Info "Retrieving DAG block data from 'https://minerstat.com'..."
-
                     $DAGdata | Add-Member Currency ([Ordered]@{ }) -Force
                     $BlockHeight, $Currency, $DAGsize, $Epoch = $null
 
@@ -104,16 +102,15 @@ Function Start-Cycle {
                         }
                     }
                     $DAGdata | Add-Member Updated (Get-Date).ToUniversalTime()
+                    Write-Message -Level Info "Loaded DAG block data from 'https://minerstat.com'."
                 }
                 Catch { 
-                    Write-Message -Level Warn "Cannot retrieve DAG block data from 'https://minerstat.com'."
+                    Write-Message -Level Warn "Cannot load DAG block data from 'https://minerstat.com'."
                 }
             }
 
             If (-not $DAGdata.Currency.RVN) {
                 Try { 
-                    Write-Message -Level Info "Retrieving RVN DAG block data from 'https://api.ravencoin.org'..."
-
                     # Get RVN block data
                     $Timeout = 5
                     $Request = "https://api.ravencoin.org/api/status"
@@ -126,9 +123,10 @@ Function Start-Cycle {
                         }
                         $DAGdata.Currency.Add("RVN", $Data)
                     }
+                    Write-Message -Level Info "Loaded RVN DAG block data from 'https://api.ravencoin.org'."
                 }
                 Catch { 
-                    Write-Message -Level Warn "Cannot retrieve RVN DAG block data from 'https://api.ravencoin.org'."
+                    Write-Message -Level Warn "Cannot load RVN DAG block data from 'https://api.ravencoin.org'."
                 }
             }
 
@@ -147,7 +145,7 @@ Function Start-Cycle {
                 $DAGdata | Add-Member Currency ([Ordered]@{ })
 
                 $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
-                Write-Message -Level Warn "Cannot retrieve ethash DAG size information from data provided by 'https://minerstat.com', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
+                Write-Message -Level Warn "Cannot load ethash DAG size information from data provided by 'https://minerstat.com', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
                 $Data = [PSCustomObject]@{ 
                     BlockHeight = [Int]$BlockHeight
                     DAGsize     = [Int64](Get-DAGSize $BlockHeight)
@@ -250,7 +248,7 @@ Function Start-Cycle {
     # Start Brain jobs (will pick up all newly added pools)
     Start-BrainJob
 
-    Write-Message "Loading currency exchange rates from 'min-api.cryptocompare.com'..."
+    # Load currency exchange rates from min-api.cryptocompare.com
     Get-Rate
 
     # Power cost preparations
@@ -423,7 +421,7 @@ Function Start-Cycle {
     $Variables.Pools | Where-Object Disabled -EQ $true | ForEach-Object { $_.Available = $false; $_.Reason += "Disabled (by Stat file)" }
     If ($Config.SSL -ne "Preferred") { $Variables.Pools | Where-Object { $_.SSL -ne [Boolean]$Config.SSL } | ForEach-Object { $_.Available = $false; $_.Reason += "Config item SSL -ne $([Boolean]$Config.SSL)" } }
     $Variables.Pools | Where-Object MarginOfError -GT (1 - $Config.MinAccuracy) | ForEach-Object { $_.Available = $false; $_.Reason += "MinAccuracy ($($Config.MinAccuracy * 100)%) exceeded" }
-    If ($Config.ApplyUnprofitableAlgorithmList) {
+    If ($Config.MinerSet -lt 2) {
         $Variables.Pools | Where-Object { "*:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Available = $false; $_.Reason += "Unprofitable Algorithm" }
         $Variables.Pools | Where-Object { "1:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } # Keep available
         $Variables.Pools | Where-Object { "2:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } # Keep available

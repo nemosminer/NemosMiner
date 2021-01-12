@@ -6,24 +6,24 @@ $Uri = "https://github.com/nanopool/nanominer/releases/download/v3.1.4/nanominer
 $DeviceEnumerator = "Type_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
-$Commands = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.02; MinMemGB = 16; Coin = "Cuckaroo30" }
-#   [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Etchash" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Ethash" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  Coin = "Kawpow" } # TeamRed-v0.7.22 is fastest
-#   [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  Coin = "Ubqhash" } # PhoenixMiner-v5.4c is fastest
+$AlgorithmDefinitions = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.02; MinMemGB = 16; MinerSet = 0; Coin= "Cuckaroo30" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; Coin= "Ethash" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; Coin= "Kawpow" } # TeamRed-v0.7.22 is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.4c is fastest
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    Coin = "RandomHash2" }
-#   [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; Coin = "RandomX" } # XmRig-v6.7.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin= "RandomX" } # XmRig-v6.7.0 is fastest
 
-#   [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Etchash" } # PhoenixMiner-v5.4c is fastest
-#   [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Ethash" } # TTMiner-v5.0.3 is fastest
-#   [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; Coin = "Kawpow" } # Trex-v0.19.7 is fastest
-#   [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; Coin = "Octopus" } # NBMiner-v36.0 is faster
-#   [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; Coin = "Ubqhash" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.19.7 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; MinerSet = 1; Coin= "Octopus" } # NBMiner-v36.0 is faster
+    [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.4c is fastest
 )
 
-If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) { 
+If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -31,7 +31,7 @@ If ($Commands = $Commands | Where-Object { $Pools.($_.Algorithm).Host }) {
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $Commands | Where-Object Type -EQ $_.Type | ForEach-Object { $Algo = $_.Algorithm; $_ } | ForEach-Object { 
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { $Algo = $_.Algorithm; $_ } | ForEach-Object { 
 
                 If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
 
