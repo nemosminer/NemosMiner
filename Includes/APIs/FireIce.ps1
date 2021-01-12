@@ -108,9 +108,6 @@ class Fireice : Miner {
         If ($this.AllowedBadShareRatio) { 
             $Shares_Accepted = [Int64]$Data.results.shares_good
             $Shares_Rejected = [Int64]($Data.results.shares_total - $Data.results.shares_good)
-            If ((-not $Shares_Accepted -and $Shares_Rejected -ge 3) -or ($Shares_Accepted -and ($Shares_Rejected * $this.AllowedBadShareRatio -gt $Shares_Accepted))) { 
-                $this.SetStatus([MinerStatus]::Failed)
-            }
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
