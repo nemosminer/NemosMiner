@@ -280,11 +280,12 @@ $AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
     $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
     If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
+    Remove-Variable $_ -ErrorAction SilentlyContinue
 }
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
 # Read configuration
-Read-Config -ConfigFile $Variables.ConfigFile
+Read-Config -Parameters $AllCommandLineParameters
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
@@ -303,11 +304,6 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
 
 # Check if new version is available
 Get-NMVersion
-# Update config file to include all new config items
-If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion )) { 
-    Update-ConfigFile -ConfigFile $Variables.ConfigFile
-}
-$Variables.AllCommandLineParameters.Keys | ForEach-Object { Remove-Variable $_ -ErrorAction SilentlyContinue }
 
 Write-Message -Level Verbose "Loading device information..."
 $Variables.Devices = [Device[]](Get-Device -Refresh)

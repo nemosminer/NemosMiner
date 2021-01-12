@@ -187,7 +187,7 @@ Function Start-APIServer {
                         Try { 
                             Copy-Item -Path $Variables.ConfigFile -Destination "$($Variables.ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
                             $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
-                            Read-Config
+                            Read-Config -ConfigFile $Variables.ConfigFile
                             $Variables.Devices | Select-Object | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { 
                                 If ($_.Name -in @($Config.ExcludeDeviceName)) { 
                                     $_.State = [DeviceState]::Disabled

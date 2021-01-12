@@ -1209,9 +1209,10 @@ Function Stop-Mining {
 }
 
 Function Read-Config { 
+
     Param(
-        [Parameter(Mandatory = $false)]
-        [Hashtable]$Parameters = @{ }
+        [Parameter(Mandatory = $true)]
+        [String]$ConfigFile
     )
 
     If ($Global:Config -isnot [Hashtable]) { 
@@ -1221,11 +1222,11 @@ Function Read-Config {
     # Load the configuration
     $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json
 
-    If ($Variables.ConfigFile -and (Test-Path -PathType Leaf $Variables.ConfigFile)) { 
-        $Config_Tmp = Get-Content $Variables.ConfigFile | ConvertFrom-Json -ErrorAction Ignore
+    If (Test-Path -PathType Leaf $ConfigFile) { 
+        $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
-            Copy-Item -Path $Variables.ConfigFile "$($Variables.ConfigFile).corrupt" -Force
-            Write-Message -Level Warn "Configuration file '$($Variables.ConfigFile)' is corrupt."
+            Copy-Item -Path $ConfigFile "$($ConfigFile).corrupt" -Force
+            Write-Message -Level Warn "Configuration file '$($ConfigFile)' is corrupt."
             $Config.ConfigFileVersionCompatibility = $null
         }
         Else { 
@@ -1233,7 +1234,7 @@ Function Read-Config {
             $Config_Tmp | ForEach-Object { 
                 $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
                     $PropertyName = $_.Name
-                    $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
+                    $PropertyName = $Variables.AllCommandLineParameters | Where-Object { $_ -eq $PropertyName }
                     If (-not $Propertyname) { $PropertyName = $_.Name }
                     $Global:Config.$PropertyName = $_.Value
                 }
@@ -2503,7 +2504,6 @@ Function Get-Region {
 Function Get-NMVersion { 
 
     # Check if new version is available
-
     Try { 
         # $UpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
         $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
@@ -2657,49 +2657,6 @@ Function Initialize-Autoupdate {
         }
     }
 
-    # Update config file to include all new config items
-    If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $UpdateVersion.Version)) { 
-        # Changed config items
-        $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
-        $Changed_Config_Items | ForEach-Object { 
-            Switch ($_) { 
-                "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
-                "APIKEY" { 
-                    $Config.MPHAPIKey = $Config.$_
-                    $Config.ProHashingAPIKey = $Config.$_
-                    $Config.Remove($_)
-                }
-                "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
-                "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
-                "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
-                "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
-                "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
-                "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
-                "UserName" { 
-                    If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
-                    If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
-                    $Config.Remove($_)
-                }
-                Default { $Config.Remove($_) } # Remove unsupported config item
-            }
-        }
-        Remove-Variable Changed_Config_Items -ErrorAction Ignore
-
-        # Add new config items
-        If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
-            $New_Config_Items | Sort-Object Name | ForEach-Object { 
-                $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
-                If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-                $Config.$_ = $Value
-            }
-            Remove-Variable Value -ErrorAction Ignore
-        }
-        $Config | Add-Member ConfigFileVersion ($UpdateVersion.Version.ToString()) -Force
-        Write-Config -ConfigFile $Variables.ConfigFile
-        "Updated configuration file '$($Variables.ConfigFile)' to version $($UpdateVersion.Version.ToString())." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
-        Remove-Variable New_Config_Items -ErrorAction Ignore
-    }
-
     # Remove temp files
     "Removing temporary files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Remove-Item .\$UpdateFileName -Force -Recurse
@@ -2743,6 +2700,53 @@ Function Initialize-Autoupdate {
         Start-Sleep -Seconds 2
         If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
     }
+}
+
+Function Update-ConfigFile {
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$ConfigFile
+    )
+    # Changed config items
+    $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
+    $Changed_Config_Items | ForEach-Object { 
+        Switch ($_) { 
+            "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+            "APIKEY" { 
+                $Config.MPHAPIKey = $Config.$_
+                $Config.ProHashingAPIKey = $Config.$_
+                $Config.Remove($_)
+            }
+            "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
+            "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+            "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
+            "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
+            "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
+            "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
+            "UserName" { 
+                If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
+                If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
+                $Config.Remove($_)
+            }
+            Default { $Config.Remove($_) } # Remove unsupported config item
+        }
+    }
+    Remove-Variable Changed_Config_Items -ErrorAction Ignore
+
+    # Add new config items
+    If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
+        $New_Config_Items | Sort-Object Name | ForEach-Object { 
+            $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+            $Config.$_ = $Value
+        }
+        Remove-Variable Value -ErrorAction Ignore
+    }
+    $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
+    Write-Config -ConfigFile $ConfigFile
+    "Updated configuration file '$($ConfigFile)' to version $($Variables.CurrentVersion.ToString())." | Write-Message -Level Verbose 
+    Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
 Function Test-Prime { 
