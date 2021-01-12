@@ -226,7 +226,7 @@
               <option value=1>Above Normal</option>
               <option value=0>Normal</option>
               <option value=-1>Below Normal</option>
-              <option value=-2></option>Low</option>
+              <option value=-2>Low</option>
             </select>
             <label for="GPUMinerProcessPriority">process priority</label>
           </div>
@@ -254,7 +254,7 @@
           <div title="Calculate power cost, required for true profit calculation&#10;Requires extra configuration of HWiNFO64&#10;(See ConfigHWinfo64.pdf)">
             <input type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate Power Cost
           </div>
-          <div id=PowerPricekWhTitle title='Price of power per kW⋅h, valid from HH:mm (24hr format)&#10;&#10;e.g. {"00:00":0.26; "12:00":0.3} means&#10;from midnight to noon: [Currency] 0.26 per kW/h &#10;from noon to midnight: [Currency] 0.30 per kW/h&#10;&#10;(compressed JSON)'>
+          <div id=PowerPricekWhTitle>
             <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
             <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
             <label id="PowerPricekWhCurrency" for="PowerPricekWh">
@@ -266,7 +266,7 @@
           <div title="NemosMiner will ignore power cost in best miner selection&#10;instead miners with best earnings will be selected">
             <input style="margin-left:20px" type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost" title="Wallet is a NiceHash internal Wallet&#10;(lower pool fees)"> Ignore Power Cost
           </div>
-          <div title="If profit (earnings - power cost) is less than the configured value&#10;(e.g. 1.00) then mining will stop&#10;(except for benchmarking & power usage measuring)&#10;use negative numbers to allow mining at loss">
+          <div id="ProfitabilityThresholdTitle">
             <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
             <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold" name="ProfitabilityThreshold" value=0.0>
             <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
@@ -532,6 +532,8 @@
         document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
         document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
         document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. { "00:00":0.26; "12:00":0.3 } means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
+        document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
+
         if (config.ShowPowerCost) {
           document.getElementById('ShowPowerCost').checked = true;
         };
@@ -948,6 +950,7 @@
     document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
     document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
     document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
+    document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
   });
 
   // Only one pool variant can be checked
