@@ -1,43 +1,40 @@
 New Config Items
 ================
 
-#Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
+# Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
   "AllowedBadShareRatio": 0.1,
 
-#If set API will log all requests to this file, to disable leave empty
+# If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
 
-#NemosMiner will not mine algorithms listed in UnprofitableAlgorithms.txt (recommended)
-  "ApplyUnprofitableAlgorithmList": true,
-
-#If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
+# If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
   "BalancesTrackerLog": false,
 
-#Interval duration (in munutes) to trigger background task to collect pool balances & earnings dataset to 0 to disable
+# Interval duration (in munutes) to trigger background task to collect pool balances & earnings dataset to 0 to disable
   "BalancesTrackerPollInterval": 5, 
 
-#If true, power usage will be read from miners and calculate power cost, required for true profit calculation
+# If true, power usage will be read from miners and calculate power cost, required for true profit calculation
   "CalculatePowerCost": true,
 
 # Process priority for CPU miners
   "CPUMinerProcessPriority": -2,
 
-#If true NemosMiner will not use any single algo miners
+# If true NemosMiner will not use any single algo miners
   "DisableSingleAlgoMining": false,
 
-#Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
+# Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
   "DisableMinerFee": false,
 
-#If true all miners which contain fees are disabled
+# If true all miners which contain fees are disabled
   "DisableMinersWithFee": false,
 
-#If true NemosMiner will not use any dual algo miners
+# If true NemosMiner will not use any dual algo miners
   "DisableDualAlgoMining": false,
 
-#If true MPM will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+# If true MPM will reduce the algo price by a correction factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
   "EstimateCorrection": false,
 
-#Excluded device names, all devices not explicitly excluded will be active
+# Excluded device names, all devices not explicitly excluded will be active
   "ExcludeDeviceName": [
     "CPU#00",
     "GPU#02"
@@ -46,25 +43,25 @@ New Config Items
 # Process priority for GPU miners
   "GPUMinerProcessPriority": -1,
 
-#Powerusage of idle system in Watt. Part of profit calculation
+# Powerusage of idle system in Watt. Part of profit calculation
   "IdlePowerUsageW": 60,
 
-#Time in seconds the system must be idle before mining starts (only if MineWhenIdle -eq $true)
+# Time in seconds the system must be idle before mining starts (only if MineWhenIdle -eq $true)
   "IdleSec": 120,
 
-#If true, NM will ignore miner fee for earning & profit calculation
+# If true, NM will ignore miner fee for earning & profit calculation
   "IgnoreMinerFee": false,
 
-#If true NM will ignore pool fee for earning & profit calculation
+# If true NM will ignore pool fee for earning & profit calculation
   "IgnorePoolFee": false,
 
-#If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
+# If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
   "IgnorePowerCost": false,
 
-#If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
+# If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
   "IncludeLegacyMiners": true,
 
-#Log level detail to be written to log file, see Write-Message function
+# Log level detail to be written to log file, see Write-Message function
   "LogFile": [
     "Info",
     "Warn",
@@ -73,7 +70,7 @@ New Config Items
     "Debug"
   ],
 
-#Log level detail to be written to screen, see Write-Message function
+# Log level detail to be written to screen, see Write-Message function
   "LogScreen": [
     "Info",
     "Warn",
@@ -82,132 +79,135 @@ New Config Items
     "Debug"
   ],
 
-#Use only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
+# Use only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
   "MinAccuracy": 0.5,
 
-#Minimum number of hash rate samples required to store hash rate
+# Minimum number of hash rate samples required to store hash rate
   "MinDataSamples": 20,
 
-#Per algo multiply MinHashRateSamples by this value
+# Per algo multiply MinHashRateSamples by this value
   "MinDataSamplesAlgoMultiplier": {
     "X25r" = 3
   }
 
-#If true NemosMiner will create separate miner instances per device model. This will increase profitability. (WIP: Need to change each miner to support this new feature)
+# If true NemosMiner will create separate miner instances per device model. This will increase profitability. (WIP: Need to change each miner to support this new feature)
   "MinerInstancePerDeviceModel": true, 
 
-#MPH API Key (required to retrieve balance information)
+# 0: Use best miner per algorithm and device only; 1: Use optimal miners (more than one per algorithm and device); 2: Use all miners per algorithm and device;
+  "MinerSet": 1,
+
+# MPH API Key (required to retrieve balance information)
   "MPHAPIKey": "",
 
-#MPH UserName, if left empty then $UserName is used
+# MPH UserName, if left empty then $UserName is used
   "MPHUserName": "",
 
-#NiceHash API Key (required to retrieve balance information)
+# NiceHash API Key (required to retrieve balance information)
   "NicehashAPIKey": "",
 
-#Set to $true if NiceHashWallet is a NiceHash internal Wallet (lower pool fees)
+# Set to $true if NiceHashWallet is a NiceHash internal Wallet (lower pool fees)
   "NiceHashWalletIsInternal": false,
 
-#NiceHash wallet, if left empty $Wallet is used
+# NiceHash wallet, if left empty $Wallet is used
   "NiceHashWallet": "",
 
-#NiceHash Organization Id (required to retrieve balance information)
+# NiceHash Organization Id (required to retrieve balance information)
   "NicehashOrganizationId": "",
 
-#If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
+# If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
   "OpenFirewallPorts": true,
 
-#Default factor with which NemosMiner multiplies the prices reported by ALL pools. The default value is 1 (valid range is from 0.1 to 1.0). 
-#E.g. If you feel that the general profit estimations as reported by MPM are too high, e.g. %20, then set '-PricePenaltyFactor' to 0.8.
+# Default factor with which NemosMiner multiplies the prices reported by ALL pools. The default value is 1 (valid range is from 0.1 to 1.0). 
+# E.g. If you feel that the general profit estimations as reported by MPM are too high, e.g. %20, then set '-PricePenaltyFactor' to 0.8.
   "PricePenaltyFactor": 1,
 
-#Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get an pool data
+# Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get an pool data
   "PoolTimeout": 30,
 
-#Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
+# Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
   "PowerPricekWh": {
     "00:00": 0.26,
     "12:00": 0.3
   },
 
-#Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+# Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
   "ProfitabilityThreshold": 0,
 
-#ProHashing API Key (required to retrieve balance information)
+# ProHashing API Key (required to retrieve balance information)
   "ProHashingAPIKey": "",
 
-#ProHashing UserName, if left empty then $UserName is used
+# ProHashing UserName, if left empty then $UserName is used
   "ProHashingUserName": "",
 
-#One of europe/us/asia
+# One of europe/us/asia
   "Region": "Europe",
 
-#Show pool data accuracy column in miner overview
+# Show pool data accuracy column in miner overview
   "ShowAccuracy": true,
 
-#Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+# Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
   "ShowAllMiner": false,
 
-#Show miner earning column in miner overview
+# Show miner earning column in miner overview
   "ShowEarning": true,
 
-#Show miner earning bias column in miner overview
+# Show miner earning bias column in miner overview
   "ShowEarningBias": true,
 
-#Show miner fee column in miner overview (if fees are available, Property '[Double]Fee')
+# Show miner fee column in miner overview (if fees are available, Property '[Double]Fee')
   "ShowMinerFee": true,
 
-#Show pool fee column in miner overview (if fees are available, Property '[Double]Fee')
+# Show pool fee column in miner overview (if fees are available, Property '[Double]Fee')
   "ShowPoolFee": true,
 
-#Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
+# Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
   "ShowMinerWindow": "minimized",
 
-#Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
+# Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
   "ShowPowerCost": true,
 
-#Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
+# Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
   "ShowProfit": true,
 
-#Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
+# Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
   "ShowProfitBias": true,
 
-#Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
+# Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
   "ShowPowerUsage": true,
 
-#Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+# Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
    "SnakeTailExe": ".\Utils\SnakeTail.exe",
 
-#Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used insted of the biased value and a warning will be shown
+# Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used insted of the biased value and a warning will be shown
   "SyncWindow": 5,
 
-#If true write transcript files to log folder
+# If true write transcript files to log folder
   "Transcript": false,
 
-#Ignore pool if price is more than $UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
+# Ignore pool if price is more than $UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
   "UnrealPoolPriceFactor": 3,
 
-#Time the miner are allowed to warm up, e.g. to compile the binaries or to get the APi reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
+# Time the miner are allowed to warm up, e.g. to compile the binaries or to get the APi reads before it get marked as failed. Default 30 (seconds). This is also a per miner config item that can be added to miner file too.
   "WarmupTime": 30,
 
-#Number of watchdog timers with same algorithm name & algorithm until miner/algo combination gets suspended
+# Number of watchdog timers with same algorithm name & algorithm until miner/algo combination gets suspended
   "WatchdogMinerAlgorithmCount": 3,
 
-#Number of watchdog timers with same miner name until miner gets suspended
+# Number of watchdog timers with same miner name until miner gets suspended
   "WatchdogMinerCount": 6,
 
-#Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended
+# Number of watchdog timers with same pool name & algorithm until pool/algo combination gets suspended
   "WatchdogPoolAlgorithmCount": 3,
 
-#Number of watchdog timers with same pool name until pool gets suspended
+# Number of watchdog timers with same pool name until pool gets suspended
   "WatchdogPoolCount": 7, 
 
-#If true launch Web GUI (default: true, to disable add ' -Webgui:false' to your NemosMiner start file)
+# If true launch Web GUI (default: true, to disable add ' -Webgui:false' to your NemosMiner start file)
   "WebGUI" = $true,
 
 Removed Config Items
 ====================
-#AMD/NVIDIA/CPU, replaced with per device configuration option "ExcludeDeviceName"
+# AMD/NVIDIA/CPU, replaced with per device configuration option "ExcludeDeviceName"
   "GPUCount": 1, (Replaced by device config in Web GUI)
   "HideConsole": false, obsolete
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
@@ -218,7 +218,6 @@ Removed Config Items
   "TypeNVIDIA": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "UserName": "", (Replaced with NiceHashUserName & ProHashingUsername)
   "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
-
 
 
 NiceHash pool Config:
