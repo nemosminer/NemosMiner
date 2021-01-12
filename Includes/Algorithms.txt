@@ -100,6 +100,7 @@
   "lyra2v2": "Lyra2RE2",
   "lyra2re3": "Lyra2RE3",
   "lyra2v3": "Lyra2RE3",
+  "lyra2z": "Lyra2Z",
   "m7m": "m7m",
   "megabtx": "MegaBtx",
   "megamec": "MegaMec",
@@ -140,6 +141,7 @@
   "yespowerr16": "YespowerR16",
   "yespowerr32": "YespowerR32",
   "yespowerr8": "YespowerR8",
+  "yespowertide": "YespowerTide",
   "wkrz": "Argon2Chukwa",
   "zhash": "EquihashBTG"
 }
