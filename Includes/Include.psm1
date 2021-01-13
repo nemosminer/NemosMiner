@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.14
-version date:   12 January 2021
+version:        3.9.9.15
+version date:   13 January 2021
 #>
 
 Class Device { 
@@ -1033,20 +1033,20 @@ namespace PInvoke.Win32 {
             If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\IdleMining.log" -Append -Force }
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Message "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
                 # Pause if system has become active
                 If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CoreRunspace) { 
-                    Write-Message "System activity detected. Stopping all running miners..."
+                    Write-Message -Level Verbose "System activity detected. Stopping all running miners..."
                     Stop-Mining
-                    Write-Message "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+                    Write-Message -Level Verbose "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
                 }
                 # Check if system has been idle long enough to unpause
                 If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
-                    Write-Message "System was idle for $IdleSeconds seconds, start mining..."
+                    Write-Message -Level Verbose "System was idle for $IdleSeconds seconds, start mining..."
                     Start-Mining
                 }
                 Start-Sleep -Seconds 1
@@ -1066,7 +1066,7 @@ Function Stop-IdleMining {
         $Variables.IdleRunspace.Close()
         If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
         $Variables.Remove("IdleRunspace")
-        Write-Message "Stopped idle detection."
+        Write-Message -Level Verbose "Stopped idle detection."
     }
 }
 
@@ -1197,15 +1197,16 @@ Function Stop-Mining {
         Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
         $_.Status = "Idle"
         $_.Best = $false
-        Write-Message "Stopped miner '$($_.Info)'."
+        Write-Message -Level Info "Stopped miner '$($_.Info)'."
     }
     $Variables.WatchdogTimers = @()
 
     If ($Variables.CoreRunspace) { 
+        Write-Message -Level Info "Ending cycle."
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
+        $Variables.Remove("Timer")
         $Variables.Remove("CoreRunspace")
-        Write-Message "Stopped cycle."
     }
 }
 
@@ -2738,7 +2739,7 @@ Function Update-ConfigFile {
     # Add new config items
     If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
         $New_Config_Items | Sort-Object Name | ForEach-Object { 
-            $Value = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
+            $Value = $Variables.AllCommandLineParameters.$_
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
             $Config.$_ = $Value
         }
