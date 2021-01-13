@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.14
-Version date:   12 January 2021
+Version:        3.9.9.15
+Version date:   14 January 2021
 #>
 
 [CmdletBinding()]
@@ -67,6 +67,8 @@ param(
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), # Will replace old device selection, e.g. @("CPU# 00", "GPU# 02") (work in progress)
     [Parameter(Mandatory = $false)]
+    [String[]]$ExcludeMinerName = @(), # List of miners to be excluded; Either specify miner short name, e.g. "PhoenixMiner" (without '-v...') to exclude any version of the miner, or use the full miner name incl. version information
+    [Parameter(Mandatory = $false)]
     [Int]$GPUMinerProcessPriority = "-1", # Process priority for GPU miners
     [Parameter(Mandatory = $false)]
     [Double]$IdlePowerUsageW = 60, # Watt, Powerusage of idle system. Part of profit calculation.
@@ -92,8 +94,6 @@ param(
     [String[]]$LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug"), # Log level detail to be written to screen, see Write-Message function
     [Parameter(Mandatory = $false)]
     [Double]$MarginOfError = 0, # 0.4, # knowledge about the past won't help us to predict the future so don't pretend that Week_Fluctuation means something real
-    [Parameter(Mandatory = $false)]
-    [String[]]$MinerName = @(), 
     [Parameter(Mandatory = $false)]
     [ValidateRange(0, 1)]
     [Double]$MinAccuracy = 0.5, # Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
@@ -280,6 +280,7 @@ $AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
     $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
     If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
+    Remove-Variable $_ -ErrorAction SilentlyContinue
 }
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
@@ -307,7 +308,6 @@ Get-NMVersion
 If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion )) { 
     Update-ConfigFile -ConfigFile $Variables.ConfigFile
 }
-$Variables.AllCommandLineParameters.Keys | ForEach-Object { Remove-Variable $_ -ErrorAction SilentlyContinue }
 
 Write-Message -Level Verbose "Loading device information..."
 $Variables.Devices = [Device[]](Get-Device -Refresh)
@@ -713,7 +713,8 @@ Function Global:TimerUITick {
                     $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% miners per device group#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
                     $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <#List all miners when measuring power usage#>
-                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } | Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -eq $_.DeviceName).Model -join ', ')]" } } | Out-Host
+                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } | 
+                Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -in $_.DeviceName).Model -join ', ')]" } } | Out-Host
 
                 # Display benchmarking progress
                 If ($MinersDeviceGroupNeedingBenchmark) { 
