@@ -6,11 +6,11 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.6x_
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; MinerSet = 1; Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v36.0 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; MinerSet = 1; Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v36.1 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; MinerSet = 0; Arguments = " --par=125,4 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; MinerSet = 0; Arguments = " --par=144,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; MinerSet = 0; Arguments = " --par=150,5 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.0; MinerSet = 0; Arguments = " --par=192,7 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.3; MinerSet = 0; Arguments = " --par=192,7 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; MinerSet = 0; Arguments = " --par=210,9 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; MinerSet = 1; Arguments = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323)
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; MinerSet = 0; Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
@@ -33,7 +33,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    # Get commands for active miner devices
+                    # Get arguments for active miner devices
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("par", "pers", "ocX") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 

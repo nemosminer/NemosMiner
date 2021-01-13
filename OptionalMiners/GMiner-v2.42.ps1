@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.41/gminer_2_41_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.42/gminer_2_42_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -16,11 +16,10 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; Arguments = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; MinerSet = 0; Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.4c may be faster, bit I see lower sppeed at the pool
 
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v36.0 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v36.1 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc"; Fee = 0.03;   MinMemGB = 6.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckaroo29b --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckaroo29s --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "CuckarooZ29";   Fee = 0.03;   MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckarooz29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo C30CTX --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckatoo31 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckatoo32 --cuda 1 --opencl 0" }
@@ -61,7 +60,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    # Get commands for active miner devices
+                    # Get arguments for active miner devices
                     # $Arguments = Get-ArgumentsPerDevice -Command $Arguments -ExcludeParameters @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Arguments += " --server $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)"

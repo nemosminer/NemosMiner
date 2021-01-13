@@ -28,7 +28,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 1; MinerSet = 1; Arguments = " --algorithm ubqhash" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 2; MinerSet = 1; Arguments = " --algorithm ubqhash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "Phi5";                Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm phi5" }
     [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm yescrypt" }
@@ -72,11 +72,11 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yespower";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespower" }
     [PSCustomObject]@{ Algorithm = "Yespower2b";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespower2b" }
     [PSCustomObject]@{ Algorithm = "YespowerItc";         Type = "CPU"; Fee = 0     ; MinerSet = 0; Arguments = " --algorithm yespoweritc" }
-    [PSCustomObject]@{ Algorithm = "Yespowerlitb";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespowerlitb" }
-    [PSCustomObject]@{ Algorithm = "Yespowerltncg";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespowerltncg" }
+    [PSCustomObject]@{ Algorithm = "YespowerLitb";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespowerlitb" }
+    [PSCustomObject]@{ Algorithm = "YespowerLtncg";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespowerltncg" }
     [PSCustomObject]@{ Algorithm = "YespowerR16";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespowerr16" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yespowersugar" }
-    [PSCustomObject]@{ Algorithm = "YespowerTide";         Type = "CPU"; Fee = 0;      MinerSet = 1; Arguments = " --algorithm yespowertide" }
+    [PSCustomObject]@{ Algorithm = "YespowerTide";        Type = "CPU"; Fee = 0;      MinerSet = 1; Arguments = " --algorithm yespowertide" }
     [PSCustomObject]@{ Algorithm = "YespowerUrx";         Type = "CPU"; Fee = 0;      MinerSet = 1; Arguments = " --algorithm yespowerurx" }
     [PSCustomObject]@{ Algorithm = "Zentoshi";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm balloon_zentoshi" }
 )

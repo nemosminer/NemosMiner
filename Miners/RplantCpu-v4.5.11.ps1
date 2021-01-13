@@ -6,15 +6,23 @@ $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/4.5.11/
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";    MinerSet = 1; Arguments = " --algo lyra2z330" } # JayddeeCpu-v3.14.3 is fastest
-    [PSCustomObject]@{ Algorithm = "YespowerIots"; MinerSet = 0; Arguments = " --algo yespoweriots" }
-    [PSCustomObject]@{ Algorithm = "Yespower";     MinerSet = 0; Arguments = " --algo yespower" }
-    [PSCustomObject]@{ Algorithm = "YespowerR16";  MinerSet = 0; Arguments = " --algo yespowerr16" }
-    [PSCustomObject]@{ Algorithm = "YescryptR8";   MinerSet = 1; Arguments = " --algo yescryptr8" } # CcminerLyraYesscrypt-v8.21r18v5 is faster
-    [PSCustomObject]@{ Algorithm = "YescryptR8g";  MinerSet = 0; Arguments = " --algo yescryptr8g" }
-    [PSCustomObject]@{ Algorithm = "Yescrypt";     MinerSet = 0; Arguments = " --algo yescrypt" }
-    [PSCustomObject]@{ Algorithm = "YescryptR32";  MinerSet = 0; Arguments = " --algo yescryptr32" } # SRBMminerMulti-v0.6.3 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "YespowerItc";  MinerSet = 0; Arguments = " --algo yespoweritc" }
+    [PSCustomObject]@{ Algorithm = "CpuPower";      MinerSet = 0; Arguments = " --algo cpupower" }
+    [PSCustomObject]@{ Algorithm = "Yescrypt";      MinerSet = 0; Arguments = " --algo yescrypt" }
+    [PSCustomObject]@{ Algorithm = "YescryptR16";   MinerSet = 1; Arguments = " --algo yescryptr16" } # CcminerLyraYesscrypt-v8.21r18v5 is faster
+    [PSCustomObject]@{ Algorithm = "YescryptR8";    MinerSet = 1; Arguments = " --algo yescryptr8" } # CcminerLyraYesscrypt-v8.21r18v5 is faster
+    [PSCustomObject]@{ Algorithm = "YescryptR8g";   MinerSet = 0; Arguments = " --algo yescryptr8g" }
+    [PSCustomObject]@{ Algorithm = "YescryptR32";   MinerSet = 0; Arguments = " --algo yescryptr32" } # SRBMminerMulti-v0.6.3 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "Yespower";      MinerSet = 0; Arguments = " --algo yespower" }
+    [PSCustomObject]@{ Algorithm = "Yespower2b";    MinerSet = 0; Arguments = " --algo yespower-b2b" }
+    [PSCustomObject]@{ Algorithm = "YespowerIc";    MinerSet = 0; Arguments = " --algo yespowerIC" }
+    [PSCustomObject]@{ Algorithm = "YespowerIots";  MinerSet = 0; Arguments = " --algo yespowerIOTS" }
+    [PSCustomObject]@{ Algorithm = "YespowerItc";   MinerSet = 0; Arguments = " --algo yespowerITC" }
+    [PSCustomObject]@{ Algorithm = "YespowerLitb";  MinerSet = 0; Arguments = " --algo yespowerLITB" }
+    [PSCustomObject]@{ Algorithm = "YespowerLtncg"; MinerSet = 0; Arguments = " --algo yespowerLTNCG" }
+    [PSCustomObject]@{ Algorithm = "YespowerR16";   MinerSet = 0; Arguments = " --algo yespowerr16" }
+    [PSCustomObject]@{ Algorithm = "YespowerRes";   MinerSet = 0; Arguments = " --algo yespowerRes" }
+    [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; Arguments = " --algo yespowerSugar" }
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 0; Arguments = " --algo yespowerURX" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -28,7 +36,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $AlgorithmDefinitions | ForEach-Object {
 
-                # Get commands for active miner devices
+                # Get arguments for active miner devices
                 # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }

@@ -9,7 +9,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Aergo";  MinMemGB = 1; MinerSet = 0; Arguments = " --algo aergo --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 2; MinerSet = 0; Arguments = " --algo xevan --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Hex";    MinMemGB = 1; MinerSet = 0; Arguments = " --algo hex --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 1; Arguments = " --algo kawpow --intensity 23" } # NBMiner-v36.0 is fastest but has optional 1% fee
+    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 1; Arguments = " --algo kawpow --intensity 23" } # NBMiner-v36.1 is fastest but has optional 1% fee
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -27,7 +27,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    # Get commands for active miner devices
+                    # Get arguments for active miner devices
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 

@@ -3,6 +3,24 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 
+Changelog NemosMiner 3.9.9.15 15.01.2021
+========================================
+
+Fixed:
+- Endless loop when benchmarking (https://github.com/Minerx117/NemosMiner/issues/73)
+- AutoUpdate: Config file update did not correctly add new parameter/vcalue pairs, e.g. 'MinerSet' (https://github.com/Minerx117/NemosMiner/issues/74)
+
+Improved:
+- Faster cycle when all miners failed immediately after start
+- Miner prerequisites are now downloaded automatically
+- Web GUI / Configuration editor: Config item 'ExcludeMinerName' added
+
+Miner updates:
+- GMiner-v2.41
+- NanoMiner-v3.1.5
+- NBMiner-v36.1
+
+
 Changelog NemosMiner 3.9.9.14 12.01.2021
 ========================================
 
