@@ -29,7 +29,7 @@
   "MTP": 30,
   "ProgPoW": 30,
   "ScryptN2": 60,
-  "UbqHash": 30,
+  "UbqHash": 60,
   "VerusHash": 90,
   "X16r": 30
 }
