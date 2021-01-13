@@ -32,7 +32,7 @@
         <div title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from Bitcoin wallet address &#10">
           <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
           <input type="text" id="NiceHashWallet" name="NiceHashWallet" maxlength=35 size=40>
-          <input title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
+          <input class="title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
           <label title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" for="NiceHashWalletIsInternal">is internal</label>
         </div>
         <div title="Your NiceHash API Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash" for="NiceHashAPIKey">
@@ -195,6 +195,9 @@
               <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all miners per algorithm and per device (incl. those in UnprofitableAlgorithms.txt)</option>
             </select>
           </div>
+          <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
+            <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=64>
+          </div>
           <br>
 
           <legend class=h6><b>Run Miners as</b></legend>
@@ -230,8 +233,7 @@
             </select>
             <label for="GPUMinerProcessPriority">process priority</label>
           </div>
-        <br>
-
+          <br>
           <div title="Watchdog will monitor pool & miner for frequent failures&#10;and suspend failing pools or miners for some cycles.">
             <input type="checkbox" id="Watchdog" name="Watchdog"> Activate Watchdog (recommended)
           </div>
@@ -474,6 +476,9 @@
         } else { 
           document.getElementById('MinerSet').value = 1;
         };
+        if (config.ExcludeMinerName) {
+          document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
+        };
 
         if (config.ShowMinerWindows.toLowerCase() == "hidden") {
           document.getElementById('ShowMinerWindowsHidden').checked = true;
@@ -689,6 +694,12 @@
           required: false,
           pattern: "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
         },
+        ExcludeMinerName: {
+          required: false,
+          minlength: 4,
+          maxlength: 256,
+          pattern: "^([A-Za-z0-9\-\.]{4,}?)+(?:,([A-Za-z0-9\-\.]{4,})+)*$"
+        },
         RunningMinerGainPct: {
           required: true,
           step: "0.1"
@@ -736,10 +747,14 @@
           pattern: "<br>Default payout currency must be between 3 and 4 charaters long<br>and may only contain upper case letters and digits"
         },
         Algorithm: {
-          pattern: "<br> algorithms must be prefixed with '+' or '-' and separated by commas"
+          pattern: "<br>Algorithms must be prefixed with '+' or '-' and separated by commas"
         },
         Proxy: {
           pattern: "<br>Enter Proxy IP V4 address and port<br>;e.g. 192.168.1.1:3128"
+        },
+        ExcludeMinerName: {
+          minlength: "<br>Miner Name is too short",
+          pattern: "<br>Miner names must separated by commas"
         }
       },
       submitHandler: function(form) {
@@ -824,6 +839,7 @@
         config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
         config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
         config.MinerSet = parseInt(document.getElementById('MinerSet').value);
+        config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).toString();
 
         if (document.getElementById('ShowMinerWindowsHidden').checked) {
           config.ShowMinerWindows = "hidden" 
