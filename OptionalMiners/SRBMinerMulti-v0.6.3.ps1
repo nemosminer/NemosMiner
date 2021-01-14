@@ -94,7 +94,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
-                    $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
+                    $MinMemGB = (3GB, ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {

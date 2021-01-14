@@ -31,13 +31,13 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { $Algo = $_.Algorithm; $_ } | ForEach-Object { 
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
+                # If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
 
                 $MinMemGB = $_.MinMemGB
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
-                    $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
+                    $MinMemGB = (3GB, ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 

@@ -61,7 +61,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW")) { 
-                    $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB
+                    $MinMemGB = (3GB, ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                     If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MPH(|Coins)$") { 
                         $Arguments += " --ethstratum ETHV1"
                     }
