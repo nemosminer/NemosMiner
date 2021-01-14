@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.9.9.15
-version date:   14 January 2021
+version date:   13 January 2021
 #>
 
 Class Device { 
@@ -2640,7 +2640,7 @@ Function Initialize-Autoupdate {
 
     # Post update actions
     # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path -Recurse $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
 
     # Update Optional Miners to Miners If in use
     Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append }
