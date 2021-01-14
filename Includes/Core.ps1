@@ -249,8 +249,8 @@ Function Start-Cycle {
         Get-Rate
 
         # Power cost preparations
-        If ($Config.CalculatePowerCost) { 
-            If (($Variables.Devices).Count -lt 1) { 
+        If ($Config.CalculatePowerCost -eq $true) { 
+            If (($EnabledDevices).Count -lt 1) { 
                 Write-Message -Level Warn "No configured miner devices. Cannot read power usage info - disabling power usage calculations."
                 $Variables.CalculatePowerCost = $false
             }
@@ -293,7 +293,7 @@ Function Start-Cycle {
                 }
             }
             If (-not $Variables.CalculatePowerCost) { 
-                Write-Message -Level Warn "Realtime power usage cannot be read from system. Will display static values where available."
+                Write-Message -Level Warn "Realtime power usage cannot be read from system. Will use static values where available."
             }
         }
 
@@ -883,8 +883,8 @@ Function Start-Cycle {
         $_.Profit_Bias = $_.Profit_Bias / (1 + ($Config.RunningMinerGainPct / 100))
     }
 
-    $Variables.MiningProfit = [Double]($BestMiners_Combo | Measure-Object Profit -Sum).Sum
     $Variables.MiningEarning = [Double]($BestMiners_Combo | Measure-Object Earning -Sum).Sum
+    $Variables.MiningProfit = [Double]($BestMiners_Combo | Measure-Object Profit -Sum).Sum
     $Variables.MiningPowerCost = [Double]($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum
     $Variables.MiningPowerUsage = [Double]($BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
 
@@ -898,29 +898,43 @@ Function Start-Cycle {
         Write-Message -Level Warn "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
     }
 
+    $Variables.Summary = ""
     If ($Variables.Rates."BTC") { 
         If ([Double]::IsNaN($Variables.MiningEarning)) { 
-            $Variables.Summary = "Estimated Earning/day: n/a (Benchmarking)"
+            $Variables.Summary += "Earning/day: n/a (benchmarking)"
         }
-        Else { 
-            $Variables.Summary = "Estimated Earning/day: {1:N} {0}" -f ($Config.Currency | Select-Object -Index 0), ($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
+        ElseIf ($Variables.MiningEarning -gt 0) { 
+            $Variables.Summary += "Earning/day: {1:N} {0}" -f ($Config.Currency | Select-Object -Index 0), ($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
         }
 
-        If ([Double]::IsNaN($Variables.MiningPowerCost)) { 
-            If ($Variables.BasePowerCostBTC -gt 0) { 
-                $Variables.Summary += "&ensp;&ensp;&ensp;Power Cost/day: n/a&ensp;(Miner: n/a (Measuring); Base {1:N} {0} [{2:0}W])" -f ($Config.Currency | Select-Object -Index 0), ($Variables.BasePowerCostBTC * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Config.IdlePowerUsageW
+        If ($Config.CalculatePowerCost -eq $true) {
+            If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
+
+            If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
+                $Variables.Summary += "Profit/day: n/a (measuring)"
             }
-        }
-        Else { 
-            If ($Variables.BasePowerCostBTC -gt 0) { 
-                $Variables.Summary += "&ensp;&ensp;&ensp;Power Cost/day: {1:N} {0}&ensp;(Miner {2:N} {0} [{3:0} W]; Base {4:N} {0} [{5:0} W])" -f $($Config.Currency | Select-Object -Index 0), (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), (($Variables.MiningPowerCost) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Variables.MiningPowerUsage, (($Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Config.IdlePowerUsageW
+            ElseIf ($Variables.MiningPowerUsage -gt 0) { 
+                $Variables.Summary += "Profit/day: {1:N} {0}" -f ($Config.Currency | Select-Object -Index 0), (($Variables.MiningProfit -$Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)))
             }
             Else { 
-                $Variables.Summary += "&ensp;&ensp;&ensp;Power Cost/day: {1:N} {0}&ensp;[{3:0} W]" -f ($Config.Currency | Select-Object -Index 0), ($Variables.BasePowerCostBTC * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Variables.MiningPowerUsage
+                $Variables.Summary += "Profit/day: n/a (no power data)"
+            }
+
+            If ($Variables.BasePowerCostBTC -gt 0) { 
+                If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
+
+                If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
+                    $Variables.Summary += "Power Cost/day: n/a&ensp;(Miner: n/a (measuring); Base {1:N} {0} [{2:0}W])" -f ($Config.Currency | Select-Object -Index 0), ($Variables.BasePowerCostBTC * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Config.IdlePowerUsageW
+                }
+                ElseIf ($Variables.MiningPowerUsage -gt 0) { 
+                    $Variables.Summary += "Power Cost/day: {1:N} {0}&ensp;(Miner {2:N} {0} [{3:0} W]; Base {4:N} {0} [{5:0} W])" -f $($Config.Currency | Select-Object -Index 0), (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), (($Variables.MiningPowerCost) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Variables.MiningPowerUsage, (($Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Config.IdlePowerUsageW
+                }
+                Else { 
+                    $Variables.Summary += "Power Cost/day: n/a&ensp;(Miner: n/a; Base: {1:N} {0} [{2:0} W])" -f $($Config.Currency | Select-Object -Index 0), (($Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0))), $Config.IdlePowerUsageW
+                }
             }
         }
-
-        If ($Variables.Summary) { $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;" }
+        If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;&ensp;" }
 
         # Add currency rates
         (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency }) + @($Config.Currency | ForEach-Object { $_ -replace "^m" } )) | Sort-Object -Unique | Where-Object { $_ -ne ($Config.Currency | Select-Object -Index 0) } | ForEach-Object { 
