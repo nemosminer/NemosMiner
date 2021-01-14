@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.14
-version date:   12 January 2021
+version:        3.9.9.15
+version date:   14 January 2021
 #>
 
 Function Start-APIServer { 
@@ -637,10 +637,6 @@ Function Start-APIServer {
                     "/watchdogexpiration" { 
                         $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
                         Break
-                    }
-                    "/variables" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Variables | Select-Object)
-                        break
                     }
                     "/version" { 
                         $Data = @("NemosMiner Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)") | ConvertTo-Json

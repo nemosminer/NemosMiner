@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-version:        3.9.9.12
-version date:   06 January 2021
+version:        3.9.9.15
+version date:   14 January 2021
 #>
 
 # Start the log
