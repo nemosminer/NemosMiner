@@ -872,8 +872,8 @@ Function Start-Cycle {
     Remove-Variable SmallestProfitBias
 
     # No CPU mining if GPU miner prevents it
-    If ($BestMiners_Combo.PreventCPUMining -contains $true) { 
-        $BestMiners_Combo = $BestMiners_Combo | Where-Object { $_.Type -ne "CPU" }
+    If ($BestMiner_Combo.PreventCPUMining -contains $true) { 
+        $BestMiner_Combo = $BestMiner_Combo | Where-Object { $_.Type -ne "CPU" }
         Write-Message "Miner prevents CPU mining"
     }
 
@@ -883,10 +883,10 @@ Function Start-Cycle {
         $_.Profit_Bias = $_.Profit_Bias / (1 + ($Config.RunningMinerGainPct / 100))
     }
 
-    $Variables.MiningEarning = [Double]($BestMiners_Combo | Measure-Object Earning -Sum).Sum
-    $Variables.MiningProfit = [Double]($BestMiners_Combo | Measure-Object Profit -Sum).Sum
-    $Variables.MiningPowerCost = [Double]($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum
-    $Variables.MiningPowerUsage = [Double]($BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
+    $Variables.MiningEarning = [Double]($BestMiner_Combo | Measure-Object Earning -Sum).Sum
+    $Variables.MiningProfit = [Double]($BestMiner_Combo | Measure-Object Profit -Sum).Sum
+    $Variables.MiningPowerCost = [Double]($BestMiner_Combo | Measure-Object PowerCost -Sum).Sum
+    $Variables.MiningPowerUsage = [Double]($BestMiner_Combo | Measure-Object PowerUsage -Sum).Sum
 
     $FastestMiners | Select-Object | ForEach-Object { $_.Fastest = $true }
 
