@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.9.9.15
-version date:   13 January 2021
+version date:   14 January 2021
 #>
 
 Class Device { 
@@ -1333,8 +1333,6 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    If ($Object -is [String]) { Return $Object }
-
     $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json 
 
     # Build an ordered hashtable of the property-value pairs.
@@ -1372,7 +1370,7 @@ Function Get-SortedObject {
             }
         }
         Default {
-            $Object
+            $SortedObject = $Object
         }
     }
 
