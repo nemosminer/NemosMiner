@@ -9,5 +9,5 @@ if not "%CUDA_DEVICE_ORDER%"=="PCI_BUS_ID" (setx CUDA_DEVICE_ORDER PCI_BUS_ID) >
 
 PWSH -executionpolicy bypass -windowstyle maximized -command ".\NemosMiner.ps1 -ConfigFile '.\Config\config.json'"
 
-
-
+echo Powershell 6 or later is required. Cannot continue.
+pause
