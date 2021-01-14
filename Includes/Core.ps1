@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           core.ps1
 version:        3.9.9.15
-version date:   13 Januar 2021
+version date:   14 Januar 2021
 #>
 
 using module .\Include.psm1
@@ -1150,7 +1150,7 @@ While ($true) {
                         Write-Message -Level Verbose "$($Miner.Name) data sample retrieved: [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
                         If ($Miner.AllowedBadShareRatio) { 
                             $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
-                                If (($Sample.Shares.$_[2] -gt [Int](1 / $Miner.AllowedBadShareRatio * 100)) -and ($Sample.Shares.$_[2] / $Sample.Shares.$_[1] -gt $Miner.AllowedBadShareRatio)) { 
+                                If ($Sample.Shares.$_[1] -gt 0 -and ($Sample.Shares.$_[2] -gt [Int](1 / $Miner.AllowedBadShareRatio * 100)) -and ($Sample.Shares.$_[2] / $Sample.Shares.$_[1] -gt $Miner.AllowedBadShareRatio)) { 
                                     Write-Message -Level Error "Miner '$($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1]))." 
                                     $Miner.SetStatus([MinerStatus]::Failed)
                                     $Miner.StatusMessage = "too many bad shares."
