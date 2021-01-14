@@ -1250,12 +1250,17 @@ Function Read-Config {
         # Prepare new config
         $Variables.FreshConfig = $true
         If (Test-Path -Path ".\Config\PoolsConfig-Recommended.json" -PathType Leaf) { 
-            $Parameters | Add-Member @{ PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } }) }
+            # Add default enabled pools
+            $Config.PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } })
         }
-        $Parameters.Keys | Sort-Object | ForEach-Object { 
-            $Global:Config.$_ = $Parameters.$_
+
+        # Add config items
+        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys } | Sort-Object Name | ForEach-Object { 
+            $Value = $Variables.AllCommandLineParameters.$_
+            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+            $Config.$_ = $Value
         }
-        $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
+        $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     }
 
     # Build pools configuation
