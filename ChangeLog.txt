@@ -9,6 +9,7 @@ Changelog NemosMiner 3.9.9.15 15.01.2021
 Fixed:
 - Endless loop when benchmarking (https://github.com/Minerx117/NemosMiner/issues/73)
 - AutoUpdate: Config file update did not correctly add new parameter/vcalue pairs, e.g. 'MinerSet' (https://github.com/Minerx117/NemosMiner/issues/74)
+- EtcHash / Ethash / ProgPoW miners: Fix min. memory requirements
 
 Improved:
 - Faster cycle when all miners failed immediately after start
