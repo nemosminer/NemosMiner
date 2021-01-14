@@ -18,7 +18,7 @@
     $.ajax({
       url: '/version',
       success: function(result) {
-        $("#footer").empty().append(result.join('&nbsp;/&nbsp;'));
+        $("#footer").empty().append(result.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools API&nbsp;/&nbsp&copy; www.nemosminer.com');
       }
     });
 
