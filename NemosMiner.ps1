@@ -232,7 +232,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.15"
+    Version      = [System.Version]"3.9.9.14"
 }
 
 Try { 
@@ -940,7 +940,7 @@ $MainForm.Add_Shown(
         # TimerCheckVersion
         $TimerCheckVersion = New-Object System.Windows.Forms.Timer
         $TimerCheckVersion.Enabled = $true
-        $TimerCheckVersion.Interval = 1 / 55 <#timer resolution in ms#> * 1000 <#milliseconds#> * 60 <#seconds#> * 60 <#minutes#> * 24 <#hours#>
+        $TimerCheckVersion.Interval = 1 <#timer resolution 1 ms#> * 1000 <#milliseconds#> * 60 <#seconds#> * 60 <#minutes#> * 24 <#hours#>
         $TimerCheckVersion.Add_Tick(
             { 
                 Get-NMVersion
