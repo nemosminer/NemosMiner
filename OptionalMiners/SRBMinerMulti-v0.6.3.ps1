@@ -50,7 +50,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "CurveHash";           Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm curvehash" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm eaglesong" }
-    [PSCustomObject]@{ Algorithm = "Etchash";             Type = "CPU"; Fee = 0.0065; MinerSet = 1; Arguments = " --algorithm etchash" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "CPU"; Fee = 0.0065; MinerSet = 1; Arguments = " --algorithm etchash" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = "Ethash";              Type = "CPU"; Fee = 0.0065; MinerSet = 1; Arguments = " --algorithm ethash" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = "Handshake";           Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm bl2bsha3" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm k12" }
