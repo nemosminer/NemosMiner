@@ -56,20 +56,32 @@
         $.ajax({url: '/functions/mining/getstatus',
           success: function(result) {
             switch (result) {
-              case "Stopped":
-                document.getElementById('miningstart').disabled = false;
+              case "Running": 
+                document.getElementById('miningstart').disabled = true;
+                document.getElementById('miningstart').title = "Mining processes are already running.";
+                document.getElementById('miningpause').innerHTML = "Pause mining";
                 document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningstop').disabled = true;
+                document.getElementById('miningpause').title = "Pause all mining processes. BrainPlus and Balances tracker remain running.";
+                document.getElementById('miningstop').disabled = false;
+                document.getElementById('miningstop').title = "Stop all mining processes. BrainPlus and Balances tracker will also stop.";
                 break;
               case "Paused":
                 document.getElementById('miningstart').disabled = false;
+                document.getElementById('miningstart').title ="Start the mining process.";
+                document.getElementById('miningpause').innerHTML = "Pause mining";
                 document.getElementById('miningpause').disabled = true;
+                document.getElementById('miningpause').title = "Mining processes are stopped. BrainPlus and Balances tracker are running.";
                 document.getElementById('miningstop').disabled = false;
+                document.getElementById('miningstop').title = "Stop all mining processes. BrainPlus and Balances tracker will also stop.";
                 break;
-              case "Running": 
-                document.getElementById('miningstart').disabled = true;
+              case "Stopped":
+                document.getElementById('miningstart').disabled = false;
+                document.getElementById('miningstart').title ="Start the mining process.";
+                document.getElementById('miningpause').innerHTML = "Start BrainPlus and Balances tracker";
                 document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningstop').disabled = false;
+                document.getElementById('miningpause').title = "Mining will not start.";
+                document.getElementById('miningstop').disabled = true;
+                document.getElementById('miningstop').title = "All mining processes are already stopped.";
                 break;
             }
           }
@@ -91,9 +103,9 @@
         <a class="navbar-brand" href="/"><h5>NemosMiner</h5></a>
       </div>
       <div class="navbar-button">
-        <button id="miningstart" class="btn btn-success btn-lg" title="Start the mining process." disabled>Start mining</button>
-        <button id="miningpause" class="btn btn-info btn-lg" title="Pause all mining processes. BrainPlus and Balances tracker remain running." disabled>Pause mining</button>
-        <button id="miningstop" class="btn btn-danger btn-lg" title="Stop all mining processes. BrainPlus and Balances tracker will also stop." disabled>Stop mining</button>
+        <button id="miningstart" class="btn btn-success btn-lg" disabled>Start mining</button>
+        <button id="miningpause" class="btn btn-info btn-lg" disabled>Pause mining</button>
+        <button id="miningstop" class="btn btn-danger btn-lg" disabled>Stop mining</button>
       </div>
       <div class="d-flex align-items-center navbar-summary text-white" id="summary"></div>
     </nav>
