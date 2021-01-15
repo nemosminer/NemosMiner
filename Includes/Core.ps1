@@ -860,22 +860,23 @@ Function Start-Cycle {
             }
         )
 
-        $BestMiners_Combo = @($BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.SortBy -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
+        $BestMiners_Combo = @($BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_."$($Sortby)" -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
         Remove-Variable Miner_Device_Combo
         Remove-Variable Miners_Device_Combos
         Remove-Variable BestMiners
         Remove-Variable SortBy
     }
-    # Hack part 2: reverse temporarily forced positive earnings & Earnings
-    $Variables.Miners | Where-Object Available -EQ $true | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Profit_Bias -= $SmallestProfitBias }
-    Remove-Variable SmallestEarningBias
-    Remove-Variable SmallestProfitBias
 
     # # No CPU mining if GPU miner prevents it
     # If ($BestMiners_Combo.PreventCPUMining -contains $true) { 
     #     $BestMiners_Combo = $BestMiners_Combo | Where-Object { $_.Type -ne "CPU" }
     #     Write-Message "Miner prevents CPU mining"
     # }
+
+    # Hack part 2: reverse temporarily forced positive earnings & Earnings
+    $Variables.Miners | Where-Object Available -EQ $true | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Profit_Bias -= $SmallestProfitBias }
+    Remove-Variable SmallestEarningBias
+    Remove-Variable SmallestProfitBias
 
     # Don't penalize active miners, revert running miner bonus
     $Variables.Miners | Select-Object | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
