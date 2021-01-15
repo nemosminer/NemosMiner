@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           core.ps1
-version:        3.9.9.15
-version date:   14 Januar 2021
+version:        3.9.9.16
+version date:   16 Januar 2021
 #>
 
 using module .\Include.psm1
@@ -411,7 +411,7 @@ Function Start-Cycle {
                 $_.Price_Bias = $_.Price * (1 - $_.MarginOfError)
             }
         }
-        Remove-Variable Pool
+        Remove-Variable Pool -ErrorAction Ignore
 
         # Filter Algo based on Per Pool Config
         $PoolsConfig = $Config.PoolsConfig # much faster
@@ -814,6 +814,7 @@ Function Start-Cycle {
                 }
             }
             $ProgressPreference = $ProgressPreferenceBackup
+            Remove-Variable ProgressPreferenceBackup
         }
     }
 
@@ -836,42 +837,34 @@ Function Start-Cycle {
         $Variables.EndLoopTime = (Get-Date).AddSeconds(10)
     }
     ElseIf ($Variables.Miners.Count -eq 1) { 
-        $BestMiners_Combo = $BestMiners = $FastestMiners = $Variables.Miners
+        $Variables.BestMiners_Combo = $Variables.BestMiners = $Variables.FastestMiners = $Variables.Miners
     }
     Else { 
         # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
         If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-        $SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } # pre-sort
-        $FastestMiners = $SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } # use a smaller subset of miners
-        $BestMiners = @($FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
+        $Variables.SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } # pre-sort
+        $Variables.FastestMiners = $Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } # use a smaller subset of miners
+        $Variables.BestMiners = @($Variables.FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($Variables.FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
-        $Miners_Device_Combos = @(Get-Combination ($BestMiners | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 })
+        $Variables.Miners_Device_Combos = @(Get-Combination ($Variables.BestMiners | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 })
 
-        $BestMiners_Combos = @(
-            $Miners_Device_Combos | ForEach-Object { 
+        $Variables.BestMiners_Combos = @(
+            $Variables.Miners_Device_Combos | ForEach-Object { 
                 $Miner_Device_Combo = $_.Combination
                 [PSCustomObject]@{ 
                     Combination = $Miner_Device_Combo | ForEach-Object { 
                         $Miner_Device_Count = $_.DeviceName.Count
                         [Regex]$Miner_Device_Regex = "^(" + (($_.DeviceName | ForEach-Object { [Regex]::Escape($_) }) -join '|') + ")$"
-                        $BestMiners | Where-Object { ([Array]$_.DeviceName -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.DeviceName -match $Miner_Device_Regex).Count -eq $Miner_Device_Count }
+                        $Variables.BestMiners | Where-Object { ([Array]$_.DeviceName -notmatch $Miner_Device_Regex).Count -eq 0 -and ([Array]$_.DeviceName -match $Miner_Device_Regex).Count -eq $Miner_Device_Count }
                     }
                 }
             }
         )
+        $Variables.BestMiners_Combo = @($Variables.BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_."$($Sortby)" -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
 
-        $BestMiners_Combo = @($BestMiners_Combos | Sort-Object -Descending { ($_.Combination | Where-Object { $_."$($Sortby)" -Like ([Double]::NaN) } | Measure-Object).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_."$($Sortby)" -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
         Remove-Variable Miner_Device_Combo
-        Remove-Variable Miners_Device_Combos
-        Remove-Variable BestMiners
         Remove-Variable SortBy
     }
-
-    # # No CPU mining if GPU miner prevents it
-    # If ($BestMiners_Combo.PreventCPUMining -contains $true) { 
-    #     $BestMiners_Combo = $BestMiners_Combo | Where-Object { $_.Type -ne "CPU" }
-    #     Write-Message "Miner prevents CPU mining"
-    # }
 
     # Hack part 2: reverse temporarily forced positive earnings & Earnings
     $Variables.Miners | Where-Object Available -EQ $true | ForEach-Object { $_.Earning_Bias -= $SmallestEarningBias; $_.Profit_Bias -= $SmallestProfitBias }
@@ -884,16 +877,16 @@ Function Start-Cycle {
         $_.Profit_Bias = $_.Profit_Bias / (1 + ($Config.RunningMinerGainPct / 100))
     }
 
-    $Variables.MiningEarning = [Double]($BestMiners_Combo | Measure-Object Earning -Sum).Sum
-    $Variables.MiningProfit = [Double]($BestMiners_Combo | Measure-Object Profit -Sum).Sum
-    $Variables.MiningPowerCost = [Double]($BestMiners_Combo | Measure-Object PowerCost -Sum).Sum
-    $Variables.MiningPowerUsage = [Double]($BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
+    $Variables.MiningEarning = [Double]($Variables.BestMiners_Combo | Measure-Object Earning -Sum).Sum
+    $Variables.MiningProfit = [Double]($Variables.BestMiners_Combo | Measure-Object Profit -Sum).Sum
+    $Variables.MiningPowerCost = [Double]($Variables.BestMiners_Combo | Measure-Object PowerCost -Sum).Sum
+    $Variables.MiningPowerUsage = [Double]($Variables.BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
 
     $FastestMiners | Select-Object | ForEach-Object { $_.Fastest = $true }
 
     # ProfitabilityThreshold check - OK to run miners?
     If ((-not $Variables.Rates."BTC") -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
-        $BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
+        $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
     }
     Else { 
         Write-Message -Level Warn "Mining profit ($($Config.Currency | Select-Object -Index 0) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -BTCRate ($Variables.Rates."BTC".($Config.Currency | Select-Object -Index 0)) -Offset 1)) is below the configured threshold of $($Config.Currency | Select-Object -Index 0) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."

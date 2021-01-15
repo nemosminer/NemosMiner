@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.15
-version date:   14 January 2021
+version:        3.9.9.16
+version date:   16 January 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.2.0"
+    $APIVersion = "0.3.3.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -543,7 +543,19 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Best -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        Break
+                    }
+                    "/miners/miners_device_combos" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
+                        Break
+                    }
+                    "/miners/bestminers_combo" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
+                        Break
+                    }
+                    "/miners/bestminers_combos" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
                         Break
                     }
                     "/miners/failed" { 
@@ -551,11 +563,15 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Fastest -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.FastestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/running" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, Workers | ConvertTo-Json -Depth 10 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning) 
+                        Break
+                    }
+                    "/miners/sorted" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.SortedMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, Workers | ConvertTo-Json -Depth 10 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning) 
                         Break
                     }
                     "/miners/unavailable" { 
