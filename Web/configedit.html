@@ -912,6 +912,12 @@
     });
   });
 
+
+  // NiceHashWalletIsInternal
+  $(document.getElementById('NiceHashWallet')).change(function(event) {
+    document.getElementById('NiceHashWalletIsInternal').disabled = !((document.getElementById('NiceHashWallet')).value.match(/^[0-9A-Za-z]{34}$/));
+  });
+
   // Dual AND single algo mining cannot be disabled at the same time
   $(document.getElementById('DisableDualAlgoMining')).click(function(event) {
     if (document.getElementById('DisableDualAlgoMining').checked) { document.getElementById('DisableSingleAlgoMining').checked = false }
