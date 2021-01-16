@@ -609,7 +609,7 @@ Function Start-Cycle {
         }
     }
 
-    # For leagacy miners
+    # For legacy miners
     $AllPools = [PSCustomObject]@{ }
     $PoolsPrimaryAlgorithm = [PSCustomObject]@{ }
     $PoolsSecondaryAlgorithm = [PSCustomObject]@{ }
@@ -843,8 +843,8 @@ Function Start-Cycle {
         # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
         If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
         $Variables.SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } # pre-sort
-        $Variables.FastestMiners = $Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1) } # use a smaller subset of miners
-        $Variables.BestMiners = @($Variables.FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($Variables.FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
+        $Variables.FastestMiners = $Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.Fastest = $true; $_ }) } # use a smaller subset of miners
+        $Variables.BestMiners = @($Variables.FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($Variables.FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1 | ForEach-Object { $_.Best = $true; $_ }) })
 
         $Variables.Miners_Device_Combos = @(Get-Combination ($Variables.BestMiners | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 })
 
