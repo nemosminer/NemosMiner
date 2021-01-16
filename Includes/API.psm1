@@ -546,10 +546,6 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
-                    "/miners/miners_device_combos" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
-                        Break
-                    }
                     "/miners/bestminers_combo" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
                         Break
@@ -576,6 +572,10 @@ Function Start-APIServer {
                     }
                     "/miners/unavailable" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
+                        Break
+                    }
+                    "/miners_device_combos" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator, SwitchingLogData, WorkersRunning)
                         Break
                     }
                     "/miningpowercost" { 
