@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           core.ps1
+File:           Core.ps1
 version:        3.9.9.16
 version date:   16 Januar 2021
 #>
