@@ -7,7 +7,11 @@ if not "%GPU_MAX_ALLOC_PERCENT%"=="100" (setx GPU_MAX_ALLOC_PERCENT 100) > nul
 if not "%GPU_SINGLE_ALLOC_PERCENT%"=="100" (setx GPU_SINGLE_ALLOC_PERCENT 100) > nul
 if not "%CUDA_DEVICE_ORDER%"=="PCI_BUS_ID" (setx CUDA_DEVICE_ORDER PCI_BUS_ID) > nul
 
-PWSH -executionpolicy bypass -windowstyle maximized -command ".\NemosMiner.ps1 -ConfigFile '.\Config\config.json'"
+WHERE /q PWSH.exe
 
-echo Powershell 6 or later is required. Cannot continue.
-pause
+IF ERRORLEVEL 1 (
+  echo Powershell 6 or later is required. Cannot continue.
+  pause
+) ELSE (
+  PWSH -executionpolicy bypass -windowstyle maximized -command ".\NemosMiner.ps1 -ConfigFile '.\Config\config.json'"
+)
