@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-version:        3.9.9.15
-version date:   14 January 2021
+version:        3.9.9.17
+version date:   22 January 2021
 #>
 
 # Start the log
@@ -159,7 +159,7 @@ While ($true) {
                             $Uuid = [string]([guid]::NewGuid())
                             $Timestamp = ([DateTimeOffset](Get-Date).ToUniversalTime()).ToUnixTimeMilliseconds()
 
-                            $Str = "$Key`0$Timestamp`0$Uuid`0`0$Organizationid`0`0$($Method.ToUpper())`0$Endpoint`0"
+                            $Str = "$Key`0$Timestamp`0$Uuid`0`0$Organizationid`0`0$($Method.ToUpper())`0$Endpoint`0extendedResponse=true"
                             $Sha = [System.Security.Cryptography.KeyedHashAlgorithm]::Create("HMACSHA256")
                             $Sha.Key = [System.Text.Encoding]::UTF8.Getbytes($Secret)
                             $Sign = [System.BitConverter]::ToString($Sha.ComputeHash([System.Text.Encoding]::UTF8.Getbytes(${str})))
@@ -170,7 +170,8 @@ While ($true) {
                                 'X-Auth'            = "$($Key):$(($Sign -replace '\-').ToLower())"
                                 'Cache-Control'     = 'no-cache'
                             }
-                            $BalanceData = Invoke-RestMethod "https://api2.nicehash.com$EndPoint" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop -Method $Method -Headers $Headers
+                            $BalanceData = Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec 15 -ErrorAction Stop -Method $Method -Headers $Headers
+                            $BalanceData | Add-Member "total_unpaid" $BalanceData.pendingDetails.unpaidMining -Force
                         }
                     }
                     "NiceHashExternal" { 
@@ -290,28 +291,33 @@ While ($true) {
                     Updated                 = $BalanceObject.DateTime
                 }
 
-                If ($BalancesTrackerConfig.EnableLog) { $Earnings.$PoolName | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLogDev.csv" -ErrorAction Ignore }
+                If ($Config.BalancesTrackerLog -eq $true) { $Earnings.$PoolName | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLogDev.csv" -ErrorAction Ignore }
 
                 $PoolDailyEarning = $DailyEarnings | Where-Object Pool -EQ $PoolName | Select-Object -Last 1
 
                 If ([String]$PoolDailyEarning.Date -eq $DateString) { 
-                    # Pool may have reduced estimated balance, use new balance as start value to avoid negative values
-                    If ($EarningsObject.total_earned -gt 0) { 
-                        $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $EarningsObject.total_earned | Measure-Object -Minimum).Minimum
-                    }
-                    Else { 
-                        $PoolDailyEarning.StartValue = $PoolDailyEarning.StartValue
-                    }
-                    $PoolDailyEarning.DailyEarnings = (($EarningsObject.total_earned - $PoolDailyEarning.StartValue), 0 | Measure-Object -Maximum).Maximum
+
                     $PoolDailyEarning.EndTime = $Now.ToString("T")
                     $PoolDailyEarning.EndValue = $EarningsObject.total_earned
+                    If (-not $PoolDailyEarning.Payout) { $PoolDailyEarning.Payout = 0 }
+
                     # Payment occured?
                     If ($EarningsObject.total_earned -lt ($BalanceObjects[$BalanceObjects.Count - 2].total_earned / 2)) { 
                         $PoolDailyEarning.PrePaymentDayValue = $BalanceObjects[$BalanceObjects.Count - 2].total_earned
                         If ($PoolDailyEarning.PrePaymentDayValue -gt 0) { 
                             # Payment occured
-                            $PoolDailyEarning.DailyEarnings += $PoolDailyEarning.PrePaymentDayValue
+                            $PoolDailyEarning.Payout += $PoolDailyEarning.PrePaymentDayValue - $EarningsObject.balance
                         }
+                        # Pool may have reduced estimated balance, use new balance as start value to avoid negative values
+                        If ($EarningsObject.total_earned -gt 0) { 
+                            $PoolDailyEarning.StartValue = ($PoolDailyEarning.StartValue, $EarningsObject.total_earned | Measure-Object -Minimum).Minimum
+                        }
+                    }
+                    If ($PoolDailyEarning.Payout -gt 0) { 
+                        $PoolDailyEarning.DailyEarnings = $PoolDailyEarning.EndValue - $PoolDailyEarning.StartValue + $PoolDailyEarning.PrePaymentDayValue 
+                    }
+                    Else { 
+                        $PoolDailyEarning.DailyEarnings = (($EarningsObject.total_earned - $PoolDailyEarning.StartValue), 0 | Measure-Object -Maximum).Maximum
                     }
                     $PoolDailyEarning.Balance = $EarningsObject.balance
                     $PoolDailyEarning.DailyGrowth = $EarningsObject.Growth24
@@ -321,17 +327,17 @@ While ($true) {
                 Else { 
                     If ($PoolDailyEarning) { 
                         $StartValue = $PoolDailyEarning.EndValue
-                        $Earnings = $EarningsObject.balance - $PoolDailyEarning.Balance
+                        $DailyEarning = $EarningsObject.balance - $PoolDailyEarning.Balance
                     }
                     Else {
                         $StartValue = $EarningsObject.total_earned
-                        $Earnings = 0
+                        $DailyEarning = 0
                     }
 
                     $DailyEarnings += [PSCustomObject]@{ 
                         Date               = $DateString
                         Pool               = $PoolName
-                        DailyEarnings      = [Double]$Earnings
+                        DailyEarnings      = [Double]$DailyEarning
                         StartTime          = $Now.ToString("T")
                         StartValue         = [Double]$StartValue
                         EndTime            = $Now.ToString("T")
@@ -339,6 +345,7 @@ While ($true) {
                         PrePaymentDayValue = [Double]0
                         Balance            = [Double]$EarningsObject.balance
                         DailyGrowth        = [Double]$EarningsObject.Growth24
+                        Payout             = [Double]0
                     }
                 }
 
@@ -358,6 +365,7 @@ While ($true) {
 
         }
 
+        $Variables.Earn = $Earnings
         # Always keep pools sorted, even when new pools were added
         $Variables.Earnings = [Ordered]@{ }
         $Earnings.Keys | Sort-Object | ForEach-Object { 
