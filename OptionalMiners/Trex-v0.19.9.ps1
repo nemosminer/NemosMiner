@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $PathCUDA10 = ".\Bin\$($Name)\t-rex_CUDA10.exe"
 $PathCUDA11 = ".\Bin\$($Name)\t-rex_CUDA11.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.7.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.9-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -27,6 +27,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "MegaMec";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo megamec --intensity 25" }
     [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "MTPTcr";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo mtp-tcr --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "Multi";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo multi --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; MinerSet = 0; Arguments = " --algo octopus --intensity 25" }
     [PSCustomObject]@{ Algorithm = "PadiHash";   Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo padihash --intensity 23" }
     [PSCustomObject]@{ Algorithm = "PawelHash";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo pawelhash --intensity 23" }
@@ -34,7 +35,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Polytimos";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo polytimos --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Sha256t";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo sha256t --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Sha256q";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo sha256q --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "SkunkHash";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo sonoa --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "SkunkHash";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo skunk --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Sonoa";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo sonoa --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Tensority";  Fee = 0.03; MinMemGB = 2; MinerSet = 0; Arguments = " --algo tensority --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Timetravel"; Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo timetravel --intensity 25" }
@@ -42,7 +43,6 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Veil";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo progpow-veil --intensity 24" }
     [PSCustomObject]@{ Algorithm = "VeriBlock";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo progpow-veriblock" }
     [PSCustomObject]@{ Algorithm = "X11r";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo x11r --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "X17";        Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo x17 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16r";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo x16r --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16rt";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo x16rt --intensity 24" }
     [PSCustomObject]@{ Algorithm = "X16rv2";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo x16rv2 --intensity 24" }
