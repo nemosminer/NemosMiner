@@ -4,12 +4,26 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 
 
+Changelog NemosMiner 3.9.9.17 22.01.2021
+========================================
+
+Fixed:
+- AutoUpdate: Hide message 'Powershell 6 or later is required. Cannot continue.'
+- BalancesTracker: Balances not showing after date change
+- Core: Best miner ist not always best (regression of 3.9.9.15)
+
+Miner updates:
+- TeamRed-v0.8.0
+- Trex-v0.19.9
+
 Changelog NemosMiner 3.9.9.16 16.01.2021
 ========================================
 
 Fixed:
 - Core: Shown profit doubled (https://github.com/Minerx117/NemosMiner/issues/74)
 
+Miner updates:
+- GMiner-v2.42
 
 Changelog NemosMiner 3.9.9.15 15.01.2021
 ========================================
@@ -27,7 +41,7 @@ Improved:
 Miner updates:
 - GMiner-v2.41
 - NanoMiner-v3.1.5
-- NBMiner-v36.1
+- Trex-v0.19.7
 
 
 Changelog NemosMiner 3.9.9.14 12.01.2021
