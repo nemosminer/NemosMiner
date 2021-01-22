@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.16
-Version date:   16 January 2021
+Version:        3.9.9.17
+Version date:   22 January 2021
 #>
 
 [CmdletBinding()]
@@ -232,7 +232,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.16"
+    Version      = [System.Version]"3.9.9.17"
 }
 
 Try { 
@@ -823,7 +823,7 @@ Function Form_Load {
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }
-                        "e" { 
+                        "b" { 
                             $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
                             Write-Host "Toggled displaying pool balances to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
