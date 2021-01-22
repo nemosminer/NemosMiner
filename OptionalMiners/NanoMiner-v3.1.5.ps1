@@ -10,7 +10,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.02; MinMemGB = 16; MinerSet = 0; Coin= "Cuckaroo30" }
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; Coin= "Ethash" } # PhoenixMiner-v5.4c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; Coin= "Kawpow" } # TeamRed-v0.7.22 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; Coin= "Kawpow" } # TeamRed-v0.8.0 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.4c is fastest
 
     [PSCustomObject]@{ Algorithm = "RandomHash2"; Type = "CPU"; Fee = 0;    MinerSet = 0; Coin = "RandomHash2" }
@@ -18,7 +18,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 
     [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.19.7 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.19.9 is fastest
     [PSCustomObject]@{ Algorithm = "Octopus"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; MinerSet = 1; Coin= "Octopus" } # NBMiner-v36.1 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.4c is fastest
 )

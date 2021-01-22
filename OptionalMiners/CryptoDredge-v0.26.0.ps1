@@ -23,7 +23,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightZls";    Fee = 0.01; MinMemGB = 1; MinerSet = 0; Arguments = " --algo=cnzls --intensity 8" }
     [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " --algo=kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "Lux";               Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo=phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 5; MinerSet = 1; Arguments = " --algo=mtp --intensity 8" } # Trex-v0.19.7 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 5; MinerSet = 1; Arguments = " --algo=mtp --intensity 8" } # Trex-v0.19.9 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTcr";            Fee = 0.02; MinMemGB = 5; MinerSet = 0; Arguments = " --algo=mtp-tcr --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ninja";             Fee = 0.01; MinMemGB = 6; MinerSet = 0; Arguments = " --algo ninja --intensity 4" }
 )

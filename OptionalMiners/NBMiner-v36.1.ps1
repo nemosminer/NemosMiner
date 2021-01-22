@@ -16,13 +16,13 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo beamv3 --fee 1" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc"; Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 5.0; MinMemGBWin10 = 6.1;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo bfc --fee 1" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo cuckarood --fee 1" } # GMiner-v2.42 is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 6.0; MinMemGBWin10 = 8.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo cuckatoo32 --fee 1" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 8.0; MinMemGBWin10 = 10.0; MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo cuckatoo32 --fee 1" }
     [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo cuckoo_ae --fee 1" } # GMiner-v2.42 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.0065; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo etchash" } # PhoenixMiner-v5.4c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.0065; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo ethash" } # BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo kawpow --fee 1" } # XmRig-v6.7.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = "Sero";          Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 2.0; MinMemGBWin10 = 2.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo progpow_sero --fee 1" }
-    [PSCustomObject]@{ Algorithm = "Octopus";       Type = "NVIDIA"; Fee = 0.03;   MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.1; MinerSet = 1; Arguments = " -mt 1 --algo octopus --fee 1" } # Trex-v0.19.7 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus";       Type = "NVIDIA"; Fee = 0.03;   MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.1; MinerSet = 1; Arguments = " -mt 1 --algo octopus --fee 1" } # Trex-v0.19.9 is fastest
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
