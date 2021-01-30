@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\cpu-SRBMiner-Multi-0-6-0/SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.0/SRBMiner-Multi-0-6-0-win64.zip"
+$Path = ".\Bin\cpu-SRBMiner-Multi-0-6-3/SRBMiner-MULTI.exe"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.3/SRBMiner-Multi-0-6-3-win64.zip"
 $Commands = [PSCustomObject]@{ 
     "randomx"            = " --algorithm randomx --randomx-use-1gb-pages" #randomx 
     "randomxmonero"      = " --algorithm randomx --randomx-use-1gb-pages" #randomx 
@@ -25,7 +25,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{ 
         Type      = "CPU"
         Path      = $Path
-        Arguments = "--cpu-threads $($ThreadCount) --nicehash true --send-stales true --api-enable --api-port $($Variables.CPUMinerAPITCPPort) --disable-gpu --pool stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) --wallet $($Pools.$Algo.User) --password $($Pools.$Algo.Pass)$($Commands.$_)"
+        Arguments = "--disable-gpu$($Commands.$_) --pool stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) --wallet $($Pools.$Algo.User) --nicehash true --send-stales true --api-enable --api-port $($Variables.CPUMinerAPITCPPort) --password $($Pools.$Algo.Pass)"
         HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .9915 } # substract 0.85% devfee}
         API       = "SRB"
         Port      = $Variables.CPUMinerAPITCPPort
