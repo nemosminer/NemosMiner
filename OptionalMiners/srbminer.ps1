@@ -25,7 +25,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{ 
         Type      = "CPU"
         Path      = $Path
-        Arguments = "--disable-gpu$($Commands.$_) --pool stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) --wallet $($Pools.$Algo.User) --nicehash true --send-stales true --api-enable --api-port $($Variables.CPUMinerAPITCPPort) --password $($Pools.$Algo.Pass)"
+        Arguments = "--disable-gpu$($Commands.$_) --pool stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) --wallet $($Pools.$Algo.User) --nicehash true --send-stales true --cpu-threads $($ThreadCount) --api-enable --api-port $($Variables.CPUMinerAPITCPPort) --password $($Pools.$Algo.Pass)"
         HashRates = [PSCustomObject]@{$Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .9915 } # substract 0.85% devfee}
         API       = "SRB"
         Port      = $Variables.CPUMinerAPITCPPort
