@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.8.1.3
-version date:   29 January 2020
+version date:   02 February 2021
 #>
  
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
@@ -1026,17 +1026,6 @@ Function Get-HashRate {
                 }
             }
 
-            "srb" { 
-                $Request = Invoke_httpRequest $Server $Port "" $Timeout
-                If ($Request) { 
-                    $Data = $Request | ConvertFrom-Json
-                    $HashRate = @(
-                        [Double]$Data.HashRate_total_now
-                        [Double]$Data.HashRate_total_5min
-                    ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
-                }
-            }
-
             "teamred" {
                 $Message = @{command = "summary"; parameter = "" } | ConvertTo-Json -Compress
                 $Request = Invoke_TcpRequest $server $port $message $Timeout
@@ -1132,6 +1121,16 @@ Function Get-HashRate {
                 if ($Request) { 
                     $Data = $Request -split ";" | ConvertFrom-StringData -ErrorAction Stop
                     $HashRate = [Double]$Data.KHS * 2000000 #Temp fix for nlpool wrong hashrate
+                }
+            }
+            "srb" { 
+                $Request = Invoke_httpRequest $Server $Port "" $Timeout
+                If ($Request) { 
+                    $Data = $Request | ConvertFrom-Json
+                    $HashRate = @(
+                        [Double]$Data.algorithms.hashrate.now
+                        [Double]$Data.algorithms.hashrate.'5min'
+                    ) | Where-Object { $_ -gt 0 } | Select-Object -First 1
                 }
             }
         } #end Switch
