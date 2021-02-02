@@ -30,14 +30,14 @@ if ($ArgumentList -ne "") { $Command += " $ArgumentList" }
 $PowerShell.AddScript("$Command 2>&1 | Write-Verbose -Verbose") | Out-Null
 $Result = $PowerShell.BeginInvoke()
 
-Write-Host "energiminer v2.2.1" -BackgroundColor Yellow -ForegroundColor Black
+Write-Host "VerthashMiner" -BackgroundColor Yellow -ForegroundColor Black
 
 do {
     Start-Sleep -Seconds 1
 
     $PowerShell.Streams.Verbose.ReadAll() | ForEach-Object {
-        $Param = @{ }
-        if ($Command -like '*energiminer.exe*') { $Param.NoNewLine = $true }
+        $Param = @{}
+        # if ($Command -like '*verthashminer.exe*') {$Param.NoNewLine = $true}
         Write-Host $_ @Param
 
         $HashRate = 0
