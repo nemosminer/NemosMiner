@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 version:        3.8.1.3
-version date:   02 February 2021
+version date:   03 February 2021
 #>
  
 # New-Item -Path function: -Name ((Get-FileHash $MyInvocation.MyCommand.path).Hash) -Value { $true} -ErrorAction SilentlyContinue | Out-Null
@@ -1107,10 +1107,10 @@ Function Get-HashRate {
             "wrapper" { 
                 $HashRate = ""
                 $wrpath = ".\Logs\energi.txt"
-                $HashRate = If (Test-Path -Path $wrpath -PathType Leaf ) { 
-                    Get-Content  $wrpath
-                    $HashRate = ($HashRate -split ',')[0]
-                    $HashRate = ($HashRate -split '.')[0]
+                if (test-path -path $wrpath ) {
+                    $HashRate = Get-Content  $wrpath
+                    $HashRate = $HashRate.split(',')[0]
+                    $HashRate = $HashRate.split('.')[0]
 
                 }
                 Else { $hashrate = 0 }
