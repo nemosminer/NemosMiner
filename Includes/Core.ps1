@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 version:        3.8.1.3
-version date:   11 February 2020
+version date:   03 February 2021
 #>
 
 Function InitApplication { 
@@ -242,7 +242,7 @@ Function NPMCycle {
         Remove-Variable LocPools
         # Filter Algo based on Per Pool Config
         $PoolsConf = $Config.PoolsConfig
-        $AllPools = $AllPools | Where-Object { $_.Name -notin ($PoolsConf | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) -or ($_.Name -in ($PoolsConf | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) -and ((-not ( $PoolsConf.($_.Name).Algorithm | Where-Object { $_ -like "+*" }) -or ("+$($_.Algorithm)" -in $PoolsConf.($_.Name).Algorithm)) -and ("-$($_.Algorithm)" -notin $PoolsConf.($_.Name).Algorithm))) }
+        $AllPools = @($AllPools).Where( { $_.Name -notin ($PoolsConf | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name) -or ($_.Name -in ($PoolsConf | Get-Member -MemberType NoteProperty | Select -ExpandProperty Name) -and ((!($PoolsConf.($_.Name).Algorithm | ? { $_ -like "+*" }) -or ("+$($_.Algorithm)" -in $PoolsConf.($_.Name).Algorithm)) -and ("-$($_.Algorithm)" -notin $PoolsConf.($_.Name).Algorithm))) })
         $Variables.AllPools = $AllPools
         # If ($AllPools.Count -eq 0) { $Update-Status("Error contacting pool, retrying..."); $timerCycle.Interval = 15000; $timerCycle.Start(); return }
         $Pools = [PSCustomObject]@{ }
@@ -430,7 +430,7 @@ Function NPMCycle {
             $BannedMiners = $Variables.ActiveMinerPrograms | Where-Object { $_.Status -eq "Failed" -and $_.FailedCount -ge $Config.MaxMinerFailure }
             # $BannedMiners | ForEach { Update-Status("BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config.") }
             $BannedMiners | ForEach-Object { "BANNED: $($_.Name) / $($_.Algorithms). Too many failures. Consider Algo exclusion in config." | Out-Host }
-            $Variables.Miners = $Variables.Miners | Where-Object { $_.Path -notin $BannedMiners.Path -and $_.Arguments -notin $BannedMiners.Arguments }
+            $Variables["Miners"] = $Variables["Miners"].Where( { -not ($_.Path -in $BannedMiners.Path -and $_.Arguments -in $BannedMiners.Arguments) } )
         }
 
         #Add the most profitable miners to the active list
@@ -495,7 +495,7 @@ Function NPMCycle {
             If ($Filtered.Count -gt 0) { 
                 If ($_.Process -eq $null -or $_.Process.HasExited -ne $false) { 
                     # Log switching information to .\Logs\switching.log
-                    [PSCustomObject]@{ Date = (Get-Date); "Type" = $_.Type; "Algo(s)" = "$($_.Algorithms -join ';')"; "Wallet(s)" = "$(($_.User | Select-Object -Unique) -join ';')" ;  "Username" = $Config.UserName ; "Host(s)" = "$(($_.host | Select-Object -Unique) -join ';')" } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
+                    [PSCustomObject]@{ Date = (Get-Date); "Type" = $_.Type; "Algo(s)" = "$($_.Algorithms -join ';')"; "Wallet(s)" = "$(($_.User | Select-Object -Unique) -join ';')" ; "Username" = $Config.UserName ; "Host(s)" = "$(($_.host | Select-Object -Unique) -join ';')" } | Export-Csv .\Logs\switching.log -Append -NoTypeInformation
 
                     # Launch prerun if exists
                     If ($_.Type -ne "AMD" -and (Test-Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
@@ -538,7 +538,7 @@ Function NPMCycle {
                     }
 
                     If ($_.Process -ne $null) { $_.Active = [TimeSpan]0 }
-                    If ($_.Wrap) { $_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Includes\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$Arguments' -WorkingDirectory '$(Split-Path $_.Path)'" -PassThru }
+                    if ($_.Wrap) { $_.Process = Start-Process -FilePath "PowerShell" -ArgumentList "-executionpolicy bypass -command . '$(Convert-Path ".\Includes\Wrapper.ps1")' -ControllerProcessID $PID -Id '$($_.Port)' -FilePath '$($_.Path)' -ArgumentList '$($_.Arguments)' -WorkingDirectory '$($Variables.MainPath)'" -PassThru }
                     Else { $_.Process = Start-SubProcess -FilePath $_.Path -ArgumentList $Arguments -WorkingDirectory (Split-Path $_.Path) }
                     If ($_.Process -eq $null) { $_.Status = "Failed" }
                     Else { 
