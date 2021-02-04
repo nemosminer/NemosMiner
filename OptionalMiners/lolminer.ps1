@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-lolminer120\lolMiner.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.20/lolMiner_v1.20_Win64.zip"
+$Path = ".\Bin\AMD-lolminer121\lolMiner.exe"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.21/lolMiner_v1.21_Win64.zip"
 $Commands = [PSCustomObject]@{ 
      "grincuckatoo31"    = " -a C31" #grincuckatoo31
      "grincuckatoo32"    = " -a C32" #grincuckatoo32
@@ -16,7 +16,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{ 
         Type      = "AMD"
         Path      = $Path
-        Arguments = "--tls 0 --devices AMD --longstats 120 --shortstats 10 --apiport $($Variables.AMDMinerAPITCPPort) --pool $($Pools.$Algo.Host):$($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
+        Arguments = "--tls 0 --devices AMD --longstats 120 --shortstats 10 --apihost 127.0.0.1 --apiport $($Variables.AMDMinerAPITCPPort) --pool $($Pools.$Algo.Host):$($Pools.$Algo.Port) --user $($Pools.$Algo.User) --pass $($Pools.$Algo.Pass)$($Commands.$_)" #
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week * .99 } # substract 2% devfee
         API       = "lol"
         Port      = $Variables.AMDMinerAPITCPPort
