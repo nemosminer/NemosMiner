@@ -5,7 +5,8 @@ $Uri = "https://github.com/todxx/teamredminer/releases/download/0.8.1/teamredmin
 
 $Commands = [PSCustomObject]@{
     "etchash"= " --algo etchash" #etchash
-    "kawpow" = " --algo kawpow" #kawpow
+    "ethash" = " --algo ethash"  #ethash
+    "kawpow" = " --algo kawpow"  #kawpow
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
