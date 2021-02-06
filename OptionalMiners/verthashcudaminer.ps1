@@ -2,7 +2,7 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-VertHash062\VerthashMiner.exe"
 $Uri = "https://github.com/CryptoGraphics/VerthashMiner/releases/download/0.6.2/VerthashMiner-0.6.2-CUDA11-windows.zip"
 
-$DatPath = "$($Variables.MainPath)\Bin\NVIDIA-VertHash061\Verthash.dat"
+$DatPath = "$($Variables.MainPath)\Bin\NVIDIA-VertHash062\Verthash.dat"
 If (-not (Test-Path $DatPath) -and (Test-Path $Path)) {
     $Variables.StatusText = "Downloading verthash.dat... 1.2Gb !"
     Invoke-WebRequest -OutFile $DatPath -Uri "https://vtc.suprnova.cc/verthash.dat"
