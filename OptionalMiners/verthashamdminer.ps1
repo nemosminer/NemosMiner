@@ -9,7 +9,7 @@ If (-not (Test-Path $DatPath) -and (Test-Path $Path)) {
 }
 
 $Commands = [PSCustomObject]@{ 
-    #"verthash" = " --verthash-data ""$($DatPath)""" #verthash
+     "verthash" = " --verthash-data ""$($DatPath)""" #verthash
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
