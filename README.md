@@ -238,7 +238,7 @@ recommended/optimal Windows AMD GPU Driver 20.3.1
 
    NemosMiner is currently tested on the following Rigs: 
 
-      windows10-1xGTX-1660Super/RYZEN-3700x (Test PC) 
+      windows10-1xGTX-3060ti/RYZEN-3700x (Test PC) 
 
       windows10-9xAMD-5700XT/Octominer (test Rig 1)
       windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
