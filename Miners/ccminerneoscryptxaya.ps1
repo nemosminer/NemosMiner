@@ -1,8 +1,8 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-ccminerbmw225x86\ccminer.exe"
-$Uri = "https://github.com/Minerx117/ccminer-bmw512/releases/download/v2.2.5-x86/ccminerbmw512x86.7z"
+$Path = ".\Bin\NVIDIA-neoscryptxaya01\ccminer-64bit.exe"
+$Uri = "https://github.com/xaya/ccminer/releases/download/v0.1/ccminer-64bit.exe"
 $Commands = [PSCustomObject]@{ 
-    "bmw512" = " -a bmw512" #Bmw512
+    "neoscrypt-xaya" = " -a neoscrypt-xaya" #neoscrypt-xaya
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
