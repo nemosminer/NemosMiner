@@ -2,8 +2,8 @@ If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; Regis
 $Path = ".\Bin\NVIDIA-neoscryptxaya01\ccminer-64bit.exe"
 $Uri = "https://github.com/xaya/ccminer/releases/download/v0.1/ccminer-64bit.exe"
 $Commands = [PSCustomObject]@{ 
-    "neoscrypt-xaya" = " -a neoscrypt-xaya" #neoscrypt-xaya
-}
+    "neoscrypt-xaya" = " -a neoscrypt-xaya" #neoscrypt-xaya 8gb and above gpu's can use -i 21 for 35-45% performance increase over default -i 13
+ }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object {
     [PSCustomObject]@{ 
