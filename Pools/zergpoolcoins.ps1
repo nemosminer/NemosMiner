@@ -9,13 +9,12 @@ Catch { return }
 If ((-not $Request) -or (-not $CoinsRequest)) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "103.249.70.7"
+$HostSuffix = ".mine.zergpool.com"
 
 $PriceField = "Plus_Price"
 #$PriceField = "actual_last24h"
 #$PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
-$Location = "US"
 
 $ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
 $PoolConf = $Config.PoolsConfig.$ConfName
@@ -25,11 +24,10 @@ $AllMiningCoins = @()
 
 #Uses BrainPlus calculated price
 $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-    $PoolHost = "$($HostSuffix)"
     $PoolPort = $Request.$_.port
     $PoolAlgorithm = Get-Algorithm $Request.$_.name
     # Find best coin for algo
-    $TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ($_.hashrate -gt 0) -and ((Get-Algorithm $_.algo) -eq $PoolAlgorithm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | select -first 1
+    $TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ($_.hashrate -gt 0) -and ((Get-Algorithm $_.algo) -eq $PoolAlgorithm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | Select-Object -first 1
 
     $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
@@ -38,21 +36,34 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
 
     $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
-    If ($PoolConf.Wallet) { 
-        [PSCustomObject]@{ 
-            Algorithm     = $PoolAlgorithm
-            Coin          = $TopCoin.Symbol
-            Info          = $TopCoin.Name
-            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
-            StablePrice   = $Stat.Week
-            MarginOfError = $Stat.Week_Fluctuation
-            Protocol      = "stratum+tcp"
-            Host          = $PoolHost
-            Port          = $PoolPort
-            User          = $PoolConf.Wallet
-            Pass          = If ($TopCoin.Symbol) { "$($WorkerName),c=$($PwdCurr),mc=$($TopCoin.Symbol)" } Else { "$($WorkerName),c=$($PwdCurr)" }
-            Location      = $Location
-            SSL           = $false
+
+    $Locations = "eu", "na", "asia"
+    $Locations | ForEach-Object { 
+        $Pool_Location = $_
+        switch ($Pool_Location) { 
+            "eu" { $Location = "EU" }
+            "na" { $Location = "US" }
+            "asia" { $Location = "JP" }
+            default { $Location = "JP" }
+        }
+        $PoolHost = "$($PoolAlgorithm).$($Pool_Location)$($HostSuffix)"
+
+        If ($PoolConf.Wallet) { 
+            [PSCustomObject]@{ 
+                Algorithm     = $PoolAlgorithm
+                Coin          = $TopCoin.Symbol
+                Info          = $TopCoin.Name
+                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
+                StablePrice   = $Stat.Week
+                MarginOfError = $Stat.Week_Fluctuation
+                Protocol      = "stratum+tcp"
+                Host          = $PoolHost
+                Port          = $PoolPort
+                User          = $PoolConf.Wallet
+                Pass          = If ($TopCoin.Symbol) { "$($WorkerName),c=$($PwdCurr),mc=$($TopCoin.Symbol)" } Else { "$($WorkerName),c=$($PwdCurr)" }
+                Location      = $Location
+                SSL           = $false
+            }
         }
     }
 }
