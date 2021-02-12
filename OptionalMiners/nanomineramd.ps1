@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 $Path = ".\Bin\AMD-nanominer315\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.1.5/nanominer-windows-3.1.5-cuda11.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.2.2/nanominer-windows-3.2.2-cuda11.zip"
 $Commands = [PSCustomObject]@{ 
      "Ubqhash" = "" #
   
