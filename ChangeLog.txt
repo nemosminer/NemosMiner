@@ -26,7 +26,7 @@ Miner updates:
 - lolMiner-v1.21
 - NanoMiner-v3.2.2
 - PhoenixMiner-v5.5c
-- SRBMminerMulti-v0.6.6
+- SRBMminerMulti-v0.6.7
 - TeamRed-v0.8.1
 - Trex-v0.19.11
 
