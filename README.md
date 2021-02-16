@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 26 January 2021
+Updated 16 February 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -15,11 +15,11 @@ Updated/Maintained by Nemo/Minerx117 & UselessGuru
 
 with alot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMiner would not be possible.
 
-NemosMiner code is based on
+NemosMiner code is partly based on
 
--MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
+- MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
 
--NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
+- NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
 
 
 Note: This beta version is **NOT backwards compatible** with the current 3.8.x code base.
@@ -241,7 +241,7 @@ Easy configuration, easy start:
 
 Please update PowerShell (Version 7.x is required): 
 
-[recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.0/PowerShell-7.1.0-win-x64.msi)
+[recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.2/PowerShell-7.1.2-win-x64.msi)
 [update PowerShell](https://github.com/PowerShell/PowerShell/releases)
 
 Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
