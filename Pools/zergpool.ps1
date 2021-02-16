@@ -8,11 +8,13 @@ Catch { return }
 If (-not $Request) { return }
 
 $Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = ".mine.zergpool.com:"
+$HostSuffix = "mine.zergpool.com"
 $PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
+
+$Location = "US"
 
 # Placed here for Perf (Disk reads)
 $ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
@@ -30,18 +32,7 @@ $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty N
     $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
     $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
 
-    $Locations = "eu", "us", "asia"
-    $Locations | ForEach-Object { 
-        $Pool_Location = $_
-        switch ($Pool_Location) { 
-            "eu" { $Location = "eu" }
-            "us" { $Location = "na" }
-            "asia" { $Location = "asia" }
-            default { $Location = "us" }
-        }
-        $PoolHost = "$($Algo).$($Pool_Location)$($HostSuffix)"
-
-        If ($PoolConf.Wallet) { 
+    If ($PoolConf.Wallet) { 
         [PSCustomObject]@{ 
             Algorithm     = $PoolAlgorithm
             Info          = ""
