@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-version:        3.9.9.17
-version date:   22 January 2021
+Version:        3.9.9.18
+Version date:   16 February 2021
 #>
 
 Class Device { 
@@ -138,7 +138,7 @@ Class Miner {
     [UInt16]$Port
     [String[]]$DeviceName = @() # derived from devices
     [String[]]$Algorithm = @() # derived from workers
-    [Double[]]$Speed_Live = @()
+    [Double[]]$Speed_Live = @(0)
 
     [Double]$Earning # derived from pool and stats
     [Double]$Earning_Bias # derived from pool and stats
@@ -183,6 +183,7 @@ Class Miner {
     [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
     [Int]$MinDataSamples # for safe hashrate values
+    [Int]$WaitForMinerData
     [Int]$WarmupTime
     [DateTime]$BeginTime
     [DateTime]$EndTime
@@ -242,11 +243,10 @@ Class Miner {
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment
 
             $this.WorkersRunning = $this.Workers
-            $this.CommandLine = $this.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                Date         = [String](Get-Date -Format o)
+                DateTime     = [String](Get-Date -Format o)
                 Action       = "Started"
                 Name         = $this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
@@ -276,9 +276,10 @@ Class Miner {
             }
 
             $this.Info = "$($this.Name) {$(($this.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-            $this.StatusMessage = "$(If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { "$($(If ($this.Benchmark -eq $true) { "Benchmarking" }), $(If ($this.Benchmark -eq $true -and $this.MeasurePowerUsage -eq $true) { "and" }), $(If ($this.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.StatusMessage = "Warming up {$(($this.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = (Get-Date).ToUniversalTime()
+            $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]0 })
         }
     }
 
@@ -335,7 +336,7 @@ Class Miner {
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            Date         = [String](Get-Date -Format o)
+            DateTime     = [String](Get-Date -Format o)
             Action       = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
             Name         = $this.Name
             Device       = ($this.Devices.Name | Sort-Object) -join "; "
@@ -361,7 +362,6 @@ Class Miner {
         }
 
         $this.WorkersRunning = @()
-        $this.CommandLine = $null
         $this.Info = ""
     }
 
@@ -793,6 +793,7 @@ Function Initialize-API {
                 $RetryCount = 3
                 While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
                     Start-Sleep -Seconds 1
+                    $RetryCount--
                     Try {
                         If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
                             Write-Message "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
@@ -804,7 +805,6 @@ Function Initialize-API {
                         }
                     }
                     Catch { 
-                        $RetryCount--
                     }
                 }
                 If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." }
@@ -836,14 +836,11 @@ Function Initialize-Application {
 }
 
 Function Get-Rate {
-
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
-        $Currencies = (@("BTC") + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PayoutCurrency | Select-Object }) + @($Config.PoolsConfig.Keys | ForEach-Object { $Config.PoolsConfig.$_.PaymentThresholdCurrency }) + @($Config.Currency | ForEach-Object { $_ } )) | Select-Object | ForEach-Object { $_ -replace "^m" } | Sort-Object -Unique
-        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($Currencies -join ",")&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
+        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } ) | Select-Object -Unique) -join ',')&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
             $Currencies = $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name
-
             $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                 $Currency = $_
                 $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -ErrorAction Ignore
@@ -851,6 +848,7 @@ Function Get-Rate {
                     $Rates.$Currency | Add-Member $_ ([Double]($Rates.BTC.$_ / $Rates.BTC.$Currency)) -Force
                 }
             }
+            # Add mBTC
             $Currencies | ForEach-Object { 
                 $Currency = $_
                 $mCurrency = "m$($Currency)"
@@ -867,16 +865,16 @@ Function Get-Rate {
                     $Rates.$Currency | Add-Member $mCurrency ([Double]($Rates.$Currency.$_) * 1000)
                 }
             }
+            Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
             $Variables.Rates = $Rates
         }
-        Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
-
+        Else { 
+            Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
+        }
     }
     Catch { 
         Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
     }
-
-    $Variables.RateFirstCurrency = $Variables.Rates.($Config.PayoutCurrency).($Config.Currency | Select-Object -Index 0)
 }
 
 Function Write-Message { 
@@ -1081,36 +1079,32 @@ Function Update-Monitoring {
     If ($Config.ReportToServer) { 
         $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
         $Status = If ($Variables.Paused) { "Paused" } Else { "Running" }
-        $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq "Running" }
-        # Add the associated object from $Variables.Miners since we need data from that too
-        $RunningMiners | ForEach-Object { 
-            $RunningMiner = $_
-            $Miner = $Variables.Miners | Where-Object { $_.Name -eq $RunningMiner.Name -and $_.Path -eq $RunningMiner.Path -and $_.Arguments -eq $RunningMiner.Arguments }
-        }
+        $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
 
         # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
         # reveal someone's windows username or other system information they might not want sent
         # For the ones that can be an array, comma separate them
-        $Data = $RunningMiners | ForEach-Object { 
+        $Data = $RunningMiners | Sort-Object DeviceName | ForEach-Object { 
             $RunningMiner = $_
             [PSCustomObject]@{ 
                 Name           = $RunningMiner.Name
                 Path           = Resolve-Path -Relative $RunningMiner.Path
                 Type           = $RunningMiner.Type -join ','
                 Algorithm      = $RunningMiner.Algorithm -join ','
-                Pool           = $RunningMiner.Workers.Pool.Name -join ','
+                Pool           = $RunningMiner.WorkersRunning.Pool.Name -join ','
                 CurrentSpeed   = $RunningMiner.Speed_Live -join ','
                 EstimatedSpeed = $RunningMiner.Workers.Speed -join ','
                 Earning        = $RunningMiner.Earning
                 Profit         = $RunningMiner.Profit
+                Currency       = $Config.Currency
             }
         }
         $DataJSON = ConvertTo-Json @($Data)
         # Calculate total estimated profit
-        $Profit = [String]([Math]::Round(($data | Measure-Object Profit -Sum).Sum, 8))
+        $Earning = [String]([Math]::Round(($data | Measure-Object Earning -Sum).Sum, 8))
 
         # Send the request
-        $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Profit; data = $DataJSON }
+        $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Earning; data = $DataJSON } # Earnings is NOT profit! Needs to be changes in mining monitor server
         Try { 
             $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
             If ($Response -eq "Success") { 
@@ -1285,13 +1279,18 @@ Function Read-Config {
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch ($PoolName) { 
-            "MPH" { 
-                If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MPHUserName -Force }
+            "MiningPoolHub" { 
+                If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MiningPoolHubUserName -Force }
             }
             "NiceHash" { 
                 If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
                 If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
-                $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
+                If ($Config.NiceHashWallet) { 
+                    $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
+                }
+                Else { 
+                    $PoolConfig | Add-Member NiceHashWalletIsInternal $false -ErrorAction Ignore
+                }
             }
             "ProHashing" { 
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
@@ -1527,7 +1526,7 @@ Function Get-Stat {
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
             & { 
-                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -Directory -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -File -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
             }
@@ -2537,7 +2536,7 @@ Function Get-NMVersion {
 Function Initialize-Autoupdate { 
     Param(
         [Parameter(Mandatory = $true)]
-        [PSCustomObject]$UpdateVersion
+        [System.Version]$UpdateVersion
     )
 
     Set-Location $Variables.MainPath
@@ -2570,6 +2569,11 @@ Function Initialize-Autoupdate {
         Return
     }
 
+    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") {
+        # Balances & earnings files are no longer compatible
+        Write-Message -Level Warn "Balances & Earnings files are no longer compatible and will be reset."
+    }
+
     # Backup current version folder in zip file; exclude existing zip files and download folder
     "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
@@ -2586,6 +2590,12 @@ Function Initialize-Autoupdate {
     Stop-IdleMining
     Stop-BrainJob
     Stop-BalancesTracker
+
+    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") {
+        # Remove balances & earnings files that are no longer compatible
+        If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+        If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+    }
 
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
@@ -2725,6 +2735,8 @@ Function Update-ConfigFile {
             }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+            "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
+            "MPHUserName"  { $Config.MiningPoolHubUserName = $Config.$_; $Config.Remove($_) }
             "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
@@ -2734,6 +2746,7 @@ Function Update-ConfigFile {
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
                 $Config.Remove($_)
             }
+            "WaitForMinerData" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             Default { $Config.Remove($_) } # Remove unsupported config item
         }
     }
@@ -2748,6 +2761,21 @@ Function Update-ConfigFile {
         }
         Remove-Variable Value -ErrorAction Ignore
     }
+
+    # Change currency names, remove mBTC
+    $Config.ExtraCurrencies = @($Config.Currency | Select-Object -Skip 1 | Where-Object { $_ -ne "mBTC" } | Select-Object)
+    $Config.Currency = $Config.Currency[0]
+
+    #Rename MPH to MiningPoolHub
+    If ($Config.PoolName -contains @("MPH")) { 
+        $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPH" }
+        $Config.PoolName += "MiningPoolHub"
+    }
+    If ($Config.PoolName -contains @("MPHCoins")) { 
+        $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPHCoins" }
+        $Config.PoolName += "MiningPoolHubCoins"
+    }
+
     $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile
     "Updated configuration file '$($ConfigFile)' to version $($Variables.CurrentVersion.ToString())." | Write-Message -Level Verbose 

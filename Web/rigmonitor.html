@@ -47,7 +47,6 @@
     data-show-refresh="true"
     data-auto-refresh="true"
     data-auto-refresh-status="true"
-    data-auto-refresh-interval="60"
     data-detail-formatter="detailFormatter"
     data-url="/displayworkers"
     data-sort-name="LastSeen"
@@ -59,7 +58,9 @@
         <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
         <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
         <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
-        <th data-field="EstimatedProfit" data-sortable="true" data-formatter="formatmBTC">Estimated Profit/day</th>
+        <th data-field="Currency" data-sortable="true">Currency</th>
+        <th data-field="EstimatedEarning" data-sortable="true">Estimated earning/day</th>
+        <th data-field="EstimatedProfit" data-sortable="true">Estimated profit/day</th>
         <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
         <th data-field="Pools" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
         <th data-field="Algos" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
@@ -73,14 +74,13 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
-  // get BTC rate of first currency
-  var rate;
+  var $table = $('#workers');
 
-  $.ajax({url: '/btcratefirstcurrency',
-    success: function(result) {
-      rate = result;
-    }
-  });
+  $table.bootstrapTable({
+    // refresh once per interval
+    autoRefreshInterval: (parseInt(config.Interval)),
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20
+  })
 
   // Get config file name
   $.ajax({url: '/configfile',

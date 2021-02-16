@@ -73,6 +73,7 @@
   "curve": "CurveHash",
   "curvehash": "CurveHash",
   "daggerhashimoto": "Ethash",
+  "ergo": "Autolykos2",
   "equihash125": "Equihash1254",
   "equihash144": "Equihash1445",
   "equihash192": "Equihash1927",

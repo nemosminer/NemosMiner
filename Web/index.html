@@ -27,10 +27,10 @@
   data-show-refresh="true"
   data-detail-view="true"
   data-detail-formatter="detailFormatter"
-  data-url="/miners/running"
   data-response-handler="formatMiners"
-  data-sort-order="asc"
+  data-url="/miners/running"
   data-sort-name="tDevices"
+  data-sort-order="asc"
   >
 
   <thead>
@@ -47,11 +47,11 @@
       <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
       <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-title-tooltip="per 24hrs (estimated)">Power Usage</th>
       <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
-      <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Speed</th>
-      <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
+      <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Hashrate</th>
+      <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Hashrate</th>
       <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
-      <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Speed</th>
-      <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Speed</th>
+      <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Hashrate</th>
+      <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Hashrate</th>
       <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
       <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
       <th data-field="Best" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Best</th>
@@ -61,16 +61,17 @@
   </thead>
 </table>
 
-<div id="balances" .style.display="none">
-  <h3 class="mt-4">Balances</h3>
+<!-- <div id="balances" .style.display="none"> -->
+<div id="balances">
+    <h3 class="mt-4">Balances</h3>
 
   <div id="balanceboxes" class="card-deck"></div>
 
   <script id="poolbalance_template" type="text/x-handlebars-template">
-    <div class="card m-3 {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}200px{{/if}}">
+    <div class="card m-3 {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}275px{{/if}}">
       <div class="card-header text-center">
-        {{#if total}}<h5>{{name}}</h5>last hour:<br>&#8776; {{growth1sum}} {{firstcurrency}}<br>&#8776; {{growth1summbtc}} mBTC<br><br>last 24 hours:<br>&#8776; {{growth24sum}} {{firstcurrency}}<br>&#8776; {{growth24summbtc}} mBTC
-        {{else}}<h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>{{updated}}<br>avg. &#8776; {{avghourlygrowth}} {{thresholdcurrency}}/h<br>{{growth24}} {{thresholdcurrency}} last 24hrs
+        {{#if total}}<h5>{{{name}}}</h5><table class="center" style="width: 102%"><tr><th style="text-align:center">Earnings last hour</th><th style="text-align:center">Earnings last 6 hours</th><th style="text-align:center">Earnings last 24 hours</th><th style="text-align:center">Earnings last 7 days</th><th style="text-align:center">Earnings last 30 days</th></tr><tr><td style="text-align:center">{{growth1sum}} {{firstcurrency}}</td><td style="text-align:center">{{growth6sum}} {{firstcurrency}}</td><td style="text-align:center">{{growth24sum}} {{firstcurrency}}</td><td style="text-align:center">{{growth168sum}} {{firstcurrency}}</td><td style="text-align:center">{{growth720sum}} {{firstcurrency}}</td></tr><tr><td style="text-align:center">{{growth1summbtc}} mBTC</td><td style="text-align:center">{{growth6summbtc}} mBTC</td><td style="text-align:center">{{growth24summbtc}} mBTC</td><td style="text-align:center">{{growth168summbtc}} mBTC</td><td style="text-align:center">{{growth720summbtc}} mBTC</td></tr></table>
+        {{else}}<h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>{{{updated}}}<br><br>{{growth1}} {{thresholdcurrency}} last 1 hour<br>{{growth24}} {{thresholdcurrency}} last 24 hrs<br>{{growth168}} {{thresholdcurrency}} last 7 days<br><br>avg. &#8776; {{avghourlygrowth}} {{thresholdcurrency}}/h<br>avg. &#8776; {{avgdailygrowth}} {{thresholdcurrency}}/day<br>avg. &#8776; {{avgweeklygrowth}} {{thresholdcurrency}}/week
         {{/if}}
       </div>
       <div class="card-body text-center">
@@ -84,12 +85,12 @@
         <p class="payout">
           <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{thresholdcurrency}}</b><br/>payout threshold<br/>
           <br/>Estimated Paydate:<br><b>{{paydate}}</b>
+          <!-- <br><br><button id=clearbalancedata value={{name}} class="btn btn-small btn-primary">Clear balance data</button> -->
         </p>
         {{/if}}
       </div>
     </div>
-  </div>
-</script>
+  </script>
 
 <!-- Start of page scripts -->
 
@@ -97,17 +98,7 @@
   var $table = $('#miners');
   var $querysize = 10000;
 
-  // get BTC rate of first currency
-  var rate;
-
-  $.ajax({url: '/btcratefirstcurrency',
-    success: function(result) {
-      rate = result;
-    }
-  });
-
   $(function(){
-    var $table = $('#miners');
     if (config.CalculatePowerCost == true) {
       $table.bootstrapTable('showColumn', 'Profit');
       $table.bootstrapTable('showColumn', 'PowerUsage');
@@ -128,7 +119,11 @@
     }
   });
 
-  document.getElementById("balances").style.display = "none";
+  $('#miners tr:eq(0) th:eq(5)').html("Earning (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(6)').html("Profit (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(7)').html("Earning Bias (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(8)').html("Profit Bias (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(9)').html("Power Cost (" + maincurrency + ")");
 
   $('#re-benchmark').click(function () {
     var $data = $table.bootstrapTable('getSelections');
@@ -187,48 +182,143 @@
   $(function() {
     function updatePoolBalances() {
       var balances = document.getElementById("balances");
-      var data_sum = {name: "Total from all Pools", balances: {}, total: true};
+      var data_sum = {
+        name: "Total from all Pools",
+        balances: {},
+        total: true
+      };
       var rates = {};
 
-      $.ajax({url: '/rates',
+      $.ajax({
+        url: '/rates',
         success: function(result) {
           if (result != null) {
             rates = result;
 
-            $.ajax({url: '/currencies',
+            $.ajax({url: '/allcurrencies',
               success: function(result) {
                 if (result != null) { 
                   currencies = result;
 
-                  $.ajax({url: '/earnings',
+                  $.ajax({url: '/balances',
                     success: function(result) {
                       if (result != null) { 
                         document.getElementById("balances").style.display = "block";
-
                         $("#balanceboxes").empty();
+                        var outdated = "";
                         var template = Handlebars.compile($("#poolbalance_template").html());
                         var footer = new RegExp("-.+|=.+");
-                        var growth1_sum = 0;
-                        var growth24_sum = 0;
+                        var growth1_sum   = 0;
+                        var growth6_sum   = 0;
+                        var growth24_sum  = 0;
+                        var growth168_sum = 0;
+                        var growth720_sum = 0;
+                        var avghourlygrowth_sum  = 0;
+                        var avgdailygrowth_sum  = 0;
+                        var avgweeklygrowth_sum = 0;
+
                         $.each(result, function(index, item) {
-                          growth1_sum = growth1_sum + item.Growth1;
-                          growth24_sum = growth24_sum + item.Growth24;
+                          item.Currencies = [item.Currency];
+                          item.Currencies = (item.Currencies).concat(currencies);
+                          item.Currencies = Array.from(new Set(item.Currencies));
+
+                          if (config.UsemBTC == true) {
+                            (item.Currencies).splice((item.Currencies).indexOf('BTC'), 1, 'mBTC')
+                          }
+
+                          growth1_sum   += (item.Growth1   * rates['BTC'][item.Currency]);
+                          growth6_sum   += (item.Growth6   * rates['BTC'][item.Currency]);
+                          growth24_sum  += (item.Growth24  * rates['BTC'][item.Currency]);
+                          growth168_sum += (item.Growth168 * rates['BTC'][item.Currency]);
+                          growth720_sum += (item.Growth720 * rates['BTC'][item.Currency]);
+
+                          avghourlygrowth_sum += (item.AvgHourlyGrowth * rates['BTC'][item.Currency]);
+                          avgdailygrowth_sum  += (item.AvgDailyGrowth  * rates['BTC'][item.Currency]);
+                          avgweeklygrowth_sum += (item.AvgWeeklyGrowth * rates['BTC'][item.Currency]);
+
                           if (!(footer.test(item.Pool))) {
-                            var data = {name: item.Pool.replace('Internal', ' (Internal)').replace('External', ' (External)'), updated: formatDate(item.Updated), payoutthreshold: item.PayoutThreshold, thresholdcurrency: item.PayoutThresholdCurrency, currency: item.Currency, uri: item.Uri, balances: {}, paydate: formatDate(item.EstimatedPayDate), percentage: (item.Balance / item.PayoutThreshold * 100 * rates['BTC'][item.PayoutThresholdCurrency.replace("^m")] * rates[item.PayoutThresholdCurrency.replace("^m")][item.PayoutThresholdCurrency]).toFixed(1), avghourlygrowth: (item.AvgHourlyGrowth * 1000).toFixed(8), growth24: (item.Growth24 * 1000).toFixed(8)};
-                            $.each(currencies, function(cindex, currency) {
-                              data["balances"][currency] = (item.Balance * rates['BTC'][currency]).toFixed(8);
+                            var data = {
+                              name: (item.Pool + " (" + item.Currency + ")"),
+                              updated: formatDate(item.LastUpdated),
+                              payoutthreshold: item.PayoutThreshold,
+                              thresholdcurrency: item.PayoutThresholdCurrency,
+                              currency: item.Currency,
+                              uri: item.Uri,
+                              balances: {},
+                              paydate: formatDate(item.EstimatedPayDate),
+                              percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency.replace("mBTC", "BTC")] * rates[item.PayoutThresholdCurrency.replace("mBTC", "BTC")][item.PayoutThresholdCurrency]).toFixed(1),
+                              growth1: (item.Growth1 * 1000).toFixed(7),
+                              growth6: (item.Growth6 * 1000).toFixed(7),
+                              growth24: (item.Growth24 * 1000).toFixed(7),
+                              growth168: (item.Growth168 * 1000).toFixed(7),
+                              growth720: (item.Growth720 * 1000).toFixed(7),
+                              avghourlygrowth: (item.AvgHourlyGrowth * 1000).toFixed(7),
+                              avgdailygrowth: (item.AvgDailyGrowth * 1000).toFixed(7),
+                              avgweeklygrowth: (item.AvgWeeklyGrowth * 1000).toFixed(7)
+                            };
+
+                            // Add warning symbol if data was not updated in last poll
+                            if ((new Date() - new Date(item.LastUpdated)) / 1000 >= parseInt(config.PoolBalancesUpdateInterval) * 60) {
+                              outdated = " &#9888;&#65039;";
+                              data.updated += outdated;
+                            }
+
+                            $.each(item.Currencies, function(cindex, currency) {
+                              data["balances"][currency] = (item.Balance * rates[item.Currency][currency]).toFixed(7);
                               if (!(data_sum["balances"][currency])) {data_sum["balances"][currency] = 0}
-                              data_sum["balances"][currency] = data_sum["balances"][currency] + item.Balance * rates['BTC'][currency];
+                              data_sum["balances"][currency] = data_sum["balances"][currency] + item.Balance * rates[item.Currency][currency];
                             });
                             $("#balanceboxes").append(template(data));
                           }
                         });
-                        data_sum["growth1summbtc"] = (growth1_sum * 1000).toFixed(8);
-                        data_sum["growth24summbtc"] = (growth24_sum * 1000).toFixed(8);
-                        data_sum["firstcurrency"] = currencies[0];
-                        data_sum["growth1sum"] = (growth1_sum * rates['BTC'][currencies[0]]).toFixed(8);
-                        data_sum["growth24sum"] = (growth24_sum * rates['BTC'][currencies[0]]).toFixed(8);
+
+                        data_sum["name"] = (data_sum["name"] + outdated);
+                        data_sum["firstcurrency"] = maincurrency;
+                        if (growth1_sum > 0) {
+                          data_sum["growth1summbtc"] = (growth1_sum * 1000).toFixed(7);
+                          data_sum["growth1sum"] = (growth1_sum * rates['BTC'][maincurrency]).toFixed(7);
+                        } else { 
+                          data_sum["growth1summbtc"] = 0;
+                          data_sum["growth1sum"] = 0;
+                        };
+                        if (growth6_sum > 0) {
+                          data_sum["growth6summbtc"] = (growth6_sum * 1000).toFixed(7);
+                          data_sum["growth6sum"] = (growth6_sum * rates['BTC'][maincurrency]).toFixed(7);
+                        } else {
+                          data_sum["growth6summbtc"] = 0;
+                          data_sum["growth6sum"] = 0;
+                        };
+                        if (growth24_sum > 0) {
+                          data_sum["growth24summbtc"] = (growth24_sum * 1000).toFixed(7);
+                          data_sum["growth24sum" ] = (growth24_sum * rates['BTC'][maincurrency]).toFixed(7);
+                        } else {
+                          data_sum["growth24summbtc"] = 0;
+                          data_sum["growth24sum"] = 0;
+                        };
+                        if (growth168_sum > 0) {
+                          data_sum["growth168summbtc"] = (growth168_sum * 1000).toFixed(7);
+                          data_sum["growth168sum"] = (growth168_sum * rates['BTC'][maincurrency]).toFixed(7);
+                        } else {
+                          data_sum["growth168summbtc"] = 0;
+                          data_sum["growth168sum"] = 0;
+                        };
+                        if (growth720_sum > 0) {
+                          data_sum["growth720summbtc"] = (growth720_sum * 1000).toFixed(7);
+                          data_sum["growth720sum"] = (growth720_sum * rates['BTC'][maincurrency]).toFixed(7);
+                        } else {
+                          data_sum["growth720summbtc"] = 0;
+                          data_sum["growth720sum"] = 0;
+                        };
+
+                        data_sum["avghourlygrowthsummbtc"] = (avghourlygrowth_sum * 1000).toFixed(7);
+                        data_sum["avgdailygrowthsummbtc"]  = (avgdailygrowth_sum * 1000).toFixed(7);
+                        data_sum["avgweeklygrowthsummbtc"] = (avgweeklygrowth_sum * 1000).toFixed(7);
+                        data_sum["avghourlygrowthsum"] = (avghourlygrowth_sum  * rates['BTC'][maincurrency]).toFixed(7);
+                        data_sum["avgdailygrowthsum"] = (avgdailygrowth_sum  * rates['BTC'][maincurrency]).toFixed(7);
+                        data_sum["avgweeklygrowthsum"] = (avgweeklygrowth_sum * rates['BTC'][maincurrency]).toFixed(7);
+
                         $("#balanceboxes").append(template(data_sum));
+
                       }
                     }
                   });
@@ -238,19 +328,13 @@
           }
         }
       });
-
-      $.ajax({url: '/btcratefirstcurrency',
-        success: function(result) {
-          rate = result;
-        }
-      });
     }
     updatePoolBalances();
 
     window.setInterval(function() { 
       updatePoolBalances();
       $table.bootstrapTable("refresh");
-    }, 60000);
+    }, (parseInt(config.Interval) * 1000));
 
   });
 

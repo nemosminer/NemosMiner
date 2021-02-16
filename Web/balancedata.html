@@ -23,7 +23,6 @@
   data-show-refresh="true"
   data-auto-refresh="true"
   data-auto-refresh-status="false"
-  data-auto-refresh-interval="60"
   data-detail-formatter="detailFormatter"
   data-url="/balancedata"
   data-sort-name="DateTime"
@@ -35,11 +34,13 @@
       <th data-field="DateTime" data-sortable="true" data-formatter="formatDate">Date & Time</th>
       <th data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
       <th data-field="Currency" data-sortable="true">Currency</th>
+      <th data-field="Pending" data-sortable="true" data-visible="true">Pending</th>
       <th data-field="Balance" data-sortable="true">Balance</th>
-      <th data-field="Unsold" data-sortable="true" data-visible="false">Unsold</th>
-      <th data-field="Total_unpaid" data-sortable="true" data-visible="false">Total Unpaid</th>
-      <th data-field="Total_paid" data-sortable="true" data-visible="false">Total Paid</th>
-      <th data-field="Total_earned" data-sortable="true" data-visible="false">Total Earned</th>
+      <th data-field="Unpaid" data-sortable="true" data-visible="true">Unpaid</th>
+      <th data-field="Earnings" data-sortable="true" data-visible="true">Earnings</th>
+      <th data-field="Delta" data-sortable="true" data-visible="true">Delta</th>
+      <th data-field="Payout" data-sortable="true" data-visible="true">Payout</th>
+      <th data-field="HiddenPending" data-sortable="true" data-visible="true">Hidden Pending</th>
     </tr>
   </thead>
 </table>
@@ -47,6 +48,14 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
+  var $table = $('#balanceobjects');
+
+  $table.bootstrapTable({
+    // refresh once per interval
+    autoRefreshInterval: (parseInt(config.Interval)),
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
+  })
+
 </script>
 
 <!-- End of page scripts -->

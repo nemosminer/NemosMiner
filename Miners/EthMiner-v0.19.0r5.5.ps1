@@ -8,7 +8,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinerSet = 0; Arguments = " --opencl --cl-devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinerSet = 0; Arguments = " --cuda --cu-devices" } # PhoenixMiner-v5.4c is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinerSet = 0; Arguments = " --cuda --cu-devices" } # PhoenixMiner-v5.5c is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -31,17 +31,18 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                 Else { $Protocol = "stratum://" }
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $Miner_Devices.Name
-                    Type       = $_.Type
-                    Path       = $Path
-                    Arguments  = ("-P $Protocol$(If ($Pools.($_.Algorithm).Name -like "MPH*") { $($Pools.($_.Algorithm).User -replace "\.", "%2e") } Else { $($Pools.($_.Algorithm).User) }):$($Pools.($_.Algorithm).Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "EthMiner"
-                    Port       = $MinerAPIPort
-                    Wrap       = $false
-                    URI        = $Uri
-                    MinerUri   = "http://localhost:$($MinerAPIPort)"
+                    Name        = $Miner_Name
+                    DeviceName  = $Miner_Devices.Name
+                    Type        = $_.Type
+                    Path        = $Path
+                    Arguments   = ("-P $Protocol$(If ($Pools.($_.Algorithm).Name -like "MiningPoolHub*") { $($Pools.($_.Algorithm).User -replace "\.", "%2e") } Else { $($Pools.($_.Algorithm).User) }):$($Pools.($_.Algorithm).Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "EthMiner"
+                    Port        = $MinerAPIPort
+                    Wrap        = $false
+                    URI         = $Uri
+                    MinerUri    = "http://localhost:$($MinerAPIPort)"
+                    WaitForData = 45
                 }
             }
         }

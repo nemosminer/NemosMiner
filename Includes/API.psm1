@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.17
-version date:   18 January 2021
+Version:        3.9.9.18
+Version date:   16 February 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.3.0"
+    $APIVersion = "0.3.4.2"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -309,6 +309,7 @@ Function Start-APIServer {
                                     $_.Available = $true
                                 }
                                 $_.Activated = 0 # To allow 3 attempts
+                                $_.Disabled = $false
                                 $_.Benchmark = $true
                                 $_.Accuracy = $null
                                 $_.Data = @()
@@ -386,7 +387,7 @@ Function Start-APIServer {
                                 $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $Parameters.Value
                                 $_.Speed = [Double]::Nan
                                 $_.Data = @()
-                                If ($Parameters.Value -eq 0 -and $Parameters.Value -eq "Hashrate") { $_.Disabled = $true }
+                                If ($Parameters.Value -eq 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
                                 $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                 ForEach ($Algorithm in $_.Algorithm) { 
                                     $StatName = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
@@ -420,6 +421,7 @@ Function Start-APIServer {
                     "/functions/watchdogtimers/reset" { 
                         $Variables.WatchdogTimersReset = $true
                         $Variables.WatchDogTimers = @()
+                        $Variables.Miners | Where-Object { $_.Reason -like "Miner suspended by watchdog *" } | ForEach-Object { $_.Reason = $_.Reason -notlike "Miner suspended by watchdog *"; $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
                         $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }
@@ -427,27 +429,51 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Algorithms | Select-Object)
                         Break
                     }
+                    "/allcurrencies" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.AllCurrencies)
+                        break
+                    }
                     "/apiversion" { 
                         $Data = ConvertTo-Json -Depth 10 @($APIVersion | Select-Object)
+                        Break
+                    }
+                    "/balances" { 
+                        # Format dates for powershell 5.1 compatiblity
+                        $Balances = $Variables.Balances | ConvertTo-Json | ConvertFrom-Json
+                        If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { 
+                            $Balances | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+                                Try {
+                                    $Balances.$_.EstimatedPayDate = ([DateTime]($Balances.$_.EstimatedPayDate)).ToString("u")
+                                }
+                                Catch { }
+                                Try { 
+                                    $Balances.$_.LastUpdated = ([DateTime]($Balances.$_.LastUpdated)).ToString("u")
+                                }
+                                Catch { }
+                            }
+                        }
+                        $Data = ConvertTo-Json -Depth 10 ($Balances | Select-Object)
                         Break
                     }
                     "/balancedata" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BalanceData | Sort-Object DateTime -Descending)
                         Break
                     }
-                    "/btcratefirstcurrency" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0) | Select-Object)
+                    "/btc" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Rates.BTC.($Config.Currency) | Select-Object)
                         Break
+                    }
+                    "/balancescurrencies" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Config.BalancesCurrencies)
+                        break
                     }
                     "/brainjobs" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BrainJobs | Select-Object)
                         Break
                     }
                     "/config" {
-                        $Data = Get-Content -Path $Variables.ConfigFile
-                        If (-not ($Data | ConvertFrom-Json).ConfigFileVersion) { 
-                            $Data = ConvertTo-Json -Depth 10 ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig)
-                        }
+                        $Data = "Unconfigured"
+                        If ($Variables.ConfigFile) { $Data = Get-Content -Path $Variables.ConfigFile -Raw }
                         Break
                     }
                     "/configfile" { 
@@ -458,9 +484,9 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
                         Break
                     }
-                    "/currencies" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Config.Currency)
-                        break
+                    "/currency" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Config.Currency)
+                        Break
                     }
                     "/dagdata" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.DAGdata | Select-Object)
@@ -487,14 +513,15 @@ Function Start-APIServer {
                         Break
                     }
                     "/displayworkers" { 
-                        $EarningsCurrency = If ("m$($Config.PayoutCurrency)" -in $Config.Currency) { "m$($Config.PayoutCurrency)" } Else { $Config.PayoutCurrency }
                         $DisplayWorkers = [System.Collections.ArrayList]@(
                             $Variables.Workers | Select-Object @(
                                 @{ Name = "Worker"; Expression = { $_.worker } }, 
                                 @{ Name = "Status"; Expression = { $_.status } }, 
                                 @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
                                 @{ Name = "Version"; Expression = { $_.version } }, 
-                                @{ Name = "EstimatedProfit"; Expression = { [decimal]($_.Profit * $Variables.Rates.BTC.$EarningsCurrency)} }, 
+                                @{ Name = "EstimatedEarning"; Expression = { [decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                @{ Name = "EstimatedProfit"; Expression = { [decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
                                 @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
                                 @{ Name = "Pools"; Expression = { $_.data.pool -replace ',', '; ' -join '<br/>' } }, 
                                 @{ Name = "Algos"; Expression = { $_.data.algorithm -replace ',', '; ' -join '<br/>' } }, 
@@ -505,34 +532,17 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
                         Break
                     }
-                    "/earnings" { 
-                        # Format dates for powershell 5.1 compatiblity
-                        $Earnings = $Variables.Earnings | ConvertTo-Json | ConvertFrom-Json
-                        If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { 
-                            $Earnings | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-                                Try {
-                                    $Earnings.$_.EstimatedPayDate = ([DateTime]($Earnings.$_.EstimatedPayDate)).ToString("u")
-                                }
-                                Catch { }
-                                Try { 
-                                    $Earnings.$_.LastUpdated = ([DateTime]($Earnings.$_.LastUpdated)).ToString("u")
-                                }
-                                Catch { }
-                            }
-                        }
-                        $Data = ConvertTo-Json -Depth 10 ($Earnings | Select-Object)
-                        Break
-                    }
                     "/earningschartdata" { 
-                        $ChartData = Get-Content ".\Logs\EarningsChartData.json" | ConvertFrom-Json
-                        # Add BTC rate to avoid blocking NaN errors
-                        $ChartData | Add-Member BTCrate ([Double]($Variables.Rates.BTC.($Config.Currency | Select-Object -Index 0)))
-                        $Data = $ChartData | ConvertTo-Json
+                        $Data = $Variables.EarningsChartData | ConvertTo-Json
                         Break
                     }
-                    "/firstcurrency" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Config.Currency | Select-Object -Index 0)
+                    "/earningschartdata24hr" { 
+                        $Data = $Variables.EarningsChartData24hr | ConvertTo-Json
                         Break
+                    }
+                    "/extracurrencies" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Config.ExtraCurrencies)
+                        break
                     }
                     "/miners" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, Name, SwitchingLogData, WorkersRunning)

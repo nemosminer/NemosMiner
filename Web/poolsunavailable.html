@@ -2,6 +2,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 id="title" class="h2" data-navbaractive="navpoolsunavailable">Unavailable Pools</h1>
 </div>
+
 <div class="alert alert-info" role="alert">This is the pool data of all unavailable pools. The column 'Reason' shows the filter criteria(s) that made the pool unavailable.</div>
 
 <div id="toolbar">
@@ -26,7 +27,6 @@
   data-show-refresh="true"
   data-auto-refresh="true"
   data-auto-refresh-status="false"
-  data-auto-refresh-interval="60"
   data-detail-formatter="detailFormatter"
   data-url="/pools/unavailable"
   data-sort-name="Algorithm"
@@ -53,6 +53,7 @@
       <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4>SSL</th>
       <th data-field="Fee" data-sortable="true" data-filter-control="input" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
       <th data-field="Workers" data-sortable="true" data-visible="false">Workers</th>
+      <th data-field="DAGsize" data-sortable="true" data-visible="false" data-formatter="formatGB" data-visible="false">DAG Size</th>
       <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince">Last Updated</th>
       <th data-field="Disabled" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Disabled</th>
     </tr>
@@ -66,7 +67,9 @@
   var $querysize = 10000;
 
   $table.bootstrapTable({
-    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985,
+    // refresh once per interval
+    autoRefreshInterval: (parseInt(config.Interval)),
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
   })
 
   $('#reset-data').click(function () {

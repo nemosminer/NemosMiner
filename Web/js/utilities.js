@@ -121,7 +121,7 @@ function formatTimeSince(value) {
 }
 
 function formatHashRateValue(value) {
-  var sizes = ['H/s','kH/s','MH/s','GH/s','TH/s','PH/s','EH/s', 'ZH/s', 'YH/s'];
+  var sizes = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s', 'YH/s'];
   if (value == '') return ''
   if (isNaN(value)) return '-';
   if (value == "0.0") return '-';
@@ -139,8 +139,24 @@ function formatHashRate(value) {
   }
 }
 
+// function formatmBTC(value) {
+//   if (value === '') return "-";
+//   if (value > 0) return (parseFloat(value * rate / 1000).toFixed(8) + " " + maincurrency);
+//   if (value == 0) return (parseFloat(0).toFixed(8) + " " + maincurrency);
+//   if (value < 0) return (parseFloat(value * rate / 1000).toFixed(8) + " " + maincurrency);
+//   return '-';
+// };
+
+// function formatBTC(value) {
+//   if (value === '') return "-";
+//   if (value > 0) return (parseFloat(value * rate).toFixed(8) + " " + maincurrency);
+//   if (value == 0) return (parseFloat(0).toFixed(8) + " " + maincurrency);
+//   if (value < 0) return (parseFloat(value * rate).toFixed(8) + " " + maincurrency);
+//   return '-';
+// };
+
 function formatmBTC(value) {
-  if (value == '') return "-";
+  if (value === '') return "-";
   if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
   if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
@@ -148,7 +164,7 @@ function formatmBTC(value) {
 };
 
 function formatBTC(value) {
-  if (value == '') return "-";
+  if (value === '') return "-";
   if (value > 0) return parseFloat(value * rate).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
   if (value < 0) return parseFloat(value * rate).toFixed(8);
@@ -156,36 +172,41 @@ function formatBTC(value) {
 };
 
 function formatDate(value) {
-  if (value == '') return "N/A";
-  if (Date.parse(value )) { return (new Date(value).toLocaleString(navigator.language)) };
+  if (value === '') return "N/A";
+  if (Date.parse(value)) { return (new Date(value).toLocaleString(navigator.language)) };
   if (value == "Unknown") { return "N/A" }
   if (value == null) { return "N/A" }
   return value;
 };
 
 function formatWatt(value) {
-  if (value == '') return "-";
+  if (value === '') return "-";
   if (value > 0) return parseFloat(value).toFixed(2) + ' W';
   if (value == 0) return parseFloat(0).toFixed(2) + ' W';
   return '-';
 };
 
 function formatPercent(value) {
-  if (value == '') return "-";
+  if (value === '') return "-";
   if (isNaN(value)) return '-';
   return parseFloat(value * 100).toFixed(2) + ' %';
 };
 
 function formatPrices(value) {
-  if (value == '') return "-";
+  if (value === '') return "-";
   if (isNaN(value)) return '-';
   return (value * 1000000000).toFixed(10);
 };
 
 function formatArrayAsString(value) {
-  if (value == '') return ''
+  if (value === '') return ''
   if (value == null) return '';
   return value.sort().join('; <br>');
+};
+
+function formatGB(value) {
+  if (value > 0) return parseFloat(value / 1024 / 1024 / 1024).toFixed(3) + ' GB';
+  return '-';
 };
 
 function formatMinerHashRatesAlgorithms(value) {

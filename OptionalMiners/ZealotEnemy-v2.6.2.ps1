@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Aergo";  MinMemGB = 1; MinerSet = 0; Arguments = " --algo aergo --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 2; MinerSet = 0; Arguments = " --algo xevan --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "Xevan";  MinMemGB = 3; MinerSet = 0; Arguments = " --algo xevan --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Hex";    MinMemGB = 1; MinerSet = 0; Arguments = " --algo hex --intensity 24" }
     [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 1; Arguments = " --algo kawpow --intensity 23" } # NBMiner-v36.1 is fastest but has optional 1% fee
 )
@@ -16,7 +16,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
-        If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model | Sort-Object $DeviceEnumerator)) { 
+        If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
@@ -35,7 +35,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         DeviceName = $Miner_Devices.Name
                         Type       = "NVIDIA"
                         Path       = $Path
-                        Arguments  = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Trex"
                         Port       = $MinerAPIPort

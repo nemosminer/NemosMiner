@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.8
-version date:   29 December 2020 -->
+version:        3.9.9.18
+version date:   12 February 2021 -->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.3.1.0)</h1>
+  <h1>NemosMiner API (version 0.3.4.2)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -47,19 +47,23 @@ version date:   29 December 2020 -->
   <p>Shows the algorithm mappings used in Get-Algorithm to build normalized algorithm names.</p>
 
   <h3>BTC Exchange rate</h3>
-  <a href="http://localhost:3999/btcratefirstcurrency">/btcratefirstcurrency</a>
-  <p>Shows the curent BTC exchange rate for the first currency.</p>
+  <a href="http://localhost:3999/btc">/btc</a>
+  <p>Shows the curent BTC exchange rate.</p>
+
+  <h3>Balances</h3>
+  <a href="http://localhost:3999/balances">/balances</a>
+  <p>Returns the current balance information calculated by the balance tracker.</p>
 
   <h3>Balance Data</h3>
   <a href="http://localhost:3999/balancedata">/balancedata</a>
-  <p>Returns the balance data collected by the balance tracker.</p>
+  <p>Returns the balances collected by the balances tracker used to calculate balance information.</p>
 
   <h3>BrainJobs</h3>
   <a href="http://localhost:3999/brainjobs">/brainjobs</a>
   <p>Returns the brainjobs information.</p>
 
   <h3>Config</h3>
-  <a href="http://localhost:3999/configfile">/configfile</a>
+  <a href="http://localhost:3999/config">/config</a>
   <p>Returns the config stored in the current config file.</p>
 
   <h3>ConfigFile</h3>
@@ -68,11 +72,23 @@ version date:   29 December 2020 -->
 
   <h3>Running Configuration</h3>
   <a href="http://localhost:3999/configrunning">/configrunning</a>
-  <p>Returns the full configuration NemosMiner is currently using (including 'PoolsConfig' built from the optional '.\Config\PoolsConfig.json' file).</p>
+  <p>Returns the full configuration NemosMiner is currently using after all variable substitution (including 'PoolsConfig' built from the optional '.\Config\PoolsConfig.json' file).</p>
 
-  <h3>Currencies</h3>
-  <a href="http://localhost:3999/currencies">/currencies</a>
-  <p>Returns the configured currencies</p>
+  <h3>Currency</h3>
+  <a href="http://localhost:3999/currency">/currency</a>
+  <p>Returns the main currency.</p>
+
+  <h3>All Currencies</h3>
+  <a href="http://localhost:3999/allcurrencies">/allecurrencies</a>
+  <p>Returns the list of all currencies (main currency, extra currency and all currencies from balances)</p>
+
+  <h3>Balances Currencies</h3>
+  <a href="http://localhost:3999/balancescurrencies">/balancescurrencies</a>
+  <p>Returns the list of balances currencies</p>
+
+  <h3>Extra Currencies</h3>
+  <a href="http://localhost:3999/extracurrencies">/extracurrencies</a>
+  <p>Returns the list of extra currencies</p>
 
   <h3>Devices</h3>
   <a href="http://localhost:3999/devices">/devices</a>
@@ -86,14 +102,6 @@ version date:   29 December 2020 -->
   <a href="http://localhost:3999/devices/enabled">/devices/enabled</a>
   <p>Shows information about all enabled mining devices.</p>
 
-  <h3>Get Running Configuration</h3>
-  <a href="http://localhost:3999/config">/config</a>
-  <p>Shows the full configuration for the running script, after all variable substitution.</p>
-
-  <h3>Earnings</h3>
-  <a href="http://localhost:3999/earnings">/earnings</a>
-  <p>Returns the earnings data.</p>
-
   <h3>Earnings Chart Data</h3>
   <a href="http://localhost:3999/earningschartdata">/earningschartdata</a>
   <p>Returns the data required for earnings chart.</p>
@@ -101,10 +109,6 @@ version date:   29 December 2020 -->
   <h3>DAG Data</h3>
   <a href="http://localhost:3999/dagdata">/dagdata</a>
   <p>Returns the DAG data (Ethash & EtcHash).</p>
-
-  <h3>First currency</h3>
-  <a href="http://localhost:3999/firstcurrency">/firstcurrency</a>
-  <p>Returns the firstcurrency information.</p>
 
   <h3>Miners</h3>
   <a href="http://localhost:3999/miners">/miners</a>

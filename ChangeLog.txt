@@ -2,6 +2,46 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
+- Balances & Earnings files from versions less 3.9.9.18 than are no longer compatible
+
+
+Changelog NemosMiner 3.9.9.18 14.02.2021
+========================================
+
+Changed:
+- BalancesTracker: Supports all currencies at all pools
+  Note: Balances & earnings files are no longer compatible - old data can be found in the autoupdate zip file.
+
+Fixed:
+- AutoUpdate: Hide message 'Powershell 6 or later is required. Cannot continue.'
+- BalancesTracker: Balances not showing after date change
+- Core: Best miner ist not always best (regression of 3.9.9.15)
+- Core: Do not trigger watchog when turning donation on/off
+- Core: Use std. Pools for donations, omit -24hr & -Coins
+- Core: Watchdog timers not getting cleared (thanks to @misterbrucewayne)
+
+Miner updates:
+- EthMiner-v0.19.0r5.5
+- GMiner-v2.44
+- lolMiner-v1.21
+- NanoMiner-v3.2.2
+- PhoenixMiner-v5.5c
+- SRBMminerMulti-v0.6.6
+- TeamRed-v0.8.1
+- Trex-v0.19.10
+
+Improved:
+- Balances summary: Added 6 hrs, 7 days & 30 days total earnings
+
+New:
+- Added config item 'UseMinerTweaks'
+  NemosMiner will apply miner specific tweaks, e.g mild overclock. This may improve profitability at the expense of system stability (Admin rights are required)
+
+Pools:
+- Renamed 'MPH' to 'MiningPoolHub'
+
+Known issues:
+- Balance & Earnings data values are wrong after a recent payout.
 
 
 Changelog NemosMiner 3.9.9.17 22.01.2021
@@ -43,6 +83,8 @@ Miner updates:
 - NanoMiner-v3.1.5
 - Trex-v0.19.7
 
+New:
+- NemosMiner: Check for pwsh version 7.x; print error message if lower version and exit
 
 Changelog NemosMiner 3.9.9.14 12.01.2021
 ========================================

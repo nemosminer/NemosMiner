@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD"; MinerSet = 1; Arguments = " -platform 1 -y 1 -rxboost 1" } # Bminer-v16.3.7 & PhoenixMiner-v5.4c are faster
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01)   ; MinMemGB = 4; Type = "AMD"; MinerSet = 1; Arguments = " -platform 1 -y 1 -rxboost 1" } # Bminer-v16.3.7 & PhoenixMiner-v5.5c are faster
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD"; MinerSet = 0; Arguments = " -dcoin blake2s -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD"; MinerSet = 0; Arguments = " -dcoin dcr -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD"; MinerSet = 0; Arguments = " -dcoin keccak -platform 1 -y 1 -rxboost 1" }
@@ -15,8 +15,8 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD"; MinerSet = 0; Arguments = " -dcoin pasc -platform 1 -y 1 -rxboost 1" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.01, 0); MinMemGB = 4; Type = "AMD"; MinerSet = 0; Arguments = " -dcoin sc -platform 1 -y 1 -rxboost 1" }
 
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01);    MinMemGB = 4; Type = "NVIDIA"; MinerSet = 1; Arguments = " -platform 2" } # PhoenixMiner-v5.4c is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; MinerSet = 1; Arguments = " -dcoin blake2s -platform 2" } # PhoenixMiner-v5.4c is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.01);    MinMemGB = 4; Type = "NVIDIA"; MinerSet = 1; Arguments = " -platform 2" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; MinerSet = 1; Arguments = " -dcoin blake2s -platform 2" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; MinerSet = 0; Arguments = " -dcoin dcr -platform 2" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; MinerSet = 0; Arguments = " -dcoin keccak -platform 2" }
     [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.01, 0); MinMemGB = 4; Type = "NVIDIA"; MinerSet = 0; Arguments = " -dcoin lbc -platform 2" }
@@ -58,8 +58,12 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm[0] -eq "Ethash") { 
+                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
+                    $WaitForData = 45 # Seconds, max. wait time until first data sample
+                }
+                Else { 
+                    $WaitForData = 15 # Seconds, max. wait time until first data sample
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -71,7 +75,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     If ($Pools.($_.Algorithm[0]).SSL) {
                         $Arguments += " -checkcert 0"
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
                             $Arguments += " -esm 3"
                             $Protocol = "stratum+ssl://"
                         }
@@ -80,7 +84,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         }
                     }
                     Else { 
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MPH(|Coins)$") { 
+                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
                             $Arguments += " -esm 3"
                             $Protocol = "stratum+tcp://"
                         }
@@ -101,17 +105,18 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = $_.Type
-                        Path       = $Path
-                        Arguments  = ("-epool $Protocol$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -ewal $($Pools.($_.Algorithm[0]).User) -epsw $($Pools.($_.Algorithm[0]).Pass)$Arguments -dbg -1 -wd 0 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($Miner_Devices | Sort-Object $DeviceEnumerator | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
-                        API        = "EthMiner"
-                        Port       = $MinerAPIPort
-                        URI        = $Uri
-                        Fee        = $_.Fee # Dev fee
-                        MinerUri   = "http://localhost:$($MinerAPIPort)"
+                        Name        = $Miner_Name
+                        DeviceName  = $Miner_Devices.Name
+                        Type        = $_.Type
+                        Path        = $Path
+                        Arguments   = ("-epool $Protocol$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -ewal $($Pools.($_.Algorithm[0]).User) -epsw $($Pools.($_.Algorithm[0]).Pass)$Arguments -dbg -1 -wd 0 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm   = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
+                        API         = "EthMiner"
+                        Port        = $MinerAPIPort
+                        URI         = $Uri
+                        Fee         = $_.Fee # Dev fee
+                        MinerUri    = "http://localhost:$($MinerAPIPort)"
+                        WaitForData = $WaitForData
                     }
                 }
             }

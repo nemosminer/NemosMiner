@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 06 January 2021
+Updated 26 January 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -180,21 +180,21 @@ Easy configuration, easy start:
       This shows less switching than following current estimate and more switching that following the 24hr actual.
       Better profitability.
 
-   Earnings Tracking
+   Balances Tracking
 
       Displays BTC/h and BTC/d as well a estimation of when the pool payment threshold will be reached.
       Supported pools:
          - AHashPool
          - BlazePool
          - BlockMasters
-         - MiningPoolHub (partial)
+         - MiningPoolHub
          - NiceHash (internal & external wallet)
          - NLPool
          - ProHashing
          - ZergPool
          - Zpool
-      If mining more than one pool, NemosMiner shows stats for any supported pool
-      Press key e in the console window to show/hide earnings
+      If mining more than one pool, NemosMiner shows stats for any supported pool.
+      Press key 'b' in the console window to show/hide earnings.
 
    Support for running multiple instances
 
@@ -217,7 +217,7 @@ Easy configuration, easy start:
 
    Algorithm switching log
 
-      Simple algo switching log in csv switching.log (data from legacy GUI) or switching2log (data from the Web GUI) file found in Logs folder.
+      Simple algo switching log as csv (switching.log file found in Logs folder).
       You can easily track switching rate.
 
    Console Display Options
@@ -226,12 +226,13 @@ Easy configuration, easy start:
          Full = Usual display (Default)
          Light = Show only current mining info
       UIStyle automatically switches to Full during benchmarking.
+      Press key 's' in the console window to switch UIStyle.
 
    In session console display toggle
 
-      Press key a in the window to show/hide all avaialable miners 
-      Press key e in the window to show/hide pool balances
-      Press key s in the window to switch between light and full display
+      Press key 'a' in the window to show/hide all avaialable miners 
+      Press key 'b' in the window to show/hide pool balances
+      Press key 's' in the window to switch between light and full display
       Will toggle display at next refresh
 
    New version notification (Available since version 3.9.9.10)

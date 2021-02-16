@@ -11,11 +11,11 @@
       <TitleMatchFilename>true</TitleMatchFilename>
       <TextColor>White</TextColor>
       <BackColor>Black</BackColor>
-      <FontInvariant>Consolas, 10pt</FontInvariant>
+      <FontInvariant>Consolas, 9pt</FontInvariant>
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2020-12-21.log</Title>
+      <Title>NemosMiner_2021-02-12.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
         <Width>1395</Width>
@@ -184,7 +184,7 @@
       <TitleMatchFilename>true</TitleMatchFilename>
       <TextColor>White</TextColor>
       <BackColor>Black</BackColor>
-      <FontInvariant>Consolas, 10pt</FontInvariant>
+      <FontInvariant>Consolas, 9pt</FontInvariant>
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
@@ -357,7 +357,7 @@
       <TitleMatchFilename>true</TitleMatchFilename>
       <TextColor>White</TextColor>
       <BackColor>Black</BackColor>
-      <FontInvariant>Consolas, 10pt</FontInvariant>
+      <FontInvariant>Consolas, 9pt</FontInvariant>
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
@@ -527,8 +527,8 @@
     <Height>700</Height>
   </WindowSize>
   <WindowPosition>
-    <X>15</X>
-    <Y>24</Y>
+    <X>19</X>
+    <Y>20</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>

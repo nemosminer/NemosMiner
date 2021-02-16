@@ -2,6 +2,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1 id="title" class="h2" data-navbaractive="navminers">All Miners</h1>
 </div>
+
 <div class="alert alert-info" role="alert">These are all available miners. If there is no pool available for a given algorithm then there will be no miner available for that algorithm.</div>
 
 <div id="toolbar">
@@ -29,14 +30,13 @@
   data-show-refresh="true"
   data-auto-refresh="true"
   data-auto-refresh-status="false"
-  data-auto-refresh-interval="60"
   data-detail-formatter="detailFormatter"
-  data-url="/miners"
   data-response-handler="formatMiners"
+  data-url="/miners"
   data-sort-name="Algorithm"
   data-sort-order="desc"
   >
-
+  <!-- <div class="row"> -->
   <thead>
     <tr>
       <th data-field="state" data-checkbox="true"></th>
@@ -47,7 +47,7 @@
       <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
       <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
       <th data-field="tReason" data-sortable="true" data-filter-control="select" data-visible="false">Reason</th>
-      <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
+      <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)" class="word-wrap">Earning</th>
       <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning Bias</th>
       <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
       <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Profit Bias</th>
@@ -56,13 +56,13 @@
       <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
       <th data-field="tEarningAccuracy" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=2>Accuracy</th>
       <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select">Primary Algorithm</th>
-      <th data-field="tPrimarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashRateValue">Primary Speed</th>
-      <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Primary Pool</th>
+      <th data-field="tPrimarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashRateValue">Primary Hashrate</th>
+      <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
       <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Pool Fee</th>
       <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Miner Fee</th>
       <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select">Secondary Algorithm</th>
-      <th data-field="tSecondarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashRateValue">Secondary Speed</th>
-      <th data-field="tSecondaryPool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Secondary Pool</th>
+      <th data-field="tSecondarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashRateValue">Secondary Hashrate</th>
+      <th data-field="tSecondaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
       <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Pool Fee</th>
       <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Miner Fee</th>
       <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
@@ -87,21 +87,19 @@
   var $table = $('#miners');
   var $querysize = 10000;
 
-  // get BTC rate of first currency
-  var rate;
-
-  $.ajax({url: '/btcratefirstcurrency',
-    success: function(result) {
-      rate = result;
-    }
-  });
+  $('#miners tr:eq(0) th:eq(8)').html("Earning (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(9)').html("Profit (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(10)').html("Earning Bias (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(11)').html("Profit Bias (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(13)').html("Power Cost (" + maincurrency + ")");
 
   $table.bootstrapTable({
-    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985,
-  })
+    // refresh once per interval
+    autoRefreshInterval: (parseInt(config.Interval)),
+    height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
+  });
 
   $(function(){
-    var $table = $('#miners');
     if (config.CalculatePowerCost == true) {
       $table.bootstrapTable('showColumn', 'Profit');
       $table.bootstrapTable('showColumn', 'Profit_Bias');

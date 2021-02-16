@@ -16,7 +16,6 @@ body {
 /*
  * Sidebar
  */
-
 .sidebar {
   width: 250px;
   position: fixed;
@@ -38,7 +37,7 @@ body {
 .sidebar-sticky {
   position: relative;
   top: 0;
-  height: calc(100vh - 148px);
+  height: calc(100vh - 75px);
   padding-top: 1.6rem;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
@@ -80,7 +79,6 @@ body {
 /*
  * Content
  */
-
 [role="main"] {
   padding-top: 75px; /* Space for fixed navbar */
 }
@@ -88,7 +86,6 @@ body {
 /*
  * Navbar
  */
-
 .navbar-brand {
   width: 250px;
   padding-top: 1.6rem;
@@ -132,7 +129,6 @@ body {
 /*
  * Utilities
  */
-
 .border-top { border-top: 1px solid #e5e5e5; }
 .border-bottom { border-bottom: 1px solid #e5e5e5; }
 

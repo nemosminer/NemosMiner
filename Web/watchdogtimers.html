@@ -27,7 +27,6 @@
   data-show-refresh="true"
   data-auto-refresh="true"
   data-auto-refresh-status="true"
-  data-auto-refresh-interval="60"
   data-detail-formatter="detailFormatter"
   data-url="/watchdogtimers"
   data-sort-order="asc"
@@ -50,8 +49,18 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
+  var $table = $('#miners');
+
+  $table.bootstrapTable({
+    // refresh once per interval
+    autoRefreshInterval: (parseInt(config.Interval)),
+    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
+  })
+
   // Get watchdog expiry time
-  $.ajax({url: '/watchdogexpiration',
+  $.ajax({
+    url: '/watchdogexpiration',
+    async: false,
     success: function(result) {
       $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + result + ").");
     }
