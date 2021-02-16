@@ -2,10 +2,10 @@ Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
-- Balances & Earnings files from versions less 3.9.9.18 than are no longer compatible
+- Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
-Changelog NemosMiner 3.9.9.18 14.02.2021
+Changelog NemosMiner 3.9.9.18 16.02.2021
 ========================================
 
 Changed:
@@ -28,7 +28,7 @@ Miner updates:
 - PhoenixMiner-v5.5c
 - SRBMminerMulti-v0.6.6
 - TeamRed-v0.8.1
-- Trex-v0.19.10
+- Trex-v0.19.11
 
 Improved:
 - Balances summary: Added 6 hrs, 7 days & 30 days total earnings
@@ -41,7 +41,7 @@ Pools:
 - Renamed 'MPH' to 'MiningPoolHub'
 
 Known issues:
-- Balance & Earnings data values are wrong after a recent payout.
+- Balance & Earnings data values showing incorrect data wrong after a recent payout.
 
 
 Changelog NemosMiner 3.9.9.17 22.01.2021
