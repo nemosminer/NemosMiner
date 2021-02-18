@@ -240,7 +240,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.18"
+    Version      = [System.Version]"3.9.9.19"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
