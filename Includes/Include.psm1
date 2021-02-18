@@ -2547,7 +2547,7 @@ Function Get-NMVersion {
 Function Initialize-Autoupdate { 
     Param(
         [Parameter(Mandatory = $true)]
-        [System.Version]$UpdateVersion
+        [PSCustomObject]$UpdateVersion
     )
 
     Set-Location $Variables.MainPath
