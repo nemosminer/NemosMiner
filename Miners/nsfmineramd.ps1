@@ -1,7 +1,7 @@
   
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-ethminer0190r55\ethminer.exe"
-$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r5.5/ethminer0190r5.5.7z"
+$Path = ".\Bin\AMD-nsfminer135\nsfminer.exe"
+$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.5/nsfminer_1.3.5-windows_10-cuda_11.2-opencl.zip"
 $Commands = [PSCustomObject]@{ 
     "ethash" = "" #ethash
 }
@@ -17,7 +17,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         [PSCustomObject]@{ 
             Type      = "AMD"
             Path      = $Path
-            Arguments = "--opencl-devices $($Config.SelGPUDSTM) --api-port -$($Variables.AMDMinerAPITCPPort) -G $AlgoParameter$($Commands.$_)"
+            Arguments = "--devices $($Config.SelGPUDSTM) --api-port -$($Variables.AMDMinerAPITCPPort) -G $AlgoParameter$($Commands.$_)"
             HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
             API       = "ethminer"
             Port      = $Variables.AMDMinerAPITCPPort #4068
