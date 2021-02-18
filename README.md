@@ -230,11 +230,11 @@ recommended/optimal Windows Nvidia driver = 461.40
 https://us.download.nvidia.com/Windows/461.40/461.40-desktop-win10-64bit-international-dch-whql.exe
 
 
-recommended/optimal Windows AMD GPU Driver 20.3.1
+recommended/optimal Windows 10 AMD GPU Driver 21.2.2
 
-[Win10:](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,1.html)
+[Win10:](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win10-64bit-feb11.exe)
 
-[Windows7, 8, 8.1](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,2.html)
+[Windows7, 8, 8.1](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win7-64bit-feb11.exe)
 
    NemosMiner is currently tested on the following Rigs: 
 
