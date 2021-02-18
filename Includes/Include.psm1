@@ -2580,7 +2580,7 @@ Function Initialize-Autoupdate {
         Return
     }
 
-    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") {
+    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion.Version -ge [System.Version]"3.9.9.17") {
         # Balances & earnings files are no longer compatible
         Write-Message -Level Warn "Balances & Earnings files are no longer compatible and will be reset."
     }
