@@ -5,6 +5,18 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.19 17.02.2021
+========================================
+
+Fixed:
+- Balances: Do not show balances without wallet
+- Device order no longer get disrupted when NemosMiner is run in a Citrix or RDP session
+- Endless benchmarking loop (regression from 3.9.9.18, thanks to Szentigrade)
+- UbqHash: Miner stopping to soon when waiting for first data sample (thanks to Szentigrade))
+- WebGUI / Dashhboard: Balances in mBTC were sometimes 0.0001 too small
+- WebGUI / Config editor: Allow '=' & '-' in worker name
+
+
 Changelog NemosMiner 3.9.9.18 16.02.2021
 ========================================
 
@@ -17,7 +29,7 @@ Fixed:
 - BalancesTracker: Balances not showing after date change
 - Core: Best miner ist not always best (regression of 3.9.9.15)
 - Core: Do not trigger watchog when turning donation on/off
-- Core: Use std. Pools for donations, omit -24hr & -Coins
+- Core: Use standard pools for donations, omit -24hr & -Coins
 - Core: Watchdog timers not getting cleared (thanks to @misterbrucewayne)
 
 Miner updates:

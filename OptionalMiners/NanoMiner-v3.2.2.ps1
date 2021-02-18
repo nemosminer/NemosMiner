@@ -35,8 +35,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                # If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
-
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required

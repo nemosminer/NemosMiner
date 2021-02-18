@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.18
-Version date:   16 February 2021
+Version:        3.9.9.19
+Version date:   18 February 2021
 #>
 
 [CmdletBinding()]
@@ -324,7 +324,10 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
 }
 
 Write-Message -Level Verbose "Loading device information..."
+$Variables.SupportedDeviceVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.Devices = [Device[]](Get-Device -Refresh)
+$Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
+$Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
 Write-Host "Setting variables..." -ForegroundColor Yellow
 $Variables.BrainJobs = @{ }
@@ -332,7 +335,6 @@ $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Princi
 $Variables.Miners = [Miner[]]@()
 $Variables.Pools = [Pool[]]@()
 $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
-$Variables.SupportedVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
 $Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
 $Variables.DriverVersion = @{ }
@@ -360,9 +362,6 @@ If (-not $Variables.Regions) {
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
-
-$Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
-$Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -579,27 +578,27 @@ Function Global:TimerUITick {
                 }
             }
 
-            $LabelEarningsDetails.Lines = @($Variables.Summary -replace '(&ensp;)+', '`n' -replace '<br>', '`n' -replace ' / ', '/' -split '`n')
+            $LabelEarningsDetails.Lines = @($Variables.Summary -replace '<br>|(&ensp;)+', '`n' -replace ' / ', '/' -split '`n')
 
             Clear-Host
 
             # Get and display earnings stats
             If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
                 $Variables.Balances.Values | ForEach-Object { 
-                    If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $_.Currency = "mBTC"; $mBTCfactor = 1000 } Else { $mBTCfactor = 1 }
+                    If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = "BTC"; $mBTCfactor = 1 }
                     Write-Host "$($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)') [$($_.Wallet)]" -BackgroundColor Green -ForegroundColor Black
-                    Write-Host "Earned last hour:       $(($_.Growth1 * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.Growth1 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
-                    Write-Host "Earned last 24 hours:   $(($_.Growth24 * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.Growth24 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
-                    Write-Host "Earned last 7 days:     $(($_.Growth168 * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.Growth168 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
-                    Write-Host "≈ average / hour:       $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
-                    Write-Host "≈ average / day:        $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
-                    Write-Host "≈ average / week:       $(($_.AvgWeeklyGrowth * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.AvgWeeklyGrowth * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
-                    Write-Host "Balance:                " -NoNewline; Write-Host "$(($_.Balance * $Variables.Rates.BTC.($_.Currency)).ToString('N8')) $($_.Currency) / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)" -ForegroundColor Yellow
+                    Write-Host "Earned last hour:       $(($_.Growth1 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth1 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
+                    Write-Host "Earned last 24 hours:   $(($_.Growth24 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth24 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
+                    Write-Host "Earned last 7 days:     $(($_.Growth168 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth168 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
+                    Write-Host "≈ average / hour:       $(($_.AvgHourlyGrowth * $mBTCfactor).ToString('N8')) $Currency / $(($_.AvgHourlyGrowth * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
+                    Write-Host "≈ average / day:        $(($_.AvgDailyGrowth * $mBTCfactor).ToString('N8')) $Currency / $(($_.AvgDailyGrowth * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
+                    Write-Host "≈ average / week:       $(($_.AvgWeeklyGrowth * $mBTCfactor).ToString('N8')) $Currency / $(($_.AvgWeeklyGrowth * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
+                    Write-Host "Balance:                " -NoNewline; Write-Host "$(($_.Balance * $mBTCfactor).ToString('N8')) $Currency / $(($_.Balance * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)" -ForegroundColor Yellow
                     Write-Host "                        $(($_.Balance / $_.PayoutThreshold * $mBTCFactor).ToString('P1')) of $(($_.PayoutThreshold).ToString()) $($_.PayoutThresholdCurrency) payment threshold"
                     Write-Host "Estimated Payment Date: $(If ($_.EstimatedPayDate -is [DateTime]) { ($_.EstimatedPayDate).ToString("G")} Else { $_.EstimatedPayDate })`n"
                 }
+                Remove-Variable Currency -ErrorAction Ignore
             }
-
             If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
                 Write-Host "`n"
                 Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
@@ -632,14 +631,14 @@ Function Global:TimerUITick {
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(
                     @( <#Miner Earning#>
-                       @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate ($Variables.Rates.BTC.($Config.Currency)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                       @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
             If ($Config.ShowEarningBias) { 
                 $Miner_Table.AddRange(
                     @( <#Miner EarningsBias#>
-                        @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value ($_.Earning_Bias) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
@@ -650,24 +649,24 @@ Function Global:TimerUITick {
                     )
                 )
             }
-            If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and ($Variables.Miners.PowerCost )) { 
+            If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and $Variables.MiningPowerCost) { 
                 $Miner_Table.AddRange(
                     @( <#PowerCost#>
                         @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
                     )
                 )
             }
-            If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.PowerPricekWh) { 
+            If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.MiningPowerCost) { 
                 $Miner_Table.AddRange(
                     @( <#Mining Profit#>
-                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -Rate ($Variables.Rates.BTC.($Config.Currency)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value ($_.Profit) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
-            If ($Config.ShowProfitBias -and $Variables.PowerPricekWh) { 
+            If ($Config.ShowProfitBias -and $Config.ShowProfitBias -and $Variables.MinerPowerCost) { 
                 $Miner_Table.AddRange(
                     @( <#Mining ProfitBias#>
-                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -Rate ($Variables.Rates.BTC.($Config.Currency)) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
@@ -784,7 +783,7 @@ Function Global:TimerUITick {
                 ) | Out-Host
             }
 
-            Write-Host "$($Variables.Summary -replace '&ensp;', ' ' -replace '  +', '; ' -replace '^; ')"
+            $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace '&ensp;', ' ' -replace '  +', '; ' -replace '; $') }
 
             If (-not $Variables.Paused) { 
                 If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 

@@ -47,6 +47,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         }
                     }
 
+                    If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
+                        $WaitForData = 45 # Seconds, max. wait time until first data sample
+                        $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
+                    }
+                    Else { 
+                        $WaitForData = 15 # Seconds, max. wait time until first data sample
+                    }
+
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name

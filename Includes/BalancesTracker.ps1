@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.18
-Version date:   16 February 2021
+Version:        3.9.9.19
+Version date:   18 February 2021
 #>
 
 # Start the log
@@ -83,7 +83,7 @@ While ($true) {
         }
 
         # Keep most recent balance objects, keep empty balances for 7 days
-        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays( -7 ) } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays( -7 ) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Name -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Name -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })

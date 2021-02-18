@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.18
-Version date:   16 February 2021
+Version:        3.9.9.19
+Version date:   18 February 2021
 #>
 
 Class Device { 
@@ -349,7 +349,7 @@ Class Miner {
             Earning_Bias = [Double]$this.Earning_Bias
             Profit       = [Double]$this.Profit
             Profit_Bias  = [Double]$this.Profit_Bias
-            CommandLine  = $this.CommandLine
+            CommandLine  = ""
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
         If ($this.Status -eq [MinerStatus]::Running) { 
@@ -1304,6 +1304,7 @@ Function Read-Config {
     }
 
     $Config.PoolsConfig = $PoolsConfig
+    If ($Variables.FreshConfig -eq $true) { Write-Config $ConfigFile }
 }
 
 Function Write-Config { 
@@ -2065,8 +2066,13 @@ Function Get-Device {
                     Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
                     Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
                 }
-
-                $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+                #Unsupported devices start at DeviceID 100 (to not disrupt device order when running in a Citrix / RDP session)
+                If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { 
+                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+                }
+                Else { 
+                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id + 100))"
+                }
                 $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
@@ -2076,7 +2082,7 @@ Function Get-Device {
                 $Id++
                 $Vendor_Id.($Device.Vendor)++
                 $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                $Type_Id.($Device.Type)++
+                If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { $Type_Id.($Device.Type)++ }
 
                 # Add raw data
                 $Device | Add-Member @{ 
@@ -2130,8 +2136,13 @@ Function Get-Device {
                         Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
                         Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
                     }
-
-                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+                    #Unsupported devices start at DeviceID 100 (to not disrupt device order when running in a Citrix / RDP session)
+                    If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { 
+                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
+                    }
+                    Else { 
+                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id) + 100)"
+                    }
                     $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
 
                     If ($Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus) { 
@@ -2147,7 +2158,7 @@ Function Get-Device {
                         $Id++
                         $Vendor_Id.($Device.Vendor)++
                         $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                        $Type_Id.($Device.Type)++
+                        If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { $Type_Id.($Device.Type)++ }
                     }
 
                     # Add OpenCL specific data
@@ -2649,21 +2660,25 @@ Function Initialize-Autoupdate {
     }
 
     # Post update actions
-    # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-
-    # Update Optional Miners to Miners If in use
-    Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append }
+    If (Test-Path  -Path ".\OptionalMiners" -PathType Container) { 
+        # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
+        Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+        # Update Optional Miners to Miners If in use
+        Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append }
+    }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append}
+    If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
-    Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
-    Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension }
-    Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
+    If (Test-Path -Path ".\OptionalMiners" -PathType Container) { Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
+    If (Test-Path -Path ".\Stats" -PathType Container) { 
+        Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+        Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    }
+
     If ($ObsoleteStatFiles.Count -gt 0) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteStatFiles | ForEach-Object { 
@@ -2741,7 +2756,7 @@ Function Update-ConfigFile {
             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
-            "UserName" { 
+            "UserName" { F
                 If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
                 $Config.Remove($_)

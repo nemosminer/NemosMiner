@@ -9,7 +9,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";   Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " -algo KAWPOW" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";    Fee = 0.01; MinMemGB = 3; MinerSet = 1; Arguments = " -algo KAWPOW" } # Trex-v0.19.11 is fastest
     [PSCustomObject]@{ Algorithm = "MTP";       Fee = 0.01; MinMemGB = 3; MinerSet = 1; Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
     [PSCustomObject]@{ Algorithm = "ProgPoW";   Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " -algo PROGPOW" } # Sero
     [PSCustomObject]@{ Algorithm = "Zano";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " -algo PROGPOWZ" }
@@ -27,9 +27,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
-                If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
