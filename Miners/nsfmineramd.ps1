@@ -17,7 +17,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         [PSCustomObject]@{ 
             Type      = "AMD"
             Path      = $Path
-            Arguments = "--devices $($Config.SelGPUDSTM) --api-port -$($Variables.AMDMinerAPITCPPort) -G $AlgoParameter$($Commands.$_)"
+            Arguments = "-v 4 --devices $($Config.SelGPUDSTM) --api-port -$($Variables.AMDMinerAPITCPPort) -G $AlgoParameter$($Commands.$_)"
             HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
             API       = "ethminer"
             Port      = $Variables.AMDMinerAPITCPPort #4068
