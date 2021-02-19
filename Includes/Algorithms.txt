@@ -110,6 +110,7 @@
   "myrgr": "MyriadGroestl",
   "myriadgroestl": "MyriadGroestl",
   "neoscrypt": "NeoScrypt",
+  "neoscryptxaya": "NeoScryptXaya",
   "padihash": "PadiHash",
   "pawelhash": "PawelHash",
   "power": "Yespower",
