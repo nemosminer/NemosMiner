@@ -2784,8 +2784,10 @@ Function Update-ConfigFile {
     }
 
     # Change currency names, remove mBTC
-    $Config.ExtraCurrencies = @($Config.Currency | Select-Object -Skip 1 | Where-Object { $_ -ne "mBTC" } | Select-Object)
-    $Config.Currency = $Config.Currency[0]
+    If ($Config.Currency -is [Array]) { 
+        $Config.Currency = $Config.Currency | Select-Object -Index 0
+        $Config.ExtraCurrencies = @($Config.Currency | Select-Object -Skip 1 | Where-Object { $_ -ne "mBTC" } | Select-Object)
+    }
 
     #Rename MPH to MiningPoolHub
     If ($Config.PoolName -contains @("MPH")) { 
