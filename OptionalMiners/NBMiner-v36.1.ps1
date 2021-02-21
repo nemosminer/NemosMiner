@@ -45,9 +45,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $WaitForData = 60 # Seconds, max. wait time until first data sample
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
-                Else { 
-                    $WaitForData = 15 # Seconds, max. wait time until first data sample
-                }
+                ElseIf ($_.Algorithm -eq "Octopus") { $WaitForData = 45 }# Seconds, max. wait time until first data sample
+                Else { $WaitForData = 15 }# Seconds, max. wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.OpenCL.ComputeCapability -ge $MinComputeCapability })) { 
 

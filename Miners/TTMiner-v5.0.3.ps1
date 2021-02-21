@@ -29,6 +29,13 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).Epoch -gt 384) { Return }
 
                 $MinMemGB = $_.MinMemGB
+                If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
+                    $WaitForData = 45 # Seconds, max. wait time until first data sample
+                    $MinMemGB = (2GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 2GB required
+                }
+                Else { 
+                    $WaitForData = 15 # Seconds, max. wait time until first data sample
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -47,14 +54,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         }
                     }
 
-                    If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                        $WaitForData = 45 # Seconds, max. wait time until first data sample
-                        $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    }
-                    Else { 
-                        $WaitForData = 15 # Seconds, max. wait time until first data sample
-                    }
-
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name
@@ -66,6 +65,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Port            = $MinerAPIPort
                         URI             = $Uri
                         PowerUsageInAPI = $true
+                        WaitForData     = $WaitForData
                     }
                 }
             }

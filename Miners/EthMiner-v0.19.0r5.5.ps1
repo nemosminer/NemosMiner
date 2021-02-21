@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; MinerSet = 0; Arguments = " --opencl --cl-devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinerSet = 0; Arguments = " --opencl --cl-devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
     [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinerSet = 0; Arguments = " --cuda --cu-devices" } # PhoenixMiner-v5.5c is fastest but has dev fee
 )
 

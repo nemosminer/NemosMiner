@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlockMasters.ps1
-Version:        3.9.9.19
-Version date:   18 February 2021
+Version:        3.9.9.20
+Version date:   21 February 2021
 #>
 
 using module ..\Includes\Include.psm1

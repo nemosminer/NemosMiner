@@ -77,7 +77,11 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
+                    $WaitForData = 45 # Seconds, max. wait time until first data sample
                 }
+                ElseIf ($_.Algorithm -eq "MTP") { $WaitForData = 30 } # Seconds, max. wait time until first data sample
+                ElseIf ($_.Algorithm -match "^Octopus$|^Sonoa$") { $WaitForData = 45 } # Seconds, max. wait time until first data sample
+                Else { $WaitForData = 15 } # Seconds, max. wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -103,14 +107,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                             Return
                         }
                     }
-
-                    If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                        $WaitForData = 45 # Seconds, max. wait time until first data sample
-                        $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    }
-                    ElseIf ($_.Algorithm -eq "MTP") { $WaitForData = 30 } # Seconds, max. wait time until first data sample
-                    ElseIf ($_.Algorithm -match "^Octopus$|^Sonoa$") { $WaitForData = 45 } # Seconds, max. wait time until first data sample
-                    Else { $WaitForData = 15 } # Seconds, max. wait time until first data sample
 
                     #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                     # From now on the username (-u) for these algorithms is no longer parsed as <wallet_address>.<worker_name>

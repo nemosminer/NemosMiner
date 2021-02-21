@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.19
-Version date:   18 February 2021
+Version:        3.9.9.20
+Version date:   21 February 2021
 #>
 
 [CmdletBinding()]
@@ -49,7 +49,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$CPUMinerProcessPriority = "-2", # Process priority for CPU miners
     [Parameter(Mandatory = $false)]
-    [String]$Currency = "EUR", # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
+    [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 1, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
@@ -240,7 +240,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.19"
+    Version      = [System.Version]"3.9.9.20"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -585,7 +585,7 @@ Function Global:TimerUITick {
             # Get and display earnings stats
             If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
                 $Variables.Balances.Values | ForEach-Object { 
-                    If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = "BTC"; $mBTCfactor = 1 }
+                    If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = $_.Currency; $mBTCfactor = 1 }
                     Write-Host "$($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)') [$($_.Wallet)]" -BackgroundColor Green -ForegroundColor Black
                     Write-Host "Earned last hour:       $(($_.Growth1 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth1 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"
                     Write-Host "Earned last 24 hours:   $(($_.Growth24 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth24 * $Variables.Rates.BTC.($Config.Currency)).ToString('N8')) $($Config.Currency)"

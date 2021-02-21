@@ -24,11 +24,11 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckatoo31 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckatoo32 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo cuckoo29 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Equihash1254";  Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 2.1; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1254";  Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7v2 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 2.1; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7v2 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7v2 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 1.0; Type = "NVIDIA"; MinerSet = 0; Arguments = " --algo equihash210_9 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.6x is fastest
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.7v2 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, bit I see lower sppeed at the pool
     [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 1; Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.7.0 is almost as fast but has no fee

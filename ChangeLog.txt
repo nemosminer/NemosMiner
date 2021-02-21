@@ -5,7 +5,23 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
-Changelog NemosMiner 3.9.9.19 17.02.2021
+Changelog NemosMiner 3.9.9.20 21.02.2021
+========================================
+
+Changed:
+- Removed TTMiner-v6.1.0 (is not fastest in any algo)
+
+Fixed:
+- TTMiner-v5.0.3 / UbqHash: Timout for fitrst hash rate sample 45 seconds (thanks to Szentigrade)
+- Text GUI: Non-BTC balances reporting wrong values (thanks to Szentigrade)
+
+Miner Updates:
+- MiniZ-v1.7x2
+- NSFMiner-v1.3.5 (new)
+- SgMinerFancyIX-v0.7.2-1 (new)
+
+
+Changelog NemosMiner 3.9.9.19 18.02.2021
 ========================================
 
 Fixed:
@@ -13,8 +29,13 @@ Fixed:
 - Device order no longer get disrupted when NemosMiner is run in a Citrix or RDP session
 - Endless benchmarking loop (regression from 3.9.9.18, thanks to Szentigrade)
 - UbqHash: Miner stopping to soon when waiting for first data sample (thanks to Szentigrade))
-- WebGUI / Dashhboard: Balances in mBTC were sometimes 0.0001 too small
+- WebGUI / Dashhboard: Balances in mBTC were sometimes 1000x too small
 - WebGUI / Config editor: Allow '=' & '-' in worker name
+- WebGUI / Config editor: Not laoding initial config, cannot save (thanks to Nemo)
+
+
+Miner Updates:
+- ZealotEnemy-v2.6.3
 
 
 Changelog NemosMiner 3.9.9.18 16.02.2021
@@ -31,6 +52,7 @@ Fixed:
 - Core: Do not trigger watchog when turning donation on/off
 - Core: Use standard pools for donations, omit -24hr & -Coins
 - Core: Watchdog timers not getting cleared (thanks to @misterbrucewayne)
+
 
 Miner updates:
 - EthMiner-v0.19.0r5.5

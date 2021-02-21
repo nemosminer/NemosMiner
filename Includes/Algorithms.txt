@@ -140,6 +140,7 @@
   "randomx": "Randomx",
   "randomxmonero": "Randomx",
   "raven": "KawPoW",
+  "ravencoin": "KawPoW",
   "rfv2": "RainforestV2",
   "scryptn11": "ScryptN11",
   "scryptn2": "ScryptN2",
@@ -168,5 +169,6 @@
   "yespowertide": "YespowerTide",
   "yespowerurx": "YespowerUrx",
   "wkrz": "Argon2Chukwa",
+  "zelantus": "KawPoW",
   "zhash": "EquihashBTG"
 }

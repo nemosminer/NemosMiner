@@ -1,3 +1,28 @@
+<#
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+File:           NiceHash.ps1
+Version:        3.9.9.20
+Version date:   21 February 2021
+#>
+
 using module ..\Includes\Include.psm1
 
 param(
@@ -37,10 +62,11 @@ If ($PoolConfig.Wallet) {
         $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
         $Divisor = 100000000
 
+        If ($Algorithm_Norm -eq "Lyra2RE3") { Return } # temp fix
+
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
-        $PoolRegions | ForEach-Object { 
-            $Region = $_
+        ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 

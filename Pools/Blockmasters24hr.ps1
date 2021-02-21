@@ -1,3 +1,28 @@
+<#
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+File:           Blockmasters24hr.ps1
+Version:        3.9.9.20
+Version date:   21 February 2021
+#>
+
 using module ..\Includes\Include.psm1
 
 param(
@@ -5,6 +30,9 @@ param(
     [Hashtable]$Variables
 )
 
+$PoolRegions = @("as", "eu", "us")
+$PoolRegions = @("as", "us") # Temp Fix, EU seems broken
+    
 If ($PoolConfig.Wallet) { 
     Try { 
         $Request = Invoke-RestMethod -Uri "http://blockmasters.co/api/status" -Headers @{"Cache-Control" = "no-cache" }
@@ -18,8 +46,6 @@ If ($PoolConfig.Wallet) {
     $PriceField = "actual_last24h"
     # $PriceField = "estimate_current"
     $DivisorMultiplier = 1000000000
-
-    $PoolRegions = @("as", "eu", "us")
 
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
@@ -35,8 +61,7 @@ If ($PoolConfig.Wallet) {
         Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = [Decimal]1 }
 
-        $PoolRegions | ForEach-Object { 
-            $Region = $_
+        ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 

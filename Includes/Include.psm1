@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.19
-Version date:   18 February 2021
+Version:        3.9.9.20
+Version date:   21 February 2021
 #>
 
 Class Device { 
@@ -1265,10 +1265,13 @@ Function Read-Config {
         }
     }
 
+    # Load default PoolData
+    $PoolData = Get-Content .\Includes\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+
     # Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
-    (Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName | ForEach-Object { 
-        $PoolName = $_ -replace "24hr$" -replace "Coins$"
+    (Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName | Sort-Object -Unique | ForEach-Object { 
+        $PoolName = $_
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
         If (-not "$PoolConfig") { # https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
@@ -1276,20 +1279,24 @@ Function Read-Config {
         }
         If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
         If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
+        If (-not $PoolConfig.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch ($PoolName) { 
             "MiningPoolHub" { 
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MiningPoolHubUserName -Force }
             }
-            "NiceHash" { 
-                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
-                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
-                If ($Config.NiceHashWallet) { 
-                    $PoolConfig | Add-Member NiceHashWalletIsInternal $Config.NiceHashWalletIsInternal -ErrorAction Ignore
+            "NiceHash External" { 
+                $PoolConfig | Add-Member NiceHashWalletIsInternal $false -ErrorAction Ignore
+                If (-not $Config.NiceHashWalletIsInternal) { 
+                    If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
                 }
-                Else { 
-                    $PoolConfig | Add-Member NiceHashWalletIsInternal $false -ErrorAction Ignore
+                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
+            }
+            "NiceHash Internal" { 
+                $PoolConfig | Add-Member NiceHashWalletIsInternal $true -ErrorAction Ignore
+                If ($Config.NiceHashWalletIsInternal -eq $true -and $Config.NiceHashWallet) { 
+                    If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
                 }
             }
             "ProHashing" { 
@@ -1299,12 +1306,11 @@ Function Read-Config {
                 If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
             }
         }
-        $PoolConfig.WorkerName = $PoolConfig.WorkerName -replace "^ID="
+        # $PoolConfig.WorkerName = $PoolConfig.WorkerName -replace "^ID="
         $PoolsConfig.$PoolName = $PoolConfig
     }
 
     $Config.PoolsConfig = $PoolsConfig
-    If ($Variables.FreshConfig -eq $true) { Write-Config $ConfigFile }
 }
 
 Function Write-Config { 

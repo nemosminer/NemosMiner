@@ -1,3 +1,29 @@
+<#
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+File:           ProHashing24hr.ps1
+Version:        3.9.9.20
+Version date:   21 February 2021
+#>
+
+
 using module ..\Includes\Include.psm1
 
 param(
@@ -7,7 +33,7 @@ param(
 
 If ($PoolConfig.UserName) { 
     Try {
-        $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -Headers @{"Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"}).data
+        $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec 15 -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
     }
     Catch { Return }
 
@@ -29,8 +55,7 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        $PoolRegions | ForEach-Object { 
-            $Region = $_
+        ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{
