@@ -4,6 +4,15 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.21 22.02.2021
+========================================
+
+Fixed:
+- Text GUI: Non-BTC balances reporting wrong values (thanks to Szentigrade)
+
+Changed:
+- Removed EthMiner-v0.19.0r5.5 (abandoned project, replaced with NSFMiner)
+
 
 Changelog NemosMiner 3.9.9.20 21.02.2021
 ========================================
