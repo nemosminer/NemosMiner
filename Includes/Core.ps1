@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.21
-Version date:   22 February 2021
+Version:        3.9.9.22
+Version date:   23 February 2021
 #>
 
 using module .\Include.psm1
@@ -197,7 +197,7 @@ Function Start-Cycle {
                     $PoolConfig | Add-Member PricePenaltyFactor 1
                     $PoolConfig | Add-Member WorkerName "NemosMiner-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
                     Switch ($_) { 
-                        "MPH" { 
+                        "MiningPoolHub" { 
                             $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
                         }
                         "NiceHash" { 
@@ -245,7 +245,7 @@ Function Start-Cycle {
         # Load currency exchange rates from min-api.cryptocompare.com
         $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
         $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Select-Object -Unique)
-        If (-not $Variables.Rates -or $Config.BalancesTrackerPollInterval -lt 1) { 
+        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.BalancesTrackerPollInterval -lt 1) { 
             Get-Rate
         }
 
@@ -330,7 +330,12 @@ Function Start-Cycle {
             Write-Message -Level Verbose "Waiting for pool data ($(@($PoolNames) -join ', '))..."
             $Variables.NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
-                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{PoolConfig = $PoolsConfig.($_ -replace "24hr$" -replace "Coins$")} -Threaded -Priority $(If ($Variables.Miners | Where-Object Status -EQ "Running" | Where-Object Type -EQ "CPU") { "Normal" })
+                    If ($_ -eq "NiceHash") { 
+                        If ($PoolsConfig."NiceHash Internal".NiceHashWalletIsInternal -eq $true) { $PoolConfig = $PoolsConfig."NiceHash Internal" }
+                        Else { $PoolConfig = $PoolsConfig."NiceHash External" }
+                    }
+                    Else { $PoolConfig = $PoolsConfig.($_ -replace "24hr$" -replace "Coins$") }
+                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ PoolConfig = $PoolConfig } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                 }
             )
 
@@ -351,7 +356,7 @@ Function Start-Cycle {
 
         # Find new pools
         [Pool[]]$ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, Host, Port, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
-        
+
         $Variables.PoolsCount = $Variables.Pools.Count
 
         # Add new pools
@@ -390,6 +395,10 @@ Function Start-Cycle {
                 $_.Workers = $Pool.Workers
                 # Set Epoch for ethash miners (add 1 to survive next epoch change)
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW", "UbqHash")) { 
+                    Switch ($_.Algorithm) { 
+                        "KawPoW" { $Pool.Currency = "RVN" }
+                        "UbqHash" { $Pool.Currency = "UBQ" }
+                    }
                     If ($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight) { 
                         $_.BlockHeight = [Int]($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight + 30000)
                         $_.Epoch = [Int]($Variables.DAGdata.Currency.($Pool.Currency).Epoch + 1)

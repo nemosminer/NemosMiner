@@ -39,11 +39,11 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; Arguments = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; Arguments = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin AUTO144_5" } # MiniZ-v1.7v2 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin AUTO192_7" } # MiniZ-v1.7v2 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin AUTO144_5" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin AUTO192_7" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo EQUI210_9" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin BTG" } # MiniZ-v1.7v2 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin ZCL" } # MiniZ-v1.7v2 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin BTG" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin ZCL" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 21; Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.5c is faster
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 21; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.5c is faster
 )

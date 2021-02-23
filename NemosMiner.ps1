@@ -1,7 +1,7 @@
 using module .\Includes\Include.psm1
 
 <#
-Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.21
-Version date:   22 February 2021
+Version:        3.9.9.22
+Version date:   23 February 2021
 #>
 
 [CmdletBinding()]
@@ -240,7 +240,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.21"
+    Version      = [System.Version]"3.9.9.22"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 

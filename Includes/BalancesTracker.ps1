@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.21
-Version date:   22 February 2021
+Version:        3.9.9.22
+Version date:   23 February 2021
 #>
 
 # Start the log
@@ -87,7 +87,7 @@ While ($true) {
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Name -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Name -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
-        
+
         # Read exchange rates
         $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
         $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique) | Select-Object -Unique)
@@ -96,28 +96,19 @@ While ($true) {
         $BalanceObjects | ForEach-Object { 
             $PoolBalanceObject = $_
 
-            $PoolConfig = $Config.PoolsConfig.($PoolBalanceObject.Pool -replace " Internal$" -replace " External$")
+            $PoolConfig = $Config.PoolsConfig.($PoolBalanceObject.Pool)
 
             $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object DateTime)
 
-            # Get threshold currency and value, prefer custom values
+            # Get threshold currency and value
             $PayoutThresholdCurrency = $PoolBalanceObject.Currency
             $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency)
-            If (-not $PayoutThreshold) { 
+            If (-not $PayoutThreshold -and $PoolBalanceObject.Currency -eq "BTC") { 
                 $PayoutThresholdCurrency = "mBTC"
                 $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency)
             }
             If (-not $PayoutThreshold) { 
-                $PayoutThresholdCurrency = $PoolBalanceObject.Currency
-                $PayoutThreshold = [Double]($PoolData.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency)
-            }
-            If (-not $PayoutThreshold) { 
-                $PayoutThresholdCurrency = "mBTC"
-                $PayoutThreshold = [Double]($PoolData.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency)
-            }
-            If (-not $PayoutThreshold) { 
-                $PayoutThresholdCurrency = $PoolBalanceObject.Currency
-                $PayoutThreshold = [Double]($PoolData.($PoolBalanceObject.Pool).PayoutThreshold."*")
+                $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold."*")
             }
 
             $Growth1 = $Growth6 = $Growth24 = $Growth168 = $Growth720 = $GrowthToday = $AvgHourlyGrowth = $AvgDailyGrowth = $AvgWeeklyGrowth = $Delta = $Payout = $HiddenPending = [Double]0
@@ -159,6 +150,9 @@ While ($true) {
                                     $HiddenPending = ($PoolBalanceObjects | Select-Object -Last 1).HiddenPending
                                     $PoolBalanceObject | Add-Member HiddenPending ([Double]$HiddenPending)
                                 }
+                            }
+                            If (($PoolBalanceObjects | Select-Object -Last 1).Unpaid -gt $PoolBalanceObject.Unpaid) { 
+                                $Payout = ($PoolBalanceObjects | Select-Object -Last 1).Unpaid - $PoolBalanceObject.Unpaid
                             }
                         }
                         $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid

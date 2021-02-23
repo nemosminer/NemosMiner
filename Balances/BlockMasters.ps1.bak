@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Url = "http://blockmasters.co/?address="
 
 Try { 
-    $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
             DateTime = (Get-Date).ToUniversalTime()

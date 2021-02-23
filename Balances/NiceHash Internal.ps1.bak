@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -59,26 +59,29 @@ Function Get-NiceHashRequest {
         "Cache-Control"     = "no-cache"
     }
     Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec 15 -ErrorAction Stop -Method $Method -Headers $Headers
+
 }
 
 Try {
-    If ($Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
-        $Method = "GET"
-        $EndPoint = "/main/api/v2/accounting/account2/BTC/"
+    If ($Config.PoolsConfig.NiceHash.NiceHashWalletIsInternal -eq $true) { 
+        If ($Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
+            $Method = "GET"
+            $EndPoint = "/main/api/v2/accounting/account2/BTC/"
 
-        $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
-        If ($APIResponse.active) { 
-            [PSCustomObject]@{ 
-                DateTime   = (Get-Date).ToUniversalTime()
-                Pool       = $Name
-                Currency   = "BTC"
-                Wallet     = "OrgID $($Config.NicehashOrganizationID)"
-                Pending    = [Double]($APIResponse.pending)
-                Balance    = [Double]($APIResponse.available)
-                Unpaid     = [Double]($APIResponse.totalBalance)
-                Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
-                #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
-                Url        = "$($Url)$($Config.PoolsConfig.NiceHash.Wallet)"
+            $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
+            If ($APIResponse.active) { 
+                [PSCustomObject]@{ 
+                    DateTime   = (Get-Date).ToUniversalTime()
+                    Pool       = "NiceHash Internal"
+                    Currency   = "BTC"
+                    Wallet     = "OrgID $($Config.NicehashOrganizationID)"
+                    Pending    = [Double]($APIResponse.pending)
+                    Balance    = [Double]($APIResponse.available)
+                    Unpaid     = [Double]($APIResponse.totalBalance)
+                    Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
+                    #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
+                    Url        = "$($Url)$($Config.PoolsConfig.NiceHash.Wallet)"
+                }
             }
         }
     }

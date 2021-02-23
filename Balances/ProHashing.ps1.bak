@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Url = "https://prohashing.com/customer/dashboard"
 
 Try { 
-    $APIResponse = Invoke-RestMethod "https://prohashing.com/api/v1/wallet?apiKey=$($Config.ProHashingAPIKey)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "https://prohashing.com/api/v1/wallet?apiKey=$($Config.ProHashingAPIKey)" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
     If ($APIResponse.status -eq "success") { 
         $APIResponse.data.balances | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
             If ($APIResponse.data.balances.$_.balance -gt 0) { 

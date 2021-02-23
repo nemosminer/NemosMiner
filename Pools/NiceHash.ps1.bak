@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -62,6 +62,8 @@ If ($PoolConfig.Wallet) {
         $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
         $Divisor = 100000000
 
+        If ($Algorithm_Norm -eq "Lyra2RE3") { Return } # temp fix
+
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
         ForEach ($Region in $PoolRegions) { 
@@ -82,6 +84,24 @@ If ($PoolConfig.Wallet) {
                 Fee                = [Decimal]$Fee
                 EstimateFactor     = [Decimal]1
             }
+
+            # If ($Algorithm_Norm -match "CryptonightR|Equihash1445|Randomx") { 
+            #     [PSCustomObject]@{ 
+            #         Algorithm          = [String]$Algorithm_Norm
+            #         Price              = [Double]$Stat.Live
+            #         StablePrice        = [Double]$Stat.Week
+            #         MarginOfError      = [Double]0
+            #         PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+            #         Host               = [String]"$Algorithm.$Region.$PoolHost"
+            #         Port               = [UInt16]$PoolPort
+            #         User               = [String]$User
+            #         Pass               = "x"
+            #         Region             = [String]$Region_Norm
+            #         SSL                = [Boolean]$true
+            #         Fee                = [Decimal]$Fee
+            #         EstimateFactor     = [Decimal]1
+            #     }
+            # }
         }
     }
 }

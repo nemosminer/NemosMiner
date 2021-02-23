@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           BlockMasters.ps1
+File:           AHashPool.ps1
 Version:        3.9.9.22
 Version date:   23 February 2021
 #>
@@ -25,21 +25,21 @@ Version date:   23 February 2021
 using module ..\Includes\Include.psm1
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$Url = "http://blockmasters.co/?address="
+$Url = "https://www.ahashpool.com/wallet.php?wallet="
 
 Try { 
-    $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
             DateTime = (Get-Date).ToUniversalTime()
             Pool     = $Name
             Currency = $APIResponse.currency
             Wallet   = $($Config.PoolsConfig.$Name.Wallet)
-            Pending  = [Double]($APIResponse.unsold) # Pending?
+            Pending  = [Double]($APIResponse.unsold) # Pending
             Balance  = [Double]($APIResponse.balance)
-            Unpaid   = [Double]($APIResponse.unpaid) # Balance + Unsold?
-            # Paid     = [Double]($APIResponse.paid24h) # Total paid?
-            # Total    = [Double]($APIResponse.total) # total unpaid + total paid
+            Unpaid   = [Double]($APIResponse.total_unpaid) # Balance + unsold (pending)
+            # Paid     = [Double]($APIResponse.total_paid)
+            # Total    = [Double]($APIResponse.total_earned) # total unpaid + total paid
             Url      = "$($Url)$($Config.PoolsConfig.$Name.Wallet)"
         }
     }

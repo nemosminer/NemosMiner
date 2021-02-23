@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miniZ.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.7x2_winx64.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.7x4_win-x64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(

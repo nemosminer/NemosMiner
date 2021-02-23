@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,15 +29,20 @@ $Url = "https://www.nicehash.com/my/miner/"
 
 Try {
     # NiceHash External balance
-    $Wallet = $Config.PoolsConfig.$Name.Wallet
+    If ($Config.PoolsConfig.NiceHash.NiceHashWalletIsInternal -eq $true) { 
+        $Wallet = $Config.Wallet
+    }
+    Else { 
+        $Wallet = $Config.PoolsConfig.NiceHash.Wallet
+    }
 
-    $APIResponse = Invoke-RestMethod "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
     $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
 
     If ($Sum -gt 0) { 
         [PSCustomObject]@{ 
             DateTime   = (Get-Date).ToUniversalTime()
-            Pool       = $Name
+            Pool       = "NiceHash External"
             Currency   = "BTC"
             Wallet     = $($Wallet)
             Pending    = [Double]($APIResponse.unpaidAmount)

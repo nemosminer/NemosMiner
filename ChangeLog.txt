@@ -4,6 +4,17 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are not longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.22 23.02.2021
+========================================
+
+Fixed:
+- Not mining at NiceHash (regression from 3.9.9.20)
+
+Miner updates:
+- GMiner-v2.45
+- MiniZ-v1.7x4
+
+
 Changelog NemosMiner 3.9.9.21 22.02.2021
 ========================================
 

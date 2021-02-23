@@ -1,5 +1,5 @@
 ﻿<#
-Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool.ps1
-Version:        3.9.9.21
-Version date:   22 February 2021
+Version:        3.9.9.22
+Version date:   23 February 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,7 +28,7 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $Url = "https://www.ahashpool.com/wallet.php?wallet="
 
 Try { 
-    $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
             DateTime = (Get-Date).ToUniversalTime()
