@@ -37,15 +37,19 @@ Try {
                     Pool     = $Name
                     Currency = $APIResponse.data.balances.$_.abbreviation
                     Wallet   = $($Config.ProHashingAPIKey)
-                    Pending  = [Double]($APIResponse.data.balances.$_.unsold)
+                    Pending  = [Double]($APIResponse.data.balances.$_.balance)
                     Balance  = [Double]($APIResponse.data.balances.$_.balance)
-                    Unpaid   = [Double]($APIResponse.data.balances.$_.unpaid) # Balance + unsold (pending)
+                    Unpaid   = [Double]($APIResponse.data.balances.$_.unpaid)
                     # Paid     = [Double]($APIResponse.data.balances.$_.paid24h) # reset after payout
                     # Total    = [Double]($APIResponse.data.balances.$_.total) # total unpaid + total paid, reset after payout
                     Url      = "$($Url)"
                 }
             }
         }
+
+        $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+
     }
 }
 Catch { }
