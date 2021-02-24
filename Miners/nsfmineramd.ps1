@@ -1,7 +1,7 @@
   
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-nsfminer135\nsfminer.exe"
-$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.5/nsfminer_1.3.5-windows_10-cuda_11.2-opencl.zip"
+$Path = ".\Bin\AMD-nsfminer137\nsfminer.exe"
+$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.7/nsfminer_1.3.7-windows_10-cuda_11.2-opencl.zip"
 $Commands = [PSCustomObject]@{ 
     "ethash" = "" #ethash
 }
