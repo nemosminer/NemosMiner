@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   26 February 2021
 #>
 
 # Start the log
@@ -83,14 +83,14 @@ While ($true) {
         }
 
         # Keep most recent balance objects, keep empty balances for 7 days
-        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays( -7 ) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object { $_.Unpaid -gt 0 -or (($_.Pending -gt 0 -or $_.Balance -gt 0) -and $_.DateTime -gt $Now.AddDays( -7 )) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Name -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Name -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Read exchange rates
         $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
-        $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique) | Select-Object -Unique)
+        $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique) | Select-Object -Unique)
         Get-Rate
 
         $BalanceObjects | ForEach-Object { 
@@ -164,6 +164,21 @@ While ($true) {
                         If ($Delta -lt 0) { 
                             # Payout occured
                             $Payout = $Delta * -1
+                            $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
+                        }
+                        Else { 
+                            $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
+                        }
+                    }
+                    ElseIf ($PoolBalanceObject.Pool -like "ProHashing") { 
+                        # ProHashing
+                        $Delta = $PoolBalanceObject.Balance - ($PoolBalanceObjects | Select-Object -Last 1).Balance
+                        # Current 'Unpaid' is smaller
+                        If ($Delta -lt 0) { 
+                            If (($Delta * -1) -gt $(If ($PayoutThresholdCurrency -eq "mBTC") { $PayoutThreshold / 1000 } Else { $PayoutThreshold }) * 0.5) { 
+                                # Payout occured (delta > 50% of payout limit)
+                                $Payout = $Delta * -1
+                            }
                             $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
                         }
                         Else { 
