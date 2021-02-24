@@ -83,6 +83,7 @@
   "equihashzcl": "EquihashZCL",
   "etc": "EtcHash",
   "etchash": "EtcHash",
+  "eth": "Ethash",
   "grincuckaroo29": "Cuckaroo29",
   "grincuckarood29": "CuckarooD29",
   "grincuckatoo31": "Cuckatoo31",
