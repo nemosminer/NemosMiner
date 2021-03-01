@@ -19,18 +19,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig,
+    [PSCustomObject]$Config,
     [Hashtable]$Variables
 )
 
-If ($PoolConfig.Wallet) { 
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+
+$PayoutCurrency = $Config.PoolsConfig.$Name_Norm.Wallets.Keys | Select-Object -Index 0
+$Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
+
+If ($Wallet) { 
     Try { 
         $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\ahashpool\ahashpool.json") | ConvertFrom-Json
     }
@@ -38,7 +44,6 @@ If ($PoolConfig.Wallet) {
 
     If (-not $Request) { Return }
 
-    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $HostSuffix = "mine.ahashpool.com"
     $PriceField = "Plus_Price"
     # $PriceField = "actual_last24h"
@@ -71,11 +76,11 @@ If ($PoolConfig.Wallet) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = [String]$PoolConfig.Wallet
-                Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency)"
+                User               = [String]$Wallet
+                Pass               = "$($Config.PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = [Decimal]$Fee

@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           MiningPoolHubCoins.ps1
+File:           ZergPoolCoins.ps1
 Version:        3.9.9.23
 Version date:   01 March 2021
 #>
@@ -33,66 +33,64 @@ param(
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
-If ($Config.PoolsConfig.$Name_Norm.UserName) { 
+If ($Config.Wallets) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" }
+        $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{"Cache-Control" = "no-cache" }
     }
     Catch { Return }
 
     If (-not $Request) { Return }
 
-    $Divisor = 1000000000
+    $Request.cryptoCurrencies | Where-Object { $Config.Wallets.($_.Name) } | ForEach-Object { 
 
-    $User = "$($Config.PoolsConfig.$Name_Norm.UserName).$($($Config.PoolsConfig.$Name_Norm.WorkerName -replace "^ID="))"
+        $Currency  = $_.name
+        $CoinName = $_.title
+        $Algorithm_Norm = Get-Algorithm $Currency
 
-    $Request.return | Where-Object profit | ForEach-Object { 
-        $Current = $_
-        $Algorithm = $_.algo -replace "-"
-        $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Coin = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-" -replace " ")
-        $Fee = [Decimal]($_.Fee / 100)
+        $Divisor = $_.profitPerPower
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]($Request.stats.$Currency.expectedReward24H * $Variables.Rates.$Currency.BTC / $Divisor))
 
-        $PoolRegions = @("Asia", "EU", "US")
+        Try { $EstimateFactor = $Request.stats.$Currency.expectedReward24H / $Request.stats.$Currency.meanExpectedReward24H }
+        Catch { $EstimateFactor = 1 }
 
-        ForEach ($Region in $PoolRegions) { 
-            $Region_Norm = Get-Region $Region
+        ForEach ($Server in $_.Servers) { 
+            $Region_Norm = Get-Region $Server.region
 
             [PSCustomObject]@{ 
                 Algorithm          = [String]$Algorithm_Norm
-                CoinName           = [String]$Coin
-                Currency           = [String]$Current.symbol
+                CoinName           = [String]$CoinName
+                Currency           = [String]$Currency
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
                 PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
-                Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                Port               = [UInt16]$Current.port
-                User               = [String]$User
+                Host               = [String]$Server.host
+                Port               = [UInt16]$Server.ports[0]
+                User               = "$($Config.Wallets.($_.Name)).$($Config.PoolsConfig.$Name_Norm.WorkerName)"
                 Pass               = "x"
-                Region             = [String]$Region_Norm
+                Region             = [String]"$(Get-Region $Server.region)"
                 SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = [Decimal]1
+                Fee                = [Decimal]0
+                EstimateFactor     = [Decimal]$EstimateFactor
             }
 
             # [PSCustomObject]@{ 
             #     Algorithm          = [String]$Algorithm_Norm
-            #     CoinName           = [String]$Coin
-            #     Currency           = [String]$Current.symbol
+            #     CoinName           = [String]$CoinName
+            #     Currency           = [String]$Currency
             #     Price              = [Double]$Stat.Live
             #     StablePrice        = [Double]$Stat.Week
             #     MarginOfError      = [Double]$Stat.Week_Fluctuation
             #     PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
-            #     Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-            #     Port               = [UInt16]$Current.port
-            #     User               = [String]$User
+            #     Host               = [String]$Server.host
+            #     Port               = [UInt16]$Server.ssl_ports[0]
+            #     User               = "$($Config.Wallets.($_.Name)).$($Config.PoolsConfig.$Name_Norm.WorkerName)"
             #     Pass               = "x"
-            #     Region             = [String]$Region_Norm
+            #     Region             = [String]"$(Get-Region $Server.region)"
             #     SSL                = [Bool]$true
-            #     Fee                = $Fee
-            #     EstimateFactor     = [Decimal]1
+            #     Fee                = [Decimal]0
+            #     EstimateFactor     = [Decimal]$EstimateFactor
             # }
         }
     }

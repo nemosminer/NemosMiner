@@ -1,8 +1,31 @@
 Breaking changes (from main code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
-- PowerShell 7.x is required, older PowerShell versions are not longer supported
+- PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
+
+
+Changelog NemosMiner 3.9.9.23 01.03.2021
+========================================
+
+Changed:
+- Available mining locations have changed. Brazil, India, HongKong & Russia are no longer available (https://www.nicehash.com/blog/post/announcing-new-hash-power-marketplace-locations)
+- Reworked DAG Data collection
+- Moved Config.Wallet to Config.Wallets.BTC
+- Added new config item Wallets.[Currency[]]
+  Also change all pools to support this feature
+
+Fixed:
+- NSFMiner failed mining @ ProHashing
+
+Miner changes:
+- NSFMiner-v1.3.7
+- SRBMinerMulti-v0.6.8
+
+New:
+- Support for 'HiveON' pool
+  Requires ETC & ETH wallet address
+
 
 Changelog NemosMiner 3.9.9.22 23.02.2021
 ========================================

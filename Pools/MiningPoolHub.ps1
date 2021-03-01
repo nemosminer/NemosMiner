@@ -19,19 +19,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig,
+    [PSCustomObject]$Config,
     [Hashtable]$Variables
 )
 
-If ($PoolConfig.UserName) { 
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+
+If ($Config.PoolsConfig.$Name_Norm.UserName) { 
     Try { 
         $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" }
     }
@@ -39,11 +42,10 @@ If ($PoolConfig.UserName) {
 
     If (-not $Request) { Return }
 
-    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $Fee = [Decimal]0.009
     $Divisor = 1000000000
 
-    $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
+    $User = "$($Config.PoolsConfig.$Name_Norm.UserName).$($($Config.PoolsConfig.$Name_Norm.WorkerName -replace "^ID="))"
 
     $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
@@ -53,19 +55,7 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
-        # If ($Current.all_host -eq "hub.miningpoolhub.com") { 
-        #     $PoolRegions = @("US")
-        #     $Current.all_host_list = $Current.all_host
-        # }
-        # Else { 
-        #     # Temp fix for Ethash https://bitcointalk.org/index.php?topic=472510.msg55320676# msg55320676
-        #     If ($Algorithm_Norm -in @("EtcHash", "Ethash", "KawPow")) { 
-        #         $PoolRegions = @("Asia", "US")
-        #     }
-        #     Else {
-                $PoolRegions = @("Asia", "EU", "US")
-        #     }
-        # }
+        $PoolRegions = @("Asia", "EU", "US")
 
         ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region
@@ -77,7 +67,7 @@ If ($PoolConfig.UserName) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port               = [UInt16]$Current.algo_switch_port
                 User               = [String]$User
@@ -95,7 +85,7 @@ If ($PoolConfig.UserName) {
             #     Price              = [Double]$Stat.Live
             #     StablePrice        = [Double]$Stat.Week
             #     MarginOfError      = [Double]$Stat.Week_Fluctuation
-            #     PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+            #     PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
             #     Host               = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
             #     Port               = [UInt16]$Current.algo_switch_port
             #     User               = [String]$User

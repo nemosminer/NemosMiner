@@ -19,18 +19,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPoolCoins.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig,
+    [PSCustomObject]$Config,
     [Hashtable]$Variables
 )
 
-If ($PoolConfig.Wallet) { 
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+
+$PayoutCurrency = $Config.PoolsConfig.$Name_Norm.Wallets.Keys | Select-Object -Index 0
+$Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
+
+If ($Wallet) { 
     Try { 
         $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
         $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" }
@@ -39,7 +45,6 @@ If ($PoolConfig.Wallet) {
 
     If ((-not $Request) -or (-not $CoinsRequest)) { Return }
 
-    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $HostSuffix = "mine.zergpool.com"
 
     $PriceField = "Plus_Price"
@@ -80,11 +85,11 @@ If ($PoolConfig.Wallet) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = [String]$PoolConfig.Wallet
-                Pass               = "$($PoolConfig.WorkerName),c=$($PoolConfig.PayoutCurrency),mc=$($TopCoin.Symbol)"
+                User               = [String]$Wallet
+                Pass               = "$($Config.PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency,mc=$($TopCoin.Symbol)"
                 Region             = "N/A (Anycast)"
                 SSL                = [Bool]$false
                 Fee                = [Decimal]$Fee

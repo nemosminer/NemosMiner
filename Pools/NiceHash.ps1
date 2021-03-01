@@ -19,18 +19,33 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig,
+    [PSCustomObject]$Config,
     [Hashtable]$Variables
 )
 
-If ($PoolConfig.Wallet) { 
+If ($Config.NiceHashWalletIsInternal -eq $true) { 
+    $PoolConfig = $Config.PoolsConfig."NiceHash Internal"
+    $Fee = [Decimal]0.02
+}
+Else { 
+    $PoolConfig = $Config.PoolsConfig."NiceHash External"
+    $Fee = [Decimal]0.05
+}
+
+$PoolHost = "nicehash.com"
+$PoolRegions = "eu-west", "eu-east", "usa-west", "usa-east"
+
+$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -Index 0
+$Wallet = $PoolConfig.Wallets.$PayoutCurrency
+
+If ($Wallet) { 
     Try { 
         $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
         $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
@@ -40,19 +55,7 @@ If ($PoolConfig.Wallet) {
 
     If (-not $Request) { Return }
 
-    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-    $PoolHost = "nicehash.com"
-
-    $PoolRegions = "br", "eu", "hk", "in", "jp", "usa"
-
-    If ($PoolConfig.NiceHashWalletIsInternal) { 
-        $Fee = [Decimal]0.02
-    }
-    Else { 
-        $Fee = [Decimal]0.05
-    }
-
-    $User = "$($PoolConfig.Wallet).$($($PoolConfig.WorkerName -replace "^ID="))"
+    $User = "$Wallet.$($($PoolConfig.WorkerName -replace "^ID="))"
 
     $Request.miningAlgorithms | Where-Object speed -GT 0 | ForEach-Object { 
         $Algorithm = $_.Algorithm
@@ -61,6 +64,8 @@ If ($PoolConfig.Wallet) {
         $DivisorMultiplier = 1000000000
         $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
         $Divisor = 100000000
+
+        If ($Algorithm_Norm -eq "Lyra2RE3") { Return } # temp fix, no orders
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor)
 

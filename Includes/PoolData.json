@@ -1,26 +1,84 @@
 {
   "AHashPool": {
-    "EarnTrackSupport": "yes",
-    "PayoutThreshold": { 
+    "GuaranteedPayoutCurrencies": [
+      "BTC"
+    ],
+    "PayoutThreshold": {
       "mBTC": 3
-    }
+    },
+    "PayoutCurrency": "BTC"
   },
-  "BlazePool": { 
-    "EarnTrackSupport": "Yes",
-    "PayoutThreshold": { 
+  "BlazePool": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC"
+    ],
+    "PayoutThreshold": {
       "mBTC": 3
-    }
+    },
+    "PayoutCurrency": "BTC"
   },
-  "BlockMasters": { 
-    "EarnTrackSupport": "Yes",
-    "PayoutThreshold": { 
+  "BlockMasters": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC",
+      "DOGE"
+    ],
+    "PayoutThreshold": {
       "mBTC": 1.65,
       "LTC": 0.1,
       "DODGE": 50
+    },
+    "PayoutCurrency": "[Default]"
+  },
+  "HiveON": {
+    "GuaranteedPayoutCurrencies": [
+      "ETC",
+      "ETH"
+    ],
+    "PayoutCurrencies": [
+      "ETC",
+      "ETH"
+    ],
+    "PayoutThreshold": {
+      "ETC": 1,
+      "ETH": 0.1
     }
   },
-  "MiningPoolHub": { 
-    "EarnTrackSupport": "yes",
+  "MiningPoolHub": {
+    "GuaranteedPayoutCurrencies": [
+      "ADZ",
+      "AUR",
+      "BSTY",
+      "BCH",
+      "BTC",
+      "BTG",
+      "DASH",
+      "DGB",
+      "ESN",
+      "ETC",
+      "ETH",
+      "ETN",
+      "EXP",
+      "FTC",
+      "GAME",
+      "GRS",
+      "LTC",
+      "MAX",
+      "MONA",
+      "MUSIC",
+      "RVN",
+      "SC",
+      "START",
+      "SXC",
+      "VTC",
+      "XZC",
+      "XMR",
+      "XMY",
+      "XVG",
+      "ZCL",
+      "ZEC",
+      "ZEN"
+    ],
     "PayoutThreshold": {
       "ADZ": 0.0115,
       "AUR": 2.01,
@@ -54,44 +112,74 @@
       "ZCL": 0.0016,
       "ZEC": 0.0016,
       "ZEN": 0.0016
-    }
+    },
+    "PayoutCurrency": "[Default]"
   },
-  "NiceHash External": { 
-    "EarnTrackSupport": "yes",
-    "PayoutThreshold": { 
-      "mBTC": 1
-    }
-  },
-  "NiceHash Internal": { 
-    "EarnTrackSupport": "yes",
-    "PayoutThreshold": { 
-      "mBTC": 0.5
-    }
-  },
-  "NLPool": { 
-    "EarnTrackSupport": "yes",
+  "NLPool": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC"
+    ],
+    "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
       "mBTC": 1
     }
   },
-  "ProHashing": { 
-    "EarnTrackSupport": "yes",
-    "PayoutThreshold": { 
+  "NiceHash External": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC"
+    ],
+    "PayoutCurrency": "BTC",
+    "PayoutThreshold": {
+      "mBTC": 1
+    }
+  },
+  "NiceHash Internal": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC"
+    ],
+    "PayoutCurrency": "BTC",
+    "PayoutThreshold": {
+      "mBTC": 0.5
+    }
+  },
+  "ProHashing": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
       "mBTC": 0,
       "LTC": 0.010950859265481713,
       "USD": 10
     }
   },
-  "ZergPool": { 
-    "EarnTrackSupport": "yes",
-    "PayoutThreshold": { 
+  "ZergPool": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "BCH",
+      "LTC",
+      "DOGE",
+      "ETH",
+      "DASH"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
       "mBTC": 2.5,
       "LTC": 0.15,
       "*": 0.0002
     }
   },
-  "Zpool": { 
-    "EarnTrackSupport": "Yes",
+  "Zpool": {
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC",
+      "DASH",
+      "DGB",
+      "KMD"
+    ],
+    "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
       "mBTC": 2.5,
       "*": 0.0125

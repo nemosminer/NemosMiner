@@ -9,10 +9,12 @@
   <table>
     <tr style="vertical-align: top;">
       <td>
-        <div title="Your Bitcoin address&#10;Do not enter a non-BTC address here.&#10;(34 characters)&#10;&#10;Payouts in other currencies must be configured as a per pool setting&#10;by editing '.\Config\PoolConfig.json'.">
-          <label for="Wallet">Bitcoin wallet address</label>
-          <input type="text" id="Wallet" name="Wallet" maxlength=35 size=40 value="1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE">
-        </div>
+        <fieldset title="Set your wallet addresses&#10;To add more currencies you need to edit '\Config\PoolsConfig.json' manually.">
+          <legend class=h6><b>Wallet addresses</b></legend>
+          <div id="Wallets"></div>
+        </fieldset>
+        <br>
+
         <div title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
           <labelfor="WorkerName">Worker name</label>
           <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
@@ -72,7 +74,7 @@
 
         <div title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in other currencies than BTC.&#10;Consult the pool API information for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
           <label for="PayoutCurrency">Default payout currency</label>
-          <input type="text" id="PayoutCurrency" name="PayoutCurrency" maxlength=5 size=3 value = "mBTC">
+          <select name="" id="PayoutCurrency"></select>
         </div>
         <br>
 
@@ -341,6 +343,8 @@
 
 <script type="text/javascript">
 
+  const walletscontainer = document.getElementById('Wallets');
+  const payoutcurrencycontainer = document.getElementById('PayoutCurrency');
   const poolscontainer = document.getElementById('Pools');
   const regionscontainer = document.getElementById('Regions');
   const devicescontainer = document.getElementById('Devices');
@@ -351,6 +355,21 @@
   var devicenames = [];
 
   $(document).ready(function() {
+
+    // Fill wallet addresses
+    $.each(config.Wallets, function (key, value) {
+      key = key.toUpperCase();
+      $('<label/>', { for: ('Wallet' + key), text: (key + " ") }).appendTo(walletscontainer);
+      if (key === "BTC" || key === "LTC") { 
+        $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 35, size: 40 }).appendTo(walletscontainer);
+      } else if (key === "ETC" || key === "ETH") { 
+        $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 42, size: 47 }).appendTo(walletscontainer);
+      } else { 
+        $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), size: 47 }).appendTo(walletscontainer);
+      };
+      $('<br>').appendTo(walletscontainer);
+      $('<option/>', { value: key, text: key }).appendTo(payoutcurrencycontainer);
+    })
 
     // Populate pool checkbox list
     $.ajax({
@@ -406,7 +425,6 @@
       }
     });
 
-    document.getElementById('Wallet').value = config.Wallet.trim();
     document.getElementById('WorkerName').value = config.WorkerName.trim();
 
     document.getElementById('MiningPoolHubAPIKey').value = config.MiningPoolHubAPIKey;
@@ -428,7 +446,7 @@
       document.getElementById('UsemBTC').checked = true;
     };
 
-    document.getElementById('PayoutCurrency').value = config.PayoutCurrency.trim();
+    document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
 
     if (config.Algorithm) {
       document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
@@ -634,7 +652,6 @@
       document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
     };
 
-    document.getElementById('Wallet').value = config.Wallet.trim();
     document.getElementById('WorkerName').value = config.WorkerName.trim();
 
     document.getElementById('MiningPoolHubAPIKey').disabled = !(document.getElementById('pool-miningpoolhub').checked || (document.getElementById('pool-miningpoolhubcoins').checked));
@@ -673,11 +690,23 @@
 
     $("#configuration").validate({
       rules: {
-        Wallet: {
+        WalletBTC: {
           required: false,
           minlength: 34,
           maxlength: 34,
           pattern: "^[0-9A-Za-z]{34}$"
+        },
+        WalletETC: {
+          required: false,
+          minlength: 42,
+          maxlength: 42,
+          pattern: "^0[x|X][0-9A-Za-z]{40}$"
+        },
+        WalletETH: {
+          required: false,
+          minlength: 42,
+          maxlength: 42,
+          pattern: "^0[x|X][0-9A-Za-z]{40}$"
         },
         WorkerName: {
           required: true,
@@ -743,10 +772,6 @@
           maxlength: 64,
           pattern: "^([A-Za-z0-9]{3,4}?)+(?:,([A-Za-z0-9]{3,4})+)*$"
         },
-        PayoutCurrency: {
-          required: true,
-          pattern: "^[A-Z0-9]{3,4}"
-        },
         Algorithm: {
           required: false,
           minlength: 3,
@@ -806,9 +831,6 @@
         Currency: {
           pattern: "<br>Currencies must be entered as 3-4 characters, separated by commas"
         },
-        PayoutCurrency: {
-          pattern: "<br>Default payout currency must be between 3 and 4 charaters long<br>and may only contain upper case letters and digits"
-        },
         Algorithm: {
           pattern: "<br>Algorithms must be prefixed with '+' or '-' and separated by commas"
         },
@@ -824,10 +846,6 @@
         config.PoolName = [];
         config.ExcludeDeviceName = [];
 
-        config.Wallet = document.getElementById('Wallet').value.toString().trim()
-        if ((document.getElementById('Wallet').value) === "") { 
-          config.Wallet = document.getElementById('Wallet').value = '1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE';
-        };
         config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
         if ((document.getElementById('WorkerName').value) == "") { 
           config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
@@ -851,7 +869,7 @@
         config.Currency = document.getElementById('Currency').value.trim();
         config.ExtraCurrencies = document.getElementById('ExtraCurrencies').value.split(',');
         config.UsemBTC = document.getElementById('UsemBTC').checked;
-        config.PayoutCurrency = document.getElementById('PayoutCurrency').value.trim();
+        config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
 
         config.Interval = parseInt(document.getElementById('Interval').value);
 
@@ -878,6 +896,10 @@
 
         config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
         config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
+
+        $.each(config.Wallets, function (key, value) {
+          config.Wallets[key] = document.getElementById('Wallet' + key).value.toString();
+        });
 
         $.each(poolnames, function (key, value) {
           if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) {

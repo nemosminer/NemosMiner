@@ -18,14 +18,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash External.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$Url = "https://www.nicehash.com/my/miner/"
+$PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -Index 0
+$Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
+$Url = "https://www.nicehash.com/my/miner/$Wallet"
 $Key = $Config.NicehashAPIKey
 $OrganizationID = $Config.NicehashOrganizationID
 $Secret = $Config.NicehashAPISecret
@@ -71,16 +73,20 @@ Try {
             [PSCustomObject]@{ 
                 DateTime   = (Get-Date).ToUniversalTime()
                 Pool       = $Name
-                Currency   = "BTC"
-                Wallet     = "OrgID $($Config.NicehashOrganizationID)"
+                Currency   = $PayoutCurrency
+                Wallet     = $Wallet
                 Pending    = [Double]($APIResponse.pending)
                 Balance    = [Double]($APIResponse.available)
                 Unpaid     = [Double]($APIResponse.totalBalance)
                 Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
                 #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
-                Url        = "$($Url)$($Config.PoolsConfig.NiceHash.Wallet)"
+                Url        = $Url
             }
         }
+
+        $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+
     }
 }
 Catch { }

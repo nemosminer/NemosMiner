@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 [CmdletBinding()]
@@ -214,6 +214,8 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
+    [Hashtable]$Wallets = @{ "BTC" = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"; "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }, 
+    [Parameter(Mandatory = $false)]
     [Switch]$Watchdog = $true, # if true NemosMiner will automatically put pools and/or miners temporarily on hold it they fail a few times in row
     [Parameter(Mandatory = $false)]
     [Int]$WatchdogCount = 3, # Number of watchdog timers
@@ -240,7 +242,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.22"
+    Version      = [System.Version]"3.9.9.23"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 

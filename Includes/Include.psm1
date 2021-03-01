@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 Class Device { 
@@ -1270,7 +1270,7 @@ Function Read-Config {
 
     # Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
-    (Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName | Sort-Object -Unique | ForEach-Object { 
+    @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$" -replace "Coins$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
@@ -1278,34 +1278,47 @@ Function Read-Config {
             If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json }
         }
         If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
-        If (-not $PoolConfig.PayoutCurrency) { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
         If (-not $PoolConfig.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch ($PoolName) { 
+            "HiveON" { 
+                If (-not $PoolConfig.PayoutCurrencies) { 
+                    $PoolConfig | Add-Member PayoutCurrencies $PoolData.$PoolName.PayoutCurrencies
+                }
+                If (-not $PoolConfig.Wallets) { 
+                    $PoolConfig | Add-Member Wallets @{ }
+                    $Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
+                        $PoolConfig.Wallets.$_ = $($Config.Wallets.($_))
+                    }
+                }
+            }
             "MiningPoolHub" { 
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MiningPoolHubUserName -Force }
             }
             "NiceHash External" { 
-                $PoolConfig | Add-Member NiceHashWalletIsInternal $false -ErrorAction Ignore
                 If (-not $Config.NiceHashWalletIsInternal) { 
-                    If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
+                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets @{ "BTC" = $Config.NiceHashWallet } -Force }
                 }
-                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
+                If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets @{ "BTC" = $Config.Wallets.BTC } -Force }
             }
             "NiceHash Internal" { 
-                $PoolConfig | Add-Member NiceHashWalletIsInternal $true -ErrorAction Ignore
                 If ($Config.NiceHashWalletIsInternal -eq $true -and $Config.NiceHashWallet) { 
-                    If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.NiceHashWallet -Force }
+                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets @{ "BTC" = $Config.NiceHashWallet } -Force }
                 }
             }
             "ProHashing" { 
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
             }
             Default { 
-                If (-not $PoolConfig.Wallet) { $PoolConfig | Add-Member Wallet $Config.Wallet -Force }
+                If (-not $PoolConfig.PayoutCurrency -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
+                If (-not $PoolConfig.Wallets) { 
+                    $PoolConfig | Add-Member Wallets @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } -Force
+                }
             }
         }
+        $PoolConfig.PSObject.Members.Remove("PayoutCurrencies")
+        $PoolConfig.PSObject.Members.Remove("PayoutCurrency")
         $PoolsConfig.$PoolName = $PoolConfig
     }
 
@@ -2257,7 +2270,7 @@ Function Get-DigitsFromValue {
         [Int]$Offset = 0
     )
 
-    $Digits = [math]::Floor($Value).ToString().Length
+    $Digits = [math]::Floor($Value).ToString().Length + $Offset
     If ($Digits -lt 0) { $Digits = 0 }
     If ($Digits -gt 10) { $Digits = 10 }
 
@@ -2512,11 +2525,13 @@ Function Get-Region {
         $Global:Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
     }
 
-    $Region = (Get-Culture).TextInfo.ToTitleCase($Region -replace '-' -replace '_' -replace '/' -replace ' ')
+    # $Region = (Get-Culture).TextInfo.ToTitleCase($Region)
+    # $Region = (Get-Culture).TextInfo.ToTitleCase($Region -replace '-' -replace '_' -replace '/' -replace ' ')
+
+    If ($List) { Return $Global:Regions.$Region }
 
     If ($Global:Regions.$Region) { 
-        If ($List) { $Global:Regions.$Region }
-        Else { $Global:Regions.$Region | Select-Object -Index 0 } 
+       $Global:Regions.$Region | Select-Object -Index 0
     }
     Else { $Region }
 }
@@ -2788,7 +2803,24 @@ Function Update-ConfigFile {
         $Config.ExtraCurrencies = @($Config.Currency | Select-Object -Skip 1 | Where-Object { $_ -ne "mBTC" } | Select-Object)
     }
 
-    #Rename MPH to MiningPoolHub
+    # Move BTC wallet to wallets
+    If ($Config.Wallet) { 
+        $Config.Wallets | Add-Member BTC $Config.Wallet -ErrorAction Ignore
+        $Config.Remove("Wallet")
+        
+        # Move [PayoutCurrency] wallet to wallets
+        If ($PoolsConfig = Get-Content .\Config\PoolsConfig.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { 
+            $PoolsConfig  | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+                If (-not $PoolsConfig.$_.Wallets -and $PoolsConfig.$_.Wallet) { 
+                    $PoolsConfig.$_ | Add-Member Wallets @{ "$($PoolsConfig.$_.PayoutCurrency)" = $PoolsConfig.$_.Wallet } -ErrorAction Ignore
+                    $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
+                }
+            }
+            $PoolsConfig | ConvertTo-Json | Set-Content .\Config\PoolsConfig.json -Force
+        }
+    }
+
+    # Rename MPH to MiningPoolHub
     If ($Config.PoolName -contains @("MPH")) { 
         $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPH" }
         $Config.PoolName += "MiningPoolHub"
@@ -2796,6 +2828,22 @@ Function Update-ConfigFile {
     If ($Config.PoolName -contains @("MPHCoins")) { 
         $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPHCoins" }
         $Config.PoolName += "MiningPoolHubCoins"
+    }
+
+    # Available regions have changed
+    If (-not (Get-Region $Config.Region -List)) { 
+        # Write message about new mining regions
+        Switch ($Config.Region) { 
+            "India"    { $Config.Region = "Japan" }
+            "HongKong" { $Config.Region = "Japan" }
+            "Japan"    { $Config.Region = "Japan" }
+            "Europe"   { $Config.Region = "Europe West" }
+            "Russia"   { $Config.Region = "Europe East" }
+            "US"       { $Config.Region = "USA West" }
+            "Brazil"   { $Config.Region = "USA West" }
+            Default    { $Config.Region = "Europe West" }
+        }
+        Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration." -Console
     }
 
     $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -74,7 +74,7 @@ $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirme
             DateTime = (Get-Date).ToUniversalTime()
             Pool     = "$Name"
             Currency = $Currency
-            Wallet   = $Config.MiningPoolHubAPIKey
+            Wallet   = $Config.MiningPoolHubUserName
             Pending  = [Double]($_.unconfirmed)
             Balance  = [Double]($_.confirmed)
             Unpaid   = [Double]($_.confirmed + $_.unconfirmed)
@@ -83,3 +83,6 @@ $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirme
         }
     }
 }
+
+$APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+$APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"

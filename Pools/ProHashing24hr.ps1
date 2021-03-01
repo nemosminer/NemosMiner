@@ -19,19 +19,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 
 using module ..\Includes\Include.psm1
 
 param(
-    [PSCustomObject]$PoolConfig,
+    [PSCustomObject]$Config,
     [Hashtable]$Variables
 )
 
-If ($PoolConfig.UserName) { 
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+
+If ($Config.PoolsConfig.$Name_Norm.UserName) { 
     Try {
         $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec 15 -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
     }
@@ -39,7 +42,6 @@ If ($PoolConfig.UserName) {
 
     If (-not $Request) { Return }
 
-    $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $PoolHost = "prohashing.com"
     # $PriceField = "actual_last24h"
     $PriceField = "actual_last24h"
@@ -63,11 +65,11 @@ If ($PoolConfig.UserName) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = [String]$PoolConfig.UserName
-                Pass               = "a=$($Algorithm_Norm),n=$($PoolConfig.WorkerName)"
+                User               = [String]$Config.PoolsConfig.$Name_Norm.UserName
+                Pass               = "a=$($Algorithm_Norm),m=pps,n=$($Config.PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee

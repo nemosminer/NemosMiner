@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -36,11 +36,11 @@ Try {
                     DateTime = (Get-Date).ToUniversalTime()
                     Pool     = $Name
                     Currency = $APIResponse.data.balances.$_.abbreviation
-                    Wallet   = $($Config.ProHashingAPIKey)
-                    Pending  = [Double]($APIResponse.data.balances.$_.balance)
+                    Wallet   = $Config.ProHashingUserName
+                    Pending  = 0
                     Balance  = [Double]($APIResponse.data.balances.$_.balance)
-                    Unpaid   = [Double]($APIResponse.data.balances.$_.unpaid)
-                    # Paid     = [Double]($APIResponse.data.balances.$_.paid24h) # reset after payout
+                    Unpaid   = [Double]($APIResponse.data.balances.$_.Unpaid)
+                    Paid     = [Double]($APIResponse.data.balances.$_.paid24h)
                     # Total    = [Double]($APIResponse.data.balances.$_.total) # total unpaid + total paid, reset after payout
                     Url      = "$($Url)"
                 }

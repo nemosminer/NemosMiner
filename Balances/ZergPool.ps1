@@ -18,30 +18,36 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module ..\Includes\Include.psm1
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$Url = "http://zergpool.com/?address="
+$PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -Index 0
+$Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
+$Url = "http://zergpool.com/?address=$Wallet"
 
 Try { 
-    $APIResponse = Invoke-RestMethod "http://www.zergpool.com:8080/api/wallet?address=$($Config.PoolsConfig.$Name.Wallet)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "http://www.zergpool.com:8080/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
             DateTime = (Get-Date).ToUniversalTime()
             Pool     = $Name
             Currency = $APIResponse.Currency
-            Wallet   = $($Config.PoolsConfig.$Name.Wallet)
+            Wallet   = $Wallet
             Pending  = [Double]($APIResponse.Unsold) # Pending
             Balance  = [Double]($APIResponse.Balance)
             Unpaid   = [Double]($APIResponse.Unpaid) # Balance + unsold (pending)
             # Paid     = [Double]($APIResponse.PaidTotal)
             # Total    = [Double]($APIResponse.Unpaid) + $APIResponse.PaidTotal
-            Url      = "$($Url)$($Config.PoolsConfig.$Name.Wallet)"
+            Url      = $Url
         }
     }
+
+    $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+    $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+
 }
 Catch { }

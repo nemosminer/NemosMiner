@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NiceHash Internal.ps1
+File:           HiveON.ps1
 Version:        3.9.9.23
 Version date:   01 March 2021
 #>
@@ -25,33 +25,33 @@ Version date:   01 March 2021
 using module ..\Includes\Include.psm1
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -Index 0
-$Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
-$Url = "https://www.nicehash.com/my/miner/$Wallet"
 
-If ($Wallet) { 
-    Try {
-        $APIResponse = Invoke-RestMethod "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
-        $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
+$Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
 
-        If ($Sum -gt 0) { 
+    $Currency = $_.ToUpper()
+    $Wallet = ($Config.PoolsConfig.$Name.Wallets.$_ -replace "^0x").ToLower()
+
+    Try { 
+        $APIResponse = Invoke-RestMethod "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+        # If ($APIResponse.currency) { 
             [PSCustomObject]@{ 
-                DateTime   = (Get-Date).ToUniversalTime()
-                Pool       = $Name
-                Currency   = $PayoutCurrency
-                Wallet     = $($Wallet)
-                Pending    = [Double]($APIResponse.unpaidAmount)
-                Balance    = [Double]($APIResponse.externalBalance)
-                Unpaid     = $Sum
-                #Total      = $Sum
-                Url        = $Wallet
-                NextPayout = $APIResponse.NextPayoutTimeStamp
+                DateTime = (Get-Date).ToUniversalTime()
+                Pool     = $Name
+                Currency = $_
+                Wallet   = $($Config.PoolsConfig.$Name.Wallets.$_)
+                Pending  = [Double]0
+                Balance  = [Double]($APIResponse.totalUnpaid)
+                Unpaid   = [Double]($APIResponse.totalUnpaid)
+                # Paid     = [Double]$APIResponse.stats.totalPaid
+                # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
+                Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
             }
-        }
-        
+        # }
+
         $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
         $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
 
     }
     Catch { }
 }
+

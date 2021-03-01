@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.22
-Version date:   23 February 2021
+Version:        3.9.9.23
+Version date:   01 March 2021
 #>
 
 using module .\Include.psm1
@@ -56,103 +56,96 @@ Function Start-Cycle {
         # Expire watchdog timers
         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
-        # Do do once every 24hrs
-        If ($Variables.DAGdata.Updated -lt (Get-Date).AddDays( -1 )) { 
+        If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
+        If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
 
-            # Get ethash DAG size and epoch
-            If ((-not (Test-Path -PathType Leaf ".\Includes\DAGdata.json")) -or $Variables.DAGdata.Currency.Count -lt 10 -or (-not $Variables.DAGdata.Currency.RVN) -or ([nullable[DateTime]]($DAGdata = Get-Content -Path ".\Includes\DAGdata.json" | ConvertFrom-Json -ErrorAction Ignore).Updated -lt (Get-Date).AddDays( +1 ))) { 
+        # Do do once every 24hrs or if unable to get data from all sources
+        If ($Variables.DAGdata.Updated_Minerstat -lt (Get-Date).AddDays( -1 ) ) { 
+            Try { 
+                $Page = Invoke-WebRequest "https://minerstat.com/dag-size-calculator" # PWSH 6+ no longer supports basic parsing -> parse text
+                $Page.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
 
-                $DAGdata = [PSCustomObject][Ordered]@{ }
+                    $BlockHeight, $Currency, $DAGsize, $Epoch = $null
 
-                If ($Variables.DAGdata.Currency.Count -lt 10) { 
-                    Try { 
-                        $DAGdata | Add-Member Currency ([Ordered]@{ }) -Force
-                        $BlockHeight, $Currency, $DAGsize, $Epoch = $null
-
-                        $Page = Invoke-WebRequest "https://minerstat.com/dag-size-calculator" # PWSH 6+ no longer supports basic parsing -> parse text
-                        $Page.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
-
-                            If ($_ -like "<div class='block' title='Current block height of *") { 
-                                $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
-                                $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>$")
-                                $DAGsize = [Int64](Get-DAGsize $BlockHeight $Currency)
-                                # Epoch for EtcHash is twice as long
-                                If ($Currency -eq "ETC") { 
-                                    $Epoch = [Int]([Math]::Floor($BlockHeight / 60000))
-                                }
-                                Else { 
-                                    $Epoch = [Int]([Math]::Floor($BlockHeight / 30000))
-                                }
-                            }
-
-                            If ($BlockHeight -and $Currency -and $DAGsize -and $Epoch) { 
-                                $Data = [PSCustomObject]@{ 
-                                    BlockHeight = $BlockHeight
-                                    DAGsize     = $DAGsize
-                                    Epoch       = $Epoch
-                                }
-                                $DAGdata.Currency.Add($Currency, $Data)
-                                $BlockHeight = $Currency = $DAGsize = $null
-                            }
+                    If ($_ -like "<div class='block' title='Current block height of *") { 
+                        $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
+                        $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>$")
+                        $DAGsize = [Int64](Get-DAGsize $BlockHeight $Currency)
+                        # Epoch for EtcHash is twice as long
+                        If ($Currency -eq "ETC") { 
+                            $Epoch = [Int]([Math]::Floor($BlockHeight / 60000))
                         }
-                        $DAGdata | Add-Member Updated (Get-Date).ToUniversalTime()
-                        Write-Message -Level Info "Loaded DAG block data from 'https://minerstat.com'."
-                    }
-                    Catch { 
-                        Write-Message -Level Warn "Cannot load DAG block data from 'https://minerstat.com'."
-                    }
-                }
-
-                If (-not $DAGdata.Currency.RVN) {
-                    Try { 
-                        # Get RVN block data
-                        $Timeout = 5
-                        $Request = "https://api.ravencoin.org/api/status"
-                        $BlockHeight = (Invoke-RestMethod -Uri $Request -TimeoutSec 5).Info.blocks
-                        If ($BlockHeight -and $DAGdata.Currency.Keys) { 
-                            $Data = [PSCustomObject][Ordered]@{ 
-                                BlockHeight = [Int]($BlockHeight)
-                                DAGsize     = [Int64](Get-DAGSize -Block $BlockHeight -Coin "RVN")
-                                Epoch       = [Int]([Math]::Floor($BlockHeight / 7500))
-                            }
-                            $DAGdata.Currency.Add("RVN", $Data)
+                        Else { 
+                            $Epoch = [Int]([Math]::Floor($BlockHeight / 30000))
                         }
-                        Write-Message -Level Info "Loaded RVN DAG block data from 'https://api.ravencoin.org'."
                     }
-                    Catch { 
-                        Write-Message -Level Warn "Cannot load RVN DAG block data from 'https://api.ravencoin.org'."
+
+                    If ($BlockHeight -and $Currency -and $DAGsize -and $Epoch) { 
+                        $Data = [PSCustomObject]@{ 
+                            BlockHeight = $BlockHeight
+                            DAGsize     = $DAGsize
+                            Epoch       = $Epoch
+                        }
+                        $Variables.DAGdata.Currency.Remove($Currency)
+                        $Variables.DAGdata.Currency.Add($Currency, $Data)
                     }
                 }
-
-                # Add default '*' (equal to highest)
-                If ($DAGdata.Currency.Keys) { 
-                    $Data = [PSCustomObject][Ordered]@{ 
-                        BlockHeight = [Int]($DAGdata.Currency.Keys | ForEach-Object { $DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
-                        DAGsize     = [Int64]($DAGdata.Currency.Keys | ForEach-Object { $DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
-                        Epoch       = [Int]($DAGdata.Currency.Keys | ForEach-Object { $DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
-                    }
-                    $DAGdata.Currency.Add("*", $Data)
-                }
-
-                If (-not $DAGdata.Currency."*") {
-                    $DAGdata = [PSCustomObject][Ordered]@{ }
-                    $DAGdata | Add-Member Currency ([Ordered]@{ })
-
-                    $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
-                    Write-Message -Level Warn "Cannot load ethash DAG size information from data provided by 'https://minerstat.com', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
-                    $Data = [PSCustomObject]@{ 
-                        BlockHeight = [Int]$BlockHeight
-                        DAGsize     = [Int64](Get-DAGSize $BlockHeight)
-                        Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
-                    }
-                    $DAGdata.Currency.Add("*", $Data)
-                }
-
-                If ($DAGData) { $DAGdata | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Includes\DAGdata.json" -Force -ErrorAction Ignore }
-                $Variables.DAGdata = $DAGdata
+                $Variables.DAGdata | Add-Member Updated_Minerstat (Get-Date).ToUniversalTime() -Force
+                Write-Message -Level Info "Loaded DAG block data from 'https://minerstat.com'."
             }
-            Remove-Variable BlockHeight, Data, DAGSize, Epoch, DAGdata, Page, Table -ErrorAction Ignore
+            Catch { 
+                Write-Message -Level Warn "Cannot load DAG block data from 'https://minerstat.com'."
+            }
         }
+
+        If ($Variables.DAGdata.Updated_RavenCoin -lt (Get-Date).AddDays( -1 )) {
+            Try { 
+                # Get RVN block data
+                $Timeout = 5
+                $Request = "https://api.ravencoin.org/api/status"
+
+                If ($BlockHeight = (Invoke-RestMethod -Uri $Request -TimeoutSec 5).Info.blocks) { 
+                    $Data = [PSCustomObject][Ordered]@{ 
+                        BlockHeight = [Int]($BlockHeight)
+                        DAGsize     = [Int64](Get-DAGSize -Block $BlockHeight -Coin "RVN")
+                        Epoch       = [Int]([Math]::Floor($BlockHeight / 7500))
+                    }
+                    $Variables.DAGdata.Currency.Remove("RVN")
+                    $Variables.DAGdata.Currency.Add("RVN", $Data)
+                    $Variables.DAGdata | Add-Member Updated_Ravencoin (Get-Date).ToUniversalTime() -Force
+                    Write-Message -Level Info "Loaded RVN DAG block data from 'https://api.ravencoin.org'."
+                }
+            }
+            Catch { 
+                Write-Message -Level Warn "Cannot load RVN DAG block data from 'https://api.ravencoin.org'."
+            }
+        }
+
+        # Add default '*' (equal to highest)
+        If ($Variables.DAGdata.Currency.Keys) { 
+            $Data = [PSCustomObject][Ordered]@{ 
+                BlockHeight = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
+                DAGsize     = [Int64]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
+                Epoch       = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
+            }
+            $Variables.DAGdata.Currency.Remove("*")
+            $Variables.DAGdata.Currency.Add("*", $Data)
+        }
+
+        If (-not $Variables.DAGdata.Currency."*") {
+            $Variables.DAGdata = [PSCustomObject][Ordered]@{ }
+            $Variables.DAGdata | Add-Member Currency ([Ordered]@{ })
+
+            $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
+            Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
+            $Data = [PSCustomObject]@{ 
+                BlockHeight = [Int]$BlockHeight
+                DAGsize     = [Int64](Get-DAGSize $BlockHeight)
+                Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
+            }
+            $Variables.DAGdata.Currency.Add("*", $Data)
+        }
+        Remove-Variable BlockHeight, Data, DAGSize, Epoch, DAGdata, Page, Table -ErrorAction Ignore
 
         # Use non-donate pool config
         $PoolNames = @($Config.PoolName)
@@ -182,7 +175,7 @@ Function Start-Cycle {
                         [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PayoutCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
+                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; WalletETC = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
                     )
                 }
                 $Variables.DonateRandom = $DonationData | Get-Random
@@ -244,7 +237,7 @@ Function Start-Cycle {
 
         # Load currency exchange rates from min-api.cryptocompare.com
         $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
-        $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Select-Object -Unique)
+        $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name ) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Select-Object -Unique)
         If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.BalancesTrackerPollInterval -lt 1) { 
             Get-Rate
         }
@@ -330,12 +323,7 @@ Function Start-Cycle {
             Write-Message -Level Verbose "Waiting for pool data ($(@($PoolNames) -join ', '))..."
             $Variables.NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
-                    If ($_ -eq "NiceHash") { 
-                        If ($PoolsConfig."NiceHash Internal".NiceHashWalletIsInternal -eq $true) { $PoolConfig = $PoolsConfig."NiceHash Internal" }
-                        Else { $PoolConfig = $PoolsConfig."NiceHash External" }
-                    }
-                    Else { $PoolConfig = $PoolsConfig.($_ -replace "24hr$" -replace "Coins$") }
-                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ PoolConfig = $PoolConfig } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
+                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -eq $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                 }
             )
 
@@ -383,7 +371,7 @@ Function Start-Cycle {
             If ($Pool) { 
                 If (-not $Config.EstimateCorrection -or $Pool.EstimateFactor -le 0 -or $Pool.EstimateFactor -gt 1) { $_.EstimateFactor = [Double]1 } Else { $_.EstimateFactor = [Double]($Pool.EstimateFactor) }
                 If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $_.Fee = 0 } Else { $_.Fee = $Pool.Fee }
-                If ($Pool.PricePenaltyFactor -lt 0 -or $Pool.PricePenaltyFactor -gt 1) { $_.PricePenaltyFactor = [Double]1 } Else { $_.PricePenaltyFactor = [Double]($Pool.PricePenaltyFactor) }
+                If ($Pool.PricePenaltyFactor -le 0 -or $Pool.PricePenaltyFactor -gt 1) { $_.PricePenaltyFactor = [Double]1 } Else { $_.PricePenaltyFactor = [Double]($Pool.PricePenaltyFactor) }
                 $_.Price = $Pool.Price * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
                 $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
                 $_.MarginOfError = $Pool.MarginOfError
@@ -603,9 +591,7 @@ Function Start-Cycle {
     # Sort best pools
     [Pool[]]$Variables.Pools = $Variables.Pools | Sort-Object { $_.Available }, { - $_.StablePrice * (1 - $_.MarginOfError) }, { $_.SSL -ne $Config.SSL }, { $Variables.Regions.($Config.Region).IndexOf($_.Region) }
     $Variables.Pools | Where-Object Available -EQ $true | Select-Object -ExpandProperty Algorithm -Unique | ForEach-Object { $_.ToLower() } | Select-Object -Unique | ForEach-Object { 
-        $Variables.Pools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { 
-            $_.Best = $true
-        }
+        $Variables.Pools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
     }
 
     # For legacy miners
@@ -883,7 +869,7 @@ Function Start-Cycle {
     $Variables.MiningPowerUsage = [Double]($Variables.BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
 
     # ProfitabilityThreshold check - OK to run miners?
-    If ((-not $Variables.Rates."BTC") -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates."BTC".($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+    If ((-not $Variables.Rates.BTC.($Config.Currency)) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
         $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
     }
     Else { 

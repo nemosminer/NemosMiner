@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.7/SRBMiner-Multi-0-6-7-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.8/SRBMiner-Multi-0-6-8-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
@@ -13,27 +13,28 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm argon2d_dynamic --gpu-intensity 31 --gpu-boost 50" } # Does not start mining
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";       Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm argon2id_ninja --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Autolykos2";          Type = "AMD"; Fee = 0.02;   MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm autolykos2 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "AMD"; Fee = 0;      MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm blake2b --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "AMD"; Fee = 0;      MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm blake2s --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CircCash";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm circcash --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCache";    Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_cache --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_ccx --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_xhv --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_gpu --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 1; Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRed-v0.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0;      MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_heavyx --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 4; MinerSet = 1; Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is faster
-    [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGb = 4; MinerSet = 1; Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # BMiner-v16.3.7 & PhoenixMiner-v5.5c are faster
-    [PSCustomObject]@{ Algorithm = "Handshake";           Type = "AMD"; Fee = 0;      MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm bl2bsha3 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm k12 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm kadena --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm keccak --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGb = 2; MinerSet = 1; Arguments = " --algorithm ubqhash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Phi5";                Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm phi5 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm verushash --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Zentoshi";            Type = "AMD"; Fee = 0.0085; MinMemGb = 1; MinerSet = 0; Arguments = " --algorithm balloon_zentoshi --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Blake2b";             Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm blake2b --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Blake2s";             Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm blake2s --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CircCash";            Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm circcash --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCache";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_cache --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_ccx --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXhv";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_xhv --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_gpu --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRed-v0.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_heavyx --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";           Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";             Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is faster
+    [PSCustomObject]@{ Algorithm = "Ethash";              Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # BMiner-v16.3.7 & PhoenixMiner-v5.5c are faster
+    [PSCustomObject]@{ Algorithm = "Handshake";           Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm bl2bsha3 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Kangaroo12";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm k12 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Kadena";              Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm kadena --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Keccak";              Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm keccak --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";             Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 1; Arguments = " --algorithm ubqhash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Phi5";                Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm phi5 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Rx2";                 Type = "AMD"; Fee = 0.0125; MinMemGB = 8; MinerSet = 0; Arguments = " --algorithm rx2" }
+    [PSCustomObject]@{ Algorithm = "VerusHash";           Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm verushash --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Yescrypt";            Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Zentoshi";            Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm balloon_zentoshi --gpu-intensity 31 --gpu-boost 50" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm argon2d_dynamic" } # Does not start mining

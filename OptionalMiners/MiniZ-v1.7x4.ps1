@@ -33,6 +33,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $AlgorithmDefinitions | ForEach-Object {
 
+                If ($Pools.($_.Algorithm).Name -like "ProHashing*" ) { Return } # temp fix, invalid memory access
+
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required

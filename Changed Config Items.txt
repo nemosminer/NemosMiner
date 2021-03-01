@@ -202,6 +202,13 @@ New Config Items
 # Number of seconds the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
   "WaitForMinerData": 15,
 
+# Wallets.[Currency=WalletAdrress]; one entry per currency
+  $Wallets: {
+    "BTC" = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
+    "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f",
+    "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"
+  }, 
+
 # Number of watchdog timers with same algorithm name & algorithm until miner/algo combination gets suspended
   "WatchdogMinerAlgorithmCount": 3,
 
@@ -220,6 +227,8 @@ New Config Items
 Removed Config Items
 ====================
 # AMD/NVIDIA/CPU, replaced with per device configuration option "ExcludeDeviceName"
+
+  "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
   "GPUCount": 1, (Replaced by device config in Web GUI)
   "HideConsole": false, obsolete
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
@@ -229,8 +238,7 @@ Removed Config Items
   "TypeCPU": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "TypeNVIDIA": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "UserName": "", (Replaced with NiceHashUserName & ProHashingUsername)
-  "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
-
+  "Wallet": [BTC Address]; replaces with "Wallets.BTC"
 
 NiceHash pool Config:
 =====================
