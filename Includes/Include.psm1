@@ -2758,16 +2758,14 @@ Function Update-ConfigFile {
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile
     )
+
+    $Wallets > w1.txt
     # Changed config items
-    $Changed_Config_Items = $Config.Keys | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
+    $Changed_Config_Items = $Config.GetEnumerator().Name | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
     $Changed_Config_Items | ForEach-Object { 
         Switch ($_) { 
             "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
-            "APIKEY" { 
-                $Config.MPHAPIKey = $Config.$_
-                $Config.ProHashingAPIKey = $Config.$_
-                $Config.Remove($_)
-            }
+            "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
@@ -2776,12 +2774,19 @@ Function Update-ConfigFile {
             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
-            "UserName" { F
-                If (-not $Config.MPHUserName) { $Config.MPHUserName = $Config.$_ }
+            "UserName" { 
+                If (-not $Config.MiningPoolHubUserName) { $Config.MiningPoolHubUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
                 $Config.Remove($_)
             }
             "WaitForMinerData" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
+            "Wallet" { 
+                If (-not $Config.Wallets) { 
+                    $Config | Add-Member @{ Wallets = $Variables.AllCommandLineParameters.Wallets }
+                }
+                $Config.Wallets.BTC = $Config.$_
+                $Config.Remove($_)
+            }
             Default { $Config.Remove($_) } # Remove unsupported config item
         }
     }
@@ -2803,31 +2808,23 @@ Function Update-ConfigFile {
         $Config.ExtraCurrencies = @($Config.Currency | Select-Object -Skip 1 | Where-Object { $_ -ne "mBTC" } | Select-Object)
     }
 
-    # Move BTC wallet to wallets
-    If ($Config.Wallet) { 
-        $Config.Wallets | Add-Member BTC $Config.Wallet -ErrorAction Ignore
-        $Config.Remove("Wallet")
-        
-        # Move [PayoutCurrency] wallet to wallets
-        If ($PoolsConfig = Get-Content .\Config\PoolsConfig.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { 
-            $PoolsConfig  | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-                If (-not $PoolsConfig.$_.Wallets -and $PoolsConfig.$_.Wallet) { 
-                    $PoolsConfig.$_ | Add-Member Wallets @{ "$($PoolsConfig.$_.PayoutCurrency)" = $PoolsConfig.$_.Wallet } -ErrorAction Ignore
-                    $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
-                }
+    # Move [PayoutCurrency] wallet to wallets
+    If ($PoolsConfig = Get-Content .\Config\PoolsConfig.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { 
+        $PoolsConfig  | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+            If (-not $PoolsConfig.$_.Wallets -and $PoolsConfig.$_.Wallet) { 
+                $PoolsConfig.$_ | Add-Member Wallets @{ "$($PoolsConfig.$_.PayoutCurrency)" = $PoolsConfig.$_.Wallet } -ErrorAction Ignore
+                $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
-            $PoolsConfig | ConvertTo-Json | Set-Content .\Config\PoolsConfig.json -Force
         }
+        $PoolsConfig | ConvertTo-Json | Set-Content .\Config\PoolsConfig.json -Force
     }
 
     # Rename MPH to MiningPoolHub
     If ($Config.PoolName -contains @("MPH")) { 
-        $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPH" }
-        $Config.PoolName += "MiningPoolHub"
+        $Config.PoolName = @($Config.PoolName | Where-Object { $_ -ne "MPH" }), "MiningPoolHub"
     }
     If ($Config.PoolName -contains @("MPHCoins")) { 
-        $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPHCoins" }
-        $Config.PoolName += "MiningPoolHubCoins"
+        $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPHCoins" }, "MiningPoolHubCoins"
     }
 
     # Available regions have changed
