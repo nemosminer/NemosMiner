@@ -154,7 +154,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", # i.e http://192.0.0.1:8080
     [Parameter(Mandatory = $false)]
-    [String]$Region = "Europe", # Used to determine pool nearest to you. Valid values are: Europe, US or Asia
+    [String]$Region = "Europe West", # Used to determine pool nearest to you.
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, 
     [Parameter(Mandatory = $false)]
@@ -211,8 +211,6 @@ param(
     [Double]$UnrealPoolPriceFactor = 2, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
     [Parameter(Mandatory = $false)]
     [Int]$WaitForMinerData = 15, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
-    [Parameter(Mandatory = $false)]
-    [String]$Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", 
     [Parameter(Mandatory = $false)]
     [Hashtable]$Wallets = @{ "BTC" = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"; "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }, 
     [Parameter(Mandatory = $false)]
@@ -296,12 +294,15 @@ $AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
     $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
     If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
-    Remove-Variable $_ -ErrorAction SilentlyContinue
 }
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
 # Read configuration
 Read-Config -ConfigFile $Variables.ConfigFile
+
+$AllCommandLineParameters | ForEach-Object { 
+    Remove-Variable $_ -ErrorAction SilentlyContinue
+}
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
