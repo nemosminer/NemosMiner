@@ -96,7 +96,7 @@ While ($true) {
         $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique) | Select-Object -Unique)
         Get-Rate
 
-        $BalanceObjects | Where-Object { $PoolBalanceObject.DateTime.ToLocalTime() -gt $Now } | ForEach-Object { 
+        $BalanceObjects | Where-Object { $_.DateTime.ToLocalTime() -gt $Now } | ForEach-Object { 
             $PoolBalanceObject = $_
 
             $PoolConfig = $Config.PoolsConfig.($PoolBalanceObject.Pool)
