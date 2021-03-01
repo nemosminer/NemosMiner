@@ -647,6 +647,7 @@ Function Start-Cycle {
                     WarmupTime       = [Int]$_.Content.WarmupTime
                     MinerUri         = [String]$_.Content.MinerUri
                     ProcessPriority  = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
+                    PowerUsageInAPI  = [String]$_.Content.PowerUsageInAPI 
                 } -as "$($_.Content.API)"
             }
         }
