@@ -44,7 +44,7 @@ If ($Wallet) {
                 Balance    = [Double]($APIResponse.externalBalance)
                 Unpaid     = $Sum
                 #Total      = $Sum
-                Url        = $Wallet
+                Url        = $Url
                 NextPayout = $APIResponse.NextPayoutTimeStamp
             }
         }
