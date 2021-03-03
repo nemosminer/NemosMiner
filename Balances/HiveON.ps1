@@ -32,7 +32,7 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
     $Wallet = ($Config.PoolsConfig.$Name.Wallets.$_ -replace "^0x").ToLower()
 
     Try { 
-        $APIResponse = Invoke-RestMethod "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+        $APIResponse = Invoke-RestMethod "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
         # If ($APIResponse.currency) { 
             [PSCustomObject]@{ 
                 DateTime = (Get-Date).ToUniversalTime()

@@ -60,7 +60,7 @@ Function Get-NiceHashRequest {
         "X-Auth"            = "$($Key):$(($Sign -replace '\-').ToLower())"
         "Cache-Control"     = "no-cache"
     }
-    Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec 15 -ErrorAction Stop -Method $Method -Headers $Headers
+    Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec 5 -ErrorAction Stop -Method $Method -Headers $Headers
 }
 
 Try {
@@ -83,10 +83,6 @@ Try {
                 Url        = $Url
             }
         }
-
-        $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
     }
 }
 Catch { }

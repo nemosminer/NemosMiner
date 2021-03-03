@@ -31,7 +31,7 @@ $Url = "http://blockmasters.co/?address=$Wallet"
 
 If ($Wallet) { 
     Try { 
-        $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+        $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
         If ($APIResponse.currency) { 
             [PSCustomObject]@{ 
                 DateTime = (Get-Date).ToUniversalTime()
@@ -46,10 +46,6 @@ If ($Wallet) {
                 Url      = $Url
             }
         }
-
-        $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
     }
     Catch { }
 }

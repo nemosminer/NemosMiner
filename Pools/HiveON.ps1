@@ -35,7 +35,7 @@ $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
 If ($Config.Wallets) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{"Cache-Control" = "no-cache" }
+        $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 

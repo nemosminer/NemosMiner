@@ -35,7 +35,7 @@ $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
 If ($Config.PoolsConfig.$Name_Norm.UserName) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" }
+        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 
@@ -55,6 +55,7 @@ If ($Config.PoolsConfig.$Name_Norm.UserName) {
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
         $PoolRegions = @("Asia", "EU", "US")
+        If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia", "US") } # temp fix
 
         ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region

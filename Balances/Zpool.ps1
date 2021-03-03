@@ -30,7 +30,7 @@ $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "https://zpool.ca/wallet/$Wallet"
 
 Try { 
-    $APIResponse = Invoke-RestMethod "http://zpool.ca/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "http://zpool.ca/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
             DateTime = (Get-Date).ToUniversalTime()
@@ -45,10 +45,6 @@ Try {
             Url      = $Url
         }
     }
-
-    $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-    $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
 }
 Catch { }
 

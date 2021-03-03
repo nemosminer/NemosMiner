@@ -36,7 +36,7 @@ $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
 If ($Config.PoolsConfig.$Name_Norm.UserName) { 
     Try {
-        $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec 15 -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
+        $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec $Config.PoolTimeout -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
     }
     Catch { Return }
 

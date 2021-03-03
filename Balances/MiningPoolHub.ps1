@@ -35,7 +35,7 @@ $RetryCount = 3
 $RetryDelay = 2
 While (-not ($APIResponse) -and $RetryCount -gt 0) { 
     Try { 
-        If (-not $APIResponse) { $APIResponse = Invoke-RestMethod "http://miningpoolhub.com/index.php?page=api&action=getuserallbalances&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop} 
+        If (-not $APIResponse) { $APIResponse = Invoke-RestMethod "http://miningpoolhub.com/index.php?page=api&action=getuserallbalances&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop} 
     }
     Catch { }
     If (-not $APIResponse) { 
@@ -58,7 +58,7 @@ $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirme
     $RetryDelay = 2
     while (-not ($Currency) -and $RetryCount -gt 0) { 
         Try { 
-            $Currency = Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop | Select-Object -ExpandProperty getpoolinfo | Select-Object -ExpandProperty data | Select-Object -ExpandProperty currency
+            $Currency = Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | Select-Object -ExpandProperty getpoolinfo | Select-Object -ExpandProperty data | Select-Object -ExpandProperty currency
         }
         Catch { 
             Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
@@ -83,6 +83,3 @@ $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirme
         }
     }
 }
-
-$APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-$APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"

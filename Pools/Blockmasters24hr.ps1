@@ -38,7 +38,7 @@ $Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "http://blockmasters.co/api/status" -Headers @{"Cache-Control" = "no-cache" }
+        $Request = Invoke-RestMethod -Uri "http://blockmasters.co/api/status" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 

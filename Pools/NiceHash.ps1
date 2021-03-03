@@ -47,8 +47,8 @@ $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
-        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -TimeoutSec 15 -Headers @{"Cache-Control" = "no-cache" }
+        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -TimeoutSec $Config.PoolTimeout -Headers @{"Cache-Control" = "no-cache" }
+        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -TimeoutSec $Config.PoolTimeout -Headers @{"Cache-Control" = "no-cache" }
         $Request.miningAlgorithms | ForEach-Object { $Algo = $_.Algorithm ; $_ | Add-Member -Force @{algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algo } } }
     }
     Catch { Return }

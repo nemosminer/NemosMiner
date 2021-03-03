@@ -39,7 +39,7 @@ $Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
 If ($Wallet) { 
     Try { 
         $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
-        $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" }
+        $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 

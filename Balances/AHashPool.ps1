@@ -30,7 +30,7 @@ $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "https://www.ahashpool.com/wallet.php?wallet=$Wallet"
 
 Try { 
-    $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+    $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
             DateTime = (Get-Date).ToUniversalTime()
@@ -45,9 +45,5 @@ Try {
             Url      = $Url
         }
     }
-
-    $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-    $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
 }
 Catch { }

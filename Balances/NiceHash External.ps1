@@ -48,10 +48,6 @@ If ($Wallet) {
                 NextPayout = $APIResponse.NextPayoutTimeStamp
             }
         }
-        
-        $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
     }
     Catch { }
 }
