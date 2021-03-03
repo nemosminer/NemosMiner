@@ -33,7 +33,7 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
 
     Try { 
         $APIResponse = Invoke-RestMethod "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-        # If ($APIResponse.currency) { 
+        If ($APIResponse.earningStats) { 
             [PSCustomObject]@{ 
                 DateTime = (Get-Date).ToUniversalTime()
                 Pool     = $Name
@@ -46,11 +46,7 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
                 # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
                 Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
             }
-        # }
-
-        $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
+        }
     }
     Catch { }
 }
