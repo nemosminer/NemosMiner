@@ -225,6 +225,8 @@
                           if (config.UsemBTC == true) {
                             (item.Currencies).splice((item.Currencies).indexOf('BTC'), 1, 'mBTC')
                           }
+                          // Remove uplicated currencies, keep first in list
+                          item.Currencies = [...new Set(item.Currencies)];
 
                           growth1_sum   += (item.Growth1   * rates['BTC'][item.Currency]);
                           growth6_sum   += (item.Growth6   * rates['BTC'][item.Currency]);
@@ -266,7 +268,7 @@
                             $.each(item.Currencies, function(cindex, currency) {
                               data["balances"][currency] = (item.Balance * rates[item.Currency][currency]).toFixed(7);
                               if (!(data_sum["balances"][currency])) {data_sum["balances"][currency] = 0}
-                              data_sum["balances"][currency] = data_sum["balances"][currency] + item.Balance * rates[item.Currency][currency];
+                              data_sum["balances"][currency] += item.Balance * rates[item.Currency][currency];
                             });
                             $("#balanceboxes").append(template(data));
                           }
