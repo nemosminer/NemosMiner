@@ -45,7 +45,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                     Wrap        = $false
                     URI         = $Uri
                     MinerUri    = "http://localhost:$($MinerAPIPort)"
-                    WaitForData = 60
+                    WaitForData = 30 # Seconds, additional wait time until first data sample
                 }
             }
         }

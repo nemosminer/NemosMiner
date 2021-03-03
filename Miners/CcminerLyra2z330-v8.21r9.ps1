@@ -25,7 +25,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2GB }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 

@@ -62,7 +62,10 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
+                    $WaitForData = 30 # Seconds, additional wait time until first data sample
                 }
+                Else { $WaitForData = 0 } # Seconds, additional wait time until first data sample
+
                 If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $Arguments += " --ethstratum ETHV1" }
                 If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0")) { $MinMemGB += 1 }
 
@@ -85,7 +88,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI             = $Uri
                         Fee             = $_.Fee
                         PowerUsageInAPI = $true
-                        WarmupTime      = 30 #Seconds
+                        WaitForData     = $WaitForData # Seconds, additional wait time until first data sample
                     }
                 }
             }

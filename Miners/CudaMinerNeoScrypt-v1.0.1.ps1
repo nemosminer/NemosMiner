@@ -21,7 +21,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2GB }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -40,7 +40,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API         = "Ccminer"
                         Port        = $MinerAPIPort
                         URI         = $Uri
-                        WaitForData = 45
+                        WaitForData = 15 # Seconds, additional wait time until first data sample
                     }
                 }
             }

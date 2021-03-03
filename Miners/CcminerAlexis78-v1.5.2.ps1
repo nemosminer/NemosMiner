@@ -16,7 +16,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Whirlcoin"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo whirlcoin" }
     [PSCustomObject]@{ Algorithm = "Whirlpool"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo whirlpool" }
     [PSCustomObject]@{ Algorithm = "X11evo";    MinMemGB = 2; MinerSet = 0; Arguments = " --algo x11evo --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "X17";       MinMemGB = 3; MinerSet = 0; Arguments = " --algo x17 --intensity 22.1" }
+    [PSCustomObject]@{ Algorithm = "X17";       MinMemGB = 3; MinerSet = 0; Arguments = " --algo x17 --intensity 22" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -30,7 +30,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2GB }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -51,7 +51,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI              = $Uri
                         PrerequisitePath = "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
                         PrerequisiteURI  = "https://aka.ms/vs/16/release/vc_redist.x64.exe"
-                        
                     }
                 }
             }

@@ -48,10 +48,10 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    $WaitForData = 45 # Seconds, max. wait time until first data sample
+                    $WaitForData = 30 # Seconds, additional wait time until first data sample
                 }
                 Else { 
-                    $WaitForData = 15 # Seconds, max. wait time until first data sample
+                    $WaitForData = 0 # Seconds, additional wait time until first data sample
                 }
 
                 # Windows 10 requires more memory on some algos
@@ -85,7 +85,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
                         PowerUsageInAPI = $true
-                        WaitForData     = $WaitForData
+                        WaitForData     = $WaitForData # Seconds, additional wait time until first data sample
                     }
                 }
             }

@@ -42,11 +42,11 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB = $_.MinMemGBWin10 } Else { $MinMemGB = $_.MinMemGB }
 
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $WaitForData = 60 # Seconds, max. wait time until first data sample
+                    $WaitForData = 45 # Seconds, max. wait time until first data sample
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
-                ElseIf ($_.Algorithm -eq "Octopus") { $WaitForData = 45 }# Seconds, max. wait time until first data sample
-                Else { $WaitForData = 15 }# Seconds, max. wait time until first data sample
+                ElseIf ($_.Algorithm -eq "Octopus") { $WaitForData = 30 }# Seconds, max. wait time until first data sample
+                Else { $WaitForData = 0 }# Seconds, max. wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.OpenCL.ComputeCapability -ge $MinComputeCapability })) { 
 
@@ -88,7 +88,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI         = $Uri
                         Fee         = $_.Fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)"
-                        WaitForData = $WaitForData
+                        WaitForData = $WaitForData # Seconds, additional wait time until first data sample
                     }
                 }
             }

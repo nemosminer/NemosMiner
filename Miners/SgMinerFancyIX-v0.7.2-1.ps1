@@ -36,7 +36,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     API         = "Xgminer"
                     Port        = $MinerAPIPort
                     URI         = $Uri
-                    WaitForData = 60
+                    WaitForData = 30 # Seconds, additional wait time until first data sample, wait for JIT compiler
                 }
             }
         }

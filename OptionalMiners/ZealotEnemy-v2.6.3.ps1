@@ -37,14 +37,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | ForEach-Object {
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $WaitForData = 45 # Seconds, max. wait time until first data sample
+                    $WaitForData = 30 # Seconds, max. wait time until first data sample
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
                 ElseIf ($_.Algorithm -match "X16r*") { 
-                    $WaitForData = 30 # Seconds, max. wait time until first data sample
+                    $WaitForData = 15 # Seconds, max. wait time until first data sample
                 }
                 Else { 
-                    $WaitForData = 15 # Seconds, max. wait time until first data sample
+                    $WaitForData = 0 # Seconds, max. wait time until first data sample
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -67,7 +67,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI         = $Uri
                         Fee         = 0.01 # dev fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)"
-                        WaitForData = $WaitForData
+                        WaitForData = $WaitForData # Seconds, additional wait time until first data sample
                     }
                 }
             }

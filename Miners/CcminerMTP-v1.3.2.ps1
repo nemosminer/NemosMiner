@@ -22,7 +22,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2GB }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -43,7 +43,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI              = $Uri
                         PrerequisitePath = "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
                         PrerequisiteURI  = "https://aka.ms/vs/16/release/vc_redist.x64.exe"
-                        WaitForData      = 45 # Seconds
+                        WaitForData      = 15 # Seconds, additional wait time until firt data sample
                     }
                 }
             }
