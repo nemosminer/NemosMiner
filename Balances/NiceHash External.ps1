@@ -31,7 +31,7 @@ $Url = "https://www.nicehash.com/my/miner/$Wallet"
 
 If ($Wallet) { 
     Try {
-        $APIResponse = Invoke-RestMethod "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2" -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
+        $APIResponse = Invoke-RestMethod "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
         $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
 
         If ($Sum -gt 0) { 
