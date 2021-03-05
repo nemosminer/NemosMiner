@@ -33,8 +33,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $AlgorithmDefinitions | ForEach-Object {
 
-                If ($Pools.($_.Algorithm).Name -like "ProHashing*" ) { Return } # temp fix, invalid memory access
-
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
@@ -54,7 +52,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" })$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" } Else { If ($Pools.($_.Algorithm).Name -like "ProHashing*" ) { "stratum1://" } } )$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "MiniZ"
                         Port            = $MinerAPIPort
