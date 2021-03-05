@@ -171,11 +171,11 @@ Function Start-Cycle {
                 }
                 Catch { 
                     $DonationData = @(
-                        [PSCustomObject]@{ Name = "MrPlus";      Wallet = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "Nemo";        Wallet = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; UserName = "nemo"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "aaronsace";   Wallet = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
-                        [PSCustomObject]@{ Name = "grantemsley"; Wallet = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"; UserName = "grantemsley"; PayoutCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallet = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; WalletETC = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"; UserName = "uselessguru"; PayoutCurrency = "BTC" }
+                        [PSCustomObject]@{ Name = "MrPlus";      Wallets = @{ BTC = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy" }; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
+                        [PSCustomObject]@{ Name = "Nemo";        Wallets = @{ BTC = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" }; UserName = "nemo"; PayoutCurrency = "BTC" }, 
+                        [PSCustomObject]@{ Name = "aaronsace";   Wallets = @{ BTC = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb" }; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
+                        [PSCustomObject]@{ Name = "grantemsley"; Wallets = @{ BTC = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity" }; UserName = "grantemsley"; PayoutCurrency = "BTC" },
+                        [PSCustomObject]@{ Name = "uselessguru"; Wallets = @{ BTC = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; ETC = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }; UserName = "uselessguru"; PayoutCurrency = "BTC" }
                     )
                 }
                 $Variables.DonateRandom = $DonationData | Get-Random
@@ -194,11 +194,11 @@ Function Start-Cycle {
                             $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
                         }
                         "NiceHash" { 
-                            $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
+                            $PoolConfig | Add-Member Wallets $Variables.DonateRandom.Wallets
                         }
                         Default { 
                             $PoolConfig | Add-Member PayoutCurrency $(If ($Variables.DonateRandom.PayoutCurrency) { $Variables.DonateRandom.PayoutCurrency } Else { "BTC" })
-                            $PoolConfig | Add-Member Wallet $Variables.DonateRandom.Wallet
+                            $PoolConfig | Add-Member Wallets $Variables.DonateRandom.Wallets
                         }
                     }
                     $Variables.DonatePoolsConfig.$_ = $PoolConfig
@@ -495,7 +495,7 @@ Function Start-Cycle {
             # Reduce data to MinDataSamples * 5
             If (($Miner.Data).Count -gt ($Miner.MinDataSamples * 5)) { 
                 Write-Message -Level Verbose "Reducing data samples for miner ($($Miner.Name)). Keeping the $($Miner.MinDataSamples * 5) most recent samples."
-                $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5))
+                $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5) | ConvertTo-Json | ConvertFrom-Json)
             }
         }
 
@@ -510,6 +510,7 @@ Function Start-Cycle {
 
         # We don't want to store hashrates if we have less than $MinDataSamples
         If ((@($Miner.Data).Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
+            $Miner.New = $false
             $Miner.StatEnd = (Get-Date).ToUniversalTime()
             $Miner.Intervals += $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
 
@@ -553,7 +554,6 @@ Function Start-Cycle {
             }
             Remove-Variable Stat_Name
             Remove-Variable Stat_Span
-            $Miner.New = $false
             Remove-Variable Stat -ErrorAction Ignore
         }
     }
@@ -643,7 +643,7 @@ Function Start-Cycle {
                     URI              = [String]$_.Content.URI
                     PrerequisitePath = [String]$_.Content.PrerequisitePath
                     PrerequisiteURI  = [String]$_.Content.PrerequisiteURI
-                    WaitForMinerData = [Int]($_.Content.WaitForData, $Config.WaitForMinerData | Measure-Object -Maximum).Maximum
+                    WaitForMinerData = [Int]($_.Content.WaitForData + $Config.WaitForMinerData)
                     WarmupTime       = [Int]$_.Content.WarmupTime
                     MinerUri         = [String]$_.Content.MinerUri
                     ProcessPriority  = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
@@ -667,11 +667,11 @@ Function Start-Cycle {
 
         # Remove all watchdog timer(s) for this miner
         ForEach ($Worker in $Miner.WorkersRunning) { 
-            If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm) {
-                # Remove watchdog timer
-                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
+            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm)) {
+                # Remove watchdog timers
+                $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimers) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
             }
-            Remove-Variable WatchdogTimer
+            Remove-Variable WatchdogTimers
         }
     }
 
@@ -957,11 +957,11 @@ Function Start-Cycle {
             Write-Message "Stopping miner '$($Miner.Info)'..."
 
             ForEach ($Worker in $Miner.WorkersRunning) { 
-                If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName) { 
-                    # Remove watchdog timer
-                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -ne $WatchdogTimer })
+                If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
+                    # Remove watchdog timers
+                    $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimers) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
                 }
-                Remove-Variable WatchdogTimer
+                Remove-Variable WatchdogTimers
             }
 
             $Miner.SetStatus([MinerStatus]::Idle)
