@@ -5,6 +5,21 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.24 06.03.2021
+========================================
+
+Fixed:
+- CcminerKlausT-v8.25: Fix waiting for first data sample
+- Text windows: Balances in local currency 1000x too low
+- WebGUI / Balances: mBTC total value was inflated
+- Miners: WaitForMinerData not working in certain scenarios
+- MiniZ-v1.7x4: Fix mining @ ProHashing
+
+Miner changes:
+- NSFMiner-v1.3.8
+- SRBMinerMulti-v0.6.9
+
+
 Changelog NemosMiner 3.9.9.23 01.03.2021
 ========================================
 
