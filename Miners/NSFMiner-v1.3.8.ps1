@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nsfminer.exe"
-$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.7/nsfminer_1.3.7-windows_10-cuda_11.2-opencl.zip"
+$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.8/nsfminer_1.3.8-windows_10-cuda_11.2-opencl.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
