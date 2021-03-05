@@ -15,7 +15,11 @@ Fixed:
 - Miners: WaitForMinerData not working in certain scenarios
 - MiniZ-v1.7x4: Fix mining @ ProHashing
 
+Improvement:
+- Memory optimization
+
 Miner changes:
+- GMiner-v2.46
 - NSFMiner-v1.3.8
 - SRBMinerMulti-v0.6.9
 
