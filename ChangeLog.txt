@@ -9,6 +9,7 @@ Changelog NemosMiner 3.9.9.24 06.03.2021
 ========================================
 
 Fixed:
+- Pool balances in BTC not showing if default payout currency is not set to BTC 
 - CcminerKlausT-v8.25: Fix waiting for first data sample
 - Text windows: Balances in local currency 1000x too low
 - WebGUI / Balances: mBTC total value was inflated
