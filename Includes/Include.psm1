@@ -839,7 +839,7 @@ Function Get-Rate {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
-        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } ) | Select-Object -Unique) -join ',')&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
+        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } ) | Select-Object -Unique) -join ',')&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
             $Currencies = $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name
             $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                 $Currency = $_
@@ -1311,7 +1311,14 @@ Function Read-Config {
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
             }
             Default { 
-                If (-not $PoolConfig.PayoutCurrency -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force }
+                If (-not $PoolConfig.PayoutCurrency) { 
+                    If ($PoolData.$PoolName.PayoutCurrency -ne "[Default]") { 
+                        $PoolConfig | Add-Member PayoutCurrency $PoolData.$PoolName.PayoutCurrency -Force
+                    }
+                    Else { 
+                        $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force
+                    }
+                }
                 If (-not $PoolConfig.Wallets) { 
                     $PoolConfig | Add-Member Wallets @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } -Force
                 }
