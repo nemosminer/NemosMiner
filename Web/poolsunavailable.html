@@ -6,6 +6,7 @@
 <div class="alert alert-info" role="alert">This is the pool data of all unavailable pools. The column 'Reason' shows the filter criteria(s) that made the pool unavailable.</div>
 
 <div id="toolbar">
+  <button id="remove-watchdog" class="btn btn-primary">Remove watchdog</button>
   <button id="reset-data" class="btn btn-warning">Reset pool stat data</button>
 </div>
 
@@ -72,6 +73,24 @@
     autoRefreshInterval: (parseInt(config.Interval)),
     height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
   })
+
+  $('#remove-watchdog').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Pool: $element.Pool})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/watchdogtimers/remove?Data=' + encodeURIComponent($data);
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#remove-watchdog').text());
+          $('#myModal').modal({show:true});
+        });
+        $table.bootstrapTable('refresh');
+      }
+    }
+  });
 
   $('#reset-data').click(function () {
     var $data = $table.bootstrapTable('getSelections');

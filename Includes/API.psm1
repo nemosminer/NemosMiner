@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.23
-Version date:   01 March 2021
+Version:        3.9.9.24
+Version date:   07 March 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.4.5"
+    $APIVersion = "0.3.5.7"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -84,7 +84,6 @@ Function Start-APIServer {
             While ($Server.IsListening) { 
                 $Context = $Server.GetContext()
                 $Request = $Context.Request
-                $URL = $Request.Url.OriginalString
 
                 If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding UTF8 }
 
@@ -379,7 +378,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/stat/set" { 
-                        If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $Parameters.Value -ne $null) { 
+                        If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $null -ne $Parameters.Value) { 
                             $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object {
                                 $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $Parameters.Value
@@ -416,10 +415,48 @@ Function Start-APIServer {
                         }
                         Break
                     }
+                    "/functions/watchdogtimers/remove" { 
+                        If ($Parameters.Data) { 
+                            ForEach ($WatchdogTimer in ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                                If ($WatchdogTimer.Algorithm -and ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm))) {
+                                    # Remove watchdog timers
+                                    $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimers) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                                    $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+
+                                    # Update miner
+                                    $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
+                                        $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
+                                        If (-not $_.Reason) { $_.Available = $true }
+                                    }
+                                }
+                                If ($WatchdogTimer.Pool -and ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Pool -EQ $WatchdogTimer.Pool))) {
+                                    # Remove watchdog timers
+                                    $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimers) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                                    $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+
+                                    # Update pool
+                                    $Variables.Pool | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
+                                        $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog *" })
+                                        If (-not $_.Reason) { $_.Available = $true }
+                                    }
+                                }
+                            }
+                            If ($WatchdogTimers) { 
+                                $Message = "Watchdog data reset for $($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" })."
+                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                $Data += "`n`n$Message"
+                            }
+                            Else { 
+                                $Data = "`nNo matching watchdog timers found."
+                            }
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
+                    }
                     "/functions/watchdogtimers/reset" { 
                         $Variables.WatchdogTimersReset = $true
                         $Variables.WatchDogTimers = @()
-                        $Variables.Miners | Where-Object { $_.Reason -like "Miner suspended by watchdog *" } | ForEach-Object { $_.Reason = $_.Reason -notlike "Miner suspended by watchdog *"; $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
+                        $Variables.Miners | Where-Object { $_.Reason -like "Miner suspended by watchdog *" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
                         $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }
@@ -720,7 +757,7 @@ Function Start-APIServer {
 
                 # If $Data is null, the API will just return whatever data was in the previous request.  Instead, show an error
                 # This happens if the script just started and hasn't filled all the properties in yet. 
-                If ($Data -eq $null) { 
+                If ($null -eq $Data) { 
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
 

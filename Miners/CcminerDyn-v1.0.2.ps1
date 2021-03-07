@@ -37,8 +37,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API        = "Ccminer"
                         Port       = $MinerAPIPort
                         URI        = $Uri
-                        PrerequisitePath = "$env:SystemRoot\System32\MSVCR120.dll"
-                        PrerequisiteURI  = "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe"
                     }
                 }
             }

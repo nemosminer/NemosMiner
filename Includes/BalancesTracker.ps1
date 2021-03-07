@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.23
-Version date:   01 March 2021
+Version:        3.9.9.24
+Version date:   07 March 2021
 #>
 
 # Start the log
@@ -116,8 +116,6 @@ While ($true) {
 
             $Growth1 = $Growth6 = $Growth24 = $Growth168 = $Growth720 = $GrowthToday = $AvgHourlyGrowth = $AvgDailyGrowth = $AvgWeeklyGrowth = $Delta = $Payout = $HiddenPending = [Double]0
 
-            $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object DateTime)
-
             If ($PoolBalanceObjects.Count -eq 0) { 
                 $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObject.Unpaid))
                 $PoolBalanceObject | Add-Member Payout ([Double](0))
@@ -193,6 +191,10 @@ While ($true) {
                         If (($Delta * -1) -gt $(If ($PayoutThresholdCurrency -eq "mBTC") { $PayoutThreshold / 1000 } Else { $PayoutThreshold }) * 0.5) { 
                             # Payout occured (delta > 50% of payout limit)
                             $Payout = $Delta * -1
+                        }
+                        Else { 
+                            # Pool reduced earnings
+                            $Payout = $Delta = 0
                         }
                         $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
                     }
@@ -354,6 +356,8 @@ While ($true) {
         $Variables.BalanceData = $AllBalanceObjects
 
     }
+
+    If ($ReadBalances) { Return } # Debug stuff
 
     # Sleep until next update (at least 1 minute, maximum 60 minutes)
     While ((Get-Date).ToLocalTime() -le $Now.AddMinutes((60, (1, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 1 }

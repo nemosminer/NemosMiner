@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.23
-Version date:   01 March 2021
+Version:        3.9.9.24
+Version date:   07 March 2021
 #>
 
 using module .\Include.psm1
@@ -101,7 +101,6 @@ Function Start-Cycle {
         If ($Variables.DAGdata.Updated_RavenCoin -lt (Get-Date).AddDays( -1 )) {
             Try { 
                 # Get RVN block data
-                $Timeout = 5
                 $Request = "https://api.ravencoin.org/api/status"
 
                 If ($BlockHeight = (Invoke-RestMethod -Uri $Request -TimeoutSec 5).Info.blocks) { 
@@ -158,7 +157,7 @@ Function Start-Cycle {
                 $Variables.DonateEnd = $null
             }
 
-            If ((Get-Date) -ge $Variables.DonateStart -and $Variables.DonateEnd -eq $null) { 
+            If ((Get-Date) -ge $Variables.DonateStart -and $null -eq $Variables.DonateEnd) { 
                 # We get here only once per day, ensure full donation period
                 $Variables.DonateStart = (Get-Date)
                 $Variables.DonateEnd = $Variables.DonateStart.AddMinutes($Config.Donate)
@@ -175,7 +174,7 @@ Function Start-Cycle {
                         [PSCustomObject]@{ Name = "Nemo";        Wallets = @{ BTC = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" }; UserName = "nemo"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "aaronsace";   Wallets = @{ BTC = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb" }; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "grantemsley"; Wallets = @{ BTC = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity" }; UserName = "grantemsley"; PayoutCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallets = @{ BTC = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; ETC = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }; UserName = "uselessguru"; PayoutCurrency = "BTC" }
+                        [PSCustomObject]@{ Name = "uselessguru"; Wallets = @{ BTC = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF" }; UserName = "uselessguru"; PayoutCurrency = "BTC" }
                     )
                 }
                 $Variables.DonateRandom = $DonationData | Get-Random
@@ -441,8 +440,8 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',')} | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
         If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in default pool config)" } }
 
-        $Variables.Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.MinWorker)' in generic config)" } 
-        $Variables.Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)' in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
+        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.MinWorker)' in generic config)" } 
+        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)' in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
         $Variables.Pools | Where-Object { $Config.Pools.($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
@@ -507,6 +506,7 @@ Function Start-Cycle {
                 }
             }
         }
+        $Miner.Intervals = @($Miner.Intervals | Select-Object -Last 100) # Only keep tha last 100 intervals
 
         # We don't want to store hashrates if we have less than $MinDataSamples
         If ((@($Miner.Data).Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
@@ -1205,6 +1205,7 @@ While ($true) {
 
             While ((Get-Date) -le $NextLoop) { Start-Sleep -Milliseconds 100 }
         }
+
         Write-Message -Level Info "$($Message)Ending cycle."
         Remove-Variable Message -ErrorAction SilentlyContinue
         Remove-Variable RunningMiners -ErrorAction SilentlyContinue

@@ -6,8 +6,9 @@
 <div class="alert alert-info" role="alert">These are all the unavailable miners. The column 'Reason' shows the filter criteria(s) that made the miner unavailable.</div>
 
 <div id="toolbar">
-  <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
-  <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
+  <button id="remove-watchdog" class="btn btn-primary">Remove watchdog</button>
+  <button id="re-benchmark" class="btn btn-warning">Trigger re-benchmarking</button>
+  <button id="re-measure" class="btn btn-warning">Trigger re-measuring power usage</button>
   <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
   <!-- <button id="disable" class="btn btn-danger">Disable Miner</button> -->
 </div>
@@ -108,6 +109,24 @@
       $table.bootstrapTable('hideColumn', 'Profit_Bias');
       $table.bootstrapTable('hideColumn', 'PowerUsage');
       $table.bootstrapTable('hideColumn', 'PowerCost');
+    }
+  });
+
+  $('#remove-watchdog').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/watchdogtimers/remove?Data=' + encodeURIComponent($data);
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#remove-watchdog').text());
+          $('#myModal').modal({show:true});
+        });
+        $table.bootstrapTable('refresh');
+      }
     }
   });
 

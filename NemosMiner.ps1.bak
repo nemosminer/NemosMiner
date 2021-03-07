@@ -975,6 +975,21 @@ $MainForm.Controls.Add($TabControl)
 # Form Controls
 $MainFormControls = @()
 
+# Tooltip
+$ToolTip = New-Object System.Windows.Forms.ToolTip
+$ShowHelp = { 
+    # Display popup help
+    # Each value is the name of a control on the form. 
+    Switch ($this) {
+        $CheckedListBoxPools { $Hint = "You cannot select multiple variants of the same pool" }
+        $LabelCurrency { $Hint = "You can define multiple currencies, if so separate values with commas." }
+        $TBCurrency { $Hint = "You can define multiple currencies, if so separate values with commas." }
+        $NumudDonate { $Hint = "Donation duration in minutes per day. Donation start time is randomized.`nLeaving donation on helps to the developers to further support this project." }
+        $LabelDonate { $Hint = "Donation duration in minutes per day. Donation start time is randomized.`nLeaving donation on helps to the developers to further support this project." }
+    }
+    $ToolTip.SetToolTip($this, $Hint)
+}
+
 $PictureBoxLogo = New-Object Windows.Forms.PictureBox
 $PictureBoxLogo.Width = 47 #$img.Size.Width
 $PictureBoxLogo.Height = 47 #$img.Size.Height

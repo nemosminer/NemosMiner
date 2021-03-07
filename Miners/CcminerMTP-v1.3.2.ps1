@@ -41,8 +41,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API              = "Ccminer"
                         Port             = $MinerAPIPort
                         URI              = $Uri
-                        PrerequisitePath = "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
-                        PrerequisiteURI  = "https://aka.ms/vs/16/release/vc_redist.x64.exe"
                         WaitForData      = 15 # Seconds, additional wait time until firt data sample
                     }
                 }
