@@ -15,8 +15,8 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo bitcore --intensity 25" }
     [PSCustomObject]@{ Algorithm = "C11";        Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Dedal";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo dedal --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.46 is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.46 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.47 is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.47 is fastest
     [PSCustomObject]@{ Algorithm = "Geek";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo geek --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";    Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo hmq1725 --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo honeycomb --intensity 25" }
