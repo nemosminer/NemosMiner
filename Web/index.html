@@ -63,7 +63,7 @@
 
 <!-- <div id="balances" .style.display="none"> -->
 <div id="balances">
-    <h3 class="mt-4">Balances</h3>
+  <h3 class="mt-4">Balances</h3>
 
   <div id="balanceboxes" class="card-deck"></div>
 
@@ -205,7 +205,7 @@
                       if (result != null) { 
                         document.getElementById("balances").style.display = "block";
                         $("#balanceboxes").empty();
-                        var outdated = "";
+                        var outdatedicon = "";
                         var template = Handlebars.compile($("#poolbalance_template").html());
                         var footer = new RegExp("-.+|=.+");
                         var growth1_sum   = 0;
@@ -261,8 +261,8 @@
 
                             // Add warning symbol if data was not updated in last poll
                             if ((new Date() - new Date(item.LastUpdated)) / 1000 >= parseInt(config.PoolBalancesUpdateInterval) * 60) {
-                              outdated = " &#9888;&#65039;";
-                              data.updated += outdated;
+                              outdatedicon = " &#9888;&#65039;";
+                              data.updated += outdatedicon;
                             }
 
                             $.each(item.Currencies, function(cindex, currency) {
@@ -274,7 +274,7 @@
                           }
                         });
 
-                        data_sum["name"] = (data_sum["name"] + outdated);
+                        data_sum["name"] = (data_sum["name"] + outdatedicon);
                         data_sum["firstcurrency"] = maincurrency;
                         if (growth1_sum > 0) {
                           data_sum["growth1summbtc"] = (growth1_sum * 1000).toFixed(7);
