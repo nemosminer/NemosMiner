@@ -27,15 +27,16 @@ using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
     [Hashtable]$Variables
 )
 
 If ($Config.NiceHashWalletIsInternal -eq $true) { 
-    $PoolConfig = $Config.PoolsConfig."NiceHash Internal"
+    $PoolConfig = $PoolsConfig."NiceHash Internal"
     $Fee = [Decimal]0.02
 }
 Else { 
-    $PoolConfig = $Config.PoolsConfig."NiceHash External"
+    $PoolConfig = $PoolsConfig."NiceHash External"
     $Fee = [Decimal]0.05
 }
 

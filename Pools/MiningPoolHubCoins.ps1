@@ -27,13 +27,14 @@ using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
-If ($Config.PoolsConfig.$Name_Norm.UserName) { 
+If ($PoolsConfig.$Name_Norm.UserName) { 
     Try { 
         $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
@@ -43,7 +44,7 @@ If ($Config.PoolsConfig.$Name_Norm.UserName) {
 
     $Divisor = 1000000000
 
-    $User = "$($Config.PoolsConfig.$Name_Norm.UserName).$($($Config.PoolsConfig.$Name_Norm.WorkerName -replace "^ID="))"
+    $User = "$($PoolsConfig.$Name_Norm.UserName).$($($PoolsConfig.$Name_Norm.WorkerName -replace "^ID="))"
 
     $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
@@ -67,7 +68,7 @@ If ($Config.PoolsConfig.$Name_Norm.UserName) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port               = [UInt16]$Current.port
                 User               = [String]$User
@@ -85,7 +86,7 @@ If ($Config.PoolsConfig.$Name_Norm.UserName) {
             #     Price              = [Double]$Stat.Live
             #     StablePrice        = [Double]$Stat.Week
             #     MarginOfError      = [Double]$Stat.Week_Fluctuation
-            #     PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
+            #     PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
             #     Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
             #     Port               = [UInt16]$Current.port
             #     User               = [String]$User

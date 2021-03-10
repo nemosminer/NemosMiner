@@ -27,6 +27,7 @@ using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
     [Hashtable]$Variables
 )
 

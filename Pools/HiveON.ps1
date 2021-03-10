@@ -27,6 +27,7 @@ using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
     [Hashtable]$Variables
 )
 
@@ -64,10 +65,10 @@ If ($Config.Wallets) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]$Server.host
                 Port               = [UInt16]$Server.ports[0]
-                User               = "$($Config.Wallets.($_.Name)).$($Config.PoolsConfig.$Name_Norm.WorkerName)"
+                User               = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
                 Pass               = "x"
                 Region             = [String]"$(Get-Region $Server.region)"
                 SSL                = [Bool]$false
@@ -82,10 +83,10 @@ If ($Config.Wallets) {
             #     Price              = [Double]$Stat.Live
             #     StablePrice        = [Double]$Stat.Week
             #     MarginOfError      = [Double]$Stat.Week_Fluctuation
-            #     PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
+            #     PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
             #     Host               = [String]$Server.host
             #     Port               = [UInt16]$Server.ssl_ports[0]
-            #     User               = "$($Config.Wallets.($_.Name)).$($Config.PoolsConfig.$Name_Norm.WorkerName)"
+            #     User               = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
             #     Pass               = "x"
             #     Region             = [String]"$(Get-Region $Server.region)"
             #     SSL                = [Bool]$true

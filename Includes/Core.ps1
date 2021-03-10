@@ -165,22 +165,23 @@ Function Start-Cycle {
                 # Get donation addresses randomly from agreed developers list
                 # This will fairly distribute donations to developers
                 # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
-                Try { 
-                    $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 10 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-                }
-                Catch { 
+                # Try { 
+                #     $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 10 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+                # }
+                # Catch { 
                     $DonationData = @(
                         [PSCustomObject]@{ Name = "MrPlus";      Wallets = @{ BTC = "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy" }; UserName = "MrPlus"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "Nemo";        Wallets = @{ BTC = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE" }; UserName = "nemo"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "aaronsace";   Wallets = @{ BTC = "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb" }; UserName = "aaronsace"; PayoutCurrency = "BTC" }, 
                         [PSCustomObject]@{ Name = "grantemsley"; Wallets = @{ BTC = "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity" }; UserName = "grantemsley"; PayoutCurrency = "BTC" },
-                        [PSCustomObject]@{ Name = "uselessguru"; Wallets = @{ BTC = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF" }; UserName = "uselessguru"; PayoutCurrency = "BTC" }
+                        [PSCustomObject]@{ Name = "uselessguru"; Wallets = @{ BTC = "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"; ETC = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }; UserName = "uselessguru"; PayoutCurrency = "BTC" }
                     )
-                }
+                # }
                 $Variables.DonateRandom = $DonationData | Get-Random
 
-                # Use all available pools for donation, except ProHashing. Not all devs have a known ProHashing account
-                $Variables.DonatePoolNames = @((Get-ChildItem .\Pools\*.ps1 -File).BaseName -replace "24hr$" -replace "Coins$" | Sort-Object -Unique | Where-Object { $_ -notlike "ProHashing*" })
+                # Use all available pools for donation, except ProHashing. Not all devs have a known accounts
+                # HiveON is requires ETC & ETH address to be used
+                $Variables.DonatePoolNames = @((Get-ChildItem .\Pools\*.ps1 -File).BaseName -replace "24hr$" -replace "Coins$" | Sort-Object -Unique | Where-Object { $_ -ne "ProHashing" })
 
                 # Add pool config to config (in-memory only)
                 $Variables.DonatePoolsConfig = [Ordered]@{ }
@@ -192,11 +193,7 @@ Function Start-Cycle {
                         "MiningPoolHub" { 
                             $PoolConfig | Add-Member UserName $Variables.DonateRandom.UserName
                         }
-                        "NiceHash" { 
-                            $PoolConfig | Add-Member Wallets $Variables.DonateRandom.Wallets
-                        }
                         Default { 
-                            $PoolConfig | Add-Member PayoutCurrency $(If ($Variables.DonateRandom.PayoutCurrency) { $Variables.DonateRandom.PayoutCurrency } Else { "BTC" })
                             $PoolConfig | Add-Member Wallets $Variables.DonateRandom.Wallets
                         }
                     }
@@ -322,7 +319,7 @@ Function Start-Cycle {
             Write-Message -Level Verbose "Waiting for pool data ($(@($PoolNames) -join ', '))..."
             $Variables.NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
-                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -eq $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
+                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -eq $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                 }
             )
 
@@ -475,6 +472,15 @@ Function Start-Cycle {
             $Miner.SetStatus([MinerStatus]::Failed)
             $Miner.StatusMessage = "Exited unexpectedly."
         }
+        ElseIf ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
+            #Update watchdog timers
+            ForEach ($Worker in $Miner.WorkersRunning) { 
+                $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1 | ForEach-Object { 
+                    $_.Kicked = $Variables.Timer
+                }
+            }
+        }
+
         If (($Miner.Data).Count) { 
             $Miner.Speed_Live = [Double[]]@()
             $PowerUsage = 0
@@ -492,26 +498,16 @@ Function Start-Cycle {
                 $PowerUsage = [Double]($CollectedPowerUsage[0])
             }
             # Reduce data to MinDataSamples * 5
-            If (($Miner.Data).Count -gt ($Miner.MinDataSamples * 5)) { 
-                Write-Message -Level Verbose "Reducing data samples for miner ($($Miner.Name)). Keeping the $($Miner.MinDataSamples * 5) most recent samples."
-                $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5) | ConvertTo-Json | ConvertFrom-Json)
+            If ($Miner.Data.Count -gt ($Miner.MinDataSamples * 5)) { 
+                        $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5) | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
             }
         }
-
-        If ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
-            #Update watchdog timers
-            ForEach ($Worker in $Miner.WorkersRunning) { 
-                $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1 | ForEach-Object { 
-                    $_.Kicked = $Variables.Timer
-                }
-            }
-        }
-        $Miner.Intervals = @($Miner.Intervals | Select-Object -Last 100) # Only keep tha last 100 intervals
 
         # We don't want to store hashrates if we have less than $MinDataSamples
         If ((@($Miner.Data).Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
             $Miner.New = $false
             $Miner.StatEnd = (Get-Date).ToUniversalTime()
+            $Miner.Intervals = @($Miner.Intervals | Select-Object -Last 100) # Only keep tha last 100 intervals
             $Miner.Intervals += $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
 
             ForEach ($Worker in $Miner.Workers) { 
@@ -641,8 +637,6 @@ Function Start-Cycle {
                     Type             = [String]$_.Content.Type
                     Port             = [UInt16]$_.Content.Port
                     URI              = [String]$_.Content.URI
-                    PrerequisitePath = [String]$_.Content.PrerequisitePath
-                    PrerequisiteURI  = [String]$_.Content.PrerequisiteURI
                     WaitForMinerData = [Int]($_.Content.WaitForData + $Config.WaitForMinerData)
                     WarmupTime       = [Int]$_.Content.WarmupTime
                     MinerUri         = [String]$_.Content.MinerUri
@@ -701,7 +695,6 @@ Function Start-Cycle {
             $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments)
             $_.Arguments = $Miner.Arguments
             $_.CommandLine = $Miner.GetCommandLine().Replace("$(Convert-Path '.\')\", "")
-            If ($Miner.PrerequisitePath) { $_.PrerequisitePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.PrerequisitePath) }
         }
 
         $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
@@ -739,7 +732,6 @@ Function Start-Cycle {
     }
 
     $Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Available = $false; $_.Reason += "Binary missing" }
-    $Variables.Miners | Where-Object Available -EQ $true | Where-Object PrerequisitePath | Where-Object { -not (Test-Path $_.PrerequisitePath -PathType Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Available = $false; $_.Reason += "PreRequisite missing" }
 
     $Variables.MinersMissingBinary = $Variables.Miners | Where-Object Reason -Contains "Binary missing"
     $Variables.MinersMissingPreRequisite = $Variables.Miners | Where-Object Reason -Contains "PreRequisite missing"
@@ -751,7 +743,7 @@ Function Start-Cycle {
             Write-Message "Some miners binaries are missing, starting downloader..."
             $Downloader_Parameters = @{
                 Logfile      = $Variables.Logfile
-                DownloadList = @($Variables.MinersMissingPreRequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
+                DownloadList = @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
             }
             $Variables.Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
             Remove-Variable Downloader_Parameters

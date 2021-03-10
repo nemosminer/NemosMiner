@@ -27,14 +27,15 @@ using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
-$PayoutCurrency = $Config.PoolsConfig.$Name_Norm.Wallets.Keys | Select-Object -Index 0
-$Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
+$PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets.Keys | Select-Object -Index 0
+$Wallet = $PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
@@ -75,11 +76,11 @@ If ($Wallet) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$PoolsConfig.$Name.PricePenaltyfactor
                 Host               = "$($Algorithm).$($Region).$($HostSuffix)"
                 Port               = [UInt16]$PoolPort
                 User               = [String]$Wallet
-                Pass               = "$($Config.PoolsConfig.$Name.WorkerName),c=$PayoutCurrency"
+                Pass               = "$($PoolsConfig.$Name.WorkerName),c=$PayoutCurrency"
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = [Decimal]$Fee

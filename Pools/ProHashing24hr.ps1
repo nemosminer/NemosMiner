@@ -28,13 +28,14 @@ using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
-If ($Config.PoolsConfig.$Name_Norm.UserName) { 
+If ($PoolsConfig.$Name_Norm.UserName) { 
     Try {
         $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec $Config.PoolTimeout -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
     }
@@ -65,11 +66,11 @@ If ($Config.PoolsConfig.$Name_Norm.UserName) {
                 Price              = [Double]$Stat.Live
                 StablePrice        = [Double]$Stat.Week
                 MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
+                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
                 Host               = [String]$PoolHost
                 Port               = [UInt16]$PoolPort
-                User               = [String]$Config.PoolsConfig.$Name_Norm.UserName
-                Pass               = "a=$($Algorithm_Norm),m=pps,n=$($Config.PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
+                User               = [String]$PoolsConfig.$Name_Norm.UserName
+                Pass               = "a=$($Algorithm_Norm),m=pps,n=$($PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
                 Region             = [String]$Region_Norm
                 SSL                = [Bool]$false
                 Fee                = $Fee
