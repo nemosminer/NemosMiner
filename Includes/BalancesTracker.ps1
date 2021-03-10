@@ -55,10 +55,11 @@ While ($true) {
 
             # Read existing earning data, use data from last file
             ForEach ($Filename in Get-ChildItem ".\Logs\BalancesTrackerData*.json" | Sort-Object LastWriteTime -Descending) {
-                $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null | ForEach-Object { $_.DateTime = ([DateTime]($_.DateTime)); $_ }
+                $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null
                 If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { Break }
             }
             If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }
+            Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
 
             # Read existing earning data, use data from last file
             ForEach($Filename in (Get-ChildItem ".\Logs\DailyEarnings*.csv" | Sort-Object LastWriteTime -Descending)) { 
@@ -218,11 +219,11 @@ While ($true) {
                 }
                 Else { 
                     # Only calculate if current balance data
-                    If (($PoolBalanceObject.DateTime).ToLocalTime() -gt $Now.AddHours( -1 )) { $Growth1 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If (($PoolBalanceObject.DateTime).ToLocalTime() -gt $Now.AddHours( -6 )) { $Growth6 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If (($PoolBalanceObject.DateTime).ToLocalTime() -gt $Now.AddHours( -24 )) { $Growth24 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If (($PoolBalanceObject.DateTime).ToLocalTime() -gt $Now.AddHours( -168 )) { $Growth168 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If (($PoolBalanceObject.DateTime).ToLocalTime() -gt $Now.AddHours( -720 )) { $Growth720 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }).Earnings | Measure-Object -Minimum).Minimum) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }) { $Growth1 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }).Earnings | Measure-Object -Minimum).Minimum) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }) { $Growth6 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }).Earnings | Measure-Object -Minimum).Minimum) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }) { $Growth24 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }).Earnings | Measure-Object -Minimum).Minimum) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }).Earnings | Measure-Object -Minimum).Minimum) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }).Earnings | Measure-Object -Minimum).Minimum) }
                 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
