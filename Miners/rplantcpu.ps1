@@ -1,7 +1,7 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-Opt5011\cpuminer-sse42.exe" #Intel
-#$Path = ".\Bin\CPU-Opt5011\cpuminer-ryzen.exe" #AMD
-$Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.11/cpuminer-opt-win.zip"
+$Path = ".\Bin\CPU-Opt5015\cpuminer-sse42.exe" #Intel
+#$Path = ".\Bin\CPU-Opt5015\cpuminer-ryzen.exe" #AMD
+$Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.15/cpuminer-opt-win.zip"
 $Commands = [PSCustomObject]@{ 
     "yespoweriots" = " -a yespoweriots" #yespoweriots
     "yespower"     = " -a yespower" #yespower
@@ -10,7 +10,7 @@ $Commands = [PSCustomObject]@{
     "yescryptr8g"  = " -a yescryptr8g" #YescryptR8g  
     "yescrypt"     = " -a yescrypt" #Yescrypt
     "yescryptr32"  = " -a yescryptr32" #YescryptR32
-    "yespoweritc"  = " -a yespoweritc" #Yespoweritc  
+    "ghostrider"   = " -a ghostrider" #Ghostrider  
     "lyra2z330"    = " -a lyra2z330" #lyra2z330
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
