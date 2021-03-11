@@ -31,7 +31,6 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm keccak --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "UbqHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 1; Arguments = " --algorithm ubqhash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Phi5";              Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm phi5 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Rx2";               Type = "AMD"; Fee = 0.0125; MinMemGB = 8; MinerSet = 0; Arguments = " --algorithm rx2" }
     [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm verushash --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Verthash";          Type = "AMD"; Fee = 0.0125; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm verthash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
