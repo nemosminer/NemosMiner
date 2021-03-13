@@ -465,20 +465,25 @@ Function Start-Cycle {
     # Ensure we get the hashrate for running miners prior looking for best miner
     ForEach ($Miner in ($Variables.Miners | Where-Object Best)) { 
         If ($Miner.DataReaderJob.HasMoreData) { 
+            # Reduce data to MinDataSamples * 5
+            If ($Miner.Data.Count -gt ($Miner.MinDataSamples * 5)) { 
+                $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5) | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
+            }
             $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
         }
-        If ($Miner.Status -eq [MinerStatus]::Running -and $Miner.GetStatus() -ne [MinerStatus]::Running) { 
-            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
-            $Miner.SetStatus([MinerStatus]::Failed)
-            $Miner.StatusMessage = "Exited unexpectedly."
-        }
-        ElseIf ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
+
+        If ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
             #Update watchdog timers
             ForEach ($Worker in $Miner.WorkersRunning) { 
                 $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1 | ForEach-Object { 
                     $_.Kicked = $Variables.Timer
                 }
             }
+        }
+        ElseIf ($Miner.Status -eq [MinerStatus]::Running) { 
+            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
+            $Miner.SetStatus([MinerStatus]::Failed)
+            $Miner.StatusMessage = "Exited unexpectedly."
         }
 
         If (($Miner.Data).Count) { 
@@ -496,10 +501,6 @@ Function Start-Cycle {
                 $CollectedPowerUsage = $Miner.CollectPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples))
                 $Miner.PowerUsage_Live = [Double]($CollectedPowerUsage[1])
                 $PowerUsage = [Double]($CollectedPowerUsage[0])
-            }
-            # Reduce data to MinDataSamples * 5
-            If ($Miner.Data.Count -gt ($Miner.MinDataSamples * 5)) { 
-                        $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5) | ConvertTo-Json -Depth 10 | ConvertFrom-Json)
             }
         }
 
@@ -1156,7 +1157,10 @@ While ($true) {
                             $Miner.Data = $Miner.Data | Where-Object Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()
                         }
                         Else { 
-                            If ($Miner.StatusMessage -like "Warming up *") { $Miner.StatusMessage = "$(If ($Miner.Benchmark -EQ $true -or $Miner.MeasurePowerUsage -EQ $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}" }
+                            If ($Miner.StatusMessage -like "Warming up *") { 
+                                $Miner.StatusMessage = "$(If ($Miner.Benchmark -EQ $true -or $Miner.MeasurePowerUsage -EQ $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+                                $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
+                            }
                             Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
                         }
                         If ($Miner.AllowedBadShareRatio) { 
