@@ -615,7 +615,7 @@ Function Start-Cycle {
         $NewMiners = $Variables.NewMiners_Jobs | ForEach-Object { 
             $_.EndInvoke($_.Job) | Where-Object { $_.Content.API } | ForEach-Object { 
 
-                If ($Config.IgnoreMinerFee) { $Miner_Fees = @($_.Content.Algorithm | ForEach-Object { [Int]0 }) } Else { $Miner_Fees = @($_.Content.Fee) }
+                If ($Config.IgnoreMinerFee) { $Miner_Fees = @($_.Content.Algorithm | ForEach-Object { [Double]0 }) } Else { $Miner_Fees = @($_.Content.Fee) }
 
                 [Worker[]]$Workers = @()
                 $_.Content.Algorithm | ForEach-Object { 
