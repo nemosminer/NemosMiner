@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.23
-Version date:   01 March 2021
+Version:        3.9.9.24
+Version date:   07 March 2021
 #>
 
 Class Device { 
@@ -130,8 +130,6 @@ Class Miner {
     [String]$BaseName
     [String]$Version
     [String]$Path
-    [String]$PrerequisitePath
-    [String]$PrerequisiteURI
     [String]$URI
     [String]$Arguments
     [String]$CommandLine
@@ -410,11 +408,7 @@ Class Miner {
     }
 
     [String[]]UpdateMinerData () { 
-        $Lines = @()
-
         If ($this.Process.HasMoreData) { 
-            $Date = (Get-Date).ToUniversalTime()
-
             $this.Process | Receive-Job | ForEach-Object { 
                 $Line = $_ -replace "`n|`r", ""
                 $Line_Simple = $Line -replace "\x1B\[[0-?]*[ -/]*[@-~]", ""
@@ -482,35 +476,17 @@ Class Miner {
 
     [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
         # Returns an array of two values (safe, unsafe)
-        $HashRates_Devices = @($this.Data | Where-Object Devices | Select-Object -ExpandProperty Device -Unique)
-        If (-not $HashRates_Devices) { $HashRates_Devices = @("Device") }
 
-        $HashRates_Counts = @{ }
-        $HashRates_Averages = @{ }
-        $HashRates_Variances = @{ }
+        $HashRates_Count = [Int]0
+        $HashRates_Average = [Double]0
+        $HashRates_Variance = [Double]0
 
-        $Hashrates_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm } | Sort-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
+        $Hashrates_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
 
-        # During benchmarking strip some of the lowest and highest sample values
-        If ($Safe) { 
-            $SkipSamples = [math]::Floor($HashRates_Samples.Count) * 0.1
-        }
-        Else { $SkipSamples = 0 }
 
-        $Hashrates_Samples | Select-Object -Skip $SkipSamples | Select-Object -SkipLast $SkipSamples | ForEach-Object { 
-            $Data_Devices = $_.Device
-            If (-not $Data_Devices) { $Data_Devices = $HashRates_Devices }
-
-            $Data_HashRates = $_.HashRate.$Algorithm
-
-            $Data_Devices | ForEach-Object { $HashRates_Counts.$_++ }
-            $Data_Devices | ForEach-Object { $HashRates_Averages.$_ += @(($Data_HashRates | Measure-Object -Sum | Select-Object -ExpandProperty Sum) / $Data_Devices.Count) }
-            $HashRates_Variances."$($Data_Devices | ConvertTo-Json)" += @($Data_HashRates | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
-        }
-
-        $HashRates_Count = $HashRates_Counts.Values | ForEach-Object { $_ } | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
-        $HashRates_Average = ($HashRates_Averages.Values | ForEach-Object { $_ } | Measure-Object -Average | Select-Object -ExpandProperty Average) * $HashRates_Averages.Keys.Count
-        $HashRates_Variance = $HashRates_Variances.Keys | ForEach-Object { $_ } | ForEach-Object { $HashRates_Variances.$_ | Measure-Object -Average -Minimum -Maximum } | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+        $HashRates_Count = $Hashrates_Samples.Count
+        $HashRates_Average = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average | Select-Object -ExpandProperty Average
+        $HashRates_Variance = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
             If ($HashRates_Count -lt 3 -or $HashRates_Variance -gt 0.05) { 
@@ -527,35 +503,16 @@ Class Miner {
 
     [Double[]]CollectPowerUsage([Boolean]$Safe = $this.New) { 
         # Returns an array of two values (safe, unsafe)
-        $PowerUsages_Devices = @($this.Data | Where-Object Devices | Select-Object -ExpandProperty Device -Unique)
-        If (-not $PowerUsages_Devices) { $PowerUsages_Devices = @("Device") }
 
-        $PowerUsages_Counts = @{ }
-        $PowerUsages_Averages = @{ }
-        $PowerUsages_Variances = @{ }
+        $PowerUsages_Count = [Int]0
+        $PowerUsages_Average = [Double]0
+        $PowerUsages_Variance = [Double]0
 
-        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage | Sort-Object PowerUsage) # Do not use 0 valued samples
+        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage) # Do not use 0 valued samples
 
-        # During power measuring strip some of the lowest and highest sample values
-        If ($Safe) { 
-            $SkipSamples = [math]::Round($PowerUsages_Samples.Count * 0.1)
-        }
-        Else { $SkipSamples = 0 }
-
-        $PowerUsages_Samples | Select-Object -Skip $SkipSamples | Select-Object -SkipLast $SkipSamples | ForEach-Object { 
-            $Data_Devices = $_.Device
-            If (-not $Data_Devices) { $Data_Devices = $PowerUsages_Devices }
-
-            $Data_PowerUsages = $_.PowerUsage
-
-            $Data_Devices | ForEach-Object { $PowerUsages_Counts.$_++ }
-            $Data_Devices | ForEach-Object { $PowerUsages_Averages.$_ += @(($Data_PowerUsages | Measure-Object -Sum | Select-Object -ExpandProperty Sum) / $Data_Devices.Count) }
-            $PowerUsages_Variances."$($Data_Devices | ConvertTo-Json)" += @($Data_PowerUsages | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
-        }
-
-        $PowerUsages_Count = $PowerUsages_Counts.Values | ForEach-Object { $_ } | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
-        $PowerUsages_Average = ($PowerUsages_Averages.Values | ForEach-Object { $_ } | Measure-Object -Average | Select-Object -ExpandProperty Average) * $PowerUsages_Averages.Keys.Count
-        $PowerUsages_Variance = $PowerUsages_Variances.Keys | ForEach-Object { $_ } | ForEach-Object { $PowerUsages_Variances.$_ | Measure-Object -Average -Minimum -Maximum } | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+        $PowerUsages_Count = $PowerUsages_Samples.Count
+        $PowerUsages_Average = $PowerUsages_Samples.PowerUsage | Measure-Object -Average | Select-Object -ExpandProperty Average
+        $PowerUsages_Variance = $PowerUsages_Samples.PowerUsage | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
             If ($PowerUsages_Count -lt 3 -or $PowerUsages_Variance -gt 0.1) { 
@@ -1527,18 +1484,18 @@ Function Set-Stat {
     }
 
     @{ 
-        Live                  = [Decimal]$Stat.Live
-        Minute                = [Decimal]$Stat.Minute
+        Live                  = [Double]$Stat.Live
+        Minute                = [Double]$Stat.Minute
         Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
-        Minute_5              = [Decimal]$Stat.Minute_5
+        Minute_5              = [Double]$Stat.Minute_5
         Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
-        Minute_10             = [Decimal]$Stat.Minute_10
+        Minute_10             = [Double]$Stat.Minute_10
         Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-        Hour                  = [Decimal]$Stat.Hour
+        Hour                  = [Double]$Stat.Hour
         Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
-        Day                   = [Decimal]$Stat.Day
+        Day                   = [Double]$Stat.Day
         Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
-        Week                  = [Decimal]$Stat.Week
+        Week                  = [Double]$Stat.Week
         Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
@@ -1599,7 +1556,7 @@ Function Get-Stat {
                 )
             }
             Catch { 
-                Write-Message -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset. "
+                Write-Message -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset."
                 Remove-Stat $Stat_Name
             }
         }
@@ -1809,13 +1766,6 @@ Function Get-CpuId {
 
     # Vendor
     $vendor = "" # not implemented
-
-    If ($vendor -eq "GenuineIntel") { 
-        $Vendor_Intel = $true;
-    }
-    ElseIf ($vendor -eq "AuthenticAMD") { 
-        $Vendor_AMD = $true;
-    }
 
     $info = [CpuID]::Invoke(0)
     # convert 16 bytes to 4 ints for compatibility with existing code
