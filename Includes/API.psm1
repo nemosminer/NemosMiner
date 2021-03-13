@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.5.9"
+    $APIVersion = "0.3.6.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -420,7 +420,7 @@ Function Start-APIServer {
                             ForEach ($WatchdogTimer in ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
                                 If ($WatchdogTimer.Algorithm -and ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm))) {
                                     # Remove watchdog timers
-                                    $Variables.WatchdogTimers = $Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers }
+                                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                     $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
 
                                     # Update miner
@@ -431,7 +431,7 @@ Function Start-APIServer {
                                 }
                                 If ($WatchdogTimer.Pool -and ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Pool -EQ $WatchdogTimer.Pool))) {
                                     # Remove watchdog timers
-                                    $Variables.WatchdogTimers = $Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers }
+                                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                     $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
 
                                     # Update pool
