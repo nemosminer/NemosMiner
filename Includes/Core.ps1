@@ -664,7 +664,7 @@ Function Start-Cycle {
         ForEach ($Worker in $Miner.WorkersRunning) { 
             If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm)) {
                 # Remove watchdog timers
-                $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimers) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
             }
             Remove-Variable WatchdogTimers
         }
@@ -952,7 +952,7 @@ Function Start-Cycle {
             ForEach ($Worker in $Miner.WorkersRunning) { 
                 If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
                     # Remove watchdog timers
-                    $Variables.WatchdogTimers = @(Compare-Object @($Variables.WatchdogTimers) @($WatchdogTimers) -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator)
+                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                 }
                 Remove-Variable WatchdogTimers
             }
