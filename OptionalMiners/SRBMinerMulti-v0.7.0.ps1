@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.6.9/SRBMiner-Multi-0-6-9-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.7.0/SRBMiner-Multi-0-7-0-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
@@ -43,7 +43,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Blake2s";           Type = "CPU"; Fee = 0;      MinerSet = 0; Arguments = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "CPU"; Fee = 0;      MinerSet = 0; Arguments = " --algorithm argon2id_chukwa" }
-    [PSCustomObject]@{ Algorithm = "CircCash";          Type = "AMD"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm circcash" }
+    [PSCustomObject]@{ Algorithm = "CircCash";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm circcash" }
     [PSCustomObject]@{ Algorithm = "CpuPower";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = "CryptonightCache";  Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm cryptonight_cache" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm cryptonight_ccx" }
@@ -59,7 +59,8 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm kadena" }
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "CPU"; Fee = 0;      MinerSet = 0; Arguments = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "Phi5";              Type = "COU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm phi5" }
+    [PSCustomObject]@{ Algorithm = "Panthera";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm panthera" }
+    [PSCustomObject]@{ Algorithm = "Phi5";              Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm phi5" }
     [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.7.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxHash2";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
