@@ -5,6 +5,26 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.25 14.03.2021
+========================================
+
+Improvement:
+- Optimize hashrate & powerusage collection code
+- WebGUI / Unavailable miners & pools: Add button to remove watchdog timer
+- WebGUI / balances: Use local culture for currency formatting
+
+Fixed:
+- Core: Slowdown over time in Write-Message()
+- Donation address randomisation not working (regression from 3.9.9.23)
+- NLPool not working (regression from 3.9.9.23)
+- NSFMiner failed mining @ ZergPool
+
+Miner updates:
+- GMiner-v2.47
+- NanoMiner-v3.3.1
+- SRBMinerMulti-v0.7.0
+
+
 Changelog NemosMiner 3.9.9.24 06.03.2021
 ========================================
 
@@ -19,11 +39,10 @@ Fixed:
 Improvement:
 - Memory optimization
 
-Miner changes:
+Miner updates:
 - GMiner-v2.46
 - NSFMiner-v1.3.8
 - SRBMinerMulti-v0.6.9
-
 
 Changelog NemosMiner 3.9.9.23 01.03.2021
 ========================================
