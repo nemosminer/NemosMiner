@@ -106,13 +106,22 @@ While ($true) {
 
             # Get threshold currency and value
             $PayoutThresholdCurrency = $PoolBalanceObject.Currency
-            $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency)
+            $PayoutThreshold = $PoolBalanceObject.PayoutThreshold
+
+            If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency) }
+
             If (-not $PayoutThreshold -and $PoolBalanceObject.Currency -eq "BTC") { 
                 $PayoutThresholdCurrency = "mBTC"
                 $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency)
             }
+
             If (-not $PayoutThreshold) { 
                 $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold."*")
+            }
+
+            If ($PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC -eq $true) { 
+                $PayoutThresholdCurrency = "mBTC"
+                $PayoutThreshold *= 1000
             }
 
             $Growth1 = $Growth6 = $Growth24 = $Growth168 = $Growth720 = $GrowthToday = $AvgHourlyGrowth = $AvgDailyGrowth = $AvgWeeklyGrowth = $Delta = $Payout = $HiddenPending = [Double]0

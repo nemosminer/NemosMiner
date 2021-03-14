@@ -79,40 +79,6 @@
       "ZEC",
       "ZEN"
     ],
-    "PayoutThreshold": {
-      "ADZ": 0.0115,
-      "AUR": 2.01,
-      "BSTY": 0.0115,
-      "BCH": 0.001,
-      "BTC": 0.0021,
-      "BTG": 0.0017,
-      "DASH": 0.0016,
-      "DGB": 2.01,
-      "ESN": 0.02,
-      "ETC": 0.00155,
-      "ETH": 0.013,
-      "ETN": 0.08,
-      "EXP": 0.002,
-      "FTC": 0.017,
-      "GAME": 0.0025,
-      "GRS": 0.0025,
-      "LTC": 0.0025,
-      "MAX": 0.0115,
-      "MONA": 0.11,
-      "MUSIC": 0.0115,
-      "RVN": 0.0025,
-      "SC": 12.0015,
-      "START": 0.0115,
-      "SXC": 1.0015,
-      "VTC": 0.101,
-      "XZC": 0.0025,
-      "XMR": 0.0503,
-      "XMY": 0.1015,
-      "XVG": 0.16,
-      "ZCL": 0.0016,
-      "ZEC": 0.0016,
-      "ZEN": 0.0016
-    },
     "PayoutCurrency": "[Default]"
   },
   "NLPool": {
@@ -165,11 +131,6 @@
       "DASH"
     ],
     "PayoutCurrency": "[Default]",
-    "PayoutThreshold": {
-      "mBTC": 2.5,
-      "LTC": 0.15,
-      "*": 0.0002
-    }
   },
   "Zpool": {
     "GuaranteedPayoutCurrencies": [
