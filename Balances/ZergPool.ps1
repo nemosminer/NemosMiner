@@ -33,17 +33,22 @@ Try {
     $APIResponse = Invoke-RestMethod "http://www.zergpool.com:8080/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
     If ($APIResponse.currency) { 
         [PSCustomObject]@{ 
-            DateTime = (Get-Date).ToUniversalTime()
-            Pool     = $Name
-            Currency = $APIResponse.Currency
-            Wallet   = $Wallet
-            Pending  = [Double]($APIResponse.Unsold) # Pending
-            Balance  = [Double]($APIResponse.Balance)
-            Unpaid   = [Double]($APIResponse.Unpaid) # Balance + unsold (pending)
-            # Paid     = [Double]($APIResponse.PaidTotal)
-            # Total    = [Double]($APIResponse.Unpaid) + $APIResponse.PaidTotal
-            Url      = $Url
+            DateTime        = (Get-Date).ToUniversalTime()
+            Pool            = $Name
+            Currency        = $APIResponse.Currency
+            Wallet          = $Wallet
+            Pending         = [Double]($APIResponse.Unsold) # Pending
+            Balance         = [Double]($APIResponse.Balance)
+            Unpaid          = [Double]($APIResponse.Unpaid) # Balance + unsold (pending)
+            # Paid            = [Double]($APIResponse.PaidTotal)
+            # Total           = [Double]($APIResponse.Unpaid) + $APIResponse.PaidTotal
+            PayoutThreshold = [Double]($(If ($APIResponse.MinPay_Sunday) { $APIResponse.MinPay_Sunday } Else { $APIResponse.MinPay } ))
+            Url             = $Url
         }
     }
+
+    $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+    $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+
 }
 Catch { }

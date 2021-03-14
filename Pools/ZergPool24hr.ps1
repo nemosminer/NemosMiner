@@ -38,6 +38,11 @@ $PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets.Keys | Select-Object -Index 0
 $Wallet = $PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
+
+    $PayoutThreshold = $PoolsConfig.$Name_Norm.PayoutThreshold.$PayoutCurrency
+    If (-not $PayoutThreshold -and $PoolsConfig.$Name_Norm.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolsConfig.$Name_Norm.PayoutThreshold.mBTC / 1000 }
+    If ($PayoutThreshold -gt 0) { $PayoutThresholdParameter = ",pl=$($PayoutThreshold)" }
+
     Try { 
         $Request = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/status" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
@@ -74,7 +79,7 @@ If ($Wallet) {
             Host               = [String]$PoolHost
             Port               = [UInt16]$PoolPort
             User               = [String]$Wallet
-            Pass               = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
+            Pass               = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
             Region             = "N/A (Anycast)"
             SSL                = [Bool]$false
             Fee                = $Fee
