@@ -5,6 +5,14 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.26 14.03.2021
+========================================
+
+Improvement:
+- MiningPoolHub: Read default payout threshold from pool API data; Custom payout threshold can be set in \Config\PoolsConfig.Json
+- ZergPool: Read default payout threshold from pool API data; Custom payout threshold can be set in \Config\PoolsConfig.Json
+
+
 Changelog NemosMiner 3.9.9.25 14.03.2021
 ========================================
 
