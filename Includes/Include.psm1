@@ -854,6 +854,7 @@ Function Write-Message {
 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
+                $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 500)
                 $Variables.LabelStatus.Lines += $Message
                 $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
                 $Variables.LabelStatus.ScrollToCaret()
@@ -882,7 +883,7 @@ Function Write-Message {
             If ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile)) { 
                 # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
                 # This lets us ensure only one thread is trying to write to the file at a time. 
-                $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteLog")
+                $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteMessage")
 
                 $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
