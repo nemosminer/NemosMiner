@@ -10,6 +10,7 @@ Changelog NemosMiner 3.9.9.26 14.03.2021
 
 Improvement:
 - MiningPoolHub: Read default payout threshold from pool API data; Custom payout threshold can be set in \Config\PoolsConfig.Json
+- WebGUI / Config editor: Add config item $WaitForMinerData ('Seconds until first valid data sample')
 - ZergPool: Read default payout threshold from pool API data; Custom payout threshold can be set in \Config\PoolsConfig.Json
 
 
