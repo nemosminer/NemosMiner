@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.6.1"
+    $APIVersion = "0.3.6.2"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -499,7 +499,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/balancescurrencies" { 
-                        $Data = ConvertTo-Json -Depth 10 ($Config.BalancesCurrencies)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.BalancesCurrencies)
                         break
                     }
                     "/brainjobs" { 
