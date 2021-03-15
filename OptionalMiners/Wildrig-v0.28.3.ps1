@@ -67,16 +67,16 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo honeycomb" } # Algo broken
-    [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo glt-jeonghash" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo glt-jeonghash" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; Arguments = " --algo kawpow" } # NBMiner-v36.1 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo lyra2v3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; Arguments = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; Arguments = " --algo megamec" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; Arguments = " --algo minotaur" }
-    [PSCustomObject]@{ Algorithm = "MTP";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; Arguments = " --algo mtp" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; Arguments = " --algo mtp" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 0; Arguments = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo glt-padihash" }
-    [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo glt-pawelhash" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo glt-pawelhash" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo phi" }
     [PSCustomObject]@{ Algorithm = "Phi5";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo phi5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo polytimos" }
@@ -86,18 +86,18 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Renesis";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo renesis" }
     [PSCustomObject]@{ Algorithm = "Skein2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo skein2" } # CcminerAlexis78-v1.5.2 is fastest
     [PSCustomObject]@{ Algorithm = "SkunkHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo skunkhash" } # CryptoDredge-v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Sonoa";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo sonoa" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "Sonoa";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo sonoa" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "Timetravel";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo tribus" }
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo x11k" }
-    [PSCustomObject]@{ Algorithm = "X16r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x16r" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "X16r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x16r" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo x16rt" }
-    [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x16rv2" } # Trex-v0.19.11 is fastest
-    [PSCustomObject]@{ Algorithm = "X16s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x16s" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x16rv2" } # Trex-v0.19.12 is fastest
+    [PSCustomObject]@{ Algorithm = "X16s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x16s" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "X17";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo x17r --protocol ufo2" }
-    [PSCustomObject]@{ Algorithm = "X21s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x21s" } # Trex-v0.19.11 is fastest
-    [PSCustomObject]@{ Algorithm = "X22i";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x22i" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "X21s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x21s" } # Trex-v0.19.12 is fastest
+    [PSCustomObject]@{ Algorithm = "X22i";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; Arguments = " --algo x22i" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "X33";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; Arguments = " --algo x33" }
 )
 

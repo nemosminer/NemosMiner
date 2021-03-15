@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $PathCUDA10 = ".\Bin\$($Name)\t-rex_CUDA10.exe"
 $PathCUDA11 = ".\Bin\$($Name)\t-rex_CUDA11.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.11-win.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.12-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 

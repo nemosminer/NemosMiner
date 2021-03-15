@@ -20,7 +20,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 0; Coin= "Ergo" }
     [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.19.12 is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";    Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; MinerSet = 1; Coin= "Octopus" } # NBMiner-v36.1 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 )

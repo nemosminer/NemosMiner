@@ -13,6 +13,9 @@ Improvement:
 - WebGUI / Config editor: Add config item $WaitForMinerData ('Seconds until first valid data sample')
 - ZergPool: Read default payout threshold from pool API data; Custom payout threshold can be set in \Config\PoolsConfig.Json
 
+Miner updates:
+- Trex-v0.19.12
+
 
 Changelog NemosMiner 3.9.9.25 14.03.2021
 ========================================

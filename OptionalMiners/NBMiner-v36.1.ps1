@@ -1,3 +1,4 @@
+
 using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -22,7 +23,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.0065; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo ethash" } # BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo kawpow --fee 1" } # XmRig-v6.7.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = "Sero";          Type = "NVIDIA"; Fee = 0.01;   MinMemGB = 2.0; MinMemGBWin10 = 2.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo progpow_sero --fee 1" }
-    [PSCustomObject]@{ Algorithm = "Octopus";       Type = "NVIDIA"; Fee = 0.03;   MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.1; MinerSet = 1; Arguments = " -mt 1 --algo octopus --fee 1" } # Trex-v0.19.11 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus";       Type = "NVIDIA"; Fee = 0.03;   MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.1; MinerSet = 1; Arguments = " -mt 1 --algo octopus --fee 1" } # Trex-v0.19.12 is fastest
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
