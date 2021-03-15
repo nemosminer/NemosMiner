@@ -331,6 +331,9 @@
           <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100)" for="MinDataSamples">Minimum data samples when benchmarking
             <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 size=4>
           </div>
+          <div title="Number of seconds until first valid data sample from the miner&#10;If the miner does not provide hashrate information with this time the miner will get stopped&#10;(min=15, max=120)&#10;&#10;Note: Some miner/algorithms will automatically extend this time" for="WaitForMinerData">Seconds until first valid data sample
+            <input type="number" id="WaitForMinerData" name="WaitForMinerData" min=15 max=120 value=15 size=4>
+          </div>
         </div>
       </td>
     </tr>
@@ -650,6 +653,10 @@
 
     if (parseInt(config.MinDataSamples)) { 
       document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
+    };
+
+    if (parseInt(config.WaitForMinerData)) { 
+      document.getElementById('WaitForMinerData').value = parseInt(config.WaitForMinerData);
     };
 
     document.getElementById('WorkerName').value = config.WorkerName.trim();
@@ -989,6 +996,7 @@
         config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
 
         config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
+        config.WaitForMinerData = parseInt(document.getElementById('WaitForMinerData').value);
 
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
