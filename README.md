@@ -225,16 +225,9 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver = 461.40
+[recommended/optimal Windows 10 Nvidia driver = 470.05 Torret Magnet Link](magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready-win-10-dch-64bit-international&tr=http%3a%2f%2fbt1.archive.org%3a6969%2fannounce&tr=http%3a%2f%2fbt2.archive.org%3a6969%2fannounce&ws=https%3a%2f%2farchive.org%2fdownload%2f&ws=http%3a%2f%2fia601501.us.archive.org%2f33%2fitems%2f&ws=%2f33%2fitems%2f)
 
-https://us.download.nvidia.com/Windows/461.40/461.40-desktop-win10-64bit-international-dch-whql.exe
-
-
-recommended/optimal Windows 10 AMD GPU Driver 21.2.2
-
-[Win10:](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win10-64bit-feb11.exe)
-
-[Windows7, 8, 8.1](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win7-64bit-feb11.exe)
+[recommended/optimal Windows 10 AMD GPU Driver 21.2.2](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win10-64bit-feb11.exe)
 
    NemosMiner is currently tested on the following Rigs: 
 
