@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.25
+Version:        3.9.9.26
 Version date:   14 March 2021
 #>
 
@@ -240,7 +240,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.25"
+    Version      = [System.Version]"3.9.9.26"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -284,7 +284,6 @@ $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))"
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))"
-$Variables.LogFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"))"
 
 $Variables.CurrentProduct = $Branding.ProductLabel
 $Variables.CurrentVersion = $Branding.Version
@@ -319,13 +318,6 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
     }
 }
 
-# Check if new version is available
-Get-NMVersion
-# Update config file to include all new config items
-If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion )) { 
-    Update-ConfigFile -ConfigFile $Variables.ConfigFile
-}
-
 #Prerequisites check
 Write-Message -Level Verbose "Verifying pre-requisites..." -Console
 $Prerequisites = @(
@@ -342,6 +334,14 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
 }
 Else { Write-Message -Level Verbose "Pre-requisite check OK." -Console }
 Remove-Variable PrerequisitesMissing, Prerequisites
+
+# Check if new version is available
+Get-NMVersion
+
+# Update config file to include all new config items
+If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion )) { 
+    Update-ConfigFile -ConfigFile $Variables.ConfigFile
+}
 
 Write-Message -Level Verbose "Loading device information..."
 $Variables.SupportedDeviceVendors = @("AMD", "INTEL", "NVIDIA")
@@ -523,7 +523,7 @@ Function Global:TimerUITick {
             If ($Variables.Balances) { 
                 $DisplayEarnings = [System.Collections.ArrayList]@(
                     $Variables.Balances.Values | Select-Object @(
-                        @{ Name = "Pool"; Expression = { $_.Pool -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)' } }, 
+                        @{ Name = "Pool"; Expression = { "$($_.Pool -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)') [$($_.Currency)]" } }, 
                         @{ Name = "Balance ($($Config.Currency))"; Expression = { "{0:N8}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                         @{ Name = "Avg. $($Config.Currency)/day"; Expression = { "{0:N8}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                         @{ Name = "$($Config.Currency) in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
@@ -1266,7 +1266,7 @@ $MainForm.Add_Load(
 
 If ($Variables.APIVersion -ne "" -and $Variables.FreshConfig -eq $true) { 
     $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096) | Out-Null
+    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`n1. Install the required VC runtimes`n   (https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)`n`n2. Use the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096) | Out-Null
     Remove-Variable wshell
 }
 

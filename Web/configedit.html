@@ -1055,7 +1055,7 @@
   });
 
   //Load default Algorithm list
-  $('#defaultAlgorithm').click(function () {
+  $('#DefaultAlgorithm').click(function () {
     $.ajax({url: '/defaultAlgorithm',
       success: function(result) {
         Algorithm.value = "+" + result.join(",+");

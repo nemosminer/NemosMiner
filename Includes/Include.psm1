@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.25
+Version:        3.9.9.26
 Version date:   14 March 2021
 #>
 
@@ -879,40 +879,41 @@ Function Write-Message {
                 }
             }
         }
-        If ($Variables.LogFile) { 
-            If ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile)) { 
-                # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
-                # This lets us ensure only one thread is trying to write to the file at a time. 
-                $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteMessage")
+        If ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile)) { 
+            # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
+            # This lets us ensure only one thread is trying to write to the file at a time. 
+            $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteMessage")
 
-                $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+            $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-                Switch ($Level) { 
-                    'Error' { 
-                        $LevelText = 'ERROR:'
-                    }
-                    'Warn' { 
-                        $LevelText = 'WARNING:'
-                    }
-                    'Info' { 
-                        $LevelText = 'INFO:'
-                    }
-                    'Verbose' { 
-                        $LevelText = 'VERBOSE:'
-                    }
-                    'Debug' { 
-                        $LevelText = 'DEBUG:'
-                    }
+            Switch ($Level) { 
+                'Error' { 
+                    $LevelText = 'ERROR:'
                 }
+                'Warn' { 
+                    $LevelText = 'WARNING:'
+                }
+                'Info' { 
+                    $LevelText = 'INFO:'
+                }
+                'Verbose' { 
+                    $LevelText = 'VERBOSE:'
+                }
+                'Debug' { 
+                    $LevelText = 'DEBUG:'
+                }
+            }
 
-                # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
-                If ($Mutex.WaitOne(1000)) { 
-                    "$Date $LevelText $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
-                    $Mutex.ReleaseMutex()
-                }
-                Else { 
-                    Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
-                }
+            # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
+            If ($Mutex.WaitOne(1000)) { 
+
+                $Variables.LogFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"))"
+
+                "$Date $LevelText $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
+                $Mutex.ReleaseMutex()
+            }
+            Else { 
+                Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
             }
         }
     }
@@ -1232,11 +1233,8 @@ Function Read-Config {
         $PoolName = $_
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
-        If (-not "$PoolConfig") { # https://stackoverflow.com/questions/53181472/what-operator-should-be-used-to-detect-an-empty-psobject
-            If ($PoolsConfig_Tmp.Default) { $PoolConfig = $PoolsConfig_Tmp.Default | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json }
-        }
         If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
-        If (-not $PoolConfig.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
+        If (-not $PoolConfig.PayoutThreshold -and $PoolData.$PoolName.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
         If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch ($PoolName) { 
