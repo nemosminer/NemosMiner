@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        3.9.9.25
+Version:        3.9.9.26
 Version date:   14 March 2021
 #>
 
@@ -28,7 +28,7 @@ $Variables = $args
 
 $ProgressPreference = "SilentlyContinue"
 
-$Variables.DownloadList | ForEach-Object { 
+$Variables.DownloadList | Select-Object | ForEach-Object { 
     $URI = $_.URI
     $Path = $_.Path
     $Searchable = $_.Searchable
