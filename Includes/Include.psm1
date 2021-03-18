@@ -850,7 +850,7 @@ Function Write-Message {
     Begin { }
     Process { 
 
-        If ((-not $Config.LogToScreen) -or ($Level -in $Config.LogToScreen)) { 
+        If ((-not $Variables.MainPath) -or (-not $Config.LogToScreen) -or ($Level -in $Config.LogToScreen)) { 
 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
@@ -879,7 +879,7 @@ Function Write-Message {
                 }
             }
         }
-        If ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile)) { 
+        If ($Variables.MainPath -and (-not $Config.LogToFile) -or ($Level -in $Config.LogToFile)) { 
             # Get mutex named NemosMinerWriteLog. Mutexes are shared across all threads and processes. 
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteMessage")
@@ -907,7 +907,7 @@ Function Write-Message {
             # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
             If ($Mutex.WaitOne(1000)) { 
 
-                $Variables.LogFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"))"
+                $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
 
                 "$Date $LevelText $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
                 $Mutex.ReleaseMutex()
