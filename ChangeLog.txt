@@ -5,7 +5,7 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
-Changelog NemosMiner 3.9.9.26 14.03.2021
+Changelog NemosMiner 3.9.9.26 18.03.2021
 ========================================
 
 Fixed:

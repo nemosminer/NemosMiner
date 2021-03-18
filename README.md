@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 01 March 2021
+Updated 18 March 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -116,9 +116,9 @@ Easy configuration, easy start:
 
    GUI
 
-      Since version 3.9.9 (Beta) NemosMiner has a Web GUI making it easy to configure and run.
-      Relies on config files. No need to edit bat files. Simply run NemosMiner.bat 
-      Set the config on the config tab, save, close, run NemosMiner.bat
+      Since version 3.9.9.x (Beta) NemosMiner has a Web GUI making it easy to configure and run.
+      NemosMiner relies on config files. No need to edit bat files. Simply run NemosMiner.bat
+      Set the config in the Web GUI, apply & start mining
 
    Pause mining
 
@@ -129,13 +129,13 @@ Easy configuration, easy start:
 
    PreRun
 
-      Ability to run a batch prior switching to a specific miner and/or algo.
-      The prerun scripts can be used to set per miner/algo OC via nvidiaInspector or OverdriveNTool.
+      Ability to run a batch prior switching to a specific miner and/or algorithm.
+      The prerun scripts can be used to set per miner/algorithm OC via nvidiaInspector or OverdriveNTool.
       Before starting a miner executable NemosMiner is trying to launch one of the following 3 prerun scripts (in this order):
       1. <MinerName>_<Algorithm>.bat
-         Simply create a file named <MinerName>_<AlgoName>.bat in prerun folder, e.g. 'Bminer-v16.3.1-1xRadeonRX5808GB-Handshake-10.bat' or 'CcminerMTP-v1.3.2-1xGTX10606GB_MTP.bat'
+         Simply create a file named <MinerName>_<AlgorithmName>.bat in prerun folder, e.g. 'Bminer-v16.3.1-1xRadeonRX5808GB-Handshake-10.bat' or 'CcminerMTP-v1.3.2-1xGTX10606GB_MTP.bat'
       2. <Algorithm>.bat
-         Simply create a file named <AlgoName>.bat in prerun folder, e.g. 'Ethash.bat'
+         Simply create a file named <AlgorithmName>.bat in prerun folder, e.g. 'Ethash.bat'
       3. default.bat
          If neither of the two above exist, NemosMiner will try to launch prerun\default.bat
       Use overclock with caution
@@ -146,16 +146,17 @@ Easy configuration, easy start:
 
       The file Config\PoolsConfig.json contains configuration details.
       There is a separate section for each configured pool. If a pool is listed in this file,
-      the specific settings will be taken into account. If not, the setting for the default values will be used.
+      the specific settings will be taken into account. If not, the built in default values will be used.
 
       You can set specific options per pool. For example, you can mine NiceHash on the internal wallet and other pools on a valid wallet. This configuration is provided as an example in Config\PoolsConfig-NHInternal.json
 
       Available options:
-         - Wallet = your wallet address
+         - Wallets[Currency] = Your wallet address for [Currency]; some pools, e.g. HiveOn require wallets in each supported currency
          - UserName = your MPH or ProHashing user name
          - WorkerName = your worker name
          - PricePenaltyFactor = See explanation below
          - Algorithm = List of included or excluded algorithms per pool (see example files)
+         - PayoutThreshold[Currency] = pool will allow pyout if this amount is reached
 
       Usage:
          - Edit Config\PoolsConfig.json
@@ -163,7 +164,7 @@ Easy configuration, easy start:
             - The name must be the pool base name (omit *24hrs or *Coins), e.g ZergPool (even if you have configured ZergPoolCoins in the pool list)
             - (**careful with json formating ;)**)
 
-      Note that the GUI only updates default values (valid for ALL pools unles ther is pool spcific configuration setting defined in PoolConfig.json). Any other changes need to be done manually.
+      Note that the GUI only updates default values (valid for ALL pools unless there is pool specific configuration setting defined in PoolConfig.json). Any other changes need to be done manually.
 
    PricePenaltyFactor
 
@@ -187,7 +188,7 @@ Easy configuration, easy start:
          - AHashPool
          - BlazePool
          - BlockMasters
-         - HiveON       
+         - HiveON
          - MiningPoolHub
          - NiceHash (internal & external wallet)
          - NLPool

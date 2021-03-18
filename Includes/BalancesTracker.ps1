@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.25
-Version date:   14 March 2021
+Version:        3.9.9.26
+Version date:   18 March 2021
 #>
 
 # Start the log
@@ -54,7 +54,7 @@ While ($true) {
             $PoolData = Get-Content ".\Includes\PoolData.json" | ConvertFrom-Json
 
             # Read existing earning data, use data from last file
-            ForEach ($Filename in Get-ChildItem ".\Logs\BalancesTrackerData*.json" | Sort-Object LastWriteTime -Descending) {
+            ForEach ($Filename in Get-ChildItem ".\Logs\BalancesTrackerData*.json" | Sort-Object -Descending) {
                 $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null
                 If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { Break }
             }
@@ -62,7 +62,7 @@ While ($true) {
             Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
 
             # Read existing earning data, use data from last file
-            ForEach($Filename in (Get-ChildItem ".\Logs\DailyEarnings*.csv" | Sort-Object LastWriteTime -Descending)) { 
+            ForEach($Filename in (Get-ChildItem ".\Logs\DailyEarnings*.csv" | Sort-Object -Descending)) { 
                 $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
                 If ($Earnings.Count -gt ($PoolData.Count / 2)) { Break }
             }
@@ -74,8 +74,8 @@ While ($true) {
             If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
             # Keep only the last 10 logs 
-            Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object LastWriteTime | Select-Object -Skiplast 99 | Remove-Item -Force -Recurse
-            Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object LastWriteTime | Select-Object -Skiplast 99 | Remove-Item -Force -Recurse
+            Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 99 | Remove-Item -Force -Recurse
+            Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 99 | Remove-Item -Force -Recurse
         }
 
         $Now = (Get-Date).ToLocalTime()
@@ -138,7 +138,7 @@ While ($true) {
                 $AvgHourlyGrowth = $AvgDailyGrowth = $AvgWeeklyGrowth = 0
             }
             Else { 
-                If ($PoolBalanceObject.Pool -eq "NiceHash") { 
+                If ($PoolBalanceObject.Pool -like "NiceHash*") { 
                     If ($PoolBalanceObject.Withdrawal -gt 0) { 
                         # NiceHash temporarily reduces 'Balance' value before paying out
                         $PoolBalanceObject.Balance += $PoolBalanceObject.Withdrawal

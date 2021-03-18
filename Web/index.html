@@ -252,7 +252,7 @@
                               uri: item.Uri,
                               balances: {},
                               paydate: formatDate(item.EstimatedPayDate),
-                              percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency.replace("mBTC", "BTC")] * rates[item.PayoutThresholdCurrency.replace("mBTC", "BTC")][item.PayoutThresholdCurrency]).toFixed(2),
+                              percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency]).toFixed(2),
                               growth1:item.Growth1 * 1000,
                               growth6: item.Growth6 * 1000,
                               growth24: item.Growth24 * 1000,
