@@ -281,6 +281,7 @@ $Variables.Pools = [Miner]::Pools
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
+$Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))"
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))"
@@ -421,6 +422,8 @@ If ($Config.WebGUI -eq $true) {
 
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $false
+
+    $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
