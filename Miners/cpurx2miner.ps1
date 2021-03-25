@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
 
-$Path = ".\Bin\CPU-RX2miner\cpuminer.exe"
+$Path = ".\Bin\CPU-RX2miner110\cpuminer.exe"
 $Uri = "https://github.com/LUX-Core/rx2-cpuminer/releases/download/1.1.0/cpuminer.exe"
 $Commands = [PSCustomObject]@{ 
      "rx2" = "" #Rx2
