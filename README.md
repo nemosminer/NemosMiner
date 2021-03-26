@@ -236,8 +236,8 @@ magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready
       windows10-1xGTX-3060ti/RYZEN-3700x (Test PC) 
 
       windows10-9xAMD-5700XT/Octominer (test Rig 1)
-      windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
-      windows8.1-6xRTX-2080/RYZEN-3700x (test Rig 3)
+      windows10-6xRTX-3070/RYZEN-3700x (test Rig 2)
+      windows8.1-6xRTX-3080/RYZEN-3700x (test Rig 3)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
 
