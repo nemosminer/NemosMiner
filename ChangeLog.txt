@@ -5,12 +5,28 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
-Changelog NemosMiner 3.9.9.27 18.03.2021
+Changelog NemosMiner 3.9.9.27 28.03.2021
 ========================================
 
+Changes:
+- Removed 'ExtraWarmupTimes.txt'
+
 Fixed:
+- Core: UnrealMinerEarningFactor not working in mixed gpu environments
 - Logfile rollover
-- WebGUI / Balances: Wrong values whtn non-BTC currencies were used
+- Re-implement WarmupTime config item (formerly WaitForMinerData)
+- WebGUI / Balances: Wrong values with non-BTC currencies were used
+
+Miner updates:
+- JayddeeCpu-v3.16.1
+- GMiner-v2.49
+- JayddeeCpu-v3.15.7
+- NBMiner-v37.0
+- NSFMiner-v1.3.11
+- RplantCpu-v5.0.19
+- SRBMinerMulti-v0.7.1
+- TeamRed-v0.8.1.1
+- Urx2Miner-v1.1.0
 
 
 Changelog NemosMiner 3.9.9.26 18.03.2021
@@ -36,7 +52,7 @@ Changelog NemosMiner 3.9.9.25 14.03.2021
 Improvement:
 - Optimize hashrate & powerusage collection code
 - WebGUI / Unavailable miners & pools: Add button to remove watchdog timer
-- WebGUI / balances: Use local culture for currency formatting
+- WebGUI / Balances: Use local culture for currency formatting
 
 Fixed:
 - Core: Slowdown over time in Write-Message()

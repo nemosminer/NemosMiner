@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.26
-Version date:   18 March 2021
+Version:        3.9.9.27
+Version date:   28 March 2021
 #>
 
 Class Device { 
@@ -181,7 +181,6 @@ Class Miner {
     [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
     [Int]$MinDataSamples # for safe hashrate values
-    [Int]$WaitForMinerData
     [Int]$WarmupTime
     [DateTime]$BeginTime
     [DateTime]$EndTime
@@ -2730,7 +2729,6 @@ Function Update-ConfigFile {
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
                 $Config.Remove($_)
             }
-            "WaitForMinerData" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "Wallet" { 
                 If (-not $Config.Wallets) { 
                     $Config | Add-Member @{ Wallets = $Variables.AllCommandLineParameters.Wallets }
@@ -2738,6 +2736,7 @@ Function Update-ConfigFile {
                 $Config.Wallets.BTC = $Config.$_
                 $Config.Remove($_)
             }
+            "WarmupTime" { $Config.WaitForMinerData = $Config.$_; $Config.Remove($_) }
             Default { $Config.Remove($_) } # Remove unsupported config item
         }
     }

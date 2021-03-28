@@ -18,7 +18,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 #    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2; MinerSet = 0; Arguments = " --algo skunk" } # No hashrate
     [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2; MinerSet = 0; Arguments = " --algo sonoa" }
     [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo timetravel" }
-    [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3; MinerSet = 0; Arguments = " --algo tribus" }
+#    [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3; MinerSet = 0; Arguments = " --algo tribus" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3; MinerSet = 0; Arguments = " --algo x16r" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3; MinerSet = 0; Arguments = " --algo x16rv2" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3; MinerSet = 0; Arguments = " --algo x16s" }
@@ -37,14 +37,17 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | ForEach-Object {
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $WaitForData = 30 # Seconds, max. wait time until first data sample
+                    $WarmupTime = 30 # Seconds, max. wait time until first data sample
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
-                ElseIf ($_.Algorithm -match "X16r*") { 
-                    $WaitForData = 15 # Seconds, max. wait time until first data sample
+                ElseIf ($_.Algorithm -match "^Tribus") { 
+                    $WarmupTime = 45 # Seconds, max. wait time until first data sample
+                }
+                ElseIf ($_.Algorithm -match "^X16r*|^Tribus") { 
+                    $WarmupTime = 15 # Seconds, max. wait time until first data sample
                 }
                 Else { 
-                    $WaitForData = 0 # Seconds, max. wait time until first data sample
+                    $WarmupTime = 0 # Seconds, max. wait time until first data sample
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -55,19 +58,19 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
-                        DeviceName  = $Miner_Devices.Name
-                        Type        = "NVIDIA"
-                        Path        = $Path
-                        Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --statsavg 5 --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm   = $_.Algorithm
-                        API         = "Trex"
-                        Port        = $MinerAPIPort
-                        Wrap        = $false
-                        URI         = $Uri
-                        Fee         = 0.01 # dev fee
-                        MinerUri    = "http://localhost:$($MinerAPIPort)"
-                        WaitForData = $WaitForData # Seconds, additional wait time until first data sample
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = "NVIDIA"
+                        Path       = $Path
+                        Arguments  = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --statsavg 5 --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = $_.Algorithm
+                        API        = "Trex"
+                        Port       = $MinerAPIPort
+                        Wrap       = $false
+                        URI        = $Uri
+                        Fee        = 0.01 # dev fee
+                        MinerUri   = "http://localhost:$($MinerAPIPort)"
+                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

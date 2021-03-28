@@ -2,7 +2,7 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/0.8.1/teamredminer-v0.8.1-win.zip"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/0.8.1.1/teamredminer-v0.8.1.1-win.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -50,11 +50,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
 
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $WaitForData =  30 # Seconds, max. wait time until first data sample
+                    $WarmupTime =  30 # Seconds, max. wait time until first data sample
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
+                ElseIf ($_.Algorithm -match "^Cryptonight.*" ) {
+                    $WarmupTime = 60
+                }
                 Else { 
-                    $WaitForData = 0 # Seconds, max. wait time until first data sample
+                    $WarmupTime = 0 # Seconds, max. wait time until first data sample
                 }
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
@@ -73,25 +76,18 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
-                    Switch -RegEx ($_.Algorithm) { 
-                        "Cryptonight.*" { $WarmupTime = 60 }
-                        "EtcHash|Ethash" { $WarmupTime = 90 }
-                        Default { $WarmupTime = 0 }
-                    }
-
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
-                        DeviceName  = $Miner_Devices.Name
-                        Type        = "AMD"
-                        Path        = $Path
-                        Arguments   = ("$Arguments --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --watchdog_disabled --no_gpu_monitor --init_style=3 --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm   = $_.Algorithm
-                        API         = "Xgminer"
-                        Port        = $MinerAPIPort
-                        URI         = $Uri
-                        Fee         = $_.Fee
-                        WarmupTime  = $WarmupTime # extra seconds
-                        WaitForData = $WaitForData # Seconds, additional wait time until first data sample
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = "AMD"
+                        Path       = $Path
+                        Arguments  = ("$Arguments --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --watchdog_disabled --no_gpu_monitor --init_style=3 --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = $_.Algorithm
+                        API        = "Xgminer"
+                        Port       = $MinerAPIPort
+                        URI        = $Uri
+                        Fee        = $_.Fee
+                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

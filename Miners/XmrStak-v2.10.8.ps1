@@ -142,22 +142,26 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Threads = 1
                     }
 
+                    If ($Platform -eq "AMD") { 
+                        $WarmupTime = 60 # seconds extra to allow for JIT compilation
+                    } 
+                    Else { $WarmupTime = 0 }
+
                     If ($Miner_Devices.PlatformId) { $Parameters.ConfigFile.Content | Add-Member "platform_index" (($Miner_Devices | Select-Object PlatformId -Unique).PlatformId) }
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
-                        DeviceName  = $Miner_Devices.Name
-                        Type        = $_.Type
-                        Path        = $Path
-                        Arguments   = $Parameters
-                        Algorithm   = $_.Algorithm
-                        API         = "Fireice"
-                        Port        = $MinerAPIPort
-                        URI         = $Uri
-                        Fees        = 0.02
-                        WarmupTime  = $(If($Platform -eq "AMD") { 60 } else { 0 }) # seconds extra to allow for JIT compilation
-                        MinerUri    = "http://localhost:$($MinerAPIPort)/h"
-                        WaitForData = 15 # Seconds, additional wait time until first data sample
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = $_.Type
+                        Path       = $Path
+                        Arguments  = $Parameters
+                        Algorithm  = $_.Algorithm
+                        API        = "Fireice"
+                        Port       = $MinerAPIPort
+                        URI        = $Uri
+                        Fees       = 0.02
+                        MinerUri   = "http://localhost:$($MinerAPIPort)/h"
+                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

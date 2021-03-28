@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.26
-Version date:   18 March 2021
+Version:        3.9.9.27
+Version date:   28 March 2021
 #>
 
 [CmdletBinding()]
@@ -210,7 +210,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Double]$UnrealPoolPriceFactor = 2, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
     [Parameter(Mandatory = $false)]
-    [Int]$WaitForMinerData = 15, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
+    [Double]$UnrealMinerEarningFactor = 5, # Ignore miner if resulting profit is more than $Config.UnrealPoolPriceFactor higher than average price of all other miners with same algo
+    [Parameter(Mandatory = $false)]
+    [Int]$WarmupTime = 15, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
     [Parameter(Mandatory = $false)]
     [Hashtable]$Wallets = @{ "BTC" = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"; "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }, 
     [Parameter(Mandatory = $false)]
@@ -240,7 +242,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.26"
+    Version      = [System.Version]"3.9.9.27"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -333,7 +335,7 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
     Write-Message -Level Warn "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
     Write-Message -Level Warn "and run 'install_all.bat'."
 }
-Else { Write-Message -Level Verbose "Pre-requisite check OK." -Console }
+Else { Write-Message -Level Verbose "Pre-requisites check OK." -Console }
 Remove-Variable PrerequisitesMissing, Prerequisites
 
 # Check if new version is available
@@ -383,6 +385,10 @@ If (-not $Variables.Regions) {
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
+If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
+    # Keep only the last 3 logs
+    Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
+}
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nsfminer.exe"
-$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.8/nsfminer_1.3.8-windows_10-cuda_11.2-opencl.zip"
+$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.11/nsfminer_1.3.11-windows_10-cuda_11.2-opencl.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -34,18 +34,18 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceName  = $Miner_Devices.Name
-                    Type        = $_.Type
-                    Path        = $Path
-                    Arguments   = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$($Pools.($_.Algorithm).Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
-                    Algorithm   = $_.Algorithm
-                    API         = "EthMiner"
-                    Port        = $MinerAPIPort
-                    Wrap        = $false
-                    URI         = $Uri
-                    MinerUri    = "http://localhost:$($MinerAPIPort)"
-                    WaitForData = 30 # Seconds, additional wait time until first data sample
+                    Name       = $Miner_Name
+                    DeviceName = $Miner_Devices.Name
+                    Type       = $_.Type
+                    Path       = $Path
+                    Arguments  = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$($Pools.($_.Algorithm).Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                    Algorithm  = $_.Algorithm
+                    API        = "EthMiner"
+                    Port       = $MinerAPIPort
+                    Wrap       = $false
+                    URI        = $Uri
+                    MinerUri   = "http://localhost:$($MinerAPIPort)"
+                    WarmupTime = 30 # Seconds, additional wait time until first data sample
                 }
             }
         }

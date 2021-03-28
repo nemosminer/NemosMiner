@@ -301,9 +301,13 @@
           </div>
           <br>
 
-          <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algo & currency&#10;(min=1, max=10)">
+          <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algorithm & currency&#10;(min=1, max=99)">
             <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
-            <input type="number" step=0.1 min=1 max=10 value=2 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+            <input type="number" step=0.1 min=1 max=99 value=2 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+          </div>
+          <div title="Mark miner as unavailable if earning is x times higher than average earning of all other miners with same algorithm & currency&#10;(min=1, max=99)">
+            <label for="UnrealMinerEarningFactor">Unreal Miner Earning Factor</label>
+            <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
           </div>
           <div title="Minimum workers mining the algorithm at the pool&#10;(min=1, max=25).&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'">
             <label for="MinWorker">Minimum Workers at Pool</label>
@@ -331,8 +335,8 @@
           <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100)" for="MinDataSamples">Minimum data samples when benchmarking
             <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 size=4>
           </div>
-          <div title="Number of seconds until first valid data sample from the miner&#10;If the miner does not provide hashrate information with this time the miner will get stopped&#10;(min=15, max=120)&#10;&#10;Note: Some miner/algorithms will automatically extend this time" for="WaitForMinerData">Seconds until first valid data sample
-            <input type="number" id="WaitForMinerData" name="WaitForMinerData" min=15 max=120 value=15 size=4>
+          <div title="Number of seconds until first valid data sample from the miner&#10;If the miner does not provide hashrate information the miner will get stopped&#10;(min=15, max=120)&#10;&#10;Note: Some miner/algorithms will automatically extend this time" for="WarmupTime">Miner warmup time until first valid data sample
+            <input type="number" id="WarmupTime" name="WarmupTime" min=15 max=120 value=15 size=4> seconds
           </div>
         </div>
       </td>
@@ -627,8 +631,11 @@
     if (config.ShowProfitBias) {
       document.getElementById('ShowProfitBias').checked = true;
     };
-    if (parseFloat(config.UnrealPoolPriceFactor)) {
-      document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
+    if (parseFloat(config.UnrealMinerEarningFactor)) {
+      document.getElementById('UnrealMinerEarningFactor').value = parseFloat(config.UnrealMinerEarningFactor);
+    };
+    if (parseFloat(config.UnrealEarningFactor)) {
+      document.getElementById('UnrealEarningFactor').value = parseFloat(config.UnrealEarningFactor);
     };
     if (parseInt(config.MinWorker)) {
       document.getElementById('MinWorker').value = parseInt(config.MinWorker);
@@ -655,8 +662,8 @@
       document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
     };
 
-    if (parseInt(config.WaitForMinerData)) { 
-      document.getElementById('WaitForMinerData').value = parseInt(config.WaitForMinerData);
+    if (parseInt(config.WarmupTime)) { 
+      document.getElementById('WarmupTime').value = parseInt(config.WarmupTime);
     };
 
     document.getElementById('WorkerName').value = config.WorkerName.trim();
@@ -984,6 +991,7 @@
         config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
 
         config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
+        config.UnrealMinerEarningFactor = parseFloat(document.getElementById('UnrealMinerEarningFactor').value);
 
         config.MinWorker = parseInt(document.getElementById('MinWorker').value);
 
@@ -996,7 +1004,7 @@
         config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
 
         config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
-        config.WaitForMinerData = parseInt(document.getElementById('WaitForMinerData').value);
+        config.WarmupTime = parseInt(document.getElementById('WarmupTime').value);
 
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
@@ -1014,7 +1022,7 @@
     document.getElementById('NiceHashWalletIsInternal').disabled = !((document.getElementById('NiceHashWallet')).value.match(/^[0-9A-Za-z]{34}$/));
   });
 
-  // Dual AND single algo mining cannot be disabled at the same time
+  // Dual AND single algorithm mining cannot be disabled at the same time
   $(document.getElementById('DisableDualAlgoMining')).click(function(event) {
     if (document.getElementById('DisableDualAlgoMining').checked) { document.getElementById('DisableSingleAlgoMining').checked = false }
   });

@@ -90,7 +90,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
  
                     If ($_.Algorithm[1] -and (-not $_.Intensity)) { 
                         # Allow 75 seconds for auto-tuning
-                        $WarmupTime = 90
+                        $WarmupTime = 75
                     }
                     Else { 
                         $WarmupTime = 30
@@ -99,20 +99,19 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub*") { $WarmupTime += 30 } # Seconds longer for MPH because of long connect issue
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
-                        DeviceName  = $Miner_Devices.Name
-                        Type        = $_.Type
-                        Path        = $Path
-                        Arguments   = ("$Arguments -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm   = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
-                        API         = "EthMiner"
-                        Port        = $MinerAPIPort
-                        Wrap        = $false
-                        URI         = $Uri
-                        Fee         = $_.Fee # Dev fee
-                        MinerUri    = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime  = $WarmupTime
-                        WaitForData = 30 # Seconds, additional wait time until first data sample
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = $_.Type
+                        Path       = $Path
+                        Arguments  = ("$Arguments -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
+                        API        = "EthMiner"
+                        Port       = $MinerAPIPort
+                        Wrap       = $false
+                        URI        = $Uri
+                        Fee        = $_.Fee # Dev fee
+                        MinerUri   = "http://localhost:$($MinerAPIPort)"
+                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

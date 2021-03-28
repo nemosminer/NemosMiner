@@ -98,20 +98,6 @@
     });
   });
 
-  // $("#showdisabledminers").on("click",function() {
-  //   $(".modal-body").load("functions/stat/get?Type=HashRate&Value=-1&Unit=H/s", function() {
-  //     $(".modal-title").text($("#showdisabledminers").text());
-  //     $("#myModal").modal({show:true});
-  //   });
-  // });
-
-  // $("#enablediabledminers").on("click",function() {
-  //   $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=-1&Unit=H/s", function() {
-  //     $(".modal-title").text($("#enablediabledminers").text());
-  //     $("#myModal").modal({show:true});
-  //   });
-  // });
-
   $("#resetallprofit").on("click",function() {
     $(".modal-body").load("functions/stat/remove?Type=Profit", function() {
       $(".modal-title").text($("#resetallprofit").text());

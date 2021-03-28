@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.47/gminer_2_47_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.49/gminer_2_49_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -48,17 +48,17 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    $WaitForData = 30 # Seconds, additional wait time until first data sample
+                    $WarmupTime = 30 # Seconds, additional wait time until first data sample
                 }
                 Else { 
-                    $WaitForData = 0 # Seconds, additional wait time until first data sample
+                    $WarmupTime = 0 # Seconds, additional wait time until first data sample
                 }
 
                 # Windows 10 requires more memory on some algos
                 If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and [System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB += 1 }
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
-                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Algos not supported on Navi
+                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Algorithms not supported on Navi
 
                 If ($Miner_Devices) { 
 
@@ -89,7 +89,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
                         PowerUsageInAPI = $true
-                        WaitForData     = $WaitForData # Seconds, additional wait time until first data sample
+                        WarmupTime      = $WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.26
-Version date:   18 March 2021
+Version:        3.9.9.27
+Version date:   28 March 2021
 #>
 
 Function Start-APIServer { 
@@ -281,7 +281,7 @@ Function Start-APIServer {
                                 Else { 
                                     $StatName = "$($_.Name)_$($_.Algorithm)"
                                 }
-                                $Data += "`n$($StatName)"
+                                $Data += "`n$($StatName) [$($_.Region)]"
                                 Remove-Stat -Name "$($StatName)_Profit"
                                 $_.Reason = [String[]]@()
                                 $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = $_.EstimateFactor = [Double]::Nan

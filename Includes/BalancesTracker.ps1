@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.26
-Version date:   18 March 2021
+Version:        3.9.9.27
+Version date:   28 March 2021
 #>
 
 # Start the log
@@ -73,9 +73,11 @@ While ($true) {
             # Keep a copy on start & at date change
             If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
-            # Keep only the last 10 logs 
-            Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 99 | Remove-Item -Force -Recurse
-            Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 99 | Remove-Item -Force -Recurse
+            If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
+                # Keep only the last 3 logs
+                Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
+                Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
+            }
         }
 
         $Now = (Get-Date).ToLocalTime()
@@ -194,7 +196,7 @@ While ($true) {
                     }
                 }
                 Else { 
-                    # AHashPool, BlockMasters, BlazePool, NLPool, ZergPool, ZPool
+                    # AHashPool, BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
                     # Current 'Unpaid' is smaller
                     If ($Delta -lt 0) { 

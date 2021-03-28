@@ -60,10 +60,10 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
-                    $WaitForData = 30 # Seconds, max. wait time until first data sample
+                    $WarmupTime = 30 # Seconds, max. wait time until first data sample
                 }
                 Else { 
-                    $WaitForData = 0 # Seconds, max. wait time until first data sample
+                    $WarmupTime = 0 # Seconds, max. wait time until first data sample
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -105,18 +105,18 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
-                        DeviceName  = $Miner_Devices.Name
-                        Type        = $_.Type
-                        Path        = $Path
-                        Arguments   = ("-epool $Protocol$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -ewal $($Pools.($_.Algorithm[0]).User) -epsw $($Pools.($_.Algorithm[0]).Pass)$Arguments -dbg -1 -wd 0 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm   = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
-                        API         = "EthMiner"
-                        Port        = $MinerAPIPort
-                        URI         = $Uri
-                        Fee         = $_.Fee # Dev fee
-                        MinerUri    = "http://localhost:$($MinerAPIPort)"
-                        WaitForData =  $WaitForData # Seconds, additional wait time until first data sample
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = $_.Type
+                        Path       = $Path
+                        Arguments  = ("-epool $Protocol$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -ewal $($Pools.($_.Algorithm[0]).User) -epsw $($Pools.($_.Algorithm[0]).Pass)$Arguments -dbg -1 -wd 0 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
+                        API        = "EthMiner"
+                        Port       = $MinerAPIPort
+                        URI        = $Uri
+                        Fee        = $_.Fee # Dev fee
+                        MinerUri   = "http://localhost:$($MinerAPIPort)"
+                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

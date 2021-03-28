@@ -19,13 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.26
-Version date:   18 March 2021
+Version:        3.9.9.27
+Version date:   28 March 2021
 #>
 
 using module .\Include.psm1
 
 Function Start-Cycle { 
+    $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
+
     Write-Message "Started new cycle."
 
     # Prepare devices
@@ -425,7 +427,8 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Name -NE "NiceHash" | Group-Object -Property Algorithm, Currency | ForEach-Object { 
             If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
                 $_.Group | Where-Object Price_Bias -gt $PriceThreshold | ForEach-Object { 
-                    $_.Available = $false; $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than average price of all other pools)"
+                    $_.Available = $false
+                    $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than average price of all other pools)"
                 }
             }
         }
@@ -626,23 +629,22 @@ Function Start-Cycle {
                 }
 
                 [PSCustomObject]@{ 
-                    Name             = [String]$_.Content.Name
-                    BaseName         = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
-                    Version          = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
-                    Path             = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
-                    Algorithm        = [String[]]$_.Content.Algorithm
-                    Workers          = [Worker[]]$Workers
-                    Arguments        = $(If ($_.Content.Arguments -isnot [String]) { [String]($_.Content.Arguments | ConvertTo-Json -Depth 10 -Compress) } Else { [String]$_.Content.Arguments })
-                    DeviceName       = [String[]]$_.Content.DeviceName
-                    Devices          = [Device[]]($Variables.Devices | Where-Object Name -in $_.Content.DeviceName)
-                    Type             = [String]$_.Content.Type
-                    Port             = [UInt16]$_.Content.Port
-                    URI              = [String]$_.Content.URI
-                    WaitForMinerData = [Int]($_.Content.WaitForData + $Config.WaitForMinerData)
-                    WarmupTime       = [Int]$_.Content.WarmupTime
-                    MinerUri         = [String]$_.Content.MinerUri
-                    ProcessPriority  = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
-                    PowerUsageInAPI  = [String]$_.Content.PowerUsageInAPI 
+                    Name            = [String]$_.Content.Name
+                    BaseName        = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
+                    Version         = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
+                    Path            = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
+                    Algorithm       = [String[]]$_.Content.Algorithm
+                    Workers         = [Worker[]]$Workers
+                    Arguments       = $(If ($_.Content.Arguments -isnot [String]) { [String]($_.Content.Arguments | ConvertTo-Json -Depth 10 -Compress) } Else { [String]$_.Content.Arguments })
+                    DeviceName      = [String[]]$_.Content.DeviceName
+                    Devices         = [Device[]]($Variables.Devices | Where-Object Name -in $_.Content.DeviceName)
+                    Type            = [String]$_.Content.Type
+                    Port            = [UInt16]$_.Content.Port
+                    URI             = [String]$_.Content.URI
+                    WarmupTime      = [Int]($_.Content.WarmupTime) + [Int]($Config.WarmupTime)
+                    MinerUri        = [String]$_.Content.MinerUri
+                    ProcessPriority = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
+                    PowerUsageInAPI = [String]$_.Content.PowerUsageInAPI 
                 } -as "$($_.Content.API)"
             }
         }
@@ -721,11 +723,12 @@ Function Start-Cycle {
     $Variables.MinersNeedingPowerUsageMeasurement = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
 
     If (-not ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement)) { 
-        # Detect miners with unreal earning (> 3x higher than the next best 10% miners, error in data provided by pool?)
-        $Variables.Miners | Select-Object | Group-Object -Property DeviceName | ForEach-Object {
-            If ($ReasonableEarning = [Double]($_.Group | Where-Object  Available | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * 5) { 
+        # Detect miners with unreal earning (> x higher than the next best 10% miners, error in data provided by pool?)
+        $Variables.Miners | Select-Object | Group-Object { $_.DeviceName } | ForEach-Object {
+            If ($ReasonableEarning = [Double]($_.Group | Where-Object  Available | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
                 $_.Group | Where-Object Earning -gt $ReasonableEarning | ForEach-Object { 
-                    $_.Available = $false; $_.Reason += "Unreal profit data (-gt 5x higher than the next best 10% available miners)"
+                    $_.Available = $false
+                    $_.Reason += "Unreal profit data (-gt $($Config.UnrealMinerEarningFactor)x higher than the next best 10% available miners of the same device(s))"
                 }
             }
         }
@@ -735,10 +738,9 @@ Function Start-Cycle {
     $Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Available = $false; $_.Reason += "Binary missing" }
 
     $Variables.MinersMissingBinary = $Variables.Miners | Where-Object Reason -Contains "Binary missing"
-    $Variables.MinersMissingPreRequisite = $Variables.Miners | Where-Object Reason -Contains "PreRequisite missing"
 
     Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
-    If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
+    If ($Variables.MinersMissingBinary) { 
         # Download miner binaries
         If ($Variables.Downloader.State -ne "Running") { 
             Write-Message "Some miners binaries are missing, starting downloader..."
@@ -1006,7 +1008,7 @@ Function Start-Cycle {
             }
             # Add extra time when CPU mining and miner requires DAG creation
             If ($Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
-                $Miner.WaitForMinerData += 10; $Miner.WarmupTime += 10 # seconds
+                $Miner.WarmupTime += 15 # seconds
             }
             Write-Message "Starting miner '$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
             $Miner.SetStatus([MinerStatus]::Running)
@@ -1105,8 +1107,7 @@ While ($true) {
         # End loop when
         # - a miner crashed (and no other miners are benchmarking)
         # - all benchmarking miners have collected enough samples
-        # - warmuptime is up
-        # - waitfordata is reached (no readout from miner)
+        # - WarmupTime is reached (no readout from miner)
         $InitialRunningMiners = $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
         $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
         If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
@@ -1133,13 +1134,13 @@ While ($true) {
                     $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                     $Sample = @($Samples) | Select-Object -Last 1
 
-                    If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WaitForMinerData)) { 
+                    If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime)) { 
                         # We must have data samples by now
                         If (-not ($Miner.Data | Where-Object Date -ge $Miner.Process.PSBeginTime.ToUniversalTime())) { 
                             # Miner has not provided first sample on time
-                            Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WaitForMinerData) seconds."
+                            Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
                             $Miner.SetStatus([MinerStatus]::Failed)
-                            $Miner.StatusMessage = "Has not updated data for $($Miner.WaitForMinerData) seconds"
+                            $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTime) seconds"
                             Break
                         }
                         ElseIf (($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds( -10 ).ToUniversalTime()) { 

@@ -15,7 +15,7 @@
   Chart.defaults.global.defaultFontSize = 16;
 
   function HslColor (amount, item, saturation, lightness) {
-    let huedelta = Math.trunc(360 / amount)
+    let huedelta = Math.trunc(540 / amount)
     let hue = item * huedelta
     return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
   };
@@ -92,7 +92,7 @@
             var earnings = {
               label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
               data: BTCvalue,
-              backgroundColor: HslColor(Object.keys(earningsdata.Pools).length, (datasets.length + 1), 50, 60)
+              backgroundColor: HslColor(Object.keys(earningsdata.Pools).length, datasets.length, 60, 66)
             };
             datasets.push(earnings);
           }
