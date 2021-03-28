@@ -26,7 +26,7 @@ Miner updates:
 - RplantCpu-v5.0.19
 - SRBMinerMulti-v0.7.1
 - TeamRed-v0.8.1.1
-- Urx2Miner-v1.1.0
+- Rx2Miner-v1.1.0
 
 
 Changelog NemosMiner 3.9.9.26 18.03.2021
