@@ -268,8 +268,8 @@
                               avgweeklygrowth: item.AvgWeeklyGrowth * factor
                             };
 
-                            // Add warning symbol if data was not updated in last poll
-                            if ((new Date() - new Date(item.LastUpdated)) / 1000 >= parseInt(config.PoolBalancesUpdateInterval) * 60) {
+                            // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
+                            if ((new Date() - new Date(item.LastUpdated)) / 1000 >= parseInt(config.PoolBalancesUpdateInterval + 1) * 60) {
                               outdatedicon = " &#9888;&#65039;";
                               data.updated += outdatedicon;
                             }
