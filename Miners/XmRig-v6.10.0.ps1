@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\xmrig.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/xmrig/xmrig-6.7.0.7z"
+$Uri = "https://github.com/Minerx117/miners/releases/download/xmrig/XMRig-v6.10.0.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
