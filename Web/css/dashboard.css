@@ -172,4 +172,5 @@ form .error {
   width: 100%;
   text-align: right;
   padding-right: 40px;
+  z-index: -1;
 }
