@@ -4,7 +4,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $PathCUDA10 = ".\Bin\$($Name)\t-rex_CUDA10.exe"
 $PathCUDA11 = ".\Bin\$($Name)\t-rex_CUDA11.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.12-win.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/T-Rex/t-rex-0.19.14-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -77,15 +77,18 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    $WarmupTime = 30 # Seconds, max. wait time until first data sample
+                    $WarmupTime = 45 # Seconds, max. wait time until first data sample
                 }
-                ElseIf ($_.Algorithm -eq "MTP") { $WarmupTime = 15 } # Seconds, max. wait time until first data sample
+                ElseIf ($_.Algorithm -eq "Lyra2Z") { $WarmupTime = 60 } # Seconds, max. wait time until first data sample
                 ElseIf ($_.Algorithm -match "^Octopus$|^Sonoa$") { $WarmupTime = 30 } # Seconds, max. wait time until first data sample
+                ElseIf ($_.Algorithm -match "^MegaBtx$|^MTP$") { $WarmupTime = 15 } # Seconds, max. wait time until first data sample
                 Else { $WarmupTime = 0 } # Seconds, max. wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+
+                    If ($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
 
                     # Get arguments for active miner devices
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
