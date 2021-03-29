@@ -104,6 +104,13 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
+                If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
+                    $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
+                    $WarmupTime = 30 # Seconds, additional wait time until first data sample
+                }
+                Else { 
+                    $WarmupTime = 0 # Seconds, additional wait time until first data sample
+                }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -123,7 +130,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API        = "XmRig"
                         Port       = $MinerAPIPort
                         URI        = $Uri
-                        WarmupTime = 15 # seconds extra to allow for JIT compilation
+                        WarmupTime = $WarmupTime # seconds extra to allow for JIT compilation
                         MinerUri   = "http://workers.xmrig.info/worker?url=$([System.Web.HTTPUtility]::UrlEncode("http://localhost:$($MinerAPIPort)"))?Authorization=Bearer $([System.Web.HTTPUtility]::UrlEncode($Miner_Name))"
                     }
                 }
