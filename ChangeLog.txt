@@ -4,12 +4,12 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
-
 Changelog NemosMiner 3.9.9.28 29.03.2021
 ========================================
 
 Fixed:
 - Unreal profit data not detected while benchmarking
+- Web GUI / Apply button no longer blocked by footer
 
 Miner updates:
 - Trex-v0.19.14
