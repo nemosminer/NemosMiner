@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.27
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   30 March 2021
 #>
 
 Function Start-APIServer { 
@@ -442,7 +442,7 @@ Function Start-APIServer {
                                 }
                             }
                             If ($WatchdogTimers) { 
-                                $Message = "Watchdog data reset for $($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" })."
+                                $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                                 Write-Message -Level Verbose "Web GUI: $Message" -Console
                                 $Data += "`n`n$Message"
                             }
