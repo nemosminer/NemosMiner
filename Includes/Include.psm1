@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 Version:        3.9.9.27
-Version date:   28 March 2021
+Version date:   29 March 2021
 #>
 
 Class Device { 
@@ -1048,8 +1048,8 @@ Function Update-Monitoring {
                 Type           = $RunningMiner.Type -join ','
                 Algorithm      = $RunningMiner.Algorithm -join ','
                 Pool           = $RunningMiner.WorkersRunning.Pool.Name -join ','
-                CurrentSpeed   = $RunningMiner.Speed_Live -join ','
-                EstimatedSpeed = $RunningMiner.Workers.Speed -join ','
+                CurrentSpeed   = $RunningMiner.Speed_Live
+                EstimatedSpeed = $RunningMiner.Workers.Speed
                 Earning        = $RunningMiner.Earning
                 Profit         = $RunningMiner.Profit
                 Currency       = $Config.Currency

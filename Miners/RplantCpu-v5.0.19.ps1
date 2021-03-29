@@ -12,7 +12,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 #    [PSCustomObject]@{ Algorithm = "CurveHash";     MinerSet = 0; WarmupTime = 75; Arguments = " --algo curvehash" } # No results
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinerSet = 0; WarmupTime = 0;  Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hodl";          MinerSet = 0; WarmupTime = 0;  Arguments = " --algo hodl" }
-    [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTime = 45; Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTime = 75; Arguments = " --algo gr" }
     [PSCustomObject]@{ Algorithm = "Phi5";          MinerSet = 0; WarmupTime = 0;  Arguments = " --algo phi5" }
     [PSCustomObject]@{ Algorithm = "Qureno";        MinerSet = 0; WarmupTime = 0;  Arguments = " --algo qureno" }
     [PSCustomObject]@{ Algorithm = "X33";           MinerSet = 0; WarmupTime = 0;  Arguments = " --algo x33" }

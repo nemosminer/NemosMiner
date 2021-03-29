@@ -5,6 +5,17 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.28 29.03.2021
+========================================
+
+Fixed:
+- Unreal profit data not detected while benchmarking
+
+Miner updates:
+- Trex-v0.19.14
+- XmRig-v6.10.0
+
+
 Changelog NemosMiner 3.9.9.27 28.03.2021
 ========================================
 
@@ -24,9 +35,9 @@ Miner updates:
 - NBMiner-v37.0
 - NSFMiner-v1.3.11
 - RplantCpu-v5.0.19
+- Rx2Miner-v1.1.0
 - SRBMinerMulti-v0.7.1
 - TeamRed-v0.8.1.1
-- Rx2Miner-v1.1.0
 
 
 Changelog NemosMiner 3.9.9.26 18.03.2021

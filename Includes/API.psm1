@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           API.psm1
 Version:        3.9.9.27
-Version date:   28 March 2021
+Version date:   29 March 2021
 #>
 
 Function Start-APIServer { 

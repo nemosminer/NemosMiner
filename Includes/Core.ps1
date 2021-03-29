@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.27
-Version date:   28 March 2021
+Version:        3.9.9.29
+Version date:   29 March 2021
 #>
 
 using module .\Include.psm1
@@ -722,18 +722,16 @@ Function Start-Cycle {
     $Variables.MinersNeedingBenchmark = $Variables.Miners | Where-Object Benchmark -EQ $true
     $Variables.MinersNeedingPowerUsageMeasurement = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
 
-    If (-not ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement)) { 
-        # Detect miners with unreal earning (> x higher than the next best 10% miners, error in data provided by pool?)
-        $Variables.Miners | Select-Object | Group-Object { $_.DeviceName } | ForEach-Object {
-            If ($ReasonableEarning = [Double]($_.Group | Where-Object  Available | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
-                $_.Group | Where-Object Earning -gt $ReasonableEarning | ForEach-Object { 
-                    $_.Available = $false
-                    $_.Reason += "Unreal profit data (-gt $($Config.UnrealMinerEarningFactor)x higher than the next best 10% available miners of the same device(s))"
-                }
+    # Detect miners with unreal earning (> x higher than the next best 10% miners, error in data provided by pool?)
+    $Variables.Miners | Where-Object Available -EQ $true | Group-Object { $_.DeviceName } | ForEach-Object {
+        If ($ReasonableEarning = [Double]($_.Group | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
+            $_.Group | Where-Object Earning -gt $ReasonableEarning | ForEach-Object { 
+                $_.Available = $false
+                $_.Reason += "Unreal profit data (-gt $($Config.UnrealMinerEarningFactor)x higher than the next best 10% available miners of the same device(s))"
             }
         }
-        Remove-Variable ReasonableEarning -ErrorAction Ignore
     }
+    Remove-Variable ReasonableEarning -ErrorAction Ignore
 
     $Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Available = $false; $_.Reason += "Binary missing" }
 
