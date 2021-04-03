@@ -99,15 +99,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
-                If ($_.Algorithm -eq "VertHash") { 
+                If ($_.Type -eq "CPU") { 
+                    $WarmupTime = 15 # Seconds, max. wait time until first data sample
+                }
+                ElseIf ($_.Algorithm -eq "VertHash") { 
                     $WarmupTime = 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
                 }
                 ElseIf ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                     $WarmupTime = 30 # Seconds, max. wait time until first data sample
-                }
-                ElseIf ($_.Type -eq "CPU") { 
-                    $WarmupTime = 15 # Seconds, max. wait time until first data sample
                 }
                 Else { 
                     $WarmupTime = 0 # Seconds, max. wait time until first data sample
