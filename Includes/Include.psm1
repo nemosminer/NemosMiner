@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.30
+Version:        3.9.9.31
 Version date:   03 April 2021
 #>
 
@@ -1172,8 +1172,6 @@ Function Read-Config {
     }
 
     # Load the configuration
-    $Variables.OldConfig = $Global:Config | ConvertTo-Json -Depth 10 | ConvertFrom-Json
-
     If (Test-Path -PathType Leaf $ConfigFile) { 
         $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
@@ -1183,13 +1181,9 @@ Function Read-Config {
         }
         Else { 
             # Fix upper / lower case (Web GUI is case sensitive)
-            $Config_Tmp | ForEach-Object { 
-                $_.PSObject.Properties | Sort-Object Name | ForEach-Object { 
-                    $PropertyName = $_.Name
-                    $PropertyName = $Variables.AllCommandLineParameters | Where-Object { $_ -eq $PropertyName }
-                    If (-not $Propertyname) { $PropertyName = $_.Name }
-                    $Global:Config.$PropertyName = $_.Value
-                }
+            $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
+                $Global:Config.Remove($_)
+                $Global:Config.$_ = $Config_Tmp.$_ 
             }
         }
         Remove-Variable Config_Tmp
@@ -1343,7 +1337,7 @@ Function Get-SortedObject {
                     $SortedObject[$Key] = Get-SortedObject $Object.$Key
                 }
                 Else { 
-                    $SortedObject[$PropKeyertyName] = $Object.$Key
+                    $SortedObject[$PropertyName] = $Object.$Key
                 }
             }
         }
