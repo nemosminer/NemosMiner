@@ -225,7 +225,9 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-[recommended/optimal Windows 10 Nvidia driver 465.89](https://us.download.nvidia.com/Windows/465.89/465.89-desktop-win10-64bit-international-dch-whql.exe)
+[recommended/optimal Windows 10 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-desktop-win10-64bit-international-dch-whql.exe)
+
+[recommended/optimal Windows 7, 8, 8.1 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-notebook-win8-win7-64bit-international-whql.exe)
 
 recommended/optimal Windows 10 Nvidia driver for RTX3060 = 470.05 Torrent Magnet
 
@@ -235,10 +237,10 @@ magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready
 
    NemosMiner is currently tested on the following Rigs: 
 
-      windows10-1xGTX-3060ti/RYZEN-3700x (Test PC) 
+      windows10-1xGTX-2080/RYZEN-1700 (Test PC) 
 
       windows10-9xAMD-5700XT/Octominer (test Rig 1)
-      windows10-6xRTX-3070/RYZEN-3700x (test Rig 2)
+      windows8.1-6xRTX-3070/RYZEN-3700x (test Rig 2)
       windows10-6xRTX-3080/RYZEN-3700x (test Rig 3)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
