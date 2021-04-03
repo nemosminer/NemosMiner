@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash External.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -63,12 +63,22 @@ Function Get-NiceHashRequest {
     Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec 5 -ErrorAction Stop -Method $Method -Headers $Headers
 }
 
-Try {
-    If ($Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
+$RetryCount = 3
+$RetryDelay = 10
+
+While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
+    $RetryCount--
+    Try {
         $Method = "GET"
         $EndPoint = "/main/api/v2/accounting/account2/BTC/"
 
         $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
+
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+            $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+        }
+
         If ($APIResponse.active) { 
             [PSCustomObject]@{ 
                 DateTime   = (Get-Date).ToUniversalTime()
@@ -84,5 +94,7 @@ Try {
             }
         }
     }
+    Catch { 
+        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+    }
 }
-Catch { }

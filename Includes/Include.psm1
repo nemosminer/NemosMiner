@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.27
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 Class Device { 
@@ -2709,7 +2709,6 @@ Function Update-ConfigFile {
         [String]$ConfigFile
     )
 
-    $Wallets > w1.txt
     # Changed config items
     $Changed_Config_Items = $Config.GetEnumerator().Name | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
     $Changed_Config_Items | ForEach-Object { 

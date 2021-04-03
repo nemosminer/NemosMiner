@@ -20,7 +20,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_ccx --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_xhv --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_gpu --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRed-v0.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRed-v0.8.1.1 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble"; Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm cryptonight_heavyx --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is faster
@@ -61,7 +61,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "CPU"; Fee = 0;      MinerSet = 0; Arguments = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "Panthera";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm panthera" }
     [PSCustomObject]@{ Algorithm = "Phi5";              Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm phi5" }
-    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.7.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxHash2";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }

@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 [CmdletBinding()]
@@ -90,6 +90,8 @@ param(
     [Switch]$IncludeLegacyMiners = $true, # If true use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 240, # seconds before between cycles after the first has passed 
+    [Parameter(Mandatory = $false)]
+    [Switch]$LogBalanceAPIResponse = $false, # If true NemosMiner will log the pool balance API data
     [Parameter(Mandatory = $false)]
     [String[]]$LogToFile = @("Info", "Warn", "Error", "Verbose", "Debug"), # Log level detail to be written to log file, see Write-Message function
     [Parameter(Mandatory = $false)]
@@ -242,7 +244,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.28"
+    Version      = [System.Version]"3.9.9.30"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -1171,9 +1173,11 @@ Function CheckBoxSwitching_Click {
     }
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
-    If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { $Variables.SwitchingLog = @(Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("DateTime", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog) }
-    $SwitchingDGV.DataSource = [System.Collections.ArrayList]($Variables.SwitchingLog | Where-Object { $_.Type -in $SwitchingDisplayTypes } | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ })
-    $SwitchingDGV.Columns[0].HeaderText = "Date & Time";
+    If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { 
+        $Variables.SwitchingLog = @(Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Select-Object -Last 1000 | Select-Object @("DateTime", "Action", "Name", "Type", "Account", "Pool", "Algorithm", "Duration")); [Array]::Reverse($Variables.SwitchingLog)
+        $SwitchingDGV.DataSource = [System.Collections.ArrayList]($Variables.SwitchingLog | Where-Object { $_.Type -in $SwitchingDisplayTypes } | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ })
+        $SwitchingDGV.Columns[0].HeaderText = "Date & Time";
+    }
 }
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView

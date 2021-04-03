@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool24hr.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,7 +41,7 @@ If ($Wallet) {
 
     $PayoutThreshold = $PoolsConfig.$Name_Norm.PayoutThreshold.$PayoutCurrency
     If (-not $PayoutThreshold -and $PoolsConfig.$Name_Norm.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolsConfig.$Name_Norm.PayoutThreshold.mBTC / 1000 }
-    If ($PayoutThreshold -gt 0) { $PayoutThresholdParameter = ",pl=$($PayoutThreshold)" }
+    $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
         $Request = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/status" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveON.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,26 +28,40 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 
 $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
 
+    $APIResponse = $null
     $Currency = $_.ToUpper()
     $Wallet = ($Config.PoolsConfig.$Name.Wallets.$_ -replace "^0x").ToLower()
 
-    Try { 
-        $APIResponse = Invoke-RestMethod "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-        If ($APIResponse.earningStats) { 
-            [PSCustomObject]@{ 
-                DateTime = (Get-Date).ToUniversalTime()
-                Pool     = $Name
-                Currency = $_
-                Wallet   = $($Config.PoolsConfig.$Name.Wallets.$_)
-                Pending  = [Double]0
-                Balance  = [Double]($APIResponse.totalUnpaid)
-                Unpaid   = [Double]($APIResponse.totalUnpaid)
-                # Paid     = [Double]$APIResponse.stats.totalPaid
-                # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
-                Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
+    $RetryCount = 3
+    $RetryDelay = 10
+
+    While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
+        $RetryCount--
+        Try { 
+            $APIResponse = Invoke-RestMethod "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+
+            If ($Config.LogBalanceAPIResponse -eq $true) { 
+                $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+                $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+            }
+
+            If ($APIResponse.earningStats) { 
+                [PSCustomObject]@{ 
+                    DateTime = (Get-Date).ToUniversalTime()
+                    Pool     = $Name
+                    Currency = $_
+                    Wallet   = $($Config.PoolsConfig.$Name.Wallets.$_)
+                    Pending  = [Double]0
+                    Balance  = [Double]($APIResponse.totalUnpaid)
+                    Unpaid   = [Double]($APIResponse.totalUnpaid)
+                    # Paid     = [Double]$APIResponse.stats.totalPaid
+                    # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
+                    Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
+                }
             }
         }
+        Catch { 
+            Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+        }
     }
-    Catch { }
 }
-

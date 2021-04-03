@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -29,26 +29,35 @@ $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -Index 
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "http://zergpool.com/?address=$Wallet"
 
-Try { 
-    $APIResponse = Invoke-RestMethod "http://www.zergpool.com:8080/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-    If ($APIResponse.currency) { 
-        [PSCustomObject]@{ 
-            DateTime        = (Get-Date).ToUniversalTime()
-            Pool            = $Name
-            Currency        = $APIResponse.Currency
-            Wallet          = $Wallet
-            Pending         = [Double]($APIResponse.Unsold) # Pending
-            Balance         = [Double]($APIResponse.Balance)
-            Unpaid          = [Double]($APIResponse.Unpaid) # Balance + unsold (pending)
-            # Paid            = [Double]($APIResponse.PaidTotal)
-            # Total           = [Double]($APIResponse.Unpaid) + $APIResponse.PaidTotal
-            PayoutThreshold = [Double]($(If ($APIResponse.MinPay_Sunday) { $APIResponse.MinPay_Sunday } Else { $APIResponse.MinPay } ))
-            Url             = $Url
+$RetryCount = 3
+$RetryDelay = 10
+While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
+    $RetryCount--
+    Try { 
+        $APIResponse = Invoke-RestMethod "http://www.zergpool.com:8080/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+            $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+        }
+
+        If ($APIResponse.currency) { 
+            [PSCustomObject]@{ 
+                DateTime        = (Get-Date).ToUniversalTime()
+                Pool            = $Name
+                Currency        = $APIResponse.Currency
+                Wallet          = $Wallet
+                Pending         = [Double]$APIResponse.Unsold
+                Balance         = [Double]$APIResponse.Balance
+                Unpaid          = [Double]$APIResponse.Unpaid
+                # Paid            = [Double]$APIResponse.PaidTotal
+                # Total           = [Double]$APIResponse.Unpaid + [Double]$APIResponse.PaidTotal
+                PayoutThreshold = [Double]($(If ($Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency -gt $APIResponse.MinPay) { $Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency } Else { $APIResponse.MinPay } ))
+                Url             = $Url
+            }
         }
     }
-
-    $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-    $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-
+    Catch { 
+        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+    }
 }
-Catch { }

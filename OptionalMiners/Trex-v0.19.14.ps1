@@ -21,7 +21,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";    Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo hmq1725 --intensity 25" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo honeycomb --intensity 25" }
     [PSCustomObject]@{ Algorithm = "JeongHash";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo jeonghash --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.7.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.10.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = "Lyra2z";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo lyra2z --intensity 24.75" }
     [PSCustomObject]@{ Algorithm = "MegaBtx";    Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo megabtx --intensity 25" }
     [PSCustomObject]@{ Algorithm = "MegaMec";    Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo megamec --intensity 25" }

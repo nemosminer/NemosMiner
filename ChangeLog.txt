@@ -4,6 +4,23 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.30 03.04.2021
+========================================
+
+Fixed:
+- ProHashing balance growth in web GUI 
+- XmRig-v6.10.0: Extend WarmupTime for Ethash-like algorithms to allow for DAG creation
+
+Improved:
+- Retry balances query if pool API is unresponsive
+
+Miner updates:
+- NanoMiner-v3.3.3
+- NBMiner-v37.1
+- NSFMiner-v1.3.12
+- Trex-v0.19.14
+
+
 Changelog NemosMiner 3.9.9.28 29.03.2021
 ========================================
 

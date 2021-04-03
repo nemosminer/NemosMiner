@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.29
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module .\Include.psm1
@@ -1126,9 +1126,6 @@ While ($true) {
                     $Miner.StatusMessage = "Miner data reader exited unexpectedly."
                 }
                 ElseIf ($Miner.DataReaderJob.HasMoreData) { 
-                    # If (((Test-Path env:\VSCODE_PID) -or ($env:TERM_PROGRAM -eq 'vscode')) -and $Miner.Benchmark -eq $true) { 
-                        $Miner.UpdateMinerData()
-                    # }
                     $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                     $Sample = @($Samples) | Select-Object -Last 1
 

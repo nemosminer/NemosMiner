@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlockMasters.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -29,9 +29,19 @@ $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -Index 
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "http://blockmasters.co/?address=$Wallet"
 
-If ($Wallet) { 
+$RetryCount = 3
+$RetryDelay = 10
+
+While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
+    $RetryCount--
     Try { 
         $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+            $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+        }
+
         If ($APIResponse.currency) { 
             [PSCustomObject]@{ 
                 DateTime = (Get-Date).ToUniversalTime()
@@ -47,5 +57,7 @@ If ($Wallet) {
             }
         }
     }
-    Catch { }
+    Catch { 
+        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+    }
 }

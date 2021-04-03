@@ -23,7 +23,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightZls";    Fee = 0.01; MinMemGB = 1; MinComputeCapability = 5.0; MinerSet = 0; Arguments = " --algo=cnzls --intensity 8" }
     [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.01; MinMemGB = 3; MinComputeCapability = 5.0; MinerSet = 1; Arguments = " --algo=kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "Lux";               Fee = 0.01; MinMemGB = 2; MinComputeCapability = 5.0; MinerSet = 0; Arguments = " --algo=phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 2; MinComputeCapability = 6.0; MinerSet = 1; Arguments = " --algo=mtp --intensity 8" } # Trex-v0.19.12 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 2; MinComputeCapability = 6.0; MinerSet = 1; Arguments = " --algo=mtp --intensity 8" } # TRex-v0.19.14  is fastest
     [PSCustomObject]@{ Algorithm = "MTPTcr";            Fee = 0.02; MinMemGB = 2; MinComputeCapability = 6.0; MinerSet = 0; Arguments = " --algo=mtp-tcr --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ninja";             Fee = 0.01; MinMemGB = 6; MinComputeCapability = 5.0; MinerSet = 0; Arguments = " --algo ninja --intensity 4" }
 )
@@ -40,6 +40,9 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($_.Algorithm -eq "Phi2" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { return }
                 $MinComputeCapability = $_.MinComputeCapability
                 $MinMemGB = $_.MinMemGB
+
+                If ($_.Algorithm -like "Argon*") { $WarmupTime = 15 }
+                Else { $WarmupTime = 0}
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.OpenCL.ComputeCapability -ge $MinComputeCapability })) { 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
@@ -59,6 +62,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Wrap       = $false
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
+                        WarmupTime = $WarmupTime # Seconds
                     }
                 }
             }

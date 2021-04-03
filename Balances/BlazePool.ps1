@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlazePool.ps1
-Version:        3.9.9.28
-Version date:   29 March 2021
+Version:        3.9.9.30
+Version date:   03 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -29,21 +29,35 @@ $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -Index 
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "http://blazepool.com/wallet.html?$($PayoutCurrency.ToLower())=$Wallet"
 
-Try { 
-    $APIResponse = Invoke-RestMethod "http://api.blazepool.com/wallet/$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-    If ($APIResponse.currency) { 
-        [PSCustomObject]@{ 
-            DateTime = (Get-Date).ToUniversalTime()
-            Pool     = $Name
-            Currency = $APIResponse.currency
-            Wallet   = $Wallet
-            Pending  = [Double]($APIResponse.total_unpaid - $APIResponse.balance) # Pending
-            Balance  = [Double]($APIResponse.balance)
-            Unpaid   = [Double]($APIResponse.total_unpaid) # Balance + unsold (pending)
-            # Paid     = [Double]($APIResponse.total_paid)
-            # Total    = [Double]($APIResponse.total_earned) # total unpaid + total paid
-            Url      = $Url
+$RetryCount = 3
+$RetryDelay = 10
+
+While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
+    $RetryCount--
+    Try { 
+        $APIResponse = Invoke-RestMethod "http://api.blazepool.com/wallet/$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
+            $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+        }
+
+        If ($APIResponse.currency) { 
+            [PSCustomObject]@{ 
+                DateTime = (Get-Date).ToUniversalTime()
+                Pool     = $Name
+                Currency = $APIResponse.currency
+                Wallet   = $Wallet
+                Pending  = [Double]($APIResponse.total_unpaid - $APIResponse.balance) # Pending
+                Balance  = [Double]($APIResponse.balance)
+                Unpaid   = [Double]($APIResponse.total_unpaid) # Balance + unsold (pending)
+                # Paid     = [Double]($APIResponse.total_paid)
+                # Total    = [Double]($APIResponse.total_earned) # total unpaid + total paid
+                Url      = $Url
+            }
         }
     }
+    Catch { 
+        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+    }
 }
-Catch { }

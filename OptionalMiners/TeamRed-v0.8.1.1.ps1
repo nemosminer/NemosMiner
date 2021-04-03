@@ -13,9 +13,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";         Fee = 0.025; MinMemGB = 2.0; MinerSet = 1; Arguments = " --algo=cnr --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # XmRig-v6.7.0 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightR";         Fee = 0.025; MinMemGB = 2.0; MinerSet = 1; Arguments = " --algo=cnr --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # XmRig-v6.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightV1";        Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=cnv8 --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Fee = 0.025; MinMemGB = 4.0; MinerSet = 0; Arguments = " --algo=cnv8_dbl --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # XmRig-v6.7.0 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Fee = 0.025; MinMemGB = 4.0; MinerSet = 0; Arguments = " --algo=cnv8_dbl --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # XmRig-v6.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=cnv8_half --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightTurtle";    Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=cnv8_trtl --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=cnv8_rwz --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
@@ -25,7 +25,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; Arguments = " --algo=etchash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; Arguments = " --algo=ethash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; MinerSet = 0; Arguments = " --algo=kawpow" } # Wildrig-v0.28.3 is fastest on Polaris
-    [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; MinerSet = 1; Arguments = " --algo=lyra2z" } # XmRig-v6.7.0 is faster
+    [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; MinerSet = 1; Arguments = " --algo=lyra2z" } # XmRig-v6.10.0 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; Arguments = " --algo=mtp" }
     [PSCustomObject]@{ Algorithm = "Nimiq";                Fee = 0.025; MinMemGB = 4.0; MinerSet = 0; Arguments = " --algo=nimiq" }

@@ -15,9 +15,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.01;  MinMemGB = 7.8; MinerSet = 0; Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; Arguments = " --algo C29D" } # TeamRed-v0.8.1 is fastest, keep enabled because TeamRed does not support algo on Navi
+    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; Arguments = " --algo C29D" } # TeamRed-v0.8.1.1 is fastest, keep enabled because TeamRed does not support algo on Navi
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; Arguments = " --algo C31" } # TeamRed-v0.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; Arguments = " --algo C31" } # TeamRed-v0.8.1.1 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; Arguments = " --algo C32" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin AUTO144_5" } # GMiner-v2.47 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --coin AUTO192_7" } # GMiner-v2.47 is fastest, but des not support Navi
@@ -29,7 +29,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 
 #    [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --algo BEAM-I" } # Algo is dead, needs pers
 #    [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; Arguments = " --algo BEAM-II" } # Algo is dead
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; Arguments = " --algo BEAM-III" } # NBMiner-v36.1 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; Arguments = " --algo BEAM-III" } # NBMiner-v37.1 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo2948";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo CR29-48" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; Arguments = " --algo CR29-40" }

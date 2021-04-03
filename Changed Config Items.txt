@@ -67,6 +67,9 @@ New Config Items
 # If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
   "IncludeLegacyMiners": true,
 
+# If true NemosMiner will log the pool balance API data
+  "LogBalanceAPIResponse": false,
+
 # Log level detail to be written to log file, see Write-Message function
   "LogFile": [
     "Info",
