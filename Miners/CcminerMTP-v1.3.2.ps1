@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\ccminer.exe"
-$Uri = "https://github.com/zcoinofficial/ccminer/releases/download/1.3.2/ccminer.exe"
+$Uri = "https://github.com/Minerx117/ccminer-2/releases/download/1.3.2/ccminermtp132.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
@@ -41,7 +41,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API        = "Ccminer"
                         Port       = $MinerAPIPort
                         URI        = $Uri
-                        WarmupTime = 15 # Seconds, additional wait time until firt data sample
+                        WarmupTime = 15 # Seconds, additional wait time until first data sample
                     }
                 }
             }
