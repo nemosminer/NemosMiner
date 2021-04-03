@@ -56,7 +56,7 @@ Function Start-Cycle {
         $Variables.WatchdogReset = $Variables.WatchdogCount * ($Variables.WatchdogCount + 1) * $Config.Interval
 
         # Expire watchdog timers
-        $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
+        $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object $Config.WatchDog | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
         If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
         If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
@@ -475,18 +475,20 @@ Function Start-Cycle {
             $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, HashRate, Shares, PowerUsage)
         }
 
-        If ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
-            #Update watchdog timers
-            ForEach ($Worker in $Miner.WorkersRunning) { 
-                $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1 | ForEach-Object { 
-                    $_.Kicked = $Variables.Timer
+        If ($Miner.Status -eq [MinerStatus]::Running) { 
+            If ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
+                #Update watchdog timers
+                ForEach ($Worker in $Miner.WorkersRunning) { 
+                    $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1 | ForEach-Object { 
+                        $_.Kicked = $Variables.Timer
+                    }
                 }
             }
-        }
-        ElseIf ($Miner.Status -eq [MinerStatus]::Running) { 
-            Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
-            $Miner.SetStatus([MinerStatus]::Failed)
-            $Miner.StatusMessage = "Exited unexpectedly."
+            Else { 
+                Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
+                $Miner.SetStatus([MinerStatus]::Failed)
+                $Miner.StatusMessage = "Exited unexpectedly."
+            }
         }
 
         If (($Miner.Data).Count) { 
@@ -1005,7 +1007,7 @@ Function Start-Cycle {
                 }
             }
             # Add extra time when CPU mining and miner requires DAG creation
-            If ($Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
+            If ($Miner.Type -ne "CPU" -and $Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
                 $Miner.WarmupTime += 15 # seconds
             }
             Write-Message "Starting miner '$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
