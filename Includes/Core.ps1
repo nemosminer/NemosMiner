@@ -1029,6 +1029,7 @@ Function Start-Cycle {
                 }
             }
         }
+        $Miner.WorkersRunning = $Miner.Workers
     }
 
     $Variables.Miners | Where-Object Best -EQ $true | ForEach-Object { 

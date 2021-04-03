@@ -239,8 +239,6 @@ Class Miner {
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment
 
-            $this.WorkersRunning = $this.Workers
-
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
                 DateTime     = [String](Get-Date -Format o)
@@ -248,9 +246,9 @@ Class Miner {
                 Name         = $this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
                 Type         = ($this.Type -join " & ")
-                Account      = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
-                Pool         = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-                Algorithm    = ($this.WorkersRunning.Pool.Algorithm) -join "; "
+                Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
+                Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+                Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
                 Duration     = ""
                 Earning      = [Double]$this.Earning
                 Earning_Bias = [Double]$this.Earning_Bias
@@ -272,8 +270,8 @@ Class Miner {
                 }
             }
 
-            $this.Info = "$($this.Name) {$(($this.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-            $this.StatusMessage = "Warming up {$(($this.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = (Get-Date).ToUniversalTime()
             $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]0 })
@@ -1185,6 +1183,7 @@ Function Read-Config {
                 $Global:Config.Remove($_)
                 $Global:Config.$_ = $Config_Tmp.$_ 
             }
+            $Global:Config.ConfigFileVersion = $Config_Tmp.ConfigFileVersion
         }
         Remove-Variable Config_Tmp
     }
