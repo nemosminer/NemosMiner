@@ -3,7 +3,7 @@
   <h1 id="title" data-navbaractive="navtaillog" class="h2">System Log</h1>
 </div>
 
-<div class="alert alert-info" role="alert">Shows the last 40 lines of the NemosMiner log</div>
+<div class="alert alert-info" role="alert">Shows the last lines of the NemosMiner log</div>
 
 <div id="logtext">
   <pre id="thePlace"></pre>
@@ -15,7 +15,7 @@
 <script type="text/javascript"> 
 
 // Substitute the URL for your server log file here...
-  var url = "/functions/log/get?lines=40";
+  var url = "/functions/log/get?lines=45";
 
   if (typeof XMLHttpRequest == "undefined") {
     // this is only for really ancient browsers
