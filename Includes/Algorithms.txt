@@ -153,6 +153,7 @@
   "wkrz": "Argon2Chukwa",
   "verus": "VerusHash",
   "verushash": "VerusHash",
+  "xaya": "NeoScryptXaya",
   "xla": "Panthera",
   "yescryptr16": "YescryptR16",
   "yescryptr32": "YescryptR32",
