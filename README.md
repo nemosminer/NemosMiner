@@ -245,7 +245,7 @@ magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
 
-      CPU miners are tested with AMD Ryzen 3700x CPU's
+      CPU miners are tested with AMD Ryzen 1700 & 3700x CPU's
 
 *****
 
