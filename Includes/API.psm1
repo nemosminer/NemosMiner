@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.6.2"
+    $APIVersion = "0.3.6.5"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -284,6 +284,7 @@ Function Start-APIServer {
                                 $Data += "`n$($StatName) [$($_.Region)]"
                                 Remove-Stat -Name "$($StatName)_Profit"
                                 $_.Reason = [String[]]@()
+                                $_.Available = $true
                                 $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = $_.EstimateFactor = [Double]::Nan
                             }
                             If ($Pools.Count -gt 0) { 
