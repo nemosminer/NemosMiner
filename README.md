@@ -227,7 +227,7 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 [recommended/optimal Windows 10 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-desktop-win10-64bit-international-dch-whql.exe)
 
-[recommended/optimal Windows 7, 8, 8.1 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-notebook-win8-win7-64bit-international-whql.exe)
+[recommended/optimal Windows 7, 8, 8.1 Nvidia driver 461.92](https://international.download.nvidia.com/Windows/461.92/461.92-desktop-win7-64bit-international-whql.exe)
 
 recommended/optimal Windows 10 Nvidia driver for RTX3060 = 470.05 Torrent Magnet
 
