@@ -241,7 +241,9 @@ Easy configuration, easy start:
 
       NemosMiner will notify new version availability
 
-**Please update PowerShell (Version 7.x is required):**
+***Requirements***
+
+PowerShell Version 7.x is required:
 
 [Windows Powershell 7.3.1 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.msi)
 
@@ -249,7 +251,9 @@ Easy configuration, easy start:
 
 [Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
 
-**When running multiple cards its recommended to increase Virtual Memory. 64gb is optimal.**
+**Virtual memory settings**
+
+When running multiple cards its recommended to increase Virtual Memory. 64gb is optimal.
 
 **Recommended/optimal Windows Nvidia driver**
 
