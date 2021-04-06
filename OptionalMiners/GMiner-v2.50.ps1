@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.49/gminer_2_49_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.50/gminer_2_50_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -17,7 +17,6 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.0065; MinMemGB = 4.0; Type = "AMD"; MinerSet = 0; Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.5c may be faster, bit I see lower sppeed at the pool
 
     [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v37.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29bfc"; Fee = 0.03;   MinMemGB = 6.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo bfc --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo cuckaroo29b --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo cuckaroo29s --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo C30CTX --cuda 1 --opencl 0" }

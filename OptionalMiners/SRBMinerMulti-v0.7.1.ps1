@@ -99,6 +99,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
+
                 If ($_.Type -eq "CPU") { 
                     $WarmupTime = 15 # Seconds, max. wait time until first data sample
                 }
