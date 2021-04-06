@@ -56,7 +56,7 @@ Function Start-Cycle {
         $Variables.WatchdogReset = $Variables.WatchdogCount * ($Variables.WatchdogCount + 1) * $Config.Interval
 
         # Expire watchdog timers
-        $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object $Config.WatchDog | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
+        $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $Config.WatchDog } | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset))
 
         If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
         If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
