@@ -241,18 +241,17 @@ Easy configuration, easy start:
 
       NemosMiner will notify new version availability
 
-Please update PowerShell (Version 7.x is required): 
+**Please update PowerShell (Version 7.x is required):**
 
-[Recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.msi)
-[update PowerShell](https://github.com/PowerShell/PowerShell/releases)
+[Windows Powershell 7.3.1 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.msi)
 
-Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
+**Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 
 [Visual C+ RunTimes](https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)
 
-running multiple cards its recommended to increase Virtual Memory 64gb is optimal
+**When running multiple cards its recommended to increase Virtual Memory. 64gb is optimal.**
 
-Recommended/optimal Windows Nvidia driver
+**Recommended/optimal Windows Nvidia driver**
 
 [Windows 10 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-desktop-win10-64bit-international-dch-whql.exe)
 
@@ -261,7 +260,7 @@ Recommended/optimal Windows Nvidia driver
 Windows 10 Nvidia driver for RTX3060 = 470.05 Torrent Magnet
 magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready-win-10-dch-64bit-international&tr=http%3a%2f%2fbt1.archive.org%3a6969%2fannounce&tr=http%3a%2f%2fbt2.archive.org%3a6969%2fannounce&ws=https%3a%2f%2farchive.org%2fdownload%2f&ws=http%3a%2f%2fia601501.us.archive.org%2f33%2fitems%2f&ws=%2f33%2fitems%2f
 
-Recommended/optimal Windows AMD driver
+**Recommended/optimal Windows AMD driver**
 
 [Windows 10 AMD GPU Driver 21.2.2](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win10-64bit-feb11.exe)
 
