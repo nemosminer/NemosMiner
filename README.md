@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 03 April 2021
+Updated 06 April 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -162,7 +162,7 @@ Easy configuration, easy start:
          - Edit Config\PoolsConfig.json
          - Add an entry for the pool you want to customize
             - The name must be the pool base name (omit *24hrs or *Coins), e.g ZergPool (even if you have configured ZergPoolCoins in the pool list)
-            - (**careful with json formating ;)**)
+            - (**careful with json formating ;)**
 
       Note that the GUI only updates default values (valid for ALL pools unless there is pool specific configuration setting defined in PoolConfig.json). Any other changes need to be done manually.
 
@@ -243,7 +243,7 @@ Easy configuration, easy start:
 
 Please update PowerShell (Version 7.x is required): 
 
-[recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.msi)
+[Recommended](https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.msi)
 [update PowerShell](https://github.com/PowerShell/PowerShell/releases)
 
 Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file
@@ -252,24 +252,26 @@ Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat f
 
 running multiple cards its recommended to increase Virtual Memory 64gb is optimal
 
-recommended/optimal Windows Nvidia driver = 457.30
+Recommended/optimal Windows Nvidia driver
 
-https://www.nvidia.com/content/DriverDownload-March2009/confirmation.php?url=/Windows/457.30/457.30-desktop-win10-64bit-international-dch-whql.exe&lang=us&type=TITAN
+[Windows 10 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-desktop-win10-64bit-international-dch-whql.exe)
 
+[Windows 7, 8, 8.1 Nvidia driver 461.92](https://international.download.nvidia.com/Windows/461.92/461.92-desktop-win7-64bit-international-whql.exe)
 
-recommended/optimal Windows AMD GPU Driver 20.3.1
+Windows 10 Nvidia driver for RTX3060 = 470.05 Torrent Magnet
+magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready-win-10-dch-64bit-international&tr=http%3a%2f%2fbt1.archive.org%3a6969%2fannounce&tr=http%3a%2f%2fbt2.archive.org%3a6969%2fannounce&ws=https%3a%2f%2farchive.org%2fdownload%2f&ws=http%3a%2f%2fia601501.us.archive.org%2f33%2fitems%2f&ws=%2f33%2fitems%2f
 
-[Win10:](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,1.html)
+Recommended/optimal Windows AMD driver
 
-[Windows7, 8, 8.1](https://www.guru3d.com/files-get/amd-radeon-adrenalin-edition-20-2-3-driver-download,2.html)
+[Windows 10 AMD GPU Driver 21.2.2](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win10-64bit-feb11.exe)
 
    NemosMiner is currently tested on the following Rigs: 
 
       windows10-1xGTX-1660Super/RYZEN-3700x (Test PC) 
 
       windows10-9xAMD-5700XT/Octominer (test Rig 1)
-      windows10-6xRTX-2060/RYZEN-3700x (test Rig 2)
-      windows8.1-6xRTX-2080/RYZEN-3700x (test Rig 3)
+      windows8.1-6xRTX-3070/RYZEN-3700x (test Rig 2)
+      windows10-6xRTX-3080/RYZEN-3700x (test Rig 3)
       windows10-1xGTX-1060Super/1xRX580-8GB/RX5700/Inteli5-8600K (test Rig 4)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
