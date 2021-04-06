@@ -253,7 +253,7 @@ PowerShell Version 7.x is required:
 
 **Virtual memory settings**
 
-When running multiple cards its recommended to increase Virtual Memory. 64gb is optimal.
+When running multiple cards its recommended to increase Virtual Memory. 64GB is optimal.
 
 **Recommended/optimal Windows Nvidia driver**
 
