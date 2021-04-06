@@ -17,6 +17,7 @@ Fixed:
 
 Miner updates:
 - CcminerNeoscryptXaya-v.0.2.ps1 (new)
+- GMiner-v2.50
 
 
 Changelog NemosMiner 3.9.9.30 03.04.2021
