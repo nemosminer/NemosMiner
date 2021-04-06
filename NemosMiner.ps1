@@ -552,6 +552,7 @@ Function Global:TimerUITick {
                 $DisplayEstimations = [System.Collections.ArrayList]@(
                     $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
                         @{ Name = "Miner"; Expression = { $_.Name } }, 
+                        @{ Name = "Device(s)"; Expression = { $_.DeviceName -join '; ' } }, 
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithm -join ' & ' } }, 
                         @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else {"$($_.PowerUsage.ToString("N3")) W"} } }, 
                         @{ Name = "Hashrate(s)"; Expression = { ($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
@@ -694,7 +695,7 @@ Function Global:TimerUITick {
                     )
                 )
             }
-            If ($Config.ShowProfitBias -and $Config.ShowProfitBias -and $Variables.MinerPowerCost) { 
+            If ($Config.CalculatePowerCost -and $Config.ShowProfitBias -and $Variables.MiningPowerCost) { 
                 $Miner_Table.AddRange(
                     @( <#Mining ProfitBias#>
                         @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value ($_.Profit_Bias) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
@@ -1103,9 +1104,11 @@ $RunningMinersDGV.Width = 708
 $RunningMinersDGV.Height = 100
 $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, 232)
 $RunningMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$RunningMinersDGV.AutoSizeColumnsMode = "Fill"
 $RunningMinersDGV.RowHeadersVisible = $false
-$RunningMinersDGV.AutoSizeColumnsMode = "AllCells"
+$RunningMinersDGV.AllowUserToOrderColumns = $true
+$RunningMinersDGV.AllowUserToResizeColumns = $true
+$RunningMinersDGV.AllowUserToResizeRows = $false
+$RunningMinersDGV.ReadOnly = $true
 $RunPageControls += $RunningMinersDGV
 
 # Earnings Page Controls
@@ -1125,8 +1128,11 @@ $EarningsDGV.Width = 708
 $EarningsDGV.Height = 165
 $EarningsDGV.Location = [System.Drawing.Point]::new(2, 167)
 $EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$EarningsDGV.AutoSizeColumnsMode = "Fill"
 $EarningsDGV.RowHeadersVisible = $false
+$EarningsDGV.AllowUserToOrderColumns = $true
+$EarningsDGV.AllowUserToResizeColumns = $true
+$EarningsDGV.AllowUserToResizeRows = $false
+$EarningsDGV.ReadOnly = $true
 $EarningsPageControls += $EarningsDGV
 
 # Switching Page Controls
@@ -1185,9 +1191,12 @@ $SwitchingDGV.Width = 708
 $SwitchingDGV.Height = 310
 $SwitchingDGV.Location = [System.Drawing.Point]::new(2, 22)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$SwitchingDGV.AutoSizeColumnsMode = "Fill"
 $SwitchingDGV.RowHeadersVisible = $false
-$SwitchingDGV.AutoSizeColumnsMode = "DisplayedCells"
+$SwitchingDGV.ColumnHeadersVisible = $true
+$SwitchingDGV.AllowUserToOrderColumns = $true
+$SwitchingDGV.AllowUserToResizeColumns = $true
+$SwitchingDGV.AllowUserToResizeRows = $false
+$SwitchingDGV.ReadOnly = $true
 $SwitchingPageControls += $SwitchingDGV
 
 # Estimations Page Controls
@@ -1196,10 +1205,12 @@ $EstimationsDGV.Width = 708
 $EstimationsDGV.Height = 330
 $EstimationsDGV.Location = [System.Drawing.Point]::new(2, 2)
 $EstimationsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$EstimationsDGV.AutoSizeColumnsMode = "Fill"
 $EstimationsDGV.RowHeadersVisible = $false
 $EstimationsDGV.ColumnHeadersVisible = $true
-$EstimationsDGV.AutoSizeColumnsMode = "DisplayedCells"
+$EstimationsDGV.AllowUserToOrderColumns = $true
+$EstimationsDGV.AllowUserToResizeColumns = $true
+$EstimationsDGV.AllowUserToResizeRows = $false
+$EstimationsDGV.ReadOnly = $true
 
 # Monitoring Page Controls
 $MonitoringPageControls = @()
@@ -1218,8 +1229,12 @@ $WorkersDGV.Width = 708
 $WorkersDGV.Height = 275
 $WorkersDGV.Location = [System.Drawing.Point]::new(2, 22)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$WorkersDGV.AutoSizeColumnsMode = "AllCells"
 $WorkersDGV.RowHeadersVisible = $false
+$WorkersDGV.ColumnHeadersVisible = $true
+$WorkersDGV.AllowUserToOrderColumns = $true
+$WorkersDGV.AllowUserToResizeColumns = $true
+$WorkersDGV.AllowUserToResizeRows = $false
+$WorkersDGV.ReadOnly = $true
 $MonitoringPageControls += $WorkersDGV
 
 $ConfigMonitoringInGUI = New-Object System.Windows.Forms.LinkLabel
