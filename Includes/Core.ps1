@@ -1016,7 +1016,7 @@ Function Start-Cycle {
 
             # Add watchdog timer
             If ($Config.Watchdog) { 
-                ForEach ($Worker in $Miner.WorkersRunning) { 
+                ForEach ($Worker in $Miner.Workers) { 
                     $Variables.WatchdogTimers += [PSCustomObject]@{ 
                         MinerName     = $Miner.Name
                         MinerBaseName = $Miner.BaseName
