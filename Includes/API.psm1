@@ -137,7 +137,7 @@ Function Start-APIServer {
                                     ForEach ($DeviceName in $Values) { 
                                         $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
                                             $_.State = [DeviceState]::Disabled
-                                            If ($_.Status -like "Mining *}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
+                                            If ($_.Status -like "* {*@*}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
                                         }
                                     }
                                     Write-Message -Level Verbose "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated." -Console
@@ -166,7 +166,7 @@ Function Start-APIServer {
                                     $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                                     $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { 
                                         $_.State = [DeviceState]::Enabled
-                                        If ($_.Status -like "*; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
+                                        If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
                                         Else { $_.Status = "Idle" }
                                     }
                                     Write-Message -Level Verbose "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated." -Console
