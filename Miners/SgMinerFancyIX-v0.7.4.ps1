@@ -2,11 +2,11 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\sgminer.exe"
-$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.7.2-1/sgminer-fancyIX-win64-0.7.2-1.zip"
+$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.7.4-0/sgminer-fancyIX-win64-0.7.4.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinerSet = 0; Arguments = " -k neoscrypt-xaya -s 1 -w 256 -I 17" }
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinerSet = 0; Arguments = " -k neoscrypt-xaya -s 1 -g 1 -w 256 -I 17" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
