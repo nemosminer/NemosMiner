@@ -33,6 +33,9 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
+                $WarmupTime = 30
+                If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $WarmupTime += 30 }
+
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name
                     DeviceName = $Miner_Devices.Name
@@ -45,7 +48,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                     Wrap       = $false
                     URI        = $Uri
                     MinerUri   = "http://localhost:$($MinerAPIPort)"
-                    WarmupTime = 30 # Seconds, additional wait time until first data sample
+                    WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
                 }
             }
         }
