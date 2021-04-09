@@ -332,10 +332,12 @@ $Prerequisites = @(
 )
 
 If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_ -PathType Leaf) })) {
-    $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." -Console }
-    Write-Message -Level Warn "Please install the required runtime modules. Download and extract"
-    Write-Message -Level Warn "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
-    Write-Message -Level Warn "and run 'install_all.bat'."
+    $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." -Console } -Console
+    Write-Message -Level Error "Please install the required runtime modules. Download and extract" -Console
+    Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip" -Console
+    Write-Message -Level Error "and run 'install_all.bat'."
+    Start-Sleep -Seconds 10
+    Exit
 }
 Else { Write-Message -Level Verbose "Pre-requisites check OK." -Console }
 Remove-Variable PrerequisitesMissing, Prerequisites
@@ -376,14 +378,14 @@ $Variables.StatStarts = @()
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
 $Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -634,7 +636,7 @@ Function Global:TimerUITick {
                 }
                 Remove-Variable Currency -ErrorAction Ignore
             }
-            If ($Variables.MinersMissingBinary -or $Variables.MinersMissingPreRequisite) { 
+            If ($Variables.MinersMissingBinary) { 
                 Write-Host "`n"
                 Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
             }
@@ -1297,7 +1299,7 @@ $MainForm.Add_Load(
 
 If ($Variables.APIVersion -ne "" -and $Variables.FreshConfig -eq $true) { 
     $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`n1. Install the required VC runtimes`n   (https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip)`n`n2. Use the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096) | Out-Null
+    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096) | Out-Null
     Remove-Variable wshell
 }
 
