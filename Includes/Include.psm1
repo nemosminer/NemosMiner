@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.31
-Version date:   06 April 2021
+Version:        3.9.9.32
+Version date:   10 April 2021
 #>
 
 Class Device { 
@@ -1203,6 +1203,7 @@ Function Read-Config {
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
             $Config.$_ = $Value
         }
+
         $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     }
 

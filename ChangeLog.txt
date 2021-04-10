@@ -5,6 +5,23 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.32 ??.04.2021
+========================================
+
+Fixed:
+- Text windows: Profit Bias not shown even when $ShowProfitBias = true
+
+Improved:
+- Auto-detect $MinerInstancePerDeviceModel on new config: Default to $true if more than one device model per vendor
+- Legacy GUI: Column handling is more flexible (resize width, change column order)
+- Text windows: Sort device groups by device name
+
+Miner updates:
+- lolMiner-v1.25
+- SgMinerFancyIX-v0.7.4 (NeoscryptXaya)
+- SRBMinerMulti-v0.7.2
+
+
 Changelog NemosMiner 3.9.9.31 06.04.2021
 ========================================
 

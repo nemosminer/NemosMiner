@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.31
-Version date:   06 April 2021
+Version:        3.9.9.32
+Version date:   10 April 2021
 #>
 
 Function Start-APIServer { 
@@ -138,6 +138,7 @@ Function Start-APIServer {
                                         $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
                                             $_.State = [DeviceState]::Disabled
                                             If ($_.Status -like "* {*@*}") { $_.Status = "$($_.Status); will get disabled at end of cycle" }
+                                            Else { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
                                         }
                                     }
                                     Write-Message -Level Verbose "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated." -Console
