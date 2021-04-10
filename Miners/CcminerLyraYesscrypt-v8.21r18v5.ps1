@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGB = 2; MinerSet = 0; Arguments = " --algo lyra2v3 --intensity 24 --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 3; MinerSet = 0; Arguments = " --algo lyra2z330 --intensity 13.2 --timeout 1 --statsavg 5" }
+#    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 3; MinerSet = 0; Arguments = " --algo lyra2z330 --intensity 13.2 --timeout 1 --statsavg 5" } #only runs on single gpu's
 #    [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; MinerSet = 1; Arguments = " --algo yescrypt --statsavg 5" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo yescryptr16 --intensity 13.2 --statsavg 5" }
 #    [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo yescryptr32 --intensity 12.23 --statsavg 5" } # Out of memory even with 6GB
