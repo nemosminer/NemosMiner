@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.7.1/SRBMiner-Multi-0-7-1-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.7.2/SRBMiner-Multi-0-7-2-win64.zip"
 $SelectedDevices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
@@ -25,14 +25,14 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is faster
     [PSCustomObject]@{ Algorithm = "Ethash";            Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # BMiner-v16.3.7 & PhoenixMiner-v5.5c are faster
-    [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm heavyhash --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "AMD"; Fee = 0.025;  MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm heavyhash --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm k12 --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Kadena";            Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm kadena --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm keccak --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "UbqHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 1; Arguments = " --algorithm ubqhash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Phi5";              Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm phi5 --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm verushash --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Verthash";          Type = "AMD"; Fee = 0.0125; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm verthash" }
+    [PSCustomObject]@{ Algorithm = "VertHash";          Type = "AMD"; Fee = 0.0125; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm verthash" }
     [PSCustomObject]@{ Algorithm = "YespowerMgpc";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm yespowermgpc --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Zentoshi";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; Arguments = " --algorithm balloon_zentoshi --gpu-intensity 31 --gpu-boost 50" }
@@ -66,10 +66,11 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxHash2";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm randomwow --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "Rx2";               Type = "CPU"; Fee = 0.01;   MinerSet = 0; Arguments = " --algorithm rx2" }
     [PSCustomObject]@{ Algorithm = "ScryptN2";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm scryptn2" }
     [PSCustomObject]@{ Algorithm = "UbqHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; Arguments = " --algorithm ubqhash" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm verushash" }
-    [PSCustomObject]@{ Algorithm = "Verthash";          Type = "CPU"; Fee = 0.0125; MinerSet = 0; Arguments = " --algorithm verthash" }
+    [PSCustomObject]@{ Algorithm = "VertHash";          Type = "CPU"; Fee = 0.01;   MinerSet = 0; Arguments = " --algorithm verthash" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = "YescryptR8";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yescryptr8" }
     [PSCustomObject]@{ Algorithm = "YescryptR16";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; Arguments = " --algorithm yescryptr16" }
@@ -103,8 +104,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($_.Type -eq "CPU") { 
                     $WarmupTime = 15 # Seconds, max. wait time until first data sample
                 }
-                ElseIf ($_.Algorithm -eq "VertHash") { 
-                    $WarmupTime = 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
+                ElseIf ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Bin\$($Name)\Cache\verthash.dat" -PathType Leaf ))) { 
+                    $WarmupTime = 60 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                 }
                 ElseIf ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
