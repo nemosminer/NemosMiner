@@ -3,7 +3,11 @@
   <h1 id="title" data-navbaractive="navbalancedata" class="h2">Balance Data</h1>
 </div>
 
-<div id="balancedata" class="alert alert-info" role="alert">This is the balance data for the last 14 days that was collected by the balance tracker.</div>
+<div id="balancedata" class="alert alert-info" role="alert">This is the balance data for the last 30 days that was collected by the balance tracker.</div>
+
+<div id="toolbar">
+  <button id="remove-entry" class="btn btn-warning">Delete entry</button>
+</div>
 
 <table id="balanceobjects" class="table"
   data-toolbar="#toolbar"
@@ -31,10 +35,11 @@
 
   <thead>
     <tr>
-      <th data-field="DateTime" data-sortable="true" data-formatter="formatDate">Date & Time</th>
+      <th data-field="state" data-checkbox="true"></th>
+      <th data-field="DateTime" data-sortable="true" data-filter-control="input" data-formatter="formatDate">Date & Time</th>
       <th data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
       <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-      <th data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Wallet / UserName</th>
+      <th data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Account</th>
       <th data-field="Pending" data-sortable="true" data-visible="true">Pending</th>
       <th data-field="Balance" data-sortable="true">Balance</th>
       <th data-field="Unpaid" data-sortable="true" data-visible="true">Unpaid</th>
@@ -50,12 +55,25 @@
 
 <script type="text/javascript">
   var $table = $('#balanceobjects');
+  var $querysize = 64000;
 
-  $table.bootstrapTable({
-    // refresh once per interval
-    autoRefreshInterval: (parseInt(config.Interval)),
-    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
-  })
+  $('#remove-entry').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#remove-entry').text());
+          $('#myModal').modal({show:true});
+        });
+        $table.bootstrapTable('refresh');
+      }
+    }
+  });
 
 </script>
 

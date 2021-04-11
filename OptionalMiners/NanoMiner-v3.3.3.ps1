@@ -7,19 +7,19 @@ $DeviceEnumerator = "Type_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.025; MinMemGB = 2;  MinerSet = 0; Coin= "Autolykos" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Ethash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = 3;  MinerSet = 1; Coin= "Kawpow" } # TeamRed-v0.8.1.1 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "AMD"; Fee = 0.025; MinMemGB = 2;  MinerSet = 0; Coin= "Autolykos" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Ethash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "AMD"; Fee = 0.02;  MinMemGB = 3;  MinerSet = 1; Coin= "Kawpow" } # TeamRed-v0.8.1.1 is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 
-    [PSCustomObject]@{ Algorithm = "Randomx";     Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin = "RandomX" } # XmRig-v6.10.0 is fastest
-    [PSCustomObject]@{ Algorithm = "VerusHash";   Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin = "VerusHash" }
+    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin = "RandomX" } # XmRig-v6.10.0 is fastest
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin = "VerusHash" }
 
     [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "NVIDIA"; Fee = 0.025; MinMemGB = 2; MinerSet = 0; Coin= "Autolykos" }
     [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # TRex-v0.19.14  is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.20.0  is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";    Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 4; MinerSet = 1; Coin= "Octopus" } # NBMiner-v37.1 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 )

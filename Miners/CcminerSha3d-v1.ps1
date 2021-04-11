@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/ccminer-bsha3/releases/download/1.0/ccminer
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Sha3d"; MinMemGB = 1; MinerSet = 0; Arguments = " -i 22 --algo keccak --statsavg 5" } # Keccak!!!
+    [PSCustomObject]@{ Algorithm = "Sha3d"; MinMemGB = 1; MinerSet = 0; Arguments = " --algo keccak --intensity 22 --statsavg 5" } # Keccak!!!
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

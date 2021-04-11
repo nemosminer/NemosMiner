@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlazePool.ps1
-Version:        3.9.9.32
-Version date:   10 April 2021
+Version:        3.9.9.33
+Version date:   11 April 2021
 #>
 
 using module ..\Includes\Include.psm1

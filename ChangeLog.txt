@@ -5,7 +5,22 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
-Changelog NemosMiner 3.9.9.32 ??.04.2021
+Changelog NemosMiner 3.9.9.33 11.04.2021
+========================================
+
+Fixed:
+- ProHashing balance tracker show earnings too high
+
+Improvements:
+- Web GUI / Updated bootstrap table 1.18.3
+- Web GUI / Updated chart.js to 3.1.0
+- Web GUI / Balance data: Added 'Delete entry' button
+
+Miner updates:
+- Trex-v0.20.0
+
+
+Changelog NemosMiner 3.9.9.32 10.04.2021
 ========================================
 
 Fixed:

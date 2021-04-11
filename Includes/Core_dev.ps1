@@ -321,6 +321,9 @@ Function Start-Cycle {
             Write-Message -Level Verbose "Waiting for pool data ($(@($PoolNames) -join ', '))..."
             $Variables.NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
+                    If ($ReadPools) { 
+                        $TmpPools = Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object Best -eq $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
+                    }
                     Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -eq $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                 }
             )
@@ -608,10 +611,20 @@ Function Start-Cycle {
 
     # Get new miners
     Write-Message -Level Verbose "Loading miners..."
+    If ($ReadMiners_Dev) { 
+        $TmpMiners = Get-ChildItemContent ".\Miners_Dev" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+    }
+    If ($ReadMiners) { 
+        $TmpMiners += Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+    }
+    If ($ReadOptionalMiners) { 
+        $TmpMiners += Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+    }
     $Variables.NewMiners_Jobs = @(
         If ($Config.IncludeRegularMiners -and (Test-Path -Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If ($Config.IncludeOptionalMiners -and (Test-Path -Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If (Test-Path -Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+        # Get-ChildItemContent ".\Miners_Dev" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
     )
 
     If ($Variables.NewMiners_Jobs) { 
@@ -1056,6 +1069,10 @@ Function Start-Cycle {
         }
     }
 
+    If ($ReadBalances -and $Config.BalancesTrackerPollInterval -gt 0 -and $Variables.PoolBalanceCollected -lt (Get-Date).ToLocalTime().AddMinutes(-$Config.BalancesTrackerPollInterval)) { 
+        . .\Includes\BalancesTracker.ps1
+    }
+
     $Error.Clear()
 
     Get-Job | Where-Object State -EQ "Completed" | Remove-Job
@@ -1129,6 +1146,9 @@ While ($true) {
                     $Miner.StatusMessage = "Miner data reader exited unexpectedly."
                 }
                 ElseIf ($Miner.DataReaderJob.HasMoreData) { 
+                    # If (((Test-Path env:\VSCODE_PID) -or ($env:TERM_PROGRAM -eq 'vscode')) -and $Miner.Benchmark -eq $true) { 
+                        $Miner.UpdateMinerData()
+                    # }
                     $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                     $Sample = @($Samples) | Select-Object -Last 1
 

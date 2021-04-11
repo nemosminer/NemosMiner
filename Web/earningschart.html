@@ -3,7 +3,7 @@
   <h1 id="title" data-navbaractive="navearningschart" class="h2">Earnings Chart</h1>
 </div>
 
-<div class="alert alert-info" role="alert">Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools API and may not yet include results from recent mining.</div>
+<div class="alert alert-info" role="alert">Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools API and may not yet include results from recent mining</div>
 
 <canvas id="EarningsChart" width="400" height="175" role="img"></canvas>
 
@@ -11,8 +11,8 @@
 
 <script type="text/javascript">
 
-  Chart.defaults.global.defaultFontColor = "black";
-  Chart.defaults.global.defaultFontSize = 16;
+  Chart.defaults.color = 'black';
+  Chart.defaults.font.size = 16
 
   function HslColor (amount, item, saturation, lightness) {
     let huedelta = Math.trunc(540 / amount)
@@ -29,47 +29,66 @@
         datasets: datasets
       },
       options: {
-        legend: {
-          labels: {
-            // fontSize: 18
+        scales: {
+          x: {
+            title: {
+              font: { 
+                size: 20
+              },
+              text: 'Date'
+            },
+            stacked: true
+          },
+          y: {
+            title: {
+              display: 'true',
+              font: { 
+                size: 20
+              },
+              text: currency
+            },
+            stacked: true
           }
         },
-        scales: {
-          xAxes: [
-            {
-              scaleLabel: {
-                fontSize: 20,
-                labelString: 'Date'
-              },
-              ticks: {
-                // fontSize: 16
-              },
-              stacked: true
-            }
-          ],
-          yAxes: [
-            {
-              scaleLabel: {
-                display: 'true',
-                fontSize: 20,
-                labelString: currency
-              },
-              stacked: true,
-              ticks: {
-                // fontSize: 16
+        plugins: { 
+          legend: {
+            labels: {
+              font: { 
+                size: 18
               }
             }
-          ]
-        },
-        title: {
-          display: true,
-          fontSize: 32,
-          fontStyle: 'normal',
-          text: 'Daily Mining Earnings'
-        },
-        tooltips: {
-          // titleFontSize: 16,
-          // bodyFontSize: 16
+          },
+          title: {
+            display: true,
+            font: { 
+              family: 'Arial, Helvetica, sans-serif',
+              size: 32,
+              weight: 'normal'
+            },
+            text: 'Daily Mining Earnings'
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: { 
+              label: function(context) {
+                var label = context.dataset.label || '';
+
+                if (label) {
+                    label += ': ';
+                }
+                if (context.parsed.y !== 0) {
+                    label += context.parsed.y.toFixed(3);
+                    return label;
+                }
+              }
+            },
+            titleFont: { 
+              size: 16
+            },
+            bodyFont: { 
+              size: 16
+            }
+          }
         }
       }
     });

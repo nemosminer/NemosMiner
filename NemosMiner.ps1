@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.32
-Version date:   10 April 2021
+Version:        3.9.9.33
+Version date:   11 April 2021
 #>
 
 [CmdletBinding()]
@@ -244,7 +244,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.32"
+    Version      = [System.Version]"3.9.9.33"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -350,6 +350,21 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
     Update-ConfigFile -ConfigFile $Variables.ConfigFile
 }
 
+# Load algorithm list
+$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Algorithms) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
+# Load regions list
+$Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Regions) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
+
 Write-Message -Level Verbose "Loading device information..."
 $Variables.SupportedDeviceVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.Devices = [Device[]](Get-Device -Refresh)
@@ -375,20 +390,7 @@ $Variables.Strikes = 3
 $Variables.WatchdogTimers = @()
 $Variables.StatStarts = @()
 
-# Load algorithm list
-$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load regions list
-$Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
-    Start-Sleep -Seconds 10
-    Exit
-}
+If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Logs\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
