@@ -88,7 +88,7 @@
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
-      "mBTC": 1
+      "mBTC": 2
     }
   },
   "NiceHash External": {
