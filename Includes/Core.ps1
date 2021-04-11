@@ -330,6 +330,11 @@ Function Start-Cycle {
             [Pool[]]$NewPools = $Variables.NewPools_Jobs | ForEach-Object { $_.EndInvoke($_.Job) | ForEach-Object { If (-not $_.Content.Name) { $_.Content | Add-Member Name $_.Name -Force }; $_.Content } }
             $Variables.NewPools_Jobs | ForEach-Object { $_.Dispose() }
             $Variables.Remove("NewPools_Jobs")
+
+            If ($PoolNoData = @($PoolNames | ForEach-Object { If (-not ($NewPools | Where-Object Name -EQ $_ )) { $_ } })) { 
+                Write-Message -Level Warn "No data received from pool$(If ($PoolNoData.Count -gt 1) { "s" } ) ($($PoolNoData -join ', '))." -Console
+            }
+            Remove-Variable PoolNoData
         }
         Else { 
             Write-Message -Level Warn "No configured pools - retrying in 10 seconds..."
