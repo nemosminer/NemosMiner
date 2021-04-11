@@ -17,7 +17,7 @@
       <S N="LogDataPath">.\BrainMemory-NLPool.csv</S>
       <S N="TransferFile">.\nlpool.json</S>
       <S N="PoolName">blazepool</S>
-      <S N="PoolStatusUri">http://api.blazepool.com/status</S>
+      <S N="PoolStatusUri">http://www.nlpool.nl/api/status</S>
     </MS>
   </Obj>
 </Objs>
