@@ -170,6 +170,9 @@ While ($true) {
                         If (($PoolBalanceObjects | Select-Object -Last 1).Unpaid -gt $PoolBalanceObject.Unpaid) { 
                             $Payout = ($PoolBalanceObjects | Select-Object -Last 1).Unpaid - $PoolBalanceObject.Unpaid
                         }
+                        Else { 
+                            $Payout = 0
+                        }
                     }
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
                     $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta + $HiddenPending + $Payout)
@@ -240,7 +243,7 @@ While ($true) {
                 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
-                    $GrowthToday = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }).Earnings | Measure-Object -Minimum).Minimum)
+                    $GrowthToday = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { $_.DateTime.ToLocalTime().Date -eq $Now.Date }).Earnings | Measure-Object -Minimum).Minimum)
                 }
 
                 $PoolBalanceObjects += $PoolBalanceObject
@@ -364,8 +367,9 @@ While ($true) {
 
         $Variables.EarningsChartData | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore
 
-        # # At least 31 days are needed for Growth720
-        If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object DateTime -ge $Now.AddDays( -31 )) }
+        # At least 31 days are needed for Growth720
+        # For data older 1 week only keep those with delta <> 0
+        If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays( -31 ) | Where-Object { $_.DateTime -ge $Now.AddDays( -7 ) -or $_.Delta -ne 0 }) }
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore }
         $Variables.BalanceData = $AllBalanceObjects
 
