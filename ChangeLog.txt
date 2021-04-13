@@ -5,6 +5,26 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.34 ??.04.2021
+========================================
+
+Changed:
+- Renamed config item 'PricePenaltyfactor' to 'EarningsAdjustmentFactor'
+
+Fixed:
+- NLpool: (Brains) returned data from BlazePool (wrong URL in .\Brains\NLPool\BrainConfig.xml)
+- NLPool: Minimum payout is 0.002 BTC (.\Includes\PoolData.json)
+- Web GUI / Earnings Chart: daily earnings ignored daylight saving time
+
+Improved:
+- Core: Print message if no response from pool
+- Web GUI / Balances summary: Add tooltips
+- Web GUI / Config editor: Add EarningsAdjustmentFactor config item
+
+Miner updates:
+- GMiner-v2.51
+- NanoMiner-v3.3.4
+
 Changelog NemosMiner 3.9.9.33 11.04.2021
 ========================================
 
@@ -17,6 +37,7 @@ Improvements:
 - Web GUI / Balance data: Added 'Delete entry' button
 
 Miner updates:
+- Gminer-v2.51beta for Cuckoo29 (algorithm is broken in in 2.50)
 - Trex-v0.20.0
 
 
@@ -1021,7 +1042,7 @@ Fixed:
 
 Breaking changes (from main code base):
 - Changed config item 'Location' to 'Region' -> requires manual change in config file
-- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Changed pool property 'EarningsAdjustmentFactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
 - Pool files are not backwards compatible
 - New data format of SwitchingLog.txt -> need to delete old file manually
 - Changed config item 'ActiveMinerGainPct' to 'RunningMinerGainPct' -> Item will be renamed in config on start (Since 28.06.2020)
@@ -1123,7 +1144,7 @@ What's broken:
 
 Breaking changes:
 - Changed config item 'Location' to 'Region' -> requires manual change in config file
-- Changed pool property 'PricePenaltyfactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
+- Changed pool property 'EarningsAdjustmentFactor' to 'EstimateCorrection' (should be added to PoolsConfig to make it a per pool config item)
 - Pool files are not backwards compatible
 
 Added:
