@@ -46,6 +46,7 @@
       <th data-field="Earnings" data-sortable="true" data-visible="true">Earnings</th>
       <th data-field="Delta" data-sortable="true" data-visible="true">Delta</th>
       <th data-field="Payout" data-sortable="true" data-visible="true">Payout</th>
+      <th data-field="Paid" data-sortable="true" data-visible="true">Paid</th>
       <th data-field="HiddenPending" data-sortable="true" data-visible="true">Hidden Pending</th>
     </tr>
   </thead>
@@ -56,6 +57,10 @@
 <script type="text/javascript">
   var $table = $('#balanceobjects');
   var $querysize = 64000;
+
+  $table.bootstrapTable({
+    height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
+  });
 
   $('#remove-entry').click(function () {
     var $data = $table.bootstrapTable('getSelections');
