@@ -68,10 +68,36 @@
   <div id="balanceboxes" class="card-deck"></div>
 
   <script id="poolbalance_template" type="text/x-handlebars-template">
-    <div class="card m-3 {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}275px{{/if}}">
+    <div class="card m-3 {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
       <div class="card-header text-center">
         {{#if total}}<h5>{{{name}}}</h5><table class="center" style="width: 102%"><tr><th style="text-align:center">Earnings last hour</th><th style="text-align:center">Earnings last 6 hours</th><th style="text-align:center">Earnings last 24 hours</th><th style="text-align:center">Earnings last 7 days</th><th style="text-align:center">Earnings last 30 days</th></tr><tr><td style="text-align:center">{{formatCurrency growth1sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth6sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth24sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth168sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth720sum}} {{firstcurrency}}</td></tr><tr><td style="text-align:center">{{formatCurrency growth1summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth6summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth24summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth168summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth720summbtc}} mBTC</td></tr></table>
-        {{else}}<h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>{{{updated}}}<br><br>{{formatCurrency growth1}} {{thresholdcurrency}} last 1 hour<br>{{formatCurrency growth24}} {{thresholdcurrency}} last 24 hrs<br>{{formatCurrency growth168}} {{thresholdcurrency}} last 7 days<br><br>avg. &#8776; {{formatCurrency avghourlygrowth}} {{thresholdcurrency}}/h<br>avg. &#8776; {{formatCurrency avgdailygrowth}} {{thresholdcurrency}}/day<br>avg. &#8776; {{formatCurrency avgweeklygrowth}} {{thresholdcurrency}}/week
+        {{else}}
+          <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
+          <div title="Data last collected from pool">
+            {{{updated}}}<br>
+          </div>
+          <div title="{{formatMainCurrency growth1 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            <br>{{formatCurrency growth1}} {{thresholdcurrency}} last 1 hour
+          </div>
+          <div title="{{formatMainCurrency growth24 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            {{formatCurrency growth24}} {{thresholdcurrency}} last 24 hrs
+          </div>
+          <div title="{{formatMainCurrency growth168 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            {{formatCurrency growth168}} {{thresholdcurrency}} last 7 days
+          </div>
+          <div title="{{formatMainCurrency growth720 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            {{formatCurrency growth720}} {{thresholdcurrency}} last 30 days
+          </div>
+          <br/>
+          <div title="{{formatMainCurrency avghourlygrowth rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            avg. {{formatCurrency avghourlygrowth}} {{thresholdcurrency}} in 1h
+          </div>
+          <div title="{{formatMainCurrency avgdailygrowth rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            avg. {{formatCurrency avgdailygrowth}} {{thresholdcurrency}} in 24 hrs
+          </div>
+          <div title="{{formatMainCurrency avgweeklygrowth rates thresholdcurrency maincurrency}} {{maincurrency}}">
+            avg. {{formatCurrency avgweeklygrowth}} {{thresholdcurrency}} in 7 days
+          </div>
         {{/if}}
       </div>
       <div class="card-body text-center">
@@ -84,8 +110,9 @@
         {{#if total}}{{else}}
         <p class="payout">
           <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{thresholdcurrency}}</b><br/>payout threshold<br/>
-          <br/>Estimated Paydate:<br><b>{{paydate}}</b>
-          <!-- <br><br><button id=clearbalancedata value={{name}} class="btn btn-small btn-primary">Clear balance data</button> -->
+          <div title="Prediction is based on the current daily average earnings">
+            Estimated Paydate:<br/><b>{{paydate}}</b>
+          </div>
         </p>
         {{/if}}
       </div>
@@ -100,6 +127,10 @@
 
   Handlebars.registerHelper('formatCurrency', function(value) {
     return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: 7 }).format(value));
+  });
+
+  Handlebars.registerHelper('formatMainCurrency', function(value, rates, thresholdcurrency, maincurrency) {
+    return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: 7 }).format(value * rates[thresholdcurrency][maincurrency]));
   });
 
   $(function(){
@@ -220,6 +251,7 @@
                         var avghourlygrowth_sum  = 0;
                         var avgdailygrowth_sum  = 0;
                         var avgweeklygrowth_sum = 0;
+                        var avgmonthlygrowth_sum = 0;
 
                         $.each(result, function(index, item) {
                           item.Currencies = [item.Currency];
@@ -238,9 +270,9 @@
                           growth168_sum += item.Growth168 * rates[item.Currency]['BTC'];
                           growth720_sum += item.Growth720 * rates[item.Currency]['BTC'];
 
-                          avghourlygrowth_sum += item.AvgHourlyGrowth * rates[item.Currency]['BTC'];
-                          avgdailygrowth_sum  += item.AvgDailyGrowth  * rates[item.Currency]['BTC'];
-                          avgweeklygrowth_sum += item.AvgWeeklyGrowth * rates[item.Currency]['BTC'];
+                          avghourlygrowth_sum += item.AvgHourlyGrowth   * rates[item.Currency]['BTC'];
+                          avgdailygrowth_sum  += item.AvgDailyGrowth    * rates[item.Currency]['BTC'];
+                          avgweeklygrowth_sum += item.AvgWeeklyGrowth   * rates[item.Currency]['BTC'];
 
                           if (!(footer.test(item.Pool))) {
                             if (config.UsemBTC && item.Currency == "BTC") {
@@ -265,7 +297,9 @@
                               growth720: item.Growth720 * factor,
                               avghourlygrowth: item.AvgHourlyGrowth * factor,
                               avgdailygrowth: item.AvgDailyGrowth * factor,
-                              avgweeklygrowth: item.AvgWeeklyGrowth * factor
+                              avgweeklygrowth: item.AvgWeeklyGrowth * factor,
+                              maincurrency: maincurrency,
+                              rates: rates
                             };
 
                             // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
