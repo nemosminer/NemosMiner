@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.6.5"
+    $APIVersion = "0.3.7.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -122,6 +122,24 @@ Function Start-APIServer {
                             $Server.Close()
                         }
                         Break
+                    }
+                    "/functions/balancedata/remove" { 
+                        If ($Parameters.Data) { 
+                            $BalanceDataEntries = ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)
+                            $Variables.BalanceData = @((Compare-Object $Variables.BalanceData $BalanceDataEntries -PassThru -Property DateTime, Pool, Currency, Wallet) | Select-Object -ExcludeProperty SideIndicator)
+                            $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore
+                            If ($BalanceDataEntries.Count -gt 0) { 
+                                $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore
+                                $Message = "$($BalanceDataEntries.Count) $(If ($BalanceDataEntries.Count -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
+                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                $Data += "`n`n$Message"
+                            }
+                            Else { 
+                                $Data = "`nNo matching entries found."
+                            }
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
                     }
                     "/functions/config/device/disable" { 
                         ForEach ($Key in $Parameters.Keys) {
