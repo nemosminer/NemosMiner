@@ -327,8 +327,13 @@
           </div>
           <br>
 
+          <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment to 80%&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')" for="EarningsAdjustmentFactor">Earnings Adjustment Factor
+            <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=100 value=100 step=1 size=4> %
+          </div>
+          <br>
+
           <div title="As long as no other miner has earning/profit that is&#10;n% higher than the current miner it will not switch.&#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct">Running Miner Gain
-            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min=0 max=100 value=5 step=0.1 size=5> %
+            <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min=0 max=100 value=5 step=0.1 size=4> %
           </div>
           <br>
 
@@ -653,6 +658,10 @@
     if (config.IgnorePoolFee) {
       document.getElementById('IgnorePoolFee').checked = true;
     };
+    
+    if (parseFloat(config.EarningsAdjustmentFactor)) { 
+      document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor) * 100;
+    };
 
     if (parseFloat(config.RunningMinerGainPct)) { 
       document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
@@ -801,6 +810,10 @@
           minlength: 4,
           maxlength: 256,
           pattern: "^([A-Za-z0-9\-\.]{4,}?)+(?:,([A-Za-z0-9\-\.]{4,})+)*$"
+        },
+        EarningsAdjustmentFactor: {
+          required: true,
+          step: "1"
         },
         RunningMinerGainPct: {
           required: true,
@@ -995,11 +1008,13 @@
 
         config.MinWorker = parseInt(document.getElementById('MinWorker').value);
 
-        config.AllowedBadShareRatio = parseFloat(document.getElementById('AllowedBadShareRatio').value / 100);
+        config.AllowedBadShareRatio = parseFloat(document.getElementById('AllowedBadShareRatio').value) / 100;
 
         config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
         config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
         config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
+
+        config.EarningsAdjustmentFactor = parseFloat(document.getElementById('EarningsAdjustmentFactor').value) / 100;
 
         config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
 
