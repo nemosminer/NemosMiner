@@ -6,19 +6,6 @@ $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.20.0/t-rex-0.20.0
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
-etchash
-ethash
-kawpow
-mtp
-mtp-tcr
-multi
-octopus
-progpow
-progpow-veil
-progpow-veriblock
-progpowz
-tensority
-
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.51 is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.51 is fastest
