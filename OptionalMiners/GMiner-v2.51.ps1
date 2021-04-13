@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.50/gminer_2_50_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.51/gminer_2_51_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -22,7 +22,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo C30CTX --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Fee = 0.02;   MinMemGB = 7.6; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo cuckatoo31 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo cuckatoo32 --cuda 1 --opencl 0" }
-#    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo cuckoo29 --cuda 1 --opencl 0" } # Broken in 2.50 (https://github.com/develsoftware/GMinerRelease/issues/199)
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; Arguments = " --algo cuckoo29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Equihash1254";  Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 2.1; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; Arguments = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest

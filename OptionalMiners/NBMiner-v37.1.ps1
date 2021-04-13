@@ -15,7 +15,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
  
     [PSCustomObject]@{ Algorithm = "BeamV3";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo beamv3" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 8.0; MinMemGBWin10 = 10.0; MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo cuckatoo32" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo cuckoo_ae" } # GMiner-v2.50 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo cuckoo_ae" } # GMiner-v2.51 is fastest
     [PSCustomObject]@{ Algorithm = "Ergo";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo ergo" }
     [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo etchash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo ethash" } # BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
