@@ -20,8 +20,8 @@ progpowz
 tensority
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.50 is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.50 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.51 is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.51 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.10.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "MTPTcr";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo mtp-tcr --intensity 21" }
