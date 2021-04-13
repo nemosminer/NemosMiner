@@ -63,6 +63,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, # Minutes per Day
     [Parameter(Mandatory = $false)]
+    [Double]$EarningsAdjustmentFactor = 1, # Default factor with which NemosMiner multiplies the prices reported by ALL pools. Allowed values: 0.0 - 1.0
+    [Parameter(Mandatory = $false)]
     [Switch]$EstimateCorrection = $false, # If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), # Will replace old device selection, e.g. @("CPU# 00", "GPU# 02") (work in progress)
@@ -145,8 +147,6 @@ param(
     [Int]$PoolTimeout = 20, # Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get any pool data
     [Parameter(Mandatory = $false)]
     [Hashtable]$PowerPricekWh = @{"00:00" = 0.26; "12:00" = 0.3 }, # Price of power per kW⋅h (in $Currency[0], e.g. CHF), valid from HH:mm (24hr format)
-    [Parameter(Mandatory = $false)]
-    [Double]$PricePenaltyFactor = 1, # Estimated profit as projected by pool will be multiplied by this factor. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
     [Double]$ProfitabilityThreshold = -99, # Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
     [Parameter(Mandatory = $false)]

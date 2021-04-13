@@ -66,7 +66,7 @@ If ($Wallet) {
         $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
         $Divisor = 100000000
 
-        If ($Algorithm_Norm -eq "Lyra2RE3") { Return } # temp fix, no orders
+        # If ($Algorithm_Norm -eq "Lyra2RE3") { Return } # temp fix, no orders
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor)
 
@@ -74,19 +74,19 @@ If ($Wallet) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]0
-                PricePenaltyfactor = [Double]$PoolConfig.PricePenaltyfactor
-                Host               = [String]"$Algorithm.$Region.$PoolHost"
-                Port               = [UInt16]$PoolPort
-                User               = [String]$User
-                Pass               = "x"
-                Region             = [String]$Region_Norm
-                SSL                = [Boolean]$false
-                Fee                = [Decimal]$Fee
-                EstimateFactor     = [Decimal]1
+                Algorithm                = [String]$Algorithm_Norm
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]0
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Host                     = [String]"$Algorithm.$Region.$PoolHost"
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$User
+                Pass                     = "x"
+                Region                   = [String]$Region_Norm
+                SSL                      = [Boolean]$false
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]1
             }
         }
     }

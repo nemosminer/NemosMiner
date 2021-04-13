@@ -62,19 +62,19 @@ If ($PoolsConfig.$Name_Norm.UserName) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{
-                Algorithm          = [String]$Algorithm_Norm
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
-                Host               = [String]$PoolHost
-                Port               = [UInt16]$PoolPort
-                User               = [String]$PoolsConfig.$Name_Norm.UserName
-                Pass               = "a=$($Algorithm_Norm),m=pps,n=$($PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
-                Region             = [String]$Region_Norm
-                SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = [Decimal]1
+                Algorithm                = [String]$Algorithm_Norm
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                Host                     = [String]$PoolHost
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$PoolsConfig.$Name_Norm.UserName
+                Pass                     = "a=$($Algorithm_Norm),m=pps,n=$($PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
+                Region                   = [String]$Region_Norm
+                SSL                      = [Bool]$false
+                Fee                      = $Fee
+                EstimateFactor           = [Decimal]1
             }
         }
     }

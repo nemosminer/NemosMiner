@@ -127,8 +127,8 @@ New Config Items
   "OpenFirewallPorts": true,
 
 # Default factor with which NemosMiner multiplies the prices reported by ALL pools. The default value is 1 (valid range is from 0.1 to 1.0). 
-# E.g. If you feel that the general profit estimations as reported by MPM are too high, e.g. %20, then set '-PricePenaltyFactor' to 0.8.
-  "PricePenaltyFactor": 1,
+# E.g. If you feel that the general profit estimations as reported by MPM are too high, e.g. %20, then set '-EarningsAdjustmentFactor' to 0.8.
+  "EarningsAdjustmentFactor": 1,
 
 # Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get an pool data
   "PoolTimeout": 30,

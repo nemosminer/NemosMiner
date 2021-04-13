@@ -59,39 +59,39 @@ If ($Config.Wallets) {
             $Region_Norm = Get-Region $Server.region
 
             [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                CoinName           = [String]$CoinName
-                Currency           = [String]$Currency
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
-                Host               = [String]$Server.host
-                Port               = [UInt16]$Server.ports[0]
-                User               = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
-                Pass               = "x"
-                Region             = [String]"$(Get-Region $Server.region)"
-                SSL                = [Bool]$false
-                Fee                = [Decimal]0
-                EstimateFactor     = [Decimal]$EstimateFactor
+                Algorithm                = [String]$Algorithm_Norm
+                CoinName                 = [String]$CoinName
+                Currency                 = [String]$Currency
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                Host                     = [String]$Server.host
+                Port                     = [UInt16]$Server.ports[0]
+                User                     = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
+                Pass                     = "x"
+                Region                   = [String]"$(Get-Region $Server.region)"
+                SSL                      = [Bool]$false
+                Fee                      = [Decimal]0
+                EstimateFactor           = [Decimal]$EstimateFactor
             }
 
             # [PSCustomObject]@{ 
-            #     Algorithm          = [String]$Algorithm_Norm
-            #     CoinName           = [String]$CoinName
-            #     Currency           = [String]$Currency
-            #     Price              = [Double]$Stat.Live
-            #     StablePrice        = [Double]$Stat.Week
-            #     MarginOfError      = [Double]$Stat.Week_Fluctuation
-            #     PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
-            #     Host               = [String]$Server.host
-            #     Port               = [UInt16]$Server.ssl_ports[0]
-            #     User               = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
-            #     Pass               = "x"
-            #     Region             = [String]"$(Get-Region $Server.region)"
-            #     SSL                = [Bool]$true
-            #     Fee                = [Decimal]0
-            #     EstimateFactor     = [Decimal]$EstimateFactor
+            #     Algorithm                = [String]$Algorithm_Norm
+            #     CoinName                 = [String]$CoinName
+            #     Currency                 = [String]$Currency
+            #     Price                    = [Double]$Stat.Live
+            #     StablePrice              = [Double]$Stat.Week
+            #     MarginOfError            = [Double]$Stat.Week_Fluctuation
+            #     EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+            #     Host                     = [String]$Server.host
+            #     Port                     = [UInt16]$Server.ssl_ports[0]
+            #     User                     = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
+            #     Pass                     = "x"
+            #     Region                   = [String]"$(Get-Region $Server.region)"
+            #     SSL                      = [Bool]$true
+            #     Fee                      = [Decimal]0
+            #     EstimateFactor           = [Decimal]$EstimateFactor
             # }
         }
     }

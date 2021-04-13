@@ -92,19 +92,21 @@
     }
   },
   "NiceHash External": {
+    "EarningsAdjustmentFactor": 1.0, // NiceHash earnings estimates are always correct
     "GuaranteedPayoutCurrencies": [
-      "BTC"
+      "BTC" // Only BTC is supported
     ],
-    "PayoutCurrency": "BTC",
+    "PayoutCurrency": "BTC", // Only BTC is supported
     "PayoutThreshold": {
       "mBTC": 1
     }
   },
   "NiceHash Internal": {
+    "EarningsAdjustmentFactor": 1.0, // NiceHash earnings estimates are always correct
     "GuaranteedPayoutCurrencies": [
-      "BTC"
+      "BTC" // Only BTC is supported
     ],
-    "PayoutCurrency": "BTC",
+    "PayoutCurrency": "BTC", // Only BTC is supported
     "PayoutThreshold": {
       "mBTC": 0.5
     }
@@ -131,6 +133,7 @@
       "DASH"
     ],
     "PayoutCurrency": "[Default]",
+    // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
   },
   "Zpool": {
     "GuaranteedPayoutCurrencies": [

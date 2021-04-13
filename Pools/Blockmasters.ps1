@@ -73,21 +73,21 @@ If ($Wallet) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$Config.PoolsConfig.$Name_Norm.PricePenaltyfactor
-                Host               = [String]"$($Region).$($HostSuffix)" -replace "^us\."
-                Port               = [UInt16]$PoolPort
-                User               = [String]$Wallet
-                Pass               = "$($Config.PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
-                Region             = [String]$Region_Norm
-                SSL                = [Bool]$false
-                Fee                = [Decimal]$Fee
-                EstimateFactor     = [Decimal]$EstimateFactor
-                Updated            = [DateTime]$Updated
-                Workers            = [Int]$Workers
+                Algorithm                = [String]$Algorithm_Norm
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                Host                     = [String]"$($Region).$($HostSuffix)" -replace "^us\."
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$Wallet
+                Pass                     = "$($Config.PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
+                Region                   = [String]$Region_Norm
+                SSL                      = [Bool]$false
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]$EstimateFactor
+                Updated                  = [DateTime]$Updated
+                Workers                  = [Int]$Workers
             }
         }
     }

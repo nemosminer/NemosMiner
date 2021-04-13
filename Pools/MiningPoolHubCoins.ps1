@@ -50,7 +50,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Coin = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-" -replace " ")
+        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-" -replace " ")
         $Fee = [Decimal]($_.Fee / 100)
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
@@ -62,39 +62,39 @@ If ($PoolsConfig.$Name_Norm.UserName) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                CoinName           = [String]$Coin
-                Currency           = [String]$Current.symbol
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
-                Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                Port               = [UInt16]$Current.port
-                User               = [String]$User
-                Pass               = "x"
-                Region             = [String]$Region_Norm
-                SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = [Decimal]1
+                Algorithm                = [String]$Algorithm_Norm
+                CoinName                 = [String]$CoinName
+                Currency                 = [String]$Current.symbol
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+                Port                     = [UInt16]$Current.port
+                User                     = [String]$User
+                Pass                     = "x"
+                Region                   = [String]$Region_Norm
+                SSL                      = [Bool]$false
+                Fee                      = $Fee
+                EstimateFactor           = [Decimal]1
             }
 
             # [PSCustomObject]@{ 
-            #     Algorithm          = [String]$Algorithm_Norm
-            #     CoinName           = [String]$Coin
-            #     Currency           = [String]$Current.symbol
-            #     Price              = [Double]$Stat.Live
-            #     StablePrice        = [Double]$Stat.Week
-            #     MarginOfError      = [Double]$Stat.Week_Fluctuation
-            #     PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
-            #     Host               = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-            #     Port               = [UInt16]$Current.port
-            #     User               = [String]$User
-            #     Pass               = "x"
-            #     Region             = [String]$Region_Norm
-            #     SSL                = [Bool]$true
-            #     Fee                = $Fee
-            #     EstimateFactor     = [Decimal]1
+            #     Algorithm                = [String]$Algorithm_Norm
+            #     CoinName                 = [String]$CoinName
+            #     Currency                 = [String]$Current.symbol
+            #     Price                    = [Double]$Stat.Live
+            #     StablePrice              = [Double]$Stat.Week
+            #     MarginOfError            = [Double]$Stat.Week_Fluctuation
+            #     EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+            #     Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+            #     Port                     = [UInt16]$Current.port
+            #     User                     = [String]$User
+            #     Pass                     = "x"
+            #     Region                   = [String]$Region_Norm
+            #     SSL                      = [Bool]$true
+            #     Fee                      = $Fee
+            #     EstimateFactor           = [Decimal]1
             # }
         }
     }

@@ -71,20 +71,20 @@ If ($Wallet) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                Algorithm          = [String]$Algorithm_Norm
-                Price              = [Double]$Stat.Live
-                StablePrice        = [Double]$Stat.Week
-                MarginOfError      = [Double]$Stat.Week_Fluctuation
-                PricePenaltyfactor = [Double]$PoolsConfig.$Name_Norm.PricePenaltyfactor
-                Host               = "$($Algorithm).$($Region).$($HostSuffix)"
-                Port               = [UInt16]$PoolPort
-                User               = [String]$Wallet
-                Pass               = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
-                Region             = [String]$Region_Norm
-                SSL                = [Bool]$false
-                Fee                = $Fee
-                EstimateFactor     = $EstimateFactor
-                Workers            = [Int]$Workers
+                Algorithm                = [String]$Algorithm_Norm
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$Wallet
+                Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
+                Region                   = [String]$Region_Norm
+                SSL                      = [Bool]$false
+                Fee                      = $Fee
+                EstimateFactor           = $EstimateFactor
+                Workers                  = [Int]$Workers
             }
         }
     }

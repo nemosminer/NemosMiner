@@ -189,7 +189,7 @@ Function Start-Cycle {
                 $Variables.DonatePoolsConfig = [Ordered]@{ }
                 $Variables.DonatePoolNames | ForEach-Object { 
                     $PoolConfig = [PSCustomObject]@{ }
-                    $PoolConfig | Add-Member PricePenaltyFactor 1
+                    $PoolConfig | Add-Member EarningsAdjustmentFactor 1
                     $PoolConfig | Add-Member WorkerName "NemosMiner-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
                     Switch ($_) { 
                         "MiningPoolHub" { 
@@ -372,11 +372,11 @@ Function Start-Cycle {
             Select-Object -First 1
 
             If ($Pool) { 
-                If (-not $Config.EstimateCorrection -or $Pool.EstimateFactor -le 0 -or $Pool.EstimateFactor -gt 1) { $_.EstimateFactor = [Double]1 } Else { $_.EstimateFactor = [Double]($Pool.EstimateFactor) }
+                If (-not $Config.EstimateCorrection -or $Pool.EstimateFactor -le 0 -or $Pool.EstimateFactor -gt 1) { $_.EstimateFactor = [Double]1 } Else { $_.EstimateFactor = $Pool.EstimateFactor }
                 If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $_.Fee = 0 } Else { $_.Fee = $Pool.Fee }
-                If ($Pool.PricePenaltyFactor -le 0 -or $Pool.PricePenaltyFactor -gt 1) { $_.PricePenaltyFactor = [Double]1 } Else { $_.PricePenaltyFactor = [Double]($Pool.PricePenaltyFactor) }
-                $_.Price = $Pool.Price * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
-                $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.PricePenaltyFactor * (1 - $_.Fee)
+                $_.EarningsAdjustmentFactor = $Pool.EarningsAdjustmentFactor
+                $_.Price = $Pool.Price * $_.EstimateFactor * $_.EarningsAdjustmentFactor * (1 - $_.Fee)
+                $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.EarningsAdjustmentFactor * (1 - $_.Fee)
                 $_.MarginOfError = $Pool.MarginOfError
                 $_.Pass = $Pool.Pass
                 $_.Updated = $Pool.Updated
@@ -400,7 +400,6 @@ Function Start-Cycle {
                         $_.Epoch = [Int]($Variables.DAGdata.Currency."*".Epoch + 1)
                         $_.DAGSize = [Int64]($Variables.DAGdata.Currency."*".DAGsize + [Math]::Pow(2, 23))
                     }
-
                     If ($_.Currency -eq "ETC") { $_.CoinName = "Ethereum Classic" }
                 }
             }
@@ -429,7 +428,7 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
         If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
         # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency, NiceHash is always right
-        $Variables.Pools | Where-Object Name -NE "NiceHash" | Group-Object -Property Algorithm, Currency | ForEach-Object { 
+        $Variables.Pools | Where-Object Price -GT 0 | Where-Object Name -NE "NiceHash" | Group-Object -Property Algorithm, Currency | ForEach-Object { 
             If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
                 $_.Group | Where-Object Price_Bias -gt $PriceThreshold | ForEach-Object { 
                     $_.Available = $false
