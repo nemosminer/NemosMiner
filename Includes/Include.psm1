@@ -85,7 +85,7 @@ Class Pool {
     [String]$Region
     [Boolean]$SSL
     [Double]$Fee
-    [Double]$PricePenaltyfactor = 1
+    [Double]$EarningsAdjustmentFactor = 1
     [Double]$EstimateFactor = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [System.Nullable[Int]]$Workers
@@ -1158,6 +1158,7 @@ Function Stop-Mining {
     }
 }
 
+
 Function Read-Config { 
 
     Param(
@@ -1182,6 +1183,10 @@ Function Read-Config {
             $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
                 $Global:Config.Remove($_)
                 $Global:Config.$_ = $Config_Tmp.$_ 
+            }
+            # Add remaining config items
+            $Config_Tmp.PSObject.Properties.Name | Where-Object { $_ -notin $Variables.AllCommandLineParameters.Keys } | ForEach-Object { 
+                $Global:Config.$_ = $Config_Tmp.$_
             }
             $Global:Config.ConfigFileVersion = $Config_Tmp.ConfigFileVersion
         }
@@ -1224,9 +1229,10 @@ Function Read-Config {
         $PoolName = $_
         $PoolConfig = [PSCustomObject]@{ }
         If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
+        ElseIf ($PoolData.$PoolName) { $PoolConfig = $PoolData.$PoolName }
         If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
         If (-not $PoolConfig.PayoutThreshold -and $PoolData.$PoolName.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
-        If (-not $PoolConfig.PricePenaltyFactor) { $PoolConfig | Add-Member PricePenaltyFactor $Config.PricePenaltyFactor -Force }
+        If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig | Add-Member EarningsAdjustmentFactor $Config.EarningsAdjustmentFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
         Switch ($PoolName) { 
             "HiveON" { 
@@ -1258,19 +1264,15 @@ Function Read-Config {
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
             }
             Default { 
-                If (-not $PoolConfig.PayoutCurrency) { 
-                    If ($PoolData.$PoolName.PayoutCurrency -ne "[Default]") { 
-                        $PoolConfig | Add-Member PayoutCurrency $PoolData.$PoolName.PayoutCurrency -Force
-                    }
-                    Else { 
-                        $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force
-                    }
+                If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { 
+                    $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force
                 }
                 If (-not $PoolConfig.Wallets) { 
                     $PoolConfig | Add-Member Wallets @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } -Force
                 }
             }
         }
+        If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
         $PoolConfig.PSObject.Members.Remove("PayoutCurrencies")
         $PoolConfig.PSObject.Members.Remove("PayoutCurrency")
         $PoolsConfig.$PoolName = $PoolConfig
@@ -2704,8 +2706,7 @@ Function Update-ConfigFile {
     )
 
     # Changed config items
-    $Changed_Config_Items = $Config.GetEnumerator().Name | Where-Object { $_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig")) }
-    $Changed_Config_Items | ForEach-Object { 
+    $Config.GetEnumerator().Name | ForEach-Object { 
         Switch ($_) { 
             "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
@@ -2716,6 +2717,7 @@ Function Update-ConfigFile {
             "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
+            "PricePenaltyFactor" { $Config.EarningsAdjustmentFactor = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "UserName" { 
                 If (-not $Config.MiningPoolHubUserName) { $Config.MiningPoolHubUserName = $Config.$_ }
@@ -2730,10 +2732,12 @@ Function Update-ConfigFile {
                 $Config.Remove($_)
             }
             "WarmupTime" { $Config.WaitForMinerData = $Config.$_; $Config.Remove($_) }
-            Default { $Config.Remove($_) } # Remove unsupported config item
+            Default { 
+                If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } # Remove unsupported config item
+            }
         }
     }
-    Remove-Variable Changed_Config_Items -ErrorAction Ignore
+    # Remove-Variable Changed_Config_Items -ErrorAction Ignore
 
     # Add new config items
     If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
