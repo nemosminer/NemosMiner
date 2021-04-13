@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.33
-Version date:   11 April 2021
+Version:        3.9.9.34
+Version date:   13 April 2021
 #>
 
 # Start the log
@@ -56,7 +56,10 @@ While ($true) {
             # Read existing earning data, use data from last file
             ForEach ($Filename in Get-ChildItem ".\Logs\BalancesTrackerData*.json" | Sort-Object -Descending) {
                 $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null
-                If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { Break }
+                If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { 
+                    $Variables.BalanceData = $AllBalanceObjects
+                    Break
+                }
             }
             If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }
             Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
@@ -144,6 +147,7 @@ While ($true) {
                     If ($PoolBalanceObject.Withdrawal -gt 0) { 
                         # NiceHash temporarily reduces 'Balance' value before paying out
                         $PoolBalanceObject.Balance += $PoolBalanceObject.Withdrawal
+                        $Payout = 0
                     }
                     ElseIf (($PoolBalanceObjects | Select-Object -Last 1).Withdrawal -gt 0 -and $PoolBalanceObject.Withdrawal -eq 0) { 
                         # Payout occurred
@@ -175,7 +179,7 @@ While ($true) {
                         }
                     }
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
-                    $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta + $HiddenPending + $Payout)
+                    $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta + $HiddenPending + $Payout)
                 }
                 ElseIf ($PoolBalanceObject.Pool -match "^MiningPoolHub(|Coins)$") { 
                     # MiningHubPool never reduces earnings
@@ -183,10 +187,11 @@ While ($true) {
                     If ($Delta -lt 0) { 
                         # Payout occured
                         $Payout = $Delta * -1
-                        $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings)
                     }
                     Else { 
-                        $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
+                        $Payout = 0
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                     }
                 }
                 ElseIf ($PoolBalanceObject.Pool -like "ProHashing*") { 
@@ -198,7 +203,7 @@ While ($true) {
                     Else { 
                         $Payout = 0
                     }
-                    $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
+                    $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
                 }
                 Else { 
                     # AHashPool, BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool
@@ -213,20 +218,19 @@ While ($true) {
                             # Pool reduced earnings
                             $Payout = $Delta = 0
                         }
-                        $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings)
                     }
                     Else { 
-                        $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                         $Payout = 0
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                     }
                 }
-
-                $PoolBalanceObject | Add-Member Payout ([Double](($PoolBalanceObjects | Select-Object -Last 1).Payout + $Payout))
+                $PoolBalanceObject | Add-Member Payout ([Double]$Payout)
                 $PoolBalanceObject | Add-Member Delta ([Double]$Delta)
 
-                $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
-                $AvgDailyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
-                $AvgWeeklyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
+                $AvgHourlyGrowth  = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
+                $AvgDailyGrowth   = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
+                $AvgWeeklyGrowth  = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
 
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 1) { 
                     # Only calculate if current balance data

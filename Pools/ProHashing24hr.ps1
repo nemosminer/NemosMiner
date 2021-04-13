@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        3.9.9.33
-Version date:   11 April 2021
+Version:        3.9.9.34
+Version date:   13 April 2021
 #>
 
 
@@ -47,7 +47,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
     # $PriceField = "actual_last24h"
     $PriceField = "actual_last24h"
     $PoolRegions = "US"
-    
+
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
@@ -70,7 +70,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Host                     = [String]$PoolHost
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolsConfig.$Name_Norm.UserName
-                Pass                     = "a=$($Algorithm_Norm),m=pps,n=$($PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
+                Pass                     = "a=$Algorithm,m=pps,n=$($PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
                 Fee                      = $Fee

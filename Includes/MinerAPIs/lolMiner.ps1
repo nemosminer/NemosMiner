@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        3.9.9.33
-Version date:   11 April 2021
+Version:        3.9.9.34
+Version date:   13 April 2021
 #>
 
 using module ..\Include.psm1

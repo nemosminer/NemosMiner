@@ -139,22 +139,6 @@ function formatHashRate(value) {
   }
 }
 
-// function formatmBTC(value) {
-//   if (value === '') return "-";
-//   if (value > 0) return (parseFloat(value * rate / 1000).toFixed(8) + " " + maincurrency);
-//   if (value == 0) return (parseFloat(0).toFixed(8) + " " + maincurrency);
-//   if (value < 0) return (parseFloat(value * rate / 1000).toFixed(8) + " " + maincurrency);
-//   return '-';
-// };
-
-// function formatBTC(value) {
-//   if (value === '') return "-";
-//   if (value > 0) return (parseFloat(value * rate).toFixed(8) + " " + maincurrency);
-//   if (value == 0) return (parseFloat(0).toFixed(8) + " " + maincurrency);
-//   if (value < 0) return (parseFloat(value * rate).toFixed(8) + " " + maincurrency);
-//   return '-';
-// };
-
 function formatmBTC(value) {
   if (value === '') return "-";
   if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
