@@ -217,6 +217,7 @@ While ($true) {
                     }
                     Else { 
                         $PoolBalanceObject | Add-Member Earnings (($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
+                        $Payout = 0
                     }
                 }
 
