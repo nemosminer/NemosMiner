@@ -7,16 +7,16 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.50 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower sppeed at the pool
+    # [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; Arguments = " -amd -eres 1" } # GMiner-v2.50 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower sppeed at the pool
+    # [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; Arguments = " -amd -eres 1" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin UBQ" }
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" }
 
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v2.50 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower sppeed at the pool
+    # [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1" } # GMiner-v2.50 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower sppeed at the pool
+    # [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.4c is maybe faster, bit I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" } # TTMiner-v5.0.3 is fastest
