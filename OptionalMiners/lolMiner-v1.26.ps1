@@ -2,7 +2,7 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\lolminer.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.25/lolMiner_v1.25_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.26/lolMiner_v1.26_Win64.zip"
 $DeviceEnumerator = "Bus"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
