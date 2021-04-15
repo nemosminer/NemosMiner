@@ -41,9 +41,11 @@
 
   <!-- Start of page scripts -->
   <script type="text/javascript">
+    var maincurrency;
+    var rate;
+    var config = {};
 
     // Get current config
-    var config = {};
     $.ajax({
       url: '/config',
       async: false,
@@ -61,19 +63,20 @@
       }
     });
 
-    // get BTC rate of first currency
-    var rate;
-    $.ajax({
-      url: '/btc',
-      async: false,
-      success: function(result) {
-        rate = result;
-      }
-    });
-
     // set the values in the header
     $(function() {
       function updateHeader() {
+
+        // get BTC rate of first currency
+        $.ajax({
+          url: '/btc',
+          async: false,
+          success: function(result) {
+            rate = result;
+          }
+        });
+
+        // get page header info
         $.ajax({
           url: '/summary',
           success: function(result) {
