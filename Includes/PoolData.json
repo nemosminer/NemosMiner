@@ -132,8 +132,7 @@
       "ETH",
       "DASH"
     ],
-    "PayoutCurrency": "[Default]",
-    // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
+    "PayoutCurrency": "[Default]", // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
   },
   "Zpool": {
     "GuaranteedPayoutCurrencies": [
@@ -145,7 +144,7 @@
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
-      "mBTC": 2.5,
+      "mBTC": 2.1,
       "*": 0.0125
     }
   }
