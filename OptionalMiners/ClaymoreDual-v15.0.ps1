@@ -60,10 +60,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { 
                     $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
-                    $WarmupTime = 30 # Seconds, max. wait time until first data sample
-                }
-                Else { 
-                    $WarmupTime = 0 # Seconds, max. wait time until first data sample
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -116,7 +112,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTime = $WarmupTime = 30 # Seconds, additional wait time until first data sample
                     }
                 }
             }

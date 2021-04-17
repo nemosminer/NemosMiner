@@ -2,23 +2,23 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.20.0/t-rex-0.20.0-win.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.20.1/t-rex-0.20.1-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.51 is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.51 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.10.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo mtp --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "MTPTcr";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; Arguments = " --algo mtp-tcr --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "Multi";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo multi --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; MinerSet = 0; Arguments = " --algo octopus --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "ProgPoW";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo progpow" }
-    [PSCustomObject]@{ Algorithm = "Tensority";  Fee = 0.03; MinMemGB = 2; MinerSet = 0; Arguments = " --algo tensority --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "Veil";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo progpow-veil --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "VeriBlock";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo progpow-veriblock" }
-    [PSCustomObject]@{ Algorithm = "Zano";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo progpowz --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTime = 45; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.51 is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTime = 45; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.51 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTime = 45; Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.10.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "MTP";        Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTime = 15; Arguments = " --algo mtp --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "MTPTcr";     Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTime = 15; Arguments = " --algo mtp-tcr --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "Multi";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo multi --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "Octopus";    Fee = 0.02; MinMemGB = 5; MinerSet = 0; WarmupTime = 30; Arguments = " --algo octopus --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "ProgPoW";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpow" }
+    [PSCustomObject]@{ Algorithm = "Tensority";  Fee = 0.03; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo tensority --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "Veil";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpow-veil --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "VeriBlock";  Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpow-veriblock" }
+    [PSCustomObject]@{ Algorithm = "Zano";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpowz --intensity 25" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -34,12 +34,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    $WarmupTime = 45 # Seconds, max. wait time until first data sample
                 }
-                ElseIf ($_.Algorithm -eq "Lyra2Z") { $WarmupTime = 60 } # Seconds, max. wait time until first data sample
-                ElseIf ($_.Algorithm -match "^Octopus$|^Sonoa$") { $WarmupTime = 30 } # Seconds, max. wait time until first data sample
-                ElseIf ($_.Algorithm -match "^MegaBtx$|^MTP$") { $WarmupTime = 15 } # Seconds, max. wait time until first data sample
-                Else { $WarmupTime = 0 } # Seconds, max. wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -58,7 +53,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
                     If ($Pools.($_.Algorithm).SSL -eq $true) { $Stratum += "+ssl://" } Else { $Stratum += "+tcp://" }
 
-                    If ($_.Algorithm -eq "ProgPoW") { 
+                    If ($_.Algorithm -eq "ProgPoW" -or $_.Algorithm -eq "Zano" ) { 
                         If ($Pools.($_.Algorithm).Currency -in @("SERO", "ZANO")) { 
                             $Coin = " --coin $($Pools.($_.Algorithm).Currency)"
                         }
@@ -90,7 +85,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
                         PowerUsageInAPI = $true
-                        WarmupTime      = $WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTime      = $_.WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

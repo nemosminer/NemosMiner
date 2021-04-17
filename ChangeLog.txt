@@ -5,6 +5,21 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.35 17.04.2021
+========================================
+
+Fixed:
+- Web GUI / Running Miners: 0.00000 earnings until first manual page refresh
+
+Miner updates:
+- GMiner-v2.52
+- JayddeeCpu-v3.16.2
+- lolMiner-v1.26
+- RplantCpu-v5.0.21
+- SRBMinerMulti-v0.7.3
+- Trex-v0.20.1
+
+
 Changelog NemosMiner 3.9.9.34 13.04.2021
 ========================================
 

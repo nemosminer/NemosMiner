@@ -9,20 +9,20 @@ $DevicesBus = @(($Devices | Select-Object).Bus | Sort-Object)
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "AMD"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0; MinerSet = 1; Arguments = " --algo etchash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";  Type = "AMD"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0; MinerSet = 1; Arguments = " --algo ethash" } # BMiner-v16.3.7 & PhoenixMiner-v5.5c are fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "AMD"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0; MinerSet = 1; Arguments = " --algo kawpow" } # XmRig-v6.10.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "EtcHash"; Type = "AMD"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0; MinerSet = 1; WarmupTime = 45; Arguments = " --algo etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";  Type = "AMD"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0; MinerSet = 1; WarmupTime = 45; Arguments = " --algo ethash" } # BMiner-v16.3.7 & PhoenixMiner-v5.5c are fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";  Type = "AMD"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0; MinerSet = 1; WarmupTime = 45; Arguments = " --algo kawpow" } # XmRig-v6.10.0 is almost as fast but has no fee
  
-    [PSCustomObject]@{ Algorithm = "BeamV3";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo beamv3" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 8.0; MinMemGBWin10 = 10.0; MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo cuckatoo32" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo cuckoo_ae" } # GMiner-v2.51 is fastest
-    [PSCustomObject]@{ Algorithm = "Ergo";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo ergo" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo etchash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo ethash" } # BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 1; Arguments = " -mt 1 --algo kawpow" } # XmRig-v6.10.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = "Sero";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 2.0; MinMemGBWin10 = 2.0;  MinComputeCapability = 6.0; MinerSet = 0; Arguments = " -mt 1 --algo progpow_sero" }
-    [PSCustomObject]@{ Algorithm = "Octopus";    Type = "NVIDIA"; Fee = 0.03; MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.1; MinerSet = 1; Arguments = " -mt 1 --algo octopus" } # Trex-v0.20.0  is fastest
-)
+    [PSCustomObject]@{ Algorithm = "BeamV3";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 0; WarmupTime = 0;  Arguments = " -mt 1 --algo beamv3" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32"; Type = "NVIDIA"; Fee = 0.02; MinMemGB = 8.0; MinMemGBWin10 = 10.0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTime = 0;  Arguments = " -mt 1 --algo cuckatoo32" }
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; WarmupTime = 0;  Arguments = " -mt 1 --algo cuckoo_ae" } # GMiner-v2.51 is fastest
+    [PSCustomObject]@{ Algorithm = "Ergo";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.0; MinerSet = 0; WarmupTime = 0;  Arguments = " -mt 1 --algo ergo" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; WarmupTime = 45; Arguments = " -mt 1 --algo etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; WarmupTime = 45; Arguments = " -mt 1 --algo ethash" } # BMiner-v16.3.7 & TTMiner-v5.0.3 are fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 1; WarmupTime = 45; Arguments = " -mt 1 --algo kawpow" } # XmRig-v6.10.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "Sero";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 2.0; MinMemGBWin10 = 2.0;  MinComputeCapability = 6.0; MinerSet = 0; WarmupTime = 0;  Arguments = " -mt 1 --algo progpow_sero" }
+    [PSCustomObject]@{ Algorithm = "Octopus";    Type = "NVIDIA"; Fee = 0.03; MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.1; MinerSet = 1; WarmupTime = 30; Arguments = " -mt 1 --algo octopus" } # TRex-v0.20.1  is fastest
+) WarmupTime = 0;
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
@@ -41,11 +41,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB = $_.MinMemGBWin10 } Else { $MinMemGB = $_.MinMemGB }
 
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $WarmupTime = 45 # Seconds, max. wait time until first data sample
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
-                ElseIf ($_.Algorithm -eq "Octopus") { $WarmupTime = 30 }# Seconds, max. wait time until first data sample
-                Else { $WarmupTime = 0 }# Seconds, max. wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.OpenCL.ComputeCapability -ge $MinComputeCapability })) { 
 
@@ -88,7 +85,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI        = $Uri
                         Fee        = $_.Fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

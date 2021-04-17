@@ -7,21 +7,21 @@ $DeviceEnumerator = "Type_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "AMD"; Fee = 0.025; MinMemGB = 2;  MinerSet = 0; Coin= "Autolykos" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Ethash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "AMD"; Fee = 0.02;  MinMemGB = 3;  MinerSet = 1; Coin= "Kawpow" } # TeamRed-v0.8.1.1 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4;  MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "AMD"; Fee = 0.025; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Coin= "Autolykos" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ethash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "AMD"; Fee = 0.02;  MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Coin= "Kawpow" } # TeamRed-v0.8.1.1 is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 
     [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin = "RandomX" } # XmRig-v6.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; Coin = "VerusHash" }
 
-    [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "NVIDIA"; Fee = 0.025; MinMemGB = 2; MinerSet = 0; Coin= "Autolykos" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; Coin= "Kawpow" } # Trex-v0.20.0  is fastest
-    [PSCustomObject]@{ Algorithm = "Octopus";    Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 4; MinerSet = 1; Coin= "Octopus" } # NBMiner-v37.1 is faster
-    [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2"; Type = "NVIDIA"; Fee = 0.025; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Coin= "Autolykos" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Coin= "Kawpow" } # TRex-v0.20.1  is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus";    Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Octopus" } # NBMiner-v37.1 is faster
+    [PSCustomObject]@{ Algorithm = "UbqHash";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -37,10 +37,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-                    $WarmupTime = 30 # Seconds, additional wait time until first data sample
                 }
-                ElseIf ($_.Algorithm -eq "Octopus") { $WarmupTime = 30 } # Seconds, additional wait time until first data sample
-                Else { $WarmupTime = 0 } # Seconds, additional wait time until first data sample
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
@@ -87,7 +84,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI        = $Uri
                         Fee        = $_.Fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)/#/"
-                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

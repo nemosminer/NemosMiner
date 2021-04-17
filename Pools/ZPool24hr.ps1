@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool24hr.ps1
-Version:        3.9.9.34
-Version date:   13 April 2021
+Version:        3.9.9.35
+Version date:   17 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -39,7 +39,7 @@ $Wallet = $PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
 
 If ($Wallet) {  
     Try { 
-        $Request = Invoke-RestMethod -Uri "http://www.zpool.ca/api/status" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
+        $Request = Invoke-RestMethod -Uri "https://www.zpool.ca/api/status" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 

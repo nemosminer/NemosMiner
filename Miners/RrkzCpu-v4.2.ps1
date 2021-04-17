@@ -6,7 +6,7 @@ $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpumi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; Arguments = " --algo cpupower" } # SRBMminerMulti-v0.6.3 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; Arguments = " --algo cpupower" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; Arguments = " --algo power2b" }
 )
 

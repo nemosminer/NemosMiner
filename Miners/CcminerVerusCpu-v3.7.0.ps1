@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.7.0/ccm
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; MinerSet = 2; Arguments = " --algo verus" } # NheqMiner-v0.8.2 is faster, SRBMminerMulti-v0.6.3 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "VerusHash"; MinerSet = 2; Arguments = " --algo verus" } # NheqMiner-v0.8.2 is faster, SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

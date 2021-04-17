@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Zpool.ps1
-Version:        3.9.9.34
-Version date:   13 April 2021
+Version:        3.9.9.35
+Version date:   17 April 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -34,7 +34,7 @@ $RetryDelay = 10
 While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
     $RetryCount--
     Try { 
-        $APIResponse = Invoke-RestMethod "http://zpool.ca/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+        $APIResponse = Invoke-RestMethod "https://zpool.ca/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
 
         If ($Config.LogBalanceAPIResponse -eq $true) { 
             $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force

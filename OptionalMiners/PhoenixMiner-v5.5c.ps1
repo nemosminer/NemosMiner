@@ -7,19 +7,19 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; Arguments = " -amd -eres 1" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin UBQ" }
-    [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; WarmupTime = 30; Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; WarmupTime = 30; Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12"; WarmupTime = 30; Arguments = " -amd -eres 1" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; WarmupTime = 30; Arguments = " -amd -eres 1 -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "AMD"; Fee = @(0.0065);   MinerSet = 0; Tuning = " -mi 12"; WarmupTime = 30; Arguments = " -amd -eres 1 -coin UBQ" }
+    [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12"; WarmupTime = 30; Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" }
 
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTime = 30; Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTime = 30; Arguments = " -nvidia -eres 1 -coin ETC -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTime = 30; Arguments = " -nvidia -eres 1" } # GMiner-v2.51 is just as fast, PhoenixMiner-v5.5c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTime = 30; Arguments = " -nvidia -eres 1 -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTime = 30; Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTime = 30; Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" } # TTMiner-v5.0.3 is fastest
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -87,16 +87,9 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($Config.UseMinerTweaks -eq $true) { 
                         $Arguments += $_.Tuning
                     }
- 
-                    If ($_.Algorithm[1] -and (-not $_.Intensity)) { 
-                        # Allow 75 seconds for auto-tuning
-                        $WarmupTime = 75
-                    }
-                    Else { 
-                        $WarmupTime = 30
-                    }
 
-                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub*") { $WarmupTime += 30 } # Seconds longer for MPH because of long connect issue
+                    If ($_.Algorithm[1] -and (-not $_.Intensity)) { $_.WarmupTime += 45 } # Allow extra 45 seconds for auto-tuning
+                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub*") { $_.WarmupTime += 30 } # Seconds longer for MPH because of long connect issue
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
@@ -111,7 +104,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }

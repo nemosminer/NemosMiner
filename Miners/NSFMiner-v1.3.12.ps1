@@ -7,8 +7,8 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinerSet = 0; Arguments = " --opencl --devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinerSet = 0; Arguments = " --cuda --devices" } # PhoenixMiner-v5.5c is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.5c is fastest but has dev fee
 )
 
 $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -33,8 +33,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
-                $WarmupTime = 30
-                If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $WarmupTime += 30 }
+                If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTime += 30 }
 
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name
@@ -48,7 +47,7 @@ $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model 
                     Wrap       = $false
                     URI        = $Uri
                     MinerUri   = "http://localhost:$($MinerAPIPort)"
-                    WarmupTime = $WarmupTime # Seconds, additional wait time until first data sample
+                    WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
                 }
             }
         }

@@ -70,7 +70,31 @@
   <script id="poolbalance_template" type="text/x-handlebars-template">
     <div class="card m-3 {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
       <div class="card-header text-center">
-        {{#if total}}<h5>{{{name}}}</h5><table class="center" style="width: 102%"><tr><th style="text-align:center">Earnings last hour</th><th style="text-align:center">Earnings last 6 hours</th><th style="text-align:center">Earnings last 24 hours</th><th style="text-align:center">Earnings last 7 days</th><th style="text-align:center">Earnings last 30 days</th></tr><tr><td style="text-align:center">{{formatCurrency growth1sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth6sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth24sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth168sum}} {{firstcurrency}}</td><td style="text-align:center">{{formatCurrency growth720sum}} {{firstcurrency}}</td></tr><tr><td style="text-align:center">{{formatCurrency growth1summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth6summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth24summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth168summbtc}} mBTC</td><td style="text-align:center">{{formatCurrency growth720summbtc}} mBTC</td></tr></table>
+        {{#if total}}
+          <h5>{{{name}}}</h5>
+          <table class="center" style="width: 102%">
+            <tr>
+              <th style="text-align:center">Earnings last hour</th>
+              <th style="text-align:center">Earnings last 6 hours</th>
+              <th style="text-align:center">Earnings last 24 hours</th>
+              <th style="text-align:center">Earnings last 7 days</th>
+              <th style="text-align:center">Earnings last 30 days</th>
+            </tr>
+            <tr>
+              <td style="text-align:center">{{formatCurrency growth1sum}} {{firstcurrency}}</td>
+              <td style="text-align:center">{{formatCurrency growth6sum}} {{firstcurrency}}</td>
+              <td style="text-align:center">{{formatCurrency growth24sum}} {{firstcurrency}}</td>
+              <td style="text-align:center">{{formatCurrency growth168sum}} {{firstcurrency}}</td>
+              <td style="text-align:center">{{formatCurrency growth720sum}} {{firstcurrency}}</td>
+            </tr>
+            <tr>
+              <td style="text-align:center">{{formatCurrency growth1summbtc}} mBTC</td>
+              <td style="text-align:center">{{formatCurrency growth6summbtc}} mBTC</td>
+              <td style="text-align:center">{{formatCurrency growth24summbtc}} mBTC</td>
+              <td style="text-align:center">{{formatCurrency growth168summbtc}} mBTC</td>
+              <td style="text-align:center">{{formatCurrency growth720summbtc}} mBTC</td>
+            </tr>
+          </table>
         {{else}}
           <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
           <div title="Data last collected from pool">
