@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        3.9.9.35
-Version date:   17 April 2021
+Version:        3.9.9.36
+Version date:   20 April 2021
 #>
 
 

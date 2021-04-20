@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.35
-Version date:   17 April 2021
+Version:        3.9.9.36
+Version date:   20 April 2021
 #>
 
 [CmdletBinding()]
@@ -244,7 +244,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.35"
+    Version      = [System.Version]"3.9.9.36"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -301,6 +301,28 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 }
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
+# Load algorithm list
+$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Algorithms) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
+# Load regions list
+$Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Regions) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
+# Verify pool data
+Try { [Void](Get-Content -Path ".\Includes\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
+Catch { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\PoolData.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
+
 # Read configuration
 Read-Config -ConfigFile $Variables.ConfigFile
 
@@ -348,21 +370,6 @@ Get-NMVersion
 # Update config file to include all new config items
 If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion )) { 
     Update-ConfigFile -ConfigFile $Variables.ConfigFile
-}
-
-# Load algorithm list
-$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load regions list
-$Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
-    Start-Sleep -Seconds 10
-    Exit
 }
 
 Write-Message -Level Verbose "Loading device information..."
