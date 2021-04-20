@@ -8,6 +8,7 @@ Changelog NemosMiner 3.9.9.36 19.04.2021
 ========================================
 
 Fixes:
+- JayddeeCpu-v3.16.2: Fix download link
 - MiningPoolHub balances: filter 0 valued currencies
 
 Miner updates:
