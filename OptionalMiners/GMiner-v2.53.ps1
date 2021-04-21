@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.52/gminer_2_52_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.53/gminer_2_53_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -33,8 +33,6 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime = 30; Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.10.0 is almost as fast but has no fee
-
-
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
