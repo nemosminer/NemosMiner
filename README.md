@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 20 April 2021
+Updated 21 April 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -173,7 +173,7 @@ Easy configuration, easy start:
       Example scenario:
          - You feel like a pool is exaggerating its estimations by 10% - Set PricePenaltyFactor to 0.9
 
-   AHashPool/BlazePool/BlockMasters/NLPool/ZergPool/Zpool
+   AHashPool/BlockMasters/NLPool/ZergPool/Zpool
 
       Uses calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
       Includes some trust index based on past 1hr current estimate variation from 24hr.
@@ -186,7 +186,6 @@ Easy configuration, easy start:
       Displays BTC/h and BTC/d as well a estimation of when the pool payment threshold will be reached.
       Supported pools:
          - AHashPool
-         - BlazePool
          - BlockMasters
          - HiveON
          - MiningPoolHub

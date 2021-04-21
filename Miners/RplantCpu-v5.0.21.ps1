@@ -29,7 +29,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerItc";   MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerITC" }
     [PSCustomObject]@{ Algorithm = "YespowerLitb";  MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerLITB" }
     [PSCustomObject]@{ Algorithm = "YespowerLtncg"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerLTNCG" }
-    [PSCustomObject]@{ Algorithm = "YespowerR16";   MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerr16" }
+    [PSCustomObject]@{ Algorithm = "YespowerR16";   MinerSet = 0; WarmupTime = 45; Arguments = " --algo yespowerr16" }
     [PSCustomObject]@{ Algorithm = "YespowerRes";   MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerRes" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerSugar" }
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTime = 0;  Arguments = " --algo yespowerTIDE" }

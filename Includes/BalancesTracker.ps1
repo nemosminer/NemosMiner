@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.36
-Version date:   20 April 2021
+Version:        3.9.9.37
+Version date:   21 April 2021
 #>
 
 # Start the log
@@ -240,15 +240,15 @@ While ($true) {
                 }
                 Else { 
                     # Only calculate if current balance data
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }) { $Growth1 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }) { $Growth6 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }) { $Growth24 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }).Earnings | Measure-Object -Minimum).Minimum) }
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }).Earnings | Measure-Object -Minimum).Minimum) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }) { $Growth1 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }) { $Growth6 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }) { $Growth24 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
                 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
-                    $GrowthToday = [Double]($PoolBalanceObject.Earnings - (($PoolBalanceObjects | Where-Object { $_.DateTime.ToLocalTime().Date -eq $Now.Date }).Earnings | Measure-Object -Minimum).Minimum)
+                    $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.ToLocalTime().Date -eq $Now.Date } | Sort-Object Date | Select-Object -Index 0).Earnings)
                 }
 
                 $PoolBalanceObjects += $PoolBalanceObject

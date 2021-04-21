@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.36
-Version date:   20 April 2021
+Version:        3.9.9.37
+Version date:   21 April 2021
 #>
 
 using module .\Include.psm1
@@ -428,11 +428,13 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
         If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
         # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency, NiceHash is always right
-        $Variables.Pools | Where-Object Price -GT 0 | Where-Object Name -NE "NiceHash" | Group-Object -Property Algorithm, Currency | ForEach-Object { 
-            If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
-                $_.Group | Where-Object Price_Bias -gt $PriceThreshold | ForEach-Object { 
-                    $_.Available = $false
-                    $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than average price of all other pools)"
+        If ($Config.UnrealPoolPriceFactor -gt 1) { 
+            $Variables.Pools | Where-Object Price -GT 0 | Where-Object Name -NE "NiceHash" | Group-Object -Property Algorithm, Currency | ForEach-Object { 
+                If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
+                    $_.Group | Where-Object Price_Bias -gt $PriceThreshold | ForEach-Object { 
+                        $_.Available = $false
+                        $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than average price of all other pools)"
+                    }
                 }
             }
         }
@@ -729,11 +731,13 @@ Function Start-Cycle {
     $Variables.MinersNeedingPowerUsageMeasurement = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
 
     # Detect miners with unreal earning (> x higher than the next best 10% miners, error in data provided by pool?)
-    $Variables.Miners | Where-Object Available -EQ $true | Group-Object { $_.DeviceName } | ForEach-Object {
-        If ($ReasonableEarning = [Double]($_.Group | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
-            $_.Group | Where-Object Earning -gt $ReasonableEarning | ForEach-Object { 
-                $_.Available = $false
-                $_.Reason += "Unreal profit data (-gt $($Config.UnrealMinerEarningFactor)x higher than the next best 10% available miners of the same device(s))"
+    If ($Config.UnrealMinerEarningFactor -gt 1) { 
+        $Variables.Miners | Where-Object Available -EQ $true | Group-Object { $_.DeviceName } | ForEach-Object {
+            If ($ReasonableEarning = [Double]($_.Group | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
+                $_.Group | Where-Object Earning -gt $ReasonableEarning | ForEach-Object { 
+                    $_.Available = $false
+                    $_.Reason += "Unreal profit data (-gt $($Config.UnrealMinerEarningFactor)x higher than the next best 10% available miners of the same device(s))"
+                }
             }
         }
     }
@@ -1166,7 +1170,7 @@ While ($true) {
                             }
                             Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
                         }
-                        If ($Miner.AllowedBadShareRatio) { 
+                        If ($Miner.AllowedBadShareRatio -gt 0) { 
                             $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
                                 If ($Sample.Shares.$_[1] -gt 0 -and ($Sample.Shares.$_[2] -gt [Int](1 / $Miner.AllowedBadShareRatio * 100)) -and ($Sample.Shares.$_[1] / $Sample.Shares.$_[2] -gt $Miner.AllowedBadShareRatio)) { 
                                     Write-Message -Level Error "Miner '$($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1]))." 

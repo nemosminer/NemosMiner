@@ -6,8 +6,8 @@ $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpumi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; Arguments = " --algo cpupower" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; Arguments = " --algo power2b" }
+    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTime = 15; Arguments = " --algo cpupower" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; WarmupTime = 0;  Arguments = " --algo power2b" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -36,6 +36,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     API        = "Ccminer"
                     Port       = $MinerAPIPort
                     URI        = $Uri
+                    Warmuptime = $_.WarmupTime # Seconds, additional wait time until first data sample
                 }
             }
         }

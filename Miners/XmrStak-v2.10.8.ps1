@@ -20,21 +20,21 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightV1";         MinMemGB = 2; Type = "AMD"; MinerSet = 0; WarmupTime = 60; Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";        MinMemGB = 2; Type = "AMD"; MinerSet = 0; WarmupTime = 60; Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightV2";         MinMemGB = 2; Type = "AMD"; MinerSet = 0; WarmupTime = 60; Arguments = " --noCPU --noNVIDIA --amd" }
-WarmupTime = 60; 
-    [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";        Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";       Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      Type = "CPU"; MinerSet = 1; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" } # XmRig-v6.10.0 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightMsr";        Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";          Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";     Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";        Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";         Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXtl";        Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";         Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noNVIDIA --cpu" }
+
+    [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";        Type = "CPU"; MinerSet = 0; WarmupTime = 30; Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";       Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";     Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc";   Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyHaven"; Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";      Type = "CPU"; MinerSet = 1; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" } # XmRig-v6.10.0 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightMsr";        Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightR";          Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";     Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";        Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";         Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXtl";        Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";         Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --noAMD --noNVIDIA --cpu" }
 
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2";   MinMemGB = 4; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";        MinMemGB = 3; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 0; Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }

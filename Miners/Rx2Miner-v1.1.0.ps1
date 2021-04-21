@@ -6,7 +6,7 @@ $Uri = "https://github.com/LUX-Core/rx2-cpuminer/releases/download/1.1.0/cpumine
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; Arguments = " --algo rx2" }
+#    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; Arguments = " --algo rx2" }  # No Hashrate in time
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -35,7 +35,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     API        = "Ccminer"
                     Port       = $MinerAPIPort
                     URI        = $Uri
-                    WarmupTime = 45 # seconds
+                    WarmupTime = 60 # seconds
                 }
             }
         }

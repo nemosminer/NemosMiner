@@ -6,8 +6,8 @@ $Uri = "https://github.com/patrykwnosuch/cpuminer-nosuch/releases/download/3.8.8
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "BinariumV1"; MinerSet = 0; Arguments = " --algo binarium-v1" }
-    [PSCustomObject]@{ Algorithm = "m7m";        MinerSet = 0; Arguments = " --algo m7m" }
+    [PSCustomObject]@{ Algorithm = "BinariumV1"; MinerSet = 0; WarmupTime = 15; Arguments = " --algo binarium-v1" }
+    [PSCustomObject]@{ Algorithm = "m7m";        MinerSet = 0; WarmupTime = 0;  Arguments = " --algo m7m" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -42,6 +42,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     API        = "Ccminer"
                     Port       = $MinerAPIPort
                     URI        = $Uri
+                    Warmuptime = $_.WarmupTime # Seconds, additional wait time until first data sample
                 }
             }
         }

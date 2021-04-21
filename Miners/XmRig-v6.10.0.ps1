@@ -33,35 +33,35 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/loki" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/sfx" }
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/wow" }
- WarmupTime = 0;
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo argon2/chukwa" }
-    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo argon2/wrkz" }
-    [PSCustomObject]@{ Algorithm = "AstroBWT";             Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo astrobwt" }
-    [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/ccx" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "CPU"; MinerSet = 1; WarmupTime = 0; Arguments = " --algo cn/double" } # XmrStak-v2.10.8 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/fast" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-lite/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-lite/1" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/half" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-heavy/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-heavy/tube" }
-    [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-pico" }
-    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-pico/tlo" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/r" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/rto" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/rwz" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/1" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";        Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/xao" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn-heavy/xhv" }
-    [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo cn/zls" }
-    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo rx/0" }
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo rx/arq" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo rx/kev" }
-    [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo rx/sfx" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo rx/wow" }
+
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo argon2/chukwa" }
+    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo argon2/wrkz" }
+    [PSCustomObject]@{ Algorithm = "AstroBWT";             Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo astrobwt" }
+    [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "CPU"; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo cn/double" } # XmrStak-v2.10.8 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/fast" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-lite/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-lite/1" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/half" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-heavy/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-heavy/tube" }
+    [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-pico" }
+    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-pico/tlo" }
+    [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/r" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/rto" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/rwz" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/1" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";        Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/2" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/xao" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn-heavy/xhv" }
+    [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/zls" }
+    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/0" }
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/arq" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/kev" }
+    [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/loki" }
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/sfx" } # SRBMinerMulti-v0.7.3 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "AstroBWT";             Type = "NVIDIA"; MinMemGB = 0.02; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo astrobwt" }
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "NVIDIA"; MinMemGB = 1;    MinerSet = 0; WarmupTime = 0;  Arguments = " --algo cn/0" }

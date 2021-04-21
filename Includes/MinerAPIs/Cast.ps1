@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Cast.ps1
-Version:        3.9.9.36
-Version date:   20 April 2021
+Version:        3.9.9.37
+Version date:   21 April 2021
 #>
 
 using module ..\Include.psm1

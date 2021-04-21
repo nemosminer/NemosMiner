@@ -84,16 +84,15 @@
         </div>
         <br>
 
-        <div title="Cycle duration (between 30 & 3600 seconds [default 90])&#10;This defines the approximate duration for one cycle." for="Interval">Cycle duration
+        <div title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600 [default 90])" for="Interval">Cycle duration
           <input type="number" id="Interval" name="Interval" min=30 max=3600 value=90> seconds
         </div>
         <br>
 
-        <div title="Default donation duration per day (between 0 - 60 minutes [default 13 &#8792; 0.9%])&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on">Donation duration per day
+        <div title="Default donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60 [default 13 &#8792; 0.9%])">Donation duration per day
           <input type="number" id="Donate" name="Donate" min=0 max=60 value=13> minutes
         </div>
         <br>
-
         <div title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128">Proxy
           <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
         </div>
@@ -115,9 +114,9 @@
         <div title="Initiate background processes, but do no not start mining">
           <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px"> Pause mining on Auto Start
         </div>
-        <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected">
+        <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected&#10;(min=0, max=3600)">
           <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when system is idle for
-          <input title="Min: 0, max: 3600" type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> seconds
+          <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> seconds
         </div>
         <br>
 
@@ -136,7 +135,7 @@
         </div>
         <br>
 
-        <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(1 - 60 minutes; 0 to disable [default: 15]) Note: this will also disable pool balances summary">Poll Pools for Balances & Earnings every
+        <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;Note: this will also disable pool balances summary in the Web GUI dashboard and API&#10;(min=1; max=60; [Default: 15, 0 to disable])">Poll Pools for Balances & Earnings every
           <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 value=15> minutes
           <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
             <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
@@ -275,7 +274,7 @@
             <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
             <label id="PowerPricekWhCurrency" for="PowerPricekWh">
             </div>
-          <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999)">
+          <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999 [Default: 60])">
             <label style="margin-left:20px" for="IdlePowerUsageW">Power Usage of idle system</label>
             <input type="number" step=1 min=0 max=999 value=60 size=3 id="IdlePowerUsageW" name="IdlePowerUsageW"> W
           </div>
@@ -301,17 +300,17 @@
           </div>
           <br>
 
-          <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algorithm & currency&#10;(min=1, max=99)">
+          <div title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algorithm & currency&#10;(min=1, max=99 [Default: 2; 1 disables this check])">
             <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
             <input type="number" step=0.1 min=1 max=99 value=2 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
           </div>
-          <div title="Mark miner as unavailable if earning is x times higher than average earning of all other miners with same algorithm & currency&#10;(min=1, max=99)">
+          <div title="Mark miner as unavailable if earning is x times higher than average earning of all other miners with same algorithm & currency&#10;(min=1, max=99 [Default: 5; 1 disables this check])">
             <label for="UnrealMinerEarningFactor">Unreal Miner Earning Factor</label>
             <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
           </div>
-          <div title="Minimum workers mining the algorithm at the pool&#10;(min=1, max=25).&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'">
-            <label for="MinWorker">Minimum Workers at Pool</label>
+          <div title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=25; [Default: 10; 0 disables this check])"> Minimum 
             <input type="number" step=1 min=0 max=25 value=10 size=3 id="MinWorker" name="MinWorker">
+            <label for="MinWorker">Workers at Pool</label>
           </div>
           <div title="Allowed ratio of bad shares (total / bad) as reported by the miner.&#10;If the ratio exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])">Allowed ratio of bad shares
             <input type="number" step=1 min=0 max=99 value=10 size=3 id="AllowedBadShareRatio" name="AllowedBadShareRatio"> %
@@ -327,20 +326,21 @@
           </div>
           <br>
 
-          <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment to 80%&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')" for="EarningsAdjustmentFactor">Earnings Adjustment Factor
+          <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 80%&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0%, max=100% [Default: 100%])" for="EarningsAdjustmentFactor">Earnings Adjustment Factor
             <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=100 value=100 step=1 size=4> %
           </div>
           <br>
 
-          <div title="As long as no other miner has earning/profit that is&#10;n% higher than the current miner it will not switch.&#10;&#10;Smaller numbers will cause more switching" for="RunningMinerGainPct">Running Miner Gain
+          <div title="As long as no other miner has earning/profit that is&#10;n% higher than the current miner it will not switch.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100% [Default: 5%])" for="RunningMinerGainPct">Running Miner Gain
             <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min=0 max=100 value=5 step=0.1 size=4> %
           </div>
           <br>
 
-          <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100)" for="MinDataSamples">Minimum data samples when benchmarking
+          <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100 [Default: 20])" for="MinDataSamples">Minimum 
             <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 size=4>
+            <label for="MinDataSamples">data samples when benchmarking</label>
           </div>
-          <div title="Number of seconds until first valid data sample from the miner&#10;If the miner does not provide hashrate information the miner will get stopped&#10;(min=15, max=120)&#10;&#10;Note: Some miner/algorithms will automatically extend this time" for="WarmupTime">Miner warmup time until first valid data sample
+          <div title="Number of seconds until first valid data sample from the miner&#10;If the miner does not provide hashrate information the miner will get stopped&#10;&#10;Note: Some miner/algorithms will automatically extend this time&#10;(min=15, max=120 [Default: 15])" for="WarmupTime">Miner warmup time until first valid data sample
             <input type="number" id="WarmupTime" name="WarmupTime" min=15 max=120 value=15 size=4> seconds
           </div>
         </div>
