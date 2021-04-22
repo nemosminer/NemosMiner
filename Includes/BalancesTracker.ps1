@@ -228,9 +228,25 @@ While ($true) {
                 $PoolBalanceObject | Add-Member Payout ([Double]$Payout)
                 $PoolBalanceObject | Add-Member Delta ([Double]$Delta)
 
-                $AvgHourlyGrowth  = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
-                $AvgDailyGrowth   = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
-                $AvgWeeklyGrowth  = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddHours( -1 ) } ) { 
+                    $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
+                }
+                Else {
+                    [Double]($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings)
+                }
+
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -1 ) }) { 
+                    $AvgDailyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
+                }
+                Else { 
+                    $AvgDailyGrowth = [Double]($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings)
+                }
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -7 ) } ) { 
+                    $AvgWeeklyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
+                }
+                Else { 
+                    $AvgWeeklyGrowth = [Double]($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings)
+                }
 
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 1) { 
                     # Only calculate if current balance data

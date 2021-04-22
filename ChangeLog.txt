@@ -10,6 +10,9 @@ Changelog NemosMiner 3.9.9.38.??.??.2021
 Changed:
 - SnakeTail updated to version 1.9.7
 
+Improvement:
+- Web GUI / Balances summary: Improve 1hr / 24hr / 7day avg. earnings prediction
+
 Miner updates:
 - TeamRed-v0.8.2
 
