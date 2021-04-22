@@ -228,26 +228,6 @@ While ($true) {
                 $PoolBalanceObject | Add-Member Payout ([Double]$Payout)
                 $PoolBalanceObject | Add-Member Delta ([Double]$Delta)
 
-                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddHours( -1 ) } ) { 
-                    $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
-                }
-                Else {
-                    [Double]($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings)
-                }
-
-                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -1 ) }) { 
-                    $AvgDailyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
-                }
-                Else { 
-                    $AvgDailyGrowth = [Double]($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings)
-                }
-                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -7 ) } ) { 
-                    $AvgWeeklyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
-                }
-                Else { 
-                    $AvgWeeklyGrowth = [Double]($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings)
-                }
-
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 1) { 
                     # Only calculate if current balance data
                     If (($PoolBalanceObject.DateTime).ToLocalTime() -gt $Now.AddMinutes( -1 )) { 
@@ -256,11 +236,31 @@ While ($true) {
                 }
                 Else { 
                     # Only calculate if current balance data
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) }) { $Growth1 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) }) { $Growth6 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) }) { $Growth24 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) })   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -1 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) })   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -6 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) })  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -24 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
                     If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -168 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
                     If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -ge $Now.AddHours( -720 ) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                }
+
+
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddHours( -1 ) } ) { 
+                    $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
+                }
+                Else {
+                    $AvgHourlyGrowth = $Growth1
+                }
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -1 ) }) { 
+                    $AvgDailyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
+                }
+                Else { 
+                    $AvgDailyGrowth = $Growth24
+                }
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -7 ) } ) { 
+                    $AvgWeeklyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
+                }
+                Else { 
+                    $AvgWeeklyGrowth = $Growth168
                 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
