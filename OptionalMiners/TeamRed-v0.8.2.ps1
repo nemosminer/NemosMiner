@@ -22,9 +22,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; MinerSet = 0; WarmupTime = 60; Arguments = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=cuckarood29_grin" } # 2GB is not enough
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.26 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTime = 30; Arguments = " --algo=etchash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTime = 30; Arguments = " --algo=ethash" } # PhoenixMiner-v5.5c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; MinerSet = 0; WarmupTime = 30; Arguments = " --algo=kawpow" } # Wildrig-v0.28.3 is fastest on Polaris
+    [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTime = 60; Arguments = " --algo=etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTime = 60; Arguments = " --algo=ethash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; MinerSet = 0; WarmupTime = 60; Arguments = " --algo=kawpow" } # Wildrig-v0.28.3 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=lyra2z" } # XmRig-v6.10.0 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=mtp" }
@@ -66,14 +66,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $Arguments = Get-ArgumentsPerDevice -Command $Arguments -ExcludeParameters @("algo", "autotune") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPow") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $Arguments += " --eth_stratum_mode=nicehash" }
-                    If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPow") -and $Miner_Devices.Model -like "RadeonRX5700*") { $Arguments += " --eth_config=A" }
+                    # If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPow") -and $Miner_Devices.Model -like "RadeonRX5700*") { $Arguments += " --eth_config=A" }
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
                     If ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Bin\$($Name)\verthash.dat" -PathType Leaf ))) { 
                         $_.WarmupTime += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                     }
-    
+
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $Miner_Devices.Name
