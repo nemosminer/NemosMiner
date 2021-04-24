@@ -10,11 +10,18 @@ Changelog NemosMiner 3.9.9.38.??.??.2021
 Changed:
 - SnakeTail updated to version 1.9.7
 
+Fixed:
+- CcminerVerusGpu-v3.8 not generating any miner objects
+- CryptoDredge-v0.26.0.ps1 not generating any miner objects
+- NBMiner-v37.1 not generating any miner objects (regression from 3.9.9.37)
+- TTMiner-v5.0.3 not generating any miner objects (regression from 3.9.9.37)
+
 Improvement:
 - Web GUI / Balances summary: Improve 1hr / 24hr / 7day avg. earnings prediction
 
 Miner updates:
 - TeamRed-v0.8.2
+- Trex-v0.20.1
 
 
 Changelog NemosMiner 3.9.9.37 21.04.2021
