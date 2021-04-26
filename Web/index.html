@@ -294,9 +294,9 @@
                           growth168_sum += item.Growth168 * rates[item.Currency]['BTC'];
                           growth720_sum += item.Growth720 * rates[item.Currency]['BTC'];
 
-                          avghourlygrowth_sum += item.AvgHourlyGrowth   * rates[item.Currency]['BTC'];
-                          avgdailygrowth_sum  += item.AvgDailyGrowth    * rates[item.Currency]['BTC'];
-                          avgweeklygrowth_sum += item.AvgWeeklyGrowth   * rates[item.Currency]['BTC'];
+                          avghourlygrowth_sum += item.AvgHourlyGrowth * rates[item.Currency]['BTC'];
+                          avgdailygrowth_sum  += item.AvgDailyGrowth  * rates[item.Currency]['BTC'];
+                          avgweeklygrowth_sum += item.AvgWeeklyGrowth * rates[item.Currency]['BTC'];
 
                           if (!(footer.test(item.Pool))) {
                             if (config.UsemBTC && item.Currency == "BTC") {

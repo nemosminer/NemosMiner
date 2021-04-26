@@ -30,11 +30,10 @@
   <div class="alert alert-info" role="alert">Shows status of all reporting rigs</div>
 
   <table id="workers" class="table"
-    data-toolbar="#toolbar"
-    data-click-to-select="true"
-    data-cache="true"
-    data-toggle="table"
     data-icons="icons"
+    data-url="/displayworkers"
+    data-cache="false"
+    data-toggle="table"
     data-show-button-text="true"
     data-remember-order="true"
     data-filter-control="true"
@@ -47,11 +46,12 @@
     data-show-refresh="true"
     data-auto-refresh="true"
     data-auto-refresh-status="true"
-    data-detail-formatter="detailFormatter"
-    data-url="/displayworkers"
     data-sort-name="LastSeen"
     data-sort-order="asc"
+    data-click-to-select="true"
+    data-detail-formatter="detailFormatter"
     >
+
     <thead>
       <tr>
         <th data-field="LastSeen" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatTimeSince">Last seen</th>
@@ -79,7 +79,7 @@
   $table.bootstrapTable({
     // refresh once per interval
     autoRefreshInterval: (parseInt(config.Interval)),
-    height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20
+    // height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20
   })
 
   // Get config file name
