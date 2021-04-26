@@ -37,7 +37,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $AlgorithmDefinitions | ForEach-Object {
-                If ($_.Algorithm -eq "Phi2" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { return }
                 $MinComputeCapability = $_.MinComputeCapability
                 $MinMemGB = $_.MinMemGB
 

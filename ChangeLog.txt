@@ -15,12 +15,14 @@ Fixed:
 - CryptoDredge-v0.26.0.ps1 not generating any miner objects
 - NBMiner-v37.1 not generating any miner objects (regression from 3.9.9.37)
 - TTMiner-v5.0.3 not generating any miner objects (regression from 3.9.9.37)
+- Web GUI / Unavailable pools: Fix selecting pools using 'Reason'
 
 Improvement:
+- API: Bump to version 3.8.2.0; Added '/poolreasons'
 - Web GUI / Balances summary: Improve 1hr / 24hr / 7day avg. earnings prediction
 
 Miner updates:
-- TeamRed-v0.8.2
+- TeamRed-v0.8.2.1
 - Trex-v0.20.1
 
 
