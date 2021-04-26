@@ -23,7 +23,7 @@ Improvement:
 
 Miner updates:
 - TeamRed-v0.8.2.1
-- Trex-v0.20.1
+- Trex-v0.20.3
 
 
 Changelog NemosMiner 3.9.9.37 21.04.2021
