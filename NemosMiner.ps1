@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.37
-Version date:   21 April 2021
+Version:        3.9.9.38
+Version date:   26 April 2021
 #>
 
 [CmdletBinding()]
@@ -244,7 +244,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.37"
+    Version      = [System.Version]"3.9.9.38"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -434,7 +434,8 @@ Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defe
 # Unblock files
 If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
 If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
-    Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
+    Start-Process (@{ desktop = "PowerShell"; core = "pwsh" }.$PSEdition) "-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1'
+    Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
 }
 
 If ($Config.WebGUI -eq $true) { 

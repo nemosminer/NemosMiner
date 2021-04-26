@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           GMiner.ps1
-Version:        3.9.9.37
-Version date:   21 April 2021
+Version:        3.9.9.38
+Version date:   26 April 2021
 #>
 
 using module ..\Include.psm1
