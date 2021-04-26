@@ -427,9 +427,9 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Price -eq 0" }
         $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
         If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
-        # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency, NiceHash is always right
+        # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency, NiceHash & MPH are always right
         If ($Config.UnrealPoolPriceFactor -gt 1) { 
-            $Variables.Pools | Where-Object Price -GT 0 | Where-Object Name -NE "NiceHash" | Group-Object -Property Algorithm, Currency | ForEach-Object { 
+            $Variables.Pools | Where-Object Price -GT 0 | Where-Object { $_.Name -notmatch "^NiceHash$|^MiningPoolHub*$" } | Group-Object -Property Algorithm, Currency | ForEach-Object { 
                 If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
                     $_.Group | Where-Object Price_Bias -gt $PriceThreshold | ForEach-Object { 
                         $_.Available = $false
@@ -439,15 +439,15 @@ Function Start-Cycle {
             }
         }
         Remove-Variable PriceThreshold -ErrorAction SilentlyContinue
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($Config.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled ('-$($_.Algorithm)' in generic config)" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled ('-$($_.Algorithm)' in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled ('-$($_.Algorithm)' in default pool config)" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($Config.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (`"-$($_.Algorithm)`" in generic config)" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (`"-$($_.Algorithm)`" in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (`"-$($_.Algorithm)`" in default pool config)" }
         If ($Config.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin  @($Config.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in generic config)" } }
         $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',')} | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
-        If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in default pool config)" } }
+        If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (`"-$($_.Algorithm)`" in default pool config)" } }
 
-        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.MinWorker)' in generic config)" } 
-        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker '$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)' in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
+        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker `"$($Config.MinWorker)`" in generic config)" } 
+        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker `"$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)`" in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
         $Variables.Pools | Where-Object { $Config.Pools.($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
