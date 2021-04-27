@@ -439,15 +439,15 @@ Function Start-Cycle {
             }
         }
         Remove-Variable PriceThreshold -ErrorAction SilentlyContinue
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($Config.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (`"-$($_.Algorithm)`" in generic config)" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (`"-$($_.Algorithm)`" in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (`"-$($_.Algorithm)`" in default pool config)" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($Config.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in generic config)" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
+        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in default pool config)" }
         If ($Config.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin  @($Config.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in generic config)" } }
-        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',')} | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
-        If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (`"-$($_.Algorithm)`" in default pool config)" } }
+        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',')} | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
+        If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',') } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)`` in default pool config)" } }
 
-        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker `"$($Config.MinWorker)`" in generic config)" } 
-        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker `"$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)`" in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
+        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" } 
+        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -gt $Config.MinWorker -and $_.Workers -lt $Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").MinWorker)`` in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
         $Variables.Pools | Where-Object { $Config.Pools.($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" } 
 
@@ -877,7 +877,7 @@ Function Start-Cycle {
         $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
     }
     Else { 
-        Write-Message -Level Warn "Mining profit ($($Config.Currency) $(ConvertTo-LocalCurrency -Value [Double]($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -BTCRate ($Variables.Rates."BTC".($Config.Currency)) -Offset 1)) is below the configured threshold of $($Config.Currency) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
+        Write-Message -Level Warn "Mining profit ($($Config.Currency) $(ConvertTo-LocalCurrency -Value ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -Rate ($Variables.Rates."BTC".($Config.Currency)) -Offset 1)) is below the configured threshold of $($Config.Currency) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
     }
 
     $Variables.Summary = ""
@@ -1083,138 +1083,113 @@ $ProgressPreference = "SilentlyContinue"
 If (Test-Path -Path ".\Includes\MinerAPIs" -PathType Container -ErrorAction Ignore) { Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName } }
 
 While ($true) { 
-    If ($Variables.MiningStatus -eq "Paused") { 
-        # Run a dummy cycle to keep the UI updating.
-        $Variables.EndLoopTime = ((Get-Date).AddSeconds($Config.Interval))
+    Start-Cycle
+    Update-Monitoring
 
-        # Keep updating summary in dashboard
-        (@(If ($Config.UsemBTC -eq $true) { "mBTC" } Else { "BTC" }) + @($Config.ExtraCurrencies) | Select-Object -Unique) | Where-Object { ($Variables.Rates.$_.($Config.Currency)) } | ForEach-Object { 
-            $Variables.Summary += "1 $_ = {0:N} $($Config.Currency)&ensp;&ensp;&ensp;" -f ($Variables.Rates.$_.($Config.Currency))
-        }
+    $Variables.RefreshNeeded = $true
+    TimerUITick
 
-        # Update the UI every 30 seconds, and the last 1/6/24hr and text window every 2 minutes
-        For ($i = 0; $i -lt 4; $i++) { 
-            If ($i -eq 3) { 
-                $Variables.EndLoop = $true
-                Update-Monitoring
+    # End loop when
+    # - a miner crashed (and no other miners are benchmarking)
+    # - all benchmarking miners have collected enough samples
+    # - WarmupTime is reached (no readout from miner)
+    $InitialRunningMiners = $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
+    $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
+    If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
+
+    While ((Get-Date) -le $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners)) {
+        $NextLoop = (Get-Date).AddSeconds($Interval)
+        ForEach ($Miner in $RunningMiners) { 
+            If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
+                # Miner crashed
+                Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
+                $Miner.StatusMessage = "Failed $($Miner.StatusMessage)"
+                $Miner.SetStatus([MinerStatus]::Failed)
             }
-            Else { 
-                $Variables.EndLoop = $false
+            ElseIf ($Miner.DataReaderJob.State -ne "Running") { 
+                # Miner data reader process failed
+                Write-Message -Level Error "Miner data reader '$($Miner.Info)' exited unexpectedly."
+                $Miner.SetStatus([MinerStatus]::Failed)
+                $Miner.StatusMessage = "Miner data reader exited unexpectedly."
             }
+            ElseIf ($Miner.DataReaderJob.HasMoreData) { 
+                $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
+                $Sample = @($Samples) | Select-Object -Last 1
 
-            $Variables.StatusText = "Mining paused"
-            Start-Sleep -Seconds 30
-        }
-    }
-    Else { 
-        Start-Cycle
-        Update-Monitoring
-
-        $Variables.RefreshNeeded = $true
-        TimerUITick
-
-        # End loop when
-        # - a miner crashed (and no other miners are benchmarking)
-        # - all benchmarking miners have collected enough samples
-        # - WarmupTime is reached (no readout from miner)
-        $InitialRunningMiners = $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
-        $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
-        If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
-
-        While ((Get-Date) -le $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners)) {
-            $NextLoop = (Get-Date).AddSeconds($Interval)
-            ForEach ($Miner in $RunningMiners) { 
-                If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
-                    # Miner crashed
-                    Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
-                    $Miner.StatusMessage = "Failed $($Miner.StatusMessage)"
-                    $Miner.SetStatus([MinerStatus]::Failed)
-                }
-                ElseIf ($Miner.DataReaderJob.State -ne "Running") { 
-                    # Miner data reader process failed
-                    Write-Message -Level Error "Miner data reader '$($Miner.Info)' exited unexpectedly."
-                    $Miner.SetStatus([MinerStatus]::Failed)
-                    $Miner.StatusMessage = "Miner data reader exited unexpectedly."
-                }
-                ElseIf ($Miner.DataReaderJob.HasMoreData) { 
-                    $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
-                    $Sample = @($Samples) | Select-Object -Last 1
-
-                    If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime)) { 
-                        # We must have data samples by now
-                        If (-not ($Miner.Data | Where-Object Date -ge $Miner.Process.PSBeginTime.ToUniversalTime())) { 
-                            # Miner has not provided first sample on time
-                            Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
-                            $Miner.SetStatus([MinerStatus]::Failed)
-                            $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTime) seconds"
-                            Break
-                        }
-                        ElseIf (($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds( -10 ).ToUniversalTime()) { 
-                            # Miner stuck - no sample for > 10 seconds
-                            Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for 10 seconds."
-                            $Miner.SetStatus([MinerStatus]::Failed)
-                            $Miner.StatusMessage = "Has not updated data for 10 seconds"
-                            Break
-                        }
+                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime)) { 
+                    # We must have data samples by now
+                    If (-not ($Miner.Data | Where-Object Date -ge $Miner.Process.PSBeginTime.ToUniversalTime())) { 
+                        # Miner has not provided first sample on time
+                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
+                        $Miner.SetStatus([MinerStatus]::Failed)
+                        $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTime) seconds"
+                        Break
                     }
+                    ElseIf (($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds( -10 ).ToUniversalTime()) { 
+                        # Miner stuck - no sample for > 10 seconds
+                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for 10 seconds."
+                        $Miner.SetStatus([MinerStatus]::Failed)
+                        $Miner.StatusMessage = "Has not updated data for 10 seconds"
+                        Break
+                    }
+                }
 
-                    If ($Sample.HashRate) { 
-                        If ($Miner.Data | Where-Object Date -gt $Miner.Process.PSBeginTime.ToUniversalTime() | Where-Object Date -lt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime).ToUniversalTime()) { 
-                            Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] (miner is warming up)"
-                            $Miner.Data = $Miner.Data | Where-Object Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()
+                If ($Sample.HashRate) { 
+                    If ($Miner.Data | Where-Object Date -gt $Miner.Process.PSBeginTime.ToUniversalTime() | Where-Object Date -lt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime).ToUniversalTime()) { 
+                        Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] (miner is warming up)"
+                        $Miner.Data = $Miner.Data | Where-Object Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()
+                    }
+                    Else { 
+                        If ($Miner.StatusMessage -like "Warming up *") { 
+                            $Miner.StatusMessage = "$(If ($Miner.Benchmark -EQ $true -or $Miner.MeasurePowerUsage -EQ $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+                            $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
                         }
-                        Else { 
-                            If ($Miner.StatusMessage -like "Warming up *") { 
-                                $Miner.StatusMessage = "$(If ($Miner.Benchmark -EQ $true -or $Miner.MeasurePowerUsage -EQ $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-                                $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
-                            }
-                            Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
-                        }
-                        If ($Miner.AllowedBadShareRatio -gt 0) { 
-                            $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
-                                If ($Sample.Shares.$_[1] -gt 0 -and ($Sample.Shares.$_[2] -gt [Int](1 / $Miner.AllowedBadShareRatio * 100)) -and ($Sample.Shares.$_[1] / $Sample.Shares.$_[2] -gt $Miner.AllowedBadShareRatio)) { 
-                                    Write-Message -Level Error "Miner '$($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1]))." 
-                                    $Miner.SetStatus([MinerStatus]::Failed)
-                                    $Miner.StatusMessage = "too many bad shares."
-                                    Break
-                                }
+                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
+                    }
+                    If ($Miner.AllowedBadShareRatio -gt 0) { 
+                        $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
+                            If ($Sample.Shares.$_[1] -gt 0 -and ($Sample.Shares.$_[2] -gt [Int](1 / $Miner.AllowedBadShareRatio * 100)) -and ($Sample.Shares.$_[1] / $Sample.Shares.$_[2] -gt $Miner.AllowedBadShareRatio)) { 
+                                Write-Message -Level Error "Miner '$($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1]))." 
+                                $Miner.SetStatus([MinerStatus]::Failed)
+                                $Miner.StatusMessage = "too many bad shares."
+                                Break
                             }
                         }
                     }
                 }
             }
-
-            $FailedMiners = $RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::Running }
-            $RunningMiners = $RunningMiners | Where-Object { $_.Status -eq [MinerStatus]::Running }
-            $BenchmarkingOrMeasuringMiners = @($BenchmarkingOrMeasuringMiners | Where-Object { $_.Status -eq [MinerStatus]::Running })
-
-            If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
-                # A miner crashed and we're not benchmarking, end the loop now
-                $Variables.EndLoop = $true
-                $Message = "Miner failed. "
-                Break
-            }
-            ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt (($Config.MinDataSamples , ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
-                # Enough samples collected for this loop, exit loop immediately
-                $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. "
-                Break
-            }
-            ElseIf ($InitialRunningMiners -and (-not $RunningMiners)) { 
-                # No more running miners, end the loop now
-                $Variables.EndLoop = $true
-                $Message = "No more running miners. "
-                Break
-            }
-
-            While ((Get-Date) -le $NextLoop) { Start-Sleep -Milliseconds 100 }
         }
 
-        Write-Message -Level Info "$($Message)Ending cycle."
-        Remove-Variable Message -ErrorAction SilentlyContinue
-        Remove-Variable RunningMiners -ErrorAction SilentlyContinue
-        Remove-Variable InitialRunningMiners -ErrorAction SilentlyContinue
-        Remove-Variable FailedMiners -ErrorAction SilentlyContinue
-        Remove-Variable BenchmarkingMiners -ErrorAction SilentlyContinue
-        Update-Monitoring
+        $FailedMiners = $RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::Running }
+        $RunningMiners = $RunningMiners | Where-Object { $_.Status -eq [MinerStatus]::Running }
+        $BenchmarkingOrMeasuringMiners = @($BenchmarkingOrMeasuringMiners | Where-Object { $_.Status -eq [MinerStatus]::Running })
+
+        If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
+            # A miner crashed and we're not benchmarking, end the loop now
+            $Variables.EndLoop = $true
+            $Message = "Miner failed. "
+            Break
+        }
+        ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt (($Config.MinDataSamples , ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
+            # Enough samples collected for this loop, exit loop immediately
+            $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. "
+            Break
+        }
+        ElseIf ($InitialRunningMiners -and (-not $RunningMiners)) { 
+            # No more running miners, end the loop now
+            $Variables.EndLoop = $true
+            $Message = "No more running miners. "
+            Break
+        }
+
+        While ((Get-Date) -le $NextLoop) { Start-Sleep -Milliseconds 100 }
     }
+
+    Write-Message -Level Info "$($Message)Ending cycle."
+    Remove-Variable Message -ErrorAction SilentlyContinue
+    Remove-Variable RunningMiners -ErrorAction SilentlyContinue
+    Remove-Variable InitialRunningMiners -ErrorAction SilentlyContinue
+    Remove-Variable FailedMiners -ErrorAction SilentlyContinue
+    Remove-Variable BenchmarkingMiners -ErrorAction SilentlyContinue
+    Update-Monitoring
 }
