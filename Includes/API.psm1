@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.8.0"
+    $APIVersion = "0.3.8.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -436,42 +436,44 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/watchdogtimers/remove" { 
-                        If ($Parameters.Data) { 
-                            ForEach ($WatchdogTimer in ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                                If ($WatchdogTimer.Algorithm -and ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm))) {
-                                    # Remove watchdog timers
-                                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                    $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
-
-                                    # Update miner
-                                    $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                        $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
-                                        If (-not $_.Reason) { $_.Available = $true }
-                                    }
-                                }
-                                If ($WatchdogTimer.Pool -and ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Pool -EQ $WatchdogTimer.Pool))) {
-                                    # Remove watchdog timers
-                                    $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                    $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
-
-                                    # Update pool
-                                    $Variables.Pool | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                        $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog *" })
-                                        If (-not $_.Reason) { $_.Available = $true }
-                                    }
+                        $Data = @()
+                        ForEach ($WatchdogTimer in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm)) {
+                                # Remove watchdog timers
+                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
+                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+                
+                                # Update miner
+                                $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
+                                    If (-not $_.Reason) { $_.Available = $true }
                                 }
                             }
-                            If ($WatchdogTimers) { 
-                                $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
-                                Write-Message -Level Verbose "Web GUI: $Message" -Console
-                                $Data += "`n`n$Message"
-                            }
-                            Else { 
-                                $Data = "`nNo matching watchdog timers found."
-                            }
-                            $Data = "<pre>$Data</pre>"
-                            Break
                         }
+                        ForEach ($WatchdogTimer in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm)) {
+                                # Remove watchdog timers
+                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
+                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+
+                                # Update pool
+                                $Variables.Pools | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Algorithm suspended by watchdog" })
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog" })
+                                    If (-not $_.Reason) { $_.Available = $true }
+                                }
+                            }
+                        }
+                        If ($WatchdogTimers) { 
+                            $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
+                            Write-Message -Level Verbose "Web GUI: $Message" -Console
+                            $Data += "`n`n$Message"
+                        }
+                        Else { 
+                            $Data = "`nNo matching watchdog timers found."
+                        }
+                        $Data = "<pre>$Data</pre>"
+                        Break
                     }
                     "/functions/watchdogtimers/reset" { 
                         $Variables.WatchdogTimersReset = $true

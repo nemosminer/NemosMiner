@@ -77,12 +77,12 @@
   $('#remove-watchdog').click(function () {
     var $data = $table.bootstrapTable('getSelections');
     if ($data.length >= 1) {
-      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Pool: $element.Pool})));
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
       if ($data.length >= $querysize) {
         alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
       }
       else {
-        $command = '/functions/watchdogtimers/remove?Data=' + encodeURIComponent($data);
+        $command = '/functions/watchdogtimers/remove?Pools=' + encodeURIComponent($data);
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#remove-watchdog').text());
           $('#myModal').modal({show:true});
