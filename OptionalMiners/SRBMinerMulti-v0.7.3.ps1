@@ -23,8 +23,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; WarmupTime =  0; Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRed-v0.8.2.1 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightDouble"; Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; WarmupTime =  0; Arguments = " --algorithm cryptonight_heavyx --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTime =  0; Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c is faster
-    [PSCustomObject]@{ Algorithm = "Ethash";            Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # BMiner-v16.3.7 & PhoenixMiner-v5.5c are faster
+    [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";            Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "AMD"; Fee = 0.0065; MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "AMD"; Fee = 0.025;  MinMemGB = 1; MinerSet = 0; WarmupTime =  0; Arguments = " --algorithm heavyhash --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTime =  0; Arguments = " --algorithm k12 --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Kadena";            Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTime =  0; Arguments = " --algorithm kadena --gpu-intensity 31 --gpu-boost 50" }
@@ -90,7 +91,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-    $Devices | Where-Object Type -in @("AMD", "CPU") | Select-Object Type, Model -Unique | ForEach-Object { 
+    $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
@@ -120,15 +121,19 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     $Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
+
                     If ($Pools.($_.Algorithm).SSL) { $Arguments += " --ssl true" }
                     If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $Arguments += " --nicehash true" }
+
+                    $Pass = " --password $($Pools.($_.Algorithm).Pass)"
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
 
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $Miner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path
-                        Arguments  = ("$Arguments --wallet $($Pools.($_.Algorithm).User) --password $($Pools.($_.Algorithm).Pass) --worker $($Config.Workername) --disable-workers-ramp-up --api-enable --api-port $($MinerAPIPort)$DeviceArguments" -replace "\s+", " ").trim()
+                        Arguments  = ("$Arguments --wallet $($Pools.($_.Algorithm).User) --worker $($Config.Workername)$Pass --disable-workers-ramp-up --api-enable --api-port $($MinerAPIPort)$DeviceArguments" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "SRBMiner"
                         Port       = $MinerAPIPort

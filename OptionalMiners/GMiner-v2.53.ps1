@@ -30,14 +30,14 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 1.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo equihash210_9 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime = 30; Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.10.0 is almost as fast but has no fee
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-    $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
+    $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
@@ -47,7 +47,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
-                If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
+                If ($Pools.($_.Algorithm).DAGSize -gt 0 ) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
 
@@ -55,7 +55,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($_.Algorithm -match "Cuckaroo*|Cuckoo*" -and [System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $MinMemGB += 1 }
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
-                If ($_.Algorithm -match "^Equihash*|^Cuckaroo29bfc$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Algorithms not supported on Navi
+
+                If ($_.Algorithm -match "^Cuckaroo29bfc$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Algorithm not supported on Navi
 
                 If ($Miner_Devices) { 
 
@@ -68,14 +69,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     # If ($Pools.($_.Algorithm).Name -match "$ProHashing.*") { $Arguments += "_$($Miner_Devices.Name -join '-')" }
 
-                    If ($_.Algorithm -eq "EthashLowMem") { $Arguments += ",1=$($SelectedDevices.OpenCL.GlobalMemSize / 1GB)" }
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Arguments += ",1=$($SelectedDevices.OpenCL.GlobalMemSize / 1GB)" }
 
                     If ($Config.UseMinerTweaks -eq $true) { 
                         $Arguments += $_.Tuning
                     }
 
                     If ($Pools.($_.Algorithm).SSL) { $Arguments += " --ssl true --ssl_verification false" }
-                    If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $Arguments += " --proto stratum" }
+
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Arguments += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
 
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name

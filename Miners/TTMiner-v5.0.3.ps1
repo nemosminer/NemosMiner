@@ -7,13 +7,14 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Eaglesong"; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo EAGLESONG" }
-    [PSCustomObject]@{ Algorithm = "Ethash";    MinMemGB = 4; MinerSet = 0; WarmupTime = 30; Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.5c is fastest but has 0.65% fee
-    [PSCustomObject]@{ Algorithm = "KawPoW";    MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " -algo KAWPOW" }
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";  MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo LYRA2V3" }
-    [PSCustomObject]@{ Algorithm = "MTP";       MinMemGB = 3; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";   MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo PROGPOW" } # Zano, Sero
-    [PSCustomObject]@{ Algorithm = "UbqHash";   MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " -algo UBQHASH -intensity 15" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo EAGLESONG" }
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4; MinerSet = 0; WarmupTime = 30; Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " -algo KAWPOW" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo LYRA2V3" }
+    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGB = 3; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";      MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " -algo PROGPOW" } # Zano, Sero
+    [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " -algo UBQHASH -intensity 15" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -30,7 +31,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                    $MinMemGB = (2GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 2GB required
+                    $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
                 }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
@@ -50,12 +51,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         }
                     }
 
+                    $Pass = " -pass $($Pools.($_.Algorithm).Pass)"
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Arguments) -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -user $($Pools.($_.Algorithm).User) -work-timeout 500000$User -pass $($Pools.($_.Algorithm).Pass)$Coin -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments) -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -user $($Pools.($_.Algorithm).User)$Pass -work-timeout 500000$Coin -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "EthMiner"
                         Port            = $MinerAPIPort

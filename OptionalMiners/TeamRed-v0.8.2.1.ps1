@@ -22,8 +22,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; MinerSet = 0; WarmupTime = 60; Arguments = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=cuckarood29_grin" } # 2GB is not enough
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.26 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTime = 60; Arguments = " --algo=etchash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 60; Arguments = " --algo=etchash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTime = 60; Arguments = " --algo=ethash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 60; Arguments = " --algo=ethash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; MinerSet = 0; WarmupTime = 60; Arguments = " --algo=kawpow" } # Wildrig-v0.28.3 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=lyra2z" } # XmRig-v6.10.0 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=lyra2rev3" }
@@ -74,12 +75,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         $_.WarmupTime += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                     }
 
+                    $Pass = " --pass $($Pools.($_.Algorithm).Pass)"
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+
                     [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $Miner_Devices.Name
                         Type       = "AMD"
                         Path       = $Path
-                        Arguments  = ("$Arguments --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --watchdog_disabled --no_gpu_monitor --init_style=3 --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments  = ("$Arguments --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)$Pass--watchdog_disabled --no_gpu_monitor --init_style=3 --platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm  = $_.Algorithm
                         API        = "Xgminer"
                         Port       = $MinerAPIPort

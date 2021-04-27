@@ -15,7 +15,8 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Fee = 0.02;   MinerSet = 1; WarmupTime = 0;  Arguments = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323)
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=192,7 --pers ZcashPoW --ocX" }
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 3.0; Fee = 0.0075; MinerSet = 0; WarmupTime = 30; Arguments = " --par=Ethash --ocX" }
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Fee = 0.0075; MinerSet = 0; WarmupTime = 30; Arguments = " --par=Ethash --ocX" }
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Fee = 0.0075; MinerSet = 1; WarmupTime = 30; Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = 3.0; Fee = 0.0075; MinerSet = 0; WarmupTime = 30; Arguments = " --par=EtcHash --ocX" }
     [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTime = 30; Arguments = " --par=kawpow --pers=rAVENCOINKAWPOW --ocX" }
     [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=ProgPow --pers=veil --ocX" }
@@ -45,12 +46,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # Get arguments for active miner devices
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("par", "pers", "ocX") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
+                    $Pass = " --pass $($Pools.($_.Algorithm).Pass)"
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" } Else { If ($Pools.($_.Algorithm).Name -like "ProHashing*" ) { "stratum1://" } } )$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --pass $($Pools.($_.Algorithm).Pass) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" } Else { If ($Pools.($_.Algorithm).Name -like "ProHashing*" ) { "stratum1://" } } )$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)$Pass --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --extra --tempunits C --show-pers --fee-time=60 --telemetry $($MinerAPIPort) --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "MiniZ"
                         Port            = $MinerAPIPort
