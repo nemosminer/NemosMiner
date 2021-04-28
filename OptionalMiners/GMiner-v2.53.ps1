@@ -66,6 +66,9 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $Arguments = Get-ArgumentsPerDevice -Command $Arguments -ExcludeParameters @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Arguments += " --server $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)"
+                    If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
+                        $Arguments += "  --proto stratum"
+                    }
 
                     # If ($Pools.($_.Algorithm).Name -match "$ProHashing.*") { $Arguments += "_$($Miner_Devices.Name -join '-')" }
 
