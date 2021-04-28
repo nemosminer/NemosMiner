@@ -122,7 +122,7 @@
         alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
       }
       else {
-        $command = '/functions/watchdogtimers/remove?Data=' + encodeURIComponent($data);
+        $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#remove-watchdog').text());
           $('#myModal').modal({show:true});
