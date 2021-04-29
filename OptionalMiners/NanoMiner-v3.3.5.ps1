@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/3.3.4/nanominer-windows-3.3.4-cuda11.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/3.3.5/nanominer-windows-3.3.5-cuda11.zip"
 $DeviceEnumerator = "Type_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -12,7 +12,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ethash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Coin= "Ethash" } # PhoenixMiner-v5.5c is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02;  MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Coin= "Kawpow" } # TeamRed-v0.8.2.1 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 15; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 
     [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTime = 30; Coin = "RandomX" } # XmRig-v6.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTime = 30; Coin = "VerusHash" }
@@ -23,7 +23,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Coin= "Kawpow" } # Trex-v0.20.3  is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Octopus" } # NBMiner-v37.2 is faster
-    [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 30; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4; MinerSet = 1; WarmupTime = 15; Coin= "Ubqhash" } # PhoenixMiner-v5.5c is fastest
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
