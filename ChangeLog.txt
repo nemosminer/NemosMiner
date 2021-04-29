@@ -18,6 +18,7 @@ Improvements:
 - Core: remove obsolete code
 
 Miner updates:
+- NanoMiner-v3.3.5
 - NBMiner-v37.2
 - NSFMiner-v1.3.13
 

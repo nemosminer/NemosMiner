@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.38
-Version date:   26 April 2021
+Version:        3.9.9.39
+Version date:   29 April 2021
 #>
 
 using module .\Include.psm1
@@ -372,7 +372,6 @@ Function Start-Cycle {
             Select-Object -First 1
 
             If ($Pool) { 
-                If (-not $Config.EstimateCorrection -or $Pool.EstimateFactor -le 0 -or $Pool.EstimateFactor -gt 1) { $_.EstimateFactor = [Double]1 } Else { $_.EstimateFactor = $Pool.EstimateFactor }
                 If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { $_.Fee = 0 } Else { $_.Fee = $Pool.Fee }
                 $_.EarningsAdjustmentFactor = $Pool.EarningsAdjustmentFactor
                 $_.Price = $Pool.Price * $_.EstimateFactor * $_.EarningsAdjustmentFactor * (1 - $_.Fee)
@@ -381,15 +380,14 @@ Function Start-Cycle {
                 $_.Pass = $Pool.Pass
                 $_.Updated = $Pool.Updated
                 $_.User = $Pool.User
-                $_.CoinName = $Pool.CoinName
-                $_.Currency = $Pool.Currency
                 $_.Workers = $Pool.Workers
-                # Set Epoch for ethash miners (add 1 to survive next epoch change)
                 If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW", "UbqHash")) { 
                     Switch ($_.Algorithm) { 
-                        "KawPoW" { $Pool.Currency = "RVN" }
-                        "UbqHash" { $Pool.Currency = "UBQ" }
+                        "EtcHash" { $Pool.Currency = "ETC"; $Pool.CoinName = "Ethereum Classic" }
+                        "KawPoW"  { $Pool.Currency = "RVN"; $Pool.CoinName = "RavenCoin" }
+                        "UbqHash" { $Pool.Currency = "UBQ"; $Pool.CoinName = "Ubiq" }
                     }
+                    # Set Epoch for ethash miners (add 1 to survive next epoch change)
                     If ($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight) { 
                         $_.BlockHeight = [Int]($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight + 30000)
                         $_.Epoch = [Int]($Variables.DAGdata.Currency.($Pool.Currency).Epoch + 1)
@@ -400,8 +398,9 @@ Function Start-Cycle {
                         $_.Epoch = [Int]($Variables.DAGdata.Currency."*".Epoch + 1)
                         $_.DAGSize = [Int64]($Variables.DAGdata.Currency."*".DAGsize + [Math]::Pow(2, 23))
                     }
-                    If ($_.Currency -eq "ETC") { $_.CoinName = "Ethereum Classic" }
                 }
+                $_.CoinName = $Pool.CoinName
+                $_.Currency = $Pool.Currency
             }
 
             If ($Variables.CycleStarts.Count -ge $Config.SyncWindow -and $_.Updated -lt $Variables.CycleStarts[0]) { 
