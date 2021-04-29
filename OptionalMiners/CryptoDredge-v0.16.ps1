@@ -6,14 +6,14 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/Cryp
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " --algo=allium --intensity 8" } # CryptoDredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo=exosis --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo=dedal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; Arguments = " --algo=neoscrypt --intensity 6 " } # Cryptodredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo=phi --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo=phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; Arguments = " --algo=pipe --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=allium --intensity 8" } # CryptoDredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=exosis --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=dedal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTime = 45; Arguments = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=neoscrypt --intensity 6 " } # Cryptodredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=phi --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=phi2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=pipe --intensity 8" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -46,6 +46,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Wrap       = $false
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
+                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
             }
