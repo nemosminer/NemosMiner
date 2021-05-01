@@ -263,7 +263,7 @@ While ($true) {
                     $AvgWeeklyGrowth = $Growth168
                 }
 
-                If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
+                If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime().Date -eq $Now.Date }) { 
                     $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.ToLocalTime().Date -eq $Now.Date } | Sort-Object Date | Select-Object -Index 0).Earnings)
                 }
 
