@@ -17,7 +17,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
             Type      = "NVIDIA"
             Path      = $Path
             Arguments = "--cpu-priority 4 -T 50000 -R 1 -i 21 -b $($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -o $AlgoParameter -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
-            HashRates = [PSCustomObject]@{ $Algo = $Statys."$($Name)_$($Algo)_HashRate".Week }
+            HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week }
             API       = "ccminer"
             Port      = $Variables.NVIDIAMinerAPITCPPort #4068
             Wrap      = $false
