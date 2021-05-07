@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.39
-Version date:   29 April 2021
+Version:        3.9.9.40
+Version date:   7 May 2021
 #>
 
 Class Device { 
@@ -263,7 +263,7 @@ Class Miner {
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
                         # Starting Miner Data reader
-                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType()), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, Process, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
+                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -402,73 +402,6 @@ Class Miner {
             }
         }
         Return $PowerUsage_Value
-    }
-
-    [String[]]UpdateMinerData () { 
-        If ($this.Process.HasMoreData) { 
-            $this.Process | Receive-Job | ForEach-Object { 
-                $Line = $_ -replace "`n|`r", ""
-                $Line_Simple = $Line -replace "\x1B\[[0-?]*[ -/]*[@-~]", ""
-
-                If ($Line_Simple) { 
-                    $HashRates = @()
-                    $Devices = @()
-
-                    If ($Line_Simple -match "/s") { 
-                        $Words = $Line_Simple -split " "
-
-                        $Words -match "/s$" | ForEach-Object { 
-                            If (($Words | Select-Object -Index $Words.IndexOf($_)) -match "^((?:\d*\.)?\d+)(.*)$") { 
-                                $HashRate = ($matches | Select-Object -Index 1) -as [Decimal]
-                                $HashRate_Unit = ($matches | Select-Object -Index 2)
-                            }
-                            Else { 
-                                $HashRate = ($Words | Select-Object -Index ($Words.IndexOf($_) - 1)) -as [Decimal]
-                                $HashRate_Unit = ($Words | Select-Object -Index $Words.IndexOf($_))
-                            }
-
-                            Switch -wildcard ($HashRate_Unit) { 
-                                "kh/s*" { $HashRate *= [Math]::Pow(1000, 1) }
-                                "mh/s*" { $HashRate *= [Math]::Pow(1000, 2) }
-                                "gh/s*" { $HashRate *= [Math]::Pow(1000, 3) }
-                                "th/s*" { $HashRate *= [Math]::Pow(1000, 4) }
-                                "ph/s*" { $HashRate *= [Math]::Pow(1000, 5) }
-                            }
-
-                            $HashRates += $HashRate
-                        }
-                    }
-
-                    If ($Line_Simple -match "gpu|cpu|device") { 
-                        $Words = $Line_Simple -replace "#", "" -replace ":", "" -split " "
-
-                        $Words -match "^gpu|^cpu|^device" | ForEach-Object { 
-                            If (($Words | Select-Object -Index $Words.IndexOf($_)) -match "^(.*)((?:\d*\.)?\d+)$") { 
-                                $Device = ($matches | Select-Object -Index 2) -as [Int]
-                                $Device_Type = ($matches | Select-Object -Index 1)
-                            }
-                            Else { 
-                                $Device = ($Words | Select-Object -Index ($Words.IndexOf($_) + 1)) -as [Int]
-                                $Device_Type = ($Words | Select-Object -Index $Words.IndexOf($_))
-                            }
-
-                            $Devices += "{0}#{1:d2}" -f $Device_Type, $Device
-                        }
-                    }
-
-                    If ($HashRate.PSObject.Properties.Value -gt 0) { 
-                        $Sample = [PSCustomObject]@{ 
-                            Date       = (Get-Date).ToUniversalTime()
-                            HashRate   = $HashRate
-                            PowerUsage = $PowerUsage
-                            Shares     = $Shares
-                        }
-                        Return $Sample
-                    }
-                }
-            }
-        }
-        Return $null
     }
 
     [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
@@ -2390,7 +2323,7 @@ public static class Kernel32
         $ControllerProcess.Handle | Out-Null
         $Process.Handle | Out-Null
 
-        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(250)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
 
@@ -2399,6 +2332,7 @@ public static class Kernel32
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
     If ($Process) { $Process.PriorityClass = $PriorityNames.$Priority }
+
     Return $Job
 }
 

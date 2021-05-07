@@ -62,7 +62,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "Panthera";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm panthera" }
     [PSCustomObject]@{ Algorithm = "Phi5";              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm phi5" }
-    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTime = 15; Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.10.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTime = 45; Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "RandomxArq";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxHash2";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }
@@ -102,6 +102,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
 
+                If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^MiningPoolHub|(Coins)$") { Return }
+
                 If ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Bin\$($Name)\Cache\verthash.dat" -PathType Leaf ))) { 
                     $_.WarmupTime = 60 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                 }
@@ -123,7 +125,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
 
                     If ($Pools.($_.Algorithm).SSL) { $Arguments += " --ssl true" }
-                    If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $Arguments += " --nicehash true" }
+                    If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^NiceHash$") { $Arguments += " --nicehash true" }
+                    If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^ProHashing.+") { $Arguments += " --esm 1" }
 
                     $Pass = " --password $($Pools.($_.Algorithm).Pass)"
                     If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }

@@ -179,5 +179,6 @@
   "yespowertide": "YespowerTide",
   "yespowerurx": "YespowerUrx",
   "zelantus": "KawPoW",
+  "zelhash": "EquihashZEL",
   "zhash": "EquihashBTG"
 }

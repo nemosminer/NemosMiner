@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           GetMinerData.ps1
-Version:        3.9.9.39
-Version date:   29 April 2021
+Version:        3.9.9.40
+Version date:   7 May 2021
 #>
 
 using module ".\Include.psm1"
@@ -35,17 +35,19 @@ param(
 # Load miner API file
 . ".\Includes\MinerAPIs\$($MinerAPI).ps1"
 
-$Miner = ($MinerJSON | ConvertFrom-Json) -as $MinerAPI
-If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { $Interval = 2 } Else { $Interval = 5 }
-
 Try { 
+
+    $Miner = ($MinerJSON | ConvertFrom-Json) -as $MinerAPI
+
+    If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { $Interval = 2 } Else { $Interval = 5 }
+
     While ($true) { 
         $NextLoop = (Get-Date).AddSeconds($Interval)
+
         $Miner.UpdateMinerData()
         While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 200 }
     }
 }
 Catch { 
-    $Error
     Exit
 }

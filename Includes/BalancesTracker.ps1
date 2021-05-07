@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.39
-Version date:   29 April 2021
+Version:        3.9.9.40
+Version date:   7 May 2021
 #>
 
 # Start the log
@@ -245,19 +245,19 @@ While ($true) {
 
 
                 If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddHours( -1 ) } ) { 
-                    $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
+                    $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours)
                 }
                 Else {
                     $AvgHourlyGrowth = $Growth1
                 }
                 If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -1 ) }) { 
-                    $AvgDailyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays)
+                    $AvgDailyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalDays)
                 }
                 Else { 
                     $AvgDailyGrowth = $Growth24
                 }
                 If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime() -lt $Now.AddDays( -7 ) } ) { 
-                    $AvgWeeklyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime)).TotalDays * 7)
+                    $AvgWeeklyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalDays * 7)
                 }
                 Else { 
                     $AvgWeeklyGrowth = $Growth168
@@ -291,10 +291,10 @@ While ($true) {
                 AvgHourlyGrowth         = [Double]$AvgHourlyGrowth
                 AvgDailyGrowth          = [Double]$AvgDailyGrowth
                 AvgWeeklyGrowth         = [Double]$AvgWeeklyGrowth
-                EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
+                EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
                 EstimatedPayDate        = If ($PayoutThreshold) { If ([Double]($PoolBalanceObject.Unpaid) -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency))) { If (($AvgDailyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-7) { [DateTime]($Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency) - $PoolBalanceObject.Unpaid) / ((($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum))) } Else { "Unknown" } } Else { If ($PoolBalanceObject.NextPayout) { $PoolBalanceObject.NextPayout.ToLocalTime() } Else { "Next Payout!" } } } Else { "Unknown" }
-                TrustLevel              = [Double](((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum)
-                TotalHours              = [Double](($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours)
+                TrustLevel              = [Double](((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum)
+                TotalHours              = [Double](($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours)
                 PayoutThresholdCurrency = $PayoutThresholdCurrency
                 PayoutThreshold         = [Double]$PayoutThreshold
                 Payout                  = [Double]$PoolBalanceObject.Payout

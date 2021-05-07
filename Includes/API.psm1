@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.39
-Version date:   29 April 2021
+Version:        3.9.9.40
+Version date:   7 May 2021
 #>
 
 Function Start-APIServer { 
@@ -442,7 +442,7 @@ Function Start-APIServer {
                                 # Remove watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
-                
+
                                 # Update miner
                                 $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
                                     $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
@@ -458,7 +458,7 @@ Function Start-APIServer {
 
                                 # Update pool
                                 $Variables.Pools | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Algorithm suspended by watchdog" })
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
                                     $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
                                     If (-not $_.Reason) { $_.Available = $true }
                                 }

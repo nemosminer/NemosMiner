@@ -22,7 +22,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3; MinerSet = 0; WarmupTime = 15; Arguments = " --algo x16r" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " --algo x16rv2" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " --algo x16s" }
-    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo x17" }
+    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTime = 60; Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo xevan --intensity 22" }
     )
 
