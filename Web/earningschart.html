@@ -12,13 +12,65 @@
 <script type="text/javascript">
 
   Chart.defaults.color = 'black';
-  Chart.defaults.font.size = 16
+  Chart.defaults.font.size = 16;
+
+  Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#f44336', '#E91E63', '#9C27B0', '#3F51B5'];
 
   function HslColor (items, item) {
-    let hue = Math.trunc(360 / items * item)
-    let saturation = 66
-    let lightness = 50 + (10 * (item % 2))
+    let hue = Math.trunc(360 / items * item);
+    // let saturation = 70;
+    let saturation = 50 + (25 * (item % 2));
+    let lightness = 50 + (25 * (item % 2));
     return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
+  };
+
+  function HsvColor (items, item) {
+    let hue = Math.trunc(360 / items * item);
+    let saturation = 0.8;
+    let value = 0.95;
+    return "rgb(" + hsv2rgb(hue, saturation, value) + ")";
+  };
+
+  function RGBcolor (items, item) {
+    let delta = 255 / 3
+    let step = Math.trunc(255 / (items + 1));
+
+    let red = step * item;
+    let green = step * item + delta;
+    if (green >= 255) { green -= 255};
+    let blue = step * item + 2 * delta;
+    if (blue >= 255) { blue -= 255};
+    return "rgb(" + red + ", " + green + ", " + blue + ")";
+  };
+
+  // hue in range [0, 360]
+  // saturation, value in range [0,1]
+  // return [r,g,b] each in range [0,255]
+  // See: https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+  function hsv2rgb(hue, saturation, value) {
+    let chroma = value * saturation;
+    let hue1 = hue / 60;
+    let x = chroma * (1- Math.abs((hue1 % 2) - 1));
+    let r1, g1, b1;
+    if (hue1 >= 0 && hue1 <= 1) {
+      ([r1, g1, b1] = [chroma, x, 0]);
+    } else if (hue1 >= 1 && hue1 <= 2) {
+      ([r1, g1, b1] = [x, chroma, 0]);
+    } else if (hue1 >= 2 && hue1 <= 3) {
+      ([r1, g1, b1] = [0, chroma, x]);
+    } else if (hue1 >= 3 && hue1 <= 4) {
+      ([r1, g1, b1] = [0, x, chroma]);
+    } else if (hue1 >= 4 && hue1 <= 5) {
+      ([r1, g1, b1] = [x, 0, chroma]);
+    } else if (hue1 >= 5 && hue1 <= 6) {
+      ([r1, g1, b1] = [chroma, 0, x]);
+    }
+    
+    let m = value - chroma;
+    let [r,g,b] = [r1+m, g1+m, b1+m];
+    
+    // Change r,g,b values from [0,1] to [0,255]
+    return [255*r,255*g,255*b];
   };
 
   function renderChart(labels, datasets, currency) {
@@ -70,7 +122,7 @@
           },
           tooltip: {
             enabled: true,
-            callbacks: { 
+            callbacks: {
               label: function(context) {
                 var label = context.dataset.label || '';
 
@@ -78,10 +130,13 @@
                     label += ': ';
                 }
                 if (context.parsed.y !== 0) {
-                    label += context.parsed.y.toFixed(3);
+                    label += (context.parsed.y.toFixed(3) + " " + currency);
                     return label;
                 }
               }
+            },
+            itemSort: function(a, b) {
+              return b.datasetIndex - a.datasetIndex;
             },
             titleFont: { 
               size: 16
@@ -112,7 +167,10 @@
             var earnings = {
               label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
               data: BTCvalue,
-              backgroundColor: HslColor(Object.keys(earningsdata.Pools).length, datasets.length)
+              backgroundColor: Colors[datasets.length]
+              // backgroundColor: HslColor(Object.keys(earningsdata.Pools).length, datasets.length)
+              // backgroundColor: HsvColor(Object.keys(earningsdata.Pools).length, datasets.length)
+              // backgroundColor: RGBcolor(Object.keys(earningsdata.Pools).length, datasets.length)
             };
             datasets.push(earnings);
           }
