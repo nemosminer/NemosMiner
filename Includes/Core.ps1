@@ -535,7 +535,7 @@ Function Start-Cycle {
                     Else { 
                         $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
-                            Write-Message "Saved hash rate ($($Stat_Name): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                            Write-Message "Saved hash rate ($($Stat_Name): $(($Stat.Live | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             $Miner.StatStart = $Miner.StatEnd
                         }
                         If ($Stat.Week -eq 0) { $PowerUsage = 0 } # Save 0 instead of measured power usage when stat contains no data
@@ -555,7 +555,7 @@ Function Start-Cycle {
                         # Do not save data if stat just got removed
                         $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
-                            Write-Message "Saved power usage ($($Stat_Name): $(([Double]$PowerUsage).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
+                            Write-Message "Saved power usage ($($Stat_Name): $(([Double]$Stat.Live).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                         }
                     }
                 }
