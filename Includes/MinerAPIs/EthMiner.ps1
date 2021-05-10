@@ -47,11 +47,14 @@ class EthMiner : Miner {
 
         $HashRate_Name = [String]($this.Algorithm[0])
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
-        If ($this.Algorithm -eq "EtcHash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
-        If ($this.Algorithm -eq "Ethash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
-        If ($this.Algorithm -eq "UbqHash" -and $Data.result[0] -notmatch "^TT-Miner") { $HashRate_Value *= 1000 }
-        If ($this.Algorithm -eq "NeoScrypt") { $HashRate_Value *= 1000 }
-        If ($this.Algorithm -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
+        If ($Data.result[0] -notmatch "^TT-Miner") { 
+            If ($this.Algorithm -eq "EtcHash")          { $HashRate_Value *= 1000 }
+            ElseIf ($this.Algorithm -eq "Ethash")       { $HashRate_Value *= 1000 }
+            ElseIf ($this.Algorithm -eq "EthashLowMem") { $HashRate_Value *= 1000 }
+            ElseIf ($this.Algorithm -eq "UbqHash")      { $HashRate_Value *= 1000 }
+        }
+        If ($this.Algorithm -eq "NeoScrypt")           { $HashRate_Value *= 1000 }
+        ElseIf ($this.Algorithm -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
 
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
