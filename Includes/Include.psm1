@@ -2488,7 +2488,7 @@ Function Initialize-Autoupdate {
 
     # Backup current version folder in zip file; exclude existing zip files and download folder
     "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
+    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads  -x!cache -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
     Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
     Remove-Item -Path "$($UpdateLog)_tmp" -Force
 
