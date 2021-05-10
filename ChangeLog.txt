@@ -5,6 +5,25 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.41 ??.05.2021
+========================================
+
+Changed:
+- Core: Remove obsolete config item 'MinDataSamplesAlgoMultiplier'
+
+Fixed:
+- Core: Message 'Saved hash rate (...) reporting 0 even when stat file was correctly written
+- EthMiner API: Hashrate of EthashLowMem to small by a factor of 10^3
+- NBMiner-v37-3: Fix WarmupTime when mining @ MiningPoolHub
+
+Improvement:
+- Core: Move VertHash data file to central location (use same file for all miners; saves disk space)
+- Web GUI / Earnings chart: Use color range from material design, fix tooltip order
+
+Miner updates:
+- Trex-v0.20.3 (new download link)
+
+
 Changelog NemosMiner 3.9.9.40 07.05.2021
 ========================================
 
