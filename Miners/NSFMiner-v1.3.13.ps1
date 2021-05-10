@@ -8,9 +8,9 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.5c is fastest but has dev fee
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.5c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # PhoenixMiner-v5.6c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6c is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6c may be faster, but I see lower speed at the pool
 )
 
 $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 

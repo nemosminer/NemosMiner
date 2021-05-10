@@ -5,7 +5,7 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
-Changelog NemosMiner 3.9.9.41 ??.05.2021
+Changelog NemosMiner 3.9.9.41 10.05.2021
 ========================================
 
 Changed:
@@ -21,6 +21,7 @@ Improvement:
 - Web GUI / Earnings chart: Use color range from material design, fix tooltip order
 
 Miner updates:
+- PhoenixMiner-v5.6c
 - Trex-v0.20.3 (new download link)
 
 

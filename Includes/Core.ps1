@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.40
-Version date:   7 May 2021
+Version:        3.9.9.41
+Version date:   10 May 2021
 #>
 
 using module .\Include.psm1
@@ -1129,7 +1129,7 @@ While ($true) {
                         # Miner stuck - no sample for > 10 seconds
                         Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for 15 seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        $Miner.StatusMessage = "Has not updated data for 10 seconds"
+                        $Miner.StatusMessage = "Has not updated data for 15 seconds"
                         Break
                     }
                 }

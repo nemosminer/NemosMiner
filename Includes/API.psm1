@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.40
-Version date:   7 May 2021
+Version:        3.9.9.41
+Version date:   10 May 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.8.1"
+    $APIVersion = "0.3.8.5"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -529,7 +529,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/config" {
-                        $Data = Get-Content -Path $Variables.ConfigFile
+                        $Data = ConvertTo-Json -Depth 10 (Get-Content -Path $Variables.ConfigFile | ConvertFrom-Json -Depth 10 | Get-SortedObject)
                         If (-not ($Data | ConvertFrom-Json).ConfigFileVersion) { 
                             $Data = ConvertTo-Json -Depth 10 ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig)
                         }

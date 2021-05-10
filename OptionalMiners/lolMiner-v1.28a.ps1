@@ -22,9 +22,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 15; Arguments = " --coin AUTO192_7" } # GMiner-v2.54 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTime = 15; Arguments = " --algo EQUI210_9" }
     [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 0; WarmupTime = 15; Arguments = " --coin ZEL" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.5c is faster
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.5c is faster
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.5c is faster
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.6c is faster
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6c is faster
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6c is faster
 
 #    [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 15; Arguments = " --algo BEAM-I" } # Algo is dead, needs pers
 #    [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 15; Arguments = " --algo BEAM-II" } # Algo is dead
@@ -41,9 +41,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 15; Arguments = " --coin AUTO192_7" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTime = 15; Arguments = " --algo EQUI210_9" }
     [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 15; Arguments = " --coin ZEL" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.5c is faster
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.5c is faster
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.5c is faster
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.6c is faster
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 4.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6c is faster
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTime = 30; Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6c is faster
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
