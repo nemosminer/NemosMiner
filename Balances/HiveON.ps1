@@ -26,7 +26,7 @@ using module ..\Includes\Include.psm1
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 
-$Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
+$Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
 
     $APIResponse = $null
     $Currency = $_.ToUpper()

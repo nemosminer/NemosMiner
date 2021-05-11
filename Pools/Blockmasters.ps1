@@ -34,7 +34,7 @@ param(
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr" -replace "Coins$"
 
-$PayoutCurrency = $Config.PoolsConfig.$Name_Norm.Wallets.Keys | Select-Object -Index 0
+$PayoutCurrency = $Config.PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
 $Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
 
 If ($Wallet) { 

@@ -1174,9 +1174,9 @@ Function Read-Config {
                     $PoolConfig | Add-Member PayoutCurrencies $PoolData.$PoolName.PayoutCurrencies
                 }
                 If (-not $PoolConfig.Wallets) { 
-                    $PoolConfig | Add-Member Wallets @{ }
+                    $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ })
                     $Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
-                        $PoolConfig.Wallets.$_ = $($Config.Wallets.($_))
+                        $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
                     }
                 }
             }
@@ -1185,13 +1185,13 @@ Function Read-Config {
             }
             "NiceHash External" { 
                 If (-not $Config.NiceHashWalletIsInternal) { 
-                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets @{ "BTC" = $Config.NiceHashWallet } -Force }
+                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "BTC" = $Config.NiceHashWallet }) -Force }
                 }
-                If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets @{ "BTC" = $Config.Wallets.BTC } -Force }
+                If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "BTC" = $Config.Wallets.BTC }) -Force }
             }
             "NiceHash Internal" { 
                 If ($Config.NiceHashWalletIsInternal -eq $true -and $Config.NiceHashWallet) { 
-                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets @{ "BTC" = $Config.NiceHashWallet } -Force }
+                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "BTC" = $Config.NiceHashWallet }) -Force }
                 }
             }
             "ProHashing" { 
@@ -1202,13 +1202,14 @@ Function Read-Config {
                     $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force
                 }
                 If (-not $PoolConfig.Wallets) { 
-                    $PoolConfig | Add-Member Wallets @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } -Force
+                    $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) }) -Force
                 }
             }
         }
         If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
         $PoolConfig.PSObject.Members.Remove("PayoutCurrencies")
         $PoolConfig.PSObject.Members.Remove("PayoutCurrency")
+      If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = $PoolConfig.Algorithm -replace " " }
         $PoolsConfig.$PoolName = $PoolConfig
     }
 

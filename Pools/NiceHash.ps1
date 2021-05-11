@@ -43,7 +43,7 @@ Else {
 $PoolHost = "nicehash.com"
 $PoolRegions = "eu-west", "eu-east", "usa-west", "usa-east"
 
-$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -Index 0
+$PayoutCurrency = $PoolConfig.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
