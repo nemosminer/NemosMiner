@@ -63,10 +63,10 @@ If ($Wallet) {
 
     # Uses BrainPlus calculated price
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-        $PoolHost = "$($HostSuffix)"
-        $PoolPort = $Request.$_.port
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
+        $PoolHost = "$Algorithm.$HostSuffix"
+        $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
 

@@ -59,7 +59,7 @@ If ($Wallet) {
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $PoolHost = "$($HostSuffix)"
+        $PoolHost = "$Algorithm.$HostSuffix"
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers

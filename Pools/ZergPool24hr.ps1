@@ -58,7 +58,7 @@ If ($Wallet) {
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $PoolHost = "$($HostSuffix)"
+        $PoolHost = "$Algorithm.$HostSuffix"
         $PoolPort = $Request.$_.port
         $Workers = $Request.$_.workers
 
