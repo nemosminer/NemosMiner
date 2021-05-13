@@ -5,6 +5,23 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
 
+Changelog NemosMiner 3.9.9.42 13.05.2021
+========================================
+
+Fixed:
+- Core: Cannot read wallet data from PoolsConfig file
+- lolMiner-v1.28: Add '--disable-dag-verify 1' (bad for profit switching)
+- SgMinerFancyIX-v0.7.5: Updated download url
+- ZergPool*: Fix pool host (was missing algo)
+
+Improvement:
+- Web GUI / Pools: add 'Enable/disable algo @ pool' buttons
+
+Miner updates:
+- JayddeeCpu-v3.16.3
+- PhoenixMiner-v5.6d
+
+
 Changelog NemosMiner 3.9.9.41 10.05.2021
 ========================================
 
