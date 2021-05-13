@@ -7,6 +7,8 @@
 
 <div id="toolbar">
   <button id="reset-data" class="btn btn-warning">Reset pool stat data</button>
+  <button id="enable" class="btn btn-success">Enable algorithm @ pool</button>
+  <button id="disable" class="btn btn-danger">Disable algorithm @ pool</button>
 </div>
 
 <table id="pools" class="table"
@@ -86,6 +88,42 @@
         $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
         $('.modal-body').load($command, function() {
           $('.modal-title').text($('#reset-data').text());
+          $('#myModal').modal({show:true});
+        });
+        $table.bootstrapTable('refresh');
+      }
+    }
+  });
+
+  $('#enable').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/pool/enable?Pools=' + encodeURIComponent($data);
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#enable').text());
+          $('#myModal').modal({show:true});
+        });
+        $table.bootstrapTable('refresh');
+      }
+    }
+  });
+
+  $('#disable').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/pool/disable?Pools=' + encodeURIComponent($data);
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#disable').text());
           $('#myModal').modal({show:true});
         });
         $table.bootstrapTable('refresh');

@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.8.5"
+    $APIVersion = "0.3.9.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -273,6 +273,86 @@ Function Start-APIServer {
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
+                    "/functions/pool/disable" { 
+                        If ($Parameters.Pools) { 
+                            $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
+                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm | ForEach-Object { $_.Name -replace "24hr$" -replace "Coins$"; $_ } | Sort-Object Name, Algorithm -Unique | Where-Object { $_.Algorithm }
+                            $Pools | ForEach-Object { 
+                                $PoolName = $_.Name
+                                $Algorithm = $_.Algorithm
+                                If ($PoolsConfig.$PoolName) { $PoolConfig = $PoolsConfig.$PoolName } Else { $PoolConfig = [PSCustomObject]@{ } }
+
+                                [System.Collections.ArrayList]$AlgorithmList = @(($PoolConfig.Algorithm -replace " ") -split ',')
+                                $AlgorithmList.Remove("+$Algorithm")
+                                If (-not ($AlgorithmList -match "\+.+") -and $AlgorithmList -notcontains "-$Algorithm") { 
+                                    $AlgorithmList += "-$Algorithm"
+                                }
+
+                                If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
+                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
+
+                                $Data += "`n$Algorithm@$PoolName"
+                                $Reason = "Algorithm disabled (``-$($_.Algorithm)`` in $PoolName pool config)"
+                                $_.Reason = @(($_.Reason -NE $Reason) | Select-Object)
+                                $_.Reason += $Reason
+                                $_.Available = $false
+                            }
+                            If ($Pools.Count -gt 0) { 
+                                # Write PoolsConfig
+                                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
+
+                                $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
+                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                $Data += "`n`n$Message"
+                            }
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
+                    }
+                    "/functions/pool/enable" { 
+                        If ($Parameters.Pools) { 
+                            $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
+                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Pools | ForEach-Object { 
+                                $PoolName = $_.Name
+                                $Algorithm = $_.Algorithm
+
+                                $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolName pool config)"
+
+                                $_.Reason = @(($_.Reason -NE $Reason) | Select-Object)
+                                $_.Available = -not [Bool]$_.Reason.Count
+                            }
+
+                            $Pools = $Pools | ForEach-Object { $_.Name -replace "24hr$" -replace "Coins$"; $_ } | Sort-Object Name, Algorithm -Unique | Where-Object { $_.Algorithm }
+                            $Pools | ForEach-Object { 
+                                $PoolName = $_.Name
+                                $Algorithm = $_.Algorithm
+                                If ($PoolsConfig.$PoolName) { $PoolConfig = $PoolsConfig.$PoolName } Else { $PoolConfig = [PSCustomObject]@{ } }
+
+                                [System.Collections.ArrayList]$AlgorithmList = @(($PoolConfig.Algorithm -replace " ") -split ',')
+                                $AlgorithmList.Remove("-$Algorithm")
+                                If ($AlgorithmList -match "\+.+" -and $AlgorithmList -notcontains "+$Algorithm") { 
+                                    $AlgorithmList += "+$Algorithm"
+                                }
+
+                                If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
+                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
+
+                                $Data += "`n$Algorithm@$PoolName"
+                                $Reason = "Algorithm disabled (``-$($_.Algorithm)`` in $PoolName pool config)"
+                            }
+                            If ($Pools.Count -gt 0) { 
+                                # Write PoolsConfig
+                                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
+
+                                $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
+                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                $Data += "`n`n$Message"
+                            }
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
+                    }
                     "/functions/stat/get" { 
                         If ($null -eq $Parameters.Value) {
                             $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ })
@@ -291,32 +371,6 @@ Function Start-APIServer {
                     Break
                     }
                     "/functions/stat/remove" { 
-                        If ($Parameters.Pools) { 
-                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
-                            $Pools | Sort-Object Name | ForEach-Object { 
-                                If ($_.Name -like "*Coins") { 
-                                    $StatName = "$($_.Name)_$($_.Algorithm)-$($_.Currency)"
-                                }
-                                Else { 
-                                    $StatName = "$($_.Name)_$($_.Algorithm)"
-                                }
-                                $Data += "`n$($StatName) [$($_.Region)]"
-                                Remove-Stat -Name "$($StatName)_Profit"
-                                $_.Reason = [String[]]@()
-                                $_.Available = $true
-                                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = $_.EstimateFactor = [Double]::Nan
-                            }
-                            If ($Pools.Count -gt 0) { 
-                                $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
-                                Write-Message -Level Verbose "Web GUI: $Message" -Console
-                                $Data += "`n`n$Message"
-                            }
-                            Else { 
-                                $Data = "`nNo matching stats found."
-                            }
-                            $Data = "<pre>$Data</pre>"
-                            Break
-                        }
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
