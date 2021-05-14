@@ -21,7 +21,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo honeycomb" } # Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo kawpow" } # TeamRed-v0.8.2.1 is fastest on Navi
+    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTime = 15; Arguments = " --algo kawpow" } # TeamRed-v0.8.2.1 is fastest on Navi
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo lyra2v3" } # TeamRed-v0.8.2.1 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; WarmupTime = 30; Arguments = " --algo megamec" }
@@ -68,7 +68,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo honeycomb" } # Algo broken
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo glt-jeonghash" } # Trex-v0.20.3  is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo kawpow" } # NBMiner-v37.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTime = 15; Arguments = " --algo kawpow" } # NBMiner-v37.3 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo lyra2v3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1; MinerSet = 0; WarmupTime = 30; Arguments = " --algo megamec" }

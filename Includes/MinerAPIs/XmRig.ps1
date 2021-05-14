@@ -48,7 +48,7 @@ class XmRig : Miner {
                 $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Set-Content $ConfigFile -ErrorAction SilentlyContinue -Force
             }
             else { 
-                #Check If we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
+                #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
                 $ThreadsConfig = Get-Content $ThreadsConfigFile -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
                 If ($ThreadsConfig.Count -lt 1) { 
                     If (Test-Path "$(Split-Path $this.Path)\$($this.Algorithm | Select-Object -Index 0)-*.json" -PathType Leaf) { 
@@ -61,6 +61,7 @@ class XmRig : Miner {
                     $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
                     If ($this.Process) { 
+                        $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId)
                         For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
                             If ($ThreadsConfig = @(Get-Content $ThreadsConfigFile -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue).threads) { 
                                 If ($this.DeviceName -like "GPU*") { 
@@ -73,7 +74,8 @@ class XmRig : Miner {
                             }
                             Start-Sleep -Milliseconds 500
                         }
-                        $this.StopMining()
+                        Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
+                        $this.Process = $null
                     }
                     Else { 
                         Write-Message -Level Error "Running temporary miner failed - cannot create threads config files for '$($this.Info)' [Error: '$($Error | Select-Object -Index 0)']."

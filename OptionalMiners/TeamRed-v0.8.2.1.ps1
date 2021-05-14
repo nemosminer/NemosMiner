@@ -71,9 +71,11 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
-                    If ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf ))) { 
-                        If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
-                        $_.WarmupTime += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
+                    If ($_.Algorithm -eq "VertHash") { 
+                        If (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf )) { 
+                            If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
+                            $_.WarmupTime += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
+                        }
                     }
 
                     $Pass = " --pass $($Pools.($_.Algorithm).Pass)"

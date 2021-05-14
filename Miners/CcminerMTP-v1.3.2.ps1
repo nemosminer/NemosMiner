@@ -41,7 +41,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API        = "Ccminer"
                         Port       = $MinerAPIPort
                         URI        = $Uri
-                        WarmupTime = 15 # Seconds, additional wait time until first data sample
+                        WarmupTime = 0 # Seconds, additional wait time until first data sample
                     }
                 }
             }

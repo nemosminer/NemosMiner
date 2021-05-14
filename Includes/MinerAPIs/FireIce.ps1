@@ -48,7 +48,7 @@ class Fireice : Miner {
             #Write config file, keep existing file to preserve user custom config
             If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { ($Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Set-Content -Path $ConfigFile }
 
-            #Check If we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
+            #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
             If (-not (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
                 If (Test-Path -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -PathType Leaf) { 
                     #Remove old config files, thread info is no longer valid
@@ -60,6 +60,7 @@ class Fireice : Miner {
                 $this.Process = Invoke-CreateProcess -Binary $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority ($this.Device.Name | ForEach-Object { If ($_ -like "CPU#*") { -2 } Else { -1 } } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) -EnvBlock $this.Environment
 
                 If ($this.Process) { 
+                    $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId)
                     For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
                         If (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf) { 
                             #Read hw config created by miner
@@ -76,7 +77,6 @@ class Fireice : Miner {
                         }
                         Start-Sleep -Milliseconds 500
                     }
-                    $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId)
                     Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
                     $this.Process = $null
                 }

@@ -32,7 +32,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "AMD"; MinMemGB = 1;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/kev" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/loki" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/sfx" }
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 0;  Arguments = " --algo rx/wow" }
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTime = 30; Arguments = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo argon2/chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo argon2/wrkz" }
@@ -89,7 +89,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "NVIDIA"; MinMemGB = 1;    MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/kev" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/loki" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/sfx" }
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTime = 0;  Arguments = " --algo rx/wow" }
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTime = 30; Arguments = " --algo rx/wow" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
