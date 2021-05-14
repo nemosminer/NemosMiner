@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.1"
+    $APIVersion = "0.3.9.2"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -371,6 +371,31 @@ Function Start-APIServer {
                     Break
                     }
                     "/functions/stat/remove" { 
+                        If ($Parameters.Pools) { 
+                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Pools | Sort-Object Name | ForEach-Object { 
+                                If ($_.Name -like "*Coins") { 
+                                    $StatName = "$($_.Name)_$($_.Algorithm)-$($_.Currency)"
+                                }
+                                Else { 
+                                    $StatName = "$($_.Name)_$($_.Algorithm)"
+                                }
+                                $Data += "`n$($StatName)"
+                                Remove-Stat -Name "$($StatName)_Profit"
+                                $_.Reason = [String[]]@()
+                                $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = $_.EstimateFactor = [Double]::Nan
+                            }
+                            If ($Pools.Count -gt 0) { 
+                                $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
+                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                $Data += "`n`n$Message"
+                            }
+                            Else { 
+                                $Data = "`nNo matching stats found."
+                            }
+                            $Data = "<pre>$Data</pre>"
+                            Break
+                        }
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
