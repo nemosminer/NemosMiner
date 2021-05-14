@@ -2413,9 +2413,9 @@ Function Get-Region {
     If ($List) { Return $Global:Regions.$Region }
 
     If ($Global:Regions.$Region) { 
-       $Global:Regions.$Region | Select-Object -Index 0
+       Return $($Global:Regions.$Region | Select-Object -Index 0)
     }
-    Else { $Region }
+    Return $null
 }
 
 Function Get-NMVersion { 

@@ -44,7 +44,7 @@ If ($Config.Wallets) {
 
     $Request.cryptoCurrencies | Where-Object { $Config.Wallets.($_.Name) } | ForEach-Object { 
 
-        $Currency  = $_.name
+        $Currency = $_.name
         $CoinName = $_.title
         $Algorithm_Norm = Get-Algorithm $Currency
 
@@ -55,44 +55,28 @@ If ($Config.Wallets) {
         Try { $EstimateFactor = $Request.stats.$Currency.expectedReward24H / $Request.stats.$Currency.meanExpectedReward24H }
         Catch { $EstimateFactor = 1 }
 
-        ForEach ($Server in $_.Servers) { 
-            $Region_Norm = Get-Region $Server.region
+        ForEach ($Server in $_.Servers) {
+            $Region = $Server.Region
+            If ($Region_Norm = Get-Region $Region) { # Only accept regions that can be resolved by regions.txt
 
-            [PSCustomObject]@{ 
-                Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]$CoinName
-                Currency                 = [String]$Currency
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
-                MarginOfError            = [Double]$Stat.Week_Fluctuation
-                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-                Host                     = [String]$Server.host
-                Port                     = [UInt16]$Server.ports[0]
-                User                     = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
-                Pass                     = "x"
-                Region                   = [String]"$(Get-Region $Server.region)"
-                SSL                      = [Bool]$false
-                Fee                      = [Decimal]0
-                EstimateFactor           = [Decimal]$EstimateFactor
+                [PSCustomObject]@{ 
+                    Algorithm                = [String]$Algorithm_Norm
+                    CoinName                 = [String]$CoinName
+                    Currency                 = [String]$Currency
+                    Price                    = [Double]$Stat.Live
+                    StablePrice              = [Double]$Stat.Week
+                    MarginOfError            = [Double]$Stat.Week_Fluctuation
+                    EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                    Host                     = [String]$Server.host
+                    Port                     = [UInt16]$Server.ports[0]
+                    User                     = "$($Config.Wallets.$Currency).$($PoolsConfig.$Name_Norm.WorkerName)"
+                    Pass                     = "x"
+                    Region                   = [String]$Region_Norm
+                    SSL                      = [Bool]$false
+                    Fee                      = [Decimal]0
+                    EstimateFactor           = [Decimal]$EstimateFactor
+                }
             }
-
-            # [PSCustomObject]@{ 
-            #     Algorithm                = [String]$Algorithm_Norm
-            #     CoinName                 = [String]$CoinName
-            #     Currency                 = [String]$Currency
-            #     Price                    = [Double]$Stat.Live
-            #     StablePrice              = [Double]$Stat.Week
-            #     MarginOfError            = [Double]$Stat.Week_Fluctuation
-            #     EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-            #     Host                     = [String]$Server.host
-            #     Port                     = [UInt16]$Server.ssl_ports[0]
-            #     User                     = "$($Config.Wallets.($_.Name)).$($PoolsConfig.$Name_Norm.WorkerName)"
-            #     Pass                     = "x"
-            #     Region                   = [String]"$(Get-Region $Server.region)"
-            #     SSL                      = [Bool]$true
-            #     Fee                      = [Decimal]0
-            #     EstimateFactor           = [Decimal]$EstimateFactor
-            # }
         }
     }
 }
