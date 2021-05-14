@@ -55,10 +55,11 @@ If ($Wallet) {
     # $PriceField = "estimate_current"
     $DivisorMultiplier = 1000000000
 
+    $PoolRegions = "eu", "na", "asia"
+
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $PoolHost = "$Algorithm.$HostSuffix"
         $PoolPort = $Request.$_.port
         $Workers = $Request.$_.workers
 
@@ -70,21 +71,48 @@ If ($Wallet) {
         Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = [Decimal]1 }
 
-        [PSCustomObject]@{ 
-            Algorithm                = [String]$Algorithm_Norm
-            Price                    = [Double]$Stat.Live
-            StablePrice              = [Double]$Stat.Week
-            MarginOfError            = [Double]$Stat.Week_Fluctuation
-            EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-            Host                     = [String]$PoolHost
-            Port                     = [UInt16]$PoolPort
-            User                     = [String]$Wallet
-            Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
-            Region                   = "N/A (Anycast)"
-            SSL                      = [Bool]$false
-            Fee                      = $Fee
-            EstimateFactor           = $EstimateFactor
-            Workers                  = [Int]$Workers
+        If ($Config.UseAnycast -or $PoolsConfig.($Name_Norm -replace '24hr$' -replace 'Coins$').UseAnycast) { 
+            $PoolHost = "$Algorithm.$HostSuffix"
+
+            [PSCustomObject]@{ 
+                Algorithm                = [String]$Algorithm_Norm
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                Host                     = [String]$PoolHost
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$Wallet
+                Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
+                Region                   = "N/A (Anycast)"
+                SSL                      = [Bool]$false
+                Fee                      = $Fee
+                EstimateFactor           = $EstimateFactor
+                Workers                  = [Int]$Workers
+            }
+        }
+        Else { 
+            ForEach ($Region in $PoolRegions) { 
+                $Region_Norm = Get-Region $Region
+                $PoolHost = "$Algorithm.$Region.$HostSuffix"
+
+                [PSCustomObject]@{ 
+                    Algorithm                = [String]$Algorithm_Norm
+                    Price                    = [Double]$Stat.Live
+                    StablePrice              = [Double]$Stat.Week
+                    MarginOfError            = [Double]$Stat.Week_Fluctuation
+                    EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                    Host                     = [String]$PoolHost
+                    Port                     = [UInt16]$PoolPort
+                    User                     = [String]$Wallet
+                    Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
+                    Region                   = [String]$Region_Norm
+                    SSL                      = [Bool]$false
+                    Fee                      = $Fee
+                    EstimateFactor           = $EstimateFactor
+                    Workers                  = [Int]$Workers
+                }
+            }
         }
     }
 }

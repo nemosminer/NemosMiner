@@ -58,6 +58,8 @@ If ($Wallet) {
     # $PriceField = "estimate_current"
     $DivisorMultiplier = 1000000
 
+    $PoolRegions = "eu", "na", "asia"
+
     $AllMiningCoins = @()
     ($CoinsRequest | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name) | ForEach-Object { $CoinsRequest.$_ | Add-Member -Force @{Symbol = If ($CoinsRequest.$_.Symbol) { $CoinsRequest.$_.Symbol } Else { $_ } } ; $AllMiningCoins += $CoinsRequest.$_ }
 
@@ -84,24 +86,54 @@ If ($Wallet) {
             Try { $EstimateFactor = ($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h }
             Catch { $EstimateFactor = 1 }
 
-            [PSCustomObject]@{ 
-                Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]$TopCoin.Name
-                Currency                 = [String]$TopCoin.Symbol
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
-                MarginOfError            = [Double]$Stat.Week_Fluctuation
-                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-                Host                     = [String]$PoolHost
-                Port                     = [UInt16]$PoolPort
-                User                     = [String]$Wallet
-                Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency,mc=$($TopCoin.Symbol)$PayoutThresholdParameter"
-                Region                   = "N/A (Anycast)"
-                SSL                      = [Bool]$false
-                Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]$EstimateFactor
-                Updated                  = [DateTime]$Updated
-                Workers                  = [Int]$Workers
+            If ($Config.UseAnycast -or $PoolsConfig.($Name_Norm -replace '24hr$' -replace 'Coins$').UseAnycast) { 
+                $PoolHost = "$Algorithm.$HostSuffix"
+
+                [PSCustomObject]@{ 
+                    Algorithm                = [String]$Algorithm_Norm
+                    CoinName                 = [String]$TopCoin.Name
+                    Currency                 = [String]$TopCoin.Symbol
+                    Price                    = [Double]$Stat.Live
+                    StablePrice              = [Double]$Stat.Week
+                    MarginOfError            = [Double]$Stat.Week_Fluctuation
+                    EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                    Host                     = [String]$PoolHost
+                    Port                     = [UInt16]$PoolPort
+                    User                     = [String]$Wallet
+                    Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency,mc=$($TopCoin.Symbol)$PayoutThresholdParameter"
+                    Region                   = "N/A (Anycast)"
+                    SSL                      = [Bool]$false
+                    Fee                      = [Decimal]$Fee
+                    EstimateFactor           = [Decimal]$EstimateFactor
+                    Updated                  = [DateTime]$Updated
+                    Workers                  = [Int]$Workers
+                }
+            }
+            Else { 
+                ForEach ($Region in $PoolRegions) { 
+                    $Region_Norm = Get-Region $Region
+                    $PoolHost = "$Algorithm.$Region.$HostSuffix"
+
+                    [PSCustomObject]@{ 
+                        Algorithm                = [String]$Algorithm_Norm
+                        CoinName                 = [String]$TopCoin.Name
+                        Currency                 = [String]$TopCoin.Symbol
+                        Price                    = [Double]$Stat.Live
+                        StablePrice              = [Double]$Stat.Week
+                        MarginOfError            = [Double]$Stat.Week_Fluctuation
+                        EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                        Host                     = [String]$PoolHost
+                        Port                     = [UInt16]$PoolPort
+                        User                     = [String]$Wallet
+                        Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency,mc=$($TopCoin.Symbol)$PayoutThresholdParameter"
+                        Region                   = [String]$Region_Norm
+                        SSL                      = [Bool]$false
+                        Fee                      = [Decimal]$Fee
+                        EstimateFactor           = [Decimal]$EstimateFactor
+                        Updated                  = [DateTime]$Updated
+                        Workers                  = [Int]$Workers
+                    }
+                }
             }
         }
     }
