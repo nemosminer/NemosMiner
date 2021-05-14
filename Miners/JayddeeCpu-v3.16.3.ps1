@@ -6,10 +6,11 @@ $Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.16.3/cpumin
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTime = 0; Arguments = " --algo hmq1725" }
     [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTime = 0; Arguments = " --algo sha3d" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTime = 0; Arguments = " --algo scrypt:2048" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo m7m" }
+    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTime = 0; Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTime = 0; Arguments = " --algo sha3d" }
+    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo scrypt(N,1,1)" }
     [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTime = 0; Arguments = " --algo verthash" }
 )
 
