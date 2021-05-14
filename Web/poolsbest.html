@@ -74,6 +74,24 @@
     height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
   })
 
+  $('#reset-data').click(function () {
+    var $data = $table.bootstrapTable('getSelections');
+    if ($data.length >= 1) {
+      $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+      if ($data.length >= $querysize) {
+        alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+      }
+      else {
+        $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
+        $('.modal-body').load($command, function() {
+          $('.modal-title').text($('#reset-data').text());
+          $('#myModal').modal({show:true});
+        });
+        $table.bootstrapTable('refresh');
+      }
+    }
+  });
+
   $('#enable').click(function () {
     var $data = $table.bootstrapTable('getSelections');
     if ($data.length >= 1) {
