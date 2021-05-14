@@ -159,6 +159,9 @@
             <div id="Regions"></div>
           </fieldset>
         </div>
+        <div title="Pools establish shortest network route based on your GEO location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+          <input type="checkbox" id="UseAnycast" name="UseAnycast" style="margin-left:15px"> Use Anycast
+        </div>
         <br>
 
         <div class="col-md-12">
@@ -521,7 +524,9 @@
       document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
     });
     document.getElementById(('region-' + config.Region).toLowerCase()).checked = "true";
-
+    if (config.UseAnycast) {
+      document.getElementById('UseAnycast').checked = true;
+    };
     if (config.IncludeOptionalMiners) {
       document.getElementById('OptionalMiners').checked = true;
     };
@@ -938,6 +943,7 @@
             config.Region = value;
           };
         });
+        config.UseAnycast = document.getElementById('UseAnycast').checked;
         $.each(devices, function (key, value) {
           if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false) {
             (config.ExcludeDeviceName).push(value.Name);

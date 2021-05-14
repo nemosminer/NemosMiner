@@ -199,6 +199,9 @@ New Config Items
 # Ignore pool if price is more than $UnrealMinerEarningFactor higher than average price of all other miners with same algo & currency
   "UnrealMinerEarningFactor": 3,
 
+# If true pools (currently ZergPool only) will use anycast for best network performance and ping times
+  "UseAnycast": $false,
+
 # If true NemosMiner will apply miner specific tweaks, e.g mild overclock. This may improve profitability at the expense of system stability (Admin rights are required)
   "UseMinerTweaks:" false,
 

@@ -76,7 +76,8 @@ class Fireice : Miner {
                         }
                         Start-Sleep -Milliseconds 500
                     }
-                    Stop-Process -Id $this.Process.Id -Force -ErrorAction Ignore
+                    $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId)
+                    Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
                     $this.Process = $null
                 }
                 Else { 
