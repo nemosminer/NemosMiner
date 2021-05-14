@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.2"
+    $APIVersion = "0.3.9.3"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -412,6 +412,7 @@ Function Start-APIServer {
                                 $_.Data = @()
                                 $_.Speed = @()
                                 $_.SpeedLive = @()
+                                $_.Earning_Accuracy = [Double]::NaN
                                 $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                 ForEach ($Algorithm in $_.Algorithm) { 
                                     Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
@@ -440,7 +441,6 @@ Function Start-APIServer {
                                 If ($_.Earning -eq 0) { 
                                     $_.Available = $true
                                 }
-                                $_.PowerUsage = [Double]::Nan
                                 $_.MeasurePowerUsage = $true
                                 $_.Activated = 0 # To allow 3 attempts
                                 $_.Benchmark = $true
