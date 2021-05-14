@@ -13,6 +13,7 @@
     "us":  ["USA West", "USA East", "Europe West", "Europe East", "Asia"],
     "naw":  ["USA West", "USA East", "Europe West", "Europe East", "Asia"],
     "usa":  ["USA West", "USA East", "Europe West", "Europe East", "Asia"],
+    "usw":  ["USA West", "USA East", "Europe West", "Europe East", "Asia"],
     "USA East":  ["USA East", "USA West", "Europe East", "Europe West", "Asia"],
     "USA West":  ["USA West", "USA East", "Europe East", "Europe West", "Asia"],
     "usa-east":  ["USA East", "USA West", "Europe East", "Europe West", "Asia"],
