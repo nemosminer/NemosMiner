@@ -1071,18 +1071,16 @@ Function Start-Mining {
             $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
         }
 
-        # $Variables.NewMiners_Jobs | ForEach-Object $_.Job | Wait-Job -Timeout 30 | Out-Null
-        # $NewMiners = $Variables.NewMiners_Jobs | ForEach-Object { 
-        #     $_.EndInvoke($_.Job) | Where-Object { $_.Content.API } | ForEach-Object { 
-
-        If ($VertHashCheck | Wait-Job -Timeout 30 |  Receive-Job -Wait -AutoRemoveJob) { 
-            Write-Message -Level Verbose "VertHash data file integrity check: OK."
+        If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
+            If ($VertHashCheck | Wait-Job -Timeout 30 |  Receive-Job -Wait -AutoRemoveJob) { 
+                Write-Message -Level Verbose "VertHash data file integrity check: OK."
+            }
+            Else { 
+                Write-Message -Level Warn "VertHash data file is corrupt -> file deleted. It will be recreated by the miners if needed."
+                Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
+            }
         }
-        Else { 
-            Write-Message -Level Warn "VertHash data file is corrupt -> file deleted. It will be recreated by the miners if needed."
-            Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
-     }
-}
+    }
     Else { 
         Write-Message -Level Error "Corrupt installation. File '$($Variables.MainPath)\Includes\Core.ps1' is missing."
     }
