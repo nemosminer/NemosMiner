@@ -9,7 +9,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 5.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d is fastest but has dev fee
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
 )
 

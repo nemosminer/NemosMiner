@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.42
-Version date:   13 May 2021
+Version:        3.9.9.43
+Version date:   15 May 2021
 #>
 
 [CmdletBinding()]
@@ -244,7 +244,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.42"
+    Version      = [System.Version]"3.9.9.43"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -916,7 +916,6 @@ Function Form_Load {
     }
     Else { 
         $null = $ShowWindow::ShowWindowAsync($ConsoleHandle, 8)
-        # Write-Message "Console window shown"
     }
     $TimerUI.Enabled = $true
 }

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Dstm.ps1
-Version:        3.9.9.42
-Version date:   13 May 2021
+Version:        3.9.9.43
+Version date:   15 May 2021
 #>
 
 using module ..\Include.psm1

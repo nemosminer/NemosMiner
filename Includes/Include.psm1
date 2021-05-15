@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.42
-Version date:   13 May 2021
+Version:        3.9.9.43
+Version date:   15 May 2021
 #>
 
 Class Device { 
@@ -293,7 +293,6 @@ Class Miner {
     }
 
     SetStatus([MinerStatus]$Status) { 
-
         Switch ($Status) { 
             "Running" { 
                 If ($Status -eq $this.GetStatus()) { Return }
@@ -389,7 +388,6 @@ Class Miner {
     }
 
     [Double]GetPowerUsage() { 
-
         $PowerUsage_Value = [Double]0
         $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
         $RegistryData = [PSCustomObject]@{ }
@@ -1047,6 +1045,12 @@ Function Update-Monitoring {
 Function Start-Mining { 
 
     If (Test-Path -PathType Leaf "$($Variables.MainPath)\Includes\Core.ps1") { 
+
+        If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
+            Write-Message -Level Verbose "Verifying integrity of VertHash data file (.\Cache\VertHash.dat)..."
+            $VertHashCheck = Start-Job ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
+        }
+
         If (-not $Variables.CoreRunspace) { 
             $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
             $Variables.Pools = $null
@@ -1066,7 +1070,19 @@ Function Start-Mining {
             $Variables.CoreRunspace = $CoreRunspace
             $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
         }
-    }
+
+        # $Variables.NewMiners_Jobs | ForEach-Object $_.Job | Wait-Job -Timeout 30 | Out-Null
+        # $NewMiners = $Variables.NewMiners_Jobs | ForEach-Object { 
+        #     $_.EndInvoke($_.Job) | Where-Object { $_.Content.API } | ForEach-Object { 
+
+        If ($VertHashCheck | Wait-Job -Timeout 30 |  Receive-Job -Wait -AutoRemoveJob) { 
+            Write-Message -Level Verbose "VertHash data file integrity check: OK."
+        }
+        Else { 
+            Write-Message -Level Warn "VertHash data file is corrupt -> file deleted. It will be recreated by the miners if needed."
+            Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
+     }
+}
     Else { 
         Write-Message -Level Error "Corrupt installation. File '$($Variables.MainPath)\Includes\Core.ps1' is missing."
     }
