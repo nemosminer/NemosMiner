@@ -54,9 +54,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightDouble"; Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm cryptonight_heavyx" }
     [PSCustomObject]@{ Algorithm = "CurveHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm curvehash" }
     [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm eaglesong" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTime = 45; Arguments = " --algorithm etchash" } # Not profitable with CPU
-    [PSCustomObject]@{ Algorithm = "Ethash";            Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTime = 45; Arguments = " --algorithm ethash" } # Not profitable with CPU
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTime = 45; Arguments = " --algorithm ethash" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTime = 15; Arguments = " --algorithm etchash" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "Ethash";            Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTime = 15; Arguments = " --algorithm ethash" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTime = 15; Arguments = " --algorithm ethash" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm heavyhash" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = "Kadena";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTime = 15; Arguments = " --algorithm kadena" }
