@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash External.ps1
-Version:        3.9.9.43
-Version date:   15 May 2021
+Version:        3.9.9.44
+Version date:   17 May 2021
 #>
 
 using module ..\Includes\Include.psm1
