@@ -203,7 +203,7 @@ While ($true) {
                     Else { 
                         $Payout = 0
                     }
-                    $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout)
+                    $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                 }
                 Else { 
                     # AHashPool, BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool
