@@ -145,6 +145,9 @@ New Config Items
 # ProHashing API Key (required to retrieve balance information)
   "ProHashingAPIKey": "",
 
+# ProHashing Mining Mode, Either PPS (Pay Per Share) or PPLNS (Pay per Last N Shares) 
+  "ProHashingMiningMode": "PPS",
+
 # ProHashing UserName, if left empty then $UserName is used
   "ProHashingUserName": "",
 

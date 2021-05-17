@@ -59,6 +59,13 @@
           <label for="ProHashingAPIKey">ProHashing API key</label>
           <input type="text" id="ProHashingAPIKey" name="ProHashingAPIKey" maxlength=65 size=70>
         </div>
+        <div title="ProHashing mining mode&#10;Google for more information on  PPS & PPLNS" for="ProHashingMiningMode">
+          <label for="ProHashingMiningMode">ProHashing mining mode</label>
+          <select name="" id="ProHashingMiningMode">
+            <option title="Pay Per Share (high pool fee)" value=PPS>PPS</option>
+            <option title="Pay Per Last N Shares (lower pool fee)" value=PPLNS>PPLNS</option>
+          </select>
+        </div>
         <br>
 
         <div>
@@ -453,6 +460,11 @@
 
     document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
     document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
+    if (config.ProHashingMiningMode === "PPLNS") {
+      document.getElementById('ProHashingMiningMode').value = config.ProHashingMiningMode;
+    } else {
+      document.getElementById('ProHashingMiningMode').value = "PPS"
+    }
 
     document.getElementById('Currency').value = config.Currency.trim();
     document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
@@ -693,6 +705,7 @@
 
     document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('pool-prohashing24hr').checked);
     document.getElementById('ProHashingUserName').disabled = !(document.getElementById('pool-prohashing24hr').checked);
+    document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById('pool-prohashing24hr').checked);
 
     document.getElementById('Currency').value = config.Currency.trim();
     document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
@@ -897,6 +910,7 @@
 
         config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
         config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
+        config.ProHashingMiningMode = document.getElementById('ProHashingMiningMode').value;
 
         config.Currency = document.getElementById('Currency').value.trim();
         config.ExtraCurrencies = document.getElementById('ExtraCurrencies').value.split(',');
@@ -1133,6 +1147,7 @@
     if (PoolName == 'pool-prohashing24hr') {
       document.getElementById('ProHashingUserName').disabled = !(document.getElementById(PoolName).checked);
       document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById(PoolName).checked);
+      document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById(PoolName).checked);
     };
   });
 

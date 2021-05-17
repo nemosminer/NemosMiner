@@ -1210,6 +1210,7 @@ Function Read-Config {
             }
             "ProHashing" { 
                 If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
+                If (-not $PoolConfig.MiningMode) { $PoolConfig | Add-Member MiningMode $Config.ProHashingMiningMode -Force }
             }
             Default { 
                 If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { 

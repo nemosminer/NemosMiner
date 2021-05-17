@@ -48,12 +48,13 @@ If ($PoolsConfig.$Name_Norm.UserName) {
     $PriceField = "actual_last24h"
     $PoolRegions = "US"
 
+    If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS") { $MiningMode = "PPLNS" } Else { $MiningMode = "PPS" }
+
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
-
-        $Fee = [Decimal]$Request.$_.pps_fee
+        $Fee = [Decimal]$Request.$_."$($MiningMode)_fee"
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
@@ -70,7 +71,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Host                     = [String]$PoolHost
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolsConfig.$Name_Norm.UserName
-                Pass                     = "a=$Algorithm,m=pps,n=$($PoolsConfig.$Name_Norm.WorkerName)" # Pay per share
+                Pass                     = "a=$Algorithm,m=$MiningMode,n=$($PoolsConfig.$Name_Norm.WorkerName)"
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
                 Fee                      = $Fee

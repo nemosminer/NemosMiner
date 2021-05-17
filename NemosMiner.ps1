@@ -150,6 +150,8 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$ProHashingAPIKey = "", # ProHashing API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
+    [String]$ProHashingMiningMode = "PPS", # Either PPS (Pay Per Share) or PPLNS (Pay per Last N Shares)
+    [Parameter(Mandatory = $false)]
     [String]$ProHashingUserName = "nemos", # ProHashing UserName, if left empty then $UserName is used
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", # i.e http://192.0.0.1:8080
