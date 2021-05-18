@@ -64,7 +64,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]($CoinName -ireplace "$Algorithm$", $Algorithm)
+                CoinName                 = [String]($CoinName -ireplace "$Algorithm$", $Algorithm_Norm -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold")
                 Currency                 = [String]$Current.symbol
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
@@ -82,7 +82,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
             # [PSCustomObject]@{ 
             #     Algorithm                = [String]$Algorithm_Norm
-            #     CoinName                 = [String]($CoinName -ireplace "$Algorithm$", $Algorithm)
+            #     CoinName                 = [String]($CoinName -ireplace "$Algorithm$", $Algorithm_Norm -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold")
             #     Currency                 = [String]$Current.symbol
             #     Price                    = [Double]$Stat.Live
             #     StablePrice              = [Double]$Stat.Week

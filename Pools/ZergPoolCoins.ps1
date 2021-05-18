@@ -86,12 +86,12 @@ If ($Wallet) {
             Try { $EstimateFactor = ($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h }
             Catch { $EstimateFactor = 1 }
 
-            If ($Config.UseAnycast -or $PoolsConfig.($Name_Norm -replace '24hr$' -replace 'Coins$').UseAnycast) { 
+            If ($Config.UseAnycast -or $PoolsConfig.$Name_Norm.UseAnycast) { 
                 $PoolHost = "$Algorithm.$HostSuffix"
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    CoinName                 = [String]($Topcoin -ireplace "$Algorithm$", $Algorithm)
+                    CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$", $Algorithm_Norm -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^Groestl$", "GroestlCoin")
                     Currency                 = [String]$TopCoin.Symbol
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
@@ -116,7 +116,7 @@ If ($Wallet) {
 
                     [PSCustomObject]@{ 
                         Algorithm                = [String]$Algorithm_Norm
-                        CoinName                 = [String]($Topcoin -ireplace "$Algorithm$", $Algorithm)
+                        CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$", $Algorithm_Norm -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^Groestl$", "GroestlCoin")
                         Currency                 = [String]$TopCoin.Symbol
                         Price                    = [Double]$Stat.Live
                         StablePrice              = [Double]$Stat.Week
