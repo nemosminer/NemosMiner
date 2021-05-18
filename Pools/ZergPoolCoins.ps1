@@ -91,7 +91,7 @@ If ($Wallet) {
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$", $Algorithm_Norm -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^Groestl$", "GroestlCoin")
+                    CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^groestl$", "GroestlCoin" -ireplace "^myriad", "MyriadCoin")
                     Currency                 = [String]$TopCoin.Symbol
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
@@ -116,7 +116,7 @@ If ($Wallet) {
 
                     [PSCustomObject]@{ 
                         Algorithm                = [String]$Algorithm_Norm
-                        CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$", $Algorithm_Norm -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^Groestl$", "GroestlCoin")
+                        CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^groestl$", "GroestlCoin" -ireplace "^myriad", "MyriadCoin")
                         Currency                 = [String]$TopCoin.Symbol
                         Price                    = [Double]$Stat.Live
                         StablePrice              = [Double]$Stat.Week
