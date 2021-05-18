@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        3.9.9.44
+Version:        3.9.9.45
 Version date:   17 May 2021
 #>
 
@@ -64,7 +64,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]$CoinName
+                CoinName                 = [String]($CoinName -ireplace "$Algorithm$", $Algorithm)
                 Currency                 = [String]$Current.symbol
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
@@ -82,7 +82,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
             # [PSCustomObject]@{ 
             #     Algorithm                = [String]$Algorithm_Norm
-            #     CoinName                 = [String]$CoinName
+            #     CoinName                 = [String]($CoinName -ireplace "$Algorithm$", $Algorithm)
             #     Currency                 = [String]$Current.symbol
             #     Price                    = [Double]$Stat.Live
             #     StablePrice              = [Double]$Stat.Week

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPoolCoins.ps1
-Version:        3.9.9.44
+Version:        3.9.9.45
 Version date:   17 May 2021
 #>
 
@@ -91,7 +91,7 @@ If ($Wallet) {
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    CoinName                 = [String]$TopCoin.Name
+                    CoinName                 = [String]($Topcoin -ireplace "$Algorithm$", $Algorithm)
                     Currency                 = [String]$TopCoin.Symbol
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
@@ -116,7 +116,7 @@ If ($Wallet) {
 
                     [PSCustomObject]@{ 
                         Algorithm                = [String]$Algorithm_Norm
-                        CoinName                 = [String]$TopCoin.Name
+                        CoinName                 = [String]($Topcoin -ireplace "$Algorithm$", $Algorithm)
                         Currency                 = [String]$TopCoin.Symbol
                         Price                    = [Double]$Stat.Live
                         StablePrice              = [Double]$Stat.Week
