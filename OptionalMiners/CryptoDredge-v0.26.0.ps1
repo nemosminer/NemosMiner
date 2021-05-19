@@ -58,7 +58,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Wrap       = $false
                         URI        = $Uri
                         Fee        = $_.Fee # Dev fee
-                        WarmupTime = $_.WarmupTime # Seconds
+                        WarmupTime = 45 # Seconds
                     }
                 }
             }
