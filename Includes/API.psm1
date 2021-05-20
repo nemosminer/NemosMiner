@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.44
+Version:        3.9.9.45
 Version date:   17 May 2021
 #>
 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.3"
+    $APIVersion = "0.3.9.4"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -276,80 +276,82 @@ Function Start-APIServer {
                     "/functions/pool/disable" { 
                         If ($Parameters.Pools) { 
                             $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
-                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm | ForEach-Object { $_.Name -replace "24hr$" -replace "Coins$"; $_ } | Sort-Object Name, Algorithm -Unique | Where-Object { $_.Algorithm }
-                            $Pools | ForEach-Object { 
+                            $Pools = ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Sort-Object Name, Algorithm -Unique
+                            $Pools | Group-Object Name | ForEach-Object { 
                                 $PoolName = $_.Name
-                                $Algorithm = $_.Algorithm
-                                If ($PoolsConfig.$PoolName) { $PoolConfig = $PoolsConfig.$PoolName } Else { $PoolConfig = [PSCustomObject]@{ } }
+                                $PoolName_Norm = $_.Name -replace "24hr$" -replace "Coins$"
 
+                                If ($PoolsConfig.$PoolName_Norm) { $PoolConfig = $PoolsConfig.$PoolName_Norm } Else { $PoolConfig = [PSCustomObject]@{ } }
                                 [System.Collections.ArrayList]$AlgorithmList = @(($PoolConfig.Algorithm -replace " ") -split ',')
-                                $AlgorithmList.Remove("+$Algorithm")
-                                If (-not ($AlgorithmList -match "\+.+") -and $AlgorithmList -notcontains "-$Algorithm") { 
-                                    $AlgorithmList += "-$Algorithm"
+
+                                ForEach ($Algorithm in $_.Group.Algorithm) { 
+                                    $Data += "`n$Algorithm@$PoolName_Norm"
+
+                                    $AlgorithmList.Remove("+$Algorithm")
+                                    If (-not ($AlgorithmList -match "\+.+") -and $AlgorithmList -notcontains "-$Algorithm") { 
+                                        $AlgorithmList += "-$Algorithm"
+                                    }
+
+                                    $ReasonToAdd = "Algorithm disabled (``-$($_.Algorithm)`` in $PoolName pool config)"
+                                    $Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
+                                        $_.Reason = @(($_.Reason -NE $ReasonToAdd) | Select-Object)
+                                        $_.Reason += $ReasonToAdd
+                                        $_.Available = $false
+                                    }
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
                                 If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
-
-                                $Data += "`n$Algorithm@$PoolName"
-                                $Reason = "Algorithm disabled (``-$($_.Algorithm)`` in $PoolName pool config)"
-                                $_.Reason = @(($_.Reason -NE $Reason) | Select-Object)
-                                $_.Reason += $Reason
-                                $_.Available = $false
                             }
-                            If ($Pools.Count -gt 0) { 
+                            $DisabledPoolsCount = $Pools.Count
+                            If ($DisabledPoolsCount -gt 0) { 
                                 # Write PoolsConfig
                                 $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
-
-                                $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
+                                $Message = "$DisabledPoolsCount $(If ($DisabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) disabled."
                                 Write-Message -Level Verbose "Web GUI: $Message" -Console
                                 $Data += "`n`n$Message"
                             }
-                            $Data = "<pre>$Data</pre>"
+                            $Data = "<pre>$($Data | Select-Object -Unique)</pre>"
                             Break
                         }
                     }
                     "/functions/pool/enable" { 
                         If ($Parameters.Pools) { 
                             $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
-                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
-                            $Pools | ForEach-Object { 
+                            $Pools = ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Sort-Object Name, Algorithm -Unique
+                            $Pools | Group-Object Name | ForEach-Object { 
                                 $PoolName = $_.Name
-                                $Algorithm = $_.Algorithm
+                                $PoolName_Norm = $_.Name -replace "24hr$" -replace "Coins$"
 
-                                $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolName pool config)"
-
-                                $_.Reason = @(($_.Reason -NE $Reason) | Select-Object)
-                                $_.Available = -not [Bool]$_.Reason.Count
-                            }
-
-                            $Pools = $Pools | ForEach-Object { $_.Name -replace "24hr$" -replace "Coins$"; $_ } | Sort-Object Name, Algorithm -Unique | Where-Object { $_.Algorithm }
-                            $Pools | ForEach-Object { 
-                                $PoolName = $_.Name
-                                $Algorithm = $_.Algorithm
-                                If ($PoolsConfig.$PoolName) { $PoolConfig = $PoolsConfig.$PoolName } Else { $PoolConfig = [PSCustomObject]@{ } }
-
+                                If ($PoolsConfig.$PoolName_Norm) { $PoolConfig = $PoolsConfig.$PoolName_Norm } Else { $PoolConfig = [PSCustomObject]@{ } }
                                 [System.Collections.ArrayList]$AlgorithmList = @(($PoolConfig.Algorithm -replace " ") -split ',')
-                                $AlgorithmList.Remove("-$Algorithm")
-                                If ($AlgorithmList -match "\+.+" -and $AlgorithmList -notcontains "+$Algorithm") { 
-                                    $AlgorithmList += "+$Algorithm"
+
+                                ForEach ($Algorithm in $_.Group.Algorithm) { 
+                                    $Data += "`n$Algorithm@$PoolName_Norm"
+
+                                    $AlgorithmList.Remove("-$Algorithm")
+                                    If ($AlgorithmList -match "\+.+" -and $AlgorithmList -notcontains "+$Algorithm") { 
+                                        $AlgorithmList += "+$Algorithm"
+                                    }
+
+                                    $ReasonToRemove = "Algorithm disabled (``-$($Algorithm)`` in $PoolName_Norm pool config)"
+                                    $Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
+                                        $_.Reason = @(($_.Reason -NE $ReasonToRemove) | Select-Object)
+                                        $_.Available = -not [Bool]$_.Reason.Count
+                                    }
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
-                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
-
-                                $Data += "`n$Algorithm@$PoolName"
-                                $Reason = "Algorithm disabled (``-$($_.Algorithm)`` in $PoolName pool config)"
+                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName_Norm $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName_Norm) }
                             }
-                            If ($Pools.Count -gt 0) { 
+                            $EnabledPoolsCount = $Pools.Count
+                            If ($EnabledPoolsCount -gt 0) { 
                                 # Write PoolsConfig
                                 $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
-
-                                $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
+                                $Message = "$EnabledPoolsCount $(If ($EnabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) enabled."
                                 Write-Message -Level Verbose "Web GUI: $Message" -Console
                                 $Data += "`n`n$Message"
                             }
-                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                     }
