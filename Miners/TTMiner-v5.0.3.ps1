@@ -64,7 +64,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API             = "EthMiner"
                         Port            = $MinerAPIPort
                         URI             = $Uri
-                        PowerUsageInAPI = $true
+                        PowerUsageInAPI = $false
                         WarmupTime      = $_.WarmupTime # Seconds, additional wait time until first data sample
                     }
                 }
