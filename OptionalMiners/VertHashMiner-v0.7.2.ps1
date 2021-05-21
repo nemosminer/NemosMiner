@@ -1,0 +1,54 @@
+using module ..\Includes\Include.psm1
+
+$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Path = ".\Bin\$($Name)\verthashminer.exe"
+$Uri = "https://github.com/Minerx117/miners/releases/download/Verthash/VertHashMiner_0.7.2.zip"
+$DeviceEnumerator = "Type_Vendor_Index"
+
+$AlgorithmDefinitions = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "VertHash"; MinMemGB = 2; Type = "AMD";    MinerSet = 0; WarmupTime = 0; Arguments = " --verthash-data ..\..\Cache\VertHash.dat --cl-devices" }
+    [PSCustomObject]@{ Algorithm = "VertHash"; MinMemGB = 2; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 0; Arguments = " --verthash-data ..\..\Cache\VertHash.dat --cu-devices" }
+)
+
+If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
+
+    $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
+
+        If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
+
+            $MinerAPIPort = 0 # Wrapper has no API Port #[UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
+
+                $MinMemGB = $_.MinMemGB
+
+                If ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf ))) { 
+                    If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
+                    $_.WarmupTime += 420 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
+                }
+
+                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )) { 
+
+                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+
+                    # Get arguments for active miner devices
+                    # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+
+                    [PSCustomObject]@{ 
+                        Name       = $Miner_Name
+                        DeviceName = $Miner_Devices.Name
+                        Type       = $_.Type
+                        Path       = $Path
+                        Arguments  = ("$($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',') --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)" -replace "\s+", " ").trim()
+                        Algorithm  = $_.Algorithm
+                        API        = "VertHashMiner"
+                        Port       = $MinerAPIPort
+                        URI        = $Uri
+                        Fee        = 0.01
+                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
+                    }
+                }
+            }
+        }
+    }
+}
