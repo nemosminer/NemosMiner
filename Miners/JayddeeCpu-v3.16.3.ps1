@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.16.3/cpuminer-opt-3.16.3-windows.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/JayDDee/JayddeeCpu-v3.16.3.7z"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
@@ -18,7 +18,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 
     
-       #If ($Miner_Devices.CpuFeatures -match "sha")        { $Path = ".\Bin\$($Name)\cpuminer-Avx512-sha.exe" }
+        If ($Miner_Devices.CpuFeatures -match "sha")        { $Path = ".\Bin\$($Name)\cpuminer-Avx512-sha.exe" }
         ElseIf ($Miner_Devices.CpuFeatures -match "avx512") { $Path = ".\Bin\$($Name)\cpuminer-Avx512.exe" }
         ElseIf ($Miner_Devices.CpuFeatures -match "avx2")   { $Path = ".\Bin\$($Name)\cpuminer-Avx2.exe" }
         ElseIf ($Miner_Devices.CpuFeatures -match "avx")    { $Path = ".\Bin\$($Name)\cpuminer-Avx.exe" }
@@ -63,7 +63,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     API        = "Ccminer"
                     Port       = $MinerAPIPort
                     URI        = $Uri
-                    WarmupTime = 45 # Seconds, additional wait time until first data sample
+                    WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
                 }
             }
         }

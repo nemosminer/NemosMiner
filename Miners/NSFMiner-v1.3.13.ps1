@@ -7,10 +7,10 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "AMD";    MinerSet = 0; WarmupTime = 30; Arguments = " --opencl --devices" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 5.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d is fastest but has dev fee
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 30; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "AMD";    MinerSet = 0; WarmupTime = 45; Arguments = " --opencl --devices" } # May need https://github.com/ethereum-mining/ethminer/issues/2001
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "AMD";    MinerSet = 0; WarmupTime = 25; Arguments = " --opencl --devices" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 5.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 45; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTime = 25; Arguments = " --cuda --devices" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
 )
 
 $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -42,12 +42,15 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
 
                 If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Arguments += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
 
+                $Pass = $($Pools.($_.Algorithm).Pass)
+                If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+
                 [PSCustomObject]@{ 
                     Name       = $Miner_Name
                     DeviceName = $Miner_Devices.Name
                     Type       = $_.Type
                     Path       = $Path
-                    Arguments  = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$($Pools.($_.Algorithm).Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments  = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$Pass@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithm  = $_.Algorithm
                     API        = "EthMiner"
                     Port       = $MinerAPIPort
