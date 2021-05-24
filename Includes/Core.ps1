@@ -1120,7 +1120,7 @@ While ($true) {
 
                 If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime)) { 
                     # We must have data samples by now
-                    If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime())) { 
+                    If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
                         Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
