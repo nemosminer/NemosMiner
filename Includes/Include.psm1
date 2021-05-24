@@ -2644,6 +2644,10 @@ Function Initialize-Autoupdate {
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
+    # Display changelog
+    Notepad .\ChangeLog.txt
+    # (New-Object -ComObject WScript.Shell).AppActivate((get-process notepad).MainWindowTitle)
+
     If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
         # Kill old instance
         "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
