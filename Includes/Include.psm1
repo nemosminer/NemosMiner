@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.44
+Version:        3.9.9.45
 Version date:   17 May 2021
 #>
 
@@ -2250,7 +2250,9 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$ShowMinerWindows = "minimized",
         [Parameter(Mandatory = $false)]
-        [String]$StartF = 0x00000001 # STARTF_USESHOWWINDOW
+        [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
+        [Parameter(Mandatory = $false)]
+        [String]$LogFile
     )
 
     $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
