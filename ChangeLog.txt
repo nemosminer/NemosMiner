@@ -24,7 +24,7 @@ Miner Updates:
 - VertHash-v0.7.2 (Manual config needed, see https://github.com/Minerx117/miners/releases/tag/Verthash)
 
 Pool updates:
-- ProHashin24hr: Added eu region support
+- ProHashing24hr: Added eu region support
 
 
 Changelog NemosMiner 3.9.9.44 17.05.2021
