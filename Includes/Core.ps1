@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.44
-Version date:   17 May 2021
+Version:        3.9.9.45
+Version date:   24 May 2021
 #>
 
 using module .\Include.psm1
@@ -1115,17 +1115,19 @@ While ($true) {
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                 $Sample = @($Samples) | Select-Object -Last 1
+                If ($Sample) { $Miner.LastSample = $Sample}
+
 
                 If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime)) { 
                     # We must have data samples by now
-                    If (-not ($Miner.Data | Where-Object Date -ge $Miner.Process.PSBeginTime.ToUniversalTime())) { 
+                    If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime())) { 
                         # Miner has not provided first sample on time
                         Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
                         $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTime) seconds"
                         Break
                     }
-                    ElseIf (($Miner.Data.Date | Select-Object -Last 1) -lt (Get-Date).AddSeconds( -15 ).ToUniversalTime()) { 
+                    ElseIf ($Miner.LastSample.Date -lt (Get-Date).ToUniversalTime().AddSeconds( -15 )) { 
                         # Miner stuck - no sample for > 15 seconds
                         Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for 15 seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
@@ -1135,7 +1137,7 @@ While ($true) {
                 }
 
                 If ($Sample.HashRate) { 
-                    If ($Miner.Data | Where-Object Date -gt $Miner.Process.PSBeginTime.ToUniversalTime() | Where-Object Date -lt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime).ToUniversalTime()) { 
+                    If (-not ($Miner.Data | Where-Object Date -gt $Miner.Process.PSBeginTime.ToUniversalTime().AddSeconds($Miner.WarmupTime))) { 
                         Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] (miner is warming up)"
                         $Miner.Data = $Miner.Data | Where-Object Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()
                     }

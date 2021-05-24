@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.44
-Version date:   17 May 2021
+Version:        3.9.9.45
+Version date:   24 May 2021
 #>
 
 # Start the log
@@ -194,16 +194,18 @@ While ($true) {
                         $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                     }
                 }
-                ElseIf ($PoolBalanceObject.Pool -like "ProHashing*") { 
-                    # ProHashing
+                ElseIf ($PoolBalanceObject.Pool -match "^ProHashing.*") { 
+                    # Pool never reduces earnings
                     $Delta = $PoolBalanceObject.Balance - ($PoolBalanceObjects | Select-Object -Last 1).Balance
-                    If ($PoolBalanceObject.Paid -ne ($PoolBalanceObjects | Select-Object -Last 1).Paid) { 
-                        $Payout = $PoolBalanceObject.Paid
+                    If ($PoolBalanceObject.Unpaid -lt ($PoolBalanceObjects | Select-Object -Last 1).Unpaid) { 
+                        # Payout occured
+                        $Payout = ($PoolBalanceObjects | Select-Object -Last 1).Unpaid - $PoolBalanceObject.Unpaid
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout - $Delta)
                     }
                     Else { 
                         $Payout = 0
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                     }
-                    $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta)
                 }
                 Else { 
                     # AHashPool, BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool

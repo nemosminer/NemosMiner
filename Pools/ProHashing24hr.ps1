@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        3.9.9.44
-Version date:   17 May 2021
+Version:        3.9.9.45
+Version date:   24 May 2021
 #>
 
 
@@ -46,7 +46,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
     $PoolHost = "prohashing.com"
     # $PriceField = "actual_last24h"
     $PriceField = "actual_last24h"
-    $PoolRegions = "US"
+    $PoolRegions = @("EU", "US")
 
     If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS") { $MiningMode = "PPLNS" } Else { $MiningMode = "PPS" }
 
@@ -68,7 +68,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-                Host                     = [String]$PoolHost
+                Host                     = "$(If ($Region -eq "eu") {"eu."})$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolsConfig.$Name_Norm.UserName
                 Pass                     = "a=$Algorithm,m=$MiningMode,n=$($PoolsConfig.$Name_Norm.WorkerName)"
