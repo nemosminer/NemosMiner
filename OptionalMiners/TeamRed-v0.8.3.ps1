@@ -2,11 +2,12 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/0.8.2.1/teamredminer-v0.8.2.1-win.zip"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.8.3/teamredminer-v0.8.3-win.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "Autolykos2";           Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = "Chukwa2";              Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=trtl_chukwa2" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTime = 60; Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # SRBMinerMulti-v0.7.5 is fastest
@@ -24,7 +25,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.28a is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 30; Arguments = " --algo=etchash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 5.0; MinerSet = 1; WarmupTime = 30; Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 30; Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTime = 20; Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; MinerSet = 0; WarmupTime = 60; Arguments = " --algo=kawpow" } # Wildrig-v0.28.3 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=lyra2z" } # XmRig-v6.10.0 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=lyra2rev3" }
