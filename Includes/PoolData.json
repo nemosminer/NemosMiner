@@ -26,7 +26,7 @@
     "PayoutThreshold": {
       "mBTC": 1.65,
       "LTC": 0.05,
-      "DODGE": 50,
+      "DODGE": 20,
       "*": 0.00001
     },
     "PayoutCurrency": "[Default]"
