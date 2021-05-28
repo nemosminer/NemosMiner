@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.45
+Version:        3.9.9.46
 Version date:   24 May 2021
 #>
 
@@ -200,7 +200,7 @@ While ($true) {
                     If ($PoolBalanceObject.Unpaid -lt ($PoolBalanceObjects | Select-Object -Last 1).Unpaid) { 
                         # Payout occured
                         $Payout = ($PoolBalanceObjects | Select-Object -Last 1).Unpaid - $PoolBalanceObject.Unpaid
-                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Payout - $Delta)
+                        $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $PoolBalanceObject.Unpaid)
                     }
                     Else { 
                         $Payout = 0
@@ -228,6 +228,7 @@ While ($true) {
                     }
                 }
                 $PoolBalanceObject | Add-Member Payout ([Double]$Payout)
+                $PoolBalanceObject | Add-Member Paid ([Double](($PoolBalanceObjects.Paid | Measure-Object -Maximum).Maximum + $Payout)) -Force
                 $PoolBalanceObject | Add-Member Delta ([Double]$Delta)
 
                 If ((($Now - ($PoolBalanceObjects[0].DateTime)).TotalHours) -lt 1) { 
