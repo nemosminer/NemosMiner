@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.45
-Version date:   24 May 2021
+Version:        3.9.9.46
+Version date:   29 May 2021
 #>
 
 Class Device { 
@@ -1073,11 +1073,11 @@ Function Start-Mining {
         }
 
         If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
-            If ($VertHashCheck | Wait-Job -Timeout 30 |  Receive-Job -Wait -AutoRemoveJob) { 
+            If ($VertHashCheck | Wait-Job -Timeout 60 |  Receive-Job -Wait -AutoRemoveJob) { 
                 Write-Message -Level Verbose "VertHash data file integrity check: OK."
             }
             Else { 
-                Write-Message -Level Warn "VertHash data file is corrupt -> file deleted. It will be recreated by the miners if needed."
+                Write-Message -Level Warn "VertHash data file (.\Cache\VertHash.dat) is corrupt -> file deleted. It will be recreated by the miners if needed."
                 Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
             }
         }

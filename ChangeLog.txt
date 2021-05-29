@@ -4,6 +4,22 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.46 xx.xx.2021
+========================================
+
+Fixes:
+- BalanceTracker: ProHashing earnings too high
+- PoolData: Blockmasters pool lowered min. DOGE payout to 20
+- TTminer-v5.03: Error when trying to mine 4GB+ ethash
+
+Miner Updates:
+- SPMinerVertHash-v5.0 (Manual config needed, see https://github.com/Minerx117/miners/releases/tag/SPMinerVertHash)
+- Trex-v0.20.4
+
+Enhancements:
+- WebGUI / Pool management: Add hidden columns 'Epoch' & 'Block Height'
+
+
 Changelog NemosMiner 3.9.9.45 24.05.2021
 ========================================
 

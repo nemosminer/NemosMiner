@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        3.9.9.45
-Version date:   24 May 2021
+Version:        3.9.9.46
+Version date:   29 May 2021
 #>
 
 
@@ -57,7 +57,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
         $PoolRegions = @("Asia", "EU", "US")
-        # If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia", "US") } # temp fix
+        If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia", "US") } # temp fix
         # If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia") } # temp fix
 
         If ($Algorithm_Norm -eq "VertHash") { $Current.algo_switch_port = 20534 }
