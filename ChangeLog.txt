@@ -13,6 +13,7 @@ Fixes:
 - TTminer-v5.03: Error when trying to mine 4GB+ ethash
 
 Miner Updates:
+- Raptor3umCpu-v2.0
 - SPMinerVertHash-v5.0 (Manual config needed, see https://github.com/Minerx117/miners/releases/tag/SPMinerVertHash)
 - Trex-v0.20.4
 
