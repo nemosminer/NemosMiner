@@ -6,7 +6,7 @@ $Uri = "https://github.com/Raptor3um/cpuminer-opt/releases/download/v2.0/cpumine
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ghostrider"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider"; MinerSet = 0; WarmupTime = 60; Arguments = " --algo gr" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
