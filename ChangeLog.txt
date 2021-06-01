@@ -4,12 +4,13 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
-Changelog NemosMiner 3.9.9.47 xx.06.2021
+Changelog NemosMiner 3.9.9.47 01.06.2021
 ========================================
 
 Enhancements:
 - Core: (Re-)Add config item 'MinDataSamplesAlgoMultiplier'
-- Core & Miners: Support Add property WarmupTimes = @(15, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
+- Core & Miners: Changed property 'WarmupTime' to 'WarmupTimes @(0,0)'; First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15).
+
 
 Fixes:
 - CryptoDredge-v0.26.0: Fix minimum memory requirements for MTP
