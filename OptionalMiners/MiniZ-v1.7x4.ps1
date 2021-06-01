@@ -6,22 +6,22 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.7x4
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Fee = 0.02;   MinerSet = 1; WarmupTime = 0;  Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v37.5 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=125,4 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=144,5 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=150,5 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.3; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=192,7 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=210,9 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Fee = 0.02;   MinerSet = 1; WarmupTime = 0;  Arguments = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323)
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
-    [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=192,7 --pers ZcashPoW --ocX" }
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Fee = 0.0075; MinerSet = 0; WarmupTime = 30; Arguments = " --par=Ethash --ocX" }
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Fee = 0.0075; MinerSet = 1; WarmupTime = 20; Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = 5.0; Fee = 0.0075; MinerSet = 0; WarmupTime = 30; Arguments = " --par=EtcHash --ocX" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTime = 30; Arguments = " --par=kawpow --pers=rAVENCOINKAWPOW --ocX" }
-    [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=ProgPow --pers=veil --ocX" }
-    [PSCustomObject]@{ Algorithm = "Veriblock";    MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=ProgPowZ --pers=zano --ocX" }
-    [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTime = 0;  Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
+    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Fee = 0.02;   MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v37.5 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=125,4 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=144,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=150,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.3; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=192,7 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=210,9 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Fee = 0.02;   MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --par=96,5 --smart-pers --ocX" } # Insane high benchmark data (https://bitcointalk.org/index.php?topic=4767892.msg55832323)
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
+    [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=192,7 --pers ZcashPoW --ocX" }
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Fee = 0.0075; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=Ethash --ocX" }
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Fee = 0.0075; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = 5.0; Fee = 0.0075; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=EtcHash --ocX" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=kawpow --pers=rAVENCOINKAWPOW --ocX" }
+    [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=ProgPow --pers=veil --ocX" }
+    [PSCustomObject]@{ Algorithm = "Veriblock";    MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=ProgPowZ --pers=zano --ocX" }
+    [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -63,7 +63,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
                         PowerUsageInAPI = $true
-                        WarmupTime      = $_.WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTimes     = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

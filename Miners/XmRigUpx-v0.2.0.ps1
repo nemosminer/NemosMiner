@@ -5,7 +5,7 @@ $Path = ".\Bin\$($Name)\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v0.2.0/xmrig-upx-v0.2.0-win64.zip"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx"; MinerSet = 0; Arguments = "-a cryptonight-upx/2" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = "-a cryptonight-upx/2" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -23,15 +23,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
             [PSCustomObject]@{ 
-                Name       = $Miner_Name
-                DeviceName = $Miner_Devices.Name
-                Type       = "CPU"
-                Path       = $Path
-                Arguments  = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --api-port=$($MinerAPIPort) --donate-level 0").trim()
-                Algorithm  = $_.Algorithm
-                API        = "XmRig"
-                Port       = $MinerAPIPort
-                URI        = $Uri
+                Name        = $Miner_Name
+                DeviceName  = $Miner_Devices.Name
+                Type        = "CPU"
+                Path        = $Path
+                Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --keepalive --api-port=$($MinerAPIPort) --donate-level 0").trim()
+                Algorithm   = $_.Algorithm
+                API         = "XmRig"
+                Port        = $MinerAPIPort
+                URI         = $Uri
+                WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
             }
         }
     }

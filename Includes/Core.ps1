@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.46
-Version date:   29 May 2021
+Version:        3.9.9.47
+Version date:   01 June 2021
 #>
 
 using module .\Include.psm1
@@ -649,7 +649,7 @@ Function Start-Cycle {
                     Type            = [String]$_.Content.Type
                     Port            = [UInt16]$_.Content.Port
                     URI             = [String]$_.Content.URI
-                    WarmupTime      = [Int]($_.Content.WarmupTime) + [Int]($Config.WarmupTime)
+                    WarmupTimes     = [Int[]](($_.Content.WarmupTimes[0] + $Config.WarmupTimes[0]), ($_.Content.WarmupTimes[1] + [Int]$Config.WarmupTimes[1]))
                     MinerUri        = [String]$_.Content.MinerUri
                     ProcessPriority = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
                     PowerUsageInAPI = [String]$_.Content.PowerUsageInAPI 
@@ -700,7 +700,7 @@ Function Start-Cycle {
         If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Path, DeviceName, Algorithm -ExcludeDifferent) { 
             $_.ProcessPriority = $Miner.ProcessPriority
             $_.ShowMinerWindows = $Config.ShowMinerWindows
-            $_.WarmupTime = $Miner.WarmupTime
+            $_.WarmupTimes = $Miner.WarmupTimes
             $_.URI = $Miner.URI
             $_.Workers = $Miner.Workers
             $_.Restart = [Boolean]($_.Arguments -ne $Miner.Arguments)
@@ -1016,7 +1016,7 @@ Function Start-Cycle {
             }
             # Add extra time when CPU mining and miner requires DAG creation
             If ($Miner.Type -ne "CPU" -and $Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
-                $Miner.WarmupTime += 15 # seconds
+                $Miner.WarmupTimes[1] += 15 # seconds
             }
             Write-Message "Starting miner '$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
             $Miner.SetStatus([MinerStatus]::Running)
@@ -1092,7 +1092,7 @@ While ($true) {
     # End loop when
     # - a miner crashed (and no other miners are benchmarking)
     # - all benchmarking miners have collected enough samples
-    # - WarmupTime is reached (no readout from miner)
+    # - WarmupTimes[1] is reached (no readout from miner)
     $InitialRunningMiners = $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
     If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
@@ -1116,15 +1116,13 @@ While ($true) {
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                 $Sample = @($Samples) | Select-Object -Last 1
                 If ($Sample) { $Miner.LastSample = $Sample}
-
-
-                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTime)) { 
+                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[1])) { 
                     # We must have data samples by now
                     If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
-                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTime) seconds."
+                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTimes[1]) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTime) seconds"
+                        $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTimes[1])) seconds"
                         Break
                     }
                     ElseIf ($Miner.LastSample.Date -lt (Get-Date).ToUniversalTime().AddSeconds( -15 )) { 
@@ -1137,7 +1135,7 @@ While ($true) {
                 }
 
                 If ($Sample.HashRate) { 
-                    If (-not ($Miner.Data | Where-Object Date -gt $Miner.Process.PSBeginTime.ToUniversalTime().AddSeconds($Miner.WarmupTime))) { 
+                    If (-not ($Miner.Data | Where-Object Date -gt $Miner.Process.PSBeginTime.ToUniversalTime().AddSeconds($Miner.WarmupTimes[0]))) { 
                         Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] (miner is warming up)"
                         $Miner.Data = $Miner.Data | Where-Object Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()
                     }

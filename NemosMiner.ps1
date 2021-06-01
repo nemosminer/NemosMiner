@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.46
-Version date:   29 May 2021
+Version:        3.9.9.47
+Version date:   01 June 2021
 #>
 
 [CmdletBinding()]
@@ -105,6 +105,8 @@ param(
     [Double]$MinAccuracy = 0.5, # Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
     [Parameter(Mandatory = $false)]
     [Int]$MinDataSamples = 20, # Minimum number of hash rate samples required to store hash rate
+    [Parameter(Mandatory = $false)]
+    [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, # Per algo multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
     [Switch]$MinerInstancePerDeviceModel = $true, # If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
     [Parameter(Mandatory = $false)]
@@ -216,7 +218,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$UseAnycast = $false, # If true pools (currently ZergPool only) will use anycast for best network performance and ping times
     [Parameter(Mandatory = $false)]
-    [Int]$WarmupTime = 15, # Time the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
+    [Int[]]$WarmupTimes = @(0, 15), # First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
     [Parameter(Mandatory = $false)]
     [Hashtable]$Wallets = @{ "BTC" = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"; "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }, 
     [Parameter(Mandatory = $false)]
@@ -246,7 +248,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.46"
+    Version      = [System.Version]"3.9.9.47"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 

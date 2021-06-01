@@ -6,7 +6,7 @@ $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/ka
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 2; Arguments = "" } # XmRig-v6.10.0 is faster
+   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 2; WarmupTimes = @(0, 15); Arguments = "" } # XmRig-v6.10.0 is faster
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -29,15 +29,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = "NVIDIA"
-                        Path       = $Path
-                        Arguments  = ("--pool stratum$(If ($Pools.($_.Algorithm).SSL) { "s" } )+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).Pass))@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = $_.Algorithm
-                        API        = "EthMiner"
-                        Port       = $MinerAPIPort
-                        URI        = $Uri
+                        Name        = $Miner_Name
+                        DeviceName  = $Miner_Devices.Name
+                        Type        = "NVIDIA"
+                        Path        = $Path
+                        Arguments   = ("--pool stratum$(If ($Pools.($_.Algorithm).SSL) { "s" } )+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).Pass))@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm   = $_.Algorithm
+                        API         = "EthMiner"
+                        Port        = $MinerAPIPort
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

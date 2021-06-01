@@ -6,24 +6,24 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/Z-Enemy/z-enemy-2.
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo aergo --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "BCD";        MinMemGB = 3; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo bcd" }
-    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo bitcore --intensity 22" }
-    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo c11" }
-    [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo hex --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Arguments = " --algo kawpow --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo phi" }
-    [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo phi2" }
-    [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo poly" }
-#    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo skunk" } # No hashrate
-#    [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2; MinerSet = 0; WarmupTime = 45; Arguments = " --algo sonoa" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo timetravel" }
-#    [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3; MinerSet = 0; WarmupTime = 45; Arguments = " --algo tribus" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3; MinerSet = 0; WarmupTime = 15; Arguments = " --algo x16r" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " --algo x16rv2" }
-    [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " --algo x16s" }
-    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTime = 60; Arguments = " --algo x17" }
-    [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2; MinerSet = 0; WarmupTime = 30; Arguments = " --algo xevan --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo aergo --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "BCD";        MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo bcd" }
+    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo bitcore --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo c11" }
+    [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo hex --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo phi" }
+    [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo phi2" }
+    [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo poly" }
+#    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo skunk" } # No hashrate
+#    [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo sonoa" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo timetravel" }
+#    [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo tribus" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16r" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo x16rv2" }
+    [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo x16s" }
+    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 90); Arguments = " --algo x17" }
+    [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo xevan --intensity 22" }
     )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -48,19 +48,19 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = "NVIDIA"
-                        Path       = $Path
-                        Arguments  = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --statsavg 5 --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = $_.Algorithm
-                        API        = "Trex"
-                        Port       = $MinerAPIPort
-                        Wrap       = $false
-                        URI        = $Uri
-                        Fee        = 0.01 # dev fee
-                        MinerUri   = "http://localhost:$($MinerAPIPort)"
-                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
+                        Name        = $Miner_Name
+                        DeviceName  = $Miner_Devices.Name
+                        Type        = "NVIDIA"
+                        Path        = $Path
+                        Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --statsavg 5 --retry-pause 1 --quiet --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm   = $_.Algorithm
+                        API         = "Trex"
+                        Port        = $MinerAPIPort
+                        Wrap        = $false
+                        URI         = $Uri
+                        Fee         = 0.01 # dev fee
+                        MinerUri    = "http://localhost:$($MinerAPIPort)"
+                        WarmupTimes = @($_.WarmupTimes) # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

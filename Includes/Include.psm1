@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.46
-Version date:   29 May 2021
+Version:        3.9.9.47
+Version date:   01 June 2021
 #>
 
 Class Device { 
@@ -182,13 +182,14 @@ Class Miner {
     [String[]]$Environment = @()
     [Int]$MinDataSamples # for safe hashrate values
     [PSCustomObject]$LastSample # last hash rate sample
-    [Int]$WarmupTime
+    [Int[]]$WarmupTimes # First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
     [DateTime]$BeginTime
     [DateTime]$EndTime
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
 
     [Double]$AllowedBadShareRatio = 0
     [String]$MinerUri = ""
+    [String]$LogFile = ""
 
     [String[]]GetProcessNames() { 
         Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf -ErrorAction Ignore)).BaseName)
@@ -238,7 +239,10 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment
+            If (($this.GetType()).Name -in @("VerthashMiner")) { 
+                $this.LogFile = $Global:ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\$($this.Name)-$($this.Port)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt")
+            }
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -2355,6 +2359,36 @@ public static class Kernel32
     Return $Job
 }
 
+Function Start-SubProcess { 
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$FilePath, 
+        [Parameter(Mandatory = $false)]
+        [String]$ArgumentList = "", 
+        [Parameter(Mandatory = $false)]
+        [String]$LogPath = "", 
+        [Parameter(Mandatory = $false)]
+        [String]$WorkingDirectory = "", 
+        [ValidateRange(-2, 3)]
+        [Parameter(Mandatory = $false)]
+        [Int]$Priority = 0, 
+        [Parameter(Mandatory = $false)]
+        [String[]]$EnvBlock
+    )
+
+    If ($EnvBlock) { $EnvBlock | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force } }
+
+    $ScriptBlock = "Set-Location '$WorkingDirectory'; (Get-Process -Id `$PID).PriorityClass = '$(@{-2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime"}[$Priority])'; "
+    $ScriptBlock += "& '$FilePath'"
+    If ($ArgumentList) { $ScriptBlock += " $ArgumentList" }
+    $ScriptBlock += " *>&1"
+    $ScriptBlock += " | Write-Output"
+    If ($LogPath) { $ScriptBlock += " | Tee-Object '$LogPath'" }
+
+    Start-Job ([ScriptBlock]::Create($ScriptBlock))
+}
+
 Function Expand-WebRequest { 
     Param(
         [Parameter(Mandatory = $true)]
@@ -2689,7 +2723,8 @@ Function Update-ConfigFile {
                 $Config.Wallets.BTC = $Config.$_
                 $Config.Remove($_)
             }
-            "WarmupTime" { $Config.WaitForMinerData = $Config.$_; $Config.Remove($_) }
+            "WaitForMinerData" { $Config.WarmupTimes = @(0, $Config.$_); $Config.Remove($_) }
+            "WarmupTime" { $Config.WarmupTimes = @(0, $Config.$_); $Config.Remove($_) }
             Default { 
                 If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } # Remove unsupported config item
             }

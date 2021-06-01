@@ -211,8 +211,8 @@ New Config Items
 # If true NemosMiner will display BTC values in mBTC (BTC/1000)
   "UsemBTC": true,
 
-# Number of seconds the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
-  "WarmupTime": 15,
+# First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed. Default 15 (seconds).
+  "WarmupTimes" = [0, 15],
 
 # Wallets.[Currency=WalletAdrress]; one entry per currency
   $Wallets: {

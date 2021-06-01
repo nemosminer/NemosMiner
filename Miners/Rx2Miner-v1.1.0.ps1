@@ -6,7 +6,7 @@ $Uri = "https://github.com/LUX-Core/rx2-cpuminer/releases/download/1.1.0/cpumine
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-#    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; Arguments = " --algo rx2" }  # No Hashrate in time
+    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; WarmupTimes = @(0, 60); Arguments = " --algo rx2" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -26,16 +26,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $Miner_Devices.Name
-                    Type       = "CPU"
-                    Path       = $Path
-                    Arguments  = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --retry-pause 1 --cpu-affinity AAAA --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "Ccminer"
-                    Port       = $MinerAPIPort
-                    URI        = $Uri
-                    WarmupTime = 60 # seconds
+                    Name        = $Miner_Name
+                    DeviceName  = $Miner_Devices.Name
+                    Type        = "CPU"
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --retry-pause 1 --cpu-affinity AAAA --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "Ccminer"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                 }
             }
         }

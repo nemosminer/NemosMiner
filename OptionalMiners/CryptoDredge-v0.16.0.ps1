@@ -6,14 +6,14 @@ $Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.16.0/Cryp
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTime = 15; Arguments = " --algo=allium --intensity 8" } # CryptoDredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=exosis --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=dedal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTime = 45; Arguments = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTime = 0;  Arguments = " --algo=neoscrypt --intensity 6 " } # Cryptodredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=phi --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo=pipe --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo=allium --intensity 8" } # CryptoDredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=exosis --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=dedal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo=neoscrypt --intensity 6 " } # Cryptodredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo=phi --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=phi2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=pipe --intensity 8" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -35,18 +35,18 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = "NVIDIA"
-                        Path       = $Path
-                        Arguments  = ("$($_.Arguments) --url=stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user=$($Pools.($_.Algorithm).User) --pass=$($Pools.($_.Algorithm).Pass) --no-watchdog --no-crashreport --timeout 180 --cpu-priority 4 --retries 1 --retry-pause 1 --api-type ccminer-tcp --api-bind=127.0.0.1:$($MinerAPIPort) --device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = $_.Algorithm
-                        API        = "Ccminer"
-                        Port       = $MinerAPIPort
-                        Wrap       = $false
-                        URI        = $Uri
-                        Fee        = $_.Fee # Dev fee
-                        WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
+                        Name        = $Miner_Name
+                        DeviceName  = $Miner_Devices.Name
+                        Type        = "NVIDIA"
+                        Path        = $Path
+                        Arguments   = ("$($_.Arguments) --url=stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user=$($Pools.($_.Algorithm).User) --pass=$($Pools.($_.Algorithm).Pass) --no-watchdog --no-crashreport --timeout 180 --cpu-priority 4 --retries 1 --retry-pause 1 --api-type ccminer-tcp --api-bind=127.0.0.1:$($MinerAPIPort) --device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm   = $_.Algorithm
+                        API         = "Ccminer"
+                        Port        = $MinerAPIPort
+                        Wrap        = $false
+                        URI         = $Uri
+                        Fee         = $_.Fee # Dev fee
+                        WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

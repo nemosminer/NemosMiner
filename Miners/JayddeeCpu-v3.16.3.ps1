@@ -6,12 +6,12 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/JayDDee/JayddeeCpu
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTime = 0; Arguments = " --algo hmq1725" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTime = 0; Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTime = 0; Arguments = " --algo sha3d" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTime = 0; Arguments = " --algo scrypt(N,1,1)" }
-    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTime = 0; Arguments = " --algo verthash" }
+    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(0, 0); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo sha3d" }
+    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo scrypt(N,1,1)" }
+    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo verthash" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -54,16 +54,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $Miner_Devices.Name
-                    Type       = "CPU"
-                    Path       = $Path
-                    Arguments  = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "Ccminer"
-                    Port       = $MinerAPIPort
-                    URI        = $Uri
-                    WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
+                    Name        = $Miner_Name
+                    DeviceNam   = $Miner_Devices.Name
+                    Type        = "CPU"
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "Ccminer"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                 }
             }
         }

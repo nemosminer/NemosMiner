@@ -6,17 +6,17 @@ $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.2/cc
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; MinerSet = 0; Arguments = " --algo c11 --intensity 22" }
-    [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 3; MinerSet = 0; Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
-    [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 3; MinerSet = 0; Arguments = " --algo lyra2v2" }
-    [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 3; MinerSet = 1; Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 3; MinerSet = 0; Arguments = " --algo skein" }
-    [PSCustomObject]@{ Algorithm = "Skein2";    MinMemGB = 3; MinerSet = 0; Arguments = " --algo skein2 --intensity 31.9" }
-    [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; MinerSet = 0; Arguments = " --algo veltor --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Whirlcoin"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo whirlcoin" }
-    [PSCustomObject]@{ Algorithm = "Whirlpool"; MinMemGB = 2; MinerSet = 0; Arguments = " --algo whirlpool" }
-    [PSCustomObject]@{ Algorithm = "X11evo";    MinMemGB = 2; MinerSet = 0; Arguments = " --algo x11evo --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "X17";       MinMemGB = 3; MinerSet = 0; Arguments = " --algo x17 --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo c11 --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo lyra2v2" }
+    [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo skein" }
+    [PSCustomObject]@{ Algorithm = "Skein2";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo skein2 --intensity 31.9" }
+    [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo veltor --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Whirlcoin"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo whirlcoin" }
+    [PSCustomObject]@{ Algorithm = "Whirlpool"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo whirlpool" }
+    [PSCustomObject]@{ Algorithm = "X11evo";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo x11evo --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "X17";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo x17 --intensity 22" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -40,15 +40,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name       = $Miner_Name
-                        DeviceName = $Miner_Devices.Name
-                        Type       = "NVIDIA"
-                        Path       = $Path
-                        Arguments  = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --retry-pause 1 --api-bind $MinerAPIPort --cuda-schedule 2 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm  = $_.Algorithm
-                        API        = "Ccminer"
-                        Port       = $MinerAPIPort
-                        URI        = $Uri
+                        Name        = $Miner_Name
+                        DeviceName  = $Miner_Devices.Name
+                        Type        = "NVIDIA"
+                        Path        = $Path
+                        Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --retry-pause 1 --api-bind $MinerAPIPort --cuda-schedule 2 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm   = $_.Algorithm
+                        API         = "Ccminer"
+                        Port        = $MinerAPIPort
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

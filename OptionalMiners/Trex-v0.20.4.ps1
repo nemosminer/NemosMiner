@@ -7,19 +7,19 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTime = 30; Arguments = " --algo etchash --intensity 25" } # GMiner-v2.54 is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTime = 30; Arguments = " --algo ethash --intensity 25" } # GMiner-v2.54 is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTime = 20; Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTime = 30; Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.10.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTime = 15; Arguments = " --algo mtp --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "MTPTcr";       Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTime = 15; Arguments = " --algo mtp-tcr --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "Multi";        Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo multi --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "Octopus";      Fee = 0.02; MinMemGB = 5; MinerSet = 0; WarmupTime = 30; Arguments = " --algo octopus --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpow" }
-    [PSCustomObject]@{ Algorithm = "Tensority";    Fee = 0.03; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo tensority --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "Veil";         Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpow-veil --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "VeriBlock";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpow-veriblock" }
-    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTime = 0;  Arguments = " --algo progpowz --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo etchash --intensity 25" } # GMiner-v2.54 is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo ethash --intensity 25" } # GMiner-v2.54 is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.10.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo mtp --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "MTPTcr";       Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo mtp-tcr --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "Multi";        Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo multi --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "Octopus";      Fee = 0.02; MinMemGB = 5; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo octopus --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo progpow" }
+    [PSCustomObject]@{ Algorithm = "Tensority";    Fee = 0.03; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo tensority --intensity 25" }
+    [PSCustomObject]@{ Algorithm = "Veil";         Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo progpow-veil --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "VeriBlock";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo progpow-veriblock" }
+    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo progpowz --intensity 25" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -89,7 +89,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
                         PowerUsageInAPI = $true
-                        WarmupTime      = $_.WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTimes     = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

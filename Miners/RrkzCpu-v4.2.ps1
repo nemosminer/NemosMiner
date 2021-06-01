@@ -6,8 +6,8 @@ $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpumi
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTime = 15; Arguments = " --algo cpupower" } # SRBMinerMulti-v0.7.5 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; WarmupTime = 0;  Arguments = " --algo power2b" }
+    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.7.6 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo power2b" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -27,16 +27,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $Miner_Devices.Name
-                    Type       = "CPU"
-                    Path       = $Path
-                    Arguments  = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-affinity AAAA --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "Ccminer"
-                    Port       = $MinerAPIPort
-                    URI        = $Uri
-                    Warmuptime = $_.WarmupTime # Seconds, additional wait time until first data sample
+                    Name        = $Miner_Name
+                    DeviceName  = $Miner_Devices.Name
+                    Type        = "CPU"
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-affinity AAAA --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "Ccminer"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                 }
             }
         }

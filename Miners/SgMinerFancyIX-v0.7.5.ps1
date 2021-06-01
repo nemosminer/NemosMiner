@@ -6,7 +6,7 @@ $Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.7.5-0
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinerSet = 0; Arguments = " -k neoscrypt-xaya -s 1 -g 1 -w 256 -I 17" }
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -k neoscrypt-xaya -s 1 -g 1 -w 256 -I 17" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -27,16 +27,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $Miner_Devices.Name
-                    Type       = "AMD"
-                    Path       = $Path
-                    Arguments  = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-listen --api-port $MinerAPIPort --gpu-platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "Xgminer"
-                    Port       = $MinerAPIPort
-                    URI        = $Uri
-                    WarmupTime = 30 # Seconds, additional wait time until first data sample, wait for JIT compiler
+                    Name        = $Miner_Name
+                    DeviceName  = $Miner_Devices.Name
+                    Type        = "AMD"
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --api-listen --api-port $MinerAPIPort --gpu-platform $($Miner_Devices.PlatformId | Sort-Object -Unique) --device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "Xgminer"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                 }
             }
         }

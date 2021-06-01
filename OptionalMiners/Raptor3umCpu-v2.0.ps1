@@ -6,7 +6,7 @@ $Uri = "https://github.com/Raptor3um/cpuminer-opt/releases/download/v2.0/cpumine
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ghostrider"; MinerSet = 0; WarmupTime = 60; Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo gr" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -27,6 +27,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
             $AlgorithmDefinitions | ForEach-Object {
+                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
 
                 If ($_.Algorithm -eq "VertHash") { 
                     If (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf) { 
@@ -39,7 +40,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
                     Else { 
                         $_.Arguments += " --verify"
-                        $_.WarmupTime += 420 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
+                        $WarmupTimes[1] += 420 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                     }
                 }
 
@@ -49,16 +50,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $Miner_Devices.Name
-                    Type       = "CPU"
-                    Path       = $Path
-                    Arguments  = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "Ccminer"
-                    Port       = $MinerAPIPort
-                    URI        = $Uri
-                    WarmupTime = $_.WarmupTime # Seconds, additional wait time until first data sample
+                    Name        = $Miner_Name
+                    DeviceName  = $Miner_Devices.Name
+                    Type        = "CPU"
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "Ccminer"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    WarmupTimes = $WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                 }
             }
         }

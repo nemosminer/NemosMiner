@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.46
-Version date:   29 May 2021
+Version:        3.9.9.47
+Version date:   01 June 2021
 #>
 
 # Start the log
@@ -268,6 +268,7 @@ While ($true) {
 
                 If ($PoolBalanceObjects | Where-Object { ($_.DateTime).ToLocalTime().Date -eq $Now.Date }) { 
                     $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.ToLocalTime().Date -eq $Now.Date } | Sort-Object Date | Select-Object -Index 0).Earnings)
+                    If ($GrowthToday -lt 0) { $GrowthToday = 0 } # to avoid negative numbers
                 }
 
                 $PoolBalanceObjects += $PoolBalanceObject

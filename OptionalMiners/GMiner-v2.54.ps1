@@ -7,32 +7,32 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";  Fee = 0.02;   MinMemGB = 4.0; Type = "AMD"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckaroo29b --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";  Fee = 0.02;   MinMemGB = 4.0; Type = "AMD"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckaroo29s --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = "Equihash1254"; Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo equihash125_4 --pers auto --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445"; Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.28a is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.28a is fastest
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";  Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.0065; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTime = 20; Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";  Fee = 0.02;   MinMemGB = 4.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckaroo29b --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";  Fee = 0.02;   MinMemGB = 4.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckaroo29s --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = "Equihash1254"; Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo equihash125_4 --pers auto --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445"; Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.28a is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.28a is fastest
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";  Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.0065; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 20); Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v37.5 is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckaroo29b --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckaroo29s --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo C30CTX --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Fee = 0.02;   MinMemGB = 7.6; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckatoo31 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckatoo32 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo cuckoo29 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "Equihash1254";  Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 2.1; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 1.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime =  0; Arguments = " --algo equihash210_9 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime =  0; Arguments = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 5.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTime = 30; Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime = 20; Arguments = " --algo ethash --cuda 1 --opencl 0" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTime = 30; Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.10.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v37.5 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckaroo29b --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckaroo29s --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo C30CTX --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Fee = 0.02;   MinMemGB = 7.6; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckatoo31 --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Fee = 0.02;   MinMemGB = 7.4; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckatoo32 --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckoo29 --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "Equihash1254";  Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 2.1; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 1.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo equihash210_9 --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo 144_5 --pers BgoldPoW --cuda 1 --opencl 0" } # MiniZ-v1.7x4 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 5.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --algo ethash --cuda 1 --opencl 0" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.10.0 is almost as fast but has no fee
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -90,7 +90,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
                         PowerUsageInAPI = $true
-                        WarmupTime      = $_.WarmupTime # Seconds, additional wait time until first data sample
+                        WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }
