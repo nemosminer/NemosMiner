@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.54/gminer_2_54_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.55/gminer_2_55_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -17,7 +17,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.0065; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 20); Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v37.5 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v37.6 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Fee = 0.04;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckaroo29b --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Fee = 0.02;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckaroo29s --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 8.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo C30CTX --cuda 1 --opencl 0" }
@@ -32,7 +32,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 5.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Fee = 0.0065; MinMemGB = 3.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --algo ethash --cuda 1 --opencl 0" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.10.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Fee = 0.01;   MinMemGB = 4.0; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.12.2 is almost as fast but has no fee
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -89,7 +89,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI             = $Uri
                         Fee             = $_.Fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
-                        PowerUsageInAPI = $true
+                        PowerUsageInAPI = $false # $true; Values read by minerare too low compered with what HWiNFO64 reports
                         WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }

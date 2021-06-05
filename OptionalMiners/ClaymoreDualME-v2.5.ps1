@@ -7,24 +7,24 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.006);        MinMemGB = 5; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 3; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 1" }
-    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 1" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin dcr -platform 1" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin keccak -platform 1" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin lbc -platform 1" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin pasc -platform 1" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin sc -platform 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.006);        MinMemGB = 5; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 3; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(0, 20); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 1" }
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 1" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin dcr -platform 1" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin keccak -platform 1" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin lbc -platform 1" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin pasc -platform 1" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin sc -platform 1" }
 
-    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.006);        MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 3; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin dcr -platform 2" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin keccak -platform 2" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin lbc -platform 2" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin pasc -platform 2" }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " -dcoin sc -platform 2" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.006);        MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 3; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 20); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin dcr -platform 2" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin keccak -platform 2" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Lbry")   ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin lbc -platform 2" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Pascal") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin pasc -platform 2" }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin sc -platform 2" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -111,7 +111,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Pass = $($Pools.($_.Algorithm[0]).Pass)
                     If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
 
-                    If (-not $_.Intensity) { $WarmupTimes[0] += 45; $WarmupTimes[1] += 45 } # Allow extra 45 seconds for auto-tuning
+                    If (-not $_.Intensity) { $WarmupTimes[0] += 15; $WarmupTimes[1] += 15 } # Allow extra seconds for auto-tuning
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

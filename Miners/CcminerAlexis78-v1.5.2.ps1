@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.2/cc
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo c11 --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo c11 --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo lyra2v2" }
     [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
