@@ -19,11 +19,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.47
-Version date:   01 June 2021
+Version:        3.9.9.48
+Version date:   06 June 2021
 #>
 
 using module .\Include.psm1
+
+# For SetWindowText
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class Win32 {
+    [DllImport("User32.dll", EntryPoint="SetWindowText")]
+    public static extern int SetWindowText(IntPtr hWnd, string strTitle);
+}
+"@
 
 Function Start-Cycle { 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
@@ -242,11 +253,7 @@ Function Start-Cycle {
 
         # Power cost preparations
         If ($Config.CalculatePowerCost -eq $true) { 
-            If (($EnabledDevices).Count -lt 1) { 
-                Write-Message -Level Warn "No configured miner devices. Cannot read power usage info - disabling power usage calculations."
-                $Variables.CalculatePowerCost = $false
-            }
-            Else { 
+            If (($EnabledDevices).Count -ge 1) { 
                 #$Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
                 $Variables.CalculatePowerCost = $true
 
@@ -974,13 +981,14 @@ Function Start-Cycle {
     }
 
     # Kill stray miners
-    Get-CIMInstance CIM_Process | Where-Object ExecutablePath | Where-Object { [String[]]($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { ($Variables.Miners).ProcessID -notcontains $_.ProcessID } | Select-Object -ExpandProperty ProcessID | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction Ignore }
+    Get-CimInstance CIM_Process | Where-Object ExecutablePath | Where-Object { [String[]]($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { ($Variables.Miners).ProcessID -notcontains $_.ProcessID } | Select-Object -ExpandProperty ProcessID | ForEach-Object { 
+        Stop-Process -Id $_ -Force -ErrorAction Ignore
+        # Optional delay to avoid blue screens
+        Start-Sleep -Seconds $Config.Delay -ErrorAction Ignore
+    }
 
     # Put here in case the port range has changed
     Initialize-API
-
-    # Optional delay to avoid blue screens
-    Start-Sleep -Seconds $Config.Delay -ErrorAction Ignore
 
     ForEach ($Miner in ($Variables.Miners | Where-Object Best -EQ $true)) { 
         If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
@@ -1021,6 +1029,18 @@ Function Start-Cycle {
             Write-Message "Starting miner '$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
             $Miner.SetStatus([MinerStatus]::Running)
             Write-Message -Level Verbose $Miner.CommandLine
+
+            # Set window title
+            $WindowTitle = "$(($Miner.Devices.Name | Sort-Object) -join "; "): $($Miner.Info)"
+            If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
+                $WindowTitle = "$($WindowTitle) ("
+                If ($Miner.Benchmark -eq $true) { $WindowTitle = "$($WindowTitle)Benchmarking" }
+                If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle = "$($WindowTitle) and " }
+                If ($Miner.MeasurePowerUsage -eq $true) { $WindowTitle = "$($WindowTitle)Measuring Power Usage" }
+                $WindowTitle = "$($WindowTitle))"
+            }
+            [Win32]::SetWindowText((Get-Process -Id $Miner.ProcessId).mainWindowHandle, $WindowTitle) | Out-Null
+            Remove-variable WindowTitle
 
             # Add watchdog timer
             If ($Config.Watchdog) { 
@@ -1115,7 +1135,8 @@ While ($true) {
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                 $Sample = @($Samples) | Select-Object -Last 1
-                If ($Sample) { $Miner.LastSample = $Sample}
+                If ($Sample) { $Miner.LastSample = $Sample }
+
                 If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[1])) { 
                     # We must have data samples by now
                     If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        3.9.9.47
-Version date:   01 June 2021
+Version:        3.9.9.48
+Version date:   06 June 2021
 #>
 
 using module ..\Include.psm1

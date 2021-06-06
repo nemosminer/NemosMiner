@@ -4,6 +4,19 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+
+Changelog NemosMiner 3.9.9.48 10.06.2021
+========================================
+
+Enhancements:
+- Core: Miner window title contains device name & miner info, e.g. 'GPU#00; GPU#01: lolMiner-v1.28a-2xRadeonRX5700XT8GB {Ethash@MiningPoolHubCoins}'
+
+Miner Updates:
+- GMiner-v2.55
+- SRBMinerMulti-v0.7.6
+- XmRig-v6.12.2
+
+
 Changelog NemosMiner 3.9.9.47 01.06.2021
 ========================================
 
@@ -18,6 +31,9 @@ Fixes:
 Changelog NemosMiner 3.9.9.46 29.05.2021
 ========================================
 
+Enhancements:
+- WebGUI / Pool management: Add hidden columns 'Epoch' & 'Block Height'
+
 Fixes:
 - BalanceTracker: ProHashing earnings too high
 - PoolData: Blockmasters pool lowered min. DOGE payout to 20
@@ -27,9 +43,6 @@ Miner Updates:
 - Raptor3umCpu-v2.0
 - SPMinerVertHash-v5.0 (Manual config needed, see https://github.com/Minerx117/miners/releases/tag/SPMinerVertHash)
 - Trex-v0.20.4
-
-Enhancements:
-- WebGUI / Pool management: Add hidden columns 'Epoch' & 'Block Height'
 
 
 Changelog NemosMiner 3.9.9.45 24.05.2021

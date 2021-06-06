@@ -32,6 +32,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $AlgorithmDefinitions | ForEach-Object {
 
+                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
                 $MinMemGB = $_.MinMemGB
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
                     $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
@@ -75,6 +76,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Pass = " --pass $($Pools.($_.Algorithm).Pass)"
                     If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+                    If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub*") { $WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
+                    If ($_.Arguments -notmatch "--kernel [0-9]") { $WarmupTimes[1] += 15 } # Allow extra seconds for kernel auto tuning
 
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name
@@ -89,7 +92,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
                         PowerUsageInAPI = $true
-                        WarmupTimes     = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
+                        WarmupTimes     = $WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

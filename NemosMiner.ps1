@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.47
-Version date:   01 June 2021
+Version:        3.9.9.48
+Version date:   06 June 2021
 #>
 
 [CmdletBinding()]
@@ -248,7 +248,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.47"
+    Version      = [System.Version]"3.9.9.48"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 

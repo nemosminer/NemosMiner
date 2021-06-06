@@ -242,7 +242,7 @@ Class Miner {
             If (($this.GetType()).Name -in @("VerthashMiner")) { 
                 $this.LogFile = $Global:ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\$($this.Name)-$($this.Port)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt")
             }
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile -WindowTitle "$(($this.Devices.Name | Sort-Object) -join "; "): $($this.Info)"
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -274,7 +274,6 @@ Class Miner {
                     Start-Sleep -Milliseconds 100
                 }
             }
-
             $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
@@ -2356,24 +2355,7 @@ public static class Kernel32
     While ($null -eq $JobOutput)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
-    If ($Process) { 
-        $Process.PriorityClass = $PriorityNames.$Priority
-
-        If ($WindowTitle) { 
-            # Set window title
-            # Define all the structures for SetWindowText
-            Add-Type -TypeDefinition @"
-    using System;
-    using System.Runtime.InteropServices;
-
-    public static class Win32 {
-        [DllImport("User32.dll", EntryPoint="SetWindowText")]
-        public static extern int SetWindowText(IntPtr hWnd, string strTitle);
-    }
-"@
-            [Win32]::SetWindowText($Process.mainWindowHandle, $WindowTitle) | Out-Null
-        }
-    }
+    If ($Process) { $Process.PriorityClass = $PriorityNames.$Priority }
 
     Return $Job
 }
