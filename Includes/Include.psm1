@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.47
-Version date:   01 June 2021
+Version:        3.9.9.48
+Version date:   06 June 2021
 #>
 
 Class Device { 
@@ -242,7 +242,7 @@ Class Miner {
             If (($this.GetType()).Name -in @("VerthashMiner")) { 
                 $this.LogFile = $Global:ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\$($this.Name)-$($this.Port)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt")
             }
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile -WindowTitle "$(($this.Devices.Name | Sort-Object) -join "; "): $($this.Info)"
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -1534,7 +1534,7 @@ Function Get-ArgumentsPerDevice {
     Param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [String]$Command = "", 
+        [String]$Command, 
         [Parameter(Mandatory = $false)]
         [String[]]$ExcludeParameters = "", 
         [Parameter(Mandatory = $false)]
@@ -1670,13 +1670,13 @@ Function Invoke-TcpRequest {
 
     Param(
         [Parameter(Mandatory = $true)]
-        [String]$Server = "localhost", 
+        [String]$Server, 
         [Parameter(Mandatory = $true)]
         [String]$Port, 
         [Parameter(Mandatory = $true)]
         [String]$Request, 
         [Parameter(Mandatory = $true)]
-        [Int]$Timeout = 30 # seconds
+        [Int]$Timeout # seconds
     )
 
     Try { 
@@ -1707,9 +1707,9 @@ Function Get-CpuId {
     # Brief : gets CPUID (CPU name and registers)
 
     # OS Features
-    $OS_x64 = "" # not implemented
-    $OS_AVX = "" # not implemented
-    $OS_AVX512 = "" # not implemented
+    # $OS_x64 = "" # not implemented
+    # $OS_AVX = "" # not implemented
+    # $OS_AVX512 = "" # not implemented
 
     # Vendor
     $vendor = "" # not implemented
@@ -2257,7 +2257,9 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
         [Parameter(Mandatory = $false)]
-        [String]$LogFile
+        [String]$LogFile,
+        [Parameter(Mandatory = $false)]
+        [String]$WindowTitle = ""
     )
 
     $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
@@ -2354,7 +2356,24 @@ public static class Kernel32
     While ($null -eq $JobOutput)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
-    If ($Process) { $Process.PriorityClass = $PriorityNames.$Priority }
+    If ($Process) { 
+        $Process.PriorityClass = $PriorityNames.$Priority
+
+        If ($WindowTitle) { 
+            # Set window title
+            # Define all the structures for SetWindowText
+            Add-Type -TypeDefinition @"
+    using System;
+    using System.Runtime.InteropServices;
+
+    public static class Win32 {
+        [DllImport("User32.dll", EntryPoint="SetWindowText")]
+        public static extern int SetWindowText(IntPtr hWnd, string strTitle);
+    }
+"@
+            [Win32]::SetWindowText($Process.mainWindowHandle, $WindowTitle) | Out-Null
+        }
+    }
 
     Return $Job
 }
@@ -2672,9 +2691,7 @@ Function Initialize-Autoupdate {
         }
     }
 
-    $TempVerObject = ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json)
-    $TempVerObject | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force
-    $TempVerObject | ConvertTo-Json | Out-File ".\Version.txt"
+    ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json) | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force | ConvertTo-Json | Out-File ".\Version.txt"
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
@@ -2730,7 +2747,6 @@ Function Update-ConfigFile {
             }
         }
     }
-    # Remove-Variable Changed_Config_Items -ErrorAction Ignore
 
     # Add new config items
     If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
