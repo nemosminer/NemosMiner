@@ -2,11 +2,11 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer.exe"
-$Uri = "https://github.com/LUX-Core/rx2-cpuminer/releases/download/1.1.0/cpuminer.exe"
+$Uri = "https://github.com/LUX-Core/rx2-cpuminer/releases/download/1.2.0-alpha/cpminer-msr.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; WarmupTimes = @(0, 60); Arguments = " --algo rx2" }
+    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; WarmupTimes = @(0, 90); Arguments = " --algo rx2" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
