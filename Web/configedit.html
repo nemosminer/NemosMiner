@@ -350,8 +350,8 @@
             <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 size=4>
             <label for="MinDataSamples">data samples when benchmarking</label>
           </div>
-          <div title="Number of seconds until first valid data sample from the miner&#10;If the miner does not provide hashrate information the miner will get stopped&#10;&#10;Note: Some miner/algorithms will automatically extend this time&#10;(min=15, max=120 [Default: 15])" for="WarmupTime">Miner warmup time until first valid data sample
-            <input type="number" id="WarmupTime" name="WarmupTime" min=15 max=120 value=15 size=4> seconds
+          <div title="Time (in seconds) the miner is allowed to warm up,&#10;e.g. to compile the binaries or to get the API ready and providing&#10;first data samples before it gets stopped and marked as failed&#10;&#10;Note: Some miner/algorithms will automatically extend this time&#10;(min=15, max=120 [Default: 15])" for="WarmupTimes">Miner warmup time until first valid data sample
+            <input type="number" id="WarmupTimes" name="WarmupTimes" min=15 max=120 value=15 size=4> seconds
           </div>
         </div>
       </td>
@@ -688,8 +688,8 @@
       document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
     };
 
-    if (parseInt(config.WarmupTime)) { 
-      document.getElementById('WarmupTime').value = parseInt(config.WarmupTime);
+    if (parseInt(config.WarmupTimes[1])) { 
+      document.getElementById('WarmupTimes').value = parseInt(config.WarmupTimes[1]);
     };
 
     document.getElementById('WorkerName').value = config.WorkerName.trim();
@@ -1039,7 +1039,7 @@
         config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
 
         config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
-        config.WarmupTime = parseInt(document.getElementById('WarmupTime').value);
+        config.WarmupTimes = [0, parseInt(document.getElementById('WarmupTimes').value)];
 
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
