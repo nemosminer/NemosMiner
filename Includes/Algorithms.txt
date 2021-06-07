@@ -96,6 +96,7 @@
   "jeonghash": "JeongHash",
   "kawpow": "KawPoW",
   "keccakc": "KeccakC",
+  "lux": "Rx2",
   "luxcoin": "Rx2",
   "lyra2": "Lyra2RE",
   "lyra2h": "Lyra2h",
