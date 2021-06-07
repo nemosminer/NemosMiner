@@ -38,56 +38,56 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Zentoshi";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algorithm balloon_zentoshi --gpu-intensity 31 --gpu-boost 50" }
 
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm argon2d_dynamic" } # Does not start mining
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm argon2id_chukwa" }
-    [PSCustomObject]@{ Algorithm = "Argon2idNinja";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm argon2id_ninja" }
-    [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "CPU"; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm autolykos2" }
-    [PSCustomObject]@{ Algorithm = "Blake2b";           Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm blake2b" }
-    [PSCustomObject]@{ Algorithm = "Blake2s";           Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm blake2s" }
-    [PSCustomObject]@{ Algorithm = "CircCash";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm circcash" }
-    [PSCustomObject]@{ Algorithm = "CpuPower";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cpupower" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCache";  Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cryptonight_cache" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cryptonight_ccx" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble"; Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cryptonight_heavyx" }
-    # [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cryptonight_gpu" } # No Hashrate in time
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cryptonight_upx" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm cryptonight_xhv" }
-    [PSCustomObject]@{ Algorithm = "CurveHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm curvehash" }
-    [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm eaglesong" }
-    # [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algorithm etchash" } # Not profitable with CPU
-    # [PSCustomObject]@{ Algorithm = "Ethash";            Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algorithm ethash" } # Not profitable with CPU
-    # [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algorithm ethash" } # Not profitable with CPU
-    [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm heavyhash" }
-    [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm k12" }
-    [PSCustomObject]@{ Algorithm = "Kadena";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm kadena" }
-    [PSCustomObject]@{ Algorithm = "Keccak";            Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm keccak" }
-    [PSCustomObject]@{ Algorithm = "Panthera";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm panthera" }
-    [PSCustomObject]@{ Algorithm = "Phi5";              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm phi5" }
-    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.12.2 is fastest
-    [PSCustomObject]@{ Algorithm = "RandomxArq";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "RandomxHash2";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "RandomxWow";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algorithm randomwow --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "Rx2";               Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 60); Arguments = " --algorithm rx2" } # No Hashrate in time
-    [PSCustomObject]@{ Algorithm = "ScryptN2";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm scryptn2" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algorithm ubqhash" } # Not profitable with CPU
-    [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm verushash" }
-    [PSCustomObject]@{ Algorithm = "VertHash";          Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm verthash --verthash-dat-path ..\..\Cache\VertHash.dat" }
-    [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yescrypt" }
-    [PSCustomObject]@{ Algorithm = "YescryptR8";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yescryptr8" }
-    [PSCustomObject]@{ Algorithm = "YescryptR16";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yescryptr16" }
-    [PSCustomObject]@{ Algorithm = "YescryptR32";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yescryptr32" }
-    [PSCustomObject]@{ Algorithm = "Yespower";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespower" }
-    [PSCustomObject]@{ Algorithm = "Yespower2b";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespower2b" }
-    [PSCustomObject]@{ Algorithm = "YespowerItc";       Type = "CPU"; Fee = 0     ; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespoweritc" }
-    [PSCustomObject]@{ Algorithm = "YespowerLitb";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowerlitb" }
-    [PSCustomObject]@{ Algorithm = "YespowerLtncg";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowerltncg" }
-    [PSCustomObject]@{ Algorithm = "YespowerMgpc";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowermgpc" }
-    [PSCustomObject]@{ Algorithm = "YespowerR16";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowerr16" }
-    [PSCustomObject]@{ Algorithm = "YespowerSugar";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowersugar" }
-    [PSCustomObject]@{ Algorithm = "YespowerTide";      Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowertide" }
-    [PSCustomObject]@{ Algorithm = "Zentoshi";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algorithm balloon_zentoshi" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";       Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algorithm yespowerurx" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm argon2d_dynamic" } # Does not start mining
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm argon2id_chukwa" }
+    [PSCustomObject]@{ Algorithm = "Argon2idNinja";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm argon2id_ninja" }
+    [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "CPU"; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm autolykos2" }
+    [PSCustomObject]@{ Algorithm = "Blake2b";           Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm blake2b" }
+    [PSCustomObject]@{ Algorithm = "Blake2s";           Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm blake2s" }
+    [PSCustomObject]@{ Algorithm = "CircCash";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm circcash" }
+    [PSCustomObject]@{ Algorithm = "CpuPower";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cpupower" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCache";  Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cryptonight_cache" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cryptonight_ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble"; Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cryptonight_heavyx" }
+    # [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cryptonight_gpu" } # No Hashrate in time
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cryptonight_upx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm cryptonight_xhv" }
+    [PSCustomObject]@{ Algorithm = "CurveHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm curvehash" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm eaglesong" }
+    # [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm etchash" } # Not profitable with CPU
+    # [PSCustomObject]@{ Algorithm = "Ethash";            Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm ethash" } # Not profitable with CPU
+    # [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm ethash" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm heavyhash" }
+    [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm k12" }
+    [PSCustomObject]@{ Algorithm = "Kadena";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm kadena" }
+    [PSCustomObject]@{ Algorithm = "Keccak";            Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm keccak" }
+    [PSCustomObject]@{ Algorithm = "Panthera";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm panthera" }
+    [PSCustomObject]@{ Algorithm = "Phi5";              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm phi5" }
+    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTimes = @(0, 45);  Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.12.2 is fastest
+    [PSCustomObject]@{ Algorithm = "RandomxArq";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "RandomxHash2";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "RandomxWow";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 30);  Arguments = " --algorithm randomwow --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = "Rx2";               Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 120); Arguments = " --algorithm rx2" } # No Hashrate in time
+    [PSCustomObject]@{ Algorithm = "ScryptN2";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm scryptn2" }
+    # [PSCustomObject]@{ Algorithm = "UbqHash";           Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(0, 45);  Arguments = " --algorithm ubqhash" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm verushash" }
+    [PSCustomObject]@{ Algorithm = "VertHash";          Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm verthash --verthash-dat-path ..\..\Cache\VertHash.dat" }
+    [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yescrypt" }
+    [PSCustomObject]@{ Algorithm = "YescryptR8";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yescryptr8" }
+    [PSCustomObject]@{ Algorithm = "YescryptR16";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yescryptr16" }
+    [PSCustomObject]@{ Algorithm = "YescryptR32";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yescryptr32" }
+    [PSCustomObject]@{ Algorithm = "Yespower";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespower" }
+    [PSCustomObject]@{ Algorithm = "Yespower2b";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespower2b" }
+    [PSCustomObject]@{ Algorithm = "YespowerItc";       Type = "CPU"; Fee = 0     ; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespoweritc" }
+    [PSCustomObject]@{ Algorithm = "YespowerLitb";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerlitb" }
+    [PSCustomObject]@{ Algorithm = "YespowerLtncg";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerltncg" }
+    [PSCustomObject]@{ Algorithm = "YespowerMgpc";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowermgpc" }
+    [PSCustomObject]@{ Algorithm = "YespowerR16";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerr16" }
+    [PSCustomObject]@{ Algorithm = "YespowerSugar";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowersugar" }
+    [PSCustomObject]@{ Algorithm = "YespowerTide";      Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowertide" }
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";       Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerurx" }
+    [PSCustomObject]@{ Algorithm = "Zentoshi";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm balloon_zentoshi" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

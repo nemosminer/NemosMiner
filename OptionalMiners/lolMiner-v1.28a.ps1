@@ -9,41 +9,41 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $AlgorithmDefinitions = [PSCustomObject[]]@(
 #    [PSCustomObject]@{ Algorithm = "Beam";          Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo BEAM-I" } # Algo is dead, needs pers
 #    [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo BEAM-II" } # Algo is dead
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo BEAM-III" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C29AE" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo CR29-40" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo CR29-32" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.01;  MinMemGB = 7.8; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo C29D" } # TeamRed-v0.8.3 is fastest, keep enabled because TeamRed does not support algo on Navi
-    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo C31" } # TeamRed-v0.8.3 is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --coin AUTO144_5" } # GMiner-v2.55 is fastest, but des not support Navi
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --coin AUTO192_7" } # GMiner-v2.55 is fastest, but des not support Navi
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo EQUI210_9" }
-    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --coin ZEL" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo ETCHASH --disable-dag-verify 1" } # Ethereum Classic, PhoenixMiner-v5.6d is faster
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo ETHASH --disable-dag-verify 1" } # PhoenixMiner-v5.6d is faster
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 20); Arguments = " --algo ETHASH --disable-dag-verify 1" } # PhoenixMiner-v5.6d is faster
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo BEAM-III" }
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo C29AE" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-40" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-32" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.01;  MinMemGB = 7.8; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C30CTX" }
+    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo C29D" } # TeamRed-v0.8.3 is fastest, keep enabled because TeamRed does not support algo on Navi
+    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C29M" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo C31" } # TeamRed-v0.8.3 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 30);  Arguments = " --algo C32" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(20, 15); Arguments = " --coin AUTO144_5" } # GMiner-v2.55 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin AUTO192_7" } # GMiner-v2.55 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo EQUI210_9" }
+    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --coin ZEL" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 30);  Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.6d is faster
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(0, 30);  Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6d is faster
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 20);  Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6d is faster
 
-#    [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo BEAM-I" } # Algo is dead, needs pers
-#    [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo BEAM-II" } # Algo is dead
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo BEAM-III" } # NBMiner-v37.6 is fastest
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C29AE" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo CR29-40" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo CR29-32" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 8.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo C29D" } # GMiner-v2.55 is fastest
-    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo C31" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --coin AUTO144_5" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --coin AUTO192_7" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo EQUI210_9" }
-    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --coin ZEL" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo ETCHASH --disable-dag-verify 1" } # Ethereum Classic, PhoenixMiner-v5.6d is faster
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo ETHASH --disable-dag-verify 1" } # PhoenixMiner-v5.6d is faster
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 20); Arguments = " --algo ETHASH --disable-dag-verify 1" } # PhoenixMiner-v5.6d is faster
+#    [PSCustomObject]@{ Algorithm = "Beam";          Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo BEAM-I" } # Algo is dead, needs pers
+#    [PSCustomObject]@{ Algorithm = "BeamV2";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo BEAM-II" } # Algo is dead
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 0);   Arguments = " --algo BEAM-III" } # NBMiner-v37.6 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo C29AE" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-40" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-32" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 8.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C30CTX" }
+    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo C29D" } # GMiner-v2.55 is fastest
+    [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C29M" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C31" }
+    [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 30);  Arguments = " --algo C32" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(20, 15); Arguments = " --coin AUTO144_5" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin AUTO192_7" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo EQUI210_9" }
+    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin ZEL" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 30);  Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.6d is faster
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(0, 30);  Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6d is faster
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(0, 20);  Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6d is faster
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -81,7 +81,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         DeviceName      = $Miner_Devices.Name
                         Type            = $_.Type
                         Path            = $Path
-                        Arguments       = ("$Arguments$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --shortstats=2 --longstats=60 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$Arguments$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --devicesbypcie --shortstats=1 --longstats=30 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "lolMiner"
                         Port            = $MinerAPIPort
