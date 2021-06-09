@@ -55,7 +55,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
-                    DeviceNam   = $Miner_Devices.Name
+                    DeviceName  = $Miner_Devices.Name
                     Type        = "CPU"
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()

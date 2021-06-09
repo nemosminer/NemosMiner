@@ -51,7 +51,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
     [Parameter(Mandatory = $false)]
-    [Int]$Delay = 1, # seconds between stop and start of miners, use only when getting blue screens on miner switches
+    [Int]$Delay = 0, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
     [Switch]$DisableDualAlgoMining = $false, # If true NemosMiner will not use any dual algo miners
     [Parameter(Mandatory = $false)]
@@ -98,8 +98,6 @@ param(
     [String[]]$LogToFile = @("Info", "Warn", "Error", "Verbose", "Debug"), # Log level detail to be written to log file, see Write-Message function
     [Parameter(Mandatory = $false)]
     [String[]]$LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug"), # Log level detail to be written to screen, see Write-Message function
-    [Parameter(Mandatory = $false)]
-    [Double]$MarginOfError = 0, # 0.4, # knowledge about the past won't help us to predict the future so don't pretend that Week_Fluctuation means something real
     [Parameter(Mandatory = $false)]
     [ValidateRange(0, 1)]
     [Double]$MinAccuracy = 0.5, # Only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
