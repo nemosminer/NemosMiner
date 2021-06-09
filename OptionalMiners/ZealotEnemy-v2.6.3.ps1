@@ -15,14 +15,14 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo phi" }
     [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo phi2" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo poly" }
-#    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo skunk" } # No hashrate
+#    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo skunk" } # No hashrate in time
 #    [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo sonoa" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo timetravel" }
 #    [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo tribus" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16r" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo x16rv2" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo x16s" }
-    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 90); Arguments = " --algo x17" }
+#    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo x17" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo xevan --intensity 22" }
     )
 
