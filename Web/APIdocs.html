@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        3.9.9.48
-version date:   06 June 2021 -->
+version:        3.9.9.49
+version date:   09 June 2021 -->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.3.9.5)</h1>
+  <h1>NemosMiner API (version 0.3.9.6)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -46,9 +46,13 @@ version date:   06 June 2021 -->
   <a href="http://localhost:3999/algorithms">/algorithms</a>
   <p>Shows the algorithm mappings used in Get-Algorithm to build normalized algorithm names.</p>
 
-  <h3>BTC Exchange rate</h3>
+  <h3>All Exchange rates</h3>
+  <a href="http://localhost:3999/rates">/rates</a>
+  <p>Shows the current BTC exchange rate.</p>
+
+  <h3>BTC Exchange rate in main currency</h3>
   <a href="http://localhost:3999/btc">/btc</a>
-  <p>Shows the curent BTC exchange rate.</p>
+  <p>Shows all current exchange rates in main currency.</p>
 
   <h3>Balances</h3>
   <a href="http://localhost:3999/balances">/balances</a>

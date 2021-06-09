@@ -243,6 +243,7 @@ Removed Config Items
   "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
   "GPUCount": 1, (Replaced by device config in Web GUI)
   "HideConsole": false, obsolete
+  "MarginOfError": 0,4, obsolete
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "Type": ["AMD", "CPU", "NVIDIA"],  obsolete; replaced with per device configuration option "ExcludeDeviceName"

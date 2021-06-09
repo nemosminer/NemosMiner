@@ -46,7 +46,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x11k" }
     [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16r" } # TeamRed-v0.8.3 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16rt" }
-    [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # TeamRed-v0.8.3 is fastest
+    # [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Error
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17r --protocol ufo2" }
@@ -95,7 +95,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x11k" }
     [PSCustomObject]@{ Algorithm = "X16r";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16r" } # Trex-v0.20.4 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16rt" }
-    [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Trex-v0.20.4 is fastest
+#    [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Error
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16s" } # Trex-v0.20.4 is fastest
     [PSCustomObject]@{ Algorithm = "X17";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "NVIDIA"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17r --protocol ufo2" }
