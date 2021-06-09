@@ -67,7 +67,8 @@ class EthMiner : Miner {
 
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-        If ($this.Algorithm -ne $HashRate_Name) { 
+        If ($this.Algorithm -ne $HashRate_Name) { # Dual algo mining
+
             $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
 
@@ -86,7 +87,7 @@ class EthMiner : Miner {
         }
 
         If ($this.CalculatePowerCost) { 
-            $PowerUsage = [Double]$Data.result[9]
+            $PowerUsage = [Double](($Data.result[9] -split ';' | Measure-Object -Sum).Sum)
             If (-not $PowerUsage) { 
                 $PowerUsage = $this.GetPowerUsage()
             }
