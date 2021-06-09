@@ -1,4 +1,4 @@
-﻿<#
+<#
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -87,7 +87,7 @@ class EthMiner : Miner {
         }
 
         If ($this.CalculatePowerCost) { 
-            $PowerUsage = [Double](($Data.result[9] -split ';' | Measure-Object -Sum).Sum)
+            $PowerUsage = [Double]($Data.result[9] -split ';' | Measure-Object -Sum).Sum
             If (-not $PowerUsage) { 
                 $PowerUsage = $this.GetPowerUsage()
             }

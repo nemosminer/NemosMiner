@@ -1132,15 +1132,10 @@ Function Read-Config {
         }
         Else { 
             # Fix upper / lower case (Web GUI is case sensitive)
-            $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
+            $Config_Tmp.PSObject.Properties.Name | ForEach-Object { 
                 $Global:Config.Remove($_)
                 $Global:Config.$_ = $Config_Tmp.$_ 
             }
-            # Add remaining config items
-            $Config_Tmp.PSObject.Properties.Name | Where-Object { $_ -notin $Variables.AllCommandLineParameters.Keys } | ForEach-Object { 
-                $Global:Config.$_ = $Config_Tmp.$_
-            }
-            $Global:Config.ConfigFileVersion = $Config_Tmp.ConfigFileVersion
         }
         Remove-Variable Config_Tmp
     }

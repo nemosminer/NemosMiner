@@ -43,11 +43,10 @@ Try {
 
     While ($true) { 
         $NextLoop = (Get-Date).AddSeconds($Interval)
-
         $Miner.UpdateMinerData()
         While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 200 }
     }
 }
 Catch { 
-    Exit
+    Return $Error[0]
 }

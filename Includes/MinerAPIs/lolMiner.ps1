@@ -1,4 +1,4 @@
-﻿<#
+<#
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
