@@ -133,7 +133,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^ProHashing.+") { $Arguments += " --esm 1" }
 
                     $Pass = " --password $($Pools.($_.Algorithm).Pass)"
-                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

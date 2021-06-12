@@ -75,7 +75,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     $Pass = " --pass $($Pools.($_.Algorithm).Pass)"
-                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",1=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
                     If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub*") { $WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
                     If ($_.Arguments -notmatch "--kernel [0-9]") { $WarmupTimes[1] += 15 } # Allow extra seconds for kernel auto tuning
 
