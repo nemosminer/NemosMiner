@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
 Version:        3.9.9.49
-Version date:   09 June 2021
+Version date:   06 June 2021
 #>
 
 
@@ -56,17 +56,20 @@ If ($PoolsConfig.$Name_Norm.UserName) {
         $Fee = [Decimal]$Request.$_."$($MiningMode)_fee"
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
+        $CoinName = ""
+        $Currency = ""
+        $Pass = @("a=$Algorithm", "n=$($PoolsConfig.$Name_Norm.WorkerName)")
+
+        If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS") { $Pass += "m=PPLNS" }
+
         $Currency = $Currencies | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Currencies.$_.Algo -eq $Algorithm }
         If ($Currency.Count -eq 1) { 
-            $CoinName = $Currencies.$Currency.name
-            If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS" -and $CoinName) { $MiningMode = ",c=$CoinName,m=PPLNS" } Else { $MiningMode = ",m=PPS" }
+            If ($CoinName = $Currencies.$Currency.name) { $Pass += "c=$CoinName" }
         }
         Else { 
-            $CoinName = ""
             $Currency = ""
-            $MiningMode = ",m=PPS"
         }
-
+    
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         ForEach ($Region in $PoolRegions) { 
@@ -83,7 +86,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Host                     = "$(If ($Region -eq "eu") {"eu."})$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolsConfig.$Name_Norm.UserName
-                Pass                     = "a=$Algorithm$MiningMode,n=$($PoolsConfig.$Name_Norm.WorkerName)"
+                Pass                     = [String]($Pass -join ',')
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
                 Fee                      = $Fee
