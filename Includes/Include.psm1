@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.49
-Version date:   09 June 2021
+Version:        3.9.9.50
+Version date:   13 June 2021
 #>
 
 Class Device { 
@@ -525,19 +525,20 @@ Class Miner {
 
 Function Get-DefaultAlgorithm {
 
-    Try { 
-        $PoolsAlgos = (Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
-        $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
-    }
-    Catch { 
-        If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType File) { 
+    # Try { 
+    #     $PoolsAlgos = (Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
+    #     $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
+    # }
+    # Catch { 
+        If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType Leaf) { 
             $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
         }
-    }
+    # }
     If ($PoolsAlgos) { 
-        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in $Config.PoolName }
+        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in ($Config.PoolName -replace "24hr$" -replace "Coins$") }
         Return  $PoolsAlgos.Value | Sort-Object -Unique
     }
+    Return
 }
 
 Function Get-Chart { 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.49
-Version date:   09 June 2021
+Version:        3.9.9.50
+Version date:   13 June 2021 
 #>
 
 using module .\Include.psm1

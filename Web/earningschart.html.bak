@@ -14,7 +14,7 @@
   Chart.defaults.color = 'black';
   Chart.defaults.font.size = 16;
 
-  Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
+  Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#f44336', '#E91E63', '#9C27B0', '#3F51B5'];
 
   function HslColor (items, item) {
     let hue = Math.trunc(360 / items * item);
