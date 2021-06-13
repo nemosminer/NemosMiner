@@ -170,6 +170,7 @@
   "yescryptr32": "YescryptR32",
   "yespower": "Yespower",
   "yespower2b": "Yespower2b",
+  "yespowerarwn": "YespowerARWN",
   "yespoweric": "YespowerIc",
   "yespoweriots": "Yespoweriots",
   "yespoweritc": "YespowerItc",
