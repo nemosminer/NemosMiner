@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           API.psm1
 Version:        3.9.9.50
-Version date:   13 June 2021 
+Version date:   13 June 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.6"
+    $APIVersion = "0.3.9.7"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -354,6 +354,11 @@ Function Start-APIServer {
                             }
                             Break
                         }
+                    }
+                    "/functions/poolsconfig/edit" {
+                        Notepad.exe $Variables.PoolsConfigFile
+                        $Data = "Config in saved PoolsConfig file`n'$(($Variables.PoolsConfigFile))'`nwill become active in next cycle."
+                        Break
                     }
                     "/functions/stat/get" { 
                         If ($null -eq $Parameters.Value) {
@@ -751,6 +756,10 @@ Function Start-APIServer {
                     }
                     "/poolsconfig" { 
                         $Data = ConvertTo-Json -Depth 10 @($Config.PoolsConfig | Select-Object)
+                        Break
+                    }
+                    "/poolsconfigfile" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.PoolsConfigFile)
                         Break
                     }
                     "/poolnames" { 

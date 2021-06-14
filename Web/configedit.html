@@ -3,7 +3,7 @@
   <h1 id="title" data-navbaractive="navconfigedit" class="h2">Edit Configuration</h1>
 </div>
 
-<div id="configfilename" class="alert alert-info" role="alert">&ensp;</div>
+<div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
 
 <form id="configuration">
   <table>
@@ -157,8 +157,9 @@
             <legend class=h6><b>Select one or more pools</b></legend>
             <div id="Pools"></div>
           </fieldset>
+          <button type="button" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
         </div>
-        <br>
+      <br>
 
         <div class="col-md-12">
           <fieldset title="NemosMiner will prefer pools from the selected region">
@@ -437,13 +438,20 @@
       }
     });
 
-    // Get config file name
+    // Get config file names
     $.ajax({
       url: '/configfile',
       async: false,
       success: function(result) {
         configfile = result;
-        $('#configfilename').text("Current configuration file: '" + configfile + "'");
+        $.ajax({
+          url: '/poolsconfigfile',
+          async: false,
+          success: function(result) {
+            poolsconfigfile = result;
+            $('#configfilenames').text("Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "'");
+          }
+        });
       }
     });
 
@@ -1112,6 +1120,16 @@
     document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
     document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
     document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
+  });
+
+  //Edit poolsconfig file
+  $('#editpoolsconfig-button').click(function () {
+    var $command = '/functions/poolsconfig/edit';
+
+    $('.modal-body').load($command, function() {
+      $('.modal-title').text('Edit PoolsConfig file');
+      $('#myModal').modal({show:true});
+    });
   });
 
   // Only one pool variant can be checked
