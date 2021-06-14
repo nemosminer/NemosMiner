@@ -264,7 +264,7 @@ Class Miner {
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
-                    If ($this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
+                    If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
                         # Starting Miner Data reader
@@ -709,9 +709,9 @@ Function Initialize-API {
 Function Initialize-Application { 
 
     # Keep only the last 10 files
-    Get-ChildItem -Path ".\Logs\NemosMiner_*.log" -File | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
-    Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
-    Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -Skiplast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\NemosMiner_*.log" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
@@ -750,7 +750,7 @@ Function Get-Rate {
 
             $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
                 $Currency = $_
-                $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $Currencies} | ForEach-Object { 
+                $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
                     $mCurrency = "m$($_)"
                     $Rates.$Currency | Add-Member $mCurrency ([Double]($Rates.$Currency.$_) * 1000)
                 }
@@ -770,7 +770,7 @@ Function Get-Rate {
 Function Write-Message { 
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Message, 
         [Parameter(Mandatory = $false)]
@@ -1162,8 +1162,8 @@ Function Read-Config {
 
     # Build pools configuation
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
-        $PoolsConfig_Tmp = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
-        If ($PoolsConfig_Tmp.PSObject.Properties.Count -eq 0 -or $PoolsConfig_Tmp -isnot [PSCustomObject]) { 
+        $Variables.PoolsConfigData = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
+        If ($Variables.PoolsConfigData.PSObject.Properties.Count -eq 0 -or $Variables.PoolsConfigData -isnot [PSCustomObject]) { 
             Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
         }
     }
@@ -1176,7 +1176,7 @@ Function Read-Config {
     @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$" -replace "Coins$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         $PoolConfig = [PSCustomObject]@{ }
-        If ($PoolsConfig_Tmp.$PoolName) { $PoolConfig = $PoolsConfig_Tmp.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
+        If ($Variables.PoolsConfigData.$PoolName) { $PoolConfig = $Variables.PoolsConfigData.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
         ElseIf ($PoolData.$PoolName) { $PoolConfig = $PoolData.$PoolName }
         If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
         If (-not $PoolConfig.PayoutThreshold -and $PoolData.$PoolName.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
@@ -1222,9 +1222,12 @@ Function Read-Config {
             }
         }
         If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
+
         $PoolConfig.PSObject.Members.Remove("PayoutCurrencies")
         $PoolConfig.PSObject.Members.Remove("PayoutCurrency")
-      If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = $PoolConfig.Algorithm -replace " " }
+
+        If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = $PoolConfig.Algorithm -replace " " }
+
         $PoolsConfig.$PoolName = $PoolConfig
     }
 
@@ -2347,7 +2350,7 @@ public static class Kernel32
         While ($Process.HasExited -eq $false)
     }
 
-    Do { Start-Sleep -MilliSeconds 50; $JobOutput = Receive-Job $Job }
+    Do { Start-Sleep -Milliseconds 50; $JobOutput = Receive-Job $Job }
     While ($null -eq $JobOutput)
 
     $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
@@ -2568,7 +2571,7 @@ Function Initialize-Autoupdate {
     # Empty folders
     If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
     If (Test-Path -Path ".\Pools") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
-    If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object {Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+    If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
 
     # Unzip in child folder excluding config
     "Unzipping update..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
@@ -2585,13 +2588,13 @@ Function Initialize-Autoupdate {
     # Stop Snaketail
     If ($Variables.SnakeTailExe) { 
         "Stopping SnakeTail..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        (Get-CIMInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -id $_ }
+        (Get-CimInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -Id $_ }
     }
 
     # Copy files
     "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
-        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.','')
+        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.', '')
         If ($_.Attributes -eq "Directory") { 
             If (-not (Test-Path -Path $DestPath -PathType Container)) { 
                 New-Item -Path $DestPath -ItemType Directory -Force
@@ -2626,8 +2629,8 @@ Function Initialize-Autoupdate {
     If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
     If (Test-Path -Path ".\OptionalMiners" -PathType Container) { Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
     If (Test-Path -Path ".\Stats" -PathType Container) { 
-        Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-        Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames} | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+        Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+        Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
     }
 
     If ($ObsoleteStatFiles.Count -gt 0) { 
@@ -2650,8 +2653,8 @@ Function Initialize-Autoupdate {
         Remove-Item ".\PostUpdateActions.ps1" -Force
         "Removed '.\PostUpdateActions.ps1'."
     }
-    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -Skiplast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse;"Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
 
     # Start new instance
     If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
@@ -2662,8 +2665,8 @@ Function Initialize-Autoupdate {
 
         # Giving 10 seconds for process to start
         $Waited = 0
-        While (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
-        If (-not (Get-Process -id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
+        While (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
+        If (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
             "Failed to start new instance of $($Variables.CurrentProduct)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
             Return
         }
@@ -2681,7 +2684,7 @@ Function Initialize-Autoupdate {
         # Kill old instance
         "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         Start-Sleep -Seconds 2
-        If (Get-Process -id $NewKid.ProcessId) { Stop-process -id $PID }
+        If (Get-Process -Id $NewKid.ProcessId) { Stop-Process -Id $PID }
     }
 }
 
