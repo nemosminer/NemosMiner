@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Balloon";       MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo balloon" }
     [PSCustomObject]@{ Algorithm = "Circcash";      MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo circcash" }
-    [PSCustomObject]@{ Algorithm = "CpuPower";      MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo cpupower" }
+    [PSCustomObject]@{ Algorithm = "CpuPower";      MinerSet = 0; WarmupTimes = @(45, 45);  Arguments = " --algo cpupower" }
 #    [PSCustomObject]@{ Algorithm = "CurveHash";     MinerSet = 0; WarmupTimes = @(0, 75); Arguments = " --algo curvehash" } # reported hash rates too high (https://github.com/rplant8/cpuminer-opt-rplant/issues/21)
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hodl";          MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo hodl" }
