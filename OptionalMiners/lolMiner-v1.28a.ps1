@@ -37,10 +37,10 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C31" }
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(0, 30);  Arguments = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(20, 35); Arguments = " --coin AUTO144_5" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin AUTO192_7" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(20, 35); Arguments = " --coin AUTO144_5" } # MiniZ-v1.8y2 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin AUTO192_7" } # MiniZ-v1.8y2 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "Equihash2109";  Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo EQUI210_9" }
-    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin ZEL" } # MiniZ-v1.7x4 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "EquihashZEL";   Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin ZEL" } # MiniZ-v1.8y2 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(60, 75); Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.6d is faster
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(60, 75); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6d is faster
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(60, 75); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.6d is faster
