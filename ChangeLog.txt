@@ -4,6 +4,12 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.52 xx.06.2021
+========================================
+
+Miner updates:
+- MiniZ-v1.8y2
+
 Changelog NemosMiner 3.9.9.51 15.06.2021
 ========================================
 
@@ -32,7 +38,6 @@ Miner updates:
 
 Changelog NemosMiner 3.9.9.49 09.06.2021
 ========================================
-
 
 Enhancements:
 - Miner files: Optimize compatibility with 2GB cards
