@@ -1129,7 +1129,7 @@ While ($true) {
     If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
 
     While ((Get-Date) -le $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners)) {
-        $NextLoop = (Get-Date).AddSeconds($Interval)
+        $NextLoop = (Get-Date).AddSeconds($Variables.Interval)
         ForEach ($Miner in $RunningMiners) { 
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 # Miner crashed
