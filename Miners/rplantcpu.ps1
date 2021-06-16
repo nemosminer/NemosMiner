@@ -1,5 +1,5 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\CPU-Opt5022\cpuminer-sse42.exe"
+$Path = ".\Bin\CPU-Opt5022\cpuminer-avx2.exe"
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.22/cpuminer-opt-win.zip"
 $Commands = [PSCustomObject]@{ 
     "yespoweriots" = " -a yespoweriots" #yespoweriots
