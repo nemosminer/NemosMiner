@@ -142,6 +142,10 @@ New Config Items
 # Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
   "ProfitabilityThreshold": 0,
 
+# Static power usage per device in W, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power usage)
+  "PowerUsage": { 
+  },
+
 # ProHashing API Key (required to retrieve balance information)
   "ProHashingAPIKey": "",
 
