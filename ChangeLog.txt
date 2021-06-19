@@ -7,8 +7,13 @@ Breaking changes (from main code base):
 Changelog NemosMiner 3.9.9.52 xx.06.2021
 ========================================
 
+Enhancements:
+- Support for configured static power usage per device (workaround if HWiNFO cannot read power usage from registry, config item 'PowerUsage')
+
 Miner updates:
+- GMiner-v2.57
 - MiniZ-v1.8y2
+
 
 Changelog NemosMiner 3.9.9.51 15.06.2021
 ========================================
@@ -31,7 +36,7 @@ Miner files:
 - Fix EthashLowMem parameter (used with ProHashing pool)
 
 Miner updates:
-- RplantCpu-v5.0.21
+- RplantCpu-v5.0.22
 - GMiner-v2.56
 - NSFMiner-v1.3.14
 
