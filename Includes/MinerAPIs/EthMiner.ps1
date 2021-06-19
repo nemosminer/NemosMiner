@@ -87,10 +87,7 @@ class EthMiner : Miner {
         }
 
         If ($this.CalculatePowerCost) { 
-            $PowerUsage = [Double]($Data.result[9] -split ';' | Measure-Object -Sum).Sum
-            If (-not $PowerUsage) { 
-                $PowerUsage = $this.GetPowerUsage()
-            }
+            $PowerUsage = $this.GetPowerUsage()
         }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 

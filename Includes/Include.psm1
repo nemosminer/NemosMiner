@@ -58,6 +58,7 @@ Class Device {
 
     [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [DeviceState]$State = [DeviceState]::Enabled
+    [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage in sensors
 }
 
 enum DeviceState {
@@ -153,7 +154,6 @@ Class Miner {
     [Boolean]$CalculatePowerCost = $false
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
-    [Boolean]$PowerUsageInAPI = $false # If true miner must expose power usage in its API
 
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
@@ -268,7 +268,7 @@ Class Miner {
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
                         # Starting Miner Data reader
-                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
+                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -392,18 +392,25 @@ Class Miner {
     }
 
     [Double]GetPowerUsage() { 
-        $PowerUsage_Value = [Double]0
-        $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
+        [Device]$Device = $null
         $RegistryData = [PSCustomObject]@{ }
+        $RegistryEntry = [PSCustomObject]@{ }
+        $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
+        $TotalPowerUsage = [Double]0
 
         # Read power usage
-        If ((Test-Path $RegistryHive) -and $this.DeviceName) { 
+        If (Test-Path $RegistryHive) { 
             $RegistryData = Get-ItemProperty $RegistryHive
-            $RegistryData.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($this.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                $PowerUsage_Value += [Double]($RegistryData.($_.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+            ForEach ($Device in $this.Devices) { 
+                If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match "$($Device.Name)" }) { 
+                    $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                }
+                Else { 
+                    $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage # Use configured value
+                }
             }
         }
-        Return $PowerUsage_Value
+        Return $TotalPowerUsage
     }
 
     [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 

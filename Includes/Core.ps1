@@ -277,6 +277,15 @@ Function Start-Cycle {
                                 $Variables.CalculatePowerCost = $false
                             }
                         }
+                        # Add configured power usage
+                        $Config.PowerUsage.PSObject.Properties.Name | Where-Object { $Config.PowerUsage.$_ } | ForEach-Object { 
+                            If ($Config.PowerUsage.$_) { 
+                                If (-not $Hashtable.$_ ) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device $_. Will use configred value of $([Double]$Config.PowerUsage.$_) W." }
+                                $Hashtable.$_ = "$Config.PowerUsage.$_ W"
+                                ($Variables.Devices | Where-Object Name -EQ $_).ConfiguredPowerUsage = [Double]$Config.PowerUsage.$_
+                            }
+                        }
+                        Compare-Object @($EnabledDevices.Name) @($Hashtable.Keys) -PassThru | Where-Object SideIndicator -EQ "<=" | ForEach-Object { }
                         If ($DeviceNamesMissingSensor = Compare-Object @($EnabledDevices.Name) @($Hashtable.Keys) -PassThru | Where-Object SideIndicator -EQ "<=") { 
                             Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage calculations."
                             $Variables.CalculatePowerCost = $false
@@ -669,7 +678,6 @@ Function Start-Cycle {
                     WarmupTimes     = [Int[]](($_.Content.WarmupTimes[0] + $Config.WarmupTimes[0]), ($_.Content.WarmupTimes[1] + [Int]$Config.WarmupTimes[1]))
                     MinerUri        = [String]$_.Content.MinerUri
                     ProcessPriority = $(If ($_.Content.Type -eq "CPU") { [Int]$Config.CPUMinerProcessPriority } Else { [Int]$Config.GPUMinerProcessPriority })
-                    PowerUsageInAPI = [String]$_.Content.PowerUsageInAPI 
                 } -as "$($_.Content.API)"
             }
         }
@@ -1106,6 +1114,7 @@ Function Start-Cycle {
 
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
     $Variables.EndLoop = $true
+    $Variables.RefreshNeeded = $true
     TimerUITick
 }
 
@@ -1115,10 +1124,7 @@ If (Test-Path -Path ".\Includes\MinerAPIs" -PathType Container -ErrorAction Igno
 
 While ($true) { 
     Start-Cycle
-    Update-Monitoring
-
-    $Variables.RefreshNeeded = $true
-    TimerUITick
+    If ((Get-Date) -le $Variables.EndLoopTime) { Update-Monitoring }
 
     # End loop when
     # - a miner crashed (and no other miners are benchmarking)
