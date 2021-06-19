@@ -64,7 +64,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API             = "EthMiner"
                         Port            = $MinerAPIPort
                         URI             = $Uri
-                        PowerUsageInAPI = $false
                         WarmupTimes     = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
