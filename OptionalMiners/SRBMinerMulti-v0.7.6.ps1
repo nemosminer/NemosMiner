@@ -22,7 +22,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algorithm cryptonight_gpu --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRed-v0.8.3 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algorithm cryptonight_xhv --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";         Type = "AMD"; Fee = 0.0085; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algorithm eaglesong --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algorithm etchash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";            Type = "AMD"; Fee = 0.0065; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "AMD"; Fee = 0.0065; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --algorithm ethash --gpu-intensity 31 --gpu-boost 50" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
@@ -112,7 +112,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
                 }
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
+                If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 

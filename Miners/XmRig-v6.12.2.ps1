@@ -27,12 +27,12 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "AMD"; MinMemGB = 4;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo cn/zls" } 
     [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "AMD"; MinMemGB = 3;    MinerSet = 2; WarmupTimes = @(0, 45); Arguments = " --algo kawpow" } # NBMiner-v37.6 is fastest, but has 2% miner fee
-    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/0" }
+    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "AMD"; MinMemGB = 3;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "AMD"; MinMemGB = 1;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/kev" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/loki" }
     [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/sfx" }
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/wow" }
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGB = 3;    MinerSet = 2; WarmupTimes = @(0, 30); Arguments = " --algo rx/wow" }
 
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo argon2/chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo argon2/wrkz" }

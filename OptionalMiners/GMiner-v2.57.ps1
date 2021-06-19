@@ -39,6 +39,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
+            If ($_.Type -eq "AMD") { $SelectedDevices = $SelectedDevices | Where-Object { $_.OpenCL.ClVersion -ge "OpenCL C 2.0" } }
+
             $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Select-Object -First 1 -ExpandProperty Id) + 1)
 
             $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 

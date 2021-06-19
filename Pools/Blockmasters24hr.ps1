@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters24hr.ps1
-Version:        3.9.9.51
-Version date:   15 June 2021 
+Version:        3.9.9.52
+Version date:   19 June 2021 
 #>
 
 using module ..\Includes\Include.psm1
