@@ -2026,8 +2026,8 @@ Function Get-Device {
         # Get OpenCL data
         Try { 
             [OpenCl.Platform]::GetPlatformIDs() | ForEach-Object { 
-                [OpenCl.Device]::GetDeviceIDs($_, [OpenCl.DeviceType]::All) | ForEach-Object { 
-                    $Device_OpenCL = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
+                [OpenCl.Device]::GetDeviceIDs($_, [OpenCl.DeviceType]::All) | ForEach-Object { $_ | ConvertTo-Json -WarningAction SilentlyContinue } | Select-Object -Unique | ForEach-Object { 
+                    $Device_OpenCL = $_ | ConvertFrom-Json
 
                     # Add normalised values
                     $Device = [PSCustomObject]@{ 
@@ -2089,6 +2089,7 @@ Function Get-Device {
                     }
 
                     # Add OpenCL specific data
+                    $tmp = [Int]$PlatformId_Index.($PlatformId) # temp fix. PlatformId_Index is broken without this
                     $Device | Add-Member @{ 
                         Index                 = [Int]$Index
                         Type_Index            = [Int]$Type_Index.($Device.Type)
