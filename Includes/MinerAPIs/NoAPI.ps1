@@ -45,7 +45,7 @@ class NoAPI : Miner {
         $Shares_Rejected = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-        If ($this.CalculatePowerCost) { 
+        If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 

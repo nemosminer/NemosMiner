@@ -58,6 +58,7 @@ Class Device {
 
     [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [DeviceState]$State = [DeviceState]::Enabled
+    [Bool]$ReadPowerUsage = $false
     [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage in sensors
 }
 
@@ -142,16 +143,17 @@ Class Miner {
     [Double]$Earning # derived from pool and stats
     [Double]$Earning_Bias # derived from pool and stats
     [Double]$Earning_Accuracy # derived from pool and stats
-    [Double]$Profit # derived from pool and stats
-    [Double]$Profit_Bias # derived from pool and stats
+    [Double]$Profit = [Double]::NaN
+    [Double]$Profit_Bias = [Double]::NaN
 
     [Boolean]$Benchmark = $false # derived from stats
     [Boolean]$CachedBenchmark = $false
 
-    [Double]$PowerUsage
-    [Double]$PowerUsage_Live
-    [Double]$PowerCost
-    [Boolean]$CalculatePowerCost = $false
+    [Double]$PowerUsage = [Double]::NaN
+    [Double]$PowerUsage_Live = [Double]::NaN
+    [Double]$PowerCost = [Double]::NaN
+    [Boolean]$ReadPowerUsage = $false
+    [Boolean]$CachedReadPowerUsage = $false
     [Boolean]$MeasurePowerUsage = $false
     [Boolean]$CachedMeasurePowerUsage = $false
 
@@ -512,8 +514,9 @@ Class Miner {
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
-        If ($this.CalculatePowerCost) { 
+        If ($this.ReadPowerUsage) { 
             If ($Stat = Get-Stat "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
+                $this.MeasurePowerUsage = $false
                 $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
@@ -526,6 +529,13 @@ Class Miner {
                 $this.Profit = [Double]::NaN
                 $this.Profit_Bias = [Double]::NaN
             }
+        }
+        Else { 
+            $this.MeasurePowerUsage = $false
+            $this.PowerUsage = [Double]::NaN
+            $this.PowerCost = [Double]::NaN
+            $this.Profit = [Double]::NaN
+            $this.Profit_Bias = [Double]::NaN
         }
     }
 }

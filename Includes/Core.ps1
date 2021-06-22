@@ -253,7 +253,7 @@ Function Start-Cycle {
 
         # Power cost preparations
         If ($Config.CalculatePowerCost -eq $true) { 
-            If (($EnabledDevices).Count -ge 1) { 
+            If ($EnabledDevices.Count -ge 1) { 
                 #$Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
                 $Variables.CalculatePowerCost = $true
 
@@ -261,47 +261,49 @@ Function Start-Cycle {
                 $RegKey = "HKCU:\Software\HWiNFO64\VSB"
                 If ($RegistryValue = Get-ItemProperty -Path $RegKey -ErrorAction SilentlyContinue) { 
                     If ([String]$Variables.HWInfo64RegistryValue -eq [String]$RegistryValue) { 
-                        Write-Message -Level Warn "Power usage info in registry has not been updated [HWiNFO64 not running???] - power cost calculation is not available."
+                        Write-Message -Level Warn "Power usage info in registry has not been updated [HWiNFO64 not running???] - disabling power usage calculations."
                         $Variables.CalculatePowerCost = $false
                     }
                     Else { 
                         $Hashtable = @{ }
-                        $Device = ""
+                        $DeviceName = ""
                         $RegistryValue.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @(($Variables.Devices).Name | Select-Object) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
-                            $Device = ($_.Value -split ' ') | Select-Object -Last 1
+                            $DeviceName = ($_.Value -split ' ') | Select-Object -Last 1
                             Try { 
-                                $Hashtable.Add($Device, $RegistryValue.($_.Name -replace "Label", "Value"))
+                                $Hashtable.Add($DeviceName, $RegistryValue.($_.Name -replace "Label", "Value"))
                             }
                             Catch { 
-                                Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $Device] - disabling power usage calculations."
+                                Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $DeviceName] - disabling power usage calculations."
                                 $Variables.CalculatePowerCost = $false
                             }
                         }
                         # Add configured power usage
                         $Config.PowerUsage.PSObject.Properties.Name | Where-Object { $Config.PowerUsage.$_ } | ForEach-Object { 
                             If ($Config.PowerUsage.$_) { 
-                                If (-not $Hashtable.$_ ) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device $_. Will use configred value of $([Double]$Config.PowerUsage.$_) W." }
+                                If ($_ -in @($EnabledDevices.Name) -and -not $Hashtable.$_ ) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device $_. Will use configred value of $([Double]$Config.PowerUsage.$_) W." }
                                 $Hashtable.$_ = "$Config.PowerUsage.$_ W"
                                 ($Variables.Devices | Where-Object Name -EQ $_).ConfiguredPowerUsage = [Double]$Config.PowerUsage.$_
                             }
                         }
-                        Compare-Object @($EnabledDevices.Name) @($Hashtable.Keys) -PassThru | Where-Object SideIndicator -EQ "<=" | ForEach-Object { }
+
                         If ($DeviceNamesMissingSensor = Compare-Object @($EnabledDevices.Name) @($Hashtable.Keys) -PassThru | Where-Object SideIndicator -EQ "<=") { 
                             Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage calculations."
                             $Variables.CalculatePowerCost = $false
                         }
-                        Remove-Variable Device
-                        Remove-Variable HashTable
+
+                        # Read power usage from device supported?
+                        $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $_.Name -In @($Hashtable.Keys) }
+
+                        Remove-Variable DeviceName
+                        Remove-Variable Hashtable
                     }
                     $Variables.HWInfo64RegistryValue = [String]$RegistryValue
                 }
                 Else { 
                     Write-Message -Level Warn "Cannot read power usage info from registry [Key '$($RegKey)' does not exist - HWiNFO64 not running???] - disabling power usage calculations."
                     $Variables.CalculatePowerCost = $false
+                    $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $false }
                 }
-            }
-            If (-not $Variables.CalculatePowerCost) { 
-                Write-Message -Level Warn "Realtime power usage cannot be read from system. Will use static values where available."
             }
         }
 
@@ -469,7 +471,7 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.Default.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in default pool config)" }
         # Algorithms not enabled
         If ($Config.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($Config.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in generic config)" } }
-        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',').Trim()} | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
+        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$" -replace "Coins$").Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
         If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)`` in default pool config)" } }
         # Region exclusions
         $Variables.Pools | Where-Object { $Config.Pools.($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$" -replace "Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.Name -replace "24hr$" -replace "Coins$") pool config)" }
@@ -533,7 +535,7 @@ Function Start-Cycle {
                 $Miner.Speed_Live += [Double]($CollectedHashRate[1])
                 $Miner_Speeds.$Algorithm = [Double]($CollectedHashRate[0])
             }
-            If ($Variables.CalculatePowerCost) {
+            If ($Miner.ReadPowerUsage) {
                 # Collect power usage from miner
                 $CollectedPowerUsage = $Miner.CollectPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples))
                 $Miner.PowerUsage_Live = [Double]($CollectedPowerUsage[1])
@@ -569,7 +571,7 @@ Function Start-Cycle {
                 }
             }
 
-            If ($Variables.CalculatePowerCost) { 
+            If ($Miner.ReadPowerUsage) { 
                 $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
                     # Stop miner if new value is outside ±200% of current value
@@ -711,6 +713,7 @@ Function Start-Cycle {
     [Miner[]]$Variables.Miners | Select-Object | ForEach-Object { 
         $_.CachedBenchmark = $_.Benchmark
         $_.CachedMeasurePowerUsage = $_.MeasurePowerusage
+        $_.CachedReadPowerUsage = $_.ReadPowerUsage
         $_.CachedShowMinerWindows = $_.ShowMinerWindows
         $_.Reason = $null
     }
@@ -734,10 +737,9 @@ Function Start-Cycle {
         }
 
         $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
-        $_.CalculatePowerCost = $Variables.CalculatePowerCost
+        $_.ReadPowerUsage = [Bool]($_.Devices.ReadPowerUsage -notcontains $false)
         $_.Refresh($Variables.PowerCostBTCperW) # To be done before MeasurePowerUsage evaluation
         $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
-        $_.MeasurePowerUsage = [Boolean]($_.CalculatePowerCost -eq $true -and [Double]::IsNaN($_.PowerUsage))
         If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
     }
     Remove-Variable Miner -ErrorAction Ignore
@@ -752,7 +754,7 @@ Function Start-Cycle {
     $Variables.Miners | Select-Object | Where-Object { $Config.DisableDualAlgoMining -and $_.Workers.Count -eq 2 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableDualAlgoMining" }
     $Variables.Miners | Select-Object | Where-Object { $Config.DisableSingleAlgoMining -and $_.Workers.Count -eq 1 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableSingleAlgoMining" }
 
-    $Variables.MinersNeedingBenchmark = $Variables.Miners | Where-Object Benchmark -EQ $true
+    $Variables.MinersNeedingBenchmark = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Benchmark -EQ $true
     $Variables.MinersNeedingPowerUsageMeasurement = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
 
     # Detect miners with unreal earning (> x higher than the next best 10% miners, error in data provided by pool?)
@@ -914,7 +916,7 @@ Function Start-Cycle {
             $Variables.Summary += "Earning / day: {1:N} {0}" -f ($Config.Currency), ($Variables.MiningEarning * ($Variables.Rates."BTC".($Config.Currency)))
         }
 
-        If ($Config.CalculatePowerCost -eq $true) {
+        If ($Variables.CalculatePowerCost -eq $true) {
             If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
             If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
@@ -951,12 +953,10 @@ Function Start-Cycle {
     }
 
     # Also restart running miners (stop & start)
-    # Is currently best miner AND
-    # has been active before OR
-    # Data collector has died OR
-    # Benchmark state changed OR
+    # When miner has been active before AND
+    # Benchmark state changed (to change data poll interval) OR
     # MeasurePowerUsage state changed OR
-    # CalculatePowerCost -> true -> done (to change data poll interval) OR
+    # ReadPowerUsage state changed OR
     # Miner windows invisibility changes
     # Miner Priority changes
     $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
@@ -967,10 +967,9 @@ Function Start-Cycle {
         }
         ElseIf ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
         ElseIf ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
-        ElseIf ($_.CalculatePowerCost -ne - $Variables.CalculatePowerCost) { $_.Restart = $true }
-        ElseIf ($_.ShowMinerWindows -eq "hidden" -and $_.CachedShowMinerWindows -in @("normal", "minimized")) { $_.Restart = $true }
-        ElseIf ($_.ShowMinerWindows -in @("normal", "minimized") -and $_.CachedShowMinerWindows -eq "hidden") { $_.Restart = $true }
-        ElseIf ($_.Type -eq "CPU" -and  $_.ProcessPriority -ne $Config.CPUMinerProcessPriority) { $_.Restart = $true }
+        ElseIf ($_.ReadPowerUsage -ne $_.CachedReadPowerUsage) { $_.Restart = $true }
+        ElseIf ($_.CachedShowMinerWindows -in @("normal", "minimized")) { If ($_.ShowMinerWindows -eq "hidden" -or $_.CachedShowMinerWindows -eq "hidden" ) { $_.Restart = $true } }
+        ElseIf ($_.Type -eq "CPU" -and $_.ProcessPriority -ne $Config.CPUMinerProcessPriority) { $_.Restart = $true }
         ElseIf ($_.Type -ne "CPU" -and  $_.ProcessPriority -ne $Config.GPUMinerProcessPriority) { $_.Restart = $true }
     }
 
@@ -1107,14 +1106,13 @@ Function Start-Cycle {
 
     Get-Job | Where-Object State -EQ "Completed" | Remove-Job
 
-    If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) { Write-Message "Collecting miner data while waiting for next cycle..." }
-
     # Cache pools config for next cycle
     $Variables.PoolsConfigCached = $Config.PoolsConfig
 
+    If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) { Write-Message "Collecting miner data while waiting for next cycle..." }
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
-    $Variables.EndLoop = $true
-    $Variables.RefreshNeeded = $true
+    # $Variables.EndLoop = $true
+    # $Variables.RefreshNeeded = $true
     TimerUITick
 }
 
@@ -1124,6 +1122,10 @@ If (Test-Path -Path ".\Includes\MinerAPIs" -PathType Container -ErrorAction Igno
 
 While ($true) { 
     Start-Cycle
+    
+    $Variables.EndLoop = $true
+    $Variables.RefreshNeeded = $true
+
     If ((Get-Date) -le $Variables.EndLoopTime) { Update-Monitoring }
 
     # End loop when
@@ -1134,8 +1136,8 @@ While ($true) {
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
     If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
 
-    While ((Get-Date) -le $Variables.EndLoopTime -or ($BenchmarkingOrMeasuringMiners)) {
-        $NextLoop = (Get-Date).AddSeconds($nterval)
+    While ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners) {
+        $NextLoop = (Get-Date).AddSeconds($Interval)
         ForEach ($Miner in $RunningMiners) { 
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 # Miner crashed
@@ -1204,7 +1206,7 @@ While ($true) {
 
         If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
             # A miner crashed and we're not benchmarking, end the loop now
-            $Variables.EndLoop = $true
+            # $Variables.EndLoop = $true
             $Message = "Miner failed. "
             Break
         }
@@ -1215,7 +1217,7 @@ While ($true) {
         }
         ElseIf ($InitialRunningMiners -and (-not $RunningMiners)) { 
             # No more running miners, end the loop now
-            $Variables.EndLoop = $true
+            # $Variables.EndLoop = $true
             $Message = "No more running miners. "
             Break
         }
@@ -1224,6 +1226,9 @@ While ($true) {
     }
 
     Write-Message -Level Info "$($Message)Ending cycle."
+
+    $Variables.EndLoop = $true
+
     Remove-Variable Message -ErrorAction SilentlyContinue
     Remove-Variable RunningMiners -ErrorAction SilentlyContinue
     Remove-Variable InitialRunningMiners -ErrorAction SilentlyContinue

@@ -87,7 +87,7 @@ class NanoMiner : Miner {
             }
         }
 
-        If ($this.CalculatePowerCost) { 
+        If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 

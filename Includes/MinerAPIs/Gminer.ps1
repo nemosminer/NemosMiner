@@ -72,7 +72,7 @@ class Gminer : Miner {
             }
         }
 
-        If ($this.CalculatePowerCost) { 
+        If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 

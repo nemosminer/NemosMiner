@@ -136,7 +136,7 @@ class Fireice : Miner {
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
-        If ($this.CalculatePowerCost) { 
+        If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
         }
 
