@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        3.9.9.53
-Version date:   23 June 2021 
+Version date:   23 June 2021
 #>
 
 [CmdletBinding()]
@@ -405,10 +405,9 @@ If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { $Variables
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
-If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
-    # Keep only the last 3 logs
-    Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object | Select-Object -SkipLast 3 | Remove-Item -Force -Recurse
-}
+# Keep only the last 3 logs
+Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object | Select-Object -SkipLast 3 | Remove-Item -Force -Recurse
+
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -546,8 +545,8 @@ Function Global:TimerUITick {
 
             # Refresh selected tab
             Switch ($TabControl.SelectedTab.Text) { 
-                "Earnings"  { Get-Chart }
-                 "Switching Log" { CheckBoxSwitching_Click }
+                "Earnings" { Get-Chart }
+                "Switching Log" { CheckBoxSwitching_Click }
             }
 
             If ($Variables.Balances) { 
@@ -577,8 +576,8 @@ Function Global:TimerUITick {
                         @{ Name = "Hashrate(s)"; Expression = { ($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
                         @{ Name = "$($Config.Currency)/day"; Expression = { ($_.Workers | ForEach-Object { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } }) -join ' + ' } }, 
                         @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' }
-                    }
-                ) | Sort-Object "m$($Config.PayoutCurrency)/day" -Descending)
+                        }
+                    ) | Sort-Object "m$($Config.PayoutCurrency)/day" -Descending)
                 $EstimationsDGV.DataSource = [System.Collections.ArrayList]@($DisplayEstimations)
             }
             $EstimationsDGV.ClearSelection()
@@ -596,8 +595,8 @@ Function Global:TimerUITick {
                         @{ Name = "Algo(s)"; Expression = { ($_.data.Algorithm | ForEach-Object { $_ -split ',' -join ' & ' }) -join '; ' } }, 
                         @{ Name = "Hashrate(s)"; Expression = { If ($_.data.CurrentSpeed) { ($_.data.CurrentSpeed | ForEach-Object { ($_ -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } ) -join ' & ' }) -join '; ' } Else { "" } } }, 
                         @{ Name = "Benchmark Hashrate(s)"; Expression = { If ($_.data.EstimatedSpeed) { ($_.data.EstimatedSpeed | ForEach-Object { ($_ -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } ) -join ' & ' }) -join '; ' } Else { "" } }
-                    }
-                ) | Sort-Object "Worker Name")
+                        }
+                    ) | Sort-Object "Worker Name")
                 $WorkersDGV.DataSource = [System.Collections.ArrayList]@($DisplayWorkers)
 
                 # Set row color
@@ -682,7 +681,7 @@ Function Global:TimerUITick {
             If ($Config.ShowEarning) { 
                 $Miner_Table.AddRange(
                     @( <#Miner Earning#>
-                       @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
+                        @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value ($_.Earning) -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
                     )
                 )
             }
@@ -978,7 +977,7 @@ $RunPage.Text = "Run"
 $Global:EarningsPage = New-Object System.Windows.Forms.TabPage
 $Global:EarningsPage.Text = "Earnings"
 $SwitchingPage = New-Object System.Windows.Forms.TabPage
-$SwitchingPage.Text =  "Switching Log"
+$SwitchingPage.Text = "Switching Log"
 $MonitoringPage = New-Object System.Windows.Forms.TabPage
 $MonitoringPage.Text = "Rig Monitoring"
 $EstimationsPage = New-Object System.Windows.Forms.TabPage
@@ -994,8 +993,8 @@ $TabControl.Controls.AddRange(@($RunPage, $Global:EarningsPage, $SwitchingPage, 
 
 $TabControl_SelectedIndexChanged = {
     Switch ($TabControl.SelectedTab.Text) { 
-        "Earnings"  { Get-Chart }
-         "Switching Log" { CheckBoxSwitching_Click }
+        "Earnings" { Get-Chart }
+        "Switching Log" { CheckBoxSwitching_Click }
     }
 }
 $TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
