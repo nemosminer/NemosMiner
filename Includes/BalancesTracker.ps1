@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.52
-Version date:   19 June 2021 
+Version:        3.9.9.53
+Version date:   23 June 2021 
 #>
 
 # Start the log
@@ -76,11 +76,11 @@ While ($true) {
             # Keep a copy on start & at date change
             If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
-            If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
+            # If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
                 # Keep only the last 3 logs
                 Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
                 Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
-            }
+            # }
         }
 
         $Now = (Get-Date).ToLocalTime()

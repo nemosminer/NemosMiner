@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           XmRig.ps1
-Version:        3.9.9.52
-Version date:   19 June 2021 
+Version:        3.9.9.53
+Version date:   23 June 2021 
 #>
 
 using module ..\Include.psm1

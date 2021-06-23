@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.52
-Version date:   19 June 2021 
+Version:        3.9.9.53
+Version date:   23 June 2021 
 #>
 
 using module .\Include.psm1
@@ -933,10 +933,10 @@ Function Start-Cycle {
                 If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                 If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                    $Variables.Summary += "Power Cost / day: n/a&ensp;(Miner: n/a; Base {1:N} {0} [{2:0}W])" -f ($Config.Currency), ($Variables.BasePowerCostBTC * ($Variables.Rates."BTC".($Config.Currency))), $Config.IdlePowerUsageW
+                    $Variables.Summary += "Power Cost / day: n/a&ensp;(Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" } ): n/a; Base: {1:N} {0} [{2:0}W])" -f ($Config.Currency), ($Variables.BasePowerCostBTC * ($Variables.Rates."BTC".($Config.Currency))), $Config.IdlePowerUsageW
                 }
                 ElseIf ($Variables.MiningPowerUsage -gt 0) { 
-                    $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;(Miner {2:N} {0} [{3:0} W]; Base {4:N} {0} [{5:0} W])" -f $($Config.Currency), (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency))), (($Variables.MiningPowerCost) * ($Variables.Rates."BTC".($Config.Currency))), $Variables.MiningPowerUsage, (($Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency))), $Config.IdlePowerUsageW
+                    $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;(Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" } ): {2:N} {0} [{3:0} W]; Base: {4:N} {0} [{5:0} W])" -f $($Config.Currency), (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency))), (($Variables.MiningPowerCost) * ($Variables.Rates."BTC".($Config.Currency))), $Variables.MiningPowerUsage, (($Variables.BasePowerCostBTC) * ($Variables.Rates."BTC".($Config.Currency))), $Config.IdlePowerUsageW
                 }
                 Else { 
                     $Variables.Summary += "Power Cost / day: n/a&ensp;(Miner: n/a; Base: {1:N} {0} [{2:0} W])" -f $($Config.Currency), ($Variables.BasePowerCostBTC * ($Variables.Rates.BTC.($Config.Currency))), $Config.IdlePowerUsageW
