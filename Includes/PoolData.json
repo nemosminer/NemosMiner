@@ -145,7 +145,7 @@
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
-      "mBTC": 2.1,
+      "mBTC": 1.6,
       "*": 0.0125
     }
   }
