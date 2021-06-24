@@ -7,6 +7,7 @@
   "argon2ddyn": "Argon2dDyn",
   "argon2wkrz": "Argon2WKZR",
   "astralhash": "AstralHash",
+  "autolykos": "Autolykos2",
   "bcd": "BCD",
   "beamv2": "BeamV2",
   "beamv3": "BeamV3",
