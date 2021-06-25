@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
-$Uri = "https://github.com/Minerx117/miners/releases/download/JayDDee/JayddeeCpu-v3.16.3.7z"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.16.4/cpuminer-opt-3.16.4-windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
