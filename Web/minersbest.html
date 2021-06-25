@@ -92,13 +92,12 @@
   })
 
   $('#miners tr:eq(0) th:eq(8)').html("Earning (" + maincurrency + ")");
-  $('#miners tr:eq(0) th:eq(9)').html("Profit (" + maincurrency + ")");
-  $('#miners tr:eq(0) th:eq(10)').html("Earning Bias (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(9)').html("Earning Bias (" + maincurrency + ")");
+  $('#miners tr:eq(0) th:eq(10)').html("Profit (" + maincurrency + ")");
   $('#miners tr:eq(0) th:eq(11)').html("Profit Bias (" + maincurrency + ")");
   $('#miners tr:eq(0) th:eq(13)').html("Power Cost (" + maincurrency + ")");
 
   $(function(){
-    $table.bootstrapTable({ title: "Bla" }, 'Profit');
     if (config.CalculatePowerCost == true) {
       $table.bootstrapTable('showColumn', 'Profit');
       $table.bootstrapTable('showColumn', 'Profit_Bias');
