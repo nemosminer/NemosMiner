@@ -24,14 +24,13 @@ $Request.miningAlgorithms | Where-Object { $_.paying -gt 0 } <# algos paying 0 f
     $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
     $Divisor = 100000000
     $Stat = Set-Stat -Name "$($Name)_$($NiceHash_Algorithm)_Profit" -Value ([Double]$_.paying / $Divisor * (1 - $Fee))
-    $Locations = "eu", "usa", "jp"
+    $Locations = "eu-west", "usa-west"
     $Locations | ForEach-Object { 
         $NiceHash_Location = $_
         switch ($NiceHash_Location) { 
-            "eu" { $Location = "EU" }
-            "usa" { $Location = "US" }
-            "jp" { $Location = "JP" }
-            default { $Location = "JP" }
+            "eu-west" { $Location = "EU" }
+            "usa-west" { $Location = "US" }
+ 
         }
         $NiceHash_Host = "$($Algo).$($NiceHash_Location).nicehash.com"
         If ($PoolConf.Wallet) { 
