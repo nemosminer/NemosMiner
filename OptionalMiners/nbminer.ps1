@@ -1,8 +1,8 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nbminer361\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v36.1/NBMiner_36.1_Win.zip"
+$Path = ".\Bin\NVIDIA-nbminer376\nbminer.exe"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v37.6/NBMiner_37.6_Win.zip"
 $Commands = [PSCustomObject]@{ 
-    #"grincuckatoo31"   = "-a cuckatoo --fee 1 -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
+     "grincuckatoo31"   = "-a cuckatoo --fee 1 -o nicehash+tcp://" #grincuckatoo31 (8gb cards work win7,8, 8.1 & Linux. Win10 requires 10gb+vram)
     #"grincuckarood29"  = "-a cuckarood --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"grincuckaroo29"   = "-a cuckaroo --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"cuckoocycle"      = "-a cuckoo_ae --fee 1 --cuckoo-intensity 0 -o nicehash+tcp://" #cuckoocycle
@@ -11,6 +11,7 @@ $Commands = [PSCustomObject]@{
     "handshake"        = "-a hns -o stratum+tcp://" #handshake
    #"kawpow"           = "-a kawpow -o stratum+tcp://" #kawpow
     "octopus"          = "-a octopus -o stratum+tcp://" #octopus
+    "autolykos"        = "-a ergo -o stratum+tcp://" #autolykos
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
@@ -18,6 +19,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     switch ($_) { 
         "ethash" { $Fee = 0.0065 }
         "eaglesong_ethash" { $Fee = 0.01 }
+        "autolykos" { $Fee = 0.05 }
         default { $Fee = 0.01 }
     }
 
@@ -44,7 +46,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
         Type      = "NVIDIA"
         Name      = $Name
         Path      = $Path
-        Arguments = "$($Commands.$_)$($Pools.$Algo.Host):$($Pools.$Algo.Port) -no-nvml --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.$Algo.User):$($Pools.$Algo.Pass)$Algo2Parameter"
+        Arguments = "$($Commands.$_)$($Pools.$Algo.Host):$($Pools.$Algo.Port) --api 127.0.0.1:$($Variables.NVIDIAMinerAPITCPPort) -d $($Config.SelGPUCC) -u $($Pools.$Algo.User):$($Pools.$Algo.Pass)$Algo2Parameter"
         HashRates = $HashRates
         API       = "nbminer"
         Port      = $Variables.NVIDIAMinerAPITCPPort
