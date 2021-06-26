@@ -1,18 +1,21 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nanominer322\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.2.2/nanominer-windows-3.2.2-cuda11.zip"
+$Path = ".\Bin\NVIDIA-nanominer335\nanominer.exe"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/3.3.5/nanominer-windows-3.3.5-cuda11.zip"
 $Commands = [PSCustomObject]@{ 
     "Ethash"  = "" 
     "kawpow"  = "" 
     "ubqhash" = "" 
     "octopus" = "" 
+    "autolykos" = ""
 }
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
     If ($Algo -eq "ethash" -and $Pools.$Algo.Host -like "*zergpool*") { return }
     Switch ($_) { 
-        "randomhash" { $Fee = 0.05 } # substract devfee
+        "octopus" { $Fee = 0.02 } # substract devfee
+        "autolykos" { $Fee = 0.05 } # substract devfee
+        "kawpow" { $Fee = 0.02 } # substract devfee
         default { $Fee = 0.01 } # substract devfee
     }
 
