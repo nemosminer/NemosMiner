@@ -69,7 +69,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Algorithm                = [String]$Algorithm_Norm
                 CoinName                 = [String]$CoinName
                 Currency                 = [String]$Current.current_mining_coin_symbol
-                Price                    = [Double]$Stat.Live
+                Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
@@ -82,24 +82,6 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]1
             }
-
-            # [PSCustomObject]@{ 
-            #     Algorithm                = [String]$Algorithm_Norm
-            #     CoinName                 = [String]$CoinName
-            #     Currency                 = [String]$Current.current_mining_coin_symbol
-            #     Price                    = [Double]$Stat.Live
-            #     StablePrice              = [Double]$Stat.Week
-            #     MarginOfError            = [Double]$Stat.Week_Fluctuation
-            #     EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-            #     Host                     = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-            #     Port                     = [UInt16]$Current.algo_switch_port
-            #     User                     = [String]$User
-            #     Pass                     = "x"
-            #     Region                   = [String]$Region_Norm
-            #     SSL                      = [Bool]$true
-            #     Fee                      = [Decimal]$Fee
-            #     EstimateFactor           = [Decimal]1
-            # }
         }
     }
 }

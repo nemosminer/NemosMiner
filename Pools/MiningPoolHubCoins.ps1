@@ -66,7 +66,7 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Algorithm                = [String]$Algorithm_Norm
                 CoinName                 = [String]($CoinName -ireplace "$Algorithm$" -ireplace ".+groestl$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold")
                 Currency                 = [String]$Current.symbol
-                Price                    = [Double]$Stat.Live
+                Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
@@ -79,24 +79,6 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Fee                      = $Fee
                 EstimateFactor           = [Decimal]1
             }
-
-            # [PSCustomObject]@{ 
-            #     Algorithm                = [String]$Algorithm_Norm
-            #     CoinName                 = [String]($CoinName -ireplace "$Algorithm$" -ireplace ".+groestl$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace ".+groestl$")
-            #     Currency                 = [String]$Current.symbol
-            #     Price                    = [Double]$Stat.Live
-            #     StablePrice              = [Double]$Stat.Week
-            #     MarginOfError            = [Double]$Stat.Week_Fluctuation
-            #     EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-            #     Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-            #     Port                     = [UInt16]$Current.port
-            #     User                     = [String]$User
-            #     Pass                     = "x"
-            #     Region                   = [String]$Region_Norm
-            #     SSL                      = [Bool]$true
-            #     Fee                      = $Fee
-            #     EstimateFactor           = [Decimal]1
-            # }
         }
     }
 }
