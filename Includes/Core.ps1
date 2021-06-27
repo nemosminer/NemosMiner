@@ -25,17 +25,6 @@ Version date:   23 June 2021
 
 using module .\Include.psm1
 
-# For SetWindowText
-Add-Type -TypeDefinition @"
-using System;
-using System.Runtime.InteropServices;
-
-public static class Win32 {
-    [DllImport("User32.dll", EntryPoint="SetWindowText")]
-    public static extern int SetWindowText(IntPtr hWnd, string strTitle);
-}
-"@
-
 Function Start-Cycle { 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
 
@@ -741,6 +730,12 @@ Function Start-Cycle {
         $_.Refresh($Variables.PowerCostBTCperW) # To be done before MeasurePowerUsage evaluation
         $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
         If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
+        If ($_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true) { 
+            $_.DataCollectInterval = 2
+        }
+        Else { 
+            $_.DataCollectInterval = 5
+        }
     }
     Remove-Variable Miner -ErrorAction Ignore
     Remove-Variable NewMiners -ErrorAction Ignore
@@ -970,7 +965,7 @@ Function Start-Cycle {
         ElseIf ($_.ReadPowerUsage -ne $_.CachedReadPowerUsage) { $_.Restart = $true }
         ElseIf ($_.CachedShowMinerWindows -in @("normal", "minimized")) { If ($_.ShowMinerWindows -eq "hidden" -or $_.CachedShowMinerWindows -eq "hidden" ) { $_.Restart = $true } }
         ElseIf ($_.Type -eq "CPU" -and $_.ProcessPriority -ne $Config.CPUMinerProcessPriority) { $_.Restart = $true }
-        ElseIf ($_.Type -ne "CPU" -and  $_.ProcessPriority -ne $Config.GPUMinerProcessPriority) { $_.Restart = $true }
+        ElseIf ($_.Type -ne "CPU" -and $_.ProcessPriority -ne $Config.GPUMinerProcessPriority) { $_.Restart = $true }
     }
 
     # Stop running miners
