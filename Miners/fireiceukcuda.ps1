@@ -3,21 +3,14 @@ $Path = ".\Bin\Nvidia-FireIce2108\xmr-stak.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/2.10.8/xmr-stak-win64-2.10.8-cuda10.0.7z"
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $Commands = [PSCustomObject]@{ 
-    #"cryptonight_haven"   = "cr yptonight_haven" #cryptonight_haven 
-    #"cryptonight_gpu"     = "cryptonight_gpu" #Cryptonight_gpu
-    #"cryptonight_fast"    = "cryptonight_v8_half" #cryptonightFast
-    #"cryptonight_heavy"   = "cryptonight_heavy" #cryptonight_heavy 
-    #"cryptonight_heavyx"  = "cryptonight_v8_double" #cryptonight_heavy 
-    #"cryptonight_conceal" = "cryptonight_conceal" #cryptonight_conceal
-    #"cryptonight-saber"   = "cryptonight_bittube2" #cryptonight-saber
-    #"cryptonight_xeq"     = "cryptonight_gpu" #cryptonight_xeq
+     "cryptonight_gpu"     = "cryptonight_gpu" #Cryptonight_gpu
 }
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
     $Algo = Get-Algorithm($_)
     ([PSCustomObject]@{
             pool_list       = @(
                 [PSCustomObject]@{ 
-                    pool_address    = "$($Pools.$Algo.Host):$($Pools.$Algo.Port)"
+                    pool_address    = "stratum+tcp://cryptonight_gpu.mine.zergpool.com:4445"
                     wallet_address  = "$($Pools.$Algo.User)"
                     pool_password   = "$($Pools.$Algo.Pass)"
                     use_nicehash    = $true
