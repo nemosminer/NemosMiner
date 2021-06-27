@@ -425,8 +425,8 @@ Class Miner {
         # Read power usage
         If (Test-Path $RegistryHive) { 
             $RegistryData = Get-ItemProperty $RegistryHive
-            ForEach ($Device in $this.Devices) { 
-                If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match "$($Device.Name)" }) { 
+            ForEach ($DeviceName in $this.DeviceName) { 
+                If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match $DeviceName }) { 
                     $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
                 }
                 Else { 
