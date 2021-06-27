@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 Version:        3.9.9.53
-Version date:   23 June 2021 
+Version date:   23 June 2021
 #>
 
 using module .\Include.psm1
@@ -423,7 +423,7 @@ Function Start-Cycle {
             }
 
             If ($Variables.CycleStarts.Count -ge $Config.SyncWindow -and $_.Updated -lt $Variables.CycleStarts[0]) { 
-                    $_.Price_Bias = $_.Price * (1 - $_.MarginOfError) * [Math]::Pow(0.9, ($Variables.CycleStarts[0] - $_.Updated).TotalMinutes)
+                $_.Price_Bias = $_.Price * (1 - $_.MarginOfError) * [Math]::Pow(0.9, ($Variables.CycleStarts[0] - $_.Updated).TotalMinutes)
             }
             Else { 
                 $_.Price_Bias = $_.Price * (1 - $_.MarginOfError)
@@ -859,7 +859,7 @@ Function Start-Cycle {
 
         # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
         If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-        $Variables.SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = {  $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } # pre-sort
+        $Variables.SortedMiners = $Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } # pre-sort
         $Variables.FastestMiners = $Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.Fastest = $true; $_ }) } # use a smaller subset of miners
         $Variables.BestMiners = @($Variables.FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($Variables.FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
@@ -1122,7 +1122,7 @@ If (Test-Path -Path ".\Includes\MinerAPIs" -PathType Container -ErrorAction Igno
 
 While ($true) { 
     Start-Cycle
-    
+
     $Variables.EndLoop = $true
     $Variables.RefreshNeeded = $true
 
@@ -1133,8 +1133,8 @@ While ($true) {
     # - all benchmarking miners have collected enough samples
     # - WarmupTimes[1] is reached (no readout from miner)
     $InitialRunningMiners = $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
+    $Interval = ($InitialRunningMiners.DataCollectInterval | Measure-Object -Maximum).Maximum
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
-    If ($BenchmarkingOrMeasuringMiners) { $Interval = 2 } Else { $Interval = 5 }
 
     While ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners) {
         $NextLoop = (Get-Date).AddSeconds($Interval)
@@ -1226,8 +1226,6 @@ While ($true) {
     }
 
     Write-Message -Level Info "$($Message)Ending cycle."
-
-    $Variables.EndLoop = $true
 
     Remove-Variable Message -ErrorAction SilentlyContinue
     Remove-Variable RunningMiners -ErrorAction SilentlyContinue

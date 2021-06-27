@@ -39,11 +39,9 @@ Try {
 
     $Miner = ($MinerJSON | ConvertFrom-Json) -as $MinerAPI
 
-    If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { $Interval = 2 } Else { $Interval = 5 }
-
     While ($true) { 
-        $NextLoop = (Get-Date).AddSeconds($Interval)
-        $Miner.UpdateMinerData()
+        $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
+        $Miner.GetMinerData()
         While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 200 }
     }
 }

@@ -183,6 +183,7 @@ Class Miner {
     [DateTime]$StatStart
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
+    [Int]$DataCollectInterval = 5 # Seconds
     [String]$ShowMinerWindows = "minimized"
     [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
