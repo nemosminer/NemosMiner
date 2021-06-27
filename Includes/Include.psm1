@@ -19,9 +19,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.53
-Version date:   23 June 2021
+Version:        3.9.9.54
+Version date:   27 June 2021
 #>
+
+# For SetWindowText
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class Win32 {
+    [DllImport("User32.dll", EntryPoint="SetWindowText")]
+    public static extern int SetWindowText(IntPtr hWnd, string strTitle);
+}
+"@
 
 Class Device { 
     [String]$Name
@@ -170,9 +181,14 @@ Class Miner {
     [Boolean]$Restart = $false # stop and start miner even if best
 
     hidden [PSCustomObject[]]$Data = $null
+    hidden [PSCustomObject[]]$Data2 = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
+
+    [Runspace]$GetMinerDataRunspace = $null
+    [PowerShell]$GetMinerDataPowerShell = $null
+
     [Int32]$ProcessId = 0
     [Int]$ProcessPriority = -1
 
@@ -274,8 +290,9 @@ Class Miner {
                     If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+                        # . "C:\Users\Stephan\Desktop\NemosMiner\Includes\GetMinerDataRunspace.ps1"
                         # Starting Miner Data reader
-                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
+                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, GetMinerDataRunspace, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -594,6 +611,155 @@ Function Get-CommandLineParameters {
     Else { 
         Return $Arguments
     }
+}
+
+Function Start-JobInProcess {
+    [CmdletBinding()]
+    Param
+    (
+        [ScriptBlock]$ScriptBlock,
+        $ArgumentList,
+        [String]$Name
+    )
+
+    Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
+namespace InProcess
+{
+    public class InMemoryJob : System.Management.Automation.Job
+    {
+        public InMemoryJob(PowerShell PowerShell, string name)
+        {
+            _PowerShell = PowerShell;
+            SetUpStreams(name);
+        }
+        private void SetUpStreams(string name)
+        {
+            _PowerShell.Streams.Verbose = this.Verbose;
+            _PowerShell.Streams.Error = this.Error;
+            _PowerShell.Streams.Debug = this.Debug;
+            _PowerShell.Streams.Warning = this.Warning;
+            _PowerShell.Streams.Information = this.Information;
+            _PowerShell.Runspace.AvailabilityChanged += new EventHandler<RunspaceAvailabilityEventArgs>(Runspace_AvailabilityChanged);
+            int id = System.Threading.Interlocked.Add(ref InMemoryJobNumber, 1);
+            if (!string.IsNullOrEmpty(name))
+            {
+                this.Name = name;
+            }
+            else
+            {
+                this.Name = "InProcessJob" + id;
+            }
+        }
+        void Runspace_AvailabilityChanged(object sender, RunspaceAvailabilityEventArgs e)
+        {
+            if (e.RunspaceAvailability == RunspaceAvailability.Available)
+            {
+                this.SetJobState(JobState.Completed);
+            }
+        }
+        PowerShell _PowerShell;
+        static int InMemoryJobNumber = 0;
+        public override bool HasMoreData
+        {
+            get {
+                return (Output.Count > 0);
+            }
+        }
+        public override string Location
+        {
+            get { return "In Process"; }
+        }
+        public override string StatusMessage
+        {
+            get { return "A new status message"; }
+        }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (!isDisposed)
+                {
+                    isDisposed = true;
+                    try
+                    {
+                        if (!IsFinishedState(JobStateInfo.State))
+                        {
+                            StopJob();
+                        }
+                        foreach (Job job in ChildJobs)
+                        {
+                            job.Dispose();
+                        }
+                    }
+                    finally
+                    {
+                        base.Dispose(disposing);
+                    }
+                }
+            }
+        }
+        private bool isDisposed = false;
+        internal bool IsFinishedState(JobState state)
+        {
+            return (state == JobState.Completed || state == JobState.Failed || state == JobState.Stopped);
+        }
+        public override void StopJob()
+        {
+            _PowerShell.Stop();
+            _PowerShell.EndInvoke(_asyncResult);
+            SetJobState(JobState.Stopped);
+        }
+        public void Start()
+        {
+            _asyncResult = _PowerShell.BeginInvoke<PSObject, PSObject>(null, Output);
+            SetJobState(JobState.Running);
+        }
+        IAsyncResult _asyncResult;
+        public void WaitJob()
+        {
+            _asyncResult.AsyncWaitHandle.WaitOne();
+        }
+        public void WaitJob(TimeSpan timeout)
+        {
+            _asyncResult.AsyncWaitHandle.WaitOne(timeout);
+        }
+    }
+}
+'@
+
+    Function Get-JobRepository {
+        [CmdletBinding()]
+        Param()
+        $PScmdlet.JobRepository
+    }
+
+    Function Add-Job {
+        [CmdletBinding()]
+        Param
+        (
+            $Job
+        )
+        $PScmdlet.JobRepository.Add($Job)
+    }
+
+    $PowerShell = [PowerShell]::Create().AddScript($ScriptBlock)
+
+    If ($ArgumentList) {
+        $ArgumentList | ForEach-Object {
+            $PowerShell.AddArgument($_)
+        }
+    }
+
+    $MemoryJob = New-Object InProcess.InMemoryJob $PowerShell, $Name
+
+    $MemoryJob.Start()
+    Add-Job $MemoryJob
+    $MemoryJob
 }
 
 Function Start-BrainJob { 

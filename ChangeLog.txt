@@ -4,6 +4,22 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.54 27.06.2021
+========================================
+
+Enhancements:
+- Core: Add properties 'Bus_Index', 'Bus_Type_Index', 'Bus_Vendor_Index' & 'Bus_Platform_Index' to Device class (required for NanoMiner)
+- Enable Algorithm 'Autolykos' on NiceHash (add algorithm to Algorithms.txt)
+
+Fixes:
+- NanoMiner: Incorrect device id selection
+- WebGUI / Miner management: Column titles were mixed up ('Earnings Bias [Currency]' <-> 'Profit [Currency]')
+
+Miner Updates:
+- GMiner-v2.58
+- JayddeeCpu-v3.16.5
+
+
 Changelog NemosMiner 3.9.9.53 23.06.2021
 ========================================
 
