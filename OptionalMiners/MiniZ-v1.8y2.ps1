@@ -18,7 +18,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Fee = 0.0075; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=Ethash --ocX" }
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Fee = 0.0075; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = 5.0; Fee = 0.0075; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=EtcHash --ocX" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=kawpow --pers=rAVENCOINKAWPOW --ocX" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=kawpow --pers=RAVENCOINKAWPOW --ocX" }
     [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=ProgPow --pers=veil --ocX" }
     [PSCustomObject]@{ Algorithm = "Veriblock";    MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=ProgPowZ --pers=zano --ocX" }
     [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
