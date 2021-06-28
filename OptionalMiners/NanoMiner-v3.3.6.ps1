@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/3.3.5/nanominer-windows-3.3.5-cuda11.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.3.6/nanominer-windows-3.3.6-cuda11.zip"
 $DeviceEnumerator = "Bus_Type_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -11,7 +11,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Etchash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Ethash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 20); Coin= "Ethash" } # PhoenixMiner-v5.6d is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Kawpow" } # TeamRed-v0.8.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 60); Coin= "Kawpow" } # TeamRed-v0.8.3 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 15); Coin= "Ubqhash" } # PhoenixMiner-v5.6d is fastest
 
     [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "RandomX" } # XmRig-v6.12.2 is fastest
@@ -21,7 +21,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Etchash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Ethash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 20); Coin= "Ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Kawpow" } # Trex-v0.20.4 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 60); Coin= "Kawpow" } # Trex-v0.20.4 is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 30); Coin= "Octopus" } # NBMiner-v37.6 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 15); Coin= "Ubqhash" } # PhoenixMiner-v5.6d is fastest
 )
