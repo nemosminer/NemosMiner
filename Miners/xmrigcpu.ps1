@@ -14,7 +14,7 @@ $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty 
     [PSCustomObject]@{ 
         Type      = "CPU"
         Path      = $Path
-        Arguments = "-t $($ThreadCount) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --keepalive --http-port=$($Variables.CPUMinerAPITCPPort) --donate-level 1 --retries=90 --retry-pause=1 --cpu-priority 3"
+        Arguments = "-t $($ThreadCount) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_) --keepalive --http-port=$($Variables.CPUMinerAPITCPPort) --donate-level 0 --retries=90 --retry-pause=1 --cpu-priority 3"
         HashRates = [PSCustomObject]@{ $Algo = $Stats."$($Name)_$($Algo)_HashRate".Week } #Recompiled 0% fee
         API       = "XMRig"
         Port      = $Variables.CPUMinerAPITCPPort
