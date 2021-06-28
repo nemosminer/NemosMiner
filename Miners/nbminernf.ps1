@@ -7,6 +7,7 @@ $Commands = [PSCustomObject]@{
     #"grincuckaroo29"   = "-a cuckaroo --fee 1 -o nicehash+tcp://" #grincuckaroo29
     #"cuckoocycle"      = "-a cuckoo_ae --fee 1 --cuckoo-intensity 0 -o nicehash+tcp://" #cuckoocycle
     #"kawpow"           = "-a kawpow -o stratum+tcp://" #kawpow
+    "etchash"          = "-a etchash -o nicehash+tcp://" #etchash
     "octopus"          = "-a octopus -o stratum+tcp://" #octopus
     "autolykos"        = "-a ergo -o stratum+tcp://" #autolykos
 }
