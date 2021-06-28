@@ -1,7 +1,7 @@
   
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-nsfminer1312\nsfminer.exe"
-$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.12/nsfminer_1.3.12-windows_10-opencl.zip"
+$Path = ".\Bin\AMD-nsfminer1314\nsfminer.exe"
+$Uri = "https://github.com/no-fee-ethereum-mining/nsfminer/releases/download/v1.3.14/nsfminer_1.3.14-windows_10-opencl.zip"
 $Commands = [PSCustomObject]@{ 
     "ethash" = "" #Fix for AMD GPUS not showing/working https://github.com/ethereum-mining/ethminer/issues/2001
 }

@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-Phoenix55c\PhoenixMiner.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/PhoenixMiner/PhoenixMiner_5.5c_Windows.zip"
+$Path = ".\Bin\AMD-Phoenix56d\PhoenixMiner.exe"
+$Uri = "https://phoenixminer.info/downloads/PhoenixMiner_5.6d_Windows.zip"
 $Commands = [PSCustomObject]@{ 
     "ethash"  = "" #Ethash
 }

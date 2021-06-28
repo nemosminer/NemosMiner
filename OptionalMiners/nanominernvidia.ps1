@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-nanominer335\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/3.3.5/nanominer-windows-3.3.5-cuda11.zip"
+$Path = ".\Bin\NVIDIA-nanominer336\nanominer.exe"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.3.6/nanominer-windows-3.3.6-cuda11.zip"
 $Commands = [PSCustomObject]@{ 
     "Ethash"  = "" 
     "kawpow"  = "" 

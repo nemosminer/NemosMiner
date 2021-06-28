@@ -1,11 +1,11 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-Bminer1645\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.4.5-53c7f21-amd64.zip"
+$Path = ".\Bin\AMD-Bminer1646\bminer.exe"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.4.6-d77cc9b-amd64.zip"
 $Commands = [PSCustomObject]@{ 
     #"equihashBTG"      = "-uri zhash://" #EquihashBTG
     #"equihash144"      = "-pers auto -uri equihash1445://" #Equihash144
     #"zhash"            = "-pers auto -uri equihash1445://" #Zhash
-    #"ethash"           = "-uri ethstratum://" #Ethash
+     "ethash"           = "-uri ethstratum://" #Ethash
     #"cuckoocycle"      = "-uri aeternity://" #aeternity
     #"beamv2"           = "-uri beamhash2://" #beam
     #"beamv3"           = "-uri beamhash3://" #beam
@@ -16,6 +16,7 @@ $Commands = [PSCustomObject]@{
     #"tensority"        = "-uri ethstratum://" #Tensority
     #"kawpow"           = "-uri raven://" #Kawpow
     #"cuckarooz29 "     = "-uri cuckaroo29z://" #Cuckaroo29z 
+     "octopus "         = "-uri conflux://" #conflux 
     
 
 }

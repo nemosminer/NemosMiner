@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\AMD-VertHash062\VerthashMiner.exe"
-$Uri = "https://github.com/CryptoGraphics/VerthashMiner/releases/download/0.6.2/VerthashMiner-0.6.2-CUDA11-windows.zip"
+$Path = ".\Bin\AMD-VertHash072\VerthashMiner.exe"
+$Uri = "https://github.com/CryptoGraphics/VerthashMiner/releases/download/0.7.2/VerthashMiner-0.7.2-CUDA11-windows.zip"
 
 $DatPath = "$($Variables.MainPath)\Bin\AMD-VertHash062\Verthash.dat"
 If (-not (Test-Path $DatPath) -and (Test-Path $Path)) {
