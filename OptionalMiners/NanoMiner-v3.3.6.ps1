@@ -14,7 +14,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 60); Coin= "Kawpow" } # TeamRed-v0.8.3 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 15); Coin= "Ubqhash" } # PhoenixMiner-v5.6d is fastest
 
-    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "RandomX" } # XmRig-v6.12.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "Randomx" } # XmRig-v6.12.2 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "VerusHash" }
 
     [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Coin= "Autolykos" }

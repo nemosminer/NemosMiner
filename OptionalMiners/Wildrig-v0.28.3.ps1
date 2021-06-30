@@ -46,14 +46,14 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x11k" }
     [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16r" } # TeamRed-v0.8.3 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16rt" }
-    # [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Error
+# [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Error
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17r --protocol ufo2" }
     [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x21s" } # TeamRed-v0.8.3 is fastest
     [PSCustomObject]@{ Algorithm = "X22i";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x22i" }
     [PSCustomObject]@{ Algorithm = "X33";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x33" }
-    [PSCustomObject]@{ Algorithm = "WildKeccak";         Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo wildkeccak" }
+    [PSCustomObject]@{ Algorithm = "WildKeccak";  Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo wildkeccak" }
 
     [PSCustomObject]@{ Algorithm = "AstralHash";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-astralhash" }
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo bcd" }

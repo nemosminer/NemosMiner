@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.54
-Version date:   23 June 2021
+Version:        3.9.9.55
+Version date:   30 June 2021
 #>
 
 using module .\Include.psm1
@@ -549,31 +549,28 @@ Function Start-Cycle {
                         Write-Message -Level Warn "$($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
-                    Else { 
-                        $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
-                        If ($Stat.Updated -gt $Miner.StatStart) { 
-                            Write-Message "Saved hash rate ($($Stat_Name): $(($Stat.Live | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
-                            $Miner.StatStart = $Miner.StatEnd
-                        }
-                        If ($Stat.Week -eq 0) { $PowerUsage = 0 } # Save 0 instead of measured power usage when stat contains no data
+                    $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
+                    If ($Stat.Updated -gt $Miner.StatStart) { 
+                        Write-Message "Saved hash rate ($($Stat_Name): $(($Stat.Live | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                        $Miner.StatStart = $Miner.StatEnd
                     }
+
+                    If ($Stat.Week -eq 0) { $PowerUsage = 0 } # Save 0 instead of measured power usage when stat contains no data
                 }
             }
 
             If ($Miner.ReadPowerUsage) { 
                 $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
+                # Do not save data if stat just got removed
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -ge 1) {
                     # Stop miner if new value is outside ±200% of current value
                     If ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt ($Stat.Week * 2) -or $PowerUsage -lt ($Stat.Week / 2))) {
                         Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($(([Double]$PowerUsage).ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
-                    Else { 
-                        # Do not save data if stat just got removed
-                        $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
-                        If ($Stat.Updated -gt $Miner.StatStart) { 
-                            Write-Message "Saved power usage ($($Stat_Name): $(([Double]$Stat.Live).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
-                        }
+                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
+                    If ($Stat.Updated -gt $Miner.StatStart) { 
+                        Write-Message "Saved power usage ($($Stat_Name): $(([Double]$Stat.Live).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                     }
                 }
             }
