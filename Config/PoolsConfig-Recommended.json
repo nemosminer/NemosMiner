@@ -26,7 +26,7 @@
                 "APIKey":  "",
                 "Algorithm":  [
                                   "+etchash",
-                                  "-ethash"
+                                  "+ethash"
                               ]
             },
     "nicehashV2":  {
@@ -38,7 +38,7 @@
                        "Algorithm":  [
                                          "+beamv2",
                                          "+beamv3",
-                                         "+ethash",
+                                         "-ethash",
                                          "+kawpow",
                                          "+octopus",
                                          "+autolykos",
