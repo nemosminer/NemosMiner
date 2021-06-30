@@ -108,6 +108,7 @@
   "lyra2rev3": "Lyra2RE3",
   "lyra2tdc": "Lyra2TDC",
   "lyra2v2": "Lyra2RE2",
+  "lyra2v2webchain": "Lyra2v2Webchain",
   "lyra2v3": "Lyra2RE3",
   "lyra2z": "Lyra2Z",
   "m7m": "m7m",
