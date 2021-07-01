@@ -366,7 +366,7 @@ Class Miner {
             Account      = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
             Pool         = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
             Algorithm    = ($this.WorkersRunning.Pool.Algorithm) -join "; "
-            Duration     = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
+            Duration     = [String]($this.EndTime - $this.BeginTime) -Split '\.' | Select-Object -Index 0
             Earning      = [Double]$this.Earning
             Earning_Bias = [Double]$this.Earning_Bias
             Profit       = [Double]$this.Profit
