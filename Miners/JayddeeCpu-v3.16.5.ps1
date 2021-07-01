@@ -44,7 +44,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
                     Else { 
                         $_.Arguments += " --verify"
-                        $_.WarmupTime += 420 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
+                        $_.WarmupTime[1] += 420 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                     }
                 }
 

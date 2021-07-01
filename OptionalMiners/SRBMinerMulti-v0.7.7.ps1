@@ -120,7 +120,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($_.Algorithm -eq "VertHash") { 
                     If (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf )) { 
                         If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
-                        $_.WarmupTime += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
+                        $_.WarmupTime[1] += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
                     }
                 }
 
