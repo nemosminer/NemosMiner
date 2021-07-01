@@ -15,14 +15,22 @@ $Commands = [PSCustomObject]@{
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 
 $Commands | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { $Algo = Get-Algorithm $_; $_ } | Where-Object { $Pools.$Algo.Host } | ForEach-Object { 
-    [PSCustomObject]@{ 
-        Type      = "NVIDIA"
-        Path      = $Path
-        Arguments = "-D $($Config.SelGPUCC) -a $_ -o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port) -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass)$($Commands.$_)"
-        HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Week }
-        API       = "wrapper"
-        Port      = $Variables.NVIDIAMinerAPITCPPort
-        Wrap      = $true
-        URI       = $Uri
+    If ($Algo) { 
+        If ($Pools.$($Algo).Name -eq "MPH") { 
+            $AlgoParameter = "-o stratum+tcp://hub.miningpoolhub.com:20534"
+        }
+        Else { 
+            $AlgoParameter = "-o stratum+tcp://$($Pools.$Algo.Host):$($Pools.$Algo.Port)"
+        }
+        [PSCustomObject]@{ 
+            Type      = "NVIDIA"
+            Path      = $Path
+            Arguments = "-D $($Config.SelGPUCC) -a $_ -u $($Pools.$Algo.User) -p $($Pools.$Algo.Pass) $AlgoParameter$($Commands.$_)"
+            HashRates = [PSCustomObject]@{($Algo) = $Stats."$($Name)_$($Algo)_HashRate".Week }
+            API       = "wrapper"
+            Port      = $Variables.NVIDIAMinerAPITCPPort
+            Wrap      = $true
+            URI       = $Uri
+        }
     }
 }
