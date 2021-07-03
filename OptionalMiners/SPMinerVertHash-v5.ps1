@@ -16,7 +16,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
         If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
-            $MinerAPIPort = 0 # Wrapper has no API Port #[UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+            $MinerAPIPort = 0 # Miner has no API Port
 
             $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
                 $WarmupTimes = $_.WarmupTimes.PsObject.Copy()

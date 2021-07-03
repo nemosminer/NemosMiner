@@ -55,7 +55,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Algorithm   = $_.Algorithm
                         API         = "Ccminer"
                         Port        = $MinerAPIPort
-                        Wrap        = $false
                         URI         = $Uri
                         Fee         = $_.Fee # Dev fee
                         WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample

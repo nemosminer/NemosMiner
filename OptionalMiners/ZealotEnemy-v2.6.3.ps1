@@ -56,7 +56,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Algorithm   = $_.Algorithm
                         API         = "Trex"
                         Port        = $MinerAPIPort
-                        Wrap        = $false
                         URI         = $Uri
                         Fee         = 0.01 # dev fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)"

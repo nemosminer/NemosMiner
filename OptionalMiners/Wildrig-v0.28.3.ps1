@@ -133,7 +133,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Algorithm  = $_.Algorithm
                         API        = "XmRig"
                         Port       = $MinerAPIPort
-                        Wrap       = $false
                         URI        = $Uri
                         Fee        = $_.Fee # subtract devfee
                         MinerUri   = "http://localhost:$($MinerAPIPort)"

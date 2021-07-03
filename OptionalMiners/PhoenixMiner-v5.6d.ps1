@@ -109,7 +109,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Algorithm   = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API         = "EthMiner"
                         Port        = $MinerAPIPort
-                        Wrap        = $false
                         URI         = $Uri
                         Fee         = $_.Fee # Dev fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)"

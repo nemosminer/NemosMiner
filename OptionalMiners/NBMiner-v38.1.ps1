@@ -89,7 +89,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Algorithm   = $_.Algorithm
                         API         = "NBMiner"
                         Port        = $MinerAPIPort
-                        Wrap        = $false
                         URI         = $Uri
                         Fee         = $_.Fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)"

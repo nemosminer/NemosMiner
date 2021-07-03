@@ -57,7 +57,6 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
                     Algorithm   = $_.Algorithm
                     API         = "EthMiner"
                     Port        = $MinerAPIPort
-                    Wrap        = $false
                     URI         = $Uri
                     MinerUri    = "http://localhost:$($MinerAPIPort)"
                     WarmupTimes = $WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample

@@ -64,7 +64,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Algorithm       = $_.Algorithm
                         API             = "MiniZ"
                         Port            = $MinerAPIPort
-                        Wrap            = $false
                         URI             = $Uri
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)"
