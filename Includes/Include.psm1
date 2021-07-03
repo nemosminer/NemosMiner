@@ -2279,12 +2279,12 @@ Function Get-Device {
                         PlatformId            = [Int]$PlatformId
                         PlatformId_Index      = [Int]$PlatformId_Index.($PlatformId)
                         Type_PlatformId_Index = [Int]$Type_PlatformId_Index.($Device.Type).($PlatformId)
-                    }
+                    } -Force
 
                     # Add raw data
                     $Device | Add-Member @{ 
                         OpenCL = $Device_OpenCL
-                    }
+                    } -Force
 
                     If (-not $Type_Vendor_Index.($Device.Type)) { 
                         $Type_Vendor_Index.($Device.Type) = @{ }
