@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.7"
+    $APIVersion = "0.3.9.11"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -566,6 +566,7 @@ Function Start-APIServer {
                         $Variables.WatchdogTimersReset = $true
                         $Variables.WatchDogTimers = @()
                         $Variables.Miners | Where-Object { $_.Reason -like "Miner suspended by watchdog *" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
+                        $Variables.Pools | Where-Object { $_.Reason -like "*Pool suspended by watchdog" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
                         $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
                         Break
                     }

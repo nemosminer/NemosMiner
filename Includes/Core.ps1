@@ -500,10 +500,22 @@ Function Start-Cycle {
 
         If ($Miner.Status -eq [MinerStatus]::Running) { 
             If ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
-                #Update watchdog timers
                 ForEach ($Worker in $Miner.WorkersRunning) { 
-                    $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1 | ForEach-Object { 
-                        $_.Kicked = $Variables.Timer
+                    If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Select-Object -Last 1) { 
+                        #Update watchdog timers
+                        $WatchdogTimer.Kicked = $Variables.Timer
+                    }
+                    ElseIf ($Config.Watchdog) { 
+                        # Create watchdog timer
+                        $Variables.WatchdogTimers += [PSCustomObject]@{ 
+                            MinerName     = $Miner.Name
+                            MinerBaseName = $Miner.BaseName
+                            MinerVersion  = $Miner.Version
+                            PoolName      = $Worker.Pool.Name
+                            Algorithm     = $Worker.Pool.Algorithm
+                            DeviceName    = [String[]]($Miner.DeviceName)
+                            Kicked        = $Variables.Timer
+                        }
                     }
                 }
             }
