@@ -10,9 +10,9 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");                    Type = "AMD"; Fee = @(0.0065);    MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem")               Type = "AMD"; Fee = @(0.0065);    MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake");       Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") }
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Handshake"); Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") }
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");              Type = "AMD"; Fee = @(0.0065);    MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake");       Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Handshake"); Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
 
     [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri beam") } # NBMiner-v36.0 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri bfc") }
@@ -33,22 +33,22 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { ($Pools.($_.Algorithm[0]).Host -and -not $_.Algorithm[1]) -or ($Pools.($_.Algorithm[0]).Host -and $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
 
-    # Does not seem to make any difference for Handshake
-    # Intensities for 2. algorithm
-    $Intensities = [PSCustomObject]@{ 
-        "Handshake" = @(0, 10, 30, 60, 100, 150, 210) # 0 = Auto-Intensity
-    }
+    # # Does not seem to make any difference for Handshake
+    # # Intensities for 2. algorithm
+    # $Intensities = [PSCustomObject]@{ 
+    #     "Handshake" = @(0, 10, 30, 60, 100, 150, 210) # 0 = Auto-Intensity
+    # }
 
-    # Build command sets for intensities
-    $AlgorithmDefinitions = $AlgorithmDefinitions | ForEach-Object { 
-        $_.PsObject.Copy()
-        $Command = $_.Command
-        ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
-            $_ | Add-Member Command "$Command -dual-subsolver -1 -dual-intensity $Intensity" -Force
-            $_ | Add-Member Intensity $Intensity -Force
-            $_.PsObject.Copy()
-        }
-    }
+    # # Build command sets for intensities
+    # $AlgorithmDefinitions = $AlgorithmDefinitions | ForEach-Object { 
+    #     $_.PsObject.Copy()
+    #     $Arguments = ""
+    #     ForEach ($Intensity in $Intensities.($_.Algorithm[1])) { 
+    #         $_ | Add-Member Arguments " -dual-subsolver -1 -dual-intensity $Intensity" -Force
+    #         $_ | Add-Member Intensity $Intensity -Force
+    #         $_.PsObject.Copy()
+    #     }
+    # }
 
     $Devices | Where-Object Type -in @("AMD", "NVIDIA") | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -58,7 +58,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-                $Arguments = ""
+                $Arguments = [String]$_.Arguments
                 $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
                 $MinMemGB = $_.MinMemGB
 
@@ -68,6 +68,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )
                 $Miner_Devices = @($Miner_Devices | Where-Object { (-not $_.CIM.CurrentRefreshRate) -or (($_.OpenCL.GlobalMemSize - 0.5) / 1GB) -ge $MinMemGB } ) # Reserve 512 MB when GPU with connected monitor
+                If ($_.Algorithm[0] -match "$Ethash.*") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Ethash mining not supported on Navi
                 If ($_.Algorithm[1]) { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "$AMD Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
 
                 If ($Miner_Devices) { 
@@ -81,7 +82,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
 
                     $Protocol = $_.Protocol[0]
-                    If ($_.Algorithm[0] -in @("Ethash", "KawPoW") -and $Pools.($_.Algorithm[0]).Name -match "$NiceHash^|$MPH(Coins)^") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
+                    If ($_.Algorithm[0] -in @("Ethash", "KawPoW") -and $Pools.($_.Algorithm[0]).Name -match "$NiceHash^|$MPH(Coins)^|$ProHashing^") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
 
                     $Arguments += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
