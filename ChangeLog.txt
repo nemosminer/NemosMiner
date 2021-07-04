@@ -4,6 +4,23 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.56 04.07.2021
+========================================
+
+Enhancements:
+- Miners: Remove obsolete property 'Wrap'
+- WebGUI / Watchdog Timers: Add button 'Reset all watchdog timers'
+
+Fixes:
+- Switching log: fix duration formatting
+- VertHash miners: Fix WarmupTime when verthash.dat needs creation
+
+Miner updates:
+- BMiner-v16.4.6
+- GMiner-v2.59
+- Trex-v0.21.0
+
+
 Changelog NemosMiner 3.9.9.55 30.06.2021
 ========================================
 
