@@ -115,8 +115,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
 
-                If ($_.Algorithm -eq "Ethash" -and $Pools.($_.Algorithm).Name -match "^MiningPoolHub|(Coins)$") { Return }
-
                 If ($_.Algorithm -eq "VertHash") { 
                     If (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf )) { 
                         If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
@@ -141,7 +139,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
 
                     If ($Pools.($_.Algorithm).SSL) { $Arguments += " --ssl true" }
-                    If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^NiceHash$") { $Arguments += " --nicehash true" }
+                    If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $Arguments += " --nicehash true" }
                     If ($_.Algorithm -in @("EtcHash", "Ethash", "UbqHash") -and $Pools.($_.Algorithm).Name -match "^ProHashing.+") { $Arguments += " --esm 1" }
 
                     $Pass = " --password $($Pools.($_.Algorithm).Pass)"
