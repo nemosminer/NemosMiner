@@ -292,7 +292,7 @@ Class Miner {
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
                         # . "C:\Users\Stephan\Desktop\NemosMiner\Includes\GetMinerDataRunspace.ps1"
                         # Starting Miner Data reader
-                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property * -ExcludeProperty Active, DataReaderJob, Devices, GetMinerDataRunspace, SideIndicator, TotalMiningDuration, Type, Workers, WorkersRunning | ConvertTo-Json) }
+                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property Algorithm, AllowedBadShareRatio, DataCollectInterval, Devices, Path, Port, ReadPowerUsage | ConvertTo-Json -WarningAction Ignore) }
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -425,8 +425,8 @@ Class Miner {
         # Read power usage
         If (Test-Path $RegistryHive) { 
             $RegistryData = Get-ItemProperty $RegistryHive
-            ForEach ($DeviceName in $this.DeviceName) { 
-                If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match $DeviceName }) { 
+            ForEach ($Device in $this.Devices) { 
+                If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match $Device.Name }) { 
                     $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
                 }
                 Else { 
