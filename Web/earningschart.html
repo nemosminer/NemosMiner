@@ -100,6 +100,7 @@
               },
               text: currency
             },
+            // reverse: true,
             stacked: true
           }
         },
@@ -110,6 +111,7 @@
                 size: 18
               }
             }
+            // ,reverse: true
           },
           title: {
             display: true,
@@ -125,14 +127,22 @@
             callbacks: {
               label: function(context) {
                 var label = context.dataset.label || '';
+                var total = 0;
 
                 if (label) {
-                    label += ': ';
+                  label = " " + label + ": ";
                 }
-                if (context.parsed.y !== 0) {
-                    label += (context.parsed.y.toFixed(3) + " " + currency);
-                    return label;
+
+                if (context.parsed.y >= 0.001) {
+                  label += (context.parsed.y.toFixed(3) + " " + currency);
+                  return label;
                 }
+              },
+              footer: function(data) {
+                // Loop through all datasets to get the actual total of the index
+                var total = 0;
+                for (var i = 0; i < data.length; i++) total += data[i].raw;
+                return "Total: " + total.toFixed(3) + " " + currency;
               }
             },
             itemSort: function(a, b) {
@@ -143,6 +153,9 @@
             },
             bodyFont: { 
               size: 16
+            },
+            footerFont: { 
+              weight: 'normal'
             }
           }
         }
@@ -159,11 +172,7 @@
 
           for (var pool in earningsdata.Pools) {
             var BTCvalue = [];
-            var BTCRate = [];
-            for (var index in earningsdata.Pools[pool]) {
-              BTCvalue.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
-              BTCRate.push(earningsdata.Pools[pool][index]);
-            };
+            for (var index in earningsdata.Pools[pool]) BTCvalue.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
             var earnings = {
               label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
               data: BTCvalue,
