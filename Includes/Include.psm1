@@ -162,15 +162,14 @@ Class Miner {
     [Double]$Profit_Bias = [Double]::NaN
 
     [Boolean]$Benchmark = $false # derived from stats
-    [Boolean]$CachedBenchmark = $false
 
     [Double]$PowerUsage = [Double]::NaN
     [Double]$PowerUsage_Live = [Double]::NaN
     [Double]$PowerCost = [Double]::NaN
     [Boolean]$ReadPowerUsage = $false
     [Boolean]$CachedReadPowerUsage = $false
+    
     [Boolean]$MeasurePowerUsage = $false
-    [Boolean]$CachedMeasurePowerUsage = $false
 
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
@@ -186,8 +185,8 @@ Class Miner {
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
 
-    [Runspace]$GetMinerDataRunspace = $null
-    [PowerShell]$GetMinerDataPowerShell = $null
+    # [Runspace]$GetMinerDataRunspace = $null
+    # [PowerShell]$GetMinerDataPowerShell = $null
 
     [Int32]$ProcessId = 0
     [Int]$ProcessPriority = -1
@@ -200,6 +199,7 @@ Class Miner {
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
     [Int]$DataCollectInterval = 5 # Seconds
+    [Int]$CachedDataCollectInterval = 5 # Seconds
     [String]$ShowMinerWindows = "minimized"
     [String]$CachedShowMinerWindows
     [String[]]$Environment = @()
@@ -262,9 +262,6 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            If (($this.GetType()).Name -in @("VerthashMiner")) { 
-                $this.LogFile = $Global:ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(".\Logs\$($this.Name)-$($this.Port)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt")
-            }
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
 
             # Log switching information to .\Logs\SwitchingLog.csv
@@ -495,6 +492,10 @@ Class Miner {
         $this.Benchmark = $false
         $this.Best = $false
 
+        $this.Earning = 0
+        $this.Earning_Bias = 0
+        $this.Earning_Accuracy = 0
+
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
                 $_.Speed = $Stat.Hour
@@ -512,18 +513,11 @@ Class Miner {
                 $_.Earning_Accuracy = [Double]::Nan
                 $_.TotalMiningDuration = New-TimeSpan
             }
-        }
-
-        $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
-
-        $this.Earning = 0
-        $this.Earning_Bias = 0
-        $this.Earning_Accuracy = 0
-
-        $this.Workers | ForEach-Object { 
             $this.Earning += $_.Earning
             $this.Earning_Bias += $_.Earning_Bias
         }
+
+        $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
 
         If ($this.Earning -eq 0) { 
             $this.Earning_Accuracy = 1
@@ -1353,6 +1347,7 @@ Function Read-Config {
         $Variables.PoolsConfigData = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
         If ($Variables.PoolsConfigData.PSObject.Properties.Count -eq 0 -or $Variables.PoolsConfigData -isnot [PSCustomObject]) { 
             Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
+            $Variables.Remove("PoolsConfigData")
         }
     }
 
@@ -1523,8 +1518,10 @@ Function Set-Stat {
         If ($Duration -le 0) { Return $Stat }
 
         If ($FaultDetection) { 
-            $ToleranceMin = $Stat.Week * (1 - [Math]::Min([Math]::Max($Stat.Week_Fluctuation * 2, 0.1), 0.9))
-            $ToleranceMax = $Stat.Week * (1 + [Math]::Min([Math]::Max($Stat.Week_Fluctuation * 2, 0.1), 0.9))
+            If ($Name -match ".+_HashRate$") { $FaultFactor = 0.1 }
+            Else { $FaultFactor = 0.2 }
+            $ToleranceMin = $Stat.Week * (1 - $FaultFactor)
+            $ToleranceMax = $Stat.Week * (1 + $FaultFactor)
         }
         Else { 
             $ToleranceMin = $ToleranceMax = $Value
@@ -1532,9 +1529,7 @@ Function Set-Stat {
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
-        If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { 
-            $Stat.ToleranceExceeded ++
-        }
+        If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
         If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
@@ -1712,27 +1707,27 @@ Function Remove-Stat {
 
 Function Get-ArgumentsPerDevice { 
 
-    # filters the command to contain only parameter values for present devices
-    # if a parameter has multiple values, only the values for the available devices are included
-    # parameters with a single value are valid for all devices and remain untouched
-    # excluded parameters are passed unmodified
+    # filters the arguments to contain only argument values for present devices
+    # if an argument has multiple values, only the values for the available devices are included
+    # arguments with a single value are valid for all devices and remain untouched
+    # excluded arguments are passed unmodified
 
     Param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
-        [String]$Command, 
+        [String]$Arguments, 
         [Parameter(Mandatory = $false)]
-        [String[]]$ExcludeParameters = "", 
+        [String[]]$ExcludeArguments = "", 
         [Parameter(Mandatory = $false)]
         [Int[]]$DeviceIDs
     )
 
-    $CommandPerDevice = ""
+    $ArgumentsPerDevice = ""
 
-    " $($Command.TrimStart().TrimEnd())" -split "(?=\s+[-]{1,2})" | ForEach-Object { 
+    " $($Arguments.TrimStart().TrimEnd())" -split "(?=\s+[-]{1,2})" | ForEach-Object { 
         $Token = $_
         $Prefix = ""
-        $ParameterValueSeparator = ""
+        $ParameterSeparator = ""
         $ValueSeparator = ""
         $Values = ""
 
@@ -1741,25 +1736,25 @@ Function Get-ArgumentsPerDevice {
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
             If ($Token -match "(?:[ =]+)" <#supported separators are listed in brackets [ =]#>) { 
-                $ParameterValueSeparator = $Matches[0]
-                $Parameter = $Token -split $ParameterValueSeparator | Select-Object -Index 0
-                $Values = $Token.Substring(("$Parameter$($ParameterValueSeparator)").length)
+                $ParameterSeparator = $Matches[0]
+                $Parameter = $Token -split $ParameterSeparator | Select-Object -Index 0
+                $Values = $Token.Substring(("$Parameter$($ParameterSeparator)").length)
 
-                If ($Parameter -notin $ExcludeParameters -and $Values -match "(?:[,; ]{1})" <#supported separators are listed in brackets [,; ]#>) { 
+                If ($Parameter -notin $ExcludeArguments -and $Values -match "(?:[,; ]{1})" <#supported separators are listed in brackets [,; ]#>) { 
                     $ValueSeparator = $Matches[0]
                     $RelevantValues = @()
                     $DeviceIDs | ForEach-Object { 
                         $RelevantValues += ($Values.Split($ValueSeparator) | Select-Object -Index $_)
                     }
-                    $CommandPerDevice += "$Prefix$Parameter$ParameterValueSeparator$($RelevantValues -join $ValueSeparator)"
+                    $ArgumentsPerDevice += "$Prefix$Parameter$ParameterSeparator$($RelevantValues -join $ValueSeparator)"
                 }
-                Else { $CommandPerDevice += "$Prefix$Parameter$ParameterValueSeparator$Values" }
+                Else { $ArgumentsPerDevice += "$Prefix$Parameter$ParameterSeparator$Values" }
             }
-            Else { $CommandPerDevice += "$Prefix$Token" }
+            Else { $ArgumentsPerDevice += "$Prefix$Token" }
         }
-        Else { $CommandPerDevice += $Token }
+        Else { $ArgumentsPerDevice += $Token }
     }
-    $CommandPerDevice
+    $ArgumentsPerDevice
 }
 
 Function Get-ChildItemContent { 
@@ -2873,7 +2868,6 @@ Function Initialize-Autoupdate {
 
     # Display changelog
     Notepad .\ChangeLog.txt
-    # (New-Object -ComObject WScript.Shell).AppActivate((get-process notepad).MainWindowTitle)
 
     If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
         # Kill old instance
