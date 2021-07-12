@@ -8,7 +8,7 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@( 
     [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.006);        MinMemGB = 5; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 3; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(0, 20); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 2; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(0, 20); Arguments = " -platform 1" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 1" }
     # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 1" }
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin dcr -platform 1" }
@@ -18,7 +18,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Sia")    ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "AMD"; MinerSet = 0; Tuning = " -rxboost 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin sc -platform 1" }
 
     [PSCustomObject]@{ Algorithm = @("Ethash");            Fee = @(0.006);        MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 3; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 20); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");      Fee = @(0.006);        MinMemGB = 2; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 20); Arguments = " -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s"); Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin blake2s -platform 2" } # PhoenixMiner-v5.6d may be faster, but I see lower speed at the pool
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Decred") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin dcr -platform 2" }
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Keccak") ; Fee = @(0.006, 0.006); MinMemGB = 5; Type = "NVIDIA"; MinerSet = 0; Tuning = " -strap 1"; WarmupTimes = @(0, 30); Arguments = " -dcoin keccak -platform 2" }
@@ -60,9 +60,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = $_.Arguments
                 $WarmupTimes = $_.WarmupTimes
                 $MinMemGB = $_.MinMemGB
-                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { 
-                    $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB
-                }
+                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB }
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
 
@@ -76,11 +74,11 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
 
                     # Get arguments for active miner devices
-                    # $Arguments = Get-ArgumentsPerDevice -Command $Arguments -ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     If ($Pools.($_.Algorithm[0]).SSL) {
                         $Arguments += " -checkcert 0"
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
+                        If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$|^ProHashing.*$") { 
                             $Arguments += " -esm 3"
                             $Protocol = "stratum+ssl://"
                         }
@@ -89,7 +87,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         }
                     }
                     Else { 
-                        If ($_.Algorithm[0] -eq "Ethash" -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
+                        If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$|^ProHashing.*$") { 
                             $Arguments += " -esm 3"
                             $Protocol = "stratum+tcp://"
                         }
@@ -109,7 +107,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     $Pass = $($Pools.($_.Algorithm[0]).Pass)
-                    If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
 
                     If (-not $_.Intensity) { $WarmupTimes[0] += 15; $WarmupTimes[1] += 15 } # Allow extra seconds for auto-tuning
 

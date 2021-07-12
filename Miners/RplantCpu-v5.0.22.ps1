@@ -56,7 +56,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | ForEach-Object {
 
                 # Get arguments for active miner devices
-                # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+tcps" } Else { $Protocol = "stratum+tcp" }
 

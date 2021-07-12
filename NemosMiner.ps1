@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.56
-Version date:   04 July 2021
+Version:        3.9.9.57
+Version date:   11 July 2021
 #>
 
 [CmdletBinding()]
@@ -248,7 +248,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.56"
+    Version      = [System.Version]"3.9.9.57"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -361,7 +361,7 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
     $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." -Console }
     Write-Message -Level Error "Please install the required runtime modules. Download and extract" -Console
     Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip" -Console
-    Write-Message -Level Error "and run 'install_all.bat'."
+    Write-Message -Level Error "and run 'install_all.bat'." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -431,8 +431,6 @@ If ($Config.AutoStart) {
 Write-Host "Importing modules..." -ForegroundColor Yellow
 Import-Module NetSecurity -ErrorAction SilentlyContinue
 Import-Module Defender -ErrorAction SilentlyContinue
-Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1" -ErrorAction SilentlyContinue
-Import-Module "$env:Windir\System32\WindowsPowerShell\v1.0\Modules\Defender\Defender.psd1" -ErrorAction SilentlyContinue
 
 # Unblock files
 If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
@@ -657,7 +655,7 @@ Function Global:TimerUITick {
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { 
                 If ($Config.UIStyle -ne "Full") { 
                     $Variables.UIStyle = "Full"
-                    Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
+                    Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " } )be shown)" -ForegroundColor Yellow
                 }
             }
 

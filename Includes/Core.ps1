@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.56
-Version date:   04 July 2021
+Version:        3.9.9.57
+Version date:   11 July 2021
 #>
 
 using module .\Include.psm1
@@ -64,7 +64,7 @@ Function Start-Cycle {
         # Do do once every 24hrs or if unable to get data from all sources
         If ($Variables.DAGdata.Updated_Minerstat -lt (Get-Date).AddDays( -1 ) ) { 
             Try { 
-                $Page = Invoke-WebRequest "https://minerstat.com/dag-size-calculator" # PWSH 6+ no longer supports basic parsing -> parse text
+                $Page = Invoke-WebRequest -Uri "https://minerstat.com/dag-size-calculator" -TimeoutSec 5 # PWSH 6+ no longer supports basic parsing -> parse text
                 $Page.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
 
                     $BlockHeight, $Currency, $DAGsize, $Epoch = $null
@@ -168,7 +168,7 @@ Function Start-Cycle {
                 # This will fairly distribute donations to developers
                 # Developers list and wallets is publicly available at: https://nemosminer.com/data/devlist.json & https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json
                 # Try { 
-                #     $DonationData = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 10 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+                #     $DonationData = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/UpDateData/master/devlist.json" -TimeoutSec 5 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
                 # }
                 # Catch { 
                     $DonationData = @(
@@ -291,6 +291,8 @@ Function Start-Cycle {
                 Else { 
                     Write-Message -Level Warn "Cannot read power usage info from registry [Key '$($RegKey)' does not exist - HWiNFO64 not running???] - disabling power usage calculations."
                     $Variables.CalculatePowerCost = $false
+                }
+                If (-not $Variables.CalculatePowerCost) { 
                     $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $false }
                 }
             }
@@ -321,6 +323,9 @@ Function Start-Cycle {
         Else {
             $Variables.UnprofitableAlgorithms = $null
         }
+
+        # Refresh stats
+        Get-Stat | Out-Null
 
         # Load information about the pools
         $Variables.NewPools_Jobs = @()
@@ -389,7 +394,7 @@ Function Start-Cycle {
                 $_.Updated = $Pool.Updated
                 $_.User = $Pool.User
                 $_.Workers = $Pool.Workers
-                If ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW", "UbqHash")) { 
+                If ($_.Algorithm -in @("EtcHash", "Ethash", "EthashLowMem",  "KawPoW", "ProgPoW", "UbqHash")) { 
                     Switch ($_.Algorithm) { 
                         "EtcHash" { $Pool.Currency = "ETC"; $Pool.CoinName = "Ethereum Classic" }
                         "KawPoW"  { $Pool.Currency = "RVN"; $Pool.CoinName = "RavenCoin" }
@@ -400,6 +405,12 @@ Function Start-Cycle {
                         $_.BlockHeight = [Int]($Variables.DAGdata.Currency.($Pool.Currency).BlockHeight + 30000)
                         $_.Epoch = [Int]($Variables.DAGdata.Currency.($Pool.Currency).Epoch + 1)
                         $_.DAGSize = [Int64]($Variables.DAGdata.Currency.($Pool.Currency).DAGsize + [Math]::Pow(2, 23))
+                    }
+                    ElseIf ($_.Algorithm -eq "EthashLowMem") { 
+                        # Dummy values for EthashLowMem
+                        $_.BlockHeight = 0
+                        $_.Epoch = 0
+                        $_.DAGSize = 0
                     }
                     Else {
                         $_.BlockHeight = [Int]($Variables.DAGdata.Currency."*".BlockHeight + 30000)
@@ -526,26 +537,26 @@ Function Start-Cycle {
             }
         }
 
-        If (($Miner.Data).Count) { 
+        If ($Miner.Data.Count) { 
             $Miner.Speed_Live = [Double[]]@()
             $PowerUsage = 0
             # Collect hashrate from miner
             $Miner_Speeds = [Hashtable]@{}
             ForEach ($Algorithm in $Miner.Algorithm) { 
-                $CollectedHashRate = $Miner.CollectHashRate($Algorithm, ($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples)))
+                $CollectedHashRate = $Miner.CollectHashRate($Algorithm, ($Miner.New -and $Miner.Data.Count -lt ($Miner.MinDataSamples)))
                 $Miner.Speed_Live += [Double]($CollectedHashRate[1])
                 $Miner_Speeds.$Algorithm = [Double]($CollectedHashRate[0])
             }
             If ($Miner.ReadPowerUsage) {
                 # Collect power usage from miner
-                $CollectedPowerUsage = $Miner.CollectPowerUsage($Miner.New -and ($Miner.Data).Count -lt ($Miner.MinDataSamples))
+                $CollectedPowerUsage = $Miner.CollectPowerUsage($Miner.New -and $Miner.Data.Count -lt ($Miner.MinDataSamples))
                 $Miner.PowerUsage_Live = [Double]($CollectedPowerUsage[1])
                 $PowerUsage = [Double]($CollectedPowerUsage[0])
             }
         }
 
         # We don't want to store hashrates if we have less than $MinDataSamples
-        If ((@($Miner.Data).Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
+        If (($Miner.Data.Count -ge $Miner.MinDataSamples) -or ($Miner.New -and $Miner.Activated -ge 3)) { 
             $Miner.New = $false
             $Miner.StatEnd = (Get-Date).ToUniversalTime()
             $Miner.Intervals = @($Miner.Intervals | Select-Object -Last 100) # Only keep tha last 100 intervals
@@ -561,7 +572,7 @@ Function Start-Cycle {
                         Write-Message -Level Warn "$($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
-                    $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
+                    $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                     If ($Stat.Updated -gt $Miner.StatStart) { 
                         Write-Message "Saved hash rate ($($Stat_Name): $(($Stat.Live | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                         $Miner.StatStart = $Miner.StatEnd
@@ -580,7 +591,7 @@ Function Start-Cycle {
                         Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($(([Double]$PowerUsage).ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
-                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection (($Miner.Data).Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
+                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                     If ($Stat.Updated -gt $Miner.StatStart) { 
                         Write-Message "Saved power usage ($($Stat_Name): $(([Double]$Stat.Live).ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                     }
@@ -609,7 +620,7 @@ Function Start-Cycle {
         $Variables.Pools | Where-Object Available -EQ $true | Group-Object -Property Algorithm, Name | ForEach-Object { 
             # Suspend algorithm@pool if > 50% of all possible miners for algorithm failed
             $WatchdogCount = ($Variables.WatchdogCount, ($Variables.WatchdogCount * $_.Group.Count / 2) | Measure-Object -Maximum).Maximum + 1
-            If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer).Count -gt $WatchdogCount }) { 
+            If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object { ($_.MinerName | Select-Object -Unique).Count -gt 1 } | Where-Object Kicked -LT $Variables.Timer).Count -gt $WatchdogCount }) { 
                 $PoolsToSuspend | ForEach-Object { 
                     $_.Available = $false
                     $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = [Double]::NaN
@@ -709,10 +720,9 @@ Function Start-Cycle {
     [Miner[]]$Variables.Miners = $Variables.Miners | Where-Object SideIndicator -EQ "=="
 
     [Miner[]]$Variables.Miners | Select-Object | ForEach-Object { 
-        $_.CachedBenchmark = $_.Benchmark
-        $_.CachedMeasurePowerUsage = $_.MeasurePowerusage
         $_.CachedReadPowerUsage = $_.ReadPowerUsage
         $_.CachedShowMinerWindows = $_.ShowMinerWindows
+        $_.CachedDataCollectInterval = $_.DataCollectInterval
         $_.Reason = $null
     }
 
@@ -740,7 +750,7 @@ Function Start-Cycle {
         $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
         If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
         If ($_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true) { 
-            $_.DataCollectInterval = 2
+            $_.DataCollectInterval = 1
         }
         Else { 
             $_.DataCollectInterval = 5
@@ -818,7 +828,7 @@ Function Start-Cycle {
         }
     }
 
-    Write-Message "Found $(($Variables.Miners).Count) miner$(If (($Variables.Miners).Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
+    Write-Message "Found $($Variables.Miners.Count) miner$(If ($Variables.Miners.Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
 
     # Open firewall ports for all miners
     If ($Config.OpenFirewallPorts) { 
@@ -904,7 +914,7 @@ Function Start-Cycle {
     $Variables.MiningPowerUsage = [Double]($Variables.BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
 
     # ProfitabilityThreshold check - OK to run miners?
-    If ((-not $Variables.Rates) -or (-not $Variables.Rates.BTC.($Config.Currency)) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+    If ((-not $Variables.Rates) -or (-not $Variables.Rates.BTC.($Config.Currency)) -or [Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningProfit) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
         $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
     }
     Else { 
@@ -958,8 +968,7 @@ Function Start-Cycle {
 
     # Also restart running miners (stop & start)
     # When miner has been active before AND
-    # Benchmark state changed (to change data poll interval) OR
-    # MeasurePowerUsage state changed OR
+    # DataCollectInterval changed (when switching benchmark / power measurement mode) OR
     # ReadPowerUsage state changed OR
     # Miner windows invisibility changes
     # Miner Priority changes
@@ -969,8 +978,7 @@ Function Start-Cycle {
             $_.Restart = $true
             $_.Data = @()
         }
-        ElseIf ($_.Benchmark -ne $_.CachedBenchmark) { $_.Restart = $true }
-        ElseIf ($_.MeasurePowerUsage -ne $_.CachedMeasurePowerUsage) { $_.Restart = $true }
+        ElseIf ($_.CachedDataCollectInterval -ne $_.DataCollectInterval) { $_.Restart = $true }
         ElseIf ($_.ReadPowerUsage -ne $_.CachedReadPowerUsage) { $_.Restart = $true }
         ElseIf ($_.CachedShowMinerWindows -in @("normal", "minimized")) { If ($_.ShowMinerWindows -eq "hidden" -or $_.CachedShowMinerWindows -eq "hidden" ) { $_.Restart = $true } }
         ElseIf ($_.Type -eq "CPU" -and $_.ProcessPriority -ne $Config.CPUMinerProcessPriority) { $_.Restart = $true }
@@ -1047,6 +1055,7 @@ Function Start-Cycle {
             If ($Miner.Type -ne "CPU" -and $Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { 
                 $Miner.WarmupTimes[1] += 15 # seconds
             }
+
             Write-Message "Starting miner '$($Miner.Name) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
             $Miner.SetStatus([MinerStatus]::Running)
             Write-Message -Level Verbose $Miner.CommandLine
@@ -1137,7 +1146,7 @@ While ($true) {
     # - all benchmarking miners have collected enough samples
     # - WarmupTimes[1] is reached (no readout from miner)
     $InitialRunningMiners = $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
-    $Interval = ($InitialRunningMiners.DataCollectInterval | Measure-Object -Maximum).Maximum
+    $Interval = ($InitialRunningMiners.DataCollectInterval | Measure-Object -Minimum).Minimum
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
     While ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners) {
@@ -1160,13 +1169,13 @@ While ($true) {
                 $Sample = @($Samples) | Select-Object -Last 1
                 If ($Sample) { $Miner.LastSample = $Sample }
 
-                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[1])) { 
+                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds(($Miner.WarmupTimes | Measure-Object -Maximum).Maximum)) { 
                     # We must have data samples by now
                     If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
-                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTimes[1]) seconds."
+                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $(($Miner.WarmupTimes | Measure-Object -Maximum).Maximum) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTimes[1])) seconds"
+                        $Miner.StatusMessage = "Has not updated data for $(($Miner.WarmupTimes | Measure-Object -Maximum).Maximum)) seconds"
                         Break
                     }
                     ElseIf ($Miner.LastSample.Date -lt (Get-Date).ToUniversalTime().AddSeconds( -15 )) { 
@@ -1188,7 +1197,7 @@ While ($true) {
                             $Miner.StatusMessage = "$(If ($Miner.Benchmark -EQ $true -or $Miner.MeasurePowerUsage -EQ $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                             $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
                         }
-                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($(($Miner.Data).Count) sample$(If (($Miner.Data).Count -ne 1) { "s"} ))"
+                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) sample$(If ($Miner.Data.Count -ne 1) { "s"} ))"
                     }
                     If ($Miner.AllowedBadShareRatio -gt 0) { 
                         $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
@@ -1214,7 +1223,7 @@ While ($true) {
             $Message = "Miner failed. "
             Break
         }
-        ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { ($_.Data).Count -lt (($Config.MinDataSamples, ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
+        ElseIf ($BenchmarkingOrMeasuringMiners -and (-not ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Data.Count -lt (($Config.MinDataSamples, ($BenchmarkingOrMeasuringMiners.MinDataSamples | Measure-Object -Minimum).Minimum) | Measure-Object -Maximum).Maximum }))) { 
             # Enough samples collected for this loop, exit loop immediately
             $Message = "All$(If ($BenchmarkingOrMeasuringMiners | Where-Object Benchmark -EQ $true) { " benchmarking" })$(If ($BenchmarkingOrMeasuringMiners | Where-Object { $_.Benchmark -eq $true -and $_.MeasurePowerUsage -eq $true }) { " and" } )$(If ($BenchmarkingOrMeasuringMiners | Where-Object MeasurePowerUsage -EQ $true) { " power usage measuring" }) miners have collected enough samples for this cycle. "
             Break

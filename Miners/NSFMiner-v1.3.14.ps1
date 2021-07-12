@@ -24,16 +24,14 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
         $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object Type -eq $_.Type | Where-Object { $Pools.($_.Algorithm).Host } | ForEach-Object { 
             $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
             $MinMemGB = $_.MinMemGB
-            If ($Pools.($_.Algorithm).DAGSize -gt 0) { 
-                $MinMemGB = (3GB, ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) | Measure-Object -Maximum).Maximum / 1GB # Minimum 3GB required
-            }
+            If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB }
 
             If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
                 $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                 # Get arguments for active miner devices
-                # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @() -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @() -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$|^ZergPool(|Coins)") { $Protocol = "-P stratum2+tcp" }
                 ElseIf ($Pools.($_.Algorithm).Name -like "HiveON*") { $Protocol = "-P stratum1+tcp" }
@@ -43,10 +41,8 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
 
                 If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $WarmupTimes[1] += 30 }
 
-                If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Arguments += ",l=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
-
                 $Pass = $($Pools.($_.Algorithm).Pass)
-                If ($Pools.($_.Algorithm).Name -match "$ProHashing.*" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$(($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB)" }
+                If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name

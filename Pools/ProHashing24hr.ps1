@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        3.9.9.56
-Version date:   04 July 2021
+Version:        3.9.9.57
+Version date:   11 July 2021
 #>
 
 
@@ -58,13 +58,12 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
         $CoinName = ""
         $Currency = ""
-        $Pass = @("a=$Algorithm", "n=$($PoolsConfig.$Name_Norm.WorkerName)")
-
-        If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS") { $Pass += "m=PPLNS" }
+        $Pass = @("a=$Algorithm", "n=$($PoolsConfig.$Name_Norm.WorkerName)", "o=$($PoolsConfig.$Name_Norm.UserName)")
 
         $Currency = $Currencies | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Currencies.$_.Algo -eq $Algorithm }
         If ($Currency.Count -eq 1) { 
             If ($CoinName = $Currencies.$Currency.name) { $Pass += "c=$CoinName" }
+            If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS") { $Pass += "m=PPLNS" }
         }
         Else { 
             $Currency = ""

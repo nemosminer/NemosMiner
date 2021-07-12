@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LogFile.ps1
-Version:        3.9.9.56
-Version date:   04 July 2021
+Version:        3.9.9.57
+Version date:   11 July 2021
 #>
 
 using module ..\Include.psm1
@@ -31,7 +31,7 @@ class NoAPI : Miner {
 
         # This will 'fake' has rate data, VertMiner currently has no API to retrieve live stat information
         $StaticHashrates = Get-Content "$(Split-Path $this.Path)\Hashrates.json" -ErrorAction Stop | ConvertFrom-Json | Select-Object
-        $HashRate_Value = $StaticHashrates.($this.DeviceName -join ',')
+        $HashRate_Value = $StaticHashrates.($this.Devices.Name -join ',')
 
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }

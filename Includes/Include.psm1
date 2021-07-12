@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.56
-Version date:   04 July 2021
+Version:        3.9.9.57
+Version date:   11 July 2021
 #>
 
 # For SetWindowText
@@ -89,9 +89,9 @@ Class Pool {
 
     [String]$Name
     [String]$Algorithm
-    [Int]$BlockHeight = 0
-    [Int64]$DAGsize = 0
-    [Int]$Epoch = 0
+    [Nullable[Int]]$BlockHeight = $null
+    [Nullable[Int64]]$DAGsize = $null
+    [Nullable[Int]]$Epoch = $null
     [String]$Currency = ""
     [String]$CoinName = ""
     [String]$Host
@@ -105,7 +105,7 @@ Class Pool {
     [Double]$EarningsAdjustmentFactor = 1
     [Double]$EstimateFactor = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
-    [System.Nullable[Int]]$Workers
+    [Nullable[Int]]$Workers
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
     [String[]]$Reason = @("")
@@ -211,8 +211,8 @@ Class Miner {
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
 
     [Double]$AllowedBadShareRatio = 0
-    [String]$MinerUri = ""
-    [String]$LogFile = ""
+    [String]$MinerUri
+    [String]$LogFile
 
     [String[]]GetProcessNames() { 
         Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf -ErrorAction Ignore)).BaseName)
@@ -559,7 +559,7 @@ Class Miner {
 Function Get-DefaultAlgorithm {
 
     # Try { 
-    #     $PoolsAlgos = (Invoke-WebRequest "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
+    #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
     #     $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
     # }
     # Catch { 
@@ -1857,7 +1857,9 @@ Function Invoke-TcpRequest {
         [Parameter(Mandatory = $true)]
         [String]$Request, 
         [Parameter(Mandatory = $true)]
-        [Int]$Timeout # seconds
+        [Int]$Timeout, # seconds
+        [Parameter(Mandatory = $false)]
+        [Bool]$ReadToEnd = $false
     )
 
     Try { 
@@ -1870,7 +1872,7 @@ Function Invoke-TcpRequest {
         $Writer.AutoFlush = $true
 
         $Writer.WriteLine($Request)
-        $Response = $Reader.ReadLine()
+        If ($ReadToEnd) { $Response = $Reader.ReadToEnd() } Else { $Response = $Reader.ReadLine() }
     }
     Catch { $Error.Remove($error[$Error.Count - 1]) }
     Finally { 
@@ -2445,9 +2447,7 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
         [Parameter(Mandatory = $false)]
-        [String]$LogFile,
-        [Parameter(Mandatory = $false)]
-        [String]$WindowTitle = ""
+        [String]$LogFile
     )
 
     $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
@@ -2596,7 +2596,7 @@ Function Expand-WebRequest {
 
     If (Test-Path $FileName -PathType Leaf) { Remove-Item $FileName }
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest $Uri -OutFile $FileName -UseBasicParsing
+    Invoke-WebRequest -Uri $Uri -OutFile $FileName -TimeoutSec 5 -UseBasicParsing
 
     If (".msi", ".exe" -contains ([IO.FileInfo](Split-Path $Uri -Leaf)).Extension) { 
         Start-Process $FileName "-qb" -Wait
@@ -2664,8 +2664,8 @@ Function Get-NMVersion {
 
     # Check if new version is available
     Try { 
-        # $UpdateVersion = Invoke-WebRequest "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        $UpdateVersion = Invoke-WebRequest "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        # $UpdateVersion = Invoke-WebRequest -Uri "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
     Catch { 
     }
@@ -2713,7 +2713,7 @@ Function Initialize-Autoupdate {
     $UpdateFileName = ".\$($UpdateVersion.Product)-$($UpdateVersion.Version)"
     "Downloading new version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
     Try { 
-        Invoke-WebRequest $UpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+        Invoke-WebRequest -Uri $UpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
     }
     Catch { 
         "Downloading failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error

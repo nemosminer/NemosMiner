@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        3.9.9.56
-Version date:   04 July 2021
+Version:        3.9.9.57
+Version date:   11 July 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -78,7 +78,7 @@ If ($Wallet) {
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
-                Host                     = [String]"$($Region).$($HostSuffix)" -replace "^us\."
+                Host                     = "$($Region).$($HostSuffix)" -replace "^us\."
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$Wallet
                 Pass                     = "$($Config.PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"

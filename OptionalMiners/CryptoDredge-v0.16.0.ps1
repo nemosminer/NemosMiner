@@ -10,7 +10,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=exosis --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=dedal --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo=hmq1725 --intensity 8" } # CryptoDredge v0.25.1 is fastest
-    [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo=neoscrypt --intensity 6 " } # Cryptodredge v0.25.1 is fastest
+    [PSCustomObject]@{ Algorithm = "NeoScrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo=neoscrypt --intensity 6" } # Cryptodredge v0.25.1 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo=phi --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=phi2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=pipe --intensity 8" }
@@ -32,7 +32,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                     # Get arguments for active miner devices
-                    # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "intensity") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

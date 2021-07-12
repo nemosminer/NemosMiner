@@ -21,7 +21,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | ForEach-Object {
 
                 # Get arguments for active miner devices
-                # $_.Arguments= Get-ArgumentsPerDevice -Command $_.Arguments-ExcludeParameters @("algo") -DeviceIDs $Devices.$DeviceEnumerator
+                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
                 If ($Pools.($_.Algorithm).Name -match "NiceHash*|MPH*") { $AlgorithmDefinitions.$_ += " --nicehash" } 
 

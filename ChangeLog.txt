@@ -4,6 +4,28 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.57 11.07.2021
+========================================
+
+Enhancements:
+- Core / Set-Stat: Improve self-healing if measured value if out of tolerance
+- Core / DataReader processes: Reduce memory consumption
+- EthashLowMem miners: Enable algorithm for 2GB cards
+- SRBMiner-v0.7.7: Enable Ethash on MiningPoolHub(Coins)
+- WebGUI: Optimize utilities.json, code cleanup
+- WebGUI / Earnings Chart: Added 'Total' to tooltips
+
+Fixes:
+- NanoMiner crash if multiple instances are launched in sequence (https://github.com/nanopool/nanominer/issues/259); temp fix
+
+Miner updates:
+- GMiner-v2.60
+- lolMiner-v1.31
+- MiniZ-v1.8y3
+- NanoMiner-v3.3.7
+- Trex-v0.21.3
+
+
 Changelog NemosMiner 3.9.9.56 04.07.2021
 ========================================
 
@@ -24,9 +46,10 @@ Miner updates:
 Changelog NemosMiner 3.9.9.55 30.06.2021
 ========================================
 
-Core:
-- Fix saving stats if stored value was unreal for 4 times in a row
-- Fix Randomx* algorithm names
+Enhancements: 
+  - Core:
+    - Fix saving stats if stored value was unreal for 4 times in a row
+    - Fix Randomx* algorithm names
 
 Miner updates:
 - NanoMiner-v3.3.6
