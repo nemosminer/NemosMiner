@@ -216,7 +216,7 @@
               <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all miners per algorithm and per device (incl. those in UnprofitableAlgorithms.txt)</option>
             </select>
           </div>
-          <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
+          <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
             <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=64>
           </div>
           <br>
@@ -432,8 +432,11 @@
           $('<input/>', { type: 'checkbox', id: ('device-' + value.Name).toLowerCase(), value: value.Name }).appendTo(devicescontainer);
           $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model + ' (Id ' + value.Id + ')'), style: "margin-left:4px" }).appendTo(devicescontainer);
           $('<br>').appendTo(devicescontainer);
-          if (value.State == 0) { document.getElementById(('device-' + value.Name).toLowerCase()).checked = true };
-          if (value.State == 2) { document.getElementById(('device-' + value.Name).toLowerCase()).disabled = true };
+          if (value.State == 0) document.getElementById(('device-' + value.Name).toLowerCase()).checked = true;
+          if (value.State == 2) { 
+            document.getElementById(('device-' + value.Name).toLowerCase()).disabled = true;
+            document.getElementById(('device-' + value.Name).toLowerCase()).checked = false;
+          }
         })
       }
     });
@@ -646,7 +649,7 @@
     document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
     document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
     document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
-    document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. { "00:00":0.26; "12:00":0.3 } means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
+    document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
     document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
 
     if (config.ShowPowerCost) {
@@ -900,14 +903,10 @@
         config.ExcludeDeviceName = [];
 
         config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
-        if ((document.getElementById('WorkerName').value) == "") { 
-          config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
-        };
+        if ((document.getElementById('WorkerName').value) == "") config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
 
         config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value.toString().trim()
-        if ((document.getElementById('MiningPoolHubUserName').value) == "") { 
-          config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value = 'Nemo';
-        };
+        if ((document.getElementById('MiningPoolHubUserName').value) == "") config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value = 'Nemo';
         config.MiningPoolHubAPIKey = document.getElementById('MiningPoolHubAPIKey').value = document.getElementById('MiningPoolHubAPIKey').value.toString().trim();
 
         config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
@@ -956,20 +955,14 @@
         });
 
         $.each(poolnames, function (key, value) {
-          if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) {
-            (config.PoolName).push(value);
-          };
+          if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) (config.PoolName).push(value);
         });
         $.each(regions, function (key, value) {
-          if (document.getElementById('region-' + value.toLowerCase()).checked == true) {
-            config.Region = value;
-          };
+          if (document.getElementById('region-' + value.toLowerCase()).checked == true) config.Region = value;
         });
         config.UseAnycast = document.getElementById('UseAnycast').checked;
         $.each(devices, function (key, value) {
-          if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false) {
-            (config.ExcludeDeviceName).push(value.Name);
-          };
+          if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) (config.ExcludeDeviceName).push(value.Name);
         });
 
         config.IncludeRegularMiners = document.getElementById('RegularMiners').checked;
@@ -983,15 +976,9 @@
         config.MinerSet = parseInt(document.getElementById('MinerSet').value);
         config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).toString();
 
-        if (document.getElementById('ShowMinerWindowsHidden').checked) {
-          config.ShowMinerWindows = "hidden" 
-        }
-        if (document.getElementById('ShowMinerWindowsMinimized').checked) {
-          config.ShowMinerWindows = "minimized" 
-        }
-        if (document.getElementById('ShowMinerWindowsNormal').checked) {
-          config.ShowMinerWindows = "normal" 
-        }
+        if (document.getElementById('ShowMinerWindowsHidden').checked) config.ShowMinerWindows = "hidden";
+        if (document.getElementById('ShowMinerWindowsMinimized').checked) config.ShowMinerWindows = "minimized";
+        if (document.getElementById('ShowMinerWindowsNormal').checked) config.ShowMinerWindows = "normal";
         config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
 
         config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
@@ -1000,27 +987,21 @@
         config.UseMinerTweaks = document.getElementById('UseMinerTweaks').checked;
 
         config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
-        if (document.getElementById('UIStyle').checked) { 
-          config.UIStyle = "Full"
-        } else { 
-          config.UIStyle = "Light"
-        };
+        if (document.getElementById('UIStyle').checked) config.UIStyle = "Full";
+        else config.UIStyle = "Light";
         config.ShowEarning = document.getElementById('ShowEarning').checked;
         config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
 
         config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
         document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[','').replace(']','');
-        if (document.getElementById('PowerPricekWh').value.toString().trim() === "") {
-          document.getElementById('PowerPricekWh').value = '{"00:00":0.0}'
-        };
-        if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) {
-          config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
-        } else {
+        if (document.getElementById('PowerPricekWh').value.toString().trim() === "") document.getElementById('PowerPricekWh').value = '{"00:00":0.0}';
+        if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
+        else {
           $('.modal-title').text('Invalid Power Price data');
           $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
           $('#myModal').modal({show:true});
           return false;
-        };
+        }
         config.IdlePowerUsageW = parseInt(document.getElementById('IdlePowerUsageW').value);
         config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
         config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
@@ -1062,15 +1043,16 @@
 
   // NiceHashWalletIsInternal
   $(document.getElementById('NiceHashWallet')).change(function(event) {
+    if (document.getElementById('NiceHashWallet').value == '') document.getElementById('NiceHashWalletIsInternal').checked = false;
     document.getElementById('NiceHashWalletIsInternal').disabled = !((document.getElementById('NiceHashWallet')).value.match(/^[0-9A-Za-z]{34}$/));
   });
 
   // Dual AND single algorithm mining cannot be disabled at the same time
   $(document.getElementById('DisableDualAlgoMining')).click(function(event) {
-    if (document.getElementById('DisableDualAlgoMining').checked) { document.getElementById('DisableSingleAlgoMining').checked = false }
+    if (document.getElementById('DisableDualAlgoMining').checked) document.getElementById('DisableSingleAlgoMining').checked = false;
   });
   $(document.getElementById('DisableSingleAlgoMining')).click(function(event) {
-    if (document.getElementById('DisableSingleAlgoMining').checked) { document.getElementById('DisableDualAlgoMining').checked = false }
+    if (document.getElementById('DisableSingleAlgoMining').checked) document.getElementById('DisableDualAlgoMining').checked = false;
   });
 
   // StartPaused
@@ -1135,22 +1117,14 @@
   // Only one pool variant can be checked
   const Pools = document.getElementById('Pools');
   $(Pools).click(function(event) {
-    if ((event.target).value) {
-      var PoolName = (event.target).id.toLowerCase();
-    };
+    if ((event.target).value) var PoolName = (event.target).id.toLowerCase();
     var basePoolName = (PoolName.replace('24hr', '')).replace('coins', '');
     var pool = document.getElementById(basePoolName);
-    if (pool && PoolName != pool.id) {
-      pool.checked = false;
-    };
+    if (pool && PoolName != pool.id) pool.checked = false;
     var pool = document.getElementById(basePoolName + '24hr');
-    if (pool && PoolName != pool.id) {
-      pool.checked = false;
-    };
+    if (pool && PoolName != pool.id)  pool.checked = false;
     var pool = document.getElementById(basePoolName + 'coins');
-    if (pool && PoolName != pool.id) {
-      pool.checked = false;
-    };
+    if (pool && PoolName != pool.id) pool.checked = false;
     if (PoolName == 'pool-miningpoolhub' || PoolName == 'pool-miningpoolhubcoins') {
       document.getElementById('MiningPoolHubUserName').disabled = !(document.getElementById(PoolName).checked);
       document.getElementById('MiningPoolHubAPIKey').disabled = !(document.getElementById(PoolName).checked);
