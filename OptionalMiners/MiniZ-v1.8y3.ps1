@@ -1,7 +1,5 @@
 using module ..\Includes\Include.psm1
 
-# Return
-
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.8y3_win-x64.zip"
@@ -23,7 +21,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=Kawpow --pers=RAVENCOINKAWPOW --ocX" }
     [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=ProgPow --pers=veil --ocX" }
     [PSCustomObject]@{ Algorithm = "Veriblock";    MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=ProgPowZ --pers=zano --ocX" }
-    [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 015; Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
+    [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
