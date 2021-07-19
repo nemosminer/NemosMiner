@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.57
-Version date:   11 July 2021
+Version:        3.9.9.58
+Version date:   19 July 2021
 #>
 
 using module .\Include.psm1
@@ -30,14 +30,14 @@ Function Start-Cycle {
 
     Write-Message "Started new cycle."
 
+
+    # Always get the latest config
+    Read-Config -ConfigFile $Variables.ConfigFile
     # Prepare devices
     $EnabledDevices = $Variables.Devices | Where-Object { $_.State -EQ [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
     # For GPUs set type AMD or NVIDIA
     $EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
     If (-not $Config.MinerInstancePerDeviceModel) { $EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } } # Remove Model information from devices -> will create only one miner instance
-
-    # Always get the latest config
-    Read-Config -ConfigFile $Variables.ConfigFile
 
     # Skip stuff if previous cycle was shorter than half of what it should
     If (-not $Variables.Timer -or ($Variables.Timer.AddSeconds([Int]($Config.Interval / 2))) -lt (Get-Date).ToUniversalTime()) { 
@@ -837,11 +837,11 @@ Function Start-Cycle {
             $ProgressPreference = "SilentlyContinue"
             If ((Get-Command "Get-MpComputerStatus" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore)) { 
                 If (Get-Command "Get-NetFirewallRule" -ErrorAction Ignore) { 
-                    $MinerFirewalls = Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program
-                    If (@($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ "=>") { 
-                        Start-Process (@{desktop = "powershell"; core = "pwsh" }.$PSEdition) ("-Command Import-Module '$env:Windir\System32\WindowsPowerShell\v1.0\Modules\NetSecurity\NetSecurity.psd1'; ('$(@($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Compare-Object @($MinerFirewalls) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object {New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by NemosMiner $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner'}" -replace '"', '\"') -Verb runAs
+                    $MinerFirewallRules = Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program
+                    If (Compare-Object @($MinerFirewallRules) @($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ "=>") { 
+                        Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$(Compare-Object @($MinerFirewallRules) @($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object {New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by NemosMiner $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner'}" -replace '"', '\"') -Verb runAs
                     }
-                    Remove-Variable MinerFirewalls
+                    Remove-Variable MinerFirewallRules
                 }
             }
             $ProgressPreference = $ProgressPreferenceBackup
@@ -1219,7 +1219,6 @@ While ($true) {
 
         If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
             # A miner crashed and we're not benchmarking, end the loop now
-            # $Variables.EndLoop = $true
             $Message = "Miner failed. "
             Break
         }
@@ -1230,7 +1229,6 @@ While ($true) {
         }
         ElseIf ($InitialRunningMiners -and (-not $RunningMiners)) { 
             # No more running miners, end the loop now
-            # $Variables.EndLoop = $true
             $Message = "No more running miners. "
             Break
         }

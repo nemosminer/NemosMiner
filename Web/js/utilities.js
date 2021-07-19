@@ -149,7 +149,7 @@ function formatDate(value) {
 function formatWatt(value) {
   if (value == 0) return parseFloat(0).toFixed(2) + ' W';
   if (value > 0) return parseFloat(value).toFixed(2) + ' W';
-  return '';
+  return '-';
 };
 
 function formatPercent(value) {
