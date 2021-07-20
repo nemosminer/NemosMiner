@@ -542,6 +542,8 @@ Function Get-Chart {
             $EarningsChart2.Series[$Pool].ToolTip = "#SERIESNAME: #VALY $($Config.Currency)"
             $Datasource | Where-Object { $_.Pool -eq $Pool } | ForEach-Object { $EarningsChart2.Series[$Pool].Points.addxy( $_.Pool , ("{0:N3}" -f $_.DailyEarnings)) | Out-Null }
         }
+
+        Remove-Variable Colors, Datasource -ErrorAction Ignore
     }
 }
 

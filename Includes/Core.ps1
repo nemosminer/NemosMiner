@@ -680,7 +680,7 @@ Function Start-Cycle {
                     Path            = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
                     Algorithm       = [String[]]$_.Content.Algorithm
                     Workers         = [Worker[]]$Workers
-                    Arguments       = $(If ($_.Content.Arguments -isnot [String]) { [String]($_.Content.Arguments | ConvertTo-Json -Depth 10 -Compress) } Else { [String]$_.Content.Arguments })
+                    Arguments       = [String]$_.Content.Arguments
                     DeviceName      = [String[]]$_.Content.DeviceName
                     Devices         = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceName)
                     Type            = [String]$_.Content.Type

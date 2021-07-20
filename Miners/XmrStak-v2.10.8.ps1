@@ -93,7 +93,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $PlatformThreadsConfigFileName = "$((@("HwConfig") + @($_.Type) + @($_.Algorithm) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt"
                     $PoolFileName = "$([System.Web.HttpUtility]::UrlEncode((@("PoolConf") + @($($Pools.($_.Algorithm).Name -replace "-Coins" -replace "24hr")) + @($_.Algorithm) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) | Select-Object) -join '-')).txt"
 
-                    $Parameters = [PSCustomObject]@{ 
+                    $Arguments = [PSCustomObject]@{ 
                         PoolFile = [PSCustomObject]@{ 
                             FileName = $PoolFileName
                             Content  = [PSCustomObject]@{ 
@@ -142,14 +142,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Threads = 1
                     }
 
-                    If ($Miner_Devices.PlatformId) { $Parameters.ConfigFile.Content | Add-Member "platform_index" (($Miner_Devices | Select-Object PlatformId -Unique).PlatformId) }
+                    If ($Miner_Devices.PlatformId) { $Arguments.ConfigFile.Content | Add-Member "platform_index" (($Miner_Devices | Select-Object PlatformId -Unique).PlatformId) }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name
                         DeviceName  = $Miner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path
-                        Arguments   = $Parameters
+                        Arguments   = $Arguments | ConvertTo-Json -Depth 10 -Compress
                         Algorithm   = $_.Algorithm
                         API         = "Fireice"
                         Port        = $MinerAPIPort
