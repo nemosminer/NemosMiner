@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\miner.exe"
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.60/gminer_2_60_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.61/gminer_2_61_windows64.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -66,10 +66,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     If ($Config.UseMinerTweaks -eq $true) { 
+                        # Apply tuning parameters
                         $Arguments += $_.Tuning
                     }
 
                     If ($Pools.($_.Algorithm).SSL) { $Arguments += " --ssl true --ssl_verification false" }
+
+                    If ($Config.Wallets.ETH) { 
+                        # Contest ETC address (if ETH wallet is specified in config)
+                        $Arguments += " --contest_wallet $($Config.Wallets.ETH)"
+                    }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name
