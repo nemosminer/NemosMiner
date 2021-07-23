@@ -15,7 +15,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri beam") } # NBMiner-v36.0 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckaroo29m") }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.61 is fastest
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.62 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri aeternity") }
