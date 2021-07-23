@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
-$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.8.3/teamredminer-v0.8.3-win.zip"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.8.4/teamredminer-v0.8.4-win.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
