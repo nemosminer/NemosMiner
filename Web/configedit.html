@@ -181,7 +181,10 @@
           <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
             <input type="checkbox" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write Balances Tracker Log
           </div>
-        </div>
+          <div title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances&#10;NemosMiner will mine at the pool&#10;the day before pool would clear the balance&#10;(one cycle only, even if it is not the most profitable pool).&#10;&#10;Requires 'Poll Pools for Balances & Earnings' > 0">
+            <input type="checkbox" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep Pool Balances alive
+          </div>
+          <br>
         <br>
       </td>
 
@@ -540,7 +543,7 @@
 
     if (config.Algorithm) document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
 
-    if (parseInt(config.Interval)) document.getElementById('Interval').value = parseInt(config.Interval);
+    document.getElementById('Interval').value = parseInt(config.Interval);
 
     if (Number.isInteger(config.Donate)) document.getElementById('Donate').value = parseInt(config.Donate);
 
@@ -556,14 +559,18 @@
     if (config.MineWhenIdle) document.getElementById('MineWhenIdle').checked = true;
     else document.getElementById('IdleSec').disabled = true;
 
-    if (parseInt(config.IdleSec)) document.getElementById('IdleSec').value = parseInt(config.IdleSec);
+    document.getElementById('IdleSec').value = parseInt(config.IdleSec);
     if (config.StartPaused) document.getElementById('StartPaused').checked = true;
     if (config.StartGUIMinimized) document.getElementById('StartGUIMinimized').checked = true;
     if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
     if (config.Watchdog) document.getElementById('Watchdog').checked = true;
-    if (parseInt(config.BalancesTrackerPollInterval)) document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
-    if (parseInt(config.BalancesTrackerPollInterval) == 0) document.getElementById('BalancesTrackerLog').disabled = true;
+    document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
+    if (parseInt(config.BalancesTrackerPollInterval) == 0) {
+      document.getElementById('BalancesTrackerLog').disabled = true;
+      document.getElementById('BalancesKeepAlive').disabled = true;
+    }
     if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
+    if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
 
     $.each(config.PoolName, function (key, value) {
       document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
@@ -621,56 +628,26 @@
     document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
     document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
 
-    if (config.ShowPowerCost) {
-      document.getElementById('ShowPowerCost').checked = true;
-    };
-    if (config.ShowPowerUsage) {
-      document.getElementById('ShowPowerUsage').checked = true;
-    };
-    if (config.ShowProfit) {
-      document.getElementById('ShowProfit').checked = true;
-    };
-    if (config.ShowProfitBias) {
-      document.getElementById('ShowProfitBias').checked = true;
-    };
-    if (parseFloat(config.UnrealMinerEarningFactor)) {
-      document.getElementById('UnrealMinerEarningFactor').value = parseFloat(config.UnrealMinerEarningFactor);
-    };
-    if (parseFloat(config.UnrealEarningFactor)) {
-      document.getElementById('UnrealEarningFactor').value = parseFloat(config.UnrealEarningFactor);
-    };
-    if (parseInt(config.MinWorker)) {
-      document.getElementById('MinWorker').value = parseInt(config.MinWorker);
-    };
-    if (parseFloat(config.AllowedBadShareRatio)) {
-      document.getElementById('AllowedBadShareRatio').value = parseFloat(config.AllowedBadShareRatio) * 100;
-    };
+    if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
+    if (config.ShowPowerUsage) document.getElementById('ShowPowerUsage').checked = true;
+    if (config.ShowProfit) document.getElementById('ShowProfit').checked = true;
+    if (config.ShowProfitBias) document.getElementById('ShowProfitBias').checked = true;
+    document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
+    document.getElementById('UnrealMinerEarningFactor').value = parseFloat(config.UnrealMinerEarningFactor);
+    document.getElementById('MinWorker').value = parseInt(config.MinWorker);
+    document.getElementById('AllowedBadShareRatio').value = parseFloat(config.AllowedBadShareRatio) * 100;
 
-    if (config.EstimateCorrection) {
-      document.getElementById('EstimateCorrection').checked = true;
-    };
-    if (config.IgnoreMinerFee) {
-      document.getElementById('IgnoreMinerFee').checked = true;
-    };
-    if (config.IgnorePoolFee) {
-      document.getElementById('IgnorePoolFee').checked = true;
-    };
+    if (config.EstimateCorrection) document.getElementById('EstimateCorrection').checked = true;
+    if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
+    if (config.IgnorePoolFee) document.getElementById('IgnorePoolFee').checked = true;
 
-    if (parseFloat(config.EarningsAdjustmentFactor)) {
-      document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor) * 100;
-    };
+    document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor) * 100;
 
-    if (parseFloat(config.RunningMinerGainPct)) {
-      document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
-    };
+    document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
 
-    if (parseInt(config.MinDataSamples)) {
-      document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
-    };
+    document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
 
-    if (parseInt(config.WarmupTimes[1])) {
-      document.getElementById('WarmupTimes').value = parseInt(config.WarmupTimes[1]);
-    };
+    document.getElementById('WarmupTimes').value = parseInt(config.WarmupTimes[1]);
 
     document.getElementById('WorkerName').value = config.WorkerName.trim();
 
@@ -918,6 +895,7 @@
 
         config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
         config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
+        config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
 
         $.each(config.Wallets, function (key, value) {
           config.Wallets[key] = document.getElementById('Wallet' + key).value.toString();
@@ -1042,6 +1020,12 @@
       $('.modal-body').html('Please help support the great team behind NemosMiner by leaving mining donations turned on.&#10;&#10;Thank you!');
       $('#myModal').modal({ show: true });
     };
+  });
+
+  // Poll Pools for Balances & Earnings
+  $(document.getElementById('BalancesTrackerPollInterval')).change(function (event) {
+    document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+    document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
   });
 
   // CalculatePowerCost
