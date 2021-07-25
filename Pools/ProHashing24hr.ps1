@@ -33,9 +33,10 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$"
+$PoolConfig = $PoolsConfig.$Name_Norm
 
-If ($PoolsConfig.$Name_Norm.UserName) { 
+If ($PoolConfig.UserName) { 
     Try {
         $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec $Config.PoolTimeout -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
         $Currencies = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/currencies" -TimeoutSec $Config.PoolTimeout -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
@@ -58,12 +59,12 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
         $CoinName = ""
         $Currency = ""
-        $Pass = @("a=$Algorithm", "n=$($PoolsConfig.$Name_Norm.WorkerName)", "o=$($PoolsConfig.$Name_Norm.UserName)")
+        $Pass = @("a=$Algorithm", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
 
         $Currency = $Currencies | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Currencies.$_.Algo -eq $Algorithm }
         If ($Currency.Count -eq 1) { 
             If ($CoinName = $Currencies.$Currency.name) { $Pass += "c=$CoinName" }
-            If ($PoolsConfig.$Name_Norm.MiningMode -eq "PPLNS") { $Pass += "m=PPLNS" }
+            If ($PoolConfig.MiningMode -eq "PPLNS") { $Pass += "m=PPLNS" }
         }
         Else { 
             $Currency = ""
@@ -81,10 +82,10 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
-                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = "$(If ($Region -eq "eu") {"eu."})$PoolHost"
                 Port                     = [UInt16]$PoolPort
-                User                     = [String]$PoolsConfig.$Name_Norm.UserName
+                User                     = [String]$PoolConfig.UserName
                 Pass                     = [String]($Pass -join ',')
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false

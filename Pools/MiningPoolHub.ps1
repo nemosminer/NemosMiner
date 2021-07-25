@@ -33,9 +33,10 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$"
+$PoolConfig = $PoolsConfig.$Name_Norm
 
-If ($PoolsConfig.$Name_Norm.UserName) { 
+If ($PoolConfig.UserName) { 
     Try { 
         $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
@@ -43,10 +44,9 @@ If ($PoolsConfig.$Name_Norm.UserName) {
 
     If (-not $Request) { Return }
 
-    $Fee = [Decimal]0.009
     $Divisor = 1000000000
 
-    $User = "$($PoolsConfig.$Name_Norm.UserName).$($($PoolsConfig.$Name_Norm.WorkerName -replace "^ID="))"
+    $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
 
     $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
@@ -72,14 +72,14 @@ If ($PoolsConfig.$Name_Norm.UserName) {
                 Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
-                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port                     = [UInt16]$Current.algo_switch_port
                 User                     = [String]$User
                 Pass                     = "x"
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
-                Fee                      = [Decimal]$Fee
+                Fee                      = [Decimal]$PoolConfig.Fee
                 EstimateFactor           = [Decimal]1
             }
         }

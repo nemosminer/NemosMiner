@@ -32,7 +32,8 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$"
+$PoolConfig = $PoolsConfig.$Name_Norm
 
 If ($Config.Wallets) { 
     Try { 
@@ -66,10 +67,10 @@ If ($Config.Wallets) {
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
                     MarginOfError            = [Double]$Stat.Week_Fluctuation
-                    EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Host                     = [String]$Server.host
                     Port                     = [UInt16]$Server.ports[0]
-                    User                     = "$($Config.Wallets.$Currency).$($PoolsConfig.$Name_Norm.WorkerName)"
+                    User                     = "$($Config.Wallets.$Currency).$($PoolConfig.WorkerName)"
                     Pass                     = "x"
                     Region                   = [String]$Region_Norm
                     SSL                      = [Bool]$false

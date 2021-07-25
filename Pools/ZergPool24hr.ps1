@@ -32,15 +32,16 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr" -replace "Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$"
+$PoolConfig = $PoolsConfig.$Name_Norm
 
 $PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
-$Wallet = $PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
+$Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
 
-    $PayoutThreshold = $PoolsConfig.$Name_Norm.PayoutThreshold.$PayoutCurrency
-    If (-not $PayoutThreshold -and $PoolsConfig.$Name_Norm.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolsConfig.$Name_Norm.PayoutThreshold.mBTC / 1000 }
+    $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
+    If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
@@ -79,11 +80,11 @@ If ($Wallet) {
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
-                EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = [String]$PoolHost
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$Wallet
-                Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
+                Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
                 Region                   = "N/A (Anycast)"
                 SSL                      = [Bool]$false
                 Fee                      = $Fee
@@ -101,11 +102,11 @@ If ($Wallet) {
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
                     MarginOfError            = [Double]$Stat.Week_Fluctuation
-                    EarningsAdjustmentFactor = [Double]$PoolsConfig.$Name_Norm.EarningsAdjustmentFactor
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Host                     = [String]$PoolHost
                     Port                     = [UInt16]$PoolPort
                     User                     = [String]$Wallet
-                    Pass                     = "$($PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
+                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
                     Region                   = [String]$Region_Norm
                     SSL                      = [Bool]$false
                     Fee                      = $Fee
