@@ -10,7 +10,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Autolykos2";           Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = "Chukwa2";              Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # SRBMinerMulti-v0.7.7 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # SRBMinerMulti-v0.7.8 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
@@ -23,9 +23,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo=cuckarood29_grin" } # 2GB is not enough
     [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 0);   Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.31 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " --algo=etchash" } # PhoenixMiner-v5.6d is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = 0.01;  MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(50, 50); Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algo=etchash" } # PhoenixMiner-v5.6d is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = 0.01;  MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(50, 0);  Arguments = " --algo=ethash" } # PhoenixMiner-v5.6d is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = 0.02;  MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(0, 60);  Arguments = " --algo=kawpow" } # Wildrig-v0.28.3 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = 0.03;  MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(0, 0);   Arguments = " --algo=lyra2z" } # XmRig-v6.12.2 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo=lyra2rev3" }
