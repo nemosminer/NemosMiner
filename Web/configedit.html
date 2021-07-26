@@ -564,7 +564,9 @@
     if (config.StartGUIMinimized) document.getElementById('StartGUIMinimized').checked = true;
     if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
     if (config.Watchdog) document.getElementById('Watchdog').checked = true;
-    document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
+
+    if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
+    else document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
     if (parseInt(config.BalancesTrackerPollInterval) == 0) {
       document.getElementById('BalancesTrackerLog').disabled = true;
       document.getElementById('BalancesKeepAlive').disabled = true;
@@ -1026,6 +1028,7 @@
   $(document.getElementById('BalancesTrackerPollInterval')).change(function (event) {
     if (document.getElementById('BalancesTrackerPollInterval').value == 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
     if (document.getElementById('BalancesTrackerPollInterval').value == 1) document.getElementById('BalancesTrackerPollInterval').value = 10;
+    if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
     document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
     document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
   });
