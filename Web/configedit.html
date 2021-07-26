@@ -175,7 +175,7 @@
         <br>
 
         <div
-          title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;Note: This will also disable pool balances summary in the Web GUI dashboard and API&#10;(min=1; max=60; [Default: 15, 0 to disable])"> Poll Pools for Balances & Earnings every
+          title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;Note: This will also disable pool balances summary in the Web GUI dashboard and API&#10;(min=10; max=60; [Default: 15, 0 to disable])"> Poll Pools for Balances & Earnings every
           <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60
             value=15> minutes
           <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
@@ -1024,6 +1024,8 @@
 
   // Poll Pools for Balances & Earnings
   $(document.getElementById('BalancesTrackerPollInterval')).change(function (event) {
+    if (document.getElementById('BalancesTrackerPollInterval').value == 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
+    if (document.getElementById('BalancesTrackerPollInterval').value == 1) document.getElementById('BalancesTrackerPollInterval').value = 10;
     document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
     document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
   });
