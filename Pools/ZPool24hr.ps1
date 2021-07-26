@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool24hr.ps1
-Version:        3.9.9.58
-Version date:   19 July 2021
+Version:        3.9.9.59
+Version date:   26 July 2021
 #>
 
 using module ..\Includes\Include.psm1

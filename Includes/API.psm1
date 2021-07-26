@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.58
-Version date:   19 July 2021
+Version:        3.9.9.59
+Version date:   26 July 2021
 #>
 
 Function Start-APIServer { 
@@ -582,21 +582,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/balances" { 
-                        # Format dates for powershell 5.1 compatiblity
-                        $Balances = $Variables.Balances | ConvertTo-Json | ConvertFrom-Json
-                        If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { 
-                            $Balances | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-                                Try {
-                                    $Balances.$_.EstimatedPayDate = ([DateTime]($Balances.$_.EstimatedPayDate)).ToString("u")
-                                }
-                                Catch { }
-                                Try { 
-                                    $Balances.$_.LastUpdated = ([DateTime]($Balances.$_.LastUpdated)).ToString("u")
-                                }
-                                Catch { }
-                            }
-                        }
-                        $Data = ConvertTo-Json -Depth 10 ($Balances | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.Balances | Select-Object)
                         Break
                     }
                     "/balancedata" { 

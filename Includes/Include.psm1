@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.58
-Version date:   19 July 2021
+Version:        3.9.9.59
+Version date:   26 July 2021
 #>
 
 # For SetWindowText
@@ -109,7 +109,7 @@ Class Pool {
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
     [String[]]$Reason = @("")
-    [Boolean]$Best
+    [Boolean]$Best = $false
 
     # Stats
     [Double]$Price
@@ -336,7 +336,7 @@ Class Miner {
     hidden StopMining() { 
         $this.EndTime = (Get-Date).ToUniversalTime()
         If ($this.Status -eq [MinerStatus]::Running) { 
-            $this.StatusMessage = "Stopping..." 
+            $this.StatusMessage = "Stopping..."
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         }
         If ($this.ProcessId) { 
@@ -568,7 +568,7 @@ Function Get-DefaultAlgorithm {
         }
     # }
     If ($PoolsAlgos) { 
-        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in ($Config.PoolName -replace "24hr$" -replace "Coins$") }
+        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in ($Config.PoolName -replace "24hr$|Coins$") }
         Return  $PoolsAlgos.Value | Sort-Object -Unique
     }
     Return
@@ -800,7 +800,6 @@ Function Start-BalancesTracker {
     }
 }
 
-
 Function Stop-BalancesTracker {
  
     If ($Variables.BalancesTrackerRunspace) { 
@@ -950,29 +949,22 @@ Function Write-Message {
 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
-                $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 500)
                 $Variables.LabelStatus.Lines += $Message
+
+                # Keep only 250 lines, more lines impact performance
+                $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 250)
+
                 $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
                 $Variables.LabelStatus.ScrollToCaret()
                 $Variables.LabelStatus.Refresh()
             }
 
             Switch ($Level) { 
-                'Error' { 
-                    Write-Host $Message -ForegroundColor "Red"
-                }
-                'Warn' { 
-                    Write-Host $Message -ForegroundColor "Magenta"
-                }
-                'Info' { 
-                    Write-Host $Message -ForegroundColor "White"
-                }
-                'Verbose' { 
-                    Write-Host $Message -ForegroundColor "Yello"
-                }
-                'Debug' { 
-                    Write-Host $Message -ForegroundColor "Blue"
-                }
+                "Error"   { Write-Host $Message -ForegroundColor "Red" }
+                "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
+                "Info"    { Write-Host $Message -ForegroundColor "White" }
+                "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
+                "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
             }
         }
         If ($Variables.LogFile -and ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile))) { 
@@ -980,23 +972,15 @@ Function Write-Message {
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteMessage")
 
-            Switch ($Level) { 
-                'Error' { 
-                    $LevelText = 'ERROR:'
+            $LevelText = $(
+                Switch ($Level) { 
+                    "Error"   { "ERROR:" }
+                    "Warn"    { "WARNING:" }
+                    "Info"    { "INFO:" }
+                    "Verbose" { "VERBOSE:" }
+                    "Debug"   { "DEBUG:" }
                 }
-                'Warn' { 
-                    $LevelText = 'WARNING:'
-                }
-                'Info' { 
-                    $LevelText = 'INFO:'
-                }
-                'Verbose' { 
-                    $LevelText = 'VERBOSE:'
-                }
-                'Debug' { 
-                    $LevelText = 'DEBUG:'
-                }
-            }
+            )
 
             # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
             If ($Mutex.WaitOne(1000)) { 
@@ -1337,7 +1321,7 @@ Function Read-Config {
 
     # Add pool config to config (in-memory only)
     $PoolsConfig = [Ordered]@{ }
-    @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$" -replace "Coins$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
+    @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$|Coins$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         $PoolConfig = [PSCustomObject]@{ }
         If ($Variables.PoolsConfigData.$PoolName) { $PoolConfig = $Variables.PoolsConfigData.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
@@ -1346,6 +1330,7 @@ Function Read-Config {
         If (-not $PoolConfig.PayoutThreshold -and $PoolData.$PoolName.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
         If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig | Add-Member EarningsAdjustmentFactor $Config.EarningsAdjustmentFactor -Force }
         If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
+        If (-not $PoolConfig.BalancesKeepAlive)  { $PoolConfig | Add-Member BalancesKeepAlive $PoolData.$PoolName.BalancesKeepAlive -Force }
         Switch ($PoolName) { 
             "HiveON" { 
                 If (-not $PoolConfig.PayoutCurrencies) { 
@@ -1688,7 +1673,7 @@ Function Remove-Stat {
 
 Function Get-ArgumentsPerDevice { 
 
-    # filters the arguments to contain only argument values for present devices
+    # filters the arguments to contain only argument values for selected devices
     # if an argument has multiple values, only the values for the available devices are included
     # arguments with a single value are valid for all devices and remain untouched
     # excluded arguments are passed unmodified
@@ -1750,8 +1735,7 @@ Function Get-ChildItemContent {
         [String]$Priority
     )
 
-    $DefaultPriority = ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass
-    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority } Else { $Priority = $DefaultPriority }
+    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority } Else { $Priority = ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass }
 
     $ScriptBlock = { 
         Param(
@@ -2478,12 +2462,13 @@ public static class Kernel32
 }
 "@
 
-        Switch ($ShowMinerWindows) {
-            "hidden" { $ShowWindow = "0x0000" } # SW_HIDE
-            "normal" { $ShowWindow = "0x0001" } # SW_SHOWNORMAL
-            Default  { $ShowWindow = "0x0007" } # SW_SHOWMINNOACTIVE
-        }
-
+        $ShowWindow = $(
+            Switch ($ShowMinerWindows) {
+                "hidden" { "0x0000" } # SW_HIDE
+                "normal" { "0x0001" } # SW_SHOWNORMAL
+                Default  { "0x0007" } # SW_SHOWMINNOACTIVE
+            }
+        )
         # Set local environment
         $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
 
@@ -2615,7 +2600,7 @@ Function Get-Algorithm {
         $Global:Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
     }
 
-    $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-' -replace '_' -replace '/' -replace ' ')
+    $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-|_|/| ')
 
     If ($Global:Algorithms.$Algorithm) { $Global:Algorithms.$Algorithm }
     Else { $Algorithm }
@@ -2765,7 +2750,7 @@ Function Initialize-Autoupdate {
     # Copy files
     "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
-        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.', '')
+        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.')
         If ($_.Attributes -eq "Directory") { 
             If (-not (Test-Path -Path $DestPath -PathType Container)) { 
                 New-Item -Path $DestPath -ItemType Directory -Force

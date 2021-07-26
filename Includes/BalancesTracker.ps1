@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.58
-Version date:   19 July 2021
+Version:        3.9.9.59
+Version date:   26 July 2021
 #>
 
 # Start the log
@@ -39,7 +39,7 @@ While ($true) {
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
         # Get pools to track
-        $PoolsToTrack = @(Get-ChildItem ".\Balances\*.ps1" -File).BaseName -replace "24hr$" -replace "Coins$" | Sort-Object -Unique
+        $PoolsToTrack = @(Get-ChildItem ".\Balances\*.ps1" -File).BaseName -replace "24hr$|Coins$" | Sort-Object -Unique
 
         # Only on first run
         If (-not $Now) { 
@@ -303,6 +303,7 @@ While ($true) {
                 PayoutThreshold         = [Double]$PayoutThreshold
                 Payout                  = [Double]$PoolBalanceObject.Payout
                 Uri                     = $PoolBalanceObject.Url
+                LastEarnings            = If ($Growth24 -gt 0) { $PoolBalanceObject.DateTime } ElseIf ($PoolBalanceObject.LastEarnings) { $PoolBalanceObject.LastEarnings } Else { $PoolBalanceObjects[0].DateTime }
             }
 
             If ($Config.BalancesTrackerLog -eq $true) { 
@@ -344,14 +345,15 @@ While ($true) {
                 }
             }
 
-            Remove-Variable PoolTodayEarning -ErrorAction Ignore
-            Remove-Variable EarningsObject -ErrorAction Ignore
+            Remove-Variable PoolTodayEarning, EarningsObject -ErrorAction Ignore
         }
 
         # Always keep pools sorted, even when new pools were added
         $Variables.Balances = [Ordered]@{ }
+        $Variables.PoolsLastEarnings = [Ordered]@{ }
         $Balances.Keys | Sort-Object | ForEach-Object { 
             $Variables.Balances.$_ = $Balances.$_
+            $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = $Balances.$_.LastEarnings
         }
 
         Try { 
