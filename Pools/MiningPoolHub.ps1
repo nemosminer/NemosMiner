@@ -52,7 +52,7 @@ If ($PoolConfig.UserName) {
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.current_mining_coin -replace "-" -replace " ")
+        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.current_mining_coin -replace "-| ")
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
