@@ -2750,7 +2750,7 @@ Function Initialize-Autoupdate {
     # Copy files
     "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
-        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.')
+        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.', '')
         If ($_.Attributes -eq "Directory") { 
             If (-not (Test-Path -Path $DestPath -PathType Container)) { 
                 New-Item -Path $DestPath -ItemType Directory -Force
