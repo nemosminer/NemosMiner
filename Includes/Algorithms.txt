@@ -24,6 +24,7 @@
   "chukwav2": "ArgonChukwaV2",
   "conflux": "Octopus",
   "cortex": "Cuckaroo30CTX",
+  "cosacoin": "Cosa",
   "cpupower": "CpuPower",
   "cryptonight7": "CryptonightV1",
   "cryptonight8": "CryptonightV2",
