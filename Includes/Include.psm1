@@ -1189,7 +1189,7 @@ Function Update-Monitoring {
             Write-Message -Level Verbose "Retrieved status for workers with ID '$($Config.MonitoringUser)'."
         }
         Catch { 
-            Write-Message -Level Warn "Monitoring: Unable to retrieve worker data from $($Config.MonitoringServer)."
+            Write-Message -Level Warn "Monitoring: Unable to retrieve worker data from '$($Config.MonitoringServer)'."
         }
     }
 }
