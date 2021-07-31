@@ -72,10 +72,13 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     If ($Pools.($_.Algorithm).SSL) { $Arguments += " --ssl true --ssl_verification false" }
 
-                    If ($Config.Wallets.ETH) { 
-                        # Contest ETC address (if ETH wallet is specified in config)
-                        $Arguments += " --contest_wallet $($Config.Wallets.ETH)"
-                    }
+                    # If ($Config.Wallets.ETH) { 
+                    #     # Contest ETC address (if ETH wallet is specified in config)
+                    #     $Arguments += " --contest_wallet $($Config.Wallets.ETH)"
+                    # }
+                    # Else { 
+                    #     $Arguments += " --contest_wallet 0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"
+                    # }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name
