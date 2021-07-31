@@ -16,12 +16,12 @@ ElseIf ($Miner_Devices.CpuFeatures -match "sse2")   { $Path = ".\Bin\$($Name)\cp
 Else { Return }
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo hmq1725" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(0, 0); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo sha3d" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo scrypt(N,1,1)" }
-    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo verthash" }
+    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(0, 0);  Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo sha3d" }
+    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo scrypt(N,1,1)" }
+    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo verthash" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -32,24 +32,26 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
         $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
         $AlgorithmDefinitions | ForEach-Object {
+            $Arguments = $_.Arguments
+            $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
 
             If ($_.Algorithm -eq "VertHash") { 
                 If (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf) { 
-                    $_.Arguments += " --data-file ..\..\Cache\VertHash.dat"
+                    $Arguments += " --data-file ..\..\Cache\VertHash.dat"
                 }
                 ElseIf (Test-Path -Path ".\VertHash.dat" -PathType Leaf) { 
                     New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null
                     Move-Item -Path ".\VertHash.dat" -Destination ".\Cache" -ErrorAction Ignore
-                    $_.Arguments += " --data-file ..\..\Cache\VertHash.dat"
+                    $Arguments += " --data-file ..\..\Cache\VertHash.dat"
                 }
                 Else { 
-                    $_.Arguments += " --verify"
-                    $_.WarmupTime[1] += 420 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
+                    $Arguments += " --verify"
+                    $WarmupTimes[0] += 480; $WarmupTimes[1] += 480 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
                 }
             }
 
             # Get arguments for active miner devices
-            # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
+            # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
             If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
@@ -58,12 +60,12 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 DeviceName  = $Miner_Devices.Name
                 Type        = "CPU"
                 Path        = $Path
-                Arguments   = ("$($_.Arguments) --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+                Arguments   = ("$Arguments --url $($Protocol)://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --quiet --threads $($Miner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
                 Algorithm   = $_.Algorithm
                 API         = "Ccminer"
                 Port        = $MinerAPIPort
                 URI         = $Uri
-                WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
+                WarmupTimes = $WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
             }
         }
     }

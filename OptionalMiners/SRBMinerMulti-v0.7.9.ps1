@@ -108,12 +108,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Arguments = $_.Arguments
                 $MinMemGB = $_.MinMemGB
+                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
+
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB }
 
                 If ($_.Algorithm -eq "VertHash") { 
                     If (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf )) { 
                         If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
-                        $_.WarmupTime[1] += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
+                        $WarmupTimes[1] += 45 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
                     }
                 }
 
@@ -153,7 +155,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI         = $Uri
                         Fee         = $_.Fee # Dev fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)/stats"
-                        WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
+                        WarmupTimes = $WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
                     }
                 }
             }

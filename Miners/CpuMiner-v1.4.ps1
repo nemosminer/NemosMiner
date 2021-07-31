@@ -6,7 +6,7 @@ $Uri = "https://github.com/fireworm71/veriumMiner/releases/download/v1.4/cpumine
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "ScryptN2"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = "" } # Empty command
+    [PSCustomObject]@{ Algorithm = "ScryptN2"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = "" } # Empty command
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

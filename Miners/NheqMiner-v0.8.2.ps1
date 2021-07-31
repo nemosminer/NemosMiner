@@ -5,9 +5,7 @@ $Path = ".\Bin\$($Name)\nheqminer.exe"
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/0.8.2/nheqminer082.7z"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " -v" } # Does not work
-)
-
+    [PSCustomObject]@{ Algorithm = "VerusHash"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " -v" }
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) {
 
     If ($Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")) { 
