@@ -46,7 +46,7 @@ If ($Config.Wallets) {
     $Request.cryptoCurrencies | Where-Object { $Config.Wallets.($_.Name) } | ForEach-Object { 
 
         $Currency = $_.name
-        $CoinName = $_.title
+        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.title) -replace "coin$", "Coin"
         $Algorithm_Norm = Get-Algorithm $Currency
 
         $Divisor = $_.profitPerPower
