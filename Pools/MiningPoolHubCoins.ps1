@@ -51,27 +51,21 @@ If ($PoolConfig.UserName) {
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ")
+        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ") -replace "$Algorithm$" -replace ".+groestl$" -replace "cash$", "Cash" -replace "gold$", "Gold" -replace "coin$", "Coin"
         $Fee = [Decimal]($_.Fee / 100)
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
-        $PoolRegions = @("Asia", "EU", "US")
-        If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia", "US") } # temp fix
-        # If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia") } # temp fix
-
-        ForEach ($Region in $PoolRegions) { 
-            $Region_Norm = Get-Region $Region
-
+        If ($Algorithm_Norm -in @("VertHash")) {
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]($CoinName -ireplace "$Algorithm$" -ireplace ".+groestl$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold")
+                CoinName                 = [String]$CoinName
                 Currency                 = [String]$Current.symbol
                 Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+                Host                     = [String]$Current.host
                 Port                     = [UInt16]$Current.port
                 User                     = [String]$User
                 Pass                     = "x"
@@ -79,6 +73,34 @@ If ($PoolConfig.UserName) {
                 SSL                      = [Bool]$false
                 Fee                      = $Fee
                 EstimateFactor           = [Decimal]1
+            }
+        }
+        Else { 
+
+            $PoolRegions = @("Asia", "EU", "US")
+            If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia", "US") } # temp fix
+            # If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia") } # temp fix
+    
+            ForEach ($Region in $PoolRegions) { 
+                $Region_Norm = Get-Region $Region
+
+                [PSCustomObject]@{ 
+                    Algorithm                = [String]$Algorithm_Norm
+                    CoinName                 = [String]$CoinName
+                    Currency                 = [String]$Current.symbol
+                    Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
+                    StablePrice              = [Double]$Stat.Week
+                    MarginOfError            = [Double]$Stat.Week_Fluctuation
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+                    Port                     = [UInt16]$Current.port
+                    User                     = [String]$User
+                    Pass                     = "x"
+                    Region                   = [String]$Region_Norm
+                    SSL                      = [Bool]$false
+                    Fee                      = $Fee
+                    EstimateFactor           = [Decimal]1
+                }
             }
         }
     }
