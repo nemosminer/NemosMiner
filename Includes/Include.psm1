@@ -185,9 +185,6 @@ Class Miner {
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
 
-    # [Runspace]$GetMinerDataRunspace = $null
-    # [PowerShell]$GetMinerDataPowerShell = $null
-
     [Int32]$ProcessId = 0
     [Int]$ProcessPriority = -1
 
@@ -202,7 +199,6 @@ Class Miner {
     [Int]$CachedDataCollectInterval = 5 # Seconds
     [String]$ShowMinerWindows = "minimized"
     [String]$CachedShowMinerWindows
-    [String[]]$Environment = @()
     [Int]$MinDataSamples # for safe hashrate values
     [PSCustomObject]$LastSample # last hash rate sample
     [Int[]]$WarmupTimes # First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
@@ -219,7 +215,7 @@ Class Miner {
     }
 
     [String]GetCommandLineParameters() { 
-        If ($this.Arguments -match "^{.+}$") { 
+        If (Test-Json $this.Arguments -ErrorAction Ignore) { 
             Return ($this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
         }
         Else { 
@@ -245,7 +241,7 @@ Class Miner {
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
 
-        If ($this.Arguments -match "^{.+}$") { 
+        If (Test-Json $this.Arguments -ErrorAction Ignore) { 
             $this.CreateConfigFiles()
         }
 
@@ -398,7 +394,7 @@ Class Miner {
 
     [TimeSpan]GetActiveTime() { 
         If ($this.BeginTime -and $this.EndTime) { 
-            Return $this.Active + ($this.EndTime - $this.BeginTime)
+            Return $this.Active + $this.EndTime - $this.BeginTime
         }
         ElseIf ($this.BeginTime) { 
             Return $this.Active + ((Get-Date) - $this.BeginTime)
@@ -453,7 +449,7 @@ Class Miner {
                 Return @(0, $HashRates_Average)
             }
             Else { 
-                Return @(($HashRates_Average * (1 + ($HashRates_Variance / 2))), $HashRates_Average)
+                Return @(($HashRates_Average * (1 + $HashRates_Variance / 2)), $HashRates_Average)
             }
         }
         Else { 
@@ -479,7 +475,7 @@ Class Miner {
                 Return @(0, $PowerUsages_Average)
             }
             Else { 
-                Return @(($PowerUsages_Average * (1 + ($PowerUsages_Variance / 2))), $PowerUsages_Average)
+                Return @(($PowerUsages_Average * (1 + $PowerUsages_Variance / 2)), $PowerUsages_Average)
             }
         }
         Else { 
@@ -568,7 +564,7 @@ Function Get-DefaultAlgorithm {
         }
     # }
     If ($PoolsAlgos) { 
-        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object { $_.Name -in ($Config.PoolName -replace "24hr$|Coins$") }
+        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @($Config.PoolName -replace "24hr$|Coins$")
         Return  $PoolsAlgos.Value | Sort-Object -Unique
     }
     Return
@@ -580,7 +576,7 @@ Function Get-CommandLineParameters {
         [String]$Arguments
     )
 
-    If ($Arguments -match "^{.+}$") { 
+    If (Test-Json $Arguments -ErrorAction Ignore) { 
         Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
     }
     Else { 
@@ -745,7 +741,7 @@ Function Start-BrainJob {
     $Config.PoolName | Select-Object | ForEach-Object { 
         If (-not $Variables.BrainJobs.$_) { 
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
-            $BrainName = (".\Brains\" + $_ + "\Brains.ps1")
+            $BrainName = ".\Brains\$($_)\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
                 $Variables.BrainJobs.$_ = (Start-Job -FilePath $BrainName -ArgumentList @($BrainPath))
                 If ($Variables.BrainJobs.$_.State -EQ "Running") { 
@@ -2572,7 +2568,7 @@ Function Expand-WebRequest {
         $Path_New = Split-Path $Path
 
         If (Test-Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
-        Start-Process ".\Utils\7z" "x `"$([IO.Path]::GetFullPath($FileName))`" -o`"$([IO.Path]::GetFullPath($Path_Old))`" -y -spe" -Wait -WindowStyle Minimized
+        Start-Process ".\Utils\7z" "x `"$([IO.Path]::GetFullPath($FileName))`" -o`"$([IO.Path]::GetFullPath($Path_Old))`" -y -spe" -Wait -WindowStyle Hidden
 
         If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
 
@@ -2750,7 +2746,7 @@ Function Initialize-Autoupdate {
     # Copy files
     "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
-        $DestPath = $_.FullName.Replace($UpdateFilePath -replace '^\.', '')
+        $DestPath = $_.FullName.Replace($UpdateFilePath -replace "^\.", "")
         If ($_.Attributes -eq "Directory") { 
             If (-not (Test-Path -Path $DestPath -PathType Container)) { 
                 New-Item -Path $DestPath -ItemType Directory -Force
@@ -2961,9 +2957,9 @@ Function Get-DAGsize {
     )
 
     Switch ($Coin) {
-        "ETC" { If ($Block -ge 11700000 ) { $Epoch_Length = 60000 } Else { $Epoch_Length = 30000 } }
-        "RVN" { $Epoch_Length = 7500 }
-        default { $Epoch_Length = 30000 }
+        "ETC"   { $Epoch_Length = If ($Block -ge 11700000 ) { 60000 } Else { 30000 } }
+        "RVN"   { $Epoch_Length = 7500 }
+        Default { $Epoch_Length = 30000 }
     }
 
     $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
@@ -3013,7 +3009,7 @@ Function Out-DataTable {
     )
 
     Begin { 
-        $dt = New-Object Data.datatable
+        $DT = New-Object Data.datatable
         $First = $true
     }
     Process { 
