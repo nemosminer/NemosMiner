@@ -55,7 +55,7 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
                     Port        = $MinerAPIPort
                     URI         = $Uri
                     MinerUri    = "http://localhost:$($MinerAPIPort)"
-                    WarmupTimes = $WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
+                    WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
                 }
             }
         }

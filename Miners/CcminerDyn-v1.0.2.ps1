@@ -6,7 +6,7 @@ $Uri = "https://github.com/nemosminer/Dynamic-GPU-Miner-Nvidia/releases/download
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo argon2d --statsavg 1" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo argon2d --statsavg 1" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -38,7 +38,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API         = "Ccminer"
                         Port        = $MinerAPIPort
                         URI         = $Uri
-                        WarmupTimes = $_.WarmupTimes # First value: extra time (in seconds) until first hash rate sample is valid, second value: extra time (in seconds) until miner must send valid sample
+                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
                     }
                 }
             }
