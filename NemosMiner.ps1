@@ -776,96 +776,22 @@ Function Global:TimerUITick {
 
             # Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
-                @{ Label = "Miner"; Expression = { $_.Name } }, 
-                @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm } }
+                @{ Label = "Miner"; Expression = { $_.Name } }
+                @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & "} }
+                If (($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )))  { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
+                @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
+                If ($Config.ShowEarning) { @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value $_.Earning -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
+                If ($Config.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value $_.Earning_Bias -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
+                If ($Config.CalculatePowerCost -and $Config.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
+                If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" } }
+                If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value $_.Profit -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
+                If ($Config.CalculatePowerCost -and $Config.ShowProfitBias -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value $_.Profit_Bias -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
+                If ($Config.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" } }
+                @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
+                If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
+                If ($Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency | Where-object { $_ } ) { $_.Workers.Pool.Currency } } } }
+                If ($Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName | Where-object { $_ } ) { $_.Workers.Pool.CoinName } } } }
             )
-            If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { 
-                $Miner_Table.AddRange(
-                    @( <#Miner fees#>
-                        @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
-                    )
-                )
-            }
-            $Miner_Table.AddRange(
-                @( <#Miner speed#>
-                    @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
-                )
-            )
-            If ($Config.ShowEarning) { 
-                $Miner_Table.AddRange(
-                    @( <#Miner Earning#>
-                        @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value $_.Earning -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    )
-                )
-            }
-            If ($Config.ShowEarningBias) { 
-                $Miner_Table.AddRange(
-                    @( <#Miner EarningsBias#>
-                        @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value $_.Earning_Bias -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    )
-                )
-            }
-            If ($Config.CalculatePowerCost -and $Config.ShowPowerUsage) { 
-                $Miner_Table.AddRange(
-                    @( <#Power Usage#>
-                        @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" }
-                    )
-                )
-            }
-            If ($Config.CalculatePowerCost -and $Config.ShowPowerCost -and $Variables.MiningPowerCost) { 
-                $Miner_Table.AddRange(
-                    @( <#PowerCost#>
-                        @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" }
-                    )
-                )
-            }
-            If ($Config.CalculatePowerCost -and $Config.ShowProfit -and $Variables.MiningPowerCost) { 
-                $Miner_Table.AddRange(
-                    @( <#Mining Profit#>
-                        @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value $_.Profit -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    )
-                )
-            }
-            If ($Config.CalculatePowerCost -and $Config.ShowProfitBias -and $Variables.MiningPowerCost) { 
-                $Miner_Table.AddRange(
-                    @( <#Mining ProfitBias#>
-                        @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value $_.Profit_Bias -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" }
-                    )
-                )
-            }
-            If ($Config.ShowAccuracy) { 
-                $Miner_Table.AddRange(
-                    @( <#Accuracy#>
-                        @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" }
-                    )
-                )
-            }
-            $Miner_Table.AddRange(
-                @( <#Pools#>
-                    @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name | ForEach-Object { $_ } } }
-                )
-            )
-            If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { 
-                $Miner_Table.AddRange(
-                    @( <#Show pool fees#>
-                        @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } }
-                    )
-                )
-            }
-            If ($Variables.Miners.Workers.Pool.Currency) { 
-                $Miner_Table.AddRange(
-                    @( <#Currency#>
-                        @{ Label = "Currency"; Expression = { $_.Workers.Pool.Currency | ForEach-Object { [String]$_ } } }
-                    )
-                )
-            }
-            If ($Variables.Miners.Workers.Pool.CoinName) { 
-                $Miner_Table.AddRange(
-                    @( <#CoinName#>
-                        @{ Label = "CoinName"; Expression = { $_.Workers.Pool.CoinName | ForEach-Object { [String]$_ } } }
-                    )
-                )
-            }
             If ($Variables.CalculatePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | Sort-Object Name | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
@@ -905,7 +831,7 @@ Function Global:TimerUITick {
 
             If ($Variables.UIStyle -eq "Full") { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
-                    Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -eq 1) { ":" } Else { "s: $($ProcessesIdle.Count)" })"
+                    Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -eq 1) { ":" } Else { "s: $($ProcessesIdle.Count)" }) in the past 24 hrs"
                     $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table -Wrap (
                         @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" }, 
@@ -917,7 +843,7 @@ Function Global:TimerUITick {
                 }
 
                 If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
-                    Write-Host -ForegroundColor Red "Failed miner$(If ($ProcessesFailed.Count -eq 1) { ":" } Else { "s: $($ProcessesFailed.Count)" })"
+                    Write-Host -ForegroundColor Red "Failed miner$(If ($ProcessesFailed.Count -eq 1) { ":" } Else { "s: $($ProcessesFailed.Count)" }) in the past 24 hrs"
                     $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
                         @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }, 
                         @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" }, 
