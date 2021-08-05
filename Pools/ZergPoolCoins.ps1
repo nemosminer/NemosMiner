@@ -45,7 +45,7 @@ If ($Wallet) {
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpoolcoins\zergpoolcoins.json") | ConvertFrom-Json
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\zergpool\zergpool.json") | ConvertFrom-Json
         $CoinsRequest = Invoke-RestMethod -Uri "http://api.zergpool.com:8080/api/currencies" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
@@ -82,9 +82,9 @@ If ($Wallet) {
             $Fee = $Request.$_.Fees / 100
             $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-            $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($TopCoin.Symbol)_Profit" -Value ([Double]($Request.$_.$PriceField / $Divisor))
+            $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($TopCoin.Symbol)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-            Try { $EstimateFactor = ($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h }
+            Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
             Catch { $EstimateFactor = 1 }
 
             If ($Config.UseAnycast -or $PoolConfig.UseAnycast) { 

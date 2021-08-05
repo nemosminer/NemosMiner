@@ -69,7 +69,7 @@ If ($PoolConfig.UserName) {
         Else { 
             $Currency = ""
         }
-    
+
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         ForEach ($Region in $PoolRegions) { 
