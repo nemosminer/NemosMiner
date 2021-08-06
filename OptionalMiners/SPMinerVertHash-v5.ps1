@@ -6,8 +6,8 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/SPMinerVertHash/SP
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VertHash"; MinMemGB = 2; Type = "AMD";    MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --verthash-data ..\..\Cache\VertHash.dat  --cl-devices" }
-    [PSCustomObject]@{ Algorithm = "VertHash"; MinMemGB = 2; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --verthash-data ..\..\Cache\VertHash.dat  --cu-devices" }
+    [PSCustomObject]@{ Algorithm = "VertHash"; MinMemGB = 2; Type = "AMD";    MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --verthash-data ..\..\Cache\VertHash.dat --cl-devices" }
+    [PSCustomObject]@{ Algorithm = "VertHash"; MinMemGB = 2; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --verthash-data ..\..\Cache\VertHash.dat --cu-devices" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
