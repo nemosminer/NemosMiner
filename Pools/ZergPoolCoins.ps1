@@ -76,7 +76,7 @@ If ($Wallet) {
         # Find best coin for algo
         If ($TopCoin = $AllMiningCoins | Where-Object { ($_.noautotrade -eq 0) -and ((Get-Algorithm $_.algo) -eq $Algorithm_Norm) } | Sort-Object -Property @{Expression = { $_.estimate / ($DivisorMultiplier * [Double]$_.mbtc_mh_factor) } } -Descending | Select-Object -first 1) { 
 
-            If ($Topcoin.symbol -eq "ETC") { $Algorithm_Norm = "EtcHash" }
+            If ($TopCoin.symbol -eq "ETC") { $Algorithm_Norm = "EtcHash" }
             If ($TopCoin.Name -eq "BitcoinInterest") { $Algorithm_Norm = "BitcoinInterest" } # Temp fix
 
             $Fee = $Request.$_.Fees / 100
@@ -92,7 +92,6 @@ If ($Wallet) {
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^groestl$", "GroestlCoin" -ireplace "^myriad", "MyriadCoin")
                     Currency                 = [String]$TopCoin.Symbol
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
@@ -117,7 +116,8 @@ If ($Wallet) {
 
                     [PSCustomObject]@{ 
                         Algorithm                = [String]$Algorithm_Norm
-                        CoinName                 = [String]($Topcoin.Name -ireplace "$Algorithm$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^groestl$", "GroestlCoin" -ireplace "^myriad", "MyriadCoin")
+                        # CoinName                 = [String]($TopCoin.Name -ireplace "$Algorithm$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^groestl$", "GroestlCoin" -ireplace "^myriad", "MyriadCoin")
+                        # CoinName                 = [String]$TopCoin.Name
                         Currency                 = [String]$TopCoin.Symbol
                         Price                    = [Double]$Stat.Live
                         StablePrice              = [Double]$Stat.Week

@@ -18,6 +18,7 @@
       <S N="TransferFile">.\ahashpool.json</S>
       <S N="PoolName">ahashpool</S>
       <S N="PoolStatusUri">https://www.ahashpool.com/api/status</S>
+      <S N="PoolCurrenciesUri">http://www.ahashpool.com/api/currencies</S>
     </MS>
   </Obj>
 </Objs>

@@ -46,23 +46,21 @@ If ($Config.Wallets) {
     $Request.cryptoCurrencies | Where-Object { $Config.Wallets.($_.Name) } | ForEach-Object { 
 
         $Currency = $_.name
-        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.title) -replace "coin$", "Coin"
         $Algorithm_Norm = Get-Algorithm $Currency
 
-        $Divisor = $_.profitPerPower
+        $Divisor = [Double]$_.profitPerPower
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]($Request.stats.$Currency.expectedReward24H * $Variables.Rates.$Currency.BTC / $Divisor))
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.stats.$Currency.expectedReward24H * $Variables.Rates.$Currency.BTC / $Divisor)
 
-        Try { $EstimateFactor = $Request.stats.$Currency.expectedReward24H / $Request.stats.$Currency.meanExpectedReward24H }
+        Try { $EstimateFactor = [Decimal]($Request.stats.$Currency.expectedReward24H / $Request.stats.$Currency.meanExpectedReward24H) }
         Catch { $EstimateFactor = 1 }
 
         ForEach ($Server in $_.Servers) {
             $Region = $Server.Region
-            If ($Region_Norm = Get-Region $Region) { # Only accept regions that can be resolved by regions.txt
+            If ($Region_Norm = Get-Region $Region) { # Only accept regions that can be resolved by Regions.json
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    CoinName                 = [String]$CoinName
                     Currency                 = [String]$Currency
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week

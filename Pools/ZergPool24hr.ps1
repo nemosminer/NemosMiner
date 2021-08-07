@@ -63,20 +63,22 @@ If ($Wallet) {
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
         $Workers = $Request.$_.workers
+        $Currency = $Request.$_.currency
 
-        $Fee = [Decimal]($Request.$_.Fees / 100)
+        $Fee = $Request.$_.Fees / 100
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-        Catch { $EstimateFactor = [Decimal]1 }
+        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / 1000 / $Request.$_.estimate_last24h) }
+        Catch { $EstimateFactor = 1 }
 
         If ($Config.UseAnycast -or $PoolsConfig.($Name_Norm -replace '24hr$' -replace 'Coins$').UseAnycast) { 
             $PoolHost = "$Algorithm.$HostSuffix"
 
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
+                Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
@@ -87,8 +89,8 @@ If ($Wallet) {
                 Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
                 Region                   = "N/A (Anycast)"
                 SSL                      = [Bool]$false
-                Fee                      = $Fee
-                EstimateFactor           = $EstimateFactor
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]$EstimateFactor
                 Workers                  = [Int]$Workers
             }
         }
@@ -99,6 +101,7 @@ If ($Wallet) {
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
+                    Currency                 = [String]$Currency
                     Price                    = [Double]$Stat.Live
                     StablePrice              = [Double]$Stat.Week
                     MarginOfError            = [Double]$Stat.Week_Fluctuation

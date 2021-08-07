@@ -54,11 +54,9 @@ If ($PoolConfig.UserName) {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
-        $Fee = [Decimal]$Request.$_."$($MiningMode)_fee"
+        $Fee = $Request.$_."$($MiningMode)_fee"
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
-        $CoinName = ""
-        $Currency = ""
         $Pass = @("a=$Algorithm", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
 
         $Currency = $Currencies | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Currencies.$_.Algo -eq $Algorithm }
@@ -77,7 +75,6 @@ If ($PoolConfig.UserName) {
 
             [PSCustomObject]@{
                 Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]($CoinName -ireplace "$Algorithm$" -ireplace "coin$", "Coin" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "^groestl$", "GroestlCoin" -ireplace "^myriad", "MyriadCoin")
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
@@ -89,7 +86,7 @@ If ($PoolConfig.UserName) {
                 Pass                     = [String]($Pass -join ',')
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
-                Fee                      = $Fee
+                Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]1
             }
         }

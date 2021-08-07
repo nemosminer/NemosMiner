@@ -54,26 +54,28 @@ If ($Wallet) {
 
     $PoolRegions = "eu", "jp", "na", "sea"
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
+        $Currency = $Request.$_.currency
 
-        $Fee = [Decimal]($Request.$_.Fees / 100)
+        $Fee = $Request.$_.Fees / 100
         $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-        Catch { $EstimateFactor = [Decimal]1 }
+        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
+        Catch { $EstimateFactor = 1 }
 
         ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
+                Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation

@@ -58,20 +58,22 @@ If ($Wallet) {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Workers = $Request.$_.workers
+        $Currency = $Request.$_.currency
 
-        $Fee = [Decimal]($Request.$_.Fees / 100)
+        $Fee = $Request.$_.Fees / 100
         $Divisor = 1000000000 * [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-        Catch { $EstimateFactor = [Decimal]1 }
+        Try { $EstimateFactor = [Decimal]($Request.$PriceField / 1000 / $Request.$_.estimate_last24h) }
+        Catch { $EstimateFactor = 1 }
 
         ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
+                Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
@@ -82,8 +84,8 @@ If ($Wallet) {
                 Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
-                Fee                      = $Fee
-                EstimateFactor           = $EstimateFactor
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]$EstimateFactor
                 Workers                  = [Int]$Workers
             }
         }

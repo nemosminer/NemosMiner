@@ -18,6 +18,7 @@
       <S N="TransferFile">.\blockmasters.json</S>
       <S N="PoolName">blockmasters</S>
       <S N="PoolStatusUri">http://blockmasters.co/api/status</S>
+      <S N="PoolCurrenciesUri">http://blockmasters.co/api/currencies</S>
     </MS>
   </Obj>
 </Objs>

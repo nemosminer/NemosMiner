@@ -51,7 +51,8 @@ If ($PoolConfig.UserName) {
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ") -replace "$Algorithm$" -replace ".+groestl$" -replace "cash$", "Cash" -replace "gold$", "Gold" -replace "coin$", "Coin"
+        # $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ") -replace "$Algorithm$" -ireplace ".+groestl$" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "coin$", "Coin"
+        # $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ") -replace "$Algorithm$" -ireplace ".+groestl$" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "coin$", "Coin"
         $Fee = [Decimal]($_.Fee / 100)
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
@@ -59,7 +60,7 @@ If ($PoolConfig.UserName) {
         If ($Algorithm_Norm -in @("VertHash")) {
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
-                CoinName                 = [String]$CoinName
+                # CoinName                 = [String]$CoinName
                 Currency                 = [String]$Current.symbol
                 Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                 StablePrice              = [Double]$Stat.Week
@@ -86,7 +87,7 @@ If ($PoolConfig.UserName) {
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    CoinName                 = [String]$CoinName
+                    # CoinName                 = [String]$CoinName
                     Currency                 = [String]$Current.symbol
                     Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                     StablePrice              = [Double]$Stat.Week

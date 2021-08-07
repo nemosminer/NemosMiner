@@ -58,14 +58,15 @@ If ($Wallet) {
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
         $Workers = $Request.$_.workers
+        $Currency = $Request.$_.currency
 
-        $Fee = [Decimal]($Request.$_.Fees / 100)
+        $Fee = $Request.$_.Fees / 100
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        Try { $EstimateFactor = [Decimal](($Request.$_.actual_last24h / 1000) / $Request.$_.estimate_last24h) }
-        Catch { $EstimateFactor = [Decimal]1 }
+        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / 1000 / $Request.$_.estimate_last24h) }
+        Catch { $EstimateFactor = 1 }
 
         $PoolRegions | ForEach-Object { 
             $Region = $_
@@ -83,8 +84,8 @@ If ($Wallet) {
                 Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
-                Fee                      = $Fee
-                EstimateFactor           = $EstimateFactor
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]$EstimateFactor
                 Workers                  = [Int]$Workers
             }
         }
