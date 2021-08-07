@@ -755,7 +755,7 @@ Function Start-BrainJob {
             }
         }
     }
-    If ($JobNames -gt 0) { Write-Message "Started Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
+    If ($JobNames -gt 0) { Write-Message "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
 }
 
 Function Stop-BrainJob { 
@@ -773,7 +773,7 @@ Function Stop-BrainJob {
         $JobNames += $_
     }
 
-    If ($JobNames.Count -gt 0) { Write-Message "Stopped Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
+    If ($JobNames.Count -gt 0) { Write-Message "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
 }
 
 
@@ -2636,10 +2636,6 @@ Function Get-CoinName {
 
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
-    }
-    If ($Currency) { 
-        "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
-        Remove-Variable Global:CoinNames
     }
     Return $null
 }

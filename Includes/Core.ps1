@@ -665,49 +665,45 @@ Function Start-Cycle {
         If (Test-Path -Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
     )
 
-    If ($NewMiners_Jobs) { 
-        # Retrieve collected miner objects
-        $NewMiners_Jobs | ForEach-Object $_.Job | Wait-Job -Timeout 15 | Out-Null
-        $NewMiners = [System.Collections.ArrayList](
-            $NewMiners_Jobs | ForEach-Object { 
-                $_.EndInvoke($_.Job) | Where-Object { $_.Content.API } | ForEach-Object { 
+    # Retrieve collected miner objects
+    $NewMiners = New-Object -TypeName "System.Collections.ArrayList"
+    $NewMiners_Jobs | ForEach-Object $_.Job | Wait-Job -Timeout 15 | Out-Null
+    $NewMiners_Jobs | ForEach-Object { 
+        $_.EndInvoke($_.Job) | Where-Object { $_.Content.API } | ForEach-Object { 
 
-                    $Miner_Fees = If ($Config.IgnoreMinerFee) { @($_.Content.Algorithm | ForEach-Object { 0 }) } Else { @($_.Content.Fee) }
+            $Miner_Fees = If ($Config.IgnoreMinerFee) { @($_.Content.Algorithm | ForEach-Object { 0 }) } Else { @($_.Content.Fee) }
 
-                    [Worker[]]$Workers = @()
-                    $_.Content.Algorithm | ForEach-Object { 
-                        $Workers += @{ 
-                            Pool = [Pool]$AllPools.$_
-                            Fee  = [Double]($Miner_Fees | Select-Object -Index $Workers.Count)
-                        }
-                    }
-
-                    [Miner]$Miner = [PSCustomObject]@{ 
-                        Name            = [String]$_.Content.Name
-                        BaseName        = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
-                        Version         = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
-                        Path            = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
-                        Algorithm       = [String[]]$_.Content.Algorithm
-                        Workers         = [Worker[]]$Workers
-                        Arguments       = [String]$_.Content.Arguments
-                        DeviceName      = [String[]]$_.Content.DeviceName
-                        Devices         = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceName)
-                        Type            = [String]$_.Content.Type
-                        Port            = [UInt16]$_.Content.Port
-                        URI             = [String]$_.Content.URI
-                        WarmupTimes     = [Int[]](($_.Content.WarmupTimes[0] + $Config.WarmupTimes[0]), ($_.Content.WarmupTimes[1] + [Int]$Config.WarmupTimes[1]))
-                        MinerUri        = [String]$_.Content.MinerUri
-                        ProcessPriority = [Int]$(If ($_.Content.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
-                    } -as "$($_.Content.API)"
-                    $Miner.CommandLine = [String]$Miner.GetCommandLine().Replace("$(Convert-Path ".\")\", "")
-                    $Miner
+            [Worker[]]$Workers = @()
+            $_.Content.Algorithm | ForEach-Object { 
+                $Workers += @{ 
+                    Pool = [Pool]$AllPools.$_
+                    Fee  = [Double]($Miner_Fees | Select-Object -Index $Workers.Count)
                 }
             }
-        )
-        $NewMiners_Jobs | ForEach-Object { $_.Dispose() }
-        Remove-Variable NewMiners_Jobs
+
+            [Miner]$Miner = [PSCustomObject]@{ 
+                Name            = [String]$_.Content.Name
+                BaseName        = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
+                Version         = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
+                Path            = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
+                Algorithm       = [String[]]$_.Content.Algorithm
+                Workers         = [Worker[]]$Workers
+                Arguments       = [String]$_.Content.Arguments
+                DeviceName      = [String[]]$_.Content.DeviceName
+                Devices         = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceName)
+                Type            = [String]$_.Content.Type
+                Port            = [UInt16]$_.Content.Port
+                URI             = [String]$_.Content.URI
+                WarmupTimes     = [Int[]](($_.Content.WarmupTimes[0] + $Config.WarmupTimes[0]), ($_.Content.WarmupTimes[1] + [Int]$Config.WarmupTimes[1]))
+                MinerUri        = [String]$_.Content.MinerUri
+                ProcessPriority = [Int]$(If ($_.Content.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
+            } -as "$($_.Content.API)"
+            $Miner.CommandLine = [String]$Miner.GetCommandLine().Replace("$(Convert-Path ".\")\", "")
+            $NewMiners.Add($Miner)
+        }
     }
-    Remove-Variable PoolsPrimaryAlgorithm, PoolsSecondaryAlgorithm -ErrorAction Ignore
+    $NewMiners_Jobs | ForEach-Object { $_.Dispose() }
+    Remove-Variable PoolsPrimaryAlgorithm, PoolsSecondaryAlgorithm, NewMiners_Jobs -ErrorAction Ignore
 
     $CompareMiners = [Miner[]](Compare-Object -PassThru @($Variables.Miners | Select-Object) @($NewMiners | Select-Object) -Property Arguments, Path -IncludeEqual)
 
@@ -727,14 +723,14 @@ Function Start-Cycle {
     }
 
     # Remove gone miners
-    $Variables.Miners = $Variables.Miners | Where-Object SideIndicator -EQ "=="
+    $Variables.Miners = @($Variables.Miners | Where-Object SideIndicator -EQ "==")
 
     # Add new miners
     $Variables.Miners += $CompareMiners | Where-Object SideIndicator -EQ "=>"
     Remove-Variable CompareMiners -ErrorAction Ignore
 
     # Update existing miners
-    $Variables.Miners | Select-Object | ForEach-Object { 
+    $Variables.Miners | ForEach-Object { 
 
         $_.CachedReadPowerUsage = $_.ReadPowerUsage
         $_.CachedShowMinerWindows = $_.ShowMinerWindows
