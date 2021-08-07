@@ -212,7 +212,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
-    [Double]$UnrealPoolPriceFactor = 2, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
+    [Double]$UnrealPoolPriceFactor = 1.5, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
     [Parameter(Mandatory = $false)]
     [Double]$UnrealMinerEarningFactor = 5, # Ignore miner if resulting profit is more than $Config.UnrealPoolPriceFactor higher than average price of all other miners with same algo
     [Parameter(Mandatory = $false)]
@@ -251,6 +251,8 @@ $Global:Branding = [PSCustomObject]@{
     Version      = [System.Version]"3.9.9.61"
 }
 
+If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
+
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
     Write-Host "`nUnsupported PowerShell version $($PSVersiontable.PSVersion.ToString()) detected.`n$($Branding.BrandName) requires at least PowerShell version 7.0.0 which can be downloaded from https://github.com/PowerShell/powershell/releases.`n`n" -ForegroundColor Red
     Start-Sleep -Seconds 30
@@ -258,21 +260,21 @@ If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") {
 }
 
 Try { 
-    Add-Type -Path ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
+    Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
 }
 Catch { 
-    Remove-Item ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
-    Add-Type -Path ".\Includes\OpenCL\*.cs" -OutputAssembly ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
-    Add-Type -Path ".\Includes\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
+    Remove-Item ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\OpenCL\*.cs" -OutputAssembly ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
+    Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
 Try { 
-    Add-Type -Path ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
+    Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
 }
 Catch { 
-    Remove-Item ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
-    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
-    Add-Type -Path ".\Includes\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
+    Remove-Item ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
+    Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
 # Create directories
@@ -326,7 +328,13 @@ Catch {
     Start-Sleep -Seconds 10
     Exit
 }
-
+# Verify coin name data
+Try { [Void](Get-Content -Path ".\Includes\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
+Catch { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\CoinNames.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
 # Read configuration
 Read-Config -ConfigFile $Variables.ConfigFile
 
@@ -371,6 +379,19 @@ Remove-Variable PrerequisitesMissing, Prerequisites
 
 # Check if new version is available
 Get-NMVersion
+
+Write-Host "Importing modules..." -ForegroundColor Yellow
+Import-Module NetSecurity -ErrorAction SilentlyContinue
+Import-Module Defender -ErrorAction SilentlyContinue
+
+# Unblock files
+If (Get-Item .\* -Stream Zone.*) { 
+    Write-Host "Unblocking files that were downloaded from the internet..." -ForegroundColor Yellow
+    If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
+    If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
+        Start-Process "pwsh" "-Command Import-Module Defender; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
+    }
+}
 
 # Update config file to include all new config items
 If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion )) { 
@@ -425,16 +446,6 @@ If ($Config.AutoStart) {
     $Variables.NewMiningStatus = If ($Config.StartPaused) { "Paused" } Else { "Running" }
     # Trigger start mining in TimerUITick
     $Variables.RestartCycle = $true
-}
-
-Write-Host "Importing modules..." -ForegroundColor Yellow
-Import-Module NetSecurity -ErrorAction SilentlyContinue
-Import-Module Defender -ErrorAction SilentlyContinue
-
-# Unblock files
-If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
-If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
-    Start-Process "pwsh" "-Command Import-Module Defender; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
 }
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
