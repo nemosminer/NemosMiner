@@ -95,6 +95,7 @@ Class Pool {
     [String]$Currency = ""
     [String]$CoinName = ""
     [String]$Host
+    # [String[]]$Hosts # To be implemented for pool failover
     [UInt16]$Port
     [String]$User
     [String]$Pass
@@ -184,6 +185,9 @@ Class Miner {
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
 
+    # [Runspace]$GetMinerDataRunspace = $null
+    # [PowerShell]$GetMinerDataPowerShell = $null
+
     [Int32]$ProcessId = 0
     [Int]$ProcessPriority = -1
 
@@ -198,6 +202,7 @@ Class Miner {
     [Int]$CachedDataCollectInterval = 5 # Seconds
     [String]$ShowMinerWindows = "minimized"
     [String]$CachedShowMinerWindows
+    # [String[]]$Environment = @()
     [Int]$MinDataSamples # for safe hashrate values
     [PSCustomObject]$LastSample # last hash rate sample
     [Int[]]$WarmupTimes # First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
@@ -738,9 +743,10 @@ Function Start-BrainJob {
     $JobNames = @()
 
     $Config.PoolName | Select-Object | ForEach-Object { 
+        $_ = $_ -replace "Coins$"
         If (-not $Variables.BrainJobs.$_) { 
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
-            $BrainName = ".\Brains\$($_)\Brains.ps1"
+            $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
                 $Variables.BrainJobs.$_ = (Start-Job -FilePath $BrainName -ArgumentList @($BrainPath))
                 If ($Variables.BrainJobs.$_.State -EQ "Running") { 
@@ -749,7 +755,7 @@ Function Start-BrainJob {
             }
         }
     }
-    If ($JobNames -gt 0) { Write-Message "Started Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ', '))." }
+    If ($JobNames -gt 0) { Write-Message "Started Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
 }
 
 Function Stop-BrainJob { 
@@ -767,7 +773,7 @@ Function Stop-BrainJob {
         $JobNames += $_
     }
 
-    If ($JobNames.Count -gt 0) { Write-Message "Stopped Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ', '))." }
+    If ($JobNames.Count -gt 0) { Write-Message "Stopped Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
 }
 
 
@@ -813,13 +819,13 @@ Function Initialize-API {
 
     # Initialize API & Web GUI
     If ($Config.APIPort -and ($Config.APIPort -ne $Variables.APIRunspace.APIPort)) { 
-        If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
-            If ($Variables.APIRunspace) { 
-                $Variables.APIRunspace.Close()
-                If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
-                $Variables.Remove("APIRunspace")
-            }
+        If ($Variables.APIRunspace) { 
+            $Variables.APIRunspace.Close()
+            If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
+            $Variables.Remove("APIRunspace")
+        }
 
+        If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
             $TCPClient = New-Object System.Net.Sockets.TCPClient
             $AsyncResult = $TCPClient.BeginConnect("localhost", $Config.APIPort, $null, $null)
             If ($AsyncResult.AsyncWaitHandle.WaitOne(100)) { 
@@ -828,6 +834,8 @@ Function Initialize-API {
                 Catch { }
             }
             Else { 
+                Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..."
+
                 Import-Module .\Includes\API.psm1
 
                 # Required for stat management
@@ -839,24 +847,22 @@ Function Initialize-API {
                 # Wait for API to get ready
                 $RetryCount = 3
                 While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
-                    Start-Sleep -Seconds 1
-                    $RetryCount--
                     Try {
                         If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
-                            Write-Message "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
+                            Write-Message -Level Info "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)." -Console
                             # Start Web GUI
-                            If ($Config.WebGui) { 
-                                Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })"
-                            }
+                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })" }
                             Break
                         }
                     }
-                    Catch { 
-                    }
+                    Catch { }
+                    $RetryCount--
+                    Start-Sleep -Seconds 1
                 }
-                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." }
+                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." -Console }
                 Remove-Variable RetryCount
             }
+            $TCPClient.Close()
             Remove-Variable AsyncResult
             Remove-Variable TCPClient
         }
@@ -878,8 +884,8 @@ Function Initialize-Application {
     # Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-    If ($Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
-    Else { $PSDefaultParameterValues["*:Proxy"] = $Proxy }
+    If ($Config.Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
+    Else { $PSDefaultParameterValues["*:Proxy"] = $Config.Proxy }
 }
 
 Function Get-Rate {
@@ -1191,46 +1197,26 @@ Function Update-Monitoring {
 
 Function Start-Mining { 
 
-    If (Test-Path -PathType Leaf "$($Variables.MainPath)\Includes\Core.ps1") { 
+    If (-not $Variables.CoreRunspace) { 
+        $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
+        $Variables.Pools = $null
+        $Variables.Miners = $null
 
-        If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
-            Write-Message -Level Verbose "Verifying integrity of VertHash data file (.\Cache\VertHash.dat)..."
-            $VertHashCheck = Start-Job ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
-        }
+        $CoreRunspace = [RunspaceFactory]::CreateRunspace()
+        $CoreRunspace.Open()
+        $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
+        $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+        $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+        $PowerShell = [PowerShell]::Create()
+        $PowerShell.Runspace = $CoreRunspace
+        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
+        $PowerShell.BeginInvoke()
 
-        If (-not $Variables.CoreRunspace) { 
-            $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-            $Variables.Pools = $null
-            $Variables.Miners = $null
-
-            $CoreRunspace = [RunspaceFactory]::CreateRunspace()
-            $CoreRunspace.Open()
-            $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
-            $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-            $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-            $PowerShell = [PowerShell]::Create()
-            $PowerShell.Runspace = $CoreRunspace
-            $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-            $PowerShell.BeginInvoke()
-
-            $Variables.CoreRunspace = $CoreRunspace
-            $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-        }
-
-        If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
-            If ($VertHashCheck | Wait-Job -Timeout 60 |  Receive-Job -Wait -AutoRemoveJob) { 
-                Write-Message -Level Verbose "VertHash data file integrity check: OK."
-            }
-            Else { 
-                Write-Message -Level Warn "VertHash data file (.\Cache\VertHash.dat) is corrupt -> file deleted. It will be recreated by the miners if needed."
-                Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
-            }
-        }
+        $Variables.CoreRunspace = $CoreRunspace
+        $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
     }
-    Else { 
-        Write-Message -Level Error "Corrupt installation. File '$($Variables.MainPath)\Includes\Core.ps1' is missing."
-    }
+
 }
 
 Function Stop-Mining { 
@@ -1253,6 +1239,30 @@ Function Stop-Mining {
     }
 }
 
+Function Merge-Hashtable { 
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Hashtable]$HT1,
+        [Parameter(Mandatory = $true)]
+        [Hashtable]$HT2,
+        [Parameter(Mandatory = $false)]
+        [Boolean]$Unique = $false
+    )
+
+    $HT2.Keys | ForEach-Object { 
+        If ($HT1.$_ -is [Hashtable]) { 
+            $HT1.$_ = Merge-Hashtable $HT1.$_ $HT2.$_ 
+        }
+        ElseIf ($HT1.$_ -is [Array]) { 
+            $HT1.$_ += $HT2.$_
+            If ($Unique) { $HT1.$_ = $HT1.$_ | Sort-Object -Unique }
+        }
+        ElseIf ($HT2.$_) { 
+            $HT1.$_ = $HT2.$_
+        }
+    }
+    $HT1
+}
 
 Function Read-Config { 
 
@@ -1302,79 +1312,73 @@ Function Read-Config {
         $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     }
 
-    # Build pools configuation
+    # Load default pool data, create case insensitive hastable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
+    $DefaultPoolData = [Ordered]@{ }
+    $Temp = Get-Content .\Includes\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
+    $Temp.Keys | Sort-Object | ForEach-Object { $DefaultPoolData += @{ $_ = $Temp.$_ } }
+
+    # Build custom pools configuation, create case insensitive hastable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
-        $Variables.PoolsConfigData = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -ErrorAction Ignore
-        If ($Variables.PoolsConfigData.PSObject.Properties.Count -eq 0 -or $Variables.PoolsConfigData -isnot [PSCustomObject]) { 
+        $CustomPoolsConfig = [Ordered]@{ }
+        If ($Temp = Get-Content $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashTable -ErrorAction Ignore) { 
+            $Temp.Keys | Sort-Object | ForEach-Object { $CustomPoolsConfig += @{ $_ = $Temp.$_ } }
+            $Variables.PoolsConfigData = $CustomPoolsConfig
+        }
+        Else { 
             Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
-            $Variables.Remove("PoolsConfigData")
         }
     }
 
-    # Load default PoolData
-    $PoolData = Get-Content .\Includes\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-
-    # Add pool config to config (in-memory only)
+    # Build in memory pool config
     $PoolsConfig = [Ordered]@{ }
     @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$|Coins$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
-        $PoolConfig = [PSCustomObject]@{ }
-        If ($Variables.PoolsConfigData.$PoolName) { $PoolConfig = $Variables.PoolsConfigData.$PoolName | ConvertTo-Json -ErrorAction Ignore | ConvertFrom-Json }
-        ElseIf ($PoolData.$PoolName) { $PoolConfig = $PoolData.$PoolName }
-        If (-not $PoolConfig.MinWorker) { $PoolConfig | Add-Member MinWorker $Config.MinWorker -Force }
-        If (-not $PoolConfig.PayoutThreshold -and $PoolData.$PoolName.PayoutThreshold) { $PoolConfig | Add-Member PayoutThreshold $PoolData.$PoolName.PayoutThreshold -Force }
-        If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig | Add-Member EarningsAdjustmentFactor $Config.EarningsAdjustmentFactor -Force }
-        If (-not $PoolConfig.WorkerName) { $PoolConfig | Add-Member WorkerName $Config.WorkerName -Force }
-        If (-not $PoolConfig.BalancesKeepAlive)  { $PoolConfig | Add-Member BalancesKeepAlive $PoolData.$PoolName.BalancesKeepAlive -Force }
-        Switch ($PoolName) { 
-            "HiveON" { 
-                If (-not $PoolConfig.PayoutCurrencies) { 
-                    $PoolConfig | Add-Member PayoutCurrencies $PoolData.$PoolName.PayoutCurrencies
-                }
-                If (-not $PoolConfig.Wallets) { 
-                    $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ })
-                    $Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
-                        $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
+        If ($PoolConfig = $DefaultPoolData.$PoolName) { 
+            # Merge default pool data with custom pool config
+            If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable $PoolConfig $CustomPoolConfig -Unique $true }
+
+            If (-not $PoolConfig.MinWorker) { $PoolConfig.MinWorker = $Config.MinWorker }
+            If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig.EarningsAdjustmentFactor = $Config.EarningsAdjustmentFactor }
+            If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Config.WorkerName }
+            If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
+
+            Switch ($PoolName) { 
+                "HiveON" { 
+                    If (-not $PoolConfig.Wallets) { 
+                        $PoolConfig.Wallets = [PSCustomObject]@{ }
+                        $Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
+                            $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
+                        }
                     }
                 }
-            }
-            "MiningPoolHub" { 
-                If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.MiningPoolHubUserName -Force }
-            }
-            "NiceHash External" { 
-                If (-not $Config.NiceHashWalletIsInternal) { 
-                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "BTC" = $Config.NiceHashWallet }) -Force }
+                "MiningPoolHub" { 
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.MiningPoolHubUserName }
                 }
-                If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "BTC" = $Config.Wallets.BTC }) -Force }
-            }
-            "NiceHash Internal" { 
-                If ($Config.NiceHashWalletIsInternal -eq $true -and $Config.NiceHashWallet) { 
-                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "BTC" = $Config.NiceHashWallet }) -Force }
+                "NiceHash External" { 
+                    If (-not $Config.NiceHashWalletIsInternal) { 
+                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Config.NiceHashWallet } }
+                    }
+                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Config.Wallets.BTC } }
                 }
-            }
-            "ProHashing" { 
-                If (-not $PoolConfig.UserName) { $PoolConfig | Add-Member UserName $Config.ProHashingUserName -Force }
-                If (-not $PoolConfig.MiningMode) { $PoolConfig | Add-Member MiningMode $Config.ProHashingMiningMode -Force }
-            }
-            Default { 
-                If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { 
-                    $PoolConfig | Add-Member PayoutCurrency $Config.PayoutCurrency -Force
+                "NiceHash Internal" { 
+                    If ($Config.NiceHashWalletIsInternal -eq $true -and $Config.NiceHashWallet) { 
+                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets =[PSCustomObject]@{ "BTC" = $Config.NiceHashWallet } }
+                    }
                 }
-                If (-not $PoolConfig.Wallets) { 
-                    $PoolConfig | Add-Member Wallets ([PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) }) -Force
+                "ProHashing" { 
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.ProHashingUserName }
+                    If (-not $PoolConfig.MiningMode) { $PoolConfig.MiningMode = $Config.ProHashingMiningMode }
+                }
+                Default { 
+                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Config.PayoutCurrency }
+                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = [PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } }
                 }
             }
+            If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
+            If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = $PoolConfig.Algorithm -replace " " }
         }
-        If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
-
-        $PoolConfig.PSObject.Members.Remove("PayoutCurrencies")
-        $PoolConfig.PSObject.Members.Remove("PayoutCurrency")
-
-        If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = $PoolConfig.Algorithm -replace " " }
-
         $PoolsConfig.$PoolName = $PoolConfig
     }
-
     $Config.PoolsConfig = $PoolsConfig
 }
 
@@ -1479,8 +1483,7 @@ Function Set-Stat {
         If ($Duration -le 0) { Return $Stat }
 
         If ($FaultDetection) { 
-            If ($Name -match ".+_HashRate$") { $FaultFactor = 0.1 }
-            Else { $FaultFactor = 0.2 }
+            $FaultFactor = If ($Name -match ".+_HashRate$") { 0.1 } Else { 0.2 }
             $ToleranceMin = $Stat.Week * (1 - $FaultFactor)
             $ToleranceMax = $Stat.Week * (1 + $FaultFactor)
         }
@@ -1493,7 +1496,7 @@ Function Set-Stat {
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
-        If ($Value -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
+        If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_HashRate$") { 
                 Write-Message -Level Warn "Failed saving hash rate ($($Name -replace '_HashRate$'): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
             }
@@ -1975,7 +1978,7 @@ Function Get-Device {
     )
 
     If ($Name) { 
-        $DeviceList = Get-Content ".\Includes\Devices.txt" | ConvertFrom-Json
+        $DeviceList = Get-Content ".\Includes\Devices.json" | ConvertFrom-Json
         $Name_Devices = $Name | ForEach-Object { 
             $Name_Split = $_ -split '#'
             $Name_Split = @($Name_Split | Select-Object -Index 0) + @($Name_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
@@ -1989,7 +1992,7 @@ Function Get-Device {
     }
 
     If ($ExcludeName) { 
-        If (-not $DeviceList) { $DeviceList = Get-Content -Path ".\Includes\Devices.txt" | ConvertFrom-Json }
+        If (-not $DeviceList) { $DeviceList = Get-Content -Path ".\Includes\Devices.json" | ConvertFrom-Json }
         $ExcludeName_Devices = $ExcludeName | ForEach-Object { 
             $ExcludeName_Split = $_ -split '#'
             $ExcludeName_Split = @($ExcludeName_Split | Select-Object -Index 0) + @($ExcludeName_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
@@ -2592,7 +2595,7 @@ Function Get-Algorithm {
     )
 
     If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) {
-        $Global:Algorithms = Get-Content ".\Includes\Algorithms.txt" | ConvertFrom-Json
+        $Global:Algorithms = Get-Content ".\Includes\Algorithms.json" | ConvertFrom-Json
     }
 
     $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-|_|/| ')
@@ -2610,13 +2613,33 @@ Function Get-Region {
     )
 
     If (-not (Test-Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
-        $Global:Regions = Get-Content ".\Includes\Regions.txt" | ConvertFrom-Json
+        $Global:Regions = Get-Content ".\Includes\Regions.json" | ConvertFrom-Json
     }
 
     If ($List) { Return $Global:Regions.$Region }
 
     If ($Global:Regions.$Region) { 
        Return $($Global:Regions.$Region | Select-Object -Index 0)
+    }
+    Return $null
+}
+
+Function Get-CoinName { 
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String]$Currency
+    )
+
+    If (-not (Test-Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
+        $Global:CoinNames = Get-Content ".\Includes\CoinNames.json" | ConvertFrom-Json
+    }
+
+    If ($Global:CoinNames.$Currency) { 
+       Return $Global:CoinNames.$Currency
+    }
+    If ($Currency) { 
+        "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
+        Remove-Variable Global:CoinNames
     }
     Return $null
 }
