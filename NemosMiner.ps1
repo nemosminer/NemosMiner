@@ -306,16 +306,16 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
 # Load algorithm list
-$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
-$Variables.Regions = Get-Content -Path ".\Includes\Regions.txt" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.Regions = Get-Content -Path ".\Includes\Regions.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.txt'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -337,8 +337,9 @@ $AllCommandLineParameters | ForEach-Object {
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
-Write-Message "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
-If (-not $Variables.FreshConfig) { Write-Message "Using configuration file '$($Variables.ConfigFile)'." }
+Write-Message -Level Info "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru" -Console
+If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." -Console }
+Write-Host ""
 
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
@@ -376,6 +377,11 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
     Update-ConfigFile -ConfigFile $Variables.ConfigFile
 }
 
+If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
+    Write-Message -Level Verbose "Verifying integrity of VertHash data file (.\Cache\VertHash.dat)..."
+    $VertHashCheck = Start-Job ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
+}
+
 Write-Message -Level Verbose "Loading device information..."
 $Variables.SupportedDeviceVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.Devices = [Device[]](Get-Device -Refresh)
@@ -406,9 +412,6 @@ If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { $Variables
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
-# Keep only the last 3 logs
-Get-ChildItem ".\Logs\SwitchingLog_*.csv" | Sort-Object | Select-Object -SkipLast 3 | Remove-Item -Force -Recurse
-
 
 If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
 If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
@@ -419,12 +422,7 @@ If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100
 If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
 
 If ($Config.AutoStart) { 
-    If ($Config.StartPaused) { 
-        $Variables.NewMiningStatus = "Paused"
-    }
-    Else { 
-        $Variables.NewMiningStatus = "Running"
-    }
+    $Variables.NewMiningStatus = If ($Config.StartPaused) { "Paused" } Else { "Running" }
     # Trigger start mining in TimerUITick
     $Variables.RestartCycle = $true
 }
@@ -439,10 +437,17 @@ If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerSta
     Start-Process "pwsh" "-Command Import-Module Defender; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
 }
 
-If ($Config.WebGUI -eq $true) { 
-    Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..."
-    Initialize-API
+If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
+    If ($VertHashCheck | Wait-Job -Timeout 60 |  Receive-Job -Wait -AutoRemoveJob) { 
+        Write-Message -Level Verbose "VertHash data file integrity check: OK."
+    }
+    Else { 
+        Write-Message -Level Warn "VertHash data file (.\Cache\VertHash.dat) is corrupt -> file deleted. It will be recreated by the miners if needed."
+        Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
+    }
 }
+
+If ($Config.WebGUI -eq $true) { Initialize-API }
 
 Function Get-Chart { 
 
@@ -644,7 +649,7 @@ Function Global:TimerUITick {
 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
 
-    # If something (pause button, idle timer) has set the RestartCycle flag, stop and start mining to switch modes immediately
+    # If something (pause button, idle timer, WebGUI/config) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
 
         If ($Variables.NewMiningStatus -eq "Stopped") { 
@@ -660,7 +665,6 @@ Function Global:TimerUITick {
             $Variables.Summary = ""
             $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
             $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
-            Clear-Host
             Write-Message -Level Info "$($Branding.ProductLabel) is idle." -Console
 
             $ButtonPause.Enabled = $true
@@ -681,7 +685,6 @@ Function Global:TimerUITick {
                     Start-BrainJob
                     Start-BalancesTracker
                 }
-                Clear-Host
                 Write-Message -Level Info "Mining is paused. BrainPlus and Earning tracker running." -Console
 
                 $ButtonStop.Enabled = $true
@@ -703,8 +706,7 @@ Function Global:TimerUITick {
             $ButtonStart.Enabled = $false
             $ButtonPause.Enabled = $true
             If ($Variables.MiningStatus -ne "Running") { 
-                Clear-Host
-                Write-Host "Mining processes started."
+                Write-Host "`nMining processes started."
                 Initialize-Application
                 Start-BrainJob
                 Start-BalancesTracker
@@ -732,9 +734,7 @@ Function Global:TimerUITick {
     If ($Variables.RefreshNeeded -and $Variables.MiningStatus -eq "Running") { 
         $host.UI.RawUI.WindowTitle = $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f ([TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime))
 
-        If (-not ($Variables.Miners | Where-Object Status -eq "Running")) { 
-            Write-Message "No miners running. Waiting for next cycle."
-        }
+        If (-not ($Variables.Miners | Where-Object Status -eq "Running")) { Write-Message "No miners running. Waiting for next cycle." }
 
         If ($Variables.EndLoop) { 
 
@@ -778,7 +778,7 @@ Function Global:TimerUITick {
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Miner"; Expression = { $_.Name } }
                 @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & "} }
-                If (($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )))  { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
+                If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
                 @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
                 If ($Config.ShowEarning) { @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value $_.Earning -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
                 If ($Config.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If (-not [Double]::IsNaN($_.Earning_Bias)) { ConvertTo-LocalCurrency -Value $_.Earning_Bias -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
@@ -789,8 +789,8 @@ Function Global:TimerUITick {
                 If ($Config.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" } }
                 @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
                 If ($Config.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
-                If ($Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency | Where-object { $_ } ) { $_.Workers.Pool.Currency } } } }
-                If ($Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName | Where-object { $_ } ) { $_.Workers.Pool.CoinName } } } }
+                If ($Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { $_.Workers.Pool.Currency } } }
+                If ($Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { $_.Workers.Pool.CoinName } } }
             )
             If ($Variables.CalculatePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | Sort-Object Name | ForEach-Object { 
