@@ -13,8 +13,8 @@
     "BalancesKeepAlive": 90, // Old accounts are purged every 120 Days
     "GuaranteedPayoutCurrencies": [
       "BTC",
-      "LTC",
-      "DOGE"
+      "DOGE",
+      "LTC"
     ],
     "PayoutThreshold": {
       "mBTC": 1.65,
@@ -75,8 +75,7 @@
       "ZCL",
       "ZEC",
       "ZEN"
-    ],
-    "PayoutCurrency": "[Default]"
+    ]
   },
   "NLPool": {
     "BalancesKeepAlive": 30, // Accounts with no mining activity for 1 month are purged
@@ -119,7 +118,6 @@
       "BTC",
       "LTC"
     ],
-    "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
       "mBTC": 0,
       "LTC": 0.010950859265481713,
@@ -129,23 +127,27 @@
   "ZergPool": {
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "GuaranteedPayoutCurrencies": [
-      "BTC",
       "BCH",
-      "LTC",
+      "BTC",
+      "DASH",
       "DOGE",
       "ETH",
-      "DASH"
+      "LTC",
+      "USDT"
     ],
-    "PayoutCurrency": "[Default]" // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": { // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
+      // e.g. "mBTC": 5
+    }
   },
   "Zpool": {
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "GuaranteedPayoutCurrencies": [
       "BTC",
-      "LTC",
       "DASH",
       "DGB",
-      "KMD"
+      "KMD",
+      "LTC"
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
