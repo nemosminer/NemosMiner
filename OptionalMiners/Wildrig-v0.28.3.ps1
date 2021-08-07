@@ -117,7 +117,10 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
+                $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
+                $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "^AMD Radeon RX 6[0-9]{3}.*" }) } # RX 6000 cards are not supported (https://github.com/andru-kun/wildrig-multi/issues/59#issuecomment-874916154)
+
+                If ($Miner_Devices) {
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
