@@ -28,12 +28,9 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf) { 
                         $Arguments = "--verthash-data ..\..\Cache\VertHash.dat $Arguments"
                     }
-                    ElseIf (Test-Path -Path ".\VertHash.dat" -PathType Leaf) { 
-                        New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null
-                        Move-Item -Path ".\VertHash.dat" -Destination ".\Cache" -ErrorAction Ignore
-                        $Arguments = "--verthash-data-file ..\..\Cache\VertHash.dat $Arguments"
-                    }
                     Else { 
+                        If (-not (Test-Path -Path "..\..\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
+                        $Arguments = "--gen-verthash-data ..\..\Cache\VertHash.dat $Arguments"
                         $WarmupTimes[0] += 480; $WarmupTimes[1] += 480 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
                     }
                 }
