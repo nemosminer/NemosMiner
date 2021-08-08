@@ -107,6 +107,7 @@ function formatTimeSince(value) {
 }
 
 function formatHashRateValue(value) {
+  if (value == null) return ''
   if (value === 0) return '0 H/s'
   if (value > 0) {
     if (value <= 1) return value.toFixed(2) + ' H/s';
@@ -116,7 +117,7 @@ function formatHashRateValue(value) {
       return parseFloat((value / Math.pow(1000, i)).toFixed(2)) + ' ' + sizes[i];
     }
   }
-  return '';
+  return 'N/A';
 };
 
 function formatHashRate(value) {
@@ -125,17 +126,19 @@ function formatHashRate(value) {
 }
 
 function formatmBTC(value) {
+  if (value == null) return ''
   if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
   if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
-  return '-';
+  return 'N/A';
 };
 
 function formatBTC(value) {
+  if (value == null) return ''
   if (value > 0) return parseFloat(value * rate).toFixed(8);
   if (value == 0) return parseFloat(0).toFixed(8);
   if (value < 0) return parseFloat(value * rate).toFixed(8);
-  return '-';
+  return 'N/A';
 };
 
 function formatDate(value) {
@@ -149,7 +152,7 @@ function formatDate(value) {
 function formatWatt(value) {
   if (value == 0) return parseFloat(0).toFixed(2) + ' W';
   if (value > 0) return parseFloat(value).toFixed(2) + ' W';
-  return '-';
+  return 'N/A';
 };
 
 function formatPercent(value) {
