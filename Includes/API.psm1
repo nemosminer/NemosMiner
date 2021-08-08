@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.14"
+    $APIVersion = "0.3.9.16"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -566,7 +566,8 @@ Function Start-APIServer {
                         $Variables.WatchDogTimers = @()
                         $Variables.Miners | Where-Object { $_.Reason -like "Miner suspended by watchdog *" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
                         $Variables.Pools | Where-Object { $_.Reason -like "*Pool suspended by watchdog" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
-                        $Data = $Variables.WatchdogTimersReset | ConvertTo-Json
+                        Write-Message -Level Verbose "Web GUI: All watchdog timers reset." -Console
+                        $Data = "`nThe watchdog timers will be recreated on next cycle."
                         Break
                     }
                     "/algorithms" { 
@@ -863,9 +864,6 @@ Function Start-APIServer {
                 If ($null -eq $Data) { 
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
-
-                # Fix for Powershell 5.1, cannot handle NaN in Json
-                If ($PSVersionTable.PSVersion -lt [Version]"6.0.0.0" ) { $Data = $Data -replace '":\s*NaN,', '":  "-",' }
 
                 # Send the response
                 $Response.Headers.Add("Content-Type", $ContentType)
