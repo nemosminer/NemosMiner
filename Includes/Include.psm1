@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.61
-Version date:   03 August 2021
+Version:        3.9.9.62
+Version date:   08 August 2021
 #>
 
 # For SetWindowText
@@ -245,9 +245,7 @@ Class Miner {
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
 
-        If (Test-Json $this.Arguments -ErrorAction Ignore) { 
-            $this.CreateConfigFiles()
-        }
+        If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
         If ($this.Process) { 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -345,10 +343,7 @@ Class Miner {
             }
             $this.ProcessId = $null
         }
-
-        If ($this.Process) { 
-            $this.Process = $null
-        }
+        If ($this.Process) { $this.Process = $null }
 
         # Stop Miner data reader
         Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
@@ -519,14 +514,7 @@ Class Miner {
 
         $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
 
-        If ($this.Earning -eq 0) { 
-            $this.Earning_Accuracy = 1
-        }
-        Else { 
-            $this.Workers | ForEach-Object { 
-                $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning)
-            }
-        }
+        $this.Earning_Accuracy = If ($this.Earning -eq 0) { 1 } Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
@@ -583,17 +571,17 @@ Function Get-CommandLineParameters {
     If (Test-Json $Arguments -ErrorAction Ignore) { 
         Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
     }
-    Else { 
-        Return $Arguments
-    }
+    Return $Arguments
 }
 
 Function Start-JobInProcess {
+    # https://community.idera.com/database-tools/powershell/powertips/b/tips/posts/a-better-and-faster-start-job
+
     [CmdletBinding()]
     Param
     (
         [ScriptBlock]$ScriptBlock,
-        $ArgumentList,
+        [String[]]$ArgumentList,
         [String]$Name
     )
 
@@ -724,11 +712,7 @@ namespace InProcess
 
     $PowerShell = [PowerShell]::Create().AddScript($ScriptBlock)
 
-    If ($ArgumentList) {
-        $ArgumentList | ForEach-Object {
-            $PowerShell.AddArgument($_)
-        }
-    }
+    If ($ArgumentList) { $ArgumentList | ForEach-Object { $PowerShell.AddArgument($_) } }
 
     $MemoryJob = New-Object InProcess.InMemoryJob $PowerShell, $Name
 
@@ -773,7 +757,9 @@ Function Stop-BrainJob {
         $JobNames += $_
     }
 
-    If ($JobNames.Count -gt 0) { Write-Message "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
+    If ($JobNames.Count -gt 0) { 
+        Write-Message "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))."
+    }
 }
 
 
@@ -973,22 +959,12 @@ Function Write-Message {
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, "NemosMinerWriteMessage")
 
-            $LevelText = $(
-                Switch ($Level) { 
-                    "Error"   { "ERROR:" }
-                    "Warn"    { "WARNING:" }
-                    "Info"    { "INFO:" }
-                    "Verbose" { "VERBOSE:" }
-                    "Debug"   { "DEBUG:" }
-                }
-            )
-
             # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
             If ($Mutex.WaitOne(1000)) { 
 
                 $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-                "$Date $LevelText $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
+                "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
                 $Mutex.ReleaseMutex()
             }
             Else { 
@@ -1216,7 +1192,6 @@ Function Start-Mining {
         $Variables.CoreRunspace = $CoreRunspace
         $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
     }
-
 }
 
 Function Stop-Mining { 
@@ -1392,6 +1367,7 @@ Function Write-Config {
 
     If (Test-Path $ConfigFile -PathType Leaf) {
         Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
+        Get-ChildItem -Path "$($ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse # Keep 10 backup copies
     }
 
     $SortedConfig = $Config | Get-SortedObject
@@ -1830,8 +1806,7 @@ Function Invoke-TcpRequest {
         $Stream = $Client.GetStream()
         $Writer = New-Object System.IO.StreamWriter $Stream
         $Reader = New-Object System.IO.StreamReader $Stream
-        $Client.SendTimeout = $Timeout * 1000
-        $Client.ReceiveTimeout = $Timeout * 1000
+        $Client.SendTimeout = $Client.ReceiveTimeout = $Timeout * 1000
         $Writer.AutoFlush = $true
 
         $Writer.WriteLine($Request)
@@ -2842,7 +2817,7 @@ Function Initialize-Autoupdate {
         }
     }
 
-    ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json) | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force | ConvertTo-Json | Out-File ".\Version.txt"
+    ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json -AsHashtable) | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force | ConvertTo-Json | Out-File ".\Version.txt"
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
@@ -2884,17 +2859,13 @@ Function Update-ConfigFile {
                 $Config.Remove($_)
             }
             "Wallet" { 
-                If (-not $Config.Wallets) { 
-                    $Config | Add-Member @{ Wallets = $Variables.AllCommandLineParameters.Wallets }
-                }
+                If (-not $Config.Wallets) { $Config | Add-Member @{ Wallets = $Variables.AllCommandLineParameters.Wallets } }
                 $Config.Wallets.BTC = $Config.$_
                 $Config.Remove($_)
             }
             "WaitForMinerData" { $Config.WarmupTimes = @(0, $Config.$_); $Config.Remove($_) }
             "WarmupTime" { $Config.WarmupTimes = @(0, $Config.$_); $Config.Remove($_) }
-            Default { 
-                If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } # Remove unsupported config item
-            }
+            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config item
         }
     }
 

@@ -366,9 +366,9 @@
           <br>
 
           <div
-            title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algorithm & currency&#10;(min=1, max=99 [Default: 2; 1 disables this check])">
+            title="Mark pool as unavailable if price is x times higher than average price of all other pools with same algorithm & currency&#10;(min=1, max=10 [Default: 1.5; 1 disables this check])">
             <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
-            <input type="number" step=0.1 min=1 max=99 value=2 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+            <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
           </div>
           <div
             title="Mark miner as unavailable if earning is x times higher than average earning of all other miners with same algorithm & currency&#10;(min=1, max=99 [Default: 5; 1 disables this check])">

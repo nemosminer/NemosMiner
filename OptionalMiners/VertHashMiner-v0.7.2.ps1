@@ -29,7 +29,6 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         $Arguments = "--verthash-data ..\..\Cache\VertHash.dat $Arguments"
                     }
                     Else { 
-                        If (-not (Test-Path -Path "..\..\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
                         $Arguments = "--gen-verthash-data ..\..\Cache\VertHash.dat $Arguments"
                         $WarmupTimes[0] += 600; $WarmupTimes[1] += 600 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
                     }

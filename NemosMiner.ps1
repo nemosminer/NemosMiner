@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.61
-Version date:   03 August 2021
+Version:        3.9.9.62
+Version date:   08 August 2021
 #>
 
 [CmdletBinding()]
@@ -248,7 +248,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.61"
+    Version      = [System.Version]"3.9.9.62"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -400,7 +400,7 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file (.\Cache\VertHash.dat)..."
-    $VertHashCheck = Start-Job ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
+    $VertHashDatCheckJob = Start-Job ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
 }
 
 Write-Message -Level Verbose "Loading device information..."
@@ -449,12 +449,12 @@ If ($Config.AutoStart) {
 }
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
-    If ($VertHashCheck | Wait-Job -Timeout 60 |  Receive-Job -Wait -AutoRemoveJob) { 
+    If ($VertHashDatCheckJob | Wait-Job -Timeout 60 |  Receive-Job -Wait -AutoRemoveJob) { 
         Write-Message -Level Verbose "VertHash data file integrity check: OK."
     }
     Else { 
-        Write-Message -Level Warn "VertHash data file (.\Cache\VertHash.dat) is corrupt -> file deleted. It will be recreated by the miners if needed."
         Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
+        Write-Message -Level Warn "VertHash data file (.\Cache\VertHash.dat) is corrupt -> file deleted. It will be recreated by the miners if needed."
     }
 }
 
@@ -578,6 +578,17 @@ Function Update-TabControl {
                     @{ Name = "Total Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                 ) | Sort-Object "Device(s)" | Out-DataTable
                 $RunningMinersDGV.ClearSelection()
+                If ($RunningMinersDGV.Columns) { 
+                    $RunningMinersDGV.Columns[0].FillWeight = 75
+                    $RunningMinersDGV.Columns[1].FillWeight = 225
+                    $RunningMinersDGV.Columns[2].FillWeight = 150
+                    $RunningMinersDGV.Columns[3].FillWeight = 50
+                    $RunningMinersDGV.Columns[4].FillWeight = 50
+                    $RunningMinersDGV.Columns[5].FillWeight = 100
+                    $RunningMinersDGV.Columns[6].FillWeight = 85
+                    $RunningMinersDGV.Columns[7].FillWeight = 65
+                    $RunningMinersDGV.Columns[8].FillWeight = 65
+                }
                 $LabelRunningMiners.Text = "Running Miners - Updated $((Get-Date).ToString())"
             }
             Else { $LabelRunningMiners.Text = "Waiting for data..." }
@@ -597,6 +608,16 @@ Function Update-TabControl {
                     @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance / ($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.Currency)))))" } }
                 ) | Sort-Object Pool | Out-DataTable
                 $EarningsDGV.ClearSelection()
+                If ($EarningsDGV.Columns) { 
+                    $EarningsDGV.Columns[0].FillWeight = 140
+                    $EarningsDGV.Columns[1].FillWeight = 90
+                    $EarningsDGV.Columns[2].FillWeight = 90
+                    $EarningsDGV.Columns[3].FillWeight = 75
+                    $EarningsDGV.Columns[4].FillWeight = 75
+                    $EarningsDGV.Columns[5].FillWeight = 75
+                    $EarningsDGV.Columns[6].FillWeight = 80
+                    $EarningsDGV.Columns[7].FillWeight = 100
+                }
                 $LabelEarnings.Text = "Earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Logs\DailyEarnings.csv" -ErrorAction Ignore).LastWriteTime.ToString())"
             }
             Else { $LabelEarnings.Text = "Waiting for data..." }
@@ -619,7 +640,17 @@ Function Update-TabControl {
                     @{ Name = "Benchmark Hashrate"; Expression = { If ($_.data.EstimatedSpeed) { ($_.data.EstimatedSpeed | ForEach-Object { ($_ -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } ) -join ' & ' }) -join '; ' } Else { "" } } }
                 ) | Sort-Object "Worker" | Out-DataTable
                 $WorkersDGV.ClearSelection()
-
+                If ($WorkersDGV.Columns) { 
+                    $WorkersDGV.Columns[0].FillWeight = 75
+                    $WorkersDGV.Columns[1].FillWeight = 60
+                    $WorkersDGV.Columns[2].FillWeight = 80
+                    $WorkersDGV.Columns[3].FillWeight = 80
+                    $WorkersDGV.Columns[4].FillWeight = 80
+                    $WorkersDGV.Columns[5].FillWeight = 150
+                    $WorkersDGV.Columns[6].FillWeight = 120
+                    $WorkersDGV.Columns[7].FillWeight = 150
+                    $WorkersDGV.Columns[8].FillWeight = 125
+                }
                 # Set row color
                 ForEach ($Row in $WorkersDGV.Rows) { 
                     $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
@@ -648,6 +679,16 @@ Function Update-TabControl {
                 ) | Sort-Object "$SortBy $($Config.Currency)/day" -Descending | Out-DataTable
                 Remove-Variable SortBy
                 $BenchmarksDGV.ClearSelection()
+                If ($BenchmarksDGV.Columns) { 
+                    $BenchmarksDGV.Columns[0].FillWeight = 220
+                    $BenchmarksDGV.Columns[1].FillWeight = 80
+                    $BenchmarksDGV.Columns[2].FillWeight = 90
+                    $BenchmarksDGV.Columns[3].FillWeight = 70
+                    $BenchmarksDGV.Columns[4].FillWeight = 100
+                    $BenchmarksDGV.Columns[5].FillWeight = 55
+                    $BenchmarksDGV.Columns[6].FillWeight = 55
+                    $BenchmarksDGV.Columns[7].FillWeight = 125
+                }
                 $LabelBenchmarks.Text = "Benchmark data read from stats - Updated $((Get-Date).ToString())"
             }
             Else { $LabelBenchmarks.Text = "Waiting for data..." }
@@ -727,7 +768,6 @@ Function Global:TimerUITick {
                 If (-not $Variables.IdleRunspace) { Start-IdleMining }
             }
             Else { 
-
                 Stop-IdleMining
                 Start-Mining
 
@@ -1216,9 +1256,20 @@ Function CheckBoxSwitching_Click {
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
     If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { 
         $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pool", "Algorithm", "Account", "Duration", "Device", "Type") | Out-DataTable
+        If ($SwitchingDGV.Columns) { 
+            $SwitchingDGV.Columns[0].FillWeight = 80
+            $SwitchingDGV.Columns[1].FillWeight = 50
+            $SwitchingDGV.Columns[2].FillWeight = 150
+            $SwitchingDGV.Columns[3].FillWeight = 90
+            $SwitchingDGV.Columns[4].FillWeight = 65
+            $SwitchingDGV.Columns[5].FillWeight = 80
+        }
         If ($SwitchingDGV.Columns[8]) { 
             $SwitchingDGV.Columns[0].HeaderText = "Date & Time"
             $SwitchingDGV.Columns[6].HeaderText = "Running Time"
+            $SwitchingDGV.Columns[6].FillWeight = 50
+            $SwitchingDGV.Columns[7].FillWeight = 55
+            $SwitchingDGV.Columns[8].FillWeight = 50
         }
         $SwitchingDGV.ClearSelection()
     }
@@ -1361,6 +1412,9 @@ Function MainForm_Resize {
     $RunningMinersDGV.Width = $TabControl.Width - 13
     $RunningMinersDGV.Height = ($TabControl.Height - $Variables.LabelStatus.Height - 56)
 
+    $WorkersDGV.Height = $TabControl.Height - 73
+    $ConfigMonitoringInGUI.Location = [System.Drawing.Point]::new(2, ($RunningMinersDGV.Bottom - 18))
+
     If ($MainForm.Width -gt 722) { 
         $EarningsChart1.Width = ($TabControl.Width - 14) * 0.60
 
@@ -1373,7 +1427,7 @@ Function MainForm_Resize {
     $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + 22))
 
     $BenchmarksDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $TabControl.Width - 14
-    $BenchmarksDGV.Height = $EarningsDGV.Height = $SwitchingDGV.Height = $WorkersDGV.Height = $TabControl.Height - 53
+    $BenchmarksDGV.Height = $EarningsDGV.Height = $SwitchingDGV.Height = $TabControl.Height - 53
 }
 
 $MainForm.Add_Load(

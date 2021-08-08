@@ -4,6 +4,33 @@ Breaking changes (from main code base):
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 
+Changelog NemosMiner 3.9.9.62 08.08.2021
+========================================
+
+Changes:
+- Core: Minor code enhancements, speed improvements & cleanup
+- Core: Moved .\Includes\*.dll to .\Cache
+- Rename \Includes\*.txt to .json (to reflect what they are)
+
+Enhancements:
+- Legacy GUI: Optimize data grid columns width
+- Legacy GUI: Re-enable 'config monitoring settings in web gui' link
+- Pools (Brains): Merge ZergPool & ZergPoolCoins to ZergPool (smaller code base)
+- Pools (Brains): Add Currency & CoinName information (where available)
+
+Fixes:
+- VertHashMiner-v0.7.2: Device selection & data file parameter broken (regression from 3.9.9.60)
+- Pools (Brains): Always update price data, even if pool API is not responding on time
+- Web GUI / utilities.js: Fix percent formatting
+
+Miner updates:
+- GMiner-v2.64
+- PhoenixMiner-v5.7b
+
+Pools:
+- ZergPool(24hr/Coins): Added USDT(ERC20) as guaranteed payout currency
+
+
 Changelog NemosMiner 3.9.9.61 03.08.2021
 ========================================
 
@@ -12,7 +39,7 @@ Enhancements:
 
 Fixes:
 - Core: Balance listing in main screen broken (regression from 3.9.9.59)
-- MiningHub(Pool): Verthash stratum error (API data incorrect)
+- MiningPoolHub(Coins): Verthash stratum error (API data incorrect)
 
 
 Changelog NemosMiner 3.9.9.60 30.07.2021
