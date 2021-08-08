@@ -152,7 +152,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARNING:.*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARN:.*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -325,7 +325,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARNING:.*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARN:.*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -498,7 +498,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARNING:.*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARN:.*</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
