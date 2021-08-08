@@ -389,7 +389,7 @@ While ($true) {
                 }
             )
             # Use dates for x-axis label
-            Pools = $PoolChartData
+            Earnings = $PoolChartData
         }
 
         $Variables.EarningsChartData | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore

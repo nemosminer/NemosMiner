@@ -170,16 +170,16 @@
         success: function (earningsdata) {
           var datasets = [];
 
-          for (var pool in earningsdata.Pools) {
+          for (var pool in earningsdata.Earnings) {
             var BTCvalue = [];
-            for (var index in earningsdata.Pools[pool]) BTCvalue.push(earningsdata.BTCrate * (earningsdata.Pools[pool][index]));
+            for (var index in earningsdata.Earnings[pool]) BTCvalue.push(earningsdata.BTCrate * (earningsdata.Earnings[pool][index]));
             var earnings = {
               label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
               data: BTCvalue,
               backgroundColor: Colors[datasets.length]
-              // backgroundColor: HslColor(Object.keys(earningsdata.Pools).length, datasets.length)
-              // backgroundColor: HsvColor(Object.keys(earningsdata.Pools).length, datasets.length)
-              // backgroundColor: RGBcolor(Object.keys(earningsdata.Pools).length, datasets.length)
+              // backgroundColor: HslColor(Object.keys(earningsdata.Earnings).length, datasets.length)
+              // backgroundColor: HsvColor(Object.keys(earningsdata.Earnings).length, datasets.length)
+              // backgroundColor: RGBcolor(Object.keys(earningsdata.Earnings).length, datasets.length)
             };
             datasets.push(earnings);
           }
