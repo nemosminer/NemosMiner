@@ -66,16 +66,13 @@
     }
   });
 
-  $(function () {
-    $("#resetwatchdog").click(function () {
-      $.ajax({
-        url: '/functions/watchdogtimers/reset', success: function (result) {
-          $('.modal-body').text('All watchdog timers will be reset on next cycle. ');
-          $('#myModal').modal({ show: true });
-          $('#watchdogtimers').bootstrapTable('refresh');
-        }
-      })
-    });
+  $("#resetwatchdog").click(function () {
+    $command = '/functions/watchdogtimers/reset';
+      $('.modal-body').load($command, function() {
+        $('.modal-title').text($('#resetwatchdog').text());
+        $('#myModal').modal({show:true});
+      });
+      $('#watchdogtimers').bootstrapTable('refresh');
   });
 
   function formatTimeSince(kicked) {
