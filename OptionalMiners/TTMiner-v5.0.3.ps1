@@ -40,29 +40,27 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     $Coin = ""
-                    If ($_.Algorithm -eq "ProgPoW") { 
-                        If ($Pools.($_.Algorithm).Currency -in @("EPIC", "ETHERCORE", "SERO", "RAVEN", "ZANO")) { 
-                            $Coin = " -coin $($Pools.($_.Algorithm).Currency)"
-                        }
-                        Else { 
-                            Return
-                        }
+                    If ($Pools.($_.Algorithm).Currency -in @("CKB", "CLO", "EPIC", "ERE", "ETC", "ETH", "ETP", "EXP", "HANA", "MUSIC", "PIRL", "SERO", "TCR", "UBQ", "VTC", "ZANO", "ZCOIN")) { 
+                        $Coin = " -coin $($Pools.($_.Algorithm).Currency)"
+                    }
+                    ElseIf ($_.Algorithm -eq "ProgPoW") { # No coin
+                        Return
                     }
 
                     $Pass = " -pass $($Pools.($_.Algorithm).Pass)"
                     If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                     [PSCustomObject]@{ 
-                        Name            = $Miner_Name
-                        DeviceName      = $Miner_Devices.Name
-                        Type            = "NVIDIA"
-                        Path            = $Path
-                        Arguments       = ("$($_.Arguments) -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -user $($Pools.($_.Algorithm).User)$Pass -work-timeout 500000$Coin -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
-                        Algorithm       = $_.Algorithm
-                        API             = "EthMiner"
-                        Port            = $MinerAPIPort
-                        URI             = $Uri
-                        WarmupTimes     = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
+                        Name        = $Miner_Name
+                        DeviceName  = $Miner_Devices.Name
+                        Type        = "NVIDIA"
+                        Path        = $Path
+                        Arguments   = ("$($_.Arguments) -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -user $($Pools.($_.Algorithm).User)$Pass -work-timeout 500000$Coin -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Algorithm   = $_.Algorithm
+                        API         = "EthMiner"
+                        Port        = $MinerAPIPort
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
                     }
                 }
             }
