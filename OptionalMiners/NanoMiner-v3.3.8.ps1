@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.3.7/nanominer-windows-3.3.7-cuda11.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.3.8/nanominer-windows-3.3.8-cuda11.zip"
 $DeviceEnumerator = "Bus_Type_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -44,9 +44,10 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    $ConfigFileName = "$((@("Config") + @($_.Algorithm) + @($($Pools.($_.Algorithm).Name -replace "Coins$|24hr$")) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -EQ $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').ini"
+                    $ConfigFileName = "$((@("Config") + @($_.Algorithm) + @($($Pools.($_.Algorithm).Name -replace "24hr$|Coins$|Plus$|CoinsPlus$")) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -EQ $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').ini"
                     If ($Config.UseMinerTweaks -eq $true) { $ConfigFileName = $ConfigFileName -replace '\.ini$', '-memTweak.ini' }
                     $Arguments = [PSCustomObject]@{ 
+                        Commands   = "$ConfigFileName"
                         ConfigFile = [PSCustomObject]@{ 
                             FileName = $ConfigFileName
                             Content  = "
@@ -70,7 +71,6 @@ pool1=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)
 wallet=$($Pools.($_.Algorithm).User -split '\.' | Select-Object -Index 0)
 $(If ($Pools.($_.Algorithm).DAGSize -gt 0) { "protocol=stratum" } )"
                         }
-                        Commands   = "$ConfigFileName"
                     }
 
                     [PSCustomObject]@{ 
