@@ -91,7 +91,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $ConfigFileName = "$((@("Config") + @($_.Type) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').txt"
                     $MinerThreadsConfigFileName = "$((@("ThreadsConfig") + @($_.Type) + @($_.Algorithm) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt"
                     $PlatformThreadsConfigFileName = "$((@("HwConfig") + @($_.Type) + @($_.Algorithm) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt"
-                    $PoolFileName = "$([System.Web.HttpUtility]::UrlEncode((@("PoolConf") + @($($Pools.($_.Algorithm).Name -replace "Coins$|24hr$")) + @($_.Algorithm) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) | Select-Object) -join '-')).txt"
+                    $PoolFileName = "$([System.Web.HttpUtility]::UrlEncode((@("PoolConf") + @($($Pools.($_.Algorithm).Name -replace "24hr$|Coins$|Plus$")) + @($_.Algorithm) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) | Select-Object) -join '-')).txt"
 
                     $Arguments = [PSCustomObject]@{ 
                         PoolFile = [PSCustomObject]@{ 
@@ -133,9 +133,9 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                                 prefer_ipv4     = $true
                             }
                         }
-                        Commands = ("--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)").trim()
+                        Commands = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)".trim()
                         Devices  = @($Miner_Devices.$DeviceEnumerator | Sort-Object)
-                        HwDetectCommands = ("--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)").trim()
+                        HwDetectCommands = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)".trim()
                         MinerThreadsConfigFileName = $MinerThreadsConfigFileName
                         Platform = $Platform
                         PlatformThreadsConfigFileName = $PlatformThreadsConfigFileName

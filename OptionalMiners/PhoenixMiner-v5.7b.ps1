@@ -80,13 +80,12 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         }
                     }
 
-                    If ($_.OpenCL.GlobalMemSize / 1GB -ge 2 * $MinMemGB -and -not $_.Algorithm[1]) { 
-                        # Faster kernels require twice as much VRAM, dual mining not supported
-                        If ($Miner_Devices.Vendor -eq "AMD") { 
+                    If ($_.OpenCL.GlobalMemSize / 1GB -ge 2 * $MinMemGB) { # Faster kernels require twice as much VRAM
+                        If ($Miner_Devices.Vendor -eq "AMD" -and -not $_.Algorithm[1]) { # Dual mining on AMD not supported
                             $Arguments += " -clkernel 3"
                         }
                         ElseIf ($Miner_Devices.Vendor -eq "NVIDIA") { 
-                            $Arguments += " -nvkernel 3"
+                            $Arguments += " -nvkernel 3" # Miner will switch to nvKernel 2 if unsuported
                         }
                     }
 
