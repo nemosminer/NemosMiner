@@ -7,7 +7,8 @@
     "PayoutThreshold": {
       "mBTC": 3
     },
-    "PayoutCurrency": "BTC"
+    "PayoutCurrency": "BTC",
+    "Region": "US"
   },
   "BlockMasters": {
     "BalancesKeepAlive": 90, // Old accounts are purged every 120 Days
@@ -22,7 +23,12 @@
       "DODGE": 20,
       "*": 0.00001
     },
-    "PayoutCurrency": "[Default]"
+    "PayoutCurrency": "[Default]",
+    "Region": [
+      "as",
+      "eu",
+      "us"
+    ]
   },
   "HiveON": {
     "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to sure
@@ -37,7 +43,16 @@
     "PayoutThreshold": {
       "ETC": 1,
       "ETH": 0.1
-    }
+    },
+    "Region": [
+      "ru",
+      "eu",
+      "na",
+      "naw",
+      "aspac",
+      "usw",
+      "use"
+    ]
   },
   "MiningPoolHub": {
     "BalancesKeepAlive": 90, // No expiration communicated by pool
@@ -75,6 +90,11 @@
       "ZCL",
       "ZEC",
       "ZEN"
+    ],
+    "Region": [
+      "Asia",
+      "EU",
+      "US"
     ]
   },
   "NLPool": {
@@ -86,7 +106,8 @@
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
       "mBTC": 2
-    }
+    },
+    "Region": "US"
   },
   "NiceHash External": {
     "BalancesKeepAlive": 180, // Your NiceHash Account may be deactivated due to your inactivity
@@ -98,7 +119,13 @@
     "PayoutCurrency": "BTC", // Only BTC is supported
     "PayoutThreshold": {
       "mBTC": 1
-    }
+    },
+    "Region": [
+      "eu-west",
+      "eu-east",
+      "usa-west",
+      "usa-east"
+    ]
   },
   "NiceHash Internal": {
     "BalancesKeepAlive": 180, // Your NiceHash Account may be deactivated due to your inactivity
@@ -110,7 +137,13 @@
     "PayoutCurrency": "BTC", // Only BTC is supported
     "PayoutThreshold": {
       "mBTC": 0.5
-    }
+    },
+    "Region": [
+      "eu-west",
+      "eu-east",
+      "usa-west",
+      "usa-east"
+    ]
   },
   "ProHashing": {
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
@@ -122,7 +155,11 @@
       "mBTC": 0,
       "LTC": 0.010950859265481713,
       "USD": 10
-    }
+    },
+    "Region": [
+      "EU",
+      "US"
+    ]
   },
   "ZergPool": {
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
@@ -138,9 +175,14 @@
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": { // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
       // e.g. "mBTC": 5
-    }
+    },
+    "Region": [
+      "eu",
+      "na",
+      "asia"
+    ]
   },
-  "Zpool": {
+  "ZPool": {
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "GuaranteedPayoutCurrencies": [
       "BTC",
@@ -153,6 +195,26 @@
     "PayoutThreshold": {
       "mBTC": 1.5,
       "*": 0.0125
+    },
+    "Region": [
+      "eu",
+      "jp",
+      "na",
+      "sea"
+    ],
+    "Variant": {
+      "ZPool": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "ZPool24hr": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "estimate_current24h"
+      },
+      "ZPoolPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "plus_price"
+      }
     }
   }
 }
