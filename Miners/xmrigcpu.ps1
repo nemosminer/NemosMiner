@@ -3,6 +3,7 @@ $Path = ".\Bin\CPU-XMRigv6122\xmrig.exe"
 $Uri = "https://github.com/Minerx117/miners/releases/download/XMRig/XMRigv6122.7z"
 $Commands = [PSCustomObject]@{ 
     "randomxmonero"       = " -o stratum+tcp://randomxmonero.usa-west.nicehash.com:3380 -a rx/0 --nicehash" #RandomX
+    "cryptonightmonero"   = " -o stratum+tcp://us-east.randomx-hub.miningpoolhub.com:20580 -a rx/0 --nicehash" #RandomX
     "randomwow"           = " -o stratum+tcp://randomwow.mine.zergpool.com:4460 -a rx/wow --nicehash" #Randomwow
     "cryptonight_haven"   = " -o stratum+tcp://cryptonight_haven.mine.zergpool.com:4452 -a cn-heavy/xhv --nicehash" #cryptonight_haven
     "cryptonight_upx"     = " -o stratum+tcp://cryptonight_upx.mine.zergpool.com:4457 -a cn/upx2 --nicehash" #cryptonight_upx
