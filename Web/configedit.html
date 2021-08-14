@@ -267,16 +267,16 @@
 
           <legend class=h6><b>Run Miners as</b></legend>
           <div title="Miners will run as a hidden background task and are not accessible (not recommended)">
-            <input type="radio" id="ShowMinerWindowsHidden" name="ShowMinerWindows" value="Hidden"> Hidden background task
+            <input type="radio" id="MinerWindowStyleHidden" name="MinerWindowStyle" value="Hidden"> Hidden background task
           </div>
           <div title="Miner windows are minimized (default), but accessible">
-            <input type="radio" id="ShowMinerWindowsMinimized" name="ShowMinerWindows" value="Minimized"> Minimized window
+            <input type="radio" id="MinerWindowStyleMinimized" name="MinerWindowStyle" value="Minimized"> Minimized window
           </div>
           <div title="Miner windows are shown normally on desktop">
-            <input type="radio" id="ShowMinerWindowsNormal" name="ShowMinerWindows" value="Normal"> Normal window
+            <input type="radio" id="MinerWindowStyleNormal" name="MinerWindowStyle" value="Normal"> Normal window
           </div>
           <div title="This is helpful to check the miner output for errors">
-            <input type="checkbox" id="ShowMinerWindowsNormalWhenBenchmarking" name="ShowMinerWindowsNormalWhenBenchmarking"> When benchmarking run in normal window
+            <input type="checkbox" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> When benchmarking run in normal window
           </div>
           <div
             title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hash rates with GPU miners">
@@ -285,7 +285,7 @@
               <option value=1>Above Normal</option>
               <option value=0>Normal</option>
               <option value=-1>Below Normal</option>
-              <option value=-2>Low</option>
+              <option value=-2>Idle</option>
             </select>
             <label for="CPUMinerProcessPriority">process priority</label>
           </div>
@@ -296,7 +296,7 @@
               <option value=1>Above Normal</option>
               <option value=0>Normal</option>
               <option value=-1>Below Normal</option>
-              <option value=-2>Low</option>
+              <option value=-2>Idle</option>
             </select>
             <label for="GPUMinerProcessPriority">process priority</label>
           </div>
@@ -575,7 +575,7 @@
     if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
 
     $.each(config.PoolName, function (key, value) {
-      document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
+      if (document.getElementById(('pool-' + value).toString().toLowerCase())) document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
     });
     document.getElementById(('region-' + config.Region).toLowerCase()).checked = "true";
     if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
@@ -591,10 +591,10 @@
     else document.getElementById('MinerSet').value = 1;
     if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
 
-    if (config.ShowMinerWindows.toLowerCase() == "hidden") document.getElementById('ShowMinerWindowsHidden').checked = true;
-    if (config.ShowMinerWindows.toLowerCase() == "minimized") document.getElementById('ShowMinerWindowsMinimized').checked = true;
-    if (config.ShowMinerWindows.toLowerCase() == "normal") document.getElementById('ShowMinerWindowsNormal').checked = true;
-    if (config.ShowMinerWindowsNormalWhenBenchmarking) document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked = true;
+    if (config.MinerWindowStyle.toLowerCase() == "hidden") document.getElementById('MinerWindowStyleHidden').checked = true;
+    if (config.MinerWindowStyle.toLowerCase() == "minimized") document.getElementById('MinerWindowStyleMinimized').checked = true;
+    if (config.MinerWindowStyle.toLowerCase() == "normal") document.getElementById('MinerWindowStyleNormal').checked = true;
+    if (config.MinerWindowStyleNormalWhenBenchmarking) document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked = true;
 
     if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority) <= 1) document.getElementById('CPUMinerProcessPriority').value = config.CPUMinerProcessPriority;
     else document.getElementById('CPUMinerProcessPriority').value = -2;
@@ -925,10 +925,10 @@
         config.MinerSet = parseInt(document.getElementById('MinerSet').value);
         config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).toString();
 
-        if (document.getElementById('ShowMinerWindowsHidden').checked) config.ShowMinerWindows = "hidden";
-        if (document.getElementById('ShowMinerWindowsMinimized').checked) config.ShowMinerWindows = "minimized";
-        if (document.getElementById('ShowMinerWindowsNormal').checked) config.ShowMinerWindows = "normal";
-        config.ShowMinerWindowsNormalWhenBenchmarking = document.getElementById('ShowMinerWindowsNormalWhenBenchmarking').checked;
+        if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";
+        if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = "minimized";
+        if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = "normal";
+        config.MinerWindowStyleNormalWhenBenchmarking = document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked;
 
         config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
         config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
@@ -1077,12 +1077,16 @@
   const Pools = document.getElementById('Pools');
   $(Pools).click(function (event) {
     if ((event.target).value) var PoolName = (event.target).id.toLowerCase();
-    var basePoolName = (PoolName.replace('24hr', '')).replace('coins', '');
+    var basePoolName = PoolName.replace('24hr', '').replace('coins', '').replace('plus', '');
     var pool = document.getElementById(basePoolName);
     if (pool && PoolName != pool.id) pool.checked = false;
     var pool = document.getElementById(basePoolName + '24hr');
     if (pool && PoolName != pool.id) pool.checked = false;
     var pool = document.getElementById(basePoolName + 'coins');
+    if (pool && PoolName != pool.id) pool.checked = false;
+    var pool = document.getElementById(basePoolName + 'plus');
+    if (pool && PoolName != pool.id) pool.checked = false;
+    var pool = document.getElementById(basePoolName + 'coinsplus');
     if (pool && PoolName != pool.id) pool.checked = false;
     if (PoolName == 'pool-miningpoolhub' || PoolName == 'pool-miningpoolhubcoins') {
       document.getElementById('MiningPoolHubUserName').disabled = !(document.getElementById(PoolName).checked);

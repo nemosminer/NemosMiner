@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,28 +32,25 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$|Plus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
-$PayoutCurrency = $Config.PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
-$Wallet = $Config.PoolsConfig.$Name_Norm.Wallets.$PayoutCurrency
+$HostSuffix = "blockmasters.co"
+$PriceField = "Plus_Price"
+# $PriceField = "actual_last24h"
+# $PriceField = "estimate_current"
+$DivisorMultiplier = 1000000
+
+$PayoutCurrency = $PoolConfig.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
+$Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\blockmasters\blockmasters.json") | ConvertFrom-Json 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
     }
     Catch { Return }
 
     If (-not $Request) { Return }
-
-    $HostSuffix = "blockmasters.co"
-    $PriceField = "Plus_Price"
-    # $PriceField = "actual_last24h"
-    # $PriceField = "estimate_current"
-    $DivisorMultiplier = 1000000
-
-    $PoolRegions = @("as", "eu", "us")
-    $PoolRegions = @("as", "us") # Temp Fix, EU seems broken
 
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
@@ -71,7 +68,7 @@ If ($Wallet) {
         Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = 1 }
 
-        ForEach ($Region in $PoolRegions) { 
+        ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
@@ -84,7 +81,7 @@ If ($Wallet) {
                 Host                     = "$($Region).$($HostSuffix)" -replace "^us\."
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$Wallet
-                Pass                     = "$($Config.PoolsConfig.$Name_Norm.WorkerName),c=$PayoutCurrency"
+                Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
                 Fee                      = [Decimal]$Fee

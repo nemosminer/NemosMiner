@@ -154,7 +154,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         API         = "Fireice"
                         Port        = $MinerAPIPort
                         URI         = $Uri
-                        Fees        = 0.02
+                        Fee         = @(0.02)
                         MinerUri    = "http://localhost:$($MinerAPIPort)/h"
                         WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
                     }

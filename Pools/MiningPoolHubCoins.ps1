@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,12 +32,13 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$|Plus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
+$PoolRegions = $PoolConfig.Region
 
 If ($PoolConfig.UserName) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
+        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{ "Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 
@@ -51,8 +52,6 @@ If ($PoolConfig.UserName) {
         $Current = $_
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        # $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ") -replace "$Algorithm$" -ireplace ".+groestl$" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "coin$", "Coin"
-        # $CoinName = (Get-Culture).TextInfo.ToTitleCase($_.coin_name -replace "-| ") -replace "$Algorithm$" -ireplace ".+groestl$" -ireplace "cash$", "Cash" -ireplace "gold$", "Gold" -ireplace "coin$", "Coin"
         $Fee = [Decimal]($_.Fee / 100)
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
@@ -60,7 +59,6 @@ If ($PoolConfig.UserName) {
         If ($Algorithm_Norm -in @("VertHash")) {
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
-                # CoinName                 = [String]$CoinName
                 Currency                 = [String]$Current.symbol
                 Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                 StablePrice              = [Double]$Stat.Week
@@ -70,24 +68,20 @@ If ($PoolConfig.UserName) {
                 Port                     = [UInt16]$Current.port
                 User                     = [String]$User
                 Pass                     = "x"
-                Region                   = [String]$Region_Norm
+                Region                   = [String]$Config.Region
                 SSL                      = [Bool]$false
                 Fee                      = $Fee
                 EstimateFactor           = [Decimal]1
             }
         }
         Else { 
-
-            $PoolRegions = @("Asia", "EU", "US")
-            If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia", "US") } # temp fix
-            # If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = @("Asia") } # temp fix
+            If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = $PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") } } # temp fix
     
             ForEach ($Region in $PoolRegions) { 
                 $Region_Norm = Get-Region $Region
 
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
-                    # CoinName                 = [String]$CoinName
                     Currency                 = [String]$Current.symbol
                     Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
                     StablePrice              = [Double]$Stat.Week

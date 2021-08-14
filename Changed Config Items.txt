@@ -7,6 +7,11 @@ New Config Items
 # If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
 
+# Balances tracker will not track these pools (use pool base name without 24hr/Coins/Plus etc.)
+    "BalancesTrackerIgnorePool": [
+      "AHashPool",
+    ], 
+
 # If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
   "BalancesTrackerLog": false,
 
@@ -104,6 +109,13 @@ New Config Items
 
 # 0: Use best miner per algorithm and device only; 1: Use optimal miners (more than one per algorithm and device); 2: Use all miners per algorithm and device;
   "MinerSet": 1,
+    [Parameter(Mandatory = $false)]
+
+# Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
+  "MinerWindowStyle": = "minimized",
+
+# If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
+  "MinerWindowStyleNormalWhenBenchmarking": true, 
 
 # MPH API Key (required to retrieve balance information)
   "MPHAPIKey": "",
@@ -175,9 +187,6 @@ New Config Items
 
 # Show pool fee column in miner overview (if fees are available, Property '[Double]Fee')
   "ShowPoolFee": true,
-
-# Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
-  "ShowMinerWindow": "minimized",
 
 # Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
   "ShowPowerCost": true,

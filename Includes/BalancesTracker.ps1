@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 # Start the log
@@ -39,7 +39,7 @@ While ($true) {
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
         # Get pools to track
-        $PoolsToTrack = @(Get-ChildItem ".\Balances\*.ps1" -File).BaseName -replace "24hr$|Coins$" | Sort-Object -Unique
+        $PoolsToTrack = @(Get-ChildItem ".\Balances\*.ps1" -File).BaseName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$" | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
 
         # Only on first run
         If (-not $Now) { 
@@ -51,10 +51,10 @@ While ($true) {
             $Earnings = @()
 
             # Get pools data
-            $PoolData = Get-Content ".\Includes\PoolData.json" | ConvertFrom-Json
+            $PoolData = Get-Content ".\Data\PoolData.json" | ConvertFrom-Json
 
             # Read existing earning data, use data from last file
-            ForEach ($Filename in Get-ChildItem ".\Logs\BalancesTrackerData*.json" | Sort-Object -Descending) {
+            ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) {
                 $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null
                 If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { 
                     $Variables.BalanceData = $AllBalanceObjects
@@ -65,21 +65,20 @@ While ($true) {
             Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
 
             # Read existing earning data, use data from last file
-            ForEach($Filename in (Get-ChildItem ".\Logs\DailyEarnings*.csv" | Sort-Object -Descending)) { 
+            ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -Descending)) { 
                 $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
                 If ($Earnings.Count -gt ($PoolData.Count / 2)) { Break }
             }
-            If ($Earnings -isnot [Array]) { $Earnings = @() }
         }
 
         If ($Now.Date -ne (Get-Date).Date) {
             # Keep a copy on start & at date change
-            If (Test-Path -Path ".\Logs\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Logs\BalancesTrackerData.json" -Destination ".\Logs\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
-            If (Test-Path -Path ".\Logs\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Logs\DailyEarnings.csv" -Destination ".\Logs\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
+            If (Test-Path -Path ".\Data\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Data\BalancesTrackerData.json" -Destination ".\Data\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
+            If (Test-Path -Path ".\Data\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Data\DailyEarnings.csv" -Destination ".\Data\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
             # If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
                 # Keep only the last 3 logs
-                Get-ChildItem ".\Logs\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
-                Get-ChildItem ".\Logs\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
+                Get-ChildItem ".\Data\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
+                Get-ChildItem ".\Data\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
             # }
         }
 
@@ -297,8 +296,8 @@ While ($true) {
                 AvgWeeklyGrowth         = [Double]$AvgWeeklyGrowth
                 EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
                 EstimatedPayDate        = If ($PayoutThreshold) { If ([Double]($PoolBalanceObject.Unpaid) -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency))) { If (($AvgDailyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-7) { [DateTime]($Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency) - $PoolBalanceObject.Unpaid) / ((($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum))) } Else { "Unknown" } } Else { If ($PoolBalanceObject.NextPayout) { $PoolBalanceObject.NextPayout.ToLocalTime() } Else { "Next Payout!" } } } Else { "Unknown" }
-                TrustLevel              = [Double](((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum)
-                TotalHours              = [Double](($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours)
+                TrustLevel              = [Double]((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum
+                TotalHours              = [Double]($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours
                 PayoutThresholdCurrency = $PayoutThresholdCurrency
                 PayoutThreshold         = [Double]$PayoutThreshold
                 Payout                  = [Double]$PoolBalanceObject.Payout
@@ -357,10 +356,10 @@ While ($true) {
         }
 
         Try { 
-            $Earnings | Export-Csv ".\Logs\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
+            $Earnings | Export-Csv ".\Data\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
         }
         Catch { 
-            Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Logs\DailyEarnings.csv' (should have $($Earnings.count) entries)."
+            Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."
         }
 
         # Build chart data (used in Web GUI) for last 30 days
@@ -392,12 +391,12 @@ While ($true) {
             Earnings = $PoolChartData
         }
 
-        $Variables.EarningsChartData | ConvertTo-Json | Out-File ".\Logs\EarningsChartData.json" -Encoding UTF8 -ErrorAction Ignore
+        $Variables.EarningsChartData | ConvertTo-Json | Out-File ".\Data\EarningsChartData.json" -Force -Encoding UTF8 -ErrorAction Ignore
 
         # At least 31 days are needed for Growth720
         # For data older 1 week only keep those with delta <> 0
         If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays( -31 ) | Where-Object { $_.DateTime -ge $Now.AddDays( -7 ) -or $_.Delta -ne 0 }) }
-        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore }
+        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Data\BalancesTrackerData.json" -Force -ErrorAction Ignore }
         $Variables.BalanceData = $AllBalanceObjects
 
     }
@@ -405,7 +404,7 @@ While ($true) {
     If ($ReadBalances) { Return } # Debug stuff
 
     # Sleep until next update (at least 1 minute, maximum 60 minutes)
-    While ((Get-Date).ToLocalTime() -le $Now.AddMinutes((60, (1, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 1 }
+    While ((Get-Date).ToLocalTime() -le $Now.AddMinutes((60, (1, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
 }
 
 Write-Message "Balances Tracker stopped."

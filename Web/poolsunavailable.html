@@ -6,10 +6,10 @@
 <div class="alert alert-info" role="alert">This is the pool data of all unavailable pools. The column 'Reason' shows the filter criteria(s) that made the pool unavailable.</div>
 
 <div id="toolbar">
-  <button id="reset-data" class="btn btn-warning">Reset pool stat data</button>
-  <button id="remove-watchdog" class="btn btn-primary">Remove watchdog</button>
-  <button id="enable" class="btn btn-success">Enable algorithm @ pool</button>
-  <button id="disable" class="btn btn-danger">Disable algorithm @ pool</button>
+  <button id="reset-data" class="btn btn-warning" disabled>Reset pool stat data</button>
+  <button id="remove-watchdog" class="btn btn-primary" disabled>Remove watchdog</button>
+  <button id="enable" class="btn btn-success" disabled>Enable algorithm @ pool</button>
+  <button id="disable" class="btn btn-danger" disabled>Disable algorithm @ pool</button>
 </div>
 
 <table id="pools" class="table"
@@ -39,8 +39,8 @@
   <thead>
     <tr>
       <th data-field="state" data-checkbox="true"></th>
-      <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
       <th data-field="Name" data-sortable="true" data-filter-control="select">Name</th>
+      <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
       <th data-field="Reason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Reason</th>
       <th data-field="User" data-sortable="true" data-filter-control="select" data-visible="false">Wallet / UserName</th>
       <th data-field="CoinName" data-sortable="true" data-filter-control="select">CoinName</th>
@@ -148,6 +148,22 @@
         $table.bootstrapTable('refresh');
       }
     }
+  });
+
+  $table.on('all.bs.table', function () {
+    try {
+      if ($table.bootstrapTable('getSelections').length >= 1) {
+        document.getElementById('reset-data').disabled = false;
+        document.getElementById('remove-watchdog').disabled = false;
+        document.getElementById('enable').disabled = false;
+        document.getElementById('disable').disabled = false;
+      } else {
+        document.getElementById('reset-data').disabled = true;
+        document.getElementById('remove-watchdog').disabled = true;
+        document.getElementById('enable').disabled = true;
+        document.getElementById('disable').disabled = true;
+      }
+    } catch {}
   });
 
 </script>

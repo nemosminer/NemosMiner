@@ -7,13 +7,13 @@ $DeviceEnumerator = "Bus_Type_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.05; MinMemGB = 3;  MinerSet = 0; WarmupTimes = @(0, 30);  Coin = "Autolykos" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.05; MinMemGB = 16; MinerSet = 1; WarmupTimes = @(120, 0); Coin = "Cuckaroo30" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(120, 0); Coin = "Etchash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(120, 0); Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01; MinMemGB = 2;  MinerSet = 1; WarmupTimes = @(120, 0); Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(120, 0); Coin = "Kawpow" } # TeamRed-v0.8.4 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; WarmupTimes = @(120, 0); Coin = "Ubqhash" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.05; MinMemGB = 3;  MinerSet = 0; WarmupTimes = @(0, 30);    Coin = "Autolykos" }
+    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.05; MinMemGB = 16; MinerSet = 1; WarmupTimes = @(120, 120); Coin = "Cuckaroo30" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(120, 120); Coin = "Etchash" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(120, 120); Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01; MinMemGB = 2;  MinerSet = 1; WarmupTimes = @(120, 120); Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(120, 120); Coin = "Kawpow" } # TeamRed-v0.8.4 is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; WarmupTimes = @(120, 120); Coin = "Ubqhash" } # PhoenixMiner-v5.7b is fastest
 
     [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "Randomx" } # XmRig-v6.12.2 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "VerusHash" }

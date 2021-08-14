@@ -156,6 +156,7 @@ function formatWatt(value) {
 };
 
 function formatPercent(value) {
+  if (isNaN(value)) return 'N/A';
   if (value != null) return parseFloat(value * 100).toFixed(2) + ' %';
   return '';
 };

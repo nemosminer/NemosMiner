@@ -4,9 +4,9 @@
 </div>
 
 <div id="toolbar">
-  <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
-  <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
-  <button id="disable" class="btn btn-danger">Disable Miner</button>
+  <button id="re-benchmark" class="btn btn-primary" disabled>Trigger re-benchmarking</button>
+  <button id="re-measure" class="btn btn-primary" disabled>Trigger re-measuring power usage</button>
+  <button id="disable" class="btn btn-danger" disabled>Disable Miner</button>
 </div>
 
 <h3>Running Miners</h3>
@@ -100,29 +100,29 @@
           <div title="Data last collected from pool">
             {{{updated}}}<br>
           </div>
-          <div title="{{formatMainCurrency growth1 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="{{formatMainCurrency growth1 rates thresholdcurrency maincurrency}} {{maincurrency}} last 1 hour">
             <br>{{formatCurrency growth1}} {{thresholdcurrency}} last 1 hour
           </div>
-          <div title="{{formatMainCurrency growth6 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="{{formatMainCurrency growth6 rates thresholdcurrency maincurrency}} {{maincurrency}} last 6 hrs">
             {{formatCurrency growth6}} {{thresholdcurrency}} last 6 hrs
           </div>
-          <div title="{{formatMainCurrency growth24 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="{{formatMainCurrency growth24 rates thresholdcurrency maincurrency}} {{maincurrency}} last 24 hrs">
             {{formatCurrency growth24}} {{thresholdcurrency}} last 24 hrs
           </div>
-          <div title="{{formatMainCurrency growth168 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="{{formatMainCurrency growth168 rates thresholdcurrency maincurrency}} {{maincurrency}} last 7 days">
             {{formatCurrency growth168}} {{thresholdcurrency}} last 7 days
           </div>
-          <div title="{{formatMainCurrency growth720 rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="{{formatMainCurrency growth720 rates thresholdcurrency maincurrency}} {{maincurrency}} last 30 days">
             {{formatCurrency growth720}} {{thresholdcurrency}} last 30 days
           </div>
           <br/>
-          <div title="{{formatMainCurrency avghourlygrowth rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="avg. {{formatMainCurrency avghourlygrowth rates thresholdcurrency maincurrency}} {{maincurrency}} in 1h">
             avg. {{formatCurrency avghourlygrowth}} {{thresholdcurrency}} in 1h
           </div>
-          <div title="{{formatMainCurrency avgdailygrowth rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="avg. {{formatMainCurrency avgdailygrowth rates thresholdcurrency maincurrency}} {{maincurrency}} in 24 hrs">
             avg. {{formatCurrency avgdailygrowth}} {{thresholdcurrency}} in 24 hrs
           </div>
-          <div title="{{formatMainCurrency avgweeklygrowth rates thresholdcurrency maincurrency}} {{maincurrency}}">
+          <div title="avg. {{formatMainCurrency avgweeklygrowth rates thresholdcurrency maincurrency}} {{maincurrency}} in 7 days">
             avg. {{formatCurrency avgweeklygrowth}} {{thresholdcurrency}} in 7 days
           </div>
         {{/if}}
@@ -288,7 +288,7 @@
                           if (config.UsemBTC == true) {
                             (item.Currencies).splice((item.Currencies).indexOf('BTC'), 1, 'mBTC')
                           }
-                          // Remove uplicated currencies, keep first in list
+                          // Remove duplicated currencies, keep first in list
                           item.Currencies = [...new Set(item.Currencies)];
 
                           growth1_sum   += item.Growth1   * rates[item.Currency]['BTC'];
@@ -408,6 +408,20 @@
       $table.bootstrapTable("refresh");
     }, (parseInt(config.Interval) * 1000));
 
+  });
+
+  $('#miners').on('all.bs.table', function () {
+    try{  
+      if ($('#miners').bootstrapTable('getSelections').length >= 1) {
+        document.getElementById('re-benchmark').disabled = false;
+        document.getElementById('re-measure').disabled = false;
+        document.getElementById('disable').disabled = false;
+      } else {
+        document.getElementById('re-benchmark').disabled = true;
+        document.getElementById('re-measure').disabled = true;
+        document.getElementById('disable').disabled = true;
+      }
+    } catch {}
   });
 
 </script>

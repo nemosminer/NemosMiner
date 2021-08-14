@@ -5,7 +5,7 @@
 <div class="alert alert-info" role="alert">These are the devices (GPUs and CPUs) detected by NemosMiner. Configuration changes made will become active in the next cycle.</div>
 
 <div id="toolbarenableddevices">
-  <button id="disable-device" class="btn btn-danger">Disable Device</button>
+  <button id="disable-device" class="btn btn-danger" disabled>Disable Device</button>
 </div>
 
 <h3 class="mt-4">Enabled Devices</h3>
@@ -72,7 +72,7 @@
 <h3 class="mt-4">Disabled Devices</h3>
 
 <div id="toolbardisableddevices">
-    <button id="enable-device" class="btn btn-success">Enable Device</button>
+    <button id="enable-device" class="btn btn-success" disabled>Enable Device</button>
 </div>
 
 <table id="disableddevices" class="table"
@@ -191,7 +191,7 @@
 
 <!-- Start of page scripts -->
 
-<script type='text/javascript'>$
+<script type='text/javascript'>
 
   $(function () {
     $('#disable-device').click(function () {
@@ -269,6 +269,25 @@
     return data;
   }
 
+  $('#enableddevices').on('all.bs.table', function () {
+    try {
+      if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
+        document.getElementById('disable-device').disabled = false;
+      } else {
+        document.getElementById('disable-device').disabled = true;
+      }
+    } catch {}
+  });
+
+  $('#disableddevices').on('all.bs.table', function () {
+    try {
+      if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
+        document.getElementById('enable-device').disabled = false;
+      } else {
+        document.getElementById('enable-device').disabled = true;
+      }
+    } catch {}
+  });
 </script>
 
 <!-- End of page scripts -->

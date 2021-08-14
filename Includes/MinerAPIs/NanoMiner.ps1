@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 using module ..\Include.psm1

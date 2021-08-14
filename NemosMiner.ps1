@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 [CmdletBinding()]
@@ -40,6 +40,8 @@ param(
     [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true Nemosminer will force mining at a pool to protect your eranings (some pools auto-purge the wallet after longer periods of inactivity, see '\Includes\PoolData.Json' BalancesKeepAlive properties)
+    [Parameter(Mandatory = $false)]
+    [String[]]$BalancesTrackerIgnorePool, # Balances tracker will not track these pools
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerLog = $false, # If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
@@ -112,6 +114,10 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$MinerSet = 1, # 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device;
     [Parameter(Mandatory = $false)]
+    [String]$MinerWindowStyle = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
+    [Parameter(Mandatory = $false)]
+    [Switch]$MinerWindowStyleNormalWhenBenchmarking = $true, # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
+    [Parameter(Mandatory = $false)]
     [String]$MiningPoolHubAPIKey = "", # MiningPoolHub API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
     [String]$MiningPoolHubUserName = "Nemo", # MiningPoolHub UserName
@@ -175,10 +181,6 @@ param(
     [Switch]$ShowEarningBias = $true, # Show miner earning bias column in miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerFee = $true, # Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
-    [Parameter(Mandatory = $false)]
-    [String]$ShowMinerWindows = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
-    [Parameter(Mandatory = $false)]
-    [Switch]$ShowMinerWindowsNormalWhenBenchmarking = $true, # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
@@ -248,7 +250,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.62"
+    Version      = [System.Version]"3.9.9.63"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -277,9 +279,14 @@ Catch {
     Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Application]::EnableVisualStyles()
+[void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
+
 # Create directories
 If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Data" -PathType Container)) { New-Item -Path . -Name "Data" -ItemType Directory | Out-Null }
 
 # Initialize global variables
 New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
@@ -308,23 +315,30 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile
 $Variables.AllCommandLineParameters = $AllCommandLineParameters
 
 # Load algorithm list
-$Variables.Algorithms = Get-Content -Path ".\Includes\Algorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
+# Load coin names
+$Variables.Algorithms = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Algorithms) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\CoinNames.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
-$Variables.Regions = Get-Content -Path ".\Includes\Regions.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\Regions.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Regions.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Verify pool data
-Try { [Void](Get-Content -Path ".\Includes\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
+Try { [Void](Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
 Catch { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\PoolData.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\PoolData.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -353,9 +367,17 @@ Write-Host ""
 If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
     $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
     $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
-    If (-not (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "`"$($Variables.SnakeTailExe)`" $($Variables.SnakeTailConfig)")) { 
-        & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
+    If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
+        # Activate existing Snaketail window
+        $MainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+        [void][Win32]::ShowWindowAsync($MainWindowHandle, 4) # ShowNoActivateRecentPosition
+        [void][Win32]::SetForegroundWindow($MainWindowHandle) 
     }
+    Else { 
+        $SnaketailProcess = Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null
+        # & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
+    }
+    Remove-Variable MainWindowHandle, SnaketailProcess -ErrorAction Ignore
 }
 
 #Prerequisites check
@@ -428,8 +450,8 @@ $Variables.Strikes = 3
 $Variables.WatchdogTimers = @()
 $Variables.StatStarts = @()
 $Variables.PoolsLastUsed = @{}
-If (Test-Path -Path ".\Logs\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Logs\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
-If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Logs\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
+If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
+If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
@@ -605,7 +627,7 @@ Function Update-TabControl {
                     @{ Name = "$($Config.Currency) in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "$($Config.Currency) in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is [DateTime]) { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } }, 
-                    @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance / ($_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.Currency)))))" } }
+                    @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance / $_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.Currency))))" } }
                 ) | Sort-Object Pool | Out-DataTable
                 $EarningsDGV.ClearSelection()
                 If ($EarningsDGV.Columns) { 
@@ -800,7 +822,7 @@ Function Global:TimerUITick {
             If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
                 $Variables.Balances.Values | ForEach-Object { 
                     If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = $_.Currency; $mBTCfactor = 1 }
-                    Write-Host "$($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)') [$($_.Wallet)]" -BackgroundColor Green -ForegroundColor Black
+                    Write-Host "$($_.Pool -replace 'Internal$', ' (Internal Wallet)' -replace 'External$', ' (External Wallet)') [$($_.Wallet)]" -ForegroundColor Green
                     Write-Host "Earned last hour:       $(($_.Growth1 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)).ToString('N8')) $($Config.Currency)"
                     Write-Host "Earned last 24 hours:   $(($_.Growth24 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)).ToString('N8')) $($Config.Currency)"
                     Write-Host "Earned last 7 days:     $(($_.Growth168 * $mBTCfactor).ToString('N8')) $Currency / $(($_.Growth168 * $Variables.Rates.($_.Currency).($Config.Currency)).ToString('N8')) $($Config.Currency)"
@@ -828,7 +850,7 @@ Function Global:TimerUITick {
             # Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Miner"; Expression = { $_.Name } }
-                @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & "} }
+                @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & " } }
                 If ($Config.ShowMinerFee -and ($Variables.Miners.Workers.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
                 @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Speed | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
                 If ($Config.ShowEarning) { @{ Label = "Earning"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ConvertTo-LocalCurrency -Value $_.Earning -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
@@ -961,20 +983,20 @@ Function MainForm_Load {
                     Switch ($KeyPressed.Character) { 
                         "a" { 
                             $Variables.ShowAllMiners = -not $Variables.ShowAllMiners
-                            Write-Host "Toggled displaying all available miners to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Write-Host "Toggled displaying " -NoNewline; Write-Host "a" -ForegroundColor Cyan -NoNewline; Write-Host "ll available miners to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }
                         "b" { 
                             $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
-                            Write-Host "Toggled displaying pool balances to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Write-Host "Toggled displaying pool " -NoNewline; Write-Host "b" -ForegroundColor Cyan -NoNewline; Write-Host "alances to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }
                         "s" { 
                             If ($Variables.UIStyle -eq "Light") { $Variables.UIStyle = "Full" }
                             Else { $Variables.UIStyle = "Light" }
-                            Write-Host "UI style set to " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host " (Information about miners run in the past, failed miners & watchdog timers will " -NoNewline; If ($Variables.UIStyle -eq "Light") { Write-Host "not" -ForegroundColor Red -NoNewline; Write-Host " " -NoNewline }; Write-Host "be shown)."
+                            Write-Host "UI " -NoNewline; Write-Host "s" -ForegroundColor Cyan -NoNewline; Write-Host "tyle set to " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host " (Information about miners run in the past, failed miners & watchdog timers will " -NoNewline; If ($Variables.UIStyle -eq "Light") { Write-Host "not" -ForegroundColor Red -NoNewline; Write-Host " " -NoNewline }; Write-Host "be shown)."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }
@@ -1005,18 +1027,14 @@ Function MainForm_Load {
 
 Function CheckedListBoxPools_Click ($Control) { 
     If ($Control.SelectedItem -in $Control.CheckedItems) { 
-        $Control.CheckedItems | Where-Object { $_ -ne $Control.SelectedItem -and ($_ -replace "24hr$|Coins$") -like "$($Control.SelectedItem -replace "24hr$|Coins$")" } | ForEach-Object { 
+        $Control.CheckedItems | Where-Object { $_ -ne $Control.SelectedItem -and ($_ -replace "24hr$|Coins$|Plus$|CoinsPlus$") -like "$($Control.SelectedItem -replace "24hr$|Coins$|Plus$|CoinsPlus$")" } | ForEach-Object { 
             $Control.SetItemChecked($Control.Items.IndexOf($_), $false)
         }
     }
 }
 
-Add-Type -AssemblyName System.Windows.Forms
-[System.Windows.Forms.Application]::EnableVisualStyles()
-[void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
-
 $MainForm = New-Object System.Windows.Forms.Form
-$MainForm.Icon = New-Object System.Drawing.Icon ("$($PWD)\Includes\NM.ICO")
+$MainForm.Icon = New-Object System.Drawing.Icon ("$($PWD)\Data\NM.ICO")
 $MainForm.MinimumSize = [System.Drawing.Size]::new(756, 501) # best to keep under 800x600
 $MainForm.Text = "NemosMiner"
 $MainForm.TopMost = $false
@@ -1469,6 +1487,11 @@ $MainForm.Add_FormClosing(
         Stop-IdleMining
         Stop-BrainJob
         Stop-BalancesTracker
+    }
+)
+
+$MainForm.Add_FormClosed(
+    { 
         # Save window settings
         $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Set-Content ".\Config\WindowSettings.json" -Force -ErrorAction Ignore
     }

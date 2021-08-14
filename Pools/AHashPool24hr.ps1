@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool24hr.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,32 +32,32 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$"
+$Name_Norm = $Name -replace "24hr$|Coins$|Plus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
+
+$HostSuffix = "mine.ahashpool.com"
+# $PriceField = "Plus_Price"
+$PriceField = "actual_last24h"
+# $PriceField = "estimate_current"
+$DivisorMultiplier = 1000000000
 
 $PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://www.ahashpool.com/api/status" -Headers @{"Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
     }
     Catch { Return }
 
     If (-not $Request) { Return }
 
-    $HostSuffix = "mine.ahashpool.com"
-    $PriceField = "actual_last24h"
-    # $PriceField = "estimate_current"
-    $DivisorMultiplier = 1000000000
-
-    $PoolRegions = "US"
-
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name  | Where-Object { [Double]($Request.$_.actual_last24h) -gt 0.000000001 } | ForEach-Object { 
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.$PriceField) -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolHost = "$($Algorithm).$($HostSuffix)"
         $PoolPort = $Request.$_.port
+        $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
         $Currency = $Request.$_.currency
 
@@ -66,10 +66,10 @@ If ($Wallet) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
-        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / 1000 / $Request.$_.estimate_last24h) }
+        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = 1 }
 
-        ForEach ($Region in $PoolRegions) { 
+        ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
@@ -87,6 +87,7 @@ If ($Wallet) {
                 SSL                      = [Bool]$false
                 Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]$EstimateFactor
+                Updated                  = [DateTime]$Updated
                 Workers                  = [Int]$Workers
             }
         }

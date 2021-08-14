@@ -6,10 +6,10 @@
 <div class="alert alert-info" role="alert">These are all available miners. If there is no pool available for a given algorithm then there will be no miner available for that algorithm.</div>
 
 <div id="toolbar">
-  <button id="re-benchmark" class="btn btn-primary">Trigger re-benchmarking</button>
-  <button id="re-measure" class="btn btn-primary">Trigger re-measuring power usage</button>
-  <!-- <button id="failed" class="btn btn-warning">Mark Miner as failed</button> -->
-  <button id="disable" class="btn btn-danger">Disable Miner</button>
+  <button id="re-benchmark" class="btn btn-primary" disabled>Trigger re-benchmarking</button>
+  <button id="re-measure" class="btn btn-primary" disabled>Trigger re-measuring power usage</button>
+  <!-- <button id="failed" class="btn btn-warning" disabled>Mark Miner as failed</button> -->
+  <button id="disable" class="btn btn-danger" disabled>Disable Miner</button>
 </div>
 
 <table id="miners" class="table"
@@ -183,6 +183,20 @@
         $table.bootstrapTable('refresh');
       }
     }
+  });
+
+  $table.on('all.bs.table', function () {
+    try {
+      if ($table.bootstrapTable('getSelections').length >= 1) {
+        document.getElementById('re-benchmark').disabled = false;
+        document.getElementById('re-measure').disabled = false;
+        document.getElementById('disable').disabled = false;
+      } else {
+        document.getElementById('re-benchmark').disabled = true;
+        document.getElementById('re-measure').disabled = true;
+        document.getElementById('disable').disabled = true;
+      }
+    } catch {}
   });
 
 </script>

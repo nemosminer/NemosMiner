@@ -49,9 +49,8 @@
 <!-- Start of page scripts -->
 
 <script type="text/javascript">
-  var $table = $('#miners');
 
-  $table.bootstrapTable({
+  $('#watchdogtimers').bootstrapTable({
     // refresh once per interval
     autoRefreshInterval: (parseInt(config.Interval)),
     height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
@@ -107,6 +106,7 @@
       return lastupdated + 'ago';
     }
   }
+
 </script>
 
 <!-- End of page scripts -->

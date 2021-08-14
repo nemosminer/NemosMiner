@@ -1,16 +1,50 @@
 Breaking changes (from main code base):
+- Brain files are not backwards compatible
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
+If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
+
+Changelog NemosMiner 3.9.9.63 14.08.2021
+========================================
+
+Changes:
+- BalancesTracker / '.\Data\EarningsChartData.json': Renamed property 'Pools' to 'Earnings'
+- Core: Add '.\Data' folder
+  move operational data files from '.\Logs' to '.\Data' folder; files in '.\Logs' folder can now be deleted without losing important data
+  move data files from '.\Includes' to '.\Data' folder; separate data from code
+- Core: End SnakeTail when closing main window
+- Core: Change structure of '\Data\UnprofitableAlgorithms.json'
+- Core: Minor code enhancements, speed improvements & cleanup
+- Core: Renamed config item 'ShowMinerWindows' to 'MinerWindowStyle'
+- Core: Renamed config item 'ShowMinerWindowsNormalWhenBenchmarking' to 'MinerWindowStyleNormalWhenBenchmarking'
+
+Enhancements:
+- Core: Keep pool & miner info in API consistent while processing
+- Pools: Ability to exclude pool regions (Property 'ExcludeRegion' in '.\Config\PoolsConfig.Json' config file)
+- Web GUI: Display [Double]::NaN as 'N/A'
+
+Fixes:
+- Core:Miners: Earning_Accuracy was always 0% (regression from 3.9.9.61)
+- Miners: CryptoDredge & CcminerNeoscryptXaya: CPU priority too high
+
+Miner updates:
+- NanoMiner-v3.3.8
+- Suprminer-v2.31 (new): Support for HeavyHash
+- Trex-v0.21.6
+
+Pools:
+- AhashPool, Blockmasters, NLPool, ZPool & ZergPool: Always use price information from brain job
+
 
 Changelog NemosMiner 3.9.9.62 08.08.2021
 ========================================
 
 Changes:
 - Core: Minor code enhancements, speed improvements & cleanup
-- Core: Moved .\Includes\*.dll to .\Cache
-- Rename \Includes\*.txt to .json (to reflect what they are)
+- Core: Moved '.\Includes\*.dll' to '.\Cache'
+- Rename .'\Includes\*.txt' to *.json (to reflect what they are)
 
 Enhancements:
 - Legacy GUI: Optimize data grid columns width
@@ -472,7 +506,7 @@ Changed:
 
 Fixed:
 - NLpool: (Brains) returned data from BlazePool (wrong URL in .\Brains\NLPool\BrainConfig.xml)
-- NLPool: Minimum payout is 0.002 BTC (.\Includes\PoolData.json)
+- NLPool: Minimum payout is 0.002 BTC (.\Data\PoolData.json)
 - Web GUI / Earnings Chart: daily earnings ignored daylight saving time
 
 Enhancements:

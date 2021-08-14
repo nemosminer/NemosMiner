@@ -19,17 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
 using module .\Include.psm1
 
 Function Start-Cycle { 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
-
-    Write-Message "Started new cycle."
-
 
     # Always get the latest config
     Read-Config -ConfigFile $Variables.ConfigFile
@@ -41,6 +38,8 @@ Function Start-Cycle {
 
     # Skip stuff if previous cycle was shorter than half of what it should
     If (-not $Variables.Timer -or ($Variables.Timer.AddSeconds([Int]($Config.Interval / 2))) -lt (Get-Date).ToUniversalTime()) { 
+
+        Write-Message "Started new cycle."
 
         # Set master timer
         $Variables.Timer = (Get-Date).ToUniversalTime()
@@ -149,7 +148,7 @@ Function Start-Cycle {
         Remove-Variable BlockHeight, Data, DAGSize, Epoch, DAGdata, Page, Table -ErrorAction Ignore
 
         # Use non-donate pool config
-        $PoolNames = @($Config.PoolName)
+        $PoolNames = $Config.PoolName
         $PoolsConfig = $Config.PoolsConfig
 
         If ($Config.Donate -gt 0) { 
@@ -183,7 +182,7 @@ Function Start-Cycle {
 
                 # Use all available pools for donation, except ProHashing. Not all devs have a known account
                 # HiveON is requires ETC & ETH address to be used
-                $Variables.DonatePoolNames = @((Get-ChildItem .\Pools\*.ps1 -File).BaseName -replace "24hr$|Coins$" | Sort-Object -Unique | Where-Object { $_ -ne "ProHashing" })
+                $Variables.DonatePoolNames = @((Get-ChildItem .\Pools\*.ps1 -File).BaseName -replace "24hr$|Coins$|Plus$|CoinsPlus$" | Sort-Object -Unique | Where-Object { $_ -ne "ProHashing" })
 
                 # Add pool config to config (in-memory only)
                 $Variables.DonatePoolsConfig = [Ordered]@{ }
@@ -228,7 +227,7 @@ Function Start-Cycle {
         }
 
         # Stop BrainJobs for deconfigured pools
-        Stop-BrainJob @($Variables.BrainJobs.Keys | Where-Object { $_ -notin @($Config.PoolName -replace "Coins$") })
+        Stop-BrainJob @($Variables.BrainJobs.Keys | Where-Object { $_ -notin $PoolNames })
 
         # Start Brain jobs (will pick up all newly added pools)
         Start-BrainJob
@@ -241,11 +240,9 @@ Function Start-Cycle {
         }
 
         # Power cost preparations
+        $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
         If ($Config.CalculatePowerCost -eq $true) { 
             If ($EnabledDevices.Count -ge 1) { 
-                #$Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
-                $Variables.CalculatePowerCost = $true
-
                 # HWiNFO64 verification
                 $RegKey = "HKCU:\Software\HWiNFO64\VSB"
                 If ($RegistryValue = Get-ItemProperty -Path $RegKey -ErrorAction SilentlyContinue) { 
@@ -269,7 +266,7 @@ Function Start-Cycle {
                         # Add configured power usage
                         $Config.PowerUsage.PSObject.Properties.Name | Where-Object { $Config.PowerUsage.$_ } | ForEach-Object { 
                             If ($Config.PowerUsage.$_) { 
-                                If ($_ -in @($EnabledDevices.Name) -and -not $Hashtable.$_ ) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device $_. Will use configred value of $([Double]$Config.PowerUsage.$_) W." }
+                                If ($_ -in @($EnabledDevices.Name) -and -not $Hashtable.$_ ) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Will use configured value of $([Double]$Config.PowerUsage.$_) W." }
                                 $Hashtable.$_ = "$Config.PowerUsage.$_ W"
                                 ($Variables.Devices | Where-Object Name -EQ $_).ConfiguredPowerUsage = [Double]$Config.PowerUsage.$_
                             }
@@ -281,7 +278,7 @@ Function Start-Cycle {
                         }
 
                         # Read power usage from device supported?
-                        $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $_.Name -In @($Hashtable.Keys) }
+                        $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $_.Name -in @($Hashtable.Keys) }
 
                         Remove-Variable DeviceName, Hashtable
                     }
@@ -291,10 +288,11 @@ Function Start-Cycle {
                     Write-Message -Level Warn "Cannot read power usage info from registry [Key '$($RegKey)' does not exist - HWiNFO64 not running???] - disabling power usage calculations."
                     $Variables.CalculatePowerCost = $false
                 }
-                If (-not $Variables.CalculatePowerCost) { 
-                    $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $false }
-                }
             }
+            Else { $Variables.CalculatePowerCost = $false }
+        }
+        If (-not $Variables.CalculatePowerCost) { 
+            $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $false }
         }
 
         # Power price
@@ -315,8 +313,8 @@ Function Start-Cycle {
         }
 
         # Load unprofitable algorithms
-        If (Test-Path -Path ".\Includes\UnprofitableAlgorithms.json" -PathType Leaf -ErrorAction Ignore) { 
-            $Variables.UnprofitableAlgorithms = [String[]](Get-Content ".\Includes\UnprofitableAlgorithms.json" | ConvertFrom-Json -ErrorAction SilentlyContinue | Sort-Object -Unique)
+        If (Test-Path -Path ".\Data\UnprofitableAlgorithms.json" -PathType Leaf -ErrorAction Ignore) { 
+            $Variables.UnprofitableAlgorithms = Get-Content ".\Data\UnprofitableAlgorithms.json" | ConvertFrom-Json -ErrorAction SilentlyContinue -AsHashtable | Get-SortedObject
             Write-Message "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) $(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "entries" } Else { "entry" } ))."
         }
         Else {
@@ -327,8 +325,9 @@ Function Start-Cycle {
         Get-Stat | Out-Null
 
         # Load information about the pools
+        $Pools = [Pool[]]$Variables.Pools
         If ($PoolNames -and (Test-Path -Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
-            Write-Message -Level Verbose "Waiting for pool data ($(@($PoolNames) -join ', '))..."
+            Write-Message -Level Verbose "Waiting for pool data ($($PoolNames -join ', '))..."
             $NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
                     Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
@@ -337,7 +336,7 @@ Function Start-Cycle {
 
             # Retrieve collected pool data
             $NewPools_Jobs | ForEach-Object $_.Job | Wait-Job -Timeout ([Int]$Config.PoolTimeout) | Out-Null
-            $NewPools = [System.Collections.ArrayList](
+            $NewPools = [System.Collections.ArrayList]( 
                 $NewPools_Jobs | ForEach-Object { $_.EndInvoke($_.Job) | ForEach-Object { If (-not $_.Content.Name) { $_.Content | Add-Member Name $_.Name -Force }; $_.Content -as [Pool] }; $_.Dispose() }
             )
             Remove-Variable NewPools_Jobs
@@ -354,27 +353,27 @@ Function Start-Cycle {
         }
 
         # Remove de-configured pools
-        $Variables.Pools = $Variables.Pools | Where-Object Name -in @($PoolNames)
+        $Pools = $Pools | Where-Object Name -in $PoolNames
 
         # Find new pools
-        $ComparePools = Compare-Object -PassThru @($Variables.Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, Host, Port, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
+        $ComparePools = Compare-Object -PassThru @($Pools | Select-Object) @($NewPools | Select-Object) -Property Name, Algorithm, Host, Port, SSL | Where-Object SideIndicator -EQ "=>" | Select-Object -Property * -ExcludeProperty SideIndicator
 
-        $Variables.PoolsCount = $Variables.Pools.Count
+        $Variables.PoolsCount = $Pools.Count
 
         # Add new pools
         If ($ComparePools) { 
-            $Variables.Pools += [Pool[]]($ComparePools | Select-Object)
+            $Pools += [Pool[]]($ComparePools | Select-Object | ForEach-Object { $_ | Add-Member BaseName ($_.Name -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$") -Force; $_})
         }
 
         # Update existing pools
-        $Variables.Pools | Select-Object | ForEach-Object { 
+        $Pools | Select-Object | ForEach-Object { 
             $_.Available = $true
             $_.Best = $false
             $_.Reason = $null
 
             If ($Pool = $NewPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Host -EQ $_.Host | Where-Object Port -EQ $_.Port | Where-Object SSL -EQ $_.SSL | Select-Object -First 1) { 
                 $_.EstimateFactor = If (-not $Config.EstimateCorrection -or $Pool.EstimateFactor -le 0 -or $Pool.EstimateFactor -gt 1) { 1 } Else { $Pool.EstimateFactor }
-                $_.Fee = If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $PoolFee -gt 1) { 0 } Else { $Pool.Fee }
+                $_.Fee = If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $Pool.Fee -gt 1) { 0 } Else { $Pool.Fee }
                 $_.EarningsAdjustmentFactor = $Pool.EarningsAdjustmentFactor
                 $_.Price = $Pool.Price * $_.EstimateFactor * $_.EarningsAdjustmentFactor * (1 - $_.Fee)
                 $_.StablePrice = $Pool.StablePrice * $_.EstimateFactor * $_.EarningsAdjustmentFactor * (1 - $_.Fee)
@@ -410,11 +409,14 @@ Function Start-Cycle {
         }
         Remove-Variable Pool -ErrorAction Ignore
 
+        # Update data in API
+        $Variables.Pools = $Pools
+
         # Pool data is older than earliest CycleStart, decay price
         If ($Variables.CycleStarts.Count -ge $Config.SyncWindow) { 
             $MaxPoolAge = $Config.SyncWindow * ($Variables.CycleStarts[-1] - $Variables.CycleStarts[0]).TotalMinutes
-            $Variables.Pools = $Variables.Pools | Where-Object { ([Math]::Floor(($Variables.CycleStarts[-1] - $_.Updated).TotalMinutes) -le $MaxPoolAge * $Config.SyncWindow) }
-            $Variables.Pools | ForEach-Object { 
+            $Pools = $Pools | Where-Object { ([Math]::Floor(($Variables.CycleStarts[-1] - $_.Updated).TotalMinutes) -le $MaxPoolAge * $Config.SyncWindow) }
+            $Pools | ForEach-Object { 
                 If ([Math]::Floor(($Variables.CycleStarts[-1] - $_.Updated).TotalMinutes) -gt $MaxPoolAge) { $_.Available = $false; $_.Reason += "Data too old" }
                 ElseIf ($_.Updated -lt $Variables.CycleStarts[0]) { $_.Price_Bias = $_.Price * (1 - $_.MarginOfError) * [Math]::Pow(0.9, ($Variables.CycleStarts[0] - $_.Updated).TotalMinutes) }
             }
@@ -426,28 +428,28 @@ Function Start-Cycle {
 
         # Filter Algorithms based on Per Pool Config
         # Pool disabled by stat file
-        $Variables.Pools | Where-Object Disabled -EQ $true | ForEach-Object { $_.Available = $false; $_.Reason += "Disabled (by Stat file)" }
+        $Pools | Where-Object Disabled -EQ $true | ForEach-Object { $_.Available = $false; $_.Reason += "Disabled (by Stat file)" }
         # SSL filter
-        If ($Config.SSL -ne "Preferred") { $Variables.Pools | Where-Object { $_.SSL -ne [Boolean]$Config.SSL } | ForEach-Object { $_.Available = $false; $_.Reason += "Config item SSL -ne $([Boolean]$Config.SSL)" } }
+        If ($Config.SSL -ne "Preferred") { $Pools | Where-Object { $_.SSL -ne [Boolean]$Config.SSL } | ForEach-Object { $_.Available = $false; $_.Reason += "Config item SSL -ne $([Boolean]$Config.SSL)" } }
         # Min accuracy exceeded
-        $Variables.Pools | Where-Object MarginOfError -GT (1 - $Config.MinAccuracy) | ForEach-Object { $_.Available = $false; $_.Reason += "MinAccuracy ($($Config.MinAccuracy * 100)%) exceeded" }
+        $Pools | Where-Object MarginOfError -GT (1 - $Config.MinAccuracy) | ForEach-Object { $_.Available = $false; $_.Reason += "MinAccuracy ($($Config.MinAccuracy * 100)%) exceeded" }
         # Filter pools on miner set
         If ($Config.MinerSet -lt 2) {
-            $Variables.Pools | Where-Object { "*:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Available = $false; $_.Reason += "Unprofitable Algorithm" }
-            $Variables.Pools | Where-Object { "1:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } # Keep available
-            $Variables.Pools | Where-Object { "2:$($_.Algorithm)" -in $Variables.UnprofitableAlgorithms } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } # Keep available
+            $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq "*" } | ForEach-Object { $_.Available = $false; $_.Reason += "Unprofitable Algorithm" }
+            $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq 1 } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } # Keep available
+            $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq 2 } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } # Keep available
         }
         # Pool not configured
-        $Variables.Pools | Where-Object { $_.Name -notin $PoolNames } | ForEach-Object { $_.Available = $false; $_.Reason += "Pool not configured" }
+        $Pools | Where-Object { $_.Name -notin $PoolNames } | ForEach-Object { $_.Available = $false; $_.Reason += "Pool not configured" }
         # Pool price 0
-        $Variables.Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Price -eq 0" }
+        $Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Price -eq 0" }
         # No price data
-        $Variables.Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
+        $Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Available = $false; $_.Reason += "No price data" }
         #Estimate factor exceeded
-        If ($Config.EstimateCorrection -eq $true ) { $Variables.Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
+        If ($Config.EstimateCorrection -eq $true ) { $Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Available = $false; $_.Reason += "EstimateFactor -lt 50%" } }
         # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency, NiceHash & MPH are always right
         If ($Config.UnrealPoolPriceFactor -gt 1) { 
-            $Variables.Pools | Where-Object Price -GT 0 | Where-Object { $_.Name -notmatch "^NiceHash$|^MiningPoolHub(|Coins)$" } | Group-Object -Property Algorithm | ForEach-Object { 
+            $Pools | Where-Object Price -GT 0 | Where-Object { $_.Name -notmatch "^NiceHash$|^MiningPoolHub(|Coins)$" } | Group-Object -Property Algorithm | ForEach-Object { 
                 If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
                     $_.Group | Where-Object Price_Bias -GT $PriceThreshold | ForEach-Object { 
                         $_.Available = $false
@@ -458,21 +460,23 @@ Function Start-Cycle {
         }
         Remove-Variable PriceThreshold -ErrorAction SilentlyContinue
         # Algorithms disabled
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($Config.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in generic config)" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.($_.Name -replace "24hr$|Coins$").Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.Name -replace "24hr$|Coins$") pool config)" }
-        $Variables.Pools | Where-Object { "-$($_.Algorithm)" -in @($PoolsConfig.Default.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in default pool config)" }
+        $Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in generic config)" }
+        $Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.($_.BaseName).Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.BaseName) pool config)" }
         # Algorithms not enabled
-        If ($Config.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($Config.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in generic config)" } }
-        $Variables.Pools | Where-Object { $PoolsConfig.($_.Name -replace "24hr$|Coins$").Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.($_.Name -replace "24hr$|Coins$").Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $($_.Name -replace "24hr$|Coins$") pool config)" }
-        If ($PoolsConfig.Default.Algorithm -like "+*") { $Variables.Pools | Where-Object { "+$($_.Algorithm)" -notin @($PoolsConfig.Default.Algorithm -Split ',').Trim() } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)`` in default pool config)" } }
+        If ($Config.Algorithm -like "+*") { $Pools | Where-Object { "+$($_.Algorithm)" -notin $Config.Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (in generic config)" } }
+        $Pools | Where-Object { $PoolsConfig.($_.BaseName).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.($_.BaseName).Algorithm } | ForEach-Object { $_.Available = $false; $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $($_.BaseName) pool config)" }
         # Region exclusions
-        $Variables.Pools | Where-Object { $Config.Pools.($_.Name -replace "24hr$|Coins$").ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.Name -replace "24hr$|Coins$").ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.Name -replace "24hr$|Coins$") pool config)" }
+        $Pools | Where-Object { $Config.Pools.($_.BaseName).ExcludeRegion -and (Compare-Object @($Config.Pools.$($_.BaseName).ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Available = $false; $_.Reason += "Region excluded (in $($_.BaseName) pool config)" }
         # MinWorkers
-        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Variables.PoolsConfigData.($_.Name -replace "24hr$|Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.PoolsConfig.($_.Name -replace "24hr$|Coins$").MinWorker)`` in $($_.Name -replace "24hr$|Coins$") pool config)" }
-        $Variables.Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker -and $null -eq $Variables.PoolsConfigData.($_.Name -replace "24hr$|Coins$").MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
+        $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Variables.PoolsConfigData.($_.BaseName).MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.PoolsConfig.($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
+        $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker -and $null -eq $Variables.PoolsConfigData.($_.BaseName).MinWorker } | ForEach-Object { $_.Available = $false; $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
 
         Write-Message -Level Verbose "Had $($Variables.PoolsCount) pool$( If ($Variables.PoolsCount -ne 1) { "s" }), found $($ComparePools.Count) new pool$( If ($ComparePools.Count -ne 1) { "s" }). $(@($Variables.Pools | Where-Object Available -EQ $true).Count) pool$(If (@($Variables.Pools | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Variables.Pools | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(@($Variables.Pools | Where-Object Available -NE $true).Count) pool$(If (@($Variables.Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
         Remove-Variable ComparePools
+
+        # Update data in API
+        $Variables.Pools = $Pools
+        Remove-Variable Pools
     }
 
     # Ensure we get the hashrate for running miners prior looking for best miner
@@ -513,9 +517,9 @@ Function Start-Cycle {
             }
         }
 
+        $Miner.Speed_Live = @()
+        $PowerUsage = [Double]::NaN
         If ($Miner.Data.Count) { 
-            $Miner.Speed_Live = [Double[]]@()
-            $PowerUsage = 0
             # Collect hashrate from miner
             $Miner_Speeds = [Hashtable]@{}
             ForEach ($Algorithm in $Miner.Algorithm) { 
@@ -543,14 +547,13 @@ Function Start-Cycle {
                 $Stat_Name = "$($Miner.Name)_$($Algorithm)_HashRate"
                 # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -gt 0) {
-                    # Stop miner if new value is outside ±200% of current value
                     $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                     If ($Stat.Updated -gt $Miner.StatStart) { 
                         Write-Message "Saved hash rate ($($Stat_Name -replace '_Hashrate$'): $(($Stat.Live | ConvertTo-Hash) -replace ' '))$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                         $Miner.StatStart = $Miner.StatEnd
-                        $Variables.PoolsLastUsed.($Worker.Pool.Name -replace 'Coins$|24hr$') = $Stat.Updated # most likely this will count at the pool to keep balances alive
+                        $Variables.PoolsLastUsed.($Worker.Pool.BaseName) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                     }
-                    ElseIf ($Miner_Speeds.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -gt $Stat.Week * 2 -or $Miner_Speeds.$Algorithm -lt $Stat.Week / 2)) { 
+                    ElseIf ($Miner_Speeds.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -gt $Stat.Week * 2 -or $Miner_Speeds.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
                         Write-Message -Level Warn "$($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
@@ -579,7 +582,7 @@ Function Start-Cycle {
     }
 
     # Update pools last used, required for BalancesKeepAlive
-    $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File ".\Logs\PoolsLastUsed.json" -Force
+    $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\PoolsLastUsed.json" -Force
 
     # Apply watchdog to pools
     If ($Config.Watchdog) { 
@@ -613,32 +616,28 @@ Function Start-Cycle {
     If ($Config.BalancesKeepAlive -and $Variables.PoolsLastEarnings) { 
         # Keep pool balances alive; force mining at pool even if it is not the best for the algo
         $PoolsToKeepBalancesAlive = @()
-        ($Variables.Pools | Where-Object Available -EQ $true).Name | Sort-Object -Unique | ForEach-Object { 
-            $PoolName_Norm = $_ -replace '24hr$|Coins$'
+        ForEach ($Pool in ($Variables.Pools | Where-Object Available -EQ $true | Sort-Object { $_.BaseName } -Unique)) { 
 
-            If ($PoolName_Norm -eq "NiceHash") { 
-                If ($Config.NiceHashWalletIsInternal -eq $true) { $PoolName = "NiceHash Internal" } Else { $PoolName = "NiceHash External" }
-            }
-            Else { $PoolName = $PoolName_Norm }
+            $PoolBaseName = If ($Pool.BaseName -eq "NiceHash") { If ($Config.NiceHashWalletIsInternal -eq $true) { "NiceHash Internal" } Else { "NiceHash External" } } Else { $Pool.BaseName}
 
-            $BalancesKeepAlive = $PoolsConfig.$PoolName.BalancesKeepAlive
+            $BalancesKeepAliveDays = $PoolsConfig.$PoolBaseName.BalancesKeepAlive
 
-            If ($BalancesKeepAlive -gt 0 -and $Variables.PoolsLastEarnings.$PoolName -and (((Get-Date).TouniversalTime() - $Variables.PoolsLastEarnings.$PoolName).Days) -ge $BalancesKeepAlive -1) { 
-                If (-not $Variables.PoolsLastUsed.$PoolName) { 
-                    $PoolsToKeepBalancesAlive += $_
-                    Write-Message -Level Warn "Pool ($_) priorized to avoid forfeiting balance (pool would clear balance after $($BalancesKeepAlive) days of inactivity)."
+            If ($BalancesKeepAliveDays -gt 0 -and $Variables.PoolsLastEarnings.$PoolBaseName -and (((Get-Date).TouniversalTime() - $Variables.PoolsLastEarnings.$PoolBaseName).Days) -ge $BalancesKeepAliveDays - 1) { 
+                If (-not $Variables.PoolsLastUsed.$PoolBaseName) { 
+                    $PoolsToKeepBalancesAlive += $Pool.Name
+                    Write-Message -Level Warn "Pool ($($Pool.Name)) priorized to avoid forfeiting balance (pool would clear balance after $($BalancesKeepAliveDays) days of inactivity)."
                 }
-                ElseIf (((Get-Date).ToUniversalTime() - $Variables.PoolsLastUsed.$PoolName_Norm).Days -ge $BalancesKeepAlive -1) { 
-                    $PoolsToKeepBalancesAlive += $_
-                    Write-Message -Level Warn "Pool ($_) priorized to avoid forfeiting balance (pool would clear balance tomorrow)."
+                ElseIf (((Get-Date).ToUniversalTime() - $Variables.PoolsLastUsed.$PoolBaseName).Days -ge $BalancesKeepAliveDays - 1) { 
+                    $PoolsToKeepBalancesAlive += $Pool.Name
+                    Write-Message -Level Warn "Pool ($($Pool.Name)) priorized to avoid forfeiting balance (pool would clear balance tomorrow)."
                 }
             }
         }
         If ($PoolsToKeepBalancesAlive) { 
             $Variables.Pools | Where-Object Available -EQ $true | Where-Object Name -notin $PoolsToKeepBalancesAlive | ForEach-Object { $_.Available = $false; $_.Reason += "BalancesKeepAlive prioritizes other pools" }
-            $Variables.Pools | Where-Object Name -in $PoolsToKeepBalancesAlive | ForEach-Object { $_.Available = $true; $_.Reason = "BalancesKeepAlive enabled all pools" }
+            $Variables.Pools | Where-Object Name -in $PoolsToKeepBalancesAlive | ForEach-Object { $_.Available = $true; $_.Reason = "Prioritized by BalancesKeepAlive" }
         }
-        Remove-Variable PoolName_Norm, BalancesKeepAlive, PoolsToKeepBalancesAlive -ErrorAction Ignore
+        Remove-Variable PoolName, BalancesKeepAlive, PoolsToKeepBalancesAlive -ErrorAction Ignore
     }
 
     # Sort best pools
@@ -659,10 +658,11 @@ Function Start-Cycle {
 
     # Get new miners
     Write-Message -Level Verbose "Loading miners..."
+    $Miners = [Miner[]]$Variables.Miners
     $NewMiners_Jobs = @(
         If ($Config.IncludeRegularMiners -and (Test-Path -Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If ($Config.IncludeOptionalMiners -and (Test-Path -Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
-        If (Test-Path -Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
+        If (Test-Path -Path ".\CustomMiners" -PathType Container) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
     )
 
     # Retrieve collected miner objects
@@ -670,45 +670,33 @@ Function Start-Cycle {
     $NewMiners_Jobs | ForEach-Object $_.Job | Wait-Job -Timeout 15 | Out-Null
     $NewMiners_Jobs | ForEach-Object { 
         $_.EndInvoke($_.Job) | Where-Object { $_.Content.API } | ForEach-Object { 
-
-            $Miner_Fees = If ($Config.IgnoreMinerFee) { @($_.Content.Algorithm | ForEach-Object { 0 }) } Else { @($_.Content.Fee) }
-
-            [Worker[]]$Workers = @()
-            $_.Content.Algorithm | ForEach-Object { 
-                $Workers += @{ 
-                    Pool = [Pool]$AllPools.$_
-                    Fee  = [Double]($Miner_Fees | Select-Object -Index $Workers.Count)
-                }
-            }
-
             [Miner]$Miner = [PSCustomObject]@{ 
-                Name            = [String]$_.Content.Name
-                BaseName        = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
-                Version         = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
-                Path            = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
-                Algorithm       = [String[]]$_.Content.Algorithm
-                Workers         = [Worker[]]$Workers
-                Arguments       = [String]$_.Content.Arguments
-                DeviceName      = [String[]]$_.Content.DeviceName
-                Devices         = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceName)
-                Type            = [String]$_.Content.Type
-                Port            = [UInt16]$_.Content.Port
-                URI             = [String]$_.Content.URI
-                WarmupTimes     = [Int[]](($_.Content.WarmupTimes[0] + $Config.WarmupTimes[0]), ($_.Content.WarmupTimes[1] + [Int]$Config.WarmupTimes[1]))
-                MinerUri        = [String]$_.Content.MinerUri
-                ProcessPriority = [Int]$(If ($_.Content.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
+                Name        = [String]$_.Content.Name
+                BaseName    = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
+                Version     = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
+                Path        = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
+                Algorithm   = [String[]]$_.Content.Algorithm
+                Workers     = [Worker[]]@( ForEach ($Algorithm in $_.Content.Algorithm) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { [Double]($_.Content.Fee | Select-Object -Index ($_.Content.Algorithm.IndexOf($Algorithm))) } } })
+                Arguments   = [String]$_.Content.Arguments
+                DeviceName  = [String[]]$_.Content.DeviceName
+                Devices     = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceName)
+                Type        = [String]$_.Content.Type
+                Port        = [UInt16]$_.Content.Port
+                URI         = [String]$_.Content.URI
+                WarmupTimes = [Int[]]$_.Content.WarmupTimes
+                MinerUri    = [String]$_.Content.MinerUri
             } -as "$($_.Content.API)"
-            $Miner.CommandLine = [String]$Miner.GetCommandLine().Replace("$(Convert-Path ".\")\", "")
+            $Miner.CommandLine = [String]$Miner.GetCommandLine().Replace("$(Convert-Path ".\")\", "") # Requires miner class
             $NewMiners.Add($Miner)
         }
     }
     $NewMiners_Jobs | ForEach-Object { $_.Dispose() }
     Remove-Variable PoolsPrimaryAlgorithm, PoolsSecondaryAlgorithm, NewMiners_Jobs -ErrorAction Ignore
 
-    $CompareMiners = [Miner[]](Compare-Object -PassThru @($Variables.Miners | Select-Object) @($NewMiners | Select-Object) -Property Arguments, Path -IncludeEqual)
+    $CompareMiners = [Miner[]](Compare-Object -PassThru $Miners $NewMiners -Property Arguments, Path -IncludeEqual)
 
     # Stop runing miners where miner object is gone
-    ForEach ($Miner in ($Variables.Miners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq [MinerStatus]::Running })) { 
+    ForEach ($Miner in ($CompareMiners | Where-Object { $_.SideIndicator -EQ "<=" -and $_.GetStatus() -eq [MinerStatus]::Running })) { 
         Write-Message "Stopping miner '$($Miner.Info)'..."
         $Miner.SetStatus([MinerStatus]::Idle)
 
@@ -723,50 +711,53 @@ Function Start-Cycle {
     }
 
     # Remove gone miners
-    $Variables.Miners = @($Variables.Miners | Where-Object SideIndicator -EQ "==")
+    $Miners = @($CompareMiners | Where-Object SideIndicator -EQ "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
 
     # Add new miners
-    $Variables.Miners += $CompareMiners | Where-Object SideIndicator -EQ "=>"
-    Remove-Variable CompareMiners -ErrorAction Ignore
+    $Miners += $CompareMiners | Where-Object SideIndicator -EQ "=>" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
 
-    # Update existing miners
-    $Variables.Miners | ForEach-Object { 
-
-        $_.CachedReadPowerUsage = $_.ReadPowerUsage
-        $_.CachedShowMinerWindows = $_.ShowMinerWindows
-        $_.CachedDataCollectInterval = $_.DataCollectInterval
-        $_.Reason = $null
-
-        If ($Miner = $NewMiners | Where-Object Arguments -EQ $_.Arguments | Where-Object Path -EQ $_.Path) { 
-            $_.ProcessPriority = $Miner.ProcessPriority
-            $_.ShowMinerWindows = $Config.ShowMinerWindows
+    # Update miners
+    $Miners | ForEach-Object { 
+        If ($Miner = $NewMiners | Where-Object Arguments -EQ $_.Arguments | Where-Object Path -EQ $_.Path) { # Update existing miners
             $_.WarmupTimes = $Miner.WarmupTimes
-            $_.URI = $Miner.URI
+            If ($_.Status -eq [MinerStatus]::Running) { # Restart running miners (stop & start)
+                If ($_.Activated -eq 0) { $_.Restart = $true; $_.Data = @() } # Re-benchmark triggered in Web GUI
+                ElseIf ($_.Benchmark -ne $Miner.Benchmark -or $_.MeasurePowerUsage -ne $Miner.MeasurePowerUsage) { $_.Restart = $true } # Benchmark / Power usage measurement complete
+            }
         }
 
-        $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
         $_.ReadPowerUsage = [Bool]($_.Devices.ReadPowerUsage -notcontains $false)
-        $_.Refresh($Variables.PowerCostBTCperW) # To be done before MeasurePowerUsage evaluation
+
+        $_.Refresh($Variables.PowerCostBTCperW) # Needs to be done after ReadPowerUsage and before DataCollectInterval evaluation
+
+        $_.AllowedBadShareRatio = $Config.AllowedBadShareRatio
+        $_.DataCollectInterval = If ($_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true) { 1 } Else { 5 } # Seconds
         $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
-        If ($_.Benchmark -and $Config.ShowMinerWindowsNormalWhenBenchmarking -eq $true) { $_.ShowMinerWindows = "normal" }
-        $_.DataCollectInterval = If ($_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true) { 1 } Else { 5 }
+        $_.WindowStyle = If ($_.Benchmark -eq $true -and $Config.MinerWindowStyleNormalWhenBenchmarking -eq $true) { "normal" } Else { $Config.MinerWindowStyle }
+        $_.ProcessPriority = If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority }
+
+        $_.WarmupTimes[0] += $Config.WarmupTimes[0]
+        $_.WarmupTimes[1] += $Config.WarmupTimes[1]
     }
-    Remove-Variable Miner, NewMiners -ErrorAction Ignore
+    Remove-Variable CompareMiners, Miner, NewMiners -ErrorAction Ignore
 
-    $Variables.Miners | Select-Object | Where-Object Disabled -EQ $true | ForEach-Object { $_.Available = $false; $_.Reason += "0H/s Stat file" }
-    $Variables.Miners | Select-Object | Where-Object { $Config.ExcludeMinerName.Count -and (Compare-Object @($Config.ExcludeMinerName | Select-Object) @($_.BaseName, "$($_.BaseName)_$($_.Version)", $_.Name | Select-Object -Unique) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "ExcludeMinerName: ($($Config.ExcludeMinerName -Join '; '))" }
-    $Variables.Miners | Select-Object | Where-Object { $Config.ExcludeDeviceName.Count -and (Compare-Object @($Config.ExcludeDeviceName | Select-Object) @($_.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "ExcludeDeviceName: ($($Config.ExcludeDeviceName -Join '; '))" }
-    $Variables.Miners | Select-Object | Where-Object Disabled -NE $true | Where-Object Earning -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Earning -eq 0" }
-    $Variables.Miners | Select-Object | Where-Object { $Config.DisableMinersWithFee -and $_.Fee -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableMinersWithFee" }
-    $Variables.Miners | Select-Object | Where-Object { $Config.DisableDualAlgoMining -and $_.Workers.Count -eq 2 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableDualAlgoMining" }
-    $Variables.Miners | Select-Object | Where-Object { $Config.DisableSingleAlgoMining -and $_.Workers.Count -eq 1 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableSingleAlgoMining" }
+    # Update data in API
+    $Variables.Miners = $Miners
 
-    $Variables.MinersNeedingBenchmark = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object Benchmark -EQ $true
-    $Variables.MinersNeedingPowerUsageMeasurement = $Variables.Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
+    $Miners | Where-Object Disabled -EQ $true | ForEach-Object { $_.Available = $false; $_.Reason += "0H/s Stat file" }
+    $Miners | Where-Object { $Config.ExcludeMinerName.Count -and (Compare-Object $Config.ExcludeMinerName @($_.BaseName, "$($_.BaseName)_$($_.Version)", $_.Name | Select-Object -Unique) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "ExcludeMinerName: ($($Config.ExcludeMinerName -Join '; '))" }
+    $Miners | Where-Object { $Config.ExcludeDeviceName.Count -and (Compare-Object $Config.ExcludeDeviceName @($_.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "ExcludeDeviceName: ($($Config.ExcludeDeviceName -Join '; '))" }
+    $Miners | Where-Object Disabled -NE $true | Where-Object Earning -EQ 0 | ForEach-Object { $_.Available = $false; $_.Reason += "Earning -eq 0" }
+    $Miners | Where-Object { $Config.DisableMinersWithFee -and $_.Fee -gt 0 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableMinersWithFee" }
+    $Miners | Where-Object { $Config.DisableDualAlgoMining -and $_.Workers.Count -eq 2 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableDualAlgoMining" }
+    $Miners | Where-Object { $Config.DisableSingleAlgoMining -and $_.Workers.Count -eq 1 } | ForEach-Object { $_.Available = $false; $_.Reason += "Config.DisableSingleAlgoMining" }
 
-    # Detect miners with unreal earning (> x higher than the next best 10% miners, error in data provided by pool?)
+    $Variables.MinersNeedingBenchmark = $Miners | Where-Object Enabled -EQ $true | Where-Object Benchmark -EQ $true
+    $Variables.MinersNeedingPowerUsageMeasurement = $Miners | Where-Object Enabled -EQ $true | Where-Object MeasurePowerUsage -EQ $true
+
+    # Detect miners with unreal earning (> x times higher than the next best 10% miners, error in data provided by pool?)
     If ($Config.UnrealMinerEarningFactor -gt 1) { 
-        $Variables.Miners | Where-Object Available -EQ $true | Group-Object { $_.DeviceName } | ForEach-Object {
+        $Miners | Where-Object Available -EQ $true | Group-Object { $_.DeviceName } | ForEach-Object {
             If ($ReasonableEarning = [Double]($_.Group | Sort-Object -Descending Earning | Select-Object -Skip 1 -First ([Int]($_.Group.Count / 10 )) | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
                 $_.Group | Where-Object Earning -GT $ReasonableEarning | ForEach-Object { 
                     $_.Available = $false
@@ -777,9 +768,15 @@ Function Start-Cycle {
     }
     Remove-Variable ReasonableEarning -ErrorAction Ignore
 
-    $Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { $_.Available = $false; $_.Reason += "Binary missing" }
+    $Variables.MinersMissingBinary = @()
+    $Miners | Where-Object Available -EQ $true | Where-Object { -not (Test-Path $_.Path -Type Leaf -ErrorAction Ignore) } | ForEach-Object { 
+        $_.Available = $false
+        $_.Reason += "Binary missing"
+        $Variables.MinersMissingBinary += $_
+    }
 
-    $Variables.MinersMissingBinary = $Variables.Miners | Where-Object Reason -Contains "Binary missing"
+    # Update data in API
+    $Variables.Miners = $Miners
 
     Get-Job | Where-Object { $_.State -eq "Completed" } | Remove-Job
     If ($Variables.MinersMissingBinary) { 
@@ -788,39 +785,42 @@ Function Start-Cycle {
             Write-Message "Some miners binaries are missing, starting downloader..."
             $Downloader_Parameters = @{
                 Logfile      = $Variables.Logfile
-                DownloadList = @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
+                DownloadList = @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
             }
             $Variables.Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
             Remove-Variable Downloader_Parameters
         }
-        ElseIf (-not ($Variables.Miners | Where-Object Available -EQ $true)) { 
+        ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
             Write-Message "Waiting 30 seconds for downloader to install binaries..."
         }
     }
 
     # Apply watchdog to miners
     If ($Config.Watchdog) { 
-        $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { "$($_.BaseName)-$($_.Version)" } | ForEach-Object { 
+        $Miners | Where-Object Available -EQ $true | Group-Object -Property { "$($_.BaseName)-$($_.Version)" } | ForEach-Object { 
             # Suspend miner if > 50% of all available algorithms failed
             $WatchdogMinerCount = ($Variables.WatchdogCount, [Math]::Ceiling($Variables.WatchdogCount * $_.Group.Count / 2) | Measure-Object -Maximum).Maximum
             If ($MinersToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object MinerBaseName -EQ $_.BaseName | Where-Object MinerVersion -EQ $_.Version | Where-Object Kicked -LT $Variables.Timer).Count -gt $WatchdogMinerCount }) { 
                 $MinersToSuspend | ForEach-Object { 
                     $_.Available = $false
-                    $_.Data = @()
+                    $_.Data = @() # Clear data because it may be incorrect caused by miner problem
                     $_.Reason += "Miner suspended by watchdog (all algorithms)"
                 }
                 Write-Message -Level Warn "Miner ($($_.Group[0].BaseName)-$($_.Group[0].Version) [all algorithms]) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerBaseName -EQ $_.Group[0].BaseName | Where-Object MinerVersion -EQ $_.Group[0].Version | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
             }
             Remove-Variable MinersToSuspend
         }
-        $Variables.Miners | Where-Object Available -EQ $true | Where-Object { @($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer).Count -ge $Variables.WatchdogCount } | ForEach-Object {
+        $Miners | Where-Object Available -EQ $true | Where-Object { @($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer).Count -ge $Variables.WatchdogCount } | ForEach-Object {
             $_.Available = $false
-            $_.Data = @()
+            $_.Data = @() # Clear data because it may be incorrect caused by miner problem
             $_.Reason += "Miner suspended by watchdog (Algorithm $($_.Algorithm))"
             Write-Message -Level Warn "Miner ($($_.Name) [$($_.Algorithm)]) is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceName -EQ $_.DeviceName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object | Select-Object -Last 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
         }
     }
 
+    # Update data in API
+    $Variables.Miners = $Miners
+    
     Write-Message "Found $($Variables.Miners.Count) miner$(If ($Variables.Miners.Count -ne 1) { "s" }), $(($Variables.Miners | Where-Object Available -EQ $true).Count) miner$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Variables.Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Variables.Miners | Where-Object Available -NE $true).Count) miner$(If (($Variables.Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
 
     # Open firewall ports for all miners
@@ -830,9 +830,9 @@ Function Start-Cycle {
             $ProgressPreference = "SilentlyContinue"
             If ((Get-Command "Get-MpComputerStatus" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore)) { 
                 If (Get-Command "Get-NetFirewallRule" -ErrorAction Ignore) { 
-                    $MinerFirewallRules = Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program
-                    If (Compare-Object @($MinerFirewallRules) @($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ "=>") { 
-                        Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$(Compare-Object @($MinerFirewallRules) @($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object {New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by NemosMiner $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner'}" -replace '"', '\"') -Verb runAs
+                    $MinerFirewallRules = @(Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program)
+                    If (Compare-Object $MinerFirewallRules @($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ "=>") { 
+                        Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$(Compare-Object $MinerFirewallRules @($Variables.Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object { New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by NemosMiner $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner' }" -replace '"', '\"') -Verb runAs
                     }
                     Remove-Variable MinerFirewallRules
                 }
@@ -842,34 +842,35 @@ Function Start-Cycle {
         }
     }
 
-    Write-Message "Calculating earning$(If ($Variables.PowerPricekWh) { " and profit" }) for each miner$(If ($Variables.PowerPricekWh) { " (power cost $($Config.Currency) $($Variables.PowerPricekWh)/kW⋅h)"})..."
-
-    If (-not ($Variables.Miners | Where-Object Available -EQ $true)) { 
-        Write-Message -Level Warn "No miners available. Waiting for next cycle."
-        $Variables.EndLoop = $true
-        $Variables.EndLoopTime = (Get-Date).AddSeconds(10)
+    If (-not ($Miners | Where-Object Available -EQ $true)) { 
+        Write-Message -Level Warn "No miners available - retrying in 10 seconds..."
+        Start-Sleep -Seconds 10
+        Continue
     }
-    ElseIf ($Variables.Miners.Count -eq 1) { 
-        $Variables.BestMiners_Combo = $Variables.BestMiners = $Variables.FastestMiners = $Variables.Miners
+
+    Write-Message "Calculating earning$(If ($Variables.PowerPricekWh) { " and profit" }) for each miner$(If ($Variables.PowerPricekWh) { " (power cost $($Config.Currency) $($Variables.PowerPricekWh)/kW⋅h)" })..."
+
+    If ($Miners.Count -eq 1) { 
+        $Variables.BestMiners_Combo = $Variables.BestMiners = $Variables.FastestMiners = $Miners
     }
     Else { 
-        # Don't penalize active miners, add running miner bonus
-        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
+        # Add running miner bonus
+        $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
             $_.Earning_Bias *= 1 + $Config.RunningMinerGainPct / 100
             $_.Profit_Bias *= 1 + $Config.RunningMinerGainPct / 100
         }
 
         # Hack: temporarily make all earnings & Earnings positive, BestMiners_Combos(_Comparison) produces wrong sort order when earnings or profits are negative
-        $SmallestEarningBias = [Double][Math]::Abs((($Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_.Earning_Bias) }).Earning_Bias | Measure-Object -Minimum).Minimum) * 2
-        $SmallestProfitBias = [Double][Math]::Abs((($Variables.Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_.Profit_Bias) }).Profit_Bias | Measure-Object -Minimum).Minimum) * 2
-        $Variables.Miners | ForEach-Object { 
+        $SmallestEarningBias = [Double][Math]::Abs((($Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_.Earning_Bias) }).Earning_Bias | Measure-Object -Minimum).Minimum) * 2
+        $SmallestProfitBias = [Double][Math]::Abs((($Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_.Profit_Bias) }).Profit_Bias | Measure-Object -Minimum).Minimum) * 2
+        $Miners | ForEach-Object { 
             $_.Earning_Bias += $SmallestEarningBias
             $_.Profit_Bias += $SmallestProfitBias
         }
 
         # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
-        If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-        $Variables.SortedMiners = @($Variables.Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false }) # pre-sort
+        If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
+        $Variables.SortedMiners = @($Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false }) # pre-sort
         $Variables.FastestMiners = @($Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.Fastest = $true; $_ }) }) # use a smaller subset of miners
         $Variables.BestMiners = @($Variables.FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($Variables.FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName | Measure-Object).Count -eq 0 } | Select-Object -First 1) })
 
@@ -891,14 +892,14 @@ Function Start-Cycle {
         Remove-Variable Miner_Device_Combo, SortBy -ErrorAction Ignore
 
         # Hack part 2: reverse temporarily forced positive earnings & profits
-        $Variables.Miners | ForEach-Object { 
+        $Miners | ForEach-Object { 
             $_.Earning_Bias -= $SmallestEarningBias
             $_.Profit_Bias -= $SmallestProfitBias
         }
         Remove-Variable SmallestEarningBias, SmallestProfitBias
 
         # Don't penalize active miners, revert running miner bonus
-        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
+        $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
             $_.Earning_Bias /= 1 + $Config.RunningMinerGainPct / 100
             $_.Profit_Bias /= 1 + $Config.RunningMinerGainPct / 100
         }
@@ -909,8 +910,11 @@ Function Start-Cycle {
     $Variables.MiningPowerCost = [Double]($Variables.BestMiners_Combo | Measure-Object PowerCost -Sum).Sum
     $Variables.MiningPowerUsage = [Double]($Variables.BestMiners_Combo | Measure-Object PowerUsage -Sum).Sum
 
+    # Update data in API
+    $Variables.Miners = $Miners
+
     # ProfitabilityThreshold check - OK to run miners?
-    If ((-not $Variables.Rates) -or (-not $Variables.Rates.BTC.($Config.Currency)) -or [Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningProfit) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+    If (-not $Variables.Rates -or -not $Variables.Rates.BTC.($Config.Currency) -or [Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningProfit) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
         $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
     }
     Else { 
@@ -956,30 +960,14 @@ Function Start-Cycle {
         If ($Variables.Summary -ne "") { $Variables.Summary += "<br>" }
 
         # Add currency conversion rates
-        (@(If ($Config.UsemBTC -eq $true) { "mBTC" } Else { "BTC" }) + @($Config.ExtraCurrencies) | Select-Object -Unique) | Where-Object { $Variables.Rates.$_.($Config.Currency) } | ForEach-Object { 
+        (@(If ($Config.UsemBTC -eq $true) { "mBTC" } Else { "BTC" }) + $Config.ExtraCurrencies) | Select-Object -Unique | Where-Object { $Variables.Rates.$_.($Config.Currency) } | ForEach-Object { 
             $Variables.Summary += "1 $_ = {0:N} $($Config.Currency)&ensp;&ensp;&ensp;" -f $Variables.Rates.$_.($Config.Currency)
         }
         $Variables.Summary -replace '(&ensp;)+'
     }
-
-    # Also restart running miners (stop & start)
-    # When miner has been active before AND
-    # DataCollectInterval changed (when switching benchmark / power measurement mode) OR
-    # ReadPowerUsage state changed OR
-    # Miner windows invisibility changes
-    # Miner Priority changes
-    $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
-        If ($_.Activated -eq 0) {
-            # Re-benchmark triggered in Web GUI
-            $_.Restart = $true
-            $_.Data = @()
-        }
-        ElseIf ($_.CachedDataCollectInterval -ne $_.DataCollectInterval) { $_.Restart = $true }
-        ElseIf ($_.ReadPowerUsage -ne $_.CachedReadPowerUsage) { $_.Restart = $true }
-        ElseIf ($_.CachedShowMinerWindows -in @("normal", "minimized")) { If ($_.ShowMinerWindows -eq "hidden" -or $_.CachedShowMinerWindows -eq "hidden" ) { $_.Restart = $true } }
-        ElseIf ($_.Type -eq "CPU" -and $_.ProcessPriority -ne $Config.CPUMinerProcessPriority) { $_.Restart = $true }
-        ElseIf ($_.Type -ne "CPU" -and $_.ProcessPriority -ne $Config.GPUMinerProcessPriority) { $_.Restart = $true }
-    }
+    # Update data in API
+    $Variables.Miners = $Miners
+    Remove-Variable Miners -ErrorAction Ignore
 
     # Stop running miners
     ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running })) { 
@@ -1158,17 +1146,25 @@ While ($true) {
                 $Miner.SetStatus([MinerStatus]::Failed)
             }
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
+                # Set miner priority
+                If ($Process = Get-Process | Where-Object Id -EQ $Miner.ProcessId) { 
+                    $MinerProcessPriority = If ($Miner.Type -eq "CPU") { $PriorityNames.($Config.CPUMinerProcessPriority) } Else { $PriorityNames.($Config.GPUMinerProcessPriority) }
+                    If ($Process.PriorityClass -ne $MinerProcessPriority) { 
+                        $Process.PriorityClass = $MinerProcessPriority
+                        Write-Message -Level Verbose "Miner ($($Miner.Name)) process priority changed to '$MinerProcessPriority'."
+                    }
+                }
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
                 $Sample = @($Samples) | Select-Object -Last 1
                 If ($Sample) { $Miner.LastSample = $Sample }
 
-                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds(($Miner.WarmupTimes | Measure-Object -Maximum).Maximum)) { 
+                If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[1])) { 
                     # We must have data samples by now
                     If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
-                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $(($Miner.WarmupTimes | Measure-Object -Maximum).Maximum) seconds."
+                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTimes[1]) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        $Miner.StatusMessage = "Has not updated data for $(($Miner.WarmupTimes | Measure-Object -Maximum).Maximum)) seconds"
+                        $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTimes[1]) seconds"
                         Break
                     }
                     ElseIf ($Miner.LastSample.Date -lt (Get-Date).ToUniversalTime().AddSeconds( -15 )) { 
@@ -1190,7 +1186,7 @@ While ($true) {
                             $Miner.StatusMessage = "$(If ($Miner.Benchmark -EQ $true -or $Miner.MeasurePowerUsage -EQ $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                             $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
                         }
-                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) sample$(If ($Miner.Data.Count -ne 1) { "s"} ))."
+                        Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$_ = $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Miner.AllowedBadShareRatio) { " / Shares Total = $($Sample.Shares.$_[2]), Rejected = $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power = $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) sample$(If ($Miner.Data.Count -ne 1) { "s" } ))."
                     }
                     If ($Miner.AllowedBadShareRatio -gt 0) { 
                         $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 

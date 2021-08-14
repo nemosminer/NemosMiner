@@ -201,20 +201,6 @@
       "jp",
       "na",
       "sea"
-    ],
-    "Variant": {
-      "ZPool": {
-        "DivisorMultiplier": 1000000,
-        "PriceField": "estimate_current"
-      },
-      "ZPool24hr": {
-        "DivisorMultiplier": 1000000000,
-        "PriceField": "estimate_current24h"
-      },
-      "ZPoolPlus": {
-        "DivisorMultiplier": 1000000,
-        "PriceField": "plus_price"
-      }
-    }
+    ]
   }
 }

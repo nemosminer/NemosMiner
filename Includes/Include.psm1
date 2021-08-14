@@ -19,20 +19,28 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.62
-Version date:   08 August 2021
+Version:        3.9.9.63
+Version date:   14 August 2021
 #>
 
-# For SetWindowText
+# Window handling
 Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
 
 public static class Win32 {
-    [DllImport("User32.dll", EntryPoint="SetWindowText")]
+    [DllImport("user32.dll")]
     public static extern int SetWindowText(IntPtr hWnd, string strTitle);
+
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    public static extern int SetForegroundWindow(IntPtr hwnd);
 }
 "@
+
+$Global:PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
 
 Class Device { 
     [String]$Name
@@ -77,7 +85,7 @@ Class Device {
     [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage in sensors
 }
 
-enum DeviceState {
+Enum DeviceState {
     Enabled
     Disabled
     Unsupported
@@ -88,6 +96,7 @@ Class Pool {
     # [Credential[]]$Credential = @()
 
     [String]$Name
+    [String]$BaseName
     [String]$Algorithm
     [Nullable[Int]]$BlockHeight = $null
     [Nullable[Int64]]$DAGsize = $null
@@ -129,7 +138,7 @@ Class Worker {
     [TimeSpan]$TotalMiningDuration
 }
 
-enum MinerStatus { 
+Enum MinerStatus { 
     Running
     Idle
     Failed
@@ -153,11 +162,11 @@ Class Miner {
     [UInt16]$Port
     [String[]]$DeviceName = @() # derived from devices
     [String[]]$Algorithm = @() # derived from workers
-    [Double[]]$Speed_Live = @(0)
+    [Double[]]$Speed_Live = @()
 
-    [Double]$Earning # derived from pool and stats
-    [Double]$Earning_Bias # derived from pool and stats
-    [Double]$Earning_Accuracy # derived from pool and stats
+    [Double]$Earning = [Double]::NaN # derived from pool and stats
+    [Double]$Earning_Bias = [Double]::NaN # derived from pool and stats
+    [Double]$Earning_Accuracy = [Double]::NaN # derived from pool and stats
     [Double]$Profit = [Double]::NaN
     [Double]$Profit_Bias = [Double]::NaN
 
@@ -167,7 +176,6 @@ Class Miner {
     [Double]$PowerUsage_Live = [Double]::NaN
     [Double]$PowerCost = [Double]::NaN
     [Boolean]$ReadPowerUsage = $false
-    [Boolean]$CachedReadPowerUsage = $false
     
     [Boolean]$MeasurePowerUsage = $false
 
@@ -199,9 +207,7 @@ Class Miner {
     [DateTime]$StatEnd
     [TimeSpan[]]$Intervals = @()
     [Int]$DataCollectInterval = 5 # Seconds
-    [Int]$CachedDataCollectInterval = 5 # Seconds
-    [String]$ShowMinerWindows = "minimized"
-    [String]$CachedShowMinerWindows
+    [String]$WindowStyle = "minimized"
     # [String[]]$Environment = @()
     [Int]$MinDataSamples # for safe hashrate values
     [PSCustomObject]$LastSample # last hash rate sample
@@ -241,6 +247,7 @@ Class Miner {
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.New = $true
         $this.Activated++
+        $this.Restart = $false
         $this.Intervals = @()
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
@@ -260,18 +267,18 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -ShowMinerWindows $this.ShowMinerWindows -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
                 DateTime     = [String](Get-Date -Format o)
-                Action       = "Started"
+                Action       = "Launched"
                 Name         = $this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
-                Type         = ($this.Type -join " & ")
+                Type         = $this.Type
                 Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
                 Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-                Algorithm    = ($this.Workers.Pool.Algorithm) -join "; "
+                Algorithm    = $this.Workers.Pool.Algorithm -join "; "
                 Duration     = ""
                 Earning      = [Double]$this.Earning
                 Earning_Bias = [Double]$this.Earning_Bias
@@ -293,17 +300,16 @@ Class Miner {
                     Start-Sleep -Milliseconds 100
                 }
             }
-            $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+
             $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = (Get-Date).ToUniversalTime()
-            $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]0 })
+            $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]::NaN })
         }
     }
 
     [MinerStatus]GetStatus() { 
-        If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { 
-            # Use ProcessName, some crashed miners are dead, but may still be found by their processId
+        If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
             Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq "Running") { 
@@ -354,10 +360,10 @@ Class Miner {
             Action       = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
             Name         = $this.Name
             Device       = ($this.Devices.Name | Sort-Object) -join "; "
-            Type         = ($this.Type -join " & ")
+            Type         = $this.Type
             Account      = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
             Pool         = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm    = ($this.WorkersRunning.Pool.Algorithm) -join "; "
+            Algorithm    = $this.WorkersRunning.Pool.Algorithm -join "; "
             Duration     = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
             Earning      = [Double]$this.Earning
             Earning_Bias = [Double]$this.Earning_Bias
@@ -426,6 +432,11 @@ Class Miner {
                 }
             }
         }
+        Else { 
+            ForEach ($Device in $this.Devices) { 
+                $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage # Use configured value
+            }
+        }
         Return $TotalPowerUsage
     }
 
@@ -483,6 +494,7 @@ Class Miner {
     }
 
     Refresh([Double]$PowerCostBTCperW) { 
+        $this.Reason = @()
         $this.Available = $true
         $this.Benchmark = $false
         $this.Best = $false
@@ -514,7 +526,7 @@ Class Miner {
 
         $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
 
-        $this.Earning_Accuracy = If ($this.Earning -eq 0) { 1 } Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
+        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 } Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
@@ -556,7 +568,7 @@ Function Get-DefaultAlgorithm {
         }
     # }
     If ($PoolsAlgos) { 
-        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @($Config.PoolName -replace "24hr$|Coins$")
+        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @($Config.PoolName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")
         Return  $PoolsAlgos.Value | Sort-Object -Unique
     }
     Return
@@ -727,12 +739,11 @@ Function Start-BrainJob {
     $JobNames = @()
 
     $Config.PoolName | Select-Object | ForEach-Object { 
-        $_ = $_ -replace "Coins$"
         If (-not $Variables.BrainJobs.$_) { 
-            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
+            $BrainPath = "$($Variables.MainPath)\Brains\$($_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")"
             $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = (Start-Job -FilePath $BrainName -ArgumentList @($BrainPath))
+                $Variables.BrainJobs.$_ = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath, $_)
                 If ($Variables.BrainJobs.$_.State -EQ "Running") { 
                     $JobNames += $_
                 }
@@ -758,7 +769,7 @@ Function Stop-BrainJob {
     }
 
     If ($JobNames.Count -gt 0) { 
-        Write-Message "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))."
+        Write-Message "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))."
     }
 }
 
@@ -1221,14 +1232,17 @@ Function Merge-Hashtable {
         [Parameter(Mandatory = $true)]
         [Hashtable]$HT2,
         [Parameter(Mandatory = $false)]
-        [Boolean]$Unique = $false
+        [Boolean]$Unique = $false,
+        [Parameter(Mandatory = $false)]
+        [String[]]$Replace = @() # Replace, not merge property
     )
 
     $HT2.Keys | ForEach-Object { 
         If ($HT1.$_ -is [Hashtable]) { 
-            $HT1.$_ = Merge-Hashtable $HT1.$_ $HT2.$_ 
+        [Boolean]$Unique = $false,
+        $HT1.$_ = Merge-Hashtable -HT1 $HT1.$_ -Ht2 $HT2.$_ -Unique $Unique -Replace $Replace
         }
-        ElseIf ($HT1.$_ -is [Array]) { 
+        ElseIf ($HT1.$_ -is [Array] -and $_ -notin $NoMerge) { 
             $HT1.$_ += $HT2.$_
             If ($Unique) { $HT1.$_ = $HT1.$_ | Sort-Object -Unique }
         }
@@ -1278,18 +1292,23 @@ Function Read-Config {
         }
 
         # Add config items
-        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys } | Sort-Object Name | ForEach-Object { 
+        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Global:Config.Keys } | Sort-Object Name | ForEach-Object { 
             $Value = $Variables.AllCommandLineParameters.$_
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Config.$_ = $Value
+            $Global:Config.$_ = $Value
         }
 
         $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     }
 
+    # Ensure parameter format
+    $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
+        If ($Global:Config.$_ -is [Array]) { $Global:Config.$_ = @($Global:Config.$_ -replace " " -split ",") } # Enforce array
+    }
+
     # Load default pool data, create case insensitive hastable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     $DefaultPoolData = [Ordered]@{ }
-    $Temp = Get-Content .\Includes\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
+    $Temp = Get-Content .\Data\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
     $Temp.Keys | Sort-Object | ForEach-Object { $DefaultPoolData += @{ $_ = $Temp.$_ } }
 
     # Build custom pools configuation, create case insensitive hastable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
@@ -1306,11 +1325,11 @@ Function Read-Config {
 
     # Build in memory pool config
     $PoolsConfig = [Ordered]@{ }
-    @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$|Coins$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
+    @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         If ($PoolConfig = $DefaultPoolData.$PoolName) { 
             # Merge default pool data with custom pool config
-            If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable $PoolConfig $CustomPoolConfig -Unique $true }
+            If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true }
 
             If (-not $PoolConfig.MinWorker) { $PoolConfig.MinWorker = $Config.MinWorker }
             If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig.EarningsAdjustmentFactor = $Config.EarningsAdjustmentFactor }
@@ -1347,10 +1366,12 @@ Function Read-Config {
                 Default { 
                     If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Config.PayoutCurrency }
                     If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = [PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } }
+                    $PoolConfig.Remove("PayoutCurrency")
                 }
             }
             If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
-            If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = $PoolConfig.Algorithm -replace " " }
+            If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = @($PoolConfig.Algorithm -replace " " -split ",") }
+            $PoolConfig.Region = $PoolConfig.Region | Where-Object { $_ -notin @($PoolConfig.ExcludeRegion) }
         }
         $PoolsConfig.$PoolName = $PoolConfig
     }
@@ -1802,15 +1823,14 @@ Function Invoke-TcpRequest {
     )
 
     Try { 
-        $Client = New-Object System.Net.Sockets.TcpClient $Server, $Port
-        $Stream = $Client.GetStream()
-        $Writer = New-Object System.IO.StreamWriter $Stream
-        $Reader = New-Object System.IO.StreamReader $Stream
+        $Client = [Net.Sockets.TcpClient]::new($Server, $Port)
         $Client.SendTimeout = $Client.ReceiveTimeout = $Timeout * 1000
+        $Stream = $Client.GetStream()
+        $Writer = [IO.StreamWriter]::new($Stream)
+        $Reader = [IO.StreamReader]::new($Stream)
         $Writer.AutoFlush = $true
-
         $Writer.WriteLine($Request)
-        If ($ReadToEnd) { $Response = $Reader.ReadToEnd() } Else { $Response = $Reader.ReadLine() }
+        $Response = If ($ReadToEnd) { $Reader.ReadToEnd() } Else { $Reader.ReadLine() }
     }
     Catch { $Error.Remove($error[$Error.Count - 1]) }
     Finally { 
@@ -1953,7 +1973,7 @@ Function Get-Device {
     )
 
     If ($Name) { 
-        $DeviceList = Get-Content ".\Includes\Devices.json" | ConvertFrom-Json
+        $DeviceList = Get-Content ".\Data\Devices.json" | ConvertFrom-Json
         $Name_Devices = $Name | ForEach-Object { 
             $Name_Split = $_ -split '#'
             $Name_Split = @($Name_Split | Select-Object -Index 0) + @($Name_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
@@ -1967,7 +1987,7 @@ Function Get-Device {
     }
 
     If ($ExcludeName) { 
-        If (-not $DeviceList) { $DeviceList = Get-Content -Path ".\Includes\Devices.json" | ConvertFrom-Json }
+        If (-not $DeviceList) { $DeviceList = Get-Content -Path ".\Data\Devices.json" | ConvertFrom-Json }
         $ExcludeName_Devices = $ExcludeName | ForEach-Object { 
             $ExcludeName_Split = $_ -split '#'
             $ExcludeName_Split = @($ExcludeName_Split | Select-Object -Index 0) + @($ExcludeName_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
@@ -2381,17 +2401,15 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$CreationFlags = 0x00000010, # CREATE_NEW_CONSOLE
         [Parameter(Mandatory = $false)]
-        [String]$ShowMinerWindows = "minimized",
+        [String]$MinerWindowStyle = "minimized",
         [Parameter(Mandatory = $false)]
         [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
         [Parameter(Mandatory = $false)]
         [String]$LogFile
     )
 
-    $PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
-
-    $Job = Start-Job -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $ShowMinerWindows, $StartF, $PID { 
-        Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $ShowMinerWindows, $StartF, $ControllerProcessID)
+    $Job = Start-Job -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
+        Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $ControllerProcessID)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
         If ($null -eq $ControllerProcess) { Return }
@@ -2436,7 +2454,7 @@ public static class Kernel32
 "@
 
         $ShowWindow = $(
-            Switch ($ShowMinerWindows) {
+            Switch ($MinerWindowStyle) {
                 "hidden" { "0x0000" } # SW_HIDE
                 "normal" { "0x0001" } # SW_SHOWNORMAL
                 Default  { "0x0007" } # SW_SHOWMINNOACTIVE
@@ -2475,7 +2493,7 @@ public static class Kernel32
         $ControllerProcess.Handle | Out-Null
         $Process.Handle | Out-Null
 
-        Do { If ($ControllerProcess.WaitForExit(250)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
 
@@ -2570,7 +2588,7 @@ Function Get-Algorithm {
     )
 
     If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) {
-        $Global:Algorithms = Get-Content ".\Includes\Algorithms.json" | ConvertFrom-Json
+        $Global:Algorithms = Get-Content ".\Data\Algorithms.json" | ConvertFrom-Json
     }
 
     $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-|_|/| ')
@@ -2588,7 +2606,7 @@ Function Get-Region {
     )
 
     If (-not (Test-Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
-        $Global:Regions = Get-Content ".\Includes\Regions.json" | ConvertFrom-Json
+        $Global:Regions = Get-Content ".\Data\Regions.json" | ConvertFrom-Json
     }
 
     If ($List) { Return $Global:Regions.$Region }
@@ -2606,7 +2624,7 @@ Function Get-CoinName {
     )
 
     If (-not (Test-Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content ".\Includes\CoinNames.json" | ConvertFrom-Json
+        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
     }
 
     If ($Global:CoinNames.$Currency) { 
@@ -2686,7 +2704,7 @@ Function Initialize-Autoupdate {
 
     # Backup current version folder in zip file; exclude existing zip files and download folder
     "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads  -x!cache -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
+    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!logs -x!cache -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
     Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
     Remove-Item -Path "$($UpdateLog)_tmp" -Force
 
@@ -2706,6 +2724,12 @@ Function Initialize-Autoupdate {
         If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
         If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
     }
+
+    # Move data files from '\Logs' to '\Data'
+    If (Test-Path -Path ".\Logs\BalancesTrackerData*.json" -PathType Leaf) { Move-Item ".\Logs\BalancesTrackerData*.json" ".\Data" -Force }
+    If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { Move-Item ".\Logs\EarningsChartData.json" ".\Data" -Force }
+    If (Test-Path -Path ".\Logs\DailyEarnings*.csv" -PathType Leaf) { Move-Item ".\Logs\DailyEarnings*.csv" ".\Data" -Force }
+    If (Test-Path -Path ".\Logs\PoolsLastUsed.json" -PathType Leaf) { Move-Item ".\Logs\PoolsLastUsed.json" ".\Data" -Force }
 
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
@@ -2853,6 +2877,8 @@ Function Update-ConfigFile {
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "PricePenaltyFactor" { $Config.EarningsAdjustmentFactor = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
+            "ShowMinerWindows" { $Config.MinerWindowStyle = $Config.$_; $Config.Remove($_) }
+            "ShowMinerWindowsNormalWhenBenchmarking" { $Config.MinerWindowStyleNormalWhenBenchmarking = $Config.$_; $Config.Remove($_) }
             "UserName" { 
                 If (-not $Config.MiningPoolHubUserName) { $Config.MiningPoolHubUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
