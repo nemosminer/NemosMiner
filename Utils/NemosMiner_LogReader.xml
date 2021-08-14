@@ -348,7 +348,7 @@
       <ExternalTools />
     </TailFileConfig>
     <TailFileConfig>
-      <FilePath>C:\Users\Stephan\Desktop\NemosMiner\Logs\DailyEarnings.csv</FilePath>
+      <FilePath>..\Data\DailyEarnings.csv</FilePath>
       <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
       <FileCacheSize>1000</FileCacheSize>
       <FileCheckInterval>10</FileCheckInterval>
