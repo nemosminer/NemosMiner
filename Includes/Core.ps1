@@ -658,7 +658,7 @@ Function Start-Cycle {
 
     # Get new miners
     Write-Message -Level Verbose "Loading miners..."
-    $Miners = [Miner[]]$Variables.Miners
+    $Miners = $Variables.Miners
     $NewMiners_Jobs = @(
         If ($Config.IncludeRegularMiners -and (Test-Path -Path ".\Miners" -PathType Container)) { Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
         If ($Config.IncludeOptionalMiners -and (Test-Path -Path ".\OptionalMiners" -PathType Container)) { Get-ChildItemContent ".\OptionalMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $EnabledDevices } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
@@ -710,12 +710,15 @@ Function Start-Cycle {
         }
     }
 
-    # Remove gone miners
-    $Miners = @($CompareMiners | Where-Object SideIndicator -EQ "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
-
-    # Add new miners
-    $Miners += $CompareMiners | Where-Object SideIndicator -EQ "=>" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
-
+    If ($Miners) { 
+        # Remove gone miners
+        $Miners = @($CompareMiners | Where-Object SideIndicator -EQ "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
+        # Add new miners
+        $Miners += $CompareMiners | Where-Object SideIndicator -EQ "=>" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
+    }
+    Else { 
+        $Miners = $NewMiners
+    }
     # Update miners
     $Miners | ForEach-Object { 
         If ($Miner = $NewMiners | Where-Object Arguments -EQ $_.Arguments | Where-Object Path -EQ $_.Path) { # Update existing miners
@@ -1126,7 +1129,7 @@ While ($true) {
     # - a miner crashed (and no other miners are benchmarking)
     # - all benchmarking miners have collected enough samples
     # - WarmupTimes[1] is reached (no readout from miner)
-    $RunningMiners = $Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage }
+    $RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending { $_.Benchmark }, { $_.MeasurePowerUsage })
     $Interval = ($RunningMiners.DataCollectInterval | Measure-Object -Minimum).Minimum
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
@@ -1155,8 +1158,7 @@ While ($true) {
                     }
                 }
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
-                $Sample = @($Samples) | Select-Object -Last 1
-                If ($Sample) { $Miner.LastSample = $Sample }
+                If ($Sample = $Samples | Select-Object -Last 1) { $Miner.LastSample = $Sample }
 
                 If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[1])) { 
                     # We must have data samples by now
@@ -1202,8 +1204,8 @@ While ($true) {
             }
         }
 
-        $FailedMiners = $RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::Running }
-        $RunningMiners = $RunningMiners | Where-Object { $_.Status -eq [MinerStatus]::Running }
+        $FailedMiners = @($RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::Running })
+        $RunningMiners = @($RunningMiners | Where-Object { $_.Status -eq [MinerStatus]::Running })
         $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
         If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 

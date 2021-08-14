@@ -357,7 +357,7 @@ $AllCommandLineParameters | ForEach-Object {
 }
 
 # Start transcript log
-If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
+If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\NemosMiner-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 Write-Message -Level Info "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru" -Console
 If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." -Console }
@@ -369,15 +369,14 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
     $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
     If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
         # Activate existing Snaketail window
-        $MainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-        [void][Win32]::ShowWindowAsync($MainWindowHandle, 4) # ShowNoActivateRecentPosition
-        [void][Win32]::SetForegroundWindow($MainWindowHandle) 
+        $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+        [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # ShowNoActivateRecentPosition
+        [void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle) 
     }
     Else { 
-        $SnaketailProcess = Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null
-        # & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
+        [Void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null)
     }
-    Remove-Variable MainWindowHandle, SnaketailProcess -ErrorAction Ignore
+    Remove-Variable SnaketailProcess, SnaketailMainWindowHandle -ErrorAction Ignore
 }
 
 #Prerequisites check
@@ -480,7 +479,16 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
     }
 }
 
-If ($Config.WebGUI -eq $true) { Initialize-API }
+If ($Config.WebGUI -eq $true) { 
+    Initialize-API
+    If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
+        # Activate existing Snaketail window
+        $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+        [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # ShowNoActivateRecentPosition
+        [void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle) 
+    }
+    Remove-Variable SnaketailProcess, SnaketailMainWindowHandle -ErrorAction Ignore
+}
 
 Function Get-Chart { 
 
