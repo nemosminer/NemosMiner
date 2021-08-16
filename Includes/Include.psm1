@@ -150,7 +150,7 @@ Class Miner {
     [Worker[]]$WorkersRunning = @()
     [Device[]]$Devices = @()
 
-    [String[]]$Type
+    [String]$Type
 
     [String]$Name
     [String]$BaseName
@@ -273,11 +273,11 @@ Class Miner {
             [PSCustomObject]@{ 
                 DateTime     = [String](Get-Date -Format o)
                 Action       = "Launched"
-                Name         = $this.Name
+                Name         = [String]$this.Name
                 Device       = ($this.Devices.Name | Sort-Object) -join "; "
-                Type         = $this.Type
-                Account      = ($this.Workers.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
-                Pool         = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+                Type         = [String]$this.Type
+                Account      = [String]($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
+                Pool         = [String]($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Algorithm    = $this.Workers.Pool.Algorithm -join "; "
                 Duration     = ""
                 Earning      = [Double]$this.Earning
@@ -305,6 +305,7 @@ Class Miner {
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = (Get-Date).ToUniversalTime()
             $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]::NaN })
+            $this.WorkersRunning = $this.Workers
         }
     }
 
@@ -358,12 +359,12 @@ Class Miner {
         [PSCustomObject]@{ 
             DateTime     = [String](Get-Date -Format o)
             Action       = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
-            Name         = $this.Name
-            Device       = ($this.Devices.Name | Sort-Object) -join "; "
-            Type         = $this.Type
-            Account      = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join '; '
-            Pool         = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm    = $this.WorkersRunning.Pool.Algorithm -join "; "
+            Name         = [String]$this.Name
+            Device       = [String]($this.Devices.Name | Sort-Object) -join "; "
+            Type         = [String]$this.Type
+            Account      = [String]($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
+            Pool         = [String]($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+            Algorithm    = [String]$this.WorkersRunning.Pool.Algorithm -join "; "
             Duration     = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
             Earning      = [Double]$this.Earning
             Earning_Bias = [Double]$this.Earning_Bias
@@ -1051,9 +1052,6 @@ namespace PInvoke.Win32 {
     }
 }
 '@
-
-            # Start transcript log
-            If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\IdleMining.log" -Append -Force }
 
             $ProgressPreference = "SilentlyContinue"
             Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
