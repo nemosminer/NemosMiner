@@ -77,35 +77,68 @@ function formatMiners(data) {
   return data;
 }
 
+// function formatTimeSince(value) {
+//   var date = new Date(value);
+//   var localtime = new Date().getTime();
+//   var seconds = Math.floor((new Date() - date) / 1000);
+//   var interval = Math.floor(seconds / 31536000);
+//   if (isNaN(seconds)) seconds = Math.floor((localtime - parseInt(value.replace("/Date(", '').replace(")/", ''))) / 1000);
+//   if (interval > 1) return interval + ' years ago';
+//   if (interval == 1) return interval + ' year ago';
+
+//   interval = Math.floor(seconds / 2592000);
+//   if (interval > 1) return interval + ' months ago';
+//   if (interval == 1) return interval + ' month ago';
+
+//   interval = Math.floor(seconds / 86400);
+//   if (interval > 1) return interval + ' days ago';
+//   if (interval == 1) return interval + ' day ago';
+
+//   interval = Math.floor(seconds / 3600);
+//   if (interval > 1) return interval + ' hours ago';
+//   if (interval == 1) return interval + ' hour ago';
+
+//   interval = Math.floor(seconds / 60);
+//   if (interval > 1) return interval + ' minutes ago';
+//   if (interval == 1) return interval + ' minute ago';
+
+//   if (seconds > 0) return Math.floor(seconds) + ' seconds ago';
+//   return 'just now';
+// }
 function formatTimeSince(value) {
-  var date = new Date(value);
+  var value = (new Date).getTime() - (new Date(value)).getTime();
   var localtime = new Date().getTime();
-  var seconds = Math.floor((new Date() - date) / 1000);
-  var interval = Math.floor(seconds / 31536000);
-  if (isNaN(seconds)) seconds = Math.floor((localtime - parseInt(value.replace("/Date(", '').replace(")/", ''))) / 1000);
-  if (interval > 1) return interval + ' years ago';
-  if (interval == 1) return interval + ' year ago';
-
-  interval = Math.floor(seconds / 2592000);
-  if (interval > 1) return interval + ' months ago';
-  if (interval == 1) return interval + ' month ago';
-
-  interval = Math.floor(seconds / 86400);
-  if (interval > 1) return interval + ' days ago';
-  if (interval == 1) return interval + ' day ago';
-
+  var lastupdated = '';
+  if (isNaN(value)) {
+    value = localtime - parseInt(kicked.replace("/Date(", "").replace(")/", ""));
+  }
+  seconds = value / 1000
   interval = Math.floor(seconds / 3600);
-  if (interval > 1) return interval + ' hours ago';
-  if (interval == 1) return interval + ' hour ago';
-
+  if (interval > 1) {
+    lastupdated = lastupdated + interval.toString() + ' hours ';
+  } else if (interval == 1) {
+    lastupdated = lastupdated + interval.toString() + ' hour ';
+  }
+  if (interval > 0) seconds = seconds - interval * 3600
   interval = Math.floor(seconds / 60);
-  if (interval > 1) return interval + ' minutes ago';
-  if (interval == 1) return interval + ' minute ago';
-
-  if (seconds > 0) return Math.floor(seconds) + ' seconds ago';
-  return 'just now';
+  if (interval > 1) {
+    lastupdated = lastupdated + interval.toString() + ' minutes ';
+  } else if (interval == 1) {
+    lastupdated = lastupdated + interval.toString() + ' minute ';
+  }
+  if (interval > 0) seconds = seconds - interval * 60
+  interval = parseInt(seconds % 60);
+  if (interval > 1) {
+    lastupdated = lastupdated + interval.toString() + ' seconds ';
+  } else if (interval == 1) {
+    lastupdated = lastupdated + interval.toString() + ' second ';
+  }
+  if (lastupdated == '') {
+    return 'just now';
+  } else {
+    return lastupdated + 'ago';
+  }
 }
-
 function formatHashRateValue(value) {
   if (value == null) return ''
   if (value === 0) return '0 H/s'
