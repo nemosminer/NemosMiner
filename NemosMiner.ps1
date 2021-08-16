@@ -298,10 +298,10 @@ $Variables.Pools = [Miner]::Pools
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
-$Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
-$Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))"
-$Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))"
-$Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))"
+$Variables.LogFile = ".\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
+$Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
+$Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
+$Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
 $Variables.CurrentProduct = $Branding.ProductLabel
 $Variables.CurrentVersion = $Branding.Version
@@ -343,9 +343,9 @@ Catch {
     Exit
 }
 # Verify coin name data
-Try { [Void](Get-Content -Path ".\Includes\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
+Try { [Void](Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
 Catch { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Includes\CoinNames.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\CoinNames.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
