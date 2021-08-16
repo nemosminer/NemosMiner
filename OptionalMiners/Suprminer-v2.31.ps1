@@ -6,7 +6,7 @@ $Uri = "https://github.com/ocminer/suprminer-releases/raw/main/suprminer-winx86_
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "HeavyHash"; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo obtc" }
+    [PSCustomObject]@{ Algorithm = "HeavyHash"; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 60); Arguments = " --algo obtc" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
