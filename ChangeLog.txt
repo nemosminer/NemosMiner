@@ -11,7 +11,7 @@ Changelog NemosMiner 3.9.9.64 19.08.2021
 
 Enhancements:
 - Brains: Remove trailing spaces from 'currency' property (workaround for error in pool API data)
-- Core: Added config item 'MinInterval' (Default= 1); minimum intervals a miner must mine continously the same available algo@pool before switching is allowed 
+- Core: Added config item 'MinInterval' (Default=0); minimum number of cycles a miner must mine continously the same available algorithm@pool before switching is allowed 
 - Core: Minor code enhancements, speed improvements & cleanup
 - Core: Use relative file paths where possible (avoid personal information in log files)
 
