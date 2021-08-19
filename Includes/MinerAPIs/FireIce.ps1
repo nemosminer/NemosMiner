@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 using module ..\Include.psm1

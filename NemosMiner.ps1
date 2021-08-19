@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 [CmdletBinding()]
@@ -114,6 +114,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$MinerSet = 1, # 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device;
     [Parameter(Mandatory = $false)]
+    [Switch]$MineWhenIdle = $false, # If true NemosMiner will start mining only if system is idle for $IdleSec seconds
+    [Parameter(Mandatory = $false)]
     [String]$MinerWindowStyle = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
     [Parameter(Mandatory = $false)]
     [Switch]$MinerWindowStyleNormalWhenBenchmarking = $true, # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
@@ -122,7 +124,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$MiningPoolHubUserName = "Nemo", # MiningPoolHub UserName
     [Parameter(Mandatory = $false)]
-    [Switch]$MineWhenIdle = $false, # If true NemosMiner will start mining only if system is idle for $IdleSec seconds
+    [Int]$MinInterval = 0, # Minimum number of full cycles a miner must mine continously the same available algo@pool before switching is allowed (e.g. 3 would force a miner to stick mining algo@pool for min. 3 intervals before switching to another algo or pool)
     [Parameter(Mandatory = $false)]
     [Int]$MinWorker = 10, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per-pool setting configurable in 'PoolsConfig.json'
     [Parameter(Mandatory = $false)]
@@ -250,7 +252,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.63"
+    Version      = [System.Version]"3.9.9.64"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -288,13 +290,10 @@ If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -N
 If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Data" -PathType Container)) { New-Item -Path . -Name "Data" -ItemType Directory | Out-Null }
 
-# Initialize global variables
+# Initialize thread safe global variables
 New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
-
-$Variables.Miners = [Miner[]]
-$Variables.Pools = [Miner]::Pools
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
@@ -371,7 +370,7 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
         # Activate existing Snaketail window
         $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
         [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # ShowNoActivateRecentPosition
-        [void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle) 
+        [void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle)
     }
     Else { 
         [Void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null)
@@ -434,21 +433,22 @@ $Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Obj
 If ($Variables.FreshConfig -eq $true) { $Config.MinerInstancePerDeviceModel = ($Variables.Devices | Group-Object Vendor  | ForEach-Object { ($_.Group.Model | Sort-Object -Unique).Count } | Measure-Object -Maximum).Maximum -gt 1 }
 
 Write-Host "Setting variables..." -ForegroundColor Yellow
-$Variables.BrainJobs = @{ }
-$Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
-$Variables.Miners = [Miner[]]@()
-$Variables.Pools = [Pool[]]@()
-$Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
 $Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
-$Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
 $Variables.DriverVersion = @{ }
 $Variables.DriverVersion | Add-Member AMD ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
 $Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.BrainJobs = @{ }
+$Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
+$Variables.Miners = [Miner[]]@()
 $Variables.MiningStatus = $Variables.NewMiningStatus = "Stopped"
+$Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
+$Variables.Pools = [Pool[]]@()
+$Variables.PoolsLastUsed = @{}
+$Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
+$Variables.StatStarts = @()
 $Variables.Strikes = 3
 $Variables.WatchdogTimers = @()
-$Variables.StatStarts = @()
-$Variables.PoolsLastUsed = @{}
+
 If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
 If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
@@ -484,7 +484,11 @@ If ($Config.WebGUI -eq $true) {
     If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
         # Activate existing Snaketail window
         $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-        [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # ShowNoActivateRecentPosition
+        # Check if the window isn't already in foreground
+        If ([Win32]::GetForegroundWindow() -ne $SnaketailMainWindowHandle) { 
+            [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 6)
+            [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 9)
+        }
         [void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle) 
     }
     Remove-Variable SnaketailProcess, SnaketailMainWindowHandle -ErrorAction Ignore

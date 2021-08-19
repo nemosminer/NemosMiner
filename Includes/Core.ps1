@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 using module .\Include.psm1
@@ -703,25 +703,32 @@ Function Start-Cycle {
     $Miners | ForEach-Object { 
         If ($Miner = $NewMiners | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Name -EQ $_.Name | Where-Object Path -EQ $_.Path) {
             # Update existing miners
+            $_.Restart = $false
             If ($_.Status -eq [MinerStatus]::Running) { 
                 # Restart of running miners (stop & start) required?
                 If ($_.Arguments -ne $Miner.Arguments) { 
                     $_.Restart = $true
                 } # Change in arguments requires a miner restart
-                If ($_.Activated -eq 0) { 
+                If ($_.Activated -eq 0) {
                     $_.Restart = $true; $_.Data = @()
                 } # Re-benchmark triggered in Web GUI
                 ElseIf ($_.Benchmark -ne $Miner.Benchmark -or $_.MeasurePowerUsage -ne $Miner.MeasurePowerUsage) { 
-                    $_.Restart = $true
+                    $_.Restart = $true 
                 } # Benchmark / Power usage measurement complete
             }
-            $_.Arguments = $Miner.Arguments
-            $_.Devices = $Miner.Devices
-            $_.DeviceName = $Miner.DeviceName
+            If ($_.Arguments -ne $Miner.Arguments -and $_.BeginTime.AddSeconds($Config.Interval * ($Config.MinInterval -1 )) -gt $Variables.Timer) { 
+                # Minimum numbers of full cycles not yet reached
+                $_.Restart = $false
+            }
+            Else { 
+                $_.Arguments = $Miner.Arguments
+                $_.Devices = $Miner.Devices
+                $_.DeviceName = $Miner.DeviceName
+                $_.Port = $Miner.Port
+                $_.Workers = $Miner.Workers
+            }
             $_.MinerUri = $Miner.MinerUri
-            $_.Port = $Miner.Port
             $_.WarmupTimes = $Miner.WarmupTimes
-            $_.Workers = $Miner.Workers
         }
 
         $_.ReadPowerUsage = [Bool]($_.Devices.ReadPowerUsage -notcontains $false)
@@ -859,7 +866,7 @@ Function Start-Cycle {
         $Miners | ForEach-Object { $_."$($SortBy)_Bias" += $SmallestBias }
 
         # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
-        $Variables.SortedMiners = @($Miners | Where-Object Available -EQ $true | Sort-Object -Property @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false }) # pre-sort
+        $Variables.SortedMiners = @($Miners | Where-Object Available -EQ $true | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, Restart, "$($SortBy)_Bias") # pre-sort
         $Variables.FastestMiners = @($Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; ($Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.Fastest = $true; $_ }) }) # use a smaller subset of miners
         $Variables.BestMiners = @($Variables.FastestMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; ($Variables.FastestMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName).Count -eq 0 } | Select-Object -First 1) })
 
@@ -1134,22 +1141,22 @@ While ($true) {
                     }
                 }
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object) 
-                If ($Sample = $Samples | Select-Object -Last 1) { $Miner.LastSample = $Sample }
+                $Sample = $Samples | Select-Object -Last 1
 
                 If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[1])) { 
                     # We must have data samples by now
-                    If ($Miner.LastSample.Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
+                    If (($Miner.Data | Select-Object -Last 1).Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
                         Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Miner.WarmupTimes[1]) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
                         $Miner.StatusMessage = "Has not updated data for $($Miner.WarmupTimes[1]) seconds"
                         Break
                     }
-                    ElseIf ($Miner.LastSample.Date -lt (Get-Date).ToUniversalTime().AddSeconds( -15 )) { 
-                        # Miner stuck - no sample for > 15 seconds
-                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for 15 seconds."
+                    ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds($Config.WarmupTimes[1]) -lt (Get-Date).ToUniversalTime()) { 
+                        # Miner stuck - no sample for > $Config.WarmupTimes[1] seconds
+                        Write-Message -Level Error "Miner '$($Miner.Info)' got stopped because it has not updated data for $($Config.WarmupTimes[1]) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        $Miner.StatusMessage = "Has not updated data for 15 seconds"
+                        $Miner.StatusMessage = "Has not updated data for $($Config.WarmupTimes[1]) seconds"
                         Break
                     }
                 }

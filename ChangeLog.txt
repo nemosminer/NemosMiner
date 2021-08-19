@@ -6,6 +6,26 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 3.9.9.64 19.08.2021
+========================================
+
+Enhancements:
+- Brains: Remove training spaces from 'currency' property (workaround for error in pool API data)
+- Core: Added config item 'MinInterval' (Default= 1); minimum intervals a miner must mine continously the same available algo@pool before switching is allowed 
+- Core: Minor code enhancements, speed improvements & cleanup
+- Core: Use relative file paths where possible (avoid personal information in log files)
+
+Fixes:
+- Core: Avoid unnecessary miner switching
+- Core: Clear watchdog timer if miner object is gone
+- Core: Do not stop miner prematurely if no hashrate is received
+- WebGUI / Config editor: Algorithm list not saved as array (algorithm filtering not working)
+
+Miner updates:
+- GMiner-v2.65
+- NBMiner-v39.0
+
+
 Changelog NemosMiner 3.9.9.63 14.08.2021
 ========================================
 
@@ -14,14 +34,15 @@ Changes:
 - Core: Add '.\Data' folder
   move operational data files from '.\Logs' to '.\Data' folder; files in '.\Logs' folder can now be deleted without losing important data
   move data files from '.\Includes' to '.\Data' folder; separate data from code
-- Core: End SnakeTail when closing main window
 - Core: Change structure of '\Data\UnprofitableAlgorithms.json'
-- Core: Minor code enhancements, speed improvements & cleanup
+- Core: End SnakeTail when closing main window
 - Core: Renamed config item 'ShowMinerWindows' to 'MinerWindowStyle'
 - Core: Renamed config item 'ShowMinerWindowsNormalWhenBenchmarking' to 'MinerWindowStyleNormalWhenBenchmarking'
 
 Enhancements:
+- Brains: Remove training spaces from 'currency' property (workaround for error in pool API data)
 - Core: Keep pool & miner info in API consistent while processing
+- Core: Minor code enhancements, speed improvements & cleanup
 - Pools: Ability to exclude pool regions (Property 'ExcludeRegion' in '.\Config\PoolsConfig.Json' config file)
 - Web GUI: Display [Double]::NaN as 'N/A'
 

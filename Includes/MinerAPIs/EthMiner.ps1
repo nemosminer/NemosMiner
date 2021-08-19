@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 using module ..\Include.psm1
@@ -48,13 +48,13 @@ class EthMiner : Miner {
         $HashRate_Name = [String]($this.Algorithm[0])
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
         If ($Data.result[0] -notmatch "^TT-Miner") { 
-            If ($this.Algorithm -eq "EtcHash")          { $HashRate_Value *= 1000 }
-            ElseIf ($this.Algorithm -eq "Ethash")       { $HashRate_Value *= 1000 }
-            ElseIf ($this.Algorithm -eq "EthashLowMem") { $HashRate_Value *= 1000 }
-            ElseIf ($this.Algorithm -eq "UbqHash")      { $HashRate_Value *= 1000 }
+            If ($HashRate_Name -eq "EtcHash")          { $HashRate_Value *= 1000 }
+            ElseIf ($HashRate_Name -eq "Ethash")       { $HashRate_Value *= 1000 }
+            ElseIf ($HashRate_Name -eq "EthashLowMem") { $HashRate_Value *= 1000 }
+            ElseIf ($HashRate_Name -eq "UbqHash")      { $HashRate_Value *= 1000 }
         }
-        If ($this.Algorithm -eq "NeoScrypt")           { $HashRate_Value *= 1000 }
-        ElseIf ($this.Algorithm -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
+        If ($HashRate_Name -eq "NeoScrypt")           { $HashRate_Value *= 1000 }
+        ElseIf ($HashRate_Name -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
 
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0

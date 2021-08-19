@@ -104,6 +104,9 @@ New Config Items
     "X25r" = 3
   }
 
+# Minimum intervals a miner must mine continously the same available algo@pool before switching is allowed (e.g. 3 would force a miner to stick mining algo@pool for min. 3 intervals before switching to another algo or pool)
+    "MinInterval": 1, 
+
 # If true NemosMiner will create separate miner instances per device model. This will increase profitability. (WIP: Need to change each miner to support this new feature)
   "MinerInstancePerDeviceModel": true, 
 

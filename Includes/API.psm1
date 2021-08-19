@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.20"
+    $APIVersion = "0.3.9.22"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -219,11 +219,12 @@ Function Start-APIServer {
                             }
                             $Variables.RestartCycle = $true
                             Write-Message -Level Verbose "Web GUI: Configuration applied." -Console
-                            $Data = "<pre>Config saved to `n'$($Variables.ConfigFile)'.</pre>"
+                            $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
                         }
                         Catch { 
-                            $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile)'.</pre>"
+                            $Data = "Error saving config file`n'$($Variables.ConfigFile)'."
                         }
+                        $Data = "<pre>$Data</pre>"
                         Break
                     }
                     "/functions/log/get" { 
@@ -312,7 +313,6 @@ Function Start-APIServer {
                                 Write-Message -Level Verbose "Web GUI: $Message" -Console
                                 $Data += "`n`n$Message"
                             }
-                            $Data = "<pre>$($Data | Select-Object -Unique)</pre>"
                             Break
                         }
                     }
@@ -357,8 +357,29 @@ Function Start-APIServer {
                         }
                     }
                     "/functions/poolsconfig/edit" {
-                        Notepad.exe $Variables.PoolsConfigFile
-                        $Data = "Config in saved PoolsConfig file`n'$(($Variables.PoolsConfigFile))'`nwill become active in next cycle."
+                        $PoolsConfigFileWriteTime = (Get-Item -Path $Variables.PoolsConfigFile -ErrorAction Ignore).LastWriteTime
+                        If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)"))) { 
+                            Notepad.exe $Variables.PoolsConfigFile
+                            $NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")
+                        }
+                        $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
+                        # Check if the window isn't already in foreground
+                        If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
+                            [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
+                            [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                        }
+                        Do { 
+                            $NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")
+                            Start-Sleep -MilliSeconds 100
+                        } While ($NotepadProcess)
+                        If ($PoolsConfigFileWriteTime -ne (Get-Item -Path $Variables.PoolsConfigFile -ErrorAction Ignore).LastWriteTime) { 
+                            $Data = "Saved '$(($Variables.PoolsConfigFile))'`nChanges will become active in next cycle."
+                            Write-Message -Level Verbose "Web GUI: Saved '$(($Variables.PoolsConfigFile))'. Changes will become active in next cycle." -Console
+                        }
+                        Else { 
+                            $Data = "No changes made to '$(($Variables.PoolsConfigFile))'."
+                        }
+                        Remove-Variable NotepadProcess, NotepadMainWindowHandle, PoolsConfigFileWriteTime -ErrorAction Ignore
                         Break
                     }
                     "/functions/stat/get" { 
@@ -375,7 +396,6 @@ Function Start-APIServer {
                         Else { 
                             $Data = "`nNo matching stats found."
                         }
-                        $Data = "<pre>$Data</pre>"
                     Break
                     }
                     "/functions/stat/remove" { 
@@ -401,7 +421,6 @@ Function Start-APIServer {
                             Else { 
                                 $Data = "`nNo matching stats found."
                             }
-                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
@@ -437,7 +456,6 @@ Function Start-APIServer {
                             Else { 
                                 $Data = "`nNo matching stats found."
                             }
-                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
@@ -469,7 +487,6 @@ Function Start-APIServer {
                             Else { 
                                 $Data = "`nNo matching stats found."
                             }
-                            $Data = "<pre>$Data</pre>"
                             Break
                         }
                         If ($null -eq $Parameters.Value) {
@@ -485,7 +502,6 @@ Function Start-APIServer {
                         If ($TempStats.Count -gt 0) {
                             Write-Message "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
                             $Data += "`n`nRemoved $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
-                            $Data = "<pre>$Data</pre>"
                         }
                         Break
                     }
@@ -508,7 +524,6 @@ Function Start-APIServer {
                             If ($Miners.Count -gt 0) {
                                 Write-Message -Level Verbose "Web GUI: Disabled $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } else { "miners" })." -Verbose
                                 $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner is" } else { "$($Miners.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "disabled" } else { "set to value $($Parameters.Value)" } )." 
-                                $Data = "<pre>$Data</pre>"
                             }
                             Break
                         }
@@ -564,7 +579,6 @@ Function Start-APIServer {
                         Else { 
                             $Data = "`nNo matching watchdog timers found."
                         }
-                        $Data = "<pre>$Data</pre>"
                         Break
                     }
                     "/functions/watchdogtimers/reset" { 
@@ -684,31 +698,31 @@ Function Start-APIServer {
                         break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process | Sort-Object Status, DeviceName, Name, SwitchingLogData, WorkersRunning)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process | Sort-Object Status, DeviceName, Name, SwitchingLogData)
                         Break
                     }
                     "/miners/available" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/bestminers_combo" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
                         Break
                     }
                     "/miners/bestminers_combos" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning | SortObject DeviceName, EndTime)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData | SortObject DeviceName, EndTime)
                         Break
                     }
                     "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.FastestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.FastestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/running" { 
@@ -720,11 +734,11 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
                         Break
                     }
                     "/miners_device_combos" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, WorkersRunning)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
                         Break
                     }
                     "/miningpowercost" { 

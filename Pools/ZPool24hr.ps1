@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool24hr.ps1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -58,7 +58,7 @@ If ($Wallet) {
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
-        $Currency = $Request.$_.currency
+        $Currency = $Request.$_.currency.Trim()
 
         $Fee = $Request.$_.Fees / 100
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor

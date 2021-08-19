@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 14 August 2021
+Updated 19 August 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -13,7 +13,7 @@ https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 
 Updated/Maintained by Nemo/Minerx117 & UselessGuru
 
-with alot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMiner would not be possible.
+with a lot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMiner would not be possible.
 
 NemosMiner code is partly based on
 

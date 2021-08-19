@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.63
-Version date:   14 August 2021
+Version:        3.9.9.64
+Version date:   19 August 2021
 #>
 
 # Window handling
@@ -37,8 +37,12 @@ public static class Win32 {
 
     [DllImport("user32.dll")]
     public static extern int SetForegroundWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetForegroundWindow();
 }
 "@
+
 
 $Global:PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
 
@@ -896,7 +900,7 @@ Function Get-Rate {
                 $Currency = $_
                 $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -ErrorAction Ignore
                 $Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
-                    $Rates.$Currency | Add-Member $_ ([Double]($Rates.BTC.$_ / $Rates.BTC.$Currency)) -Force
+                    $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
                 }
             }
             # Add mBTC
@@ -905,15 +909,14 @@ Function Get-Rate {
                 $mCurrency = "m$($Currency)"
                 $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
                 $Rates.$mCurrency | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
-                    $Rates.$mCurrency | Add-Member $_ ([Double]($Rates.$Currency.$_) / 1000) -Force
+                    $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
                 }
             }
-
             $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
                 $Currency = $_
                 $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
                     $mCurrency = "m$($_)"
-                    $Rates.$Currency | Add-Member $mCurrency ([Double]($Rates.$Currency.$_) * 1000)
+                    $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
                 }
             }
             Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
@@ -1304,12 +1307,12 @@ Function Read-Config {
         If ($Global:Config.$_ -is [Array]) { $Global:Config.$_ = @($Global:Config.$_ -replace " " -split ",") } # Enforce array
     }
 
-    # Load default pool data, create case insensitive hastable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
+    # Load default pool data, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     $DefaultPoolData = [Ordered]@{ }
     $Temp = Get-Content .\Data\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
     $Temp.Keys | Sort-Object | ForEach-Object { $DefaultPoolData += @{ $_ = $Temp.$_ } }
 
-    # Build custom pools configuation, create case insensitive hastable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
+    # Build custom pools configuation, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
         $CustomPoolsConfig = [Ordered]@{ }
         If ($Temp = Get-Content $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashTable -ErrorAction Ignore) { 
@@ -2615,6 +2618,26 @@ Function Get-Region {
     Return $null
 }
 
+# Function Get-CoinName { 
+#     Param(
+#         [Parameter(Mandatory = $false)]
+#         [String]$Currency
+#     )
+
+#     If (-not (Test-Path Variable:Global:CoinsDB -ErrorAction SilentlyContinue)) { 
+#         $Global:CoinsDB = Get-Content ".\Includes\CoinsDB.json" | ConvertFrom-Json
+#     }
+
+#     If ($Global:CoinsDB.$Currency) { 
+#        Return $Global:CoinsDB.$Currency.Name
+#     }
+#     If ($Currency) { 
+#         "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
+#         $Global:CoinsDB = Get-Content ".\Includes\CoinsDB.json" | ConvertFrom-Json
+#     }
+#     Return $null
+# }
+
 Function Get-CoinName { 
     Param(
         [Parameter(Mandatory = $false)]
@@ -2627,6 +2650,10 @@ Function Get-CoinName {
 
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
+    }
+    If ($Currency) { 
+        "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
+        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
     }
     Return $null
 }
