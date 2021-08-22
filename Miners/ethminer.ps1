@@ -1,6 +1,6 @@
 If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
-$Path = ".\Bin\NVIDIA-ethminer0190r56\ethminer.exe"
-$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r5.6/ethminer0190r56.7z"
+$Path = ".\Bin\NVIDIA-ethminer0190r57\ethminer.exe"
+$Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r5.57/ethminer0190r57.7z"
 $Commands = [PSCustomObject]@{ 
     "ethash" = "" #ethash
 }
