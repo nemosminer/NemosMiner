@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 19 August 2021
+Updated 23 August 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -244,7 +244,7 @@ Easy configuration, easy start:
 
 PowerShell Version 7.x is required:
 
-[Windows Powershell 7.1.3 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.3/PowerShell-7.1.3-win-x64.msi)
+[Windows Powershell 7.1.4 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.4/PowerShell-7.1.4-win-x64.zip)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 
@@ -256,12 +256,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows Nvidia driver**
 
-[Windows 10 Nvidia driver 461.92](https://us.download.nvidia.com/Windows/461.92/461.92-desktop-win10-64bit-international-dch-whql.exe)
-
-[Windows 7, 8, 8.1 Nvidia driver 461.92](https://international.download.nvidia.com/Windows/461.92/461.92-desktop-win7-64bit-international-whql.exe)
-
-Windows 10 Nvidia driver for RTX3060 = 470.05 Torrent Magnet
-magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready-win-10-dch-64bit-international&tr=http%3a%2f%2fbt1.archive.org%3a6969%2fannounce&tr=http%3a%2f%2fbt2.archive.org%3a6969%2fannounce&ws=https%3a%2f%2farchive.org%2fdownload%2f&ws=http%3a%2f%2fia601501.us.archive.org%2f33%2fitems%2f&ws=%2f33%2fitems%2f
+[recommended/optimal Windows Nvidia driver 471.41](https://us.download.nvidia.com/Windows/471.41/471.41-desktop-win10-64bit-international-dch-whql.exe)
 
 **Recommended/optimal Windows AMD driver**
 
@@ -274,7 +269,7 @@ magnet:?xt=urn:btih:8453693771195232CE91406C1A3481EBBA315866&dn=470.05-gameready
       windows10-9xAMD-5700XT/Octominer (test Rig 1)
       windows8.1-6xRTX-3070/RYZEN-3700x (test Rig 2)
       windows10-6xRTX-3080/RYZEN-3700x (test Rig 3)
-      windows10-1xGTX-1060Super/1xRX580-8GB/RX5700/Inteli5-8600K (test Rig 4)
+      windows10-1xGTX-1060Super/1xGTX750Ti-2GB/1xRX580-8GB/RX5700/Inteli5-8600K (test Rig 4)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
 

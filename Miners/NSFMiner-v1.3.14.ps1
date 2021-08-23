@@ -12,7 +12,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "AMD";    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --opencl --devices" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "AMD";    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --opencl --devices" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 5.0; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --cuda --devices" } # PhoenixMiner-v5.7b is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --cuda --devices" } # PhoenixMiner-v5.7b is fastest but has dev fee
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --cuda --devices" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
 )
 
@@ -24,7 +24,7 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
         $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object Type -eq $_.Type | Where-Object { $Pools.($_.Algorithm).Host } | ForEach-Object { 
             $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
             $MinMemGB = $_.MinMemGB
-            If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB }
+            If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
 
             If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 

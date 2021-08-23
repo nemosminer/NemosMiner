@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.64
-Version date:   19 August 2021
+Version:        3.9.9.65
+Version date:   23 August 2021
 #>
 
 # Window handling
@@ -40,9 +40,11 @@ public static class Win32 {
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 }
 "@
-
 
 $Global:PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
 
@@ -189,7 +191,8 @@ Class Miner {
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
     [String[]]$Reason
-    [Boolean]$Restart = $false # stop and start miner even if best
+    [Boolean]$Restart = $false 
+    [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [PSCustomObject[]]$Data2 = $null
@@ -245,13 +248,29 @@ Class Miner {
         Return $this.ProcessId
     }
 
+    hidden StartDataReader() { 
+        # Start Miner data reader
+        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -ThrottleLimit 50 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property Algorithm, AllowedBadShareRatio, DataCollectInterval, Devices, Path, Port, ReadPowerUsage | ConvertTo-Json -WarningAction Ignore) }
+    }
+
+    hidden StopDataReader() { 
+        # Stop Miner data reader
+        Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
+    }
+
+    hidden RestartDataReader() { 
+        # Read data if available before restarting
+        If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
+        $this.StopDataReader()
+        $this.StartDataReader()
+    }
+
     hidden StartMining() { 
         $this.Status = [MinerStatus]::Failed
         $this.StatusMessage = "Launching..."
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.New = $true
         $this.Activated++
-        $this.Restart = $false
         $this.Intervals = @()
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
@@ -296,9 +315,7 @@ Class Miner {
                     If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                        # . "C:\Users\Stephan\Desktop\NemosMiner\Includes\GetMinerDataRunspace.ps1"
-                        # Starting Miner Data reader
-                        $this | Add-Member -Force @{ DataReaderJob = Start-Job -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property Algorithm, AllowedBadShareRatio, DataCollectInterval, Devices, Path, Port, ReadPowerUsage | ConvertTo-Json -WarningAction Ignore) }
+                        $this.StartDataReader()
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -357,7 +374,7 @@ Class Miner {
         If ($this.Process) { $this.Process = $null }
 
         # Stop Miner data reader
-        Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
+        $this.StopDataReader()
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
@@ -564,7 +581,7 @@ Class Miner {
 Function Get-DefaultAlgorithm {
 
     # Try { 
-    #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
+    #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
     #     $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
     # }
     # Catch { 
@@ -748,14 +765,12 @@ Function Start-BrainJob {
             $BrainPath = "$($Variables.MainPath)\Brains\$($_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")"
             $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = Start-Job -FilePath $BrainName -ArgumentList @($BrainPath, $_)
-                If ($Variables.BrainJobs.$_.State -EQ "Running") { 
-                    $JobNames += $_
-                }
+                $Variables.BrainJobs.$_ = Start-ThreadJob -ThrottleLimit 50 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
+                $JobNames += $_
             }
         }
     }
-    If ($JobNames -gt 0) { Write-Message "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($($JobNames -join ", "))." }
+    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))." }
 }
 
 Function Stop-BrainJob { 
@@ -773,9 +788,7 @@ Function Stop-BrainJob {
         $JobNames += $_
     }
 
-    If ($JobNames.Count -gt 0) { 
-        Write-Message "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))."
-    }
+    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))." }
 }
 
 
@@ -1240,8 +1253,7 @@ Function Merge-Hashtable {
 
     $HT2.Keys | ForEach-Object { 
         If ($HT1.$_ -is [Hashtable]) { 
-        [Boolean]$Unique = $false,
-        $HT1.$_ = Merge-Hashtable -HT1 $HT1.$_ -Ht2 $HT2.$_ -Unique $Unique -Replace $Replace
+            $HT1.$_ = Merge-Hashtable -HT1 $HT1.$_ -Ht2 $HT2.$_ -Unique $Unique -Replace $Replace
         }
         ElseIf ($HT1.$_ -is [Array] -and $_ -notin $NoMerge) { 
             $HT1.$_ += $HT2.$_
@@ -1315,11 +1327,12 @@ Function Read-Config {
     # Build custom pools configuation, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
         $CustomPoolsConfig = [Ordered]@{ }
-        If ($Temp = Get-Content $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashTable -ErrorAction Ignore) { 
+        Try { 
+            $Temp = Get-Content $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashTable -ErrorAction Ignore
             $Temp.Keys | Sort-Object | ForEach-Object { $CustomPoolsConfig += @{ $_ = $Temp.$_ } }
             $Variables.PoolsConfigData = $CustomPoolsConfig
         }
-        Else { 
+        Catch { 
             Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
         }
     }
@@ -2409,7 +2422,7 @@ Function Invoke-CreateProcess {
         [String]$LogFile
     )
 
-    $Job = Start-Job -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
+    $Job = Start-ThreadJob -ThrottleLimit 50 -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
         Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $ControllerProcessID)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
@@ -2534,7 +2547,7 @@ Function Start-SubProcess {
     $ScriptBlock += " | Write-Output"
     If ($LogPath) { $ScriptBlock += " | Tee-Object '$LogPath'" }
 
-    Start-Job ([ScriptBlock]::Create($ScriptBlock))
+    Start-ThreadJob -ThrottleLimit 50 ([ScriptBlock]::Create($ScriptBlock))
 }
 
 Function Expand-WebRequest { 
@@ -2662,8 +2675,8 @@ Function Get-NMVersion {
 
     # Check if new version is available
     Try { 
-        # $UpdateVersion = Invoke-WebRequest -Uri "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-        $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        # $UpdateVersion = Invoke-WebRequest -Uri "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
     }
     Catch { 
     }

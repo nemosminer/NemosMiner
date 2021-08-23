@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.64
-Version date:   19 August 2021
+Version:        3.9.9.65
+Version date:   23 August 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.22"
+    $APIVersion = "0.3.9.24"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -360,18 +360,22 @@ Function Start-APIServer {
                         $PoolsConfigFileWriteTime = (Get-Item -Path $Variables.PoolsConfigFile -ErrorAction Ignore).LastWriteTime
                         If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)"))) { 
                             Notepad.exe $Variables.PoolsConfigFile
-                            $NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")
                         }
-                        $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
-                        # Check if the window isn't already in foreground
-                        If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
-                            [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
-                            [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                        If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
+                            $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
+                            # Check if the window isn't already in foreground
+                            While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
+                                $FGWindowPid  = [IntPtr]::Zero
+                                [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
+                                If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
+                                    If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
+                                        [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
+                                        [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                                    }
+                                }
+                                Start-Sleep -MilliSeconds 100
+                            }
                         }
-                        Do { 
-                            $NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")
-                            Start-Sleep -MilliSeconds 100
-                        } While ($NotepadProcess)
                         If ($PoolsConfigFileWriteTime -ne (Get-Item -Path $Variables.PoolsConfigFile -ErrorAction Ignore).LastWriteTime) { 
                             $Data = "Saved '$(($Variables.PoolsConfigFile))'`nChanges will become active in next cycle."
                             Write-Message -Level Verbose "Web GUI: Saved '$(($Variables.PoolsConfigFile))'. Changes will become active in next cycle." -Console

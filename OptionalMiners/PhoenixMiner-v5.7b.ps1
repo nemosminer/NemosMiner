@@ -53,7 +53,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = $_.Arguments
                 $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
                 $MinMemGB = $_.MinMemGB
-                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB }
+                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
 

@@ -6,6 +6,21 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 3.9.9.65 23.08.2021
+========================================
+
+Enhancements:
+- Core / Read-Config: Show error message if PoolsConfig file is not a valid json file
+- Core: Minor code enhancements, speed improvements & cleanup
+- Core: Reduce memory footprint
+
+Miner Updates:
+- NBMiner-v39.1
+
+Workarounds:
+- AHashPool: Use IP address instead of DNS name, skip certificate checks (Pool has DNS & certificate issues)
+
+
 Changelog NemosMiner 3.9.9.64 19.08.2021
 ========================================
 

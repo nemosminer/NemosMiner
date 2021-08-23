@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.64
-Version date:   19 August 2021
+Version:        3.9.9.65
+Version date:   23 August 2021
 #>
 
 # Start transcript log
@@ -35,51 +35,54 @@ $BalanceObjects = @()
 $AllBalanceObjects = @()
 $Earnings = @()
 
+Write-Message -Level Info "Balances Tracker started."
+
+$Balances = [Ordered]@{ }
+$BalanceObjects = @()
+$AllBalanceObjects = @()
+$Earnings = @()
+
+# Get pools data
+If (Test-Path -Path ".\Data\PoolData.json" -PathType Leaf) { $PoolData = Get-Content ".\Data\PoolData.json" | ConvertFrom-Json }
+Else { $PoolData = [PSCustomObject]@{ } }
+
+# Get pools last earnings
+If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { $Variables.PoolsLastEarnings = Get-Content ".\Data\PoolsLastEarnings.json" | ConvertFrom-Json -AsHashtable }
+Else { $Variables.PoolsLastEarnings = [Ordered]@{ } }
+
+# Read existing earning data, use data from last file
+ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) {
+    $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null
+    If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { 
+        $Variables.BalanceData = $AllBalanceObjects
+        Break
+    }
+}
+If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }
+Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
+
+# Read existing earning data, use data from last file
+ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -Descending)) { 
+    $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
+    If ($Earnings.Count -gt ($PoolData.Count / 2)) { Break }
+}
+
 While ($true) { 
+
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
         # Get pools to track
         $PoolsToTrack = @(Get-ChildItem ".\Balances\*.ps1" -File).BaseName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$" | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
 
-        # Only on first run
-        If (-not $Now) { 
-            Write-Message -Level Info "Balances Tracker started."
-
-            $Balances = [Ordered]@{ }
-            $BalanceObjects = @()
-            $AllBalanceObjects = @()
-            $Earnings = @()
-
-            # Get pools data
-            $PoolData = Get-Content ".\Data\PoolData.json" | ConvertFrom-Json
-
-            # Read existing earning data, use data from last file
-            ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) {
-                $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json ) | Where-Object Balance -NE $null
-                If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { 
-                    $Variables.BalanceData = $AllBalanceObjects
-                    Break
-                }
-            }
-            If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }
-            Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
-
-            # Read existing earning data, use data from last file
-            ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -Descending)) { 
-                $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
-                If ($Earnings.Count -gt ($PoolData.Count / 2)) { Break }
-            }
-        }
-
         If ($Now.Date -ne (Get-Date).Date) {
             # Keep a copy on start & at date change
             If (Test-Path -Path ".\Data\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Data\BalancesTrackerData.json" -Destination ".\Data\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Data\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Data\DailyEarnings.csv" -Destination ".\Data\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
-            # If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
+            If (-not (Test-Path -Path ".\NemosMiner_Dev.ps1")) { 
                 # Keep only the last 3 logs
                 Get-ChildItem ".\Data\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
                 Get-ChildItem ".\Data\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
-            # }
+            }
         }
 
         $Now = (Get-Date).ToLocalTime()
@@ -354,6 +357,8 @@ While ($true) {
             $Variables.Balances.$_ = $Balances.$_
             $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = $Balances.$_.LastEarnings
         }
+        $Variables.PoolsLastEarnings = $Variables.PoolsLastEarnings | Get-SortedObject
+        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File ".\Data\PoolsLastEarnings.json" -Force
 
         Try { 
             $Earnings | Export-Csv ".\Data\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
@@ -399,12 +404,12 @@ While ($true) {
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Data\BalancesTrackerData.json" -Force -ErrorAction Ignore }
         $Variables.BalanceData = $AllBalanceObjects
 
+        If ($ReadBalances) { Return } # Debug stuff
+
+        # Sleep until next update (at least 1 minute, maximum 60 minutes)
+        While ((Get-Date).ToLocalTime() -le $Now.AddMinutes((60, (1, [Int]($Config.BalancesTrackerPollInterval) | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
     }
 
-    If ($ReadBalances) { Return } # Debug stuff
-
-    # Sleep until next update (at least 1 minute, maximum 60 minutes)
-    While ((Get-Date).ToLocalTime() -le $Now.AddMinutes((60, (1, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
 }
 
 Write-Message "Balances Tracker stopped."

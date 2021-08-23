@@ -24,7 +24,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");  Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
     [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri raven") }
-    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri conflux") } # NBMiner-v39.0 is faster is faster but has 2% fee
+    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri conflux") } # NBMiner-v39.1 is faster is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri sero") }
 )
 
@@ -58,7 +58,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $Arguments = [String]$_.Arguments
                 $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
                 $MinMemGB = $_.MinMemGB
-                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { $MinMemGB = ($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB }
+                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )
                 $Miner_Devices = @($Miner_Devices | Where-Object { (-not $_.CIM.MaxRefreshRate) -or (($_.OpenCL.GlobalMemSize / 1GB) - 0.5) -ge $MinMemGB } ) # Reserve 512 MB when GPU with connected monitor

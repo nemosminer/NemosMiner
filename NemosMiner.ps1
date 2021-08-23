@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.64
-Version date:   19 August 2021
+Version:        3.9.9.65
+Version date:   23 August 2021
 #>
 
 [CmdletBinding()]
@@ -252,7 +252,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.64"
+    Version      = [System.Version]"3.9.9.65"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -420,7 +420,7 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file (.\Cache\VertHash.dat)..."
-    $VertHashDatCheckJob = Start-Job ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
+    $VertHashDatCheckJob = Start-ThreadJob -ThrottleLimit 50 ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
 }
 
 Write-Message -Level Verbose "Loading device information..."
