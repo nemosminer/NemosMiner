@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool.ps1
-Version:        3.9.9.64
-Version date:   19 August 2021
+Version:        3.9.9.65
+Version date:   23 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -27,7 +27,9 @@ using module ..\Includes\Include.psm1
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
-$Url = "https://www.ahashpool.com/wallet.php?wallet=$Wallet"
+
+#$Url = "https://www.ahashpool.com/wallet.php?wallet=$Wallet"
+$Url = "https://128.199.93.104/wallet.php?wallet=$Wallet"
 
 $RetryCount = 3
 $RetryDelay = 10
@@ -35,7 +37,8 @@ $RetryDelay = 10
 While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
     $RetryCount--
     Try { 
-        $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+#        $APIResponse = Invoke-RestMethod "http://www.ahashpool.com/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+        $APIResponse = Invoke-RestMethod "https://128.199.93.104/api/wallet?address=$Wallet" -SkipCertificateCheck -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
 
         If ($Config.LogBalanceAPIResponse -eq $true) { 
             $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
