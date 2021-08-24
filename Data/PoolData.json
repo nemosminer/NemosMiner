@@ -11,7 +11,7 @@
     "Region": "US"
   },
   "BlockMasters": {
-    "BalancesKeepAlive": 90, // Old accounts are purged every 120 Days
+    "BalancesKeepAlive": 120, // Old accounts are purged every 120 Days
     "GuaranteedPayoutCurrencies": [
       "BTC",
       "DOGE",
@@ -21,7 +21,7 @@
       "mBTC": 1.65,
       "LTC": 0.05,
       "DODGE": 20,
-      "*": 0.00001
+      "*": "0.01 mBTC" // From pool: All other coins is paid once you reach the coin equivalent to 0.0001 BTC every 4 hours or 0.00001 BTC on Sundays
     },
     "PayoutCurrency": "[Default]",
     "Region": [
@@ -31,7 +31,7 @@
     ]
   },
   "HiveON": {
-    "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to sure
+    "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to be sure
     "GuaranteedPayoutCurrencies": [
       "ETC",
       "ETH"

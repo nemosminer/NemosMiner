@@ -101,7 +101,7 @@ While ($true) {
 
         # Read exchange rates
         $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
-        $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique) | Select-Object -Unique)
+        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique)) | Select-Object -Unique)
         Get-Rate
 
         $BalanceObjects | Where-Object { $_.DateTime.ToLocalTime() -gt $Now } | ForEach-Object { 
@@ -123,7 +123,7 @@ While ($true) {
             }
 
             If (-not $PayoutThreshold) { 
-                $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold."*")
+                $PayoutThreshold = If ($PoolConfig.PayoutThreshold."*" -like "* *") { [Double](($PoolConfig.PayoutThreshold."*" -split ' ' | Select-Object -Index 0) * $Variables.Rates.$PayoutThresholdCurrency.($PoolConfig.PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
             }
 
             If ($PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC -eq $true) { 
