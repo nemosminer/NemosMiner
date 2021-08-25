@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/ccminer/releases/download/v0.2/neoscryptxay
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 75); Arguments = " --algo neoscrypt-xaya --retries 1 --retry-pause 1 --intensity 21 --statsavg 10" }
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 105); Arguments = " --algo neoscrypt-xaya --retries 1 --retry-pause 1 --intensity 21 --statsavg 5" }
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
