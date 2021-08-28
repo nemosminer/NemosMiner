@@ -19,10 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
-
 
 using module ..\Includes\Include.psm1
 
@@ -33,39 +32,33 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$|Plus$"
+$Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 If ($PoolConfig.UserName) { 
     Try {
-        $Request = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/status" -TimeoutSec $Config.PoolTimeout -SkipCertificateCheck -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
-        $Currencies = (Invoke-RestMethod -Uri "https://prohashing.com/api/v1/currencies" -TimeoutSec $Config.PoolTimeout -SkipCertificateCheck -Headers @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" }).data
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
     }
     Catch { Return }
 
     If (-not $Request) { Return }
 
     $PoolHost = "prohashing.com"
-    # $PriceField = "actual_last24h"
     $PriceField = "actual_last24h"
+    # $PriceField = "estimate_current"
+    # $PriceField = "Plus_Price"
 
     $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
-        $Fee = $Request.$_."$($MiningMode)_fee"
-        $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
         $Pass = @("a=$Algorithm", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
 
-        $Currency = $Currencies | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Currencies.$_.Algo -eq $Algorithm }
-        If ($Currency.Count -eq 1) { 
-            If ($CoinName = $Currencies.$Currency.name) { $Pass += "c=$CoinName" }
-            If ($PoolConfig.MiningMode -eq "PPLNS") { $Pass += "m=PPLNS" }
-        }
-        Else { 
-            $Currency = ""
-        }
+        $Currency = $Request.$_.currency
+
+        $Fee = $Request.$_."$($MiningMode)_fee"
+        $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
@@ -79,7 +72,7 @@ If ($PoolConfig.UserName) {
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$(If ($Region -eq "eu") {"eu." })$PoolHost"
+                Host                     = "$(If ($Region -eq "eu") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolConfig.UserName
                 Pass                     = [String]($Pass -join ',')

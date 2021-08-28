@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 23 August 2021
+Updated 28 August 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru

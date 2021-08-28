@@ -12,7 +12,7 @@
 <table id="balanceobjects" class="table"
   data-toolbar="#toolbar"
   data-click-to-select="true"
-  data-cache="true"
+  data-cache="false"
   data-toggle="table"
   data-icons="icons"
   data-show-button-text="true"
@@ -25,7 +25,7 @@
   data-show-refresh="true"
   data-detail-view="true"
   data-show-refresh="true"
-  data-auto-refresh="true"
+  data-auto-refresh="false"
   data-auto-refresh-status="false"
   data-detail-formatter="detailFormatter"
   data-url="/balancedata"
@@ -38,8 +38,8 @@
       <th data-field="state" data-checkbox="true"></th>
       <th data-field="DateTime" data-sortable="true" data-filter-control="input" data-formatter="formatDate">Date & Time</th>
       <th data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
-      <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
       <th data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Account</th>
+      <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
       <th data-field="Pending" data-sortable="true" data-visible="true">Pending</th>
       <th data-field="Balance" data-sortable="true">Balance</th>
       <th data-field="Unpaid" data-sortable="true" data-visible="true">Unpaid</th>
@@ -62,6 +62,11 @@
     height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
   });
 
+  window.setInterval(function() { 
+    // refresh once per pool balance update interval
+    $table.bootstrapTable("refresh");
+  }, (parseInt(config.PoolBalancesUpdateInterval) * 1000 * 60));
+
   $('#remove-entry').click(function () {
     var $data = $table.bootstrapTable('getSelections');
     if ($data.length >= 1) {
@@ -80,6 +85,15 @@
     }
   });
 
+  $('#balanceobjects').on('all.bs.table', function () {
+    try {
+      if ($('#balanceobjects').bootstrapTable('getSelections').length >= 1) {
+        document.getElementById('remove-entry').disabled = false;
+      } else {
+        document.getElementById('remove-entry').disabled = true;
+      }
+    } catch {}
+  });
 </script>
 
 <!-- End of page scripts -->

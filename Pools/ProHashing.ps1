@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           ZPool.ps1
+File:           ProHashing24hr.ps1
 Version:        3.9.9.66
 Version date:   28 August 2021
 #>
@@ -35,59 +35,51 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
-$HostSuffix = "mine.zpool.ca"
-# $PriceField = "Plus_Price"
-# $PriceField = "actual_last24h"
-$PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
-
-$PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
-$Wallet = $PoolConfig.Wallets.$PayoutCurrency
-
-If ($Wallet) { 
-    Try { 
+If ($PoolConfig.UserName) { 
+    Try {
         $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
     }
     Catch { Return }
 
     If (-not $Request) { Return }
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
-        $Algorithm = $_
+    $PoolHost = "prohashing.com"
+    # $PriceField = "actual_last24h"
+    $PriceField = "estimate_current"
+    # $PriceField = "Plus_Price"
+
+    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
+        $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
-        $Updated = $Request.$_.Updated
-        $Workers = $Request.$_.workers
+
+        $Pass = @("a=$Algorithm", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
+
         $Currency = $Request.$_.currency
 
-        $Fee = $Request.$_.Fees / 100
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+        $Fee = $Request.$_."$($MiningMode)_fee"
+        $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
-
-        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
-        Catch { $EstimateFactor = 1 }
 
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region
 
-            [PSCustomObject]@{ 
+            [PSCustomObject]@{
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
+                Host                     = "$(If ($Region -eq "eu") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort
-                User                     = [String]$Wallet
-                Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
+                User                     = [String]$PoolConfig.UserName
+                Pass                     = [String]($Pass -join ',')
                 Region                   = [String]$Region_Norm
                 SSL                      = [Bool]$false
                 Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]$EstimateFactor
-                Updated                  = [DateTime]$Updated
-                Workers                  = [Int]$Workers
+                EstimateFactor           = [Decimal]1
             }
         }
     }

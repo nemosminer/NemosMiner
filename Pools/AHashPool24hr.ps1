@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool24hr.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,7 +32,7 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$|Plus$"
+$Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 $HostSuffix = "mine.ahashpool.com"

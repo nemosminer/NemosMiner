@@ -6,6 +6,35 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 3.9.9.66 28.08.2021
+========================================
+
+Enhancements:
+- Core: Minor code enhancements, speed improvements & cleanup
+- Core: Reduce memory footprint
+- Core: Restart DataReader if power readout status changes (no need to restart miner)
+- Miner APIs: Remove redundant code
+- Web GUI & API: Do not list currencies with 0 balance
+
+Fixes:
+- Blockmasters pool: Payout threshold for non-std. payout currencies equivalent to 0.0001 BTC
+- Brains: Hidden error when currency is not available
+- Core: do not change device bus id order when started in a RDP or Citrix session
+- Core: do not allow multiple balance tracker instances
+- Core: do not start/stop brain job if switching pool type (e.g. 24hr -> Plus)
+- Core: Always stop gone miners
+- Miner Wildrig-v0.28.3 not creating miner objects (regression from 3.9.9.62)
+- Web GUI / devices: Fix column Bus_Platform_Index
+
+Miner Updates:
+- GMiner-v2.66
+- SRBMinerMulti-v0.8.0
+
+Pools:
+- ProHashing: use price information from brain job
+- AHashPool, BlockMaters, NLPool, ProHashing, ZergPool(Coins), ZPool: support for *24hr, *Plus & normal pool variants
+
+
 Changelog NemosMiner 3.9.9.65 23.08.2021
 ========================================
 

@@ -18,29 +18,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 using module ..\Include.psm1
 
 class NanoMiner : Miner { 
-    [String]GetCommandLineParameters() { 
-        If ($this.Arguments -match "^{.+}$") { 
-            Return ($this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
-        }
-        Else { 
-            Return $this.Arguments
-        }
-    }
-
     CreateConfigFiles() { 
         $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Try { 
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
-
-            #Write config files. Keep separate files, do not overwrite to preserve optional manual customization
+            #Write config files. Do not overwrite existing files to preserve optional manual customization
             If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
                 $Parameters.ConfigFile.Content | Set-Content $ConfigFile -ErrorAction SilentlyContinue -Force
             }

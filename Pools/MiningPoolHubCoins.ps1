@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,7 +32,7 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$|Plus$"
+$Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 $PoolRegions = $PoolConfig.Region
 
@@ -56,11 +56,13 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
+        $Price = (($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
+
         If ($Algorithm_Norm -in @("VertHash")) {
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Current.symbol
-                Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
+                Price                    = [Double]$Price
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -83,7 +85,7 @@ If ($PoolConfig.UserName) {
                 [PSCustomObject]@{ 
                     Algorithm                = [String]$Algorithm_Norm
                     Currency                 = [String]$Current.symbol
-                    Price                    = [Double](($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
+                    Price                    = [Double]$Price
                     StablePrice              = [Double]$Stat.Week
                     MarginOfError            = [Double]$Stat.Week_Fluctuation
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor

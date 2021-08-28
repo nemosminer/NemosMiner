@@ -23,6 +23,7 @@ version date:   28 August 2021
 #>
 
 Set-Location ($args[0])
+#Set-Location c:\Users\Stephan\Desktop\NemosMiner\Brains\ProHashing\
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -64,6 +65,7 @@ Function Get-Median {
 } 
 
 $AlgoObject = @()
+$CurrenciesData = @()
 $MathObject = @()
 $TestDisplay = @()
 $PrevTrend = 0
@@ -98,8 +100,10 @@ While ($true) {
     $RetryInterval = 0
 
     Try {
-        $AlgoData = Invoke-RestMethod -Uri $PoolStatusUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }
-        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }
+#        $AlgoData = (Invoke-RestMethod -Uri $PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" }).data
+#        $CurrenciesData = (Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" }).data
+        $AlgoData = (Invoke-RestMethod -Uri $PoolStatusUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).data
+        $CurrenciesData = (Invoke-RestMethod -Uri $PoolCurrenciesUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).data
         $APICallFails = 0
     }
     Catch {
@@ -107,24 +111,20 @@ While ($true) {
         $RetryInterval = $Interval * [math]::max(0, $APICallFails - $AllowedAPIFailureCount)
     }
 
-    $CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $CurrenciesData.$_ | Add-Member -Force @{Symbol = If ($CurrenciesData.$_.Symbol) { $CurrenciesData.$_.Symbol -replace '-.+' } Else { $_ -replace '-.+'} } }
-
     ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)) {
-        $Currencies = @($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
-        If ($Currencies.Count -eq 1) { $Currency = $Currencies.Symbol }
-        Else { $Currency = ($Currencies | Sort-Object Estimate)[-1].Symbol }
+        $Currencies = @($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
+        $Currency = If ($Currencies.Count -eq 1) { $Currencies[0] -replace '-.+'} Else { "" }
         $AlgoData.$Algo | Add-Member @{ currency = $Currency.Trim() }
 
         $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
         If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]($AlgoData.$Algo.actual_last24h / 1000) }
-        If ($AlgoData.$Algo.rental_current) { $AlgoData.$Algo.rental_current = [Double]($AlgoData.$Algo.rental_current / 1000) }
         $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]$AlgoData.$Algo.actual_last24h } Else { [Double]$AlgoData.$Algo.estimate_last24h }
         $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($PerAPIFailPercentPenalty * [math]::max(0, $APICallFails - $AllowedAPIFailureCount) / 100))))
         $AlgoObject += [PSCustomObject]@{
             Date               = $CurDate
             Name               = $AlgoData.$Algo.name
             Port               = $AlgoData.$Algo.port
-            coins              = $AlgoData.$Algo.coins
+            Currencies         = $AlgoData.$Algo.Coins
             Fees               = $AlgoData.$Algo.Fees
             Hashrate           = $AlgoData.$Algo.Hashrate
             Workers            = $AlgoData.$Algo.Workers
@@ -189,6 +189,7 @@ While ($true) {
             }
         }
     }
+
     If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
 
     $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 

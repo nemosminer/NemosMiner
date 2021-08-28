@@ -36,9 +36,9 @@ $Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 $HostSuffix = "mine.zergpool.com"
-# $PriceField = "Plus_Price"
+$PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
-$PriceField = "estimate_current"
+# $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
 
 $PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0

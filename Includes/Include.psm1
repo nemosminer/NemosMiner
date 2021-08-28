@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 # Window handling
@@ -232,12 +232,7 @@ Class Miner {
     }
 
     [String]GetCommandLineParameters() { 
-        If (Test-Json $this.Arguments -ErrorAction Ignore) { 
-            Return ($this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
-        }
-        Else { 
-            Return $this.Arguments
-        }
+        Return (Get-CommandLineParameters $this.Arguments)
     }
 
     [String]GetCommandLine() { 
@@ -250,7 +245,7 @@ Class Miner {
 
     hidden StartDataReader() { 
         # Start Miner data reader
-        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -ThrottleLimit 50 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property Algorithm, AllowedBadShareRatio, DataCollectInterval, Devices, Path, Port, ReadPowerUsage | ConvertTo-Json -WarningAction Ignore) }
+        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -ThrottleLimit 99 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property Algorithm, AllowedBadShareRatio, DataCollectInterval, Devices, Path, Port, ReadPowerUsage | ConvertTo-Json -WarningAction Ignore) }
     }
 
     hidden StopDataReader() { 
@@ -320,6 +315,7 @@ Class Miner {
                     }
                     Start-Sleep -Milliseconds 100
                 }
+                Remove-Variable WaitForPID
             }
 
             $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
@@ -332,7 +328,8 @@ Class Miner {
 
     [MinerStatus]GetStatus() { 
         If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
-            Return [MinerStatus]::Running
+            $this.Status = [MinerStatus]::Running
+            Return $this.Status
         }
         ElseIf ($this.Status -eq "Running") { 
             $this.Status = [MinerStatus]::Failed
@@ -366,9 +363,7 @@ Class Miner {
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         }
         If ($this.ProcessId) { 
-            If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
-                Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
-            }
+            If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore }
             $this.ProcessId = $null
         }
         If ($this.Process) { $this.Process = $null }
@@ -548,7 +543,8 @@ Class Miner {
 
         $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
 
-        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 } Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
+        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 } 
+        Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
@@ -603,156 +599,9 @@ Function Get-CommandLineParameters {
     )
 
     If (Test-Json $Arguments -ErrorAction Ignore) { 
-        Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
+        Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Arguments
     }
     Return $Arguments
-}
-
-Function Start-JobInProcess {
-    # https://community.idera.com/database-tools/powershell/powertips/b/tips/posts/a-better-and-faster-start-job
-
-    [CmdletBinding()]
-    Param
-    (
-        [ScriptBlock]$ScriptBlock,
-        [String[]]$ArgumentList,
-        [String]$Name
-    )
-
-    Add-Type -TypeDefinition @'
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-namespace InProcess
-{
-    public class InMemoryJob : System.Management.Automation.Job
-    {
-        public InMemoryJob(PowerShell PowerShell, string name)
-        {
-            _PowerShell = PowerShell;
-            SetUpStreams(name);
-        }
-        private void SetUpStreams(string name)
-        {
-            _PowerShell.Streams.Verbose = this.Verbose;
-            _PowerShell.Streams.Error = this.Error;
-            _PowerShell.Streams.Debug = this.Debug;
-            _PowerShell.Streams.Warning = this.Warning;
-            _PowerShell.Streams.Information = this.Information;
-            _PowerShell.Runspace.AvailabilityChanged += new EventHandler<RunspaceAvailabilityEventArgs>(Runspace_AvailabilityChanged);
-            int id = System.Threading.Interlocked.Add(ref InMemoryJobNumber, 1);
-            if (!string.IsNullOrEmpty(name))
-            {
-                this.Name = name;
-            }
-            else
-            {
-                this.Name = "InProcessJob" + id;
-            }
-        }
-        void Runspace_AvailabilityChanged(object sender, RunspaceAvailabilityEventArgs e)
-        {
-            if (e.RunspaceAvailability == RunspaceAvailability.Available)
-            {
-                this.SetJobState(JobState.Completed);
-            }
-        }
-        PowerShell _PowerShell;
-        static int InMemoryJobNumber = 0;
-        public override bool HasMoreData
-        {
-            get {
-                return (Output.Count > 0);
-            }
-        }
-        public override string Location
-        {
-            get { return "In Process"; }
-        }
-        public override string StatusMessage
-        {
-            get { return "A new status message"; }
-        }
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (!isDisposed)
-                {
-                    isDisposed = true;
-                    try
-                    {
-                        if (!IsFinishedState(JobStateInfo.State))
-                        {
-                            StopJob();
-                        }
-                        foreach (Job job in ChildJobs)
-                        {
-                            job.Dispose();
-                        }
-                    }
-                    finally
-                    {
-                        base.Dispose(disposing);
-                    }
-                }
-            }
-        }
-        private bool isDisposed = false;
-        internal bool IsFinishedState(JobState state)
-        {
-            return (state == JobState.Completed || state == JobState.Failed || state == JobState.Stopped);
-        }
-        public override void StopJob()
-        {
-            _PowerShell.Stop();
-            _PowerShell.EndInvoke(_asyncResult);
-            SetJobState(JobState.Stopped);
-        }
-        public void Start()
-        {
-            _asyncResult = _PowerShell.BeginInvoke<PSObject, PSObject>(null, Output);
-            SetJobState(JobState.Running);
-        }
-        IAsyncResult _asyncResult;
-        public void WaitJob()
-        {
-            _asyncResult.AsyncWaitHandle.WaitOne();
-        }
-        public void WaitJob(TimeSpan timeout)
-        {
-            _asyncResult.AsyncWaitHandle.WaitOne(timeout);
-        }
-    }
-}
-'@
-
-    Function Get-JobRepository {
-        [CmdletBinding()]
-        Param()
-        $PScmdlet.JobRepository
-    }
-
-    Function Add-Job {
-        [CmdletBinding()]
-        Param
-        (
-            $Job
-        )
-        $PScmdlet.JobRepository.Add($Job)
-    }
-
-    $PowerShell = [PowerShell]::Create().AddScript($ScriptBlock)
-
-    If ($ArgumentList) { $ArgumentList | ForEach-Object { $PowerShell.AddArgument($_) } }
-
-    $MemoryJob = New-Object InProcess.InMemoryJob $PowerShell, $Name
-
-    $MemoryJob.Start()
-    Add-Job $MemoryJob
-    $MemoryJob
 }
 
 Function Start-BrainJob { 
@@ -761,11 +610,12 @@ Function Start-BrainJob {
     $JobNames = @()
 
     $Config.PoolName | Select-Object | ForEach-Object { 
+        $_ = $_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
         If (-not $Variables.BrainJobs.$_) { 
-            $BrainPath = "$($Variables.MainPath)\Brains\$($_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")"
+            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
             $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = Start-ThreadJob -ThrottleLimit 50 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
+                $Variables.BrainJobs.$_ = Start-ThreadJob -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
                 $JobNames += $_
             }
         }
@@ -783,6 +633,7 @@ Function Stop-BrainJob {
 
     # Stop Brains if necessary
     $Jobs | Select-Object | ForEach-Object { 
+        $_ = $_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
         $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
         $Variables.BrainJobs.Remove($_)
         $JobNames += $_
@@ -794,7 +645,7 @@ Function Stop-BrainJob {
 
 Function Start-BalancesTracker { 
 
-    If (-not $Variables.CycleRunspace) { 
+    If (-not $Variables.BalancesTrackerRunspace) { 
 
         Try { 
             $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
@@ -892,9 +743,7 @@ Function Initialize-Application {
     Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
 
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
-    If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { 
-        [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
-    }
+    If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12 }
 
     # Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -1170,18 +1019,10 @@ Function Update-Monitoring {
                 $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
                 If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
                 # Show friendly time since last report in seconds, minutes, hours or days
-                If ($TimeSinceLastReport.Days -ge 1) { 
-                    $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays }
-                }
-                ElseIf ($TimeSinceLastReport.Hours -ge 1) { 
-                    $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours }
-                }
-                ElseIf ($TimeSinceLastReport.Minutes -ge 1) { 
-                    $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes }
-                }
-                Else { 
-                    $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds }
-                }
+                If ($TimeSinceLastReport.Days -ge 1) { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays } }
+                ElseIf ($TimeSinceLastReport.Hours -ge 1) { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours } }
+                ElseIf ($TimeSinceLastReport.Minutes -ge 1) { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes } }
+                Else { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds } }
             }
             $Variables | Add-Member -Force @{ Workers = $Workers }
             $Variables | Add-Member -Force @{ WorkersLastUpdated = (Get-Date) }
@@ -1229,6 +1070,8 @@ Function Stop-Mining {
     }
     $Variables.WatchdogTimers = @()
     $Variables.Summary = ""
+
+    Stop-BrainJob
 
     If ($Variables.CoreRunspace) { 
         Write-Message -Level Info "Ending cycle."
@@ -1432,12 +1275,7 @@ Function Get-SortedObject {
                 $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
                 If (-not $PropertyName) { $PropertyName = $_.Name }
 
-                If ($Object.$PropertyName -is [Hashtable] -or $Object.$PropertyName -is [PSCustomObject]) { 
-                    $SortedObject[$PropertyName] = Get-SortedObject $Object.$PropertyName
-                }
-                Else { 
-                    $SortedObject[$PropertyName] = $Object.$PropertyName
-                }
+                $SortedObject[$PropertyName] = If ($Object.$PropertyName -is [Hashtable] -or $Object.$PropertyName -is [PSCustomObject]) { Get-SortedObject $Object.$PropertyName } Else { $Object.$PropertyName }
             }
         }
         "Hashtable|SyncHashtable" { 
@@ -1447,12 +1285,7 @@ Function Get-SortedObject {
                 $Key = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $Key }
                 If (-not $Key) { $Key = $_ }
 
-                If ($Object.$Key -is [Hashtable] -or $Object.$Key -is [PSCustomObject]) { 
-                    $SortedObject[$Key] = Get-SortedObject $Object.$Key
-                }
-                Else { 
-                    $SortedObject[$PropertyName] = $Object.$Key
-                }
+                $SortedObject[$Key] = If ($Object.$Key -is [Hashtable] -or $Object.$Key -is [PSCustomObject]) { Get-SortedObject $Object.$Key } Else { $Object.$Key }
             }
         }
         Default {
@@ -1806,15 +1639,7 @@ Function Get-ChildItemContent {
     }
 
     If ($Threaded) { 
-        $PowerShell = [PowerShell]::Create().AddScript($ScriptBlock)
-        [Void]$PowerShell.AddArgument($Path)
-        [Void]$PowerShell.AddArgument($Parameters)
-        [Void]$PowerShell.AddArgument($Priority)
-
-        $Job = $PowerShell.BeginInvoke()
-        $PowerShell | Add-Member Job $Job
-
-        Return $PowerShell
+        Return (Start-ThreadJob -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority)
     }
     Else { 
         Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
@@ -2149,6 +1974,7 @@ Function Get-Device {
                 }
                 Else { 
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id + 100))"
+                    $Device.Bus = $null
                 }
                 $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
 
@@ -2219,6 +2045,7 @@ Function Get-Device {
                     }
                     Else { 
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id) + 100)"
+                        $Device.Bus = $null
                     }
                     $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
 
@@ -2422,7 +2249,7 @@ Function Invoke-CreateProcess {
         [String]$LogFile
     )
 
-    $Job = Start-ThreadJob -ThrottleLimit 50 -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
+    $Job = Start-ThreadJob -ThrottleLimit 99 -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
         Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $ControllerProcessID)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
@@ -2547,7 +2374,7 @@ Function Start-SubProcess {
     $ScriptBlock += " | Write-Output"
     If ($LogPath) { $ScriptBlock += " | Tee-Object '$LogPath'" }
 
-    Start-ThreadJob -ThrottleLimit 50 ([ScriptBlock]::Create($ScriptBlock))
+    Start-ThreadJob -ThrottleLimit 99 ([ScriptBlock]::Create($ScriptBlock))
 }
 
 Function Expand-WebRequest { 
@@ -2754,7 +2581,6 @@ Function Initialize-Autoupdate {
     #Stop all background processes
     Stop-Mining
     Stop-IdleMining
-    Stop-BrainJob
     Stop-BalancesTracker
 
     If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") {

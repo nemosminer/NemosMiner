@@ -137,8 +137,8 @@
         {{#if total}}{{else}}
         <p class="payout">
           <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{thresholdcurrency}}</b><br/>payout threshold<br/>
-          <div title="Prediction is based on the current daily average earnings">
-            Estimated Paydate:<br/><b>{{paydate}}</b>
+          <div title="Projection is based on the current daily average earnings">
+            Projected Paydate:<br/><b>{{paydate}}</b>
           </div>
         </p>
         {{/if}}
@@ -315,7 +315,7 @@
                               currency: item.Currency,
                               uri: item.Uri,
                               balances: {},
-                              paydate: formatDate(item.EstimatedPayDate),
+                              paydate: formatDate(item.ProjectedPayDate),
                               percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency]).toFixed(2),
                               growth1:item.Growth1 * factor,
                               growth6: item.Growth6 * factor,

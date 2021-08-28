@@ -18,21 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 using module ..\Include.psm1
 
 class SRBMiner : Miner { 
-    [String]GetCommandLineParameters() { 
-        If ($this.Arguments -match "^{.+}$") { 
-            Return ($this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
-        }
-        Else { 
-            Return $this.Arguments
-        }
-    }
 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds

@@ -18,22 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 using module ..\Include.psm1
 
 class Fireice : Miner { 
-    [String]GetCommandLineParameters() { 
-        If ($this.Arguments -match "^{.+}$") { 
-            Return ($this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Commands
-        }
-        Else { 
-            Return $this.Arguments
-        }
-    }
-
     CreateConfigFiles() { 
         Try { 
             $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -57,10 +48,10 @@ class Fireice : Miner {
                 }
 
                 #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
-                $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectCommands -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $(If ($this.DeviceName -like "CPU#*") { -2 } Else { -1 }) -EnvBlock $this.Environment
+                $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $(If ($this.DeviceName -like "CPU#*") { -2 } Else { -1 }) -EnvBlock $this.Environment
 
                 If ($this.Process) { 
-                    $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectCommands)*" }).ProcessId)
+                    $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
                     For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
                         If (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf) { 
                             #Read hw config created by miner

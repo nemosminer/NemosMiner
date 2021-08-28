@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 [CmdletBinding()]
@@ -252,7 +252,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.65"
+    Version      = [System.Version]"3.9.9.66"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -323,28 +323,28 @@ If (-not $Variables.Algorithms) {
 # Load coin names
 $Variables.Algorithms = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\CoinNames.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
 $Variables.Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Regions.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Verify pool data
 Try { [Void](Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
 Catch { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\PoolData.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\PoolData.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Verify coin name data
 Try { [Void](Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
 Catch { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\CoinNames.json'))' is not a valid JSON file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -369,8 +369,7 @@ If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Te
     If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
         # Activate existing Snaketail window
         $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-        [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # ShowNoActivateRecentPosition
-        [void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle)
+        [void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # SHOWNOACTIVATE 
     }
     Else { 
         [Void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null)
@@ -419,8 +418,8 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
 }
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
-    Write-Message -Level Verbose "Verifying integrity of VertHash data file (.\Cache\VertHash.dat)..."
-    $VertHashDatCheckJob = Start-ThreadJob -ThrottleLimit 50 ([ScriptBlock]::Create("(Get-FileHash .\Cache\VertHash.dat).Hash -eq 'A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48'"))
+    Write-Message -Level Verbose "Verifying integrity of VertHash data file '.\Cache\VertHash.dat'..."
+    $VertHashDatCheckJob = Start-ThreadJob -ScriptBlock { (Get-FileHash ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
 }
 
 Write-Message -Level Verbose "Loading device information..."
@@ -475,7 +474,7 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
     }
     Else { 
         Remove-Item -Path .\Cache\VertHash.dat -Force -ErrorAction Ignore
-        Write-Message -Level Warn "VertHash data file (.\Cache\VertHash.dat) is corrupt -> file deleted. It will be recreated by the miners if needed."
+        Write-Message -Level Warn "VertHash data file '.\Cache\VertHash.dat' is corrupt -> file deleted. It will be recreated by the miners if needed."
     }
 }
 
@@ -745,7 +744,6 @@ Function Global:TimerUITick {
 
             Stop-Mining
             Stop-IdleMining
-            Stop-BrainJob
             Stop-BalancesTracker
 
             $Variables.Summary = ""
@@ -757,7 +755,7 @@ Function Global:TimerUITick {
             $ButtonStart.Enabled = $true
         }
         ElseIf ($Variables.NewMiningStatus -eq "Paused") { 
-            If ($Variables.MiningStatus -ne "Paused") { 
+            If ($Variables.MiningStatus -ne $Variables.NewMiningStatus) { 
                 $ButtonPause.Enabled = $false
                 $ButtonStart.Enabled = $false
                 $ButtonStop.Enabled = $false
@@ -768,10 +766,9 @@ Function Global:TimerUITick {
                 }
                 Else { 
                     Initialize-Application
-                    Start-BrainJob
                     Start-BalancesTracker
                 }
-                Write-Message -Level Info "Mining is paused. BrainPlus and Earning tracker running." -Console
+                Write-Message -Level Info "Mining is paused. Balances Tracker running." -Console
 
                 $ButtonStop.Enabled = $true
                 $ButtonStart.Enabled = $true
@@ -794,7 +791,6 @@ Function Global:TimerUITick {
             If ($Variables.MiningStatus -ne "Running") { 
                 Write-Host "`nMining processes started."
                 Initialize-Application
-                Start-BrainJob
                 Start-BalancesTracker
             }
             If ($Config.MineWhenIdle) { 

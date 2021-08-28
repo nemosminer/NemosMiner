@@ -138,18 +138,24 @@
   <h3 class="mt-4">Unsupported Devices</h3>
 
   <table id="tableunsupporteddevices" class="table"
-    data-icons="icons"
-    data-url="/devices/unsupported"
-    data-cache="false"
-    data-toggle="table"
-    data-detail-view="true"
-    data-show-button-text="true"
-    data-show-columns="true"
-    data-show-toggle="true"
-    data-detail-view="true"
-    data-click-to-select="true"
-    data-detail-formatter="detailFormatter"
-    data-response-handler="formatDevices"
+  data-click-to-select="true"
+  data-cache="true"
+  data-toggle="table"
+  data-icons="icons"
+  data-show-button-text="true"
+  data-remember-order="true"
+  data-filter-control="true"
+  data-disable-control-when-search="true"
+  data-show-search-clear-button="true"
+  data-show-columns="true"
+  data-show-toggle="true"
+  data-show-refresh="true"
+  data-detail-view="true"
+  data-detail-formatter="detailFormatter"
+  data-url="/devices/unsupported"
+  data-response-handler="formatDevices"
+  data-sort-name="Name"
+  data-sort-order="asc"
     >
 
     <thead>
@@ -196,8 +202,8 @@
   $(function () {
     $('#disable-device').click(function () {
       var $table = $('#enableddevices')
-      $Command = 'functions/config/device/disable?ExcludeDeviceName=' + encodeURIComponent($table.bootstrapTable('getSelections').map(item => item.Name))
-      $('.modal-body').load($Command, function() {
+      var command = 'functions/config/device/disable?ExcludeDeviceName=' + encodeURIComponent($table.bootstrapTable('getSelections').map(item => item.Name))
+      $('.modal-body').load(command, function() {
         $('.modal-title').text($('#disable-device').text());
         $('#myModal').modal({show:true});
       });
@@ -209,8 +215,8 @@
   $(function () {
     $('#enable-device').click(function () {
       var $table = $('#disableddevices')
-      $Command = 'functions/config/device/enable?DeviceName=' + encodeURIComponent($table.bootstrapTable('getSelections').map(item => item.Name))
-      $('.modal-body').load($Command, function() {
+      var command = 'functions/config/device/enable?DeviceName=' + encodeURIComponent($table.bootstrapTable('getSelections').map(item => item.Name))
+      $('.modal-body').load(command, function() {
         $('.modal-title').text($('#enable-device').text());
         $('#myModal').modal({show:true});
       });

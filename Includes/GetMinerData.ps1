@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           GetMinerData.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 using module ".\Include.psm1"
@@ -42,7 +42,7 @@ Try {
     While ($true) { 
         $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
         $Miner.GetMinerData()
-        While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 200 }
+        While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 100 }
     }
 }
 Catch { 

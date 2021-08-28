@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        3.9.9.65
-Version date:   23 August 2021
+Version:        3.9.9.66
+Version date:   28 August 2021
 #>
 
 # Start transcript log
@@ -297,8 +297,8 @@ While ($true) {
                 AvgHourlyGrowth         = [Double]$AvgHourlyGrowth
                 AvgDailyGrowth          = [Double]$AvgDailyGrowth
                 AvgWeeklyGrowth         = [Double]$AvgWeeklyGrowth
-                EstimatedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
-                EstimatedPayDate        = If ($PayoutThreshold) { If ([Double]($PoolBalanceObject.Unpaid) -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency))) { If (($AvgDailyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-7) { [DateTime]($Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency) - $PoolBalanceObject.Unpaid) / ((($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum))) } Else { "Unknown" } } Else { If ($PoolBalanceObject.NextPayout) { $PoolBalanceObject.NextPayout.ToLocalTime() } Else { "Next Payout!" } } } Else { "Unknown" }
+                ProjectedEndDayGrowth   = If ((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours) -ge 1) { [Double]($AvgHourlyGrowth * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) } Else { [Double]($Growth1 * ((Get-Date -Hour 0 -Minute 00 -Second 00).AddDays(1).AddSeconds(-1) - $Now).Hours) }
+                ProjectedPayDate        = If ($PayoutThreshold) { If ([Double]($PoolBalanceObject.Unpaid) -lt ($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency))) { If (($AvgDailyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-7) { [DateTime]($Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency) - $PoolBalanceObject.Unpaid) / ((($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum))) } Else { "Unknown" } } Else { If ($PoolBalanceObject.NextPayout) { $PoolBalanceObject.NextPayout.ToLocalTime() } Else { "Next Payout!" } } } Else { "Unknown" }
                 TrustLevel              = [Double]((($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum
                 TotalHours              = [Double]($Now - ($PoolBalanceObjects[0].DateTime).ToLocalTime()).TotalHours
                 PayoutThresholdCurrency = $PayoutThresholdCurrency
@@ -309,7 +309,7 @@ While ($true) {
             }
 
             If ($Config.BalancesTrackerLog -eq $true) { 
-                $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -ErrorAction Ignore
+                $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -Force -ErrorAction Ignore
             }
 
             $PoolTodayEarning = $Earnings | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Select-Object -Last 1
@@ -399,8 +399,16 @@ While ($true) {
         $Variables.EarningsChartData | ConvertTo-Json | Out-File ".\Data\EarningsChartData.json" -Force -Encoding UTF8 -ErrorAction Ignore
 
         # At least 31 days are needed for Growth720
-        # For data older 1 week only keep those with delta <> 0
-        If ($AllBalanceObjects.Count -gt 1) { $AllBalanceObjects = @($AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays( -31 ) | Where-Object { $_.DateTime -ge $Now.AddDays( -7 ) -or $_.Delta -ne 0 }) }
+        If ($AllBalanceObjects.Count -gt 1) { 
+            $AllBalanceObjects = @(
+                $AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays( -31 ) | Sort-Object DateTime | ForEach-Object { 
+                    If ($_.Delta -ne 0) { $_ } # keep with delta <> 0
+                    ElseIf ($Record -and $_.DateTime.Date -ne $Record.DateTime.Date) { $_ } # keep the newest one per day
+                    $Record = $_
+                }
+            ) | Sort-Object DateTime -Descending
+        }
+
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Data\BalancesTrackerData.json" -Force -ErrorAction Ignore }
         $Variables.BalanceData = $AllBalanceObjects
 

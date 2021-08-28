@@ -36,9 +36,9 @@ $Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 $HostSuffix = "mine.zergpool.com"
-# $PriceField = "Plus_Price"
+$PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
-$PriceField = "estimate_current"
+# $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
 
 $PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
@@ -69,7 +69,7 @@ If ($Wallet) {
         $Fee = $Request.$_.Fees / 100
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
 
         Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = 1 }
