@@ -233,7 +233,7 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
       windows10-1xGTX-2080/INTEL-i3-10105F(Test PC) 
 
-      windows10-9xAMD-6600XT/RYZEN 2600 (test Rig 1)
+      windows10-7xAMD-6600XT/RYZEN 2600 (test Rig 1)
       windows10-6xRTX-3070/RYZEN-3700x (test Rig 2)
       windows10-6xRTX-3060ti/RYZEN-1700x (test Rig 3)
       (users have reported up to 12cards are working, I have not tested myself)
