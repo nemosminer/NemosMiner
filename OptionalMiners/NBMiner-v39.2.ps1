@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nbminer.exe"
-$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v39.1/NBMiner_39.1_Win.zip"
+$Uri = "https://github.com/NebuTech/NBMiner/releases/download/v39.2/NBMiner_39.2_Win.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 

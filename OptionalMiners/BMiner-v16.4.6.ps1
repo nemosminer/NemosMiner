@@ -24,7 +24,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");  Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri ethproxy") }
     [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri raven") }
-    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri conflux") } # NBMiner-v39.1 is faster is faster but has 2% fee
+    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri conflux") } # NBMiner-v39.2 is faster is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri sero") }
 )
 
