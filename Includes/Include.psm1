@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.66
-Version date:   28 August 2021
+Version:        3.9.9.67
+Version date:   02 September 2021
 #>
 
 # Window handling
@@ -87,7 +87,7 @@ Class Device {
 
     [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [DeviceState]$State = [DeviceState]::Enabled
-    [Bool]$ReadPowerUsage = $false
+    [Boolean]$ReadPowerUsage = $false
     [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage in sensors
 }
 
@@ -269,12 +269,13 @@ Class Miner {
         $this.Intervals = @()
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+        Write-Message "Starting miner '$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
 
         If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
         If ($this.Process) { 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
-                $this.Process | Remove-Job -Force
+                $this.Process | Remove-Job -Force -ErrorAction Ignore
             }
 
             If (-not ($this.Process | Get-Job -ErrorAction SilentlyContinue)) { 
@@ -309,8 +310,6 @@ Class Miner {
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
                     If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
-                        $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                        $this.StartDataReader()
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -319,19 +318,21 @@ Class Miner {
             }
 
             $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            Write-Message -Level Verbose $this.CommandLine
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-            $this.StatStart = (Get-Date).ToUniversalTime()
+            $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+            $this.StartDataReader()
             $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]::NaN })
             $this.WorkersRunning = $this.Workers
         }
     }
 
     [MinerStatus]GetStatus() { 
-        If ($this.Process.State -eq "Running" -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
+        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
             $this.Status = [MinerStatus]::Running
             Return $this.Status
         }
-        ElseIf ($this.Status -eq "Running") { 
+        ElseIf ($this.Status -eq [MinerStatus]::Running) { 
             $this.Status = [MinerStatus]::Failed
             Return $this.Status
         }
@@ -357,19 +358,27 @@ Class Miner {
     }
 
     hidden StopMining() { 
+        Write-Message "Stopping miner '$($this.Info)'..."
+
         $this.EndTime = (Get-Date).ToUniversalTime()
         If ($this.Status -eq [MinerStatus]::Running) { 
             $this.StatusMessage = "Stopping..."
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         }
-        If ($this.ProcessId) { 
-            If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore }
-            $this.ProcessId = $null
-        }
-        If ($this.Process) { $this.Process = $null }
 
         # Stop Miner data reader
         $this.StopDataReader()
+
+        If ($this.ProcessId) { 
+            If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
+                Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
+            }
+            $this.ProcessId = $null
+        }
+        If ($this.Process) { 
+            $this.Process | Remove-Job -Force -ErrorAction Ignore
+            $this.Process = $null 
+        }
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
@@ -574,36 +583,6 @@ Class Miner {
     }
 }
 
-Function Get-DefaultAlgorithm {
-
-    # Try { 
-    #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
-    #     $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
-    # }
-    # Catch { 
-        If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType Leaf) { 
-            $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
-        }
-    # }
-    If ($PoolsAlgos) { 
-        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @($Config.PoolName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")
-        Return  $PoolsAlgos.Value | Sort-Object -Unique
-    }
-    Return
-}
-
-Function Get-CommandLineParameters { 
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$Arguments
-    )
-
-    If (Test-Json $Arguments -ErrorAction Ignore) { 
-        Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Arguments
-    }
-    Return $Arguments
-}
-
 Function Start-BrainJob { 
 
     # Starts Brains if necessary
@@ -622,6 +601,163 @@ Function Start-BrainJob {
     }
     If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))." }
 }
+Function Start-IdleMining {
+ 
+    # Function tracks how long the system has been idle and controls the paused state
+    $IdleRunspace = [runspacefactory]::CreateRunspace()
+    $IdleRunspace.Open()
+    Get-Variable -Scope Global | ForEach-Object { 
+        Try { 
+            $IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+        }
+        Catch { }
+    }
+    $IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $PowerShell = [PowerShell]::Create()
+    $PowerShell.Runspace = $IdleRunspace
+    $PowerShell.AddScript(
+        { 
+            # Set the starting directory
+            Set-Location (Split-Path $MyInvocation.MyCommand.Path)
+
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+
+            # No native way to check how long the system has been idle in PowerShell. Have to use .NET code.
+            Add-Type -TypeDefinition @'
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+namespace PInvoke.Win32 {
+
+    public static class UserInput {
+
+        [DllImport("user32.dll", SetLastError=false)]
+        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct LASTINPUTINFO {
+            public uint cbSize;
+            public int dwTime;
+        }
+
+        public static DateTime LastInput {
+            get {
+                DateTime bootTime = DateTime.UtcNow.AddMilliseconds(-Environment.TickCount);
+                DateTime lastInput = bootTime.AddMilliseconds(LastInputTicks);
+                return lastInput;
+            }
+        }
+
+        public static TimeSpan IdleTime {
+            get {
+                return DateTime.UtcNow.Subtract(LastInput);
+            }
+        }
+
+        public static int LastInputTicks {
+            get {
+                LASTINPUTINFO lii = new LASTINPUTINFO();
+                lii.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
+                GetLastInputInfo(ref lii);
+                return lii.dwTime;
+            }
+        }
+    }
+}
+'@
+
+            $ProgressPreference = "SilentlyContinue"
+            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+
+            While ($true) { 
+                $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
+
+                # Pause if system has become active
+                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CoreRunspace) { 
+                    Write-Message -Level Verbose "System activity detected. Stopping mining processes..."
+                    Stop-Mining
+
+                    $LabelMiningStatus.Text = "Idle | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
+
+                    Write-Message -Level Verbose "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+                }
+                # Check if system has been idle long enough to unpause
+                If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
+                    Write-Message -Level Verbose "System was idle for $IdleSeconds seconds, starting mining processes..."
+                    Start-Mining
+
+                    $LabelMiningStatus.Text = "Running | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
+                }
+                Start-Sleep -Seconds 1
+            }
+            Return
+        }
+    ) | Out-Null
+    $PowerShell.BeginInvoke()
+
+    $Variables.IdleRunspace = $IdleRunspace
+    $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+}
+
+Function Stop-IdleMining { 
+
+    If ($Variables.IdleRunspace) { 
+        $Variables.IdleRunspace.Close()
+        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
+        $Variables.Remove("IdleRunspace")
+        Write-Message -Level Verbose "Stopped idle detection."
+    }
+}
+
+Function Start-Mining { 
+
+    If (-not $Variables.CoreRunspace) { 
+
+        $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
+        $Variables.Pools = $null
+        $Variables.Miners = $null
+
+        $CoreRunspace = [RunspaceFactory]::CreateRunspace()
+        $CoreRunspace.Open()
+        $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
+        $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+        $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+        $PowerShell = [PowerShell]::Create()
+        $PowerShell.Runspace = $CoreRunspace
+        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
+        $PowerShell.BeginInvoke()
+
+        $Variables.CoreRunspace = $CoreRunspace
+        $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+
+        Write-Message -Level Verbose "Mining processes started." -Console
+    }
+}
+
+Function Stop-Mining { 
+
+    ForEach ($Miner in ($Variables.Miners | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
+        Write-Message -Level Info "Stopping miner '$($Miner.Info)'..."
+        $Miner.StopMining()
+        $Miner.Best = $false
+    }
+    $Variables.WatchdogTimers = @()
+    $Variables.Summary = ""
+
+    If ($Variables.CoreRunspace) { 
+        Write-Message -Level Info "Ending cycle."
+        $Variables.CoreRunspace.Close()
+        If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
+        $Variables.Remove("Timer")
+        $Variables.Remove("CoreRunspace")
+
+        Write-Message -Level Verbose "Mining processes stopped." -Console
+    }
+}
 
 Function Stop-BrainJob { 
     Param(
@@ -634,14 +770,13 @@ Function Stop-BrainJob {
     # Stop Brains if necessary
     $Jobs | Select-Object | ForEach-Object { 
         $_ = $_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
-        $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -ErrorAction Ignore
+        $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
         $Variables.BrainJobs.Remove($_)
         $JobNames += $_
     }
 
     If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))." }
 }
-
 
 Function Start-BalancesTracker { 
 
@@ -674,6 +809,40 @@ Function Stop-BalancesTracker {
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
         $Variables.Remove("BalancesTrackerRunspace")
         Write-Message "Stopped Balances Tracker."
+    }
+}
+
+Function Start-RigMonitor { 
+
+    If (-not $Variables.RigMonitorRunspace) { 
+
+        Try { 
+            $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
+            $BalancesTrackerRunspace.Open()
+            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
+            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+            $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+            $PowerShell = [PowerShell]::Create()
+            $PowerShell.Runspace = $BalancesTrackerRunspace
+            $PowerShell.AddScript("$($Variables.MainPath)\Includes\RigMonitor.ps1")
+            $PowerShell.BeginInvoke()
+
+            $Variables.RigMonitorRunspace = $BalancesTrackerRunspace
+            $Variables.RigMonitorRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+        }
+        Catch { 
+            Write-Message -Level Error "Failed to start Rig Monitor [$Error[0]]."
+        }
+    }
+}
+
+Function Stop-RigMonitor {
+ 
+    If ($Variables.RigMonitorRunspace) { 
+        $Variables.RigMonitorRunspace.Close()
+        If ($Variables.RigMonitorRunspace.PowerShell) { $Variables.RigMonitorRunspace.PowerShell.Dispose() }
+        $Variables.Remove("RigMonitorRunspace")
+        Write-Message "Stopped Rig Monitor."
     }
 }
 
@@ -750,6 +919,36 @@ Function Initialize-Application {
 
     If ($Config.Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
     Else { $PSDefaultParameterValues["*:Proxy"] = $Config.Proxy }
+}
+
+Function Get-DefaultAlgorithm {
+
+    # Try { 
+    #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
+    #     $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
+    # }
+    # Catch { 
+        If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType Leaf) { 
+            $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
+        }
+    # }
+    If ($PoolsAlgos) { 
+        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @($Config.PoolName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")
+        Return  $PoolsAlgos.Value | Sort-Object -Unique
+    }
+    Return
+}
+
+Function Get-CommandLineParameters { 
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Arguments
+    )
+
+    If (Test-Json $Arguments -ErrorAction Ignore) { 
+        Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Arguments
+    }
+    Return $Arguments
 }
 
 Function Get-Rate {
@@ -852,111 +1051,7 @@ Function Write-Message {
     End { }
 }
 
-Function Start-IdleMining {
- 
-    # Function tracks how long the system has been idle and controls the paused state
-    $IdleRunspace = [runspacefactory]::CreateRunspace()
-    $IdleRunspace.Open()
-    Get-Variable -Scope Global | ForEach-Object { 
-        Try { 
-            $IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
-        }
-        Catch { }
-    }
-    $IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-    $PowerShell = [PowerShell]::Create()
-    $PowerShell.Runspace = $IdleRunspace
-    $PowerShell.AddScript(
-        { 
-            # Set the starting directory
-            Set-Location (Split-Path $MyInvocation.MyCommand.Path)
-
-            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
-
-            # No native way to check how long the system has been idle in PowerShell. Have to use .NET code.
-            Add-Type -TypeDefinition @'
-using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-
-namespace PInvoke.Win32 {
-
-    public static class UserInput {
-
-        [DllImport("user32.dll", SetLastError=false)]
-        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct LASTINPUTINFO {
-            public uint cbSize;
-            public int dwTime;
-        }
-
-        public static DateTime LastInput {
-            get {
-                DateTime bootTime = DateTime.UtcNow.AddMilliseconds(-Environment.TickCount);
-                DateTime lastInput = bootTime.AddMilliseconds(LastInputTicks);
-                return lastInput;
-            }
-        }
-
-        public static TimeSpan IdleTime {
-            get {
-                return DateTime.UtcNow.Subtract(LastInput);
-            }
-        }
-
-        public static int LastInputTicks {
-            get {
-                LASTINPUTINFO lii = new LASTINPUTINFO();
-                lii.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
-                GetLastInputInfo(ref lii);
-                return lii.dwTime;
-            }
-        }
-    }
-}
-'@
-
-            $ProgressPreference = "SilentlyContinue"
-            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
-
-            While ($true) { 
-                $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
-
-                # Pause if system has become active
-                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CoreRunspace) { 
-                    Write-Message -Level Verbose "System activity detected. Stopping all running miners..."
-                    Stop-Mining
-                    Write-Message -Level Verbose "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
-                }
-                # Check if system has been idle long enough to unpause
-                If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
-                    Write-Message -Level Verbose "System was idle for $IdleSeconds seconds, start mining..."
-                    Start-Mining
-                }
-                Start-Sleep -Seconds 1
-            }
-            Return
-        }
-    ) | Out-Null
-    $PowerShell.BeginInvoke()
-
-    $Variables.IdleRunspace = $IdleRunspace
-    $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-}
-
-Function Stop-IdleMining { 
-
-    If ($Variables.IdleRunspace) { 
-        $Variables.IdleRunspace.Close()
-        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
-        $Variables.Remove("IdleRunspace")
-        Write-Message -Level Verbose "Stopped idle detection."
-    }
-}
-
-Function Update-Monitoring { 
+Function Send-MonitoringData { 
 
     # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
 
@@ -966,48 +1061,57 @@ Function Update-Monitoring {
 
     If ($Config.ReportToServer) { 
         $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
-        $Status = If ($Variables.Paused) { "Paused" } Else { "Running" }
+        $Status = $Variables.MiningStatus
         $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
 
         # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
         # reveal someone's windows username or other system information they might not want sent
         # For the ones that can be an array, comma separate them
-        $Data = $RunningMiners | Sort-Object DeviceName | ForEach-Object { 
-            $RunningMiner = $_
-            [PSCustomObject]@{ 
-                Name           = $RunningMiner.Name
-                Path           = Resolve-Path -Relative $RunningMiner.Path
-                Type           = $RunningMiner.Type -join ','
-                Algorithm      = $RunningMiner.Algorithm -join ','
-                Pool           = $RunningMiner.WorkersRunning.Pool.Name -join ','
-                CurrentSpeed   = $RunningMiner.Speed_Live
-                EstimatedSpeed = $RunningMiner.Workers.Speed
-                Earning        = $RunningMiner.Earning
-                Profit         = $RunningMiner.Profit
-                Currency       = $Config.Currency
+        $Data = @(
+            $RunningMiners | Sort-Object DeviceName | ForEach-Object { 
+                [PSCustomObject]@{ 
+                    Name           = $_.Name
+                    Path           = Resolve-Path -Relative $_.Path
+                    Type           = $_.Type -join ','
+                    Algorithm      = $_.Algorithm -join ','
+                    Pool           = $_.WorkersRunning.Pool.Name -join ','
+                    CurrentSpeed   = $_.Speed_Live
+                    EstimatedSpeed = $_.Workers.Speed
+                    Earning        = $_.Earning
+                    Profit         = $_.Profit
+                    Currency       = $Config.Currency
+                }
             }
+        )
+
+        $Body = @{ 
+            user    = $Config.MonitoringUser
+            worker  = $Config.WorkerName
+            version = $Version
+            status  = $Status
+            profit  = [String][Math]::Round(($data | Measure-Object Earning -Sum).Sum, 8) # Earnings is NOT profit! Needs to be changed in mining monitor server
+            data    = ConvertTo-Json $Data
         }
-        $DataJSON = ConvertTo-Json @($Data)
-        # Calculate total estimated profit
-        $Earning = [String]([Math]::Round(($data | Measure-Object Earning -Sum).Sum, 8))
 
         # Send the request
-        $Body = @{ user = $Config.MonitoringUser; worker = $Config.WorkerName; version = $Version; status = $Status; profit = $Earning; data = $DataJSON } # Earnings is NOT profit! Needs to be changes in mining monitor server
         Try { 
             $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
             If ($Response -eq "Success") { 
-                Write-Message -Level Verbose "Reported worker status to monitoring server '$($Config.MonitoringServer)'."
+                Write-Message -Level Verbose "Reported worker status to monitoring server '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
             }
             Else { 
                 Write-Message -Level Verbose "Reporting worker status to monitoring server '$($Config.MonitoringServer)' failed: [$($Response)]."
             }
         }
         Catch { 
-            Write-Message -Level Warn "Monitoring: Unable to send status to $($Config.MonitoringServer)."
+            Write-Message -Level Warn "Monitoring: Unable to send status to '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
     }
+}
 
-    If ($Config.ShowWorkerStatus) { 
+Function Receive-MonitoringData { 
+
+    If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer) { 
         Try { 
             $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{ user = $Config.MonitoringUser } -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
             # Calculate some additional properties and format others
@@ -1018,67 +1122,17 @@ Function Update-Monitoring {
                 # If a machine hasn't reported in for > 10 minutes, mark it as offline
                 $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
                 If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
-                # Show friendly time since last report in seconds, minutes, hours or days
-                If ($TimeSinceLastReport.Days -ge 1) { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} days ago' -f $TimeSinceLastReport.TotalDays } }
-                ElseIf ($TimeSinceLastReport.Hours -ge 1) { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} hours ago' -f $TimeSinceLastReport.TotalHours } }
-                ElseIf ($TimeSinceLastReport.Minutes -ge 1) { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} minutes ago' -f $TimeSinceLastReport.TotalMinutes } }
-                Else { $_ | Add-Member -Force @{ timesincelastreport = '{0:N0} seconds ago' -f $TimeSinceLastReport.TotalSeconds } }
             }
             $Variables | Add-Member -Force @{ Workers = $Workers }
             $Variables | Add-Member -Force @{ WorkersLastUpdated = (Get-Date) }
 
             Remove-Variable Workers
 
-            Write-Message -Level Verbose "Retrieved status for workers with ID '$($Config.MonitoringUser)'."
+            Write-Message -Level Verbose "Retrieved worker status from '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
         Catch { 
-            Write-Message -Level Warn "Monitoring: Unable to retrieve worker data from '$($Config.MonitoringServer)'."
+            Write-Message -Level Warn "Monitoring: Unable to retrieve worker data from '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
-    }
-}
-
-Function Start-Mining { 
-
-    If (-not $Variables.CoreRunspace) { 
-        $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-        $Variables.Pools = $null
-        $Variables.Miners = $null
-
-        $CoreRunspace = [RunspaceFactory]::CreateRunspace()
-        $CoreRunspace.Open()
-        $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
-        $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-        $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-        $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-        $PowerShell = [PowerShell]::Create()
-        $PowerShell.Runspace = $CoreRunspace
-        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-        $PowerShell.BeginInvoke()
-
-        $Variables.CoreRunspace = $CoreRunspace
-        $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-    }
-}
-
-Function Stop-Mining { 
-
-    $Variables.Miners | Where-Object { $_.Status -EQ "Running" } | ForEach-Object { 
-        Stop-Process -Id $_.ProcessId -Force -ErrorAction Ignore
-        $_.Status = "Idle"
-        $_.Best = $false
-        Write-Message -Level Info "Stopped miner '$($_.Info)'."
-    }
-    $Variables.WatchdogTimers = @()
-    $Variables.Summary = ""
-
-    Stop-BrainJob
-
-    If ($Variables.CoreRunspace) { 
-        Write-Message -Level Info "Ending cycle."
-        $Variables.CoreRunspace.Close()
-        If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
-        $Variables.Remove("Timer")
-        $Variables.Remove("CoreRunspace")
     }
 }
 
@@ -1119,6 +1173,7 @@ Function Read-Config {
     If ($Global:Config -isnot [Hashtable]) { 
         New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
     }
+    $Local:Config = $Global:Config
 
     # Load the configuration
     If (Test-Path -PathType Leaf $ConfigFile) { 
@@ -1126,13 +1181,13 @@ Function Read-Config {
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
             Copy-Item -Path $ConfigFile "$($ConfigFile).corrupt" -Force
             Write-Message -Level Warn "Configuration file '$($ConfigFile)' is corrupt."
-            $Config.ConfigFileVersionCompatibility = $null
+            $Local:Config.ConfigFileVersionCompatibility = $null
         }
         Else { 
             # Fix upper / lower case (Web GUI is case sensitive)
             $Config_Tmp.PSObject.Properties.Name | ForEach-Object { 
-                $Global:Config.Remove($_)
-                $Global:Config.$_ = $Config_Tmp.$_ 
+                $Local:Config.Remove($_)
+                $Local:Config.$_ = $Config_Tmp.$_ 
             }
         }
         Remove-Variable Config_Tmp
@@ -1144,27 +1199,28 @@ Function Read-Config {
         $Variables.FreshConfig = $true
         If (Test-Path -Path ".\Config\PoolsConfig-Recommended.json" -PathType Leaf) { 
             # Add default enabled pools
-            $Config.PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } })
+            $Local:Config.PoolName = @(Get-Content ".\Config\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $_ -ne "Default" } })
         }
 
         # Add config items
-        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Global:Config.Keys } | Sort-Object Name | ForEach-Object { 
+        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Local:Config.Keys } | Sort-Object Name | ForEach-Object { 
             $Value = $Variables.AllCommandLineParameters.$_
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Global:Config.$_ = $Value
+            $Local:Config.$_ = $Value
         }
 
-        $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
+        $Local:Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     }
 
     # Ensure parameter format
     $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
-        If ($Global:Config.$_ -is [Array]) { $Global:Config.$_ = @($Global:Config.$_ -replace " " -split ",") } # Enforce array
+        If ($Variables.AllCommandLineParameters.$_ -is [Array]) { 
+            $Local:Config.$_ = @($Local:Config.$_ -replace " " -split ",") } # Enforce array
     }
 
     # Load default pool data, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     $DefaultPoolData = [Ordered]@{ }
-    $Temp = Get-Content .\Data\PoolData.json -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
+    $Temp = Get-Content ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
     $Temp.Keys | Sort-Object | ForEach-Object { $DefaultPoolData += @{ $_ = $Temp.$_ } }
 
     # Build custom pools configuation, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
@@ -1188,41 +1244,41 @@ Function Read-Config {
             # Merge default pool data with custom pool config
             If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true }
 
-            If (-not $PoolConfig.MinWorker) { $PoolConfig.MinWorker = $Config.MinWorker }
-            If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig.EarningsAdjustmentFactor = $Config.EarningsAdjustmentFactor }
-            If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Config.WorkerName }
+            If (-not $PoolConfig.MinWorker) { $PoolConfig.MinWorker = $Local:Config.MinWorker }
+            If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig.EarningsAdjustmentFactor = $Local:Config.EarningsAdjustmentFactor }
+            If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Local:Config.WorkerName }
             If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
 
             Switch ($PoolName) { 
                 "HiveON" { 
                     If (-not $PoolConfig.Wallets) { 
                         $PoolConfig.Wallets = [PSCustomObject]@{ }
-                        $Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
-                            $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
+                        $Local:Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
+                            $PoolConfig.Wallets | Add-Member $_ ($Local:Config.Wallets.$_)
                         }
                     }
                 }
                 "MiningPoolHub" { 
-                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.MiningPoolHubUserName }
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.MiningPoolHubUserName }
                 }
                 "NiceHash External" { 
-                    If (-not $Config.NiceHashWalletIsInternal) { 
-                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Config.NiceHashWallet } }
+                    If (-not $Local:Config.NiceHashWalletIsInternal) { 
+                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
                     }
-                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Config.Wallets.BTC } }
+                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.Wallets.BTC } }
                 }
                 "NiceHash Internal" { 
-                    If ($Config.NiceHashWalletIsInternal -eq $true -and $Config.NiceHashWallet) { 
-                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets =[PSCustomObject]@{ "BTC" = $Config.NiceHashWallet } }
+                    If ($Local:Config.NiceHashWalletIsInternal -eq $true -and $Local:Config.NiceHashWallet) { 
+                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets =[PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
                     }
                 }
                 "ProHashing" { 
-                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.ProHashingUserName }
-                    If (-not $PoolConfig.MiningMode) { $PoolConfig.MiningMode = $Config.ProHashingMiningMode }
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.ProHashingUserName }
+                    If (-not $PoolConfig.MiningMode) { $PoolConfig.MiningMode = $Local:Config.ProHashingMiningMode }
                 }
                 Default { 
-                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Config.PayoutCurrency }
-                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = [PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } }
+                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Local:Config.PayoutCurrency }
+                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = [PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Local:Config.Wallets.($PoolConfig.PayoutCurrency)) } }
                     $PoolConfig.Remove("PayoutCurrency")
                 }
             }
@@ -1232,7 +1288,8 @@ Function Read-Config {
         }
         $PoolsConfig.$PoolName = $PoolConfig
     }
-    $Config.PoolsConfig = $PoolsConfig
+    $Local:Config.PoolsConfig = $PoolsConfig
+    $Global:Config = $Local:Config
 }
 
 Function Write-Config { 
@@ -1262,7 +1319,7 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json 
+    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json -NoEnumerate
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
@@ -1271,11 +1328,14 @@ Function Get-SortedObject {
         "PSCustomObject" { 
             Get-Member -Type NoteProperty -InputObject $Object | Sort-Object Name | ForEach-Object { 
                 # Upper / lower case conversion (Web GUI is case sensitive)
-                $PropertyName = $_.Name
-                $PropertyName = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $PropertyName }
-                If (-not $PropertyName) { $PropertyName = $_.Name }
+                $Property = $_.Name
+                $Property = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $Property }
+                If (-not $PropertyName) { $Property = $_.Name }
 
-                $SortedObject[$PropertyName] = If ($Object.$PropertyName -is [Hashtable] -or $Object.$PropertyName -is [PSCustomObject]) { Get-SortedObject $Object.$PropertyName } Else { $Object.$PropertyName }
+                If ($Object.$Property -is [Hashtable] -or $Object.$Property -is [PSCustomObject]) { $SortedObject[$Property] = Get-SortedObject $Object.$Property }
+                ElseIf ($Object.$Property -is [Array]) { $SortedObject[$Property] = $Object.$Property -as $Object.$Property.GetType().Name }
+                # ElseIf ($Object.$Property -is [Array]) { $SortedObject[$Property] = @($Object.$Property) }
+                Else { $SortedObject[$Property] = $Object.$Property }
             }
         }
         "Hashtable|SyncHashtable" { 
@@ -1307,9 +1367,9 @@ Function Set-Stat {
         [Parameter(Mandatory = $false)]
         [TimeSpan]$Duration, 
         [Parameter(Mandatory = $false)]
-        [Bool]$FaultDetection = $true, 
+        [Boolean]$FaultDetection = $true, 
         [Parameter(Mandatory = $false)]
-        [Bool]$ChangeDetection = $false, 
+        [Boolean]$ChangeDetection = $false, 
         [Parameter(Mandatory = $false)]
         [Int]$ToleranceExceeded = 3
     )
@@ -1658,7 +1718,7 @@ Function Invoke-TcpRequest {
         [Parameter(Mandatory = $true)]
         [Int]$Timeout, # seconds
         [Parameter(Mandatory = $false)]
-        [Bool]$ReadToEnd = $false
+        [Boolean]$ReadToEnd = $false
     )
 
     Try { 
@@ -1696,7 +1756,7 @@ Function Get-CpuId {
 
     $info = [CpuID]::Invoke(0)
     # convert 16 bytes to 4 ints for compatibility with existing code
-    $info = [int[]]@(
+    $info = [Int[]]@(
         [BitConverter]::ToInt32($info, 0 * 4)
         [BitConverter]::ToInt32($info, 1 * 4)
         [BitConverter]::ToInt32($info, 2 * 4)
@@ -1708,7 +1768,7 @@ Function Get-CpuId {
     $info = [CpuID]::Invoke(0x80000000)
     $nExIds = [BitConverter]::ToUInt32($info, 0 * 4) # not sure as to why 'nExIds' is unsigned; may not be necessary
     # convert 16 bytes to 4 ints for compatibility with existing code
-    $info = [int[]]@(
+    $info = [Int[]]@(
         [BitConverter]::ToInt32($info, 0 * 4)
         [BitConverter]::ToInt32($info, 1 * 4)
         [BitConverter]::ToInt32($info, 2 * 4)
@@ -1721,76 +1781,76 @@ Function Get-CpuId {
 
         $info = [CpuID]::Invoke(0x00000001)
         # convert 16 bytes to 4 ints for compatibility with existing code
-        $info = [int[]]@(
+        $info = [Int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
             [BitConverter]::ToInt32($info, 2 * 4)
             [BitConverter]::ToInt32($info, 3 * 4)
         )
 
-        $features.MMX = ($info[3] -band ([int]1 -shl 23)) -ne 0
-        $features.SSE = ($info[3] -band ([int]1 -shl 25)) -ne 0
-        $features.SSE2 = ($info[3] -band ([int]1 -shl 26)) -ne 0
-        $features.SSE3 = ($info[2] -band ([int]1 -shl 00)) -ne 0
+        $features.MMX = ($info[3] -band ([Int]1 -shl 23)) -ne 0
+        $features.SSE = ($info[3] -band ([Int]1 -shl 25)) -ne 0
+        $features.SSE2 = ($info[3] -band ([Int]1 -shl 26)) -ne 0
+        $features.SSE3 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
 
-        $features.SSSE3 = ($info[2] -band ([int]1 -shl 09)) -ne 0
-        $features.SSE41 = ($info[2] -band ([int]1 -shl 19)) -ne 0
-        $features.SSE42 = ($info[2] -band ([int]1 -shl 20)) -ne 0
-        $features.AES = ($info[2] -band ([int]1 -shl 25)) -ne 0
+        $features.SSSE3 = ($info[2] -band ([Int]1 -shl 09)) -ne 0
+        $features.SSE41 = ($info[2] -band ([Int]1 -shl 19)) -ne 0
+        $features.SSE42 = ($info[2] -band ([Int]1 -shl 20)) -ne 0
+        $features.AES = ($info[2] -band ([Int]1 -shl 25)) -ne 0
 
-        $features.AVX = ($info[2] -band ([int]1 -shl 28)) -ne 0
-        $features.FMA3 = ($info[2] -band ([int]1 -shl 12)) -ne 0
+        $features.AVX = ($info[2] -band ([Int]1 -shl 28)) -ne 0
+        $features.FMA3 = ($info[2] -band ([Int]1 -shl 12)) -ne 0
 
-        $features.RDRAND = ($info[2] -band ([int]1 -shl 30)) -ne 0
+        $features.RDRAND = ($info[2] -band ([Int]1 -shl 30)) -ne 0
     }
 
     If ($nIds -ge 0x00000007) { 
 
         $info = [CpuID]::Invoke(0x00000007)
         # convert 16 bytes to 4 ints for compatibility with existing code
-        $info = [int[]]@(
+        $info = [Int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
             [BitConverter]::ToInt32($info, 2 * 4)
             [BitConverter]::ToInt32($info, 3 * 4)
         )
 
-        $features.AVX2 = ($info[1] -band ([int]1 -shl 05)) -ne 0
+        $features.AVX2 = ($info[1] -band ([Int]1 -shl 05)) -ne 0
 
-        $features.BMI1 = ($info[1] -band ([int]1 -shl 03)) -ne 0
-        $features.BMI2 = ($info[1] -band ([int]1 -shl 08)) -ne 0
-        $features.ADX = ($info[1] -band ([int]1 -shl 19)) -ne 0
-        $features.MPX = ($info[1] -band ([int]1 -shl 14)) -ne 0
-        $features.SHA = ($info[1] -band ([int]1 -shl 29)) -ne 0
-        $features.PREFETCHWT1 = ($info[2] -band ([int]1 -shl 00)) -ne 0
+        $features.BMI1 = ($info[1] -band ([Int]1 -shl 03)) -ne 0
+        $features.BMI2 = ($info[1] -band ([Int]1 -shl 08)) -ne 0
+        $features.ADX = ($info[1] -band ([Int]1 -shl 19)) -ne 0
+        $features.MPX = ($info[1] -band ([Int]1 -shl 14)) -ne 0
+        $features.SHA = ($info[1] -band ([Int]1 -shl 29)) -ne 0
+        $features.PREFETCHWT1 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
 
-        $features.AVX512_F = ($info[1] -band ([int]1 -shl 16)) -ne 0
-        $features.AVX512_CD = ($info[1] -band ([int]1 -shl 28)) -ne 0
-        $features.AVX512_PF = ($info[1] -band ([int]1 -shl 26)) -ne 0
-        $features.AVX512_ER = ($info[1] -band ([int]1 -shl 27)) -ne 0
-        $features.AVX512_VL = ($info[1] -band ([int]1 -shl 31)) -ne 0
-        $features.AVX512_BW = ($info[1] -band ([int]1 -shl 30)) -ne 0
-        $features.AVX512_DQ = ($info[1] -band ([int]1 -shl 17)) -ne 0
-        $features.AVX512_IFMA = ($info[1] -band ([int]1 -shl 21)) -ne 0
-        $features.AVX512_VBMI = ($info[2] -band ([int]1 -shl 01)) -ne 0
+        $features.AVX512_F = ($info[1] -band ([Int]1 -shl 16)) -ne 0
+        $features.AVX512_CD = ($info[1] -band ([Int]1 -shl 28)) -ne 0
+        $features.AVX512_PF = ($info[1] -band ([Int]1 -shl 26)) -ne 0
+        $features.AVX512_ER = ($info[1] -band ([Int]1 -shl 27)) -ne 0
+        $features.AVX512_VL = ($info[1] -band ([Int]1 -shl 31)) -ne 0
+        $features.AVX512_BW = ($info[1] -band ([Int]1 -shl 30)) -ne 0
+        $features.AVX512_DQ = ($info[1] -band ([Int]1 -shl 17)) -ne 0
+        $features.AVX512_IFMA = ($info[1] -band ([Int]1 -shl 21)) -ne 0
+        $features.AVX512_VBMI = ($info[2] -band ([Int]1 -shl 01)) -ne 0
     }
 
     If ($nExIds -ge 0x80000001) { 
 
         $info = [CpuID]::Invoke(0x80000001)
         # convert 16 bytes to 4 ints for compatibility with existing code
-        $info = [int[]]@(
+        $info = [Int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
             [BitConverter]::ToInt32($info, 2 * 4)
             [BitConverter]::ToInt32($info, 3 * 4)
         )
 
-        $features.x64 = ($info[3] -band ([int]1 -shl 29)) -ne 0
-        $features.ABM = ($info[2] -band ([int]1 -shl 05)) -ne 0
-        $features.SSE4a = ($info[2] -band ([int]1 -shl 06)) -ne 0
-        $features.FMA4 = ($info[2] -band ([int]1 -shl 16)) -ne 0
-        $features.XOP = ($info[2] -band ([int]1 -shl 11)) -ne 0
+        $features.x64 = ($info[3] -band ([Int]1 -shl 29)) -ne 0
+        $features.ABM = ($info[2] -band ([Int]1 -shl 05)) -ne 0
+        $features.SSE4a = ($info[2] -band ([Int]1 -shl 06)) -ne 0
+        $features.FMA4 = ($info[2] -band ([Int]1 -shl 16)) -ne 0
+        $features.XOP = ($info[2] -band ([Int]1 -shl 11)) -ne 0
     }
 
     # wrap data into PSObject
@@ -2452,10 +2512,8 @@ Function Get-Region {
 
     If ($List) { Return $Global:Regions.$Region }
 
-    If ($Global:Regions.$Region) { 
-       Return $($Global:Regions.$Region | Select-Object -Index 0)
-    }
-    Return $null
+    If ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -Index 0) }
+    Else { $Region }
 }
 
 # Function Get-CoinName { 
@@ -2545,7 +2603,7 @@ Function Initialize-Autoupdate {
     "Starting auto update - Logging changes to '$UpdateLog'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
 
     # Setting autostart to true
-    If ($Variables.MiningStatus -eq "Running") { $Config.AutoStart = $true }
+    If ($Variables.MiningStatus -eq [MinerStatus]::Running) { $Config.AutoStart = $true }
 
     # Download update file
     $UpdateFileName = ".\$($UpdateVersion.Product)-$($UpdateVersion.Version)"
@@ -2580,6 +2638,7 @@ Function Initialize-Autoupdate {
 
     #Stop all background processes
     Stop-Mining
+    Stop-BrainJob
     Stop-IdleMining
     Stop-BalancesTracker
 

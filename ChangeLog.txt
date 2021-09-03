@@ -6,6 +6,24 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 3.9.9.67 02.09.2021
+========================================
+
+Enhancements:
+- Balance tracker: Minor code enhancements, speed improvements & cleanup
+- Core: Minor code enhancements, speed improvements & cleanup
+- Core: Report worker status only once per cycle
+- Core: Optimized 'report to monitoring server' code, poll workers even if mining is idle
+- Text window: Added more hot keys, press 'h' for help
+
+Fixes:
+- Web GUI / API Balances: Projected paydate was based on earnings instead of balance (-> premature payout date)
+- Nicehash Pool: Pool config parameter "Algorithm" not working
+
+Miner updates:
+- NBMiner-v39.2
+
+
 Changelog NemosMiner 3.9.9.66 28.08.2021
 ========================================
 

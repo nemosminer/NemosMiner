@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash External.ps1
-Version:        3.9.9.66
-Version date:   28 August 2021
+Version:        3.9.9.67
+Version date:   02 September 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -46,7 +46,7 @@ Function Get-NiceHashRequest {
         [String]$Secret = ""
     )
 
-    $Uuid = [string]([guid]::NewGuid())
+    $Uuid = [String]([guid]::NewGuid())
     $Timestamp = ([DateTimeOffset](Get-Date).ToUniversalTime()).ToUnixTimeMilliseconds()
 
     $Str = "$Key`0$Timestamp`0$Uuid`0`0$Organizationid`0`0$($Method.ToUpper())`0$Endpoint`0extendedResponse=true"

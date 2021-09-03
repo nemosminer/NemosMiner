@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        3.9.9.66
-Version date:   28 August 2021
+Version:        3.9.9.67
+Version date:   02 September 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -56,9 +56,20 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
 
-        $Price = (($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1))) + ($Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))))
+        $Price = $Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
 
-        If ($Algorithm_Norm -in @("VertHash")) {
+        $PoolRegions = $PoolConfig.Region
+
+        # Temp fix
+        If ($Current.host_list.split(";").count -eq 1) { $PoolRegions = @("N/A") }
+        Switch ($Algorithm_Norm) { 
+            "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
+            # Default    { $Port = $Current.algo_switch_port }
+        }
+
+        ForEach ($Region in $PoolRegions) { 
+            $Region_Norm = Get-Region $Region
+
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Current.symbol
@@ -66,38 +77,14 @@ If ($PoolConfig.UserName) {
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = [String]$Current.host
+                Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
                 Port                     = [UInt16]$Current.port
                 User                     = [String]$User
                 Pass                     = "x"
-                Region                   = [String]$Config.Region
-                SSL                      = [Bool]$false
+                Region                   = [String]$Region_Norm
+                SSL                      = [Boolean]$false
                 Fee                      = $Fee
                 EstimateFactor           = [Decimal]1
-            }
-        }
-        Else { 
-            If ($Algorithm_Norm -eq "Ethash") { $PoolRegions = $PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") } } # temp fix
-    
-            ForEach ($Region in $PoolRegions) { 
-                $Region_Norm = Get-Region $Region
-
-                [PSCustomObject]@{ 
-                    Algorithm                = [String]$Algorithm_Norm
-                    Currency                 = [String]$Current.symbol
-                    Price                    = [Double]$Price
-                    StablePrice              = [Double]$Stat.Week
-                    MarginOfError            = [Double]$Stat.Week_Fluctuation
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                    Port                     = [UInt16]$Current.port
-                    User                     = [String]$User
-                    Pass                     = "x"
-                    Region                   = [String]$Region_Norm
-                    SSL                      = [Bool]$false
-                    Fee                      = $Fee
-                    EstimateFactor           = [Decimal]1
-                }
             }
         }
     }

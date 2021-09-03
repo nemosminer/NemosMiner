@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPoolCoins.ps1
-Version:        3.9.9.66
-Version date:   28 August 2021
+Version:        3.9.9.67
+Version date:   02 September 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -70,7 +70,7 @@ If ($Config.Wallets) {
                 User                     = "$($Config.Wallets.$Currency).$($PoolConfig.WorkerName)"
                 Pass                     = "x"
                 Region                   = [String]$Region_Norm
-                SSL                      = [Bool]$false
+                SSL                      = [Boolean]$false
                 Fee                      = [Decimal]0
                 EstimateFactor           = [Decimal]$EstimateFactor
             }

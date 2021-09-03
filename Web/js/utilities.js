@@ -81,35 +81,31 @@ function formatTimeSince(value) {
   var value = (new Date).getTime() - (new Date(value)).getTime();
   var localtime = new Date().getTime();
   var lastupdated = '';
-  if (isNaN(value)) {
-    value = localtime - parseInt(kicked.replace("/Date(", "").replace(")/", ""));
-  }
-  seconds = value / 1000
+  if (isNaN(value)) value = localtime - parseInt(kicked.replace("/Date(", "").replace(")/", ""));
+
+  seconds = value / 1000;
+
+  interval = Math.floor(seconds / (24 * 3600));
+  if (interval > 1) lastupdated = lastupdated + interval.toString() + ' days ';
+  else if (interval == 1) lastupdated = lastupdated + interval.toString() + ' day ';
+
+  if (interval > 0) seconds = seconds - interval * (24 * 3600);
   interval = Math.floor(seconds / 3600);
-  if (interval > 1) {
-    lastupdated = lastupdated + interval.toString() + ' hours ';
-  } else if (interval == 1) {
-    lastupdated = lastupdated + interval.toString() + ' hour ';
-  }
-  if (interval > 0) seconds = seconds - interval * 3600
+  if (interval > 1) lastupdated = lastupdated + interval.toString() + ' hours ';
+  else if (interval == 1) lastupdated = lastupdated + interval.toString() + ' hour ';
+
+  if (interval > 0) seconds = seconds - interval * 3600;
   interval = Math.floor(seconds / 60);
-  if (interval > 1) {
-    lastupdated = lastupdated + interval.toString() + ' minutes ';
-  } else if (interval == 1) {
-    lastupdated = lastupdated + interval.toString() + ' minute ';
-  }
-  if (interval > 0) seconds = seconds - interval * 60
+  if (interval > 1) lastupdated = lastupdated + interval.toString() + ' minutes ';
+  else if (interval == 1) lastupdated = lastupdated + interval.toString() + ' minute ';
+
+  if (interval > 0) seconds = seconds - interval * 60;
   interval = parseInt(seconds % 60);
-  if (interval > 1) {
-    lastupdated = lastupdated + interval.toString() + ' seconds ';
-  } else if (interval == 1) {
-    lastupdated = lastupdated + interval.toString() + ' second ';
-  }
-  if (lastupdated == '') {
-    return 'just now';
-  } else {
-    return lastupdated + 'ago';
-  }
+  if (interval > 1) lastupdated = lastupdated + interval.toString() + ' seconds ';
+  else if (interval == 1) lastupdated = lastupdated + interval.toString() + ' second ';
+
+  if (lastupdated == '') return 'just now';
+  else return lastupdated.trim() + ' ago';
 }
 
 function formatHashRateValue(value) {
@@ -181,21 +177,18 @@ function formatArrayAsString(value) {
 function detailFormatter(index, row) {
   var html = [];
   $.each(row, function (key, value) {
-    if (typeof value === 'string') {
-      html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll("\\\\", "\\")}</p>`);
-    } else {
-      html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value)}</p>`);
-    }
+    if (typeof value === 'string') html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll("\\\\", "\\")}</p>`);
+    else html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value)}</p>`);
   });
   return html.join('');
 }
 
 function formatBytes(bytes) {
   if (bytes > 0) {
-    decimals = 2
-    var k = 1024,
-    dm = decimals || 2,
-    sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+    decimals = 2;
+    var k = 1024;
+    dm = decimals || 2;
+    sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
     i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }

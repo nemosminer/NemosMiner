@@ -15,15 +15,15 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2021-02-12.log</Title>
+      <Title>NemosMiner_2021-08-31.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
         <Width>1395</Width>
-        <Height>627</Height>
+        <Height>596</Height>
       </WindowSize>
       <WindowPosition>
-        <X>-8</X>
-        <Y>-31</Y>
+        <X>-11</X>
+        <Y>-45</Y>
       </WindowPosition>
       <ServiceName />
       <ServiceMachineName />
@@ -52,7 +52,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Reported worker status to monitoring server|Retrieved status for workers with ID</Keyword>
+          <Keyword>Reported worker status to monitoring server|Retrieved worker status from</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -191,12 +191,12 @@
       <Title>SwitchingLog.csv</Title>
       <WindowState>Minimized</WindowState>
       <WindowSize>
-        <Width>348</Width>
-        <Height>318</Height>
+        <Width>520</Width>
+        <Height>485</Height>
       </WindowSize>
       <WindowPosition>
-        <X>26</X>
-        <Y>26</Y>
+        <X>38</X>
+        <Y>38</Y>
       </WindowPosition>
       <ServiceName />
       <ServiceMachineName />
@@ -225,7 +225,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Reported worker status to monitoring server|Retrieved status for workers with ID</Keyword>
+          <Keyword>Reported worker status to monitoring server|Retrieved worker status from</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -364,12 +364,12 @@
       <Title>DailyEarnings.csv</Title>
       <WindowState>Minimized</WindowState>
       <WindowSize>
-        <Width>348</Width>
-        <Height>318</Height>
+        <Width>520</Width>
+        <Height>485</Height>
       </WindowSize>
       <WindowPosition>
-        <X>52</X>
-        <Y>52</Y>
+        <X>76</X>
+        <Y>76</Y>
       </WindowPosition>
       <ServiceName />
       <ServiceMachineName />
@@ -398,7 +398,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Reported worker status to monitoring server|Retrieved status for workers with ID</Keyword>
+          <Keyword>Reported worker status to monitoring server|Retrieved worker status from</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>

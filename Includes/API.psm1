@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.66
-Version date:   28 August 2021
+Version:        3.9.9.67
+Version date:   02 September 2021
 #>
 
 Function Start-APIServer { 
@@ -36,7 +36,7 @@ Function Start-APIServer {
         }
     }
 
-    $APIVersion = "0.3.9.24"
+    $APIVersion = "0.3.9.28"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -218,6 +218,20 @@ Function Start-APIServer {
                                 }
                             }
                             $Variables.RestartCycle = $true
+
+                            # Set operational values for text window
+                            $Variables.ShowAccuracy = $Config.ShowAccuracy
+                            $Variables.ShowAllMiners = $Config.ShowAllMiners
+                            $Variables.ShowEarning = $Config.ShowEarning
+                            $Variables.ShowEarningBias = $Config.ShowEarningBias
+                            $Variables.ShowMinerFee = $Config.ShowMinerFee
+                            $Variables.ShowPoolBalances = $Config.ShowPoolBalances
+                            $Variables.ShowPoolFee = $Config.ShowPoolFee
+                            $Variables.ShowPowerCost = $Config.ShowPowerCost
+                            $Variables.ShowPowerUsage = $Config.ShowPowerUsage
+                            $Variables.ShowProfit = $Config.ShowProfit
+                            $Variables.ShowProfitBias = $Config.ShowProfitBias
+
                             Write-Message -Level Verbose "Web GUI: Configuration applied." -Console
                             $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
                         }
@@ -249,29 +263,27 @@ Function Start-APIServer {
                     "/functions/mining/pause" { 
                         If ($Variables.MiningStatus -ne "Paused") { 
                             $Variables.NewMiningStatus = "Paused"
+                            $Data = "Mining is paused.`n$(If ($Variables.MiningStatus -ne "Running" -and $Config.RigMonitorPollInterval) { "Rig Monitor" } )$(If ($Variables.MiningStatus -ne "Running" -and $Config.RigMonitorPollInterval -and $Config.BalancesTrackerPollInterval) { " and " } )$( If ($Variables.MiningStatus -ne "Running" -and $Config.BalancesTrackerPollInterval) { "Balances Tracker" } )$(If ($Variables.MiningStatus -ne "Running" -and $Config.RigMonitorPollInterval -or $Config.BalancesTrackerPollInterval) { " running." } )"
                         }
                         $Variables.RestartCycle = $true
-                        $Data = "Mining is paused. BrainPlus and Balances Tracker running."
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
                     "/functions/mining/start" { 
                         If ($Variables.MiningStatus -ne "Running") { 
                             $Variables.NewMiningStatus = "Running"
+                            $Data = "Mining processes started.`n$(If ($Variables.RigMonitorRunspace) { "Rig Monitor" } )$(If ($Variables.RigMonitorRunspace -and $Variables.BalancesTrackerRunspace) { " and " } )$( If ($Variables.BalancesTrackerRunspace) { "Balances Tracker" } )$(If ($Variables.RigMonitorRunspace -or $Variables.BalancesTrackerRunspace) { " running." } )"
                         }
                         $Variables.RestartCycle = $true
-                        $Data = "Mining processes started."
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
                     "/functions/mining/stop" { 
                         If ($Variables.MiningStatus -ne "Stopped") { 
                             $Variables.NewMiningStatus = "Stopped"
+                            $Data = "NemosMiner is idle.`n$(If ($Variables.RigMonitorRunspace) { "Rig Monitor" } )$(If ($Variables.RigMonitorRunspace -and $Variables.BalancesTrackerRunspace) { " and " } )$( If ($Variables.BalancesTrackerRunspace) { "Balances Tracker" } )$(If ($Variables.RigMonitorRunspace -or $Variables.BalancesTrackerRunspace) { " stopped." } )"
                         }
                         $Variables.RestartCycle = $true
-                        $Data = "NemosMiner is idle.`n"
-                        If ($Variables.MiningStatus -eq "Running") { $Data += "`nMining stopped." }
-                        $Data += "`nStopped Balances Tracker and Brain jobs."
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
@@ -338,7 +350,7 @@ Function Start-APIServer {
                                     $ReasonToRemove = "Algorithm disabled (``-$($Algorithm)`` in $PoolName_Norm pool config)"
                                     $Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
                                         $_.Reason = @(($_.Reason -NE $ReasonToRemove) | Select-Object)
-                                        $_.Available = -not [Bool]$_.Reason.Count
+                                        $_.Available = -not [Boolean]$_.Reason.Count
                                     }
                                 }
 
@@ -369,8 +381,8 @@ Function Start-APIServer {
                                 [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
                                 If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
                                     If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
-                                        [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
-                                        [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
+                                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
                                     }
                                 }
                                 Start-Sleep -MilliSeconds 100
@@ -670,21 +682,22 @@ Function Start-APIServer {
                         Break
                     }
                     "/displayworkers" { 
+                        Receive-MonitoringData
                         $DisplayWorkers = [System.Collections.ArrayList]@(
                             $Variables.Workers | Select-Object @(
                                 @{ Name = "Worker"; Expression = { $_.worker } }, 
                                 @{ Name = "Status"; Expression = { $_.status } }, 
                                 @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
                                 @{ Name = "Version"; Expression = { $_.version } }, 
-                                @{ Name = "EstimatedEarning"; Expression = { [decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
-                                @{ Name = "EstimatedProfit"; Expression = { [decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                @{ Name = "EstimatedProfit"; Expression = { [Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
                                 @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
                                 @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
-                                @{ Name = "Pools"; Expression = { $_.data.pool -replace ',', '; ' -join '<br/>' } }, 
-                                @{ Name = "Algos"; Expression = { $_.data.algorithm -replace ',', '; ' -join '<br/>' } }, 
-                                @{ Name = "BenchmarkSpeeds"; Expression = { If ($_.data.EstimatedSpeed) { @($_.data | ForEach-Object { ($_.EstimatedSpeed -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join '; ' }) -join '<br/>' } Else { '' } } }, 
-                                @{ Name = "ActualSpeeds"; Expression = { If ($_.data.CurrentSpeed) { @($_.data | ForEach-Object { ($_.CurrentSpeed -split ',' | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join '; ' }) -join '<br/>' } Else { '' } } }
-                            ) | Sort-Object "Worker Name"
+                                @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace "Internal$", " (Internal)" -replace "External", " (External)" }) -join " & "}) -join "<br/>" } }, 
+                                @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
+                                @{ Name = "Live Hashrate"; Expression = { If ($_.data.CurrentSpeed) { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join "<br/>" } Else { "" } } }, 
+                                @{ Name = "Benchmark Hashrate"; Expression = { If ($_.data.EstimatedSpeed) { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join "<br/>" } Else { "" } } }
+                                ) | Sort-Object "Worker Name"
                         )
                         $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
                         Break

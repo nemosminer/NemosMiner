@@ -47,11 +47,11 @@
       <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
       <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage</th>
       <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
+      <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Live Hashrate</th>
       <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Hashrate</th>
-      <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Hashrate</th>
       <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
+      <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Live Hashrate</th>
       <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Hashrate</th>
-      <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Actual Hashrate</th>
       <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
       <th data-field="WarmupTimes" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-width=3>WarmupTimes</th>
       <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
@@ -62,7 +62,7 @@
   </thead>
 </table>
 
-<div id="balances">
+<div id="balances" style ="display:none">
   <h3 class="mt-4">Balances</h3>
 
   <div id="balanceboxes" class="card-deck"></div>

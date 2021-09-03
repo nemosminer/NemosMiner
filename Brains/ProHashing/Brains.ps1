@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        3.9.9.66
-version date:   28 August 2021
+version:        3.9.9.67
+version date:   02 September 2021
 #>
 
 Set-Location ($args[0])
@@ -203,7 +203,7 @@ While ($true) {
     ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Set-Content $TransferFile
 
     # Limit to only sample size + 10 minutes min history
-    $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes( - ($SampleSizeMinutes + 10)) }
+    $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinutes + 10)) }
 
     $MathObject = @()
     Start-Sleep ($Interval + $RetryInterval - (Get-Date).Second)

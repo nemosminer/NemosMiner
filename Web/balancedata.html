@@ -62,8 +62,8 @@
     height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
   });
 
+  // refresh once per pool balance update interval
   window.setInterval(function() { 
-    // refresh once per pool balance update interval
     $table.bootstrapTable("refresh");
   }, (parseInt(config.PoolBalancesUpdateInterval) * 1000 * 60));
 

@@ -95,27 +95,24 @@
               case "Running": 
                 document.getElementById('miningstart').disabled = true;
                 document.getElementById('miningstart').title = "Mining processes are already running.";
-                document.getElementById('miningpause').innerHTML = "Pause mining";
                 document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningpause').title = "Pause all mining processes. BrainPlus and Balances tracker remain running.";
+                document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
                 document.getElementById('miningstop').disabled = false;
-                document.getElementById('miningstop').title = "Stop all mining processes. BrainPlus and Balances tracker will also stop.";
+                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
                 break;
               case "Paused":
                 document.getElementById('miningstart').disabled = false;
                 document.getElementById('miningstart').title ="Start the mining process.";
-                document.getElementById('miningpause').innerHTML = "Pause mining";
                 document.getElementById('miningpause').disabled = true;
-                document.getElementById('miningpause').title = "Mining processes are stopped. BrainPlus and Balances tracker are running.";
+                document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
                 document.getElementById('miningstop').disabled = false;
-                document.getElementById('miningstop').title = "Stop all mining processes. BrainPlus and Balances tracker will also stop.";
+                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
                 break;
               case "Stopped":
                 document.getElementById('miningstart').disabled = false;
                 document.getElementById('miningstart').title ="Start the mining process.";
-                document.getElementById('miningpause').innerHTML = "Start BrainPlus and Balances tracker";
                 document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningpause').title = "Mining will not start.";
+                document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
                 document.getElementById('miningstop').disabled = true;
                 document.getElementById('miningstop').title = "All mining processes are already stopped.";
                 break;

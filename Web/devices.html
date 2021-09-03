@@ -240,33 +240,19 @@
     // that is easier to display and manipulate in a table
     $.each(data, function(index, item) {
       // Format the device(s)
-      if (item.OpenCL) {
-        item.tMemory = formatBytes(item.OpenCL.GlobalMemSize)
-      } else {
-        item.tMemory = 'N/A'
-      }
+      if (item.OpenCL) item.tMemory = formatBytes(item.OpenCL.GlobalMemSize);
+      else item.tMemory = 'N/A';
 
-      if (item.OpenCL) {
-        item.tClockSpeed = item.OpenCL.MaxClockFrequency
-      } else if (item.CIM) {
-        item.tClockSpeed = item.CIM.MaxClockSpeed
-      } else {
-        item.tClockSpeed = 'N/A'
-      }
+      if (item.OpenCL) item.tClockSpeed = item.OpenCL.MaxClockFrequency;
+      else if (item.CIM) item.tClockSpeed = item.CIM.MaxClockSpeed;
+      else item.tClockSpeed = 'N/A';
 
-      if (item.OpenCL) {
-        item.tDriverVersion = item.OpenCL.DriverVersion
-      } else {
-        item.tDriverVersion = 'N/A'
-      }
+      if (item.OpenCL) item.tDriverVersion = item.OpenCL.DriverVersion;
+      else item.tDriverVersion = 'N/A';
 
-      if (item.OpenCL) {
-        item.tCores = item.OpenCL.MaxComputeUnits
-      } else if (item.CIM) {
-        item.tCores = item.CIM.NumberOfLogicalProcessors
-      } else {
-        item.tCores = 'N/A'
-      }
+      if (item.OpenCL) item.tCores = item.OpenCL.MaxComputeUnits;
+      else if (item.CIM) item.tCores = item.CIM.NumberOfLogicalProcessors;
+      else item.tCores = 'N/A';
 
       // Format device state
       const enumstatus = ["Enabled", "Disabled", "Unsupported"];
