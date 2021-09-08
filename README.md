@@ -227,7 +227,7 @@ running multiple cards its recommended to increase Virtual Memory 64gb is optima
 
 [recommended/optimal Windows Nvidia driver 471.41](https://us.download.nvidia.com/Windows/471.41/471.41-desktop-win10-64bit-international-dch-whql.exe)
 
-[recommended/optimal Windows 10 AMD GPU Driver 21.8.2](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.8.2-win10-64bit-aug25.exe)
+[recommended/optimal Windows 10 AMD GPU Driver 21.8.2](https://www.techspot.com/drivers/downloadnow/17832/?evp=1442951cf35848972768a80fbc413e47&file=23680)
 
    NemosMiner is currently tested on the following Rigs: 
 
