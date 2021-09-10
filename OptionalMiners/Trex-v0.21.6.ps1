@@ -67,7 +67,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                     # From now on the username (-u) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                     If ($Pools.($_.Algorithm).DAGsize -gt 0 -and ($Pools.($_.Algorithm).User -split "\.").Count -eq 2) { 
-                        $User = " --user $($Pools.($_.Algorithm).User) --worker $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 1)"
+                        $User = " --user $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 0) --worker $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 1)"
                     }
                     Else { 
                         $User = " --user $($Pools.($_.Algorithm).User)"
@@ -90,7 +90,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         URI             = $Uri
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
-                        WarmupTimes     = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
+                        WarmupTimes     = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }

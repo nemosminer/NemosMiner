@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Nheq.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 using module ..\Include.psm1
@@ -42,21 +42,14 @@ class Nheq : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $Shares = [PSCustomObject]@{ }
-
         $HashRate_Name = [String]$this.Algorithm[0]
         $HashRate_Value = [Double]($Data.result.speed_ips | Measure-Object -Sum).Sum
-
-        $Shares_Accepted = [Int64]0
-        $Shares_Rejected = [Int64]0
-
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-        If ($this.AllowedBadShareRatio) { 
-            $Shares_Accepted = [Int64]($Data.result.accepted_per_minute | Measure-Object -Sum).Sum
-            $Shares_Rejected = [Int64]($Data.result.rejected_per_minute | Measure-Object -Sum).Sum
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
-        }
+        $Shares = [PSCustomObject]@{ }
+        $Shares_Accepted = [Int64]($Data.result.accepted_per_minute | Measure-Object -Sum).Sum
+        $Shares_Rejected = [Int64]($Data.result.rejected_per_minute | Measure-Object -Sum).Sum
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()

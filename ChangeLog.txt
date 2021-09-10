@@ -6,6 +6,25 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 3.9.9.68 10.09.2021
+========================================
+
+Enhancements:
+- Core: Added config parameter 'IgnoreRejectedShares'
+- Core: Merged config items 'AutoStart' and 'StartPaused' to 'StartupMode'
+- Core: Improve LogViewer (Snaketail) start
+- Core / Miner APIs: Cleanup code
+
+Fixes:
+- PhoenixMiner: Ethash on Nvida using wrong parameters (-coin ETC) causing high number of invalid shares
+- Core: Config item 'ExcludeMinerName' not excluding miner if excluded miner name included version
+- Core / Regions.json: 'Europe West' was not resolved
+- Web GUI / Rig Monitor: Endless loop retrieving worker status (regression of 3.9.9.67)
+
+Miner updates:
+- NanoMiner-v3.3.9
+
+
 Changelog NemosMiner 3.9.9.67 02.09.2021
 ========================================
 

@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        3.9.9.67
-version date:   02 September 2021
+version:        3.9.9.68
+version date:   10 September 2021
 #>
 
 Set-Location ($args[0])

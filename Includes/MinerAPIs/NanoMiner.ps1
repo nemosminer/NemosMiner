@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 using module ..\Include.psm1
@@ -57,24 +57,20 @@ class NanoMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $Shares = [PSCustomObject]@{ }
-
         $HashRate_Name = $this.Algorithm[0]
         $HashRate_Value = [Double]0
 
+        $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
         $Data.Algorithms | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name } | Select-Object -Unique | ForEach-Object { 
             $HashRate_Value = [Double]($Data.Algorithms.$_.Total.Hashrate | Measure-Object -Sum).Sum
-
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            If ($this.AllowedBadShareRatio) { 
-                $Shares_Accepted = [Int64]($Data.Algorithms.$_.Total.Accepted | Measure-Object -Sum).Sum
-                $Shares_Rejected = [Int64]($Data.Algorithms.$_.Total.Denied | Measure-Object -Sum).Sum
-                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
-            }
+            $Shares_Accepted = [Int64]($Data.Algorithms.$_.Total.Accepted | Measure-Object -Sum).Sum
+            $Shares_Rejected = [Int64]($Data.Algorithms.$_.Total.Denied | Measure-Object -Sum).Sum
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
         If ($this.ReadPowerUsage) { 

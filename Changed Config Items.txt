@@ -69,6 +69,9 @@ New Config Items
 # If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
   "IgnorePowerCost": false,
 
+# If true, NM will ignore rejected shares when measuring hashrates
+  "IgnoreRejectedShares": true, 
+
 # If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
   "IncludeLegacyMiners": true,
 
@@ -112,7 +115,6 @@ New Config Items
 
 # 0: Use best miner per algorithm and device only; 1: Use optimal miners (more than one per algorithm and device); 2: Use all miners per algorithm and device;
   "MinerSet": 1,
-    [Parameter(Mandatory = $false)]
 
 # Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
   "MinerWindowStyle": = "minimized",
@@ -208,6 +210,9 @@ New Config Items
 
 # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
    "SnakeTailExe": ".\Utils\SnakeTail.exe",
+
+# One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
+  "StartupMode": false,
 
 # Current pool prices must all be all with 'SyncWindow' minutes, otherwise stable price will be used insted of the biased value and a warning will be shown
   "SyncWindow": 5,

@@ -13,9 +13,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.025; MinMemGB = 7.8; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo C29D" } # TeamRed-v0.8.4 is fastest, keep enabled because TeamRed does not support algo on Navi
+    [PSCustomObject]@{ Algorithm = "CuckarooD29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo C29D" } # TeamRed-v0.8.5 is fastest, keep enabled because TeamRed does not support algo on Navi
     [PSCustomObject]@{ Algorithm = "CuckarooM29";   Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.02;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo C31" } # TeamRed-v0.8.4 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";    Type = "AMD"; Fee = 0.02;  MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo C31" } # TeamRed-v0.8.5 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckatoo32";    Type = "AMD"; Fee = 0.02;  MinMemGB = 4.0; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C32" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(20, 20); Arguments = " --coin AUTO144_5" } # GMiner-v2.66 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = "Equihash1927";  Type = "AMD"; Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --coin AUTO192_7" } # GMiner-v2.66 is fastest, but des not support Navi
@@ -85,7 +85,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         Port            = $MinerAPIPort
                         URI             = $Uri
                         Fee             = $_.Fee
-                        WarmupTimes     = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
+                        WarmupTimes     = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }

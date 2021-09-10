@@ -3,6 +3,7 @@
   "Asia":  ["Asia", "USA East", "Europe East", "Europe West", "USA West"],
   "aspac":  [ "Asia", "USA East", "Europe East", "Europe West", "USA West"],
   "eu":  ["Europe West", "Europe East", "USA West", "USA East", "Asia"],
+  "Europe East":  ["Europe East", "Europe West", "Asia", "USA East", "USA West"],
   "Europe West":  ["Europe West", "Europe East", "USA West", "USA East", "Asia"],
   "eu-east":  ["Europe East", "Europe West", "USA West", "USA East", "Asia"],
   "eu-west":  ["Europe West", "Europe East", "USA West", "USA East", "Asia"],

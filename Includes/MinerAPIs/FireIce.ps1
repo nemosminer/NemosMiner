@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 using module ..\Include.psm1
@@ -48,7 +48,7 @@ class Fireice : Miner {
                 }
 
                 #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
-                $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $(If ($this.DeviceName -like "CPU#*") { -2 } Else { -1 }) -EnvBlock $this.Environment
+                $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
                 If ($this.Process) { 
                     $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
@@ -109,23 +109,16 @@ class Fireice : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $Shares = [PSCustomObject]@{ }
-
         $HashRate_Name = [String]$this.Algorithm[0]
         $HashRate_Value = [Double]$Data.hashrate.total[0]
         If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.hashrate.total[1] } #fix
         If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.hashrate.total[2] } #fix
-
-        $Shares_Accepted = [Int64]0
-        $Shares_Rejected = [Int64]0
-
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-        If ($this.AllowedBadShareRatio) { 
-            $Shares_Accepted = [Int64]$Data.results.shares_good
-            $Shares_Rejected = [Int64]($Data.results.shares_total - $Data.results.shares_good)
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
-        }
+        $Shares = [PSCustomObject]@{ }
+        $Shares_Accepted = [Int64]$Data.results.shares_good
+        $Shares_Rejected = [Int64]($Data.results.shares_total - $Data.results.shares_good)
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()

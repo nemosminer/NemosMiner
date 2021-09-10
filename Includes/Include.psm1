@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 # Window handling
@@ -223,7 +223,7 @@ Class Miner {
     [DateTime]$EndTime
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
 
-    [Double]$AllowedBadShareRatio = 0
+    [String]$API
     [String]$MinerUri
     [String]$LogFile
 
@@ -244,13 +244,29 @@ Class Miner {
     }
 
     hidden StartDataReader() { 
+        $ScriptBlock = { 
+            $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+            Try { 
+                    # Load miner API file
+                . ".\Includes\MinerAPIs\$($args[0]).ps1"
+                $Miner = ($args[1] | ConvertFrom-Json) -as $args[0]
+                While ($true) { 
+                    $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
+                    $Miner.GetMinerData()
+                    While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 100 }
+                }
+            }
+            Catch { 
+                Return $Error[0]
+            }
+        }
         # Start Miner data reader
-        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -ThrottleLimit 99 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -Name "$($this.Name)_DataReader" -ScriptBlock { .\Includes\GetMinerData.ps1 $args[0] $args[1] } -ArgumentList ([String]$this.GetType().Name), ($this | Select-Object -Property Algorithm, AllowedBadShareRatio, DataCollectInterval, Devices, Path, Port, ReadPowerUsage | ConvertTo-Json -WarningAction Ignore) }
+        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -ThrottleLimit 99 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithm, DataCollectInterval, Devices, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
     }
 
     hidden StopDataReader() { 
         # Stop Miner data reader
-        Get-Job | Where-Object Name -EQ "$($this.Name)_DataReader" | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
+        $this.DataReaderJob | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
     }
 
     hidden RestartDataReader() { 
@@ -269,7 +285,7 @@ Class Miner {
         $this.Intervals = @()
 
         $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-        Write-Message "Starting miner '$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}'..."
+        Write-Message "Starting miner '$($this.Info)'..."
 
         If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
@@ -286,7 +302,7 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -594,7 +610,7 @@ Function Start-BrainJob {
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
             $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = Start-ThreadJob -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
+                $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
                 $JobNames += $_
             }
         }
@@ -1699,7 +1715,7 @@ Function Get-ChildItemContent {
     }
 
     If ($Threaded) { 
-        Return (Start-ThreadJob -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority)
+        Return (Start-ThreadJob -Name "Get-ChildItemContent_$($Path -Replace '\.\\|\.\*' -Replace '\\', '_')"  -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority)
     }
     Else { 
         Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
@@ -2306,10 +2322,12 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
         [Parameter(Mandatory = $false)]
+        [String]$JobName,
+        [Parameter(Mandatory = $false)]
         [String]$LogFile
     )
 
-    $Job = Start-ThreadJob -ThrottleLimit 99 -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
+    $Job = Start-ThreadJob -Name $JobName -ThrottleLimit 99 -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
         Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $ControllerProcessID)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
@@ -2394,15 +2412,9 @@ public static class Kernel32
         $ControllerProcess.Handle | Out-Null
         $Process.Handle | Out-Null
 
-        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(100)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
-
-    Do { Start-Sleep -Milliseconds 50; $JobOutput = Receive-Job $Job }
-    While ($null -eq $JobOutput)
-
-    $Process = Get-Process | Where-Object Id -EQ $JobOutput.ProcessId
-    If ($Process) { $Process.PriorityClass = $PriorityNames.$Priority }
 
     Return $Job
 }
@@ -2700,10 +2712,7 @@ Function Initialize-Autoupdate {
     }
 
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-    If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
-        "Restarting SnakeTail..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        & "$($Variables.SnakeTailExe)" $Variables.SnakeTailConfig
-    }
+    Start-LogReader
 
     # Post update actions
     If (Test-Path  -Path ".\OptionalMiners" -PathType Container) { 
@@ -2764,7 +2773,9 @@ Function Initialize-Autoupdate {
         }
     }
 
-    ((Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json -AsHashtable) | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force | ConvertTo-Json | Out-File ".\Version.txt"
+    $VersionTable = (Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json -AsHashtable
+    $VersionTable | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force
+    $VersionTable | ConvertTo-Json | Out-File ".\Version.txt"
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
@@ -2779,6 +2790,24 @@ Function Initialize-Autoupdate {
     }
 }
 
+Function Start-LogReader {
+    If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
+        $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
+        $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
+        If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
+            # Activate existing Snaketail window
+            $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+            If (@($SnaketailMainWindowHandle).Count -eq 1) { 
+                [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 6) # HIDE 
+                [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # SHOWNOACTIVATE 
+            }
+        }
+        Else { 
+            [Void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail")
+        }
+    }
+}
+
 Function Update-ConfigFile {
 
     Param(
@@ -2790,6 +2819,15 @@ Function Update-ConfigFile {
     $Config.GetEnumerator().Name | ForEach-Object { 
         Switch ($_) { 
             "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+            "AutoStart" { 
+                If ($Config.$_ -eq $true) { 
+                    If ($Config.StartPaused -eq $true) { $Config.StartupMode = "Paused" }
+                    Else { $Config.StartupMode = "Running" }
+                }
+                Else { $Config.StartupMode = "Idle" }
+                $Config.Remove($_)
+                $Config.Remove("StartPaused")
+            }
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }

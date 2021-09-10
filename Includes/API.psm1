@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 Function Start-APIServer { 
@@ -416,7 +416,7 @@ Function Start-APIServer {
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Pools) { 
-                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Pools = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
                             $Pools | Sort-Object Name | ForEach-Object { 
                                 If ($_.Name -like "*Coins") { 
                                     $StatName = "$($_.Name)_$($_.Algorithm)-$($_.Currency)"
@@ -440,7 +440,7 @@ Function Start-APIServer {
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
-                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                 If ($_.Status -EQ [MinerStatus]::Running) { 
                                     $Variables.EndLoopTime = Get-Date # End loop immediately
@@ -475,7 +475,7 @@ Function Start-APIServer {
                             Break
                         }
                         If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
-                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                 If ($_.Status -EQ [MinerStatus]::Running) { 
                                     $_.Data = @()
@@ -523,7 +523,7 @@ Function Start-APIServer {
                     }
                     "/functions/stat/set" { 
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $null -ne $Parameters.Value) { 
-                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @(($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue) | Select-Object) -Property Name, Algorithm
+                            $Miners = Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm
                             $Miners | Sort-Object Name, Algorithm | ForEach-Object {
                                 $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $Parameters.Value
                                 $_.Speed = [Double]::Nan

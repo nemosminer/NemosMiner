@@ -55,7 +55,7 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
                     Port        = $MinerAPIPort
                     URI         = $Uri
                     MinerUri    = "http://localhost:$($MinerAPIPort)"
-                    WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates, second value: extra time (in seconds) until miner must send first valid sample
+                    WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                 }
             }
         }

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LogFile.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 using module ..\Include.psm1
@@ -36,7 +36,6 @@ class NoAPI : Miner {
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
         $HashRate = [PSCustomObject]@{ }
-
         $HashRate_Name = $this.Algorithm | Select-Object -Last 1
         $HashRate | Add-Member @{ $HashRate_Name = $HashRate_Value }
 

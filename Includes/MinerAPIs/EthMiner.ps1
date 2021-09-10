@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 using module ..\Include.psm1
@@ -43,8 +43,6 @@ class EthMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $Shares = [PSCustomObject]@{ }
-
         $HashRate_Name = [String]($this.Algorithm[0])
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
         If ($Data.result[0] -notmatch "^TT-Miner") { 
@@ -55,35 +53,22 @@ class EthMiner : Miner {
         }
         If ($HashRate_Name -eq "NeoScrypt")           { $HashRate_Value *= 1000 }
         ElseIf ($HashRate_Name -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
-
-        $Shares_Accepted = [Int64]0
-        $Shares_Rejected = [Int64]0
-
-        If ($this.AllowedBadShareRatio) { 
-            $Shares_Accepted = [Int64]($Data.result[2] -split ";")[1]
-            $Shares_Rejected = [Int64]($Data.result[2] -split ";")[2]
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
-        }
-
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-        If ($this.Algorithm -ne $HashRate_Name) { # Dual algo mining
+        $Shares = [PSCustomObject]@{ }
+        $Shares_Accepted = [Int64]($Data.result[2] -split ";")[1]
+        $Shares_Rejected = [Int64]($Data.result[2] -split ";")[2]
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
+        If ($HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)) { # Dual algo mining
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
-
             If ($this.Algorithm -eq "Blake2s") { $HashRate_Value *= 1000 }
             If ($this.Algorithm -eq "Keccak") { $HashRate_Value *= 1000 }
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            If ($this.AllowedBadShareRatio) { 
-                $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
-                $Shares_Rejected = [Int64]($Data.result[4] -split ";")[2]
-                $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
-            }
-
-            If ($HashRate_Name) { 
-                $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-            }
+            $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
+            $Shares_Rejected = [Int64]($Data.result[4] -split ";")[2]
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
         If ($this.ReadPowerUsage) { 

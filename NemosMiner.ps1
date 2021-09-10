@@ -20,8 +20,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.67
-Version date:   02 September 2021
+Version:        3.9.9.68
+Version date:   10 September 2021
 #>
 
 [CmdletBinding()]
@@ -30,8 +30,6 @@ param(
     [String[]]$Algorithm = @(), # i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)]
     [Double]$AllowedBadShareRatio = 0.1, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
-    [Parameter(Mandatory = $false)]
-    [Switch]$AutoStart = $false, # If true NemosMiner will start mining automatically
     [Parameter(Mandatory = $false)] 
     [String]$APILogfile = "", # API will log all requests to this file, to disable leave empty
     [Parameter(Mandatory = $false)]
@@ -39,7 +37,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
-    [Boolean]$BalancesKeepAlive = $true, # If true Nemosminer will force mining at a pool to protect your eranings (some pools auto-purge the wallet after longer periods of inactivity, see '\Includes\PoolData.Json' BalancesKeepAlive properties)
+    [Boolean]$BalancesKeepAlive = $true, # If true Nemosminer will force mining at a pool to protect your eranings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
     [Parameter(Mandatory = $false)]
     [String[]]$BalancesTrackerIgnorePool, # Balances tracker will not track these pools
     [Parameter(Mandatory = $false)]
@@ -57,19 +55,19 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 0, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableDualAlgoMining = $false, # If true NemosMiner will not use any dual algo miners
+    [Switch]$DisableDualAlgoMining = $false, # If true NemosMiner will not use any dual algorithm miners
     [Parameter(Mandatory = $false)]
     [Switch]$DisableMinerFee = $false, # Set to true to disable miner fees (Note: not all miners support turning off their built in fees, others will reduce the hashrate)
     [Parameter(Mandatory = $false)]
     [Switch]$DisableMinersWithFee = $false, # Set to true to disable all miners which contain fees
     [Parameter(Mandatory = $false)]
-    [Switch]$DisableSingleAlgoMining = $false, # If true NemosMiner will not use any single algo miners
+    [Switch]$DisableSingleAlgoMining = $false, # If true NemosMiner will not use any single algorithm miners
     [Parameter(Mandatory = $false)]
     [Int]$Donate = 13, # Minutes per Day
     [Parameter(Mandatory = $false)]
     [Double]$EarningsAdjustmentFactor = 1, # Default factor with which NemosMiner multiplies the prices reported by ALL pools. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
-    [Switch]$EstimateCorrection = $false, # If true NemosMiner will multiply the algo price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+    [Switch]$EstimateCorrection = $false, # If true NemosMiner will multiply the algorithm price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), # Array of disabled devices, e.g. @("CPU# 00", "GPU# 02");  by default all devices are enabled
     [Parameter(Mandatory = $false)]
@@ -88,6 +86,8 @@ param(
     [Switch]$IgnorePoolFee = $false, # If true NM will ignore pool fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
     [Switch]$IgnorePowerCost = $false, # If true NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
+    [Parameter(Mandatory = $false)]
+    [Boolean]$IgnoreRejectedShares = $true, # If true NM will ignore rejected shares when measuring hashrates
     [Parameter(Mandatory = $false)]
     [Switch]$IncludeOptionalMiners = $true, # If true use the miners in the 'OptionalMiners' directory
     [Parameter(Mandatory = $false)]
@@ -108,7 +108,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$MinDataSamples = 20, # Minimum number of hash rate samples required to store hash rate
     [Parameter(Mandatory = $false)]
-    [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, # Per algo multiply MinDataSamples by this value
+    [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X25r" = 3 }, # Per algorithm multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
     [Switch]$MinerInstancePerDeviceModel = $true, # If true NemosMiner will create separate miner instances per device model. This will increase profitability. 
     [Parameter(Mandatory = $false)]
@@ -124,9 +124,9 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$MiningPoolHubUserName = "Nemo", # MiningPoolHub UserName
     [Parameter(Mandatory = $false)]
-    [Int]$MinInterval = 0, # Minimum number of full cycles a miner must mine continously the same available algo@pool before switching is allowed (e.g. 3 would force a miner to stick mining algo@pool for min. 3 intervals before switching to another algo or pool)
+    [Int]$MinInterval = 0, # Minimum number of full cycles a miner must mine continously the same available algo@pool before switching is allowed (e.g. 3 would force a miner to stick mining algo@pool for min. 3 intervals before switching to another algorithm or pool)
     [Parameter(Mandatory = $false)]
-    [Int]$MinWorker = 10, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per-pool setting configurable in 'PoolsConfig.json'
+    [Int]$MinWorker = 10, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per pool setting configurable in 'PoolsConfig.json'
     [Parameter(Mandatory = $false)]
     [String]$MonitoringServer = "", # Monitoring server hostname, default "https://nemosminer.com"
     [Parameter(Mandatory = $false)]
@@ -206,7 +206,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
-    [Switch]$StartPaused = $false, # If true NemosMiner will start background jobs (Earnings Tracker etc.), but will not mine
+    [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
     [Parameter(Mandatory = $false)]
     [Int]$SyncWindow = 3, # Cycles. Pool prices must all be all have been collected within the last 'SyncWindow' cycles, otherwise the biased value of older poll price data will get reduced more the older the data is
     [Parameter(Mandatory = $false)]
@@ -218,7 +218,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$UIStyle = "Light", # Light or Full. Defines level of info displayed
     [Parameter(Mandatory = $false)]
-    [Double]$UnrealPoolPriceFactor = 1.5, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algo & currency
+    [Double]$UnrealPoolPriceFactor = 1.5, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algorithm & currency
     [Parameter(Mandatory = $false)]
     [Double]$UnrealMinerEarningFactor = 5, # Ignore miner if resulting profit is more than $Config.UnrealPoolPriceFactor higher than average price of all other miners with same algo
     [Parameter(Mandatory = $false)]
@@ -254,7 +254,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.67"
+    Version      = [System.Version]"3.9.9.68"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -343,6 +343,13 @@ Catch {
     Start-Sleep -Seconds 10
     Exit
 }
+# Verify donation data
+$Variables.Donation = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Donation) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
+}
 # Verify coin name data
 Try { [Void](Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
 Catch { 
@@ -354,7 +361,7 @@ Catch {
 Read-Config -ConfigFile $Variables.ConfigFile
 
 $AllCommandLineParameters | ForEach-Object { 
-    Remove-Variable $_ -ErrorAction SilentlyContinue
+    Remove-Variable $_ -ErrorAction Ignore
 }
 
 # Start transcript log
@@ -365,19 +372,7 @@ If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuratio
 Write-Host ""
 
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
-    $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
-    $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
-    If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
-        # Activate existing Snaketail window
-        $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-        If (@($SnaketailMainWindowHandle).Count -eq 1) { [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) } # SHOWNOACTIVATE 
-    }
-    Else { 
-        [Void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null)
-    }
-    Remove-Variable SnaketailProcess, SnaketailMainWindowHandle -ErrorAction Ignore
-}
+Start-LogReader
 
 #Prerequisites check
 Write-Message -Level Verbose "Verifying pre-requisites..." -Console
@@ -421,10 +416,10 @@ If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file '.\Cache\VertHash.dat'..."
-    $VertHashDatCheckJob = Start-ThreadJob -ScriptBlock { (Get-FileHash ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
+    $VertHashDatCheckJob = Start-ThreadJob -ThrottleLimit 99 -ScriptBlock { (Get-FileHash ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
 }
 
-Write-Message -Level Verbose "Loading device information..."
+Write-Message -Level Verbose "Loading miner device information..."
 $Variables.SupportedDeviceVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 $Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
@@ -464,6 +459,7 @@ $Variables.ShowProfit = $Config.ShowProfit
 $Variables.ShowProfitBias = $Config.ShowProfitBias
 
 If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
+If (-not $Variables.PoolsLastUsed) { $Variables.PoolsLastUsed = @{} }
 If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
 # Rename existing switching log
@@ -477,12 +473,6 @@ If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }    
 If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
 If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
 
-If ($Config.AutoStart) { 
-    $Variables.NewMiningStatus = If ($Config.StartPaused) { "Paused" } Else { "Running" }
-    # Trigger start mining in TimerUITick
-    $Variables.RestartCycle = $true
-}
-
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
     If ($VertHashDatCheckJob | Wait-Job -Timeout 60 |  Receive-Job -Wait -AutoRemoveJob) { 
         Write-Message -Level Verbose "VertHash data file integrity check: OK."
@@ -495,17 +485,16 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
 
 If ($Config.WebGUI -eq $true) { 
     Initialize-API
-    If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
-        # Activate existing Snaketail window
-        $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-        # Check if the window isn't already in foreground
-        If ([Win32]::GetForegroundWindow() -ne $SnaketailMainWindowHandle) { 
-            [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 6)
-            [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 9)
-        }
-        [Void][Win32]::SetForegroundWindow($SnaketailMainWindowHandle) 
-    }
-    Remove-Variable SnaketailProcess, SnaketailMainWindowHandle -ErrorAction Ignore
+    Start-LogReader
+}
+
+If ($Config.StartupMode -match "Paused|Running") { 
+    $Variables.NewMiningStatus = $Config.StartupMode
+    # Trigger start mining in TimerUITick
+    $Variables.RestartCycle = $true
+}
+Else { 
+    $Variables.NewMiningStatus = "Idle"
 }
 
 Function Get-Chart { 
@@ -930,10 +919,10 @@ Function Global:TimerUITick {
                 $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.Fastest -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 } )
                 $MinersDeviceGroup | Where-Object { 
                     $Variables.ShowAllMiners -or <#List all miners#>
-                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
-                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) -or <#Always list the better 50% miners per device group#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
-                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 <#List all miners when measuring power usage#>
+                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
+                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
+                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) <#Always list the better 50% miners per device group#>
                 } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } | 
                 Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -In $_.DeviceName).Model -join ', ')]" } } | Out-Host
 

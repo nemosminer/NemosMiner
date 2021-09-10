@@ -19,7 +19,7 @@
 
         <div title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
           <labelfor="WorkerName">Worker name</label>
-            <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
+          <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
         </div>
         <div style="line-height:100%;">
           <br>
@@ -40,8 +40,7 @@
         <div title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from Bitcoin wallet address &#10">
           <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
           <input type="text" id="NiceHashWallet" name="NiceHashWallet" maxlength=35 size=40>
-          <input class="title=" Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox"
-            id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
+          <input class="title=" Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
           <label title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" for="NiceHashWalletIsInternal">is internal</label>
         </div>
         <div title="Your NiceHash API Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash internal wallet" for="NiceHashAPIKey">
@@ -102,15 +101,13 @@
 
         <div title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable Algorithm&#10;Values must be sparated by commas&#10;&#10;If '+' is used, then only the explicitly enabled Algorithms are used&#10;If '-' is used, then all Algorithms are used except the disabled ones&#10;Leave empty to use ALL available Algorithms (not recommended as it may cause more switching)&#10;&#10;Do not combine '+' and '-' for the same Algorithm&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Algorithms
           <input type="text" id="Algorithm" name="Algorithm" size=64>
-          <button type="button" id="DefaultAlgorithm" name="DefaultAlgorithm"
-            title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
+          <button type="button" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
         </div>
         <div style="line-height:100%;">
           <br>
         </div>
 
-        <div title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600 [default 90] seconds)"
-          for="Interval">Cycle duration
+        <div title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600 [default 90] seconds)" for="Interval">Cycle duration
           <input type="number" id="Interval" name="Interval" min=30 max=3600 value=90> seconds
         </div>
         <div title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=0, max=10 [Default: 0] cycles)" for="MinInterval">
@@ -150,12 +147,13 @@
           <br>
         </div>
 
-        <div title="Initiate background processes and start mining when NemosMiner is launched">
-          <input type="checkbox" id="AutoStart" name="AutoStart"> Auto Start
-        </div>
-        <div title="Initiate background processes&#10;(Balances tracker & Mr. Plus Pool data requestor)&#10;but do not start mining">
-          <input type="checkbox" id="StartPaused" name="StartPaused" style="margin-left:20px"> Pause mining on Auto Start
-        </div>
+        <label for="StartupMode" title="Defines NemosMiner startup mode">NemosMiner starts in</label>
+        <select name="" id="StartupMode">
+          <option value="Idle" title="Initiate application, but do not start mining or run any background processes&#10;Same as pressing the 'Stop Mining' button.">Idle</option>
+          <option value="Paused" title="Initiate application and run background processes, but no start mining&#10;Same as pressing the 'Pause Mining' button.">Paused</option>
+          <option value="Running" title="Initiate application and start mining&#10;Same as pressing the 'Start Mining' button.">Running</option>
+        </select><label for="StartupMode" title="Defines NemosMiner startup mode"> mode</label>
+
         <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected&#10;(min=0, max=3600 [default=120] seconds)">
           <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when system is idle for
           <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> seconds
@@ -208,8 +206,7 @@
             <legend class=h6><b>Select one or more pools</b></legend>
             <div id="Pools"></div>
           </fieldset>
-          <button type="button" id="editpoolsconfig-button" name="editpoolsconfig-button"
-            title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
+          <button type="button" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
         </div>
         <div style="line-height:100%;">
           <br>
@@ -323,8 +320,7 @@
             <br>
           </div>
 
-          <div
-            title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
+          <div title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
             <input type="checkbox" id="UseMinerTweaks" name="UseMinerTweaks"> Enable Miner Tweaks (Admin rights required)
           </div>
           <div style="line-height:100%;">
@@ -436,6 +432,12 @@
           </div>
           <div title="Time (in seconds) the miner is allowed to warm up,&#10;e.g. to compile the binaries or to get the API ready, and providing&#10;data samples before it gets stopped and marked as failed&#10;&#10;Note: Some miner/algorithms will automatically extend this time&#10;(min=15, max=120 [Default: 15] seconds)" for="WarmupTimes">Miner warmup time until valid sample
             <input type="number" id="WarmupTimes" name="WarmupTimes" min=15 max=120 value=15 size=4> seconds
+          <div style="line-height:100%;">
+            <br>
+          </div>
+
+          <div title="NemosMiner will ignore rejected shares when measuring hashrates&#10;This will increase earnings accuracy">
+            <input type="checkbox" id="IgnoreRejectedShares" name="IgnoreRejectedShares"> Ignore rejected shares
           </div>
         </div>
       </td>
@@ -573,9 +575,9 @@
 
     if (config.OpenFirewallPorts) document.getElementById('OpenFirewallPorts').checked = true;
 
-    if (config.AutoStart) document.getElementById('AutoStart').checked = true;
-    else document.getElementById('StartPaused').disabled = true;
-    
+    if (config.StartupMode ==="Idle" || config.StartupMode ==="Paused" || config.StartupMode ==="Running") document.getElementById('StartupMode').value = config.StartupMode;
+    else document.getElementById('StartupMode').value = "Idle";
+
     if (config.MineWhenIdle) document.getElementById('MineWhenIdle').checked = true;
     else document.getElementById('IdleSec').disabled = true;
 
@@ -673,6 +675,8 @@
 
     document.getElementById('WarmupTimes').value = parseInt(config.WarmupTimes[1]);
 
+    if (config.IgnoreRejectedShares) document.getElementById('IgnoreRejectedShares').checked = true;
+
     document.getElementById('WorkerName').value = config.WorkerName.trim();
 
     document.getElementById('MiningPoolHubAPIKey').disabled = !(document.getElementById('pool-miningpoolhub').checked || (document.getElementById('pool-miningpoolhubcoins').checked));
@@ -692,7 +696,7 @@
     document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
 
     if (parseInt(document.getElementById('Donate').value) <= 0) {
-      $('.modal-title').html('Donation duration set to 0  &#128546');
+      $('.modal-title').html('Donation duration set to 0 minutes  &#128546');
       $('.modal-body').html('Please help support the great team behind NemosMiner by leaving mining donations turned on.&#10;&#10;Thank you!');
       $('#myModal').modal({ show: true });
     };
@@ -907,8 +911,9 @@
 
         config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
 
-        config.AutoStart = document.getElementById('AutoStart').checked;
-        config.StartPaused = document.getElementById('StartPaused').checked;
+        if (document.getElementById('StartupMode').value.match("Idle|Paused|Running")) config.StartupMode = document.getElementById('StartupMode').value;
+        else config.StartupMode = "Idle";
+
         config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
 
         config.MineWhenIdle = document.getElementById('MineWhenIdle').checked;
@@ -922,7 +927,6 @@
         config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
         config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
         config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
-
 
         $.each(config.Wallets, function (key, value) {
           config.Wallets[key] = document.getElementById('Wallet' + key).value.toString();
@@ -1003,6 +1007,8 @@
 
         config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
         config.WarmupTimes = [0, parseInt(document.getElementById('WarmupTimes').value)];
+
+        config.IgnoreRejectedShares = document.getElementById('IgnoreRejectedShares').checked;
 
         //Write current config
         var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
