@@ -279,8 +279,8 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/mining/stop" { 
-                        If ($Variables.MiningStatus -ne "Stopped") { 
-                            $Variables.NewMiningStatus = "Stopped"
+                        If ($Variables.MiningStatus -ne "Idle") { 
+                            $Variables.NewMiningStatus = "Idle"
                             $Data = "NemosMiner is idle.`n$(If ($Variables.RigMonitorRunspace) { "Rig Monitor" } )$(If ($Variables.RigMonitorRunspace -and $Variables.BalancesTrackerRunspace) { " and " } )$( If ($Variables.BalancesTrackerRunspace) { "Balances Tracker" } )$(If ($Variables.RigMonitorRunspace -or $Variables.BalancesTrackerRunspace) { " stopped." } )"
                         }
                         $Variables.RestartCycle = $true

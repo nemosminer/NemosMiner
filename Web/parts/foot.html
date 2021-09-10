@@ -28,6 +28,7 @@
         if (this.outerText) {
           $('.modal-title').text($('#miningpause').text());
           $('#myModal').modal({show:true});
+          updateHeader();
         };
       });
       document.getElementById('miningpause').disabled = true;
@@ -41,6 +42,7 @@
         if (this.outerText) {
           $('.modal-title').text($('#miningstart').text());
           $('#myModal').modal({show:true});
+          updateHeader();
         };
       });
       document.getElementById('miningpause').disabled = true;
@@ -54,6 +56,7 @@
         if (this.outerText) {
           $('.modal-title').text($('#miningstop').text());
           $('#myModal').modal({show:true});
+          updateHeader();
         };
       });
       document.getElementById('miningpause').disabled = true;

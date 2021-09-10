@@ -1123,7 +1123,7 @@ $ProgressPreference = "SilentlyContinue"
 
 If (Test-Path -Path ".\Includes\MinerAPIs" -PathType Container -ErrorAction Ignore) { Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName } }
 
-While ($true) { 
+While ($Variables.NewMiningStatus -eq "Running") { 
     Start-Cycle
 
     $Variables.EndLoop = $true
@@ -1137,7 +1137,7 @@ While ($true) {
     $Interval = ($RunningMiners.DataCollectInterval | Measure-Object -Minimum).Minimum
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
-    While ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners) {
+    While ($Variables.NewMiningStatus -eq "Running" -and ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners)) {
         $NextLoop = (Get-Date).AddSeconds($Interval)
         ForEach ($Miner in $RunningMiners) { 
             If ($GetMinerData) { 

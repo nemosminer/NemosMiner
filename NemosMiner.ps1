@@ -343,17 +343,15 @@ Catch {
     Start-Sleep -Seconds 10
     Exit
 }
+# Load PoolsLastUsed data
+Try { $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
+Catch { 
+    $Variables.PoolsLastUsed = @{ }
+}
 # Verify donation data
 $Variables.Donation = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Donation) { 
     Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download." -Console
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Verify coin name data
-Try { [Void](Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
-Catch { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -434,15 +432,17 @@ $Variables.DriverVersion = @{ }
 $Variables.DriverVersion | Add-Member AMD ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
 $Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
 $Variables.BrainJobs = @{ }
+$Variables.EndLoopTime = (Get-Date).AddSeconds($Config.Interval)
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 $Variables.Miners = [Miner[]]@()
-$Variables.MiningStatus = $Variables.NewMiningStatus = "Stopped"
+$Variables.NewMiningStatus = If ($Config.StartupMode -match "Paused|Running") { $Config.StartupMode } Else { "Idle" }
 $Variables.MyIP = (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress
 $Variables.Pools = [Pool[]]@()
-$Variables.PoolsLastUsed = @{}
+$Variables.RestartCycle = $true # To simulate first loop
 $Variables.ScriptStartTime = (Get-Date).ToUniversalTime()
 $Variables.StatStarts = @()
 $Variables.Strikes = 3
+$Variables.Timer = (Get-Date).ToUniversalTime()
 $Variables.WatchdogTimers = @()
 
 # Set operational values for text window
@@ -486,15 +486,6 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
 If ($Config.WebGUI -eq $true) { 
     Initialize-API
     Start-LogReader
-}
-
-If ($Config.StartupMode -match "Paused|Running") { 
-    $Variables.NewMiningStatus = $Config.StartupMode
-    # Trigger start mining in TimerUITick
-    $Variables.RestartCycle = $true
-}
-Else { 
-    $Variables.NewMiningStatus = "Idle"
 }
 
 Function Get-Chart { 
@@ -785,7 +776,7 @@ Function Global:TimerUITick {
             $ButtonStop.Enabled = $false
 
             Switch ($Variables.NewMiningStatus) { 
-                "Stopped" { 
+                "Idle" { 
                     Stop-Mining
                     Stop-BrainJob
                     Stop-IdleMining
@@ -797,7 +788,7 @@ Function Global:TimerUITick {
                     $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
-                    Write-Message -Level Info "$($Branding.ProductLabel) is stopped." -Console
+                    Write-Message -Level Info "$($Branding.ProductLabel) is idle." -Console
 
                     $ButtonPause.Enabled = $true
                     $ButtonStart.Enabled = $true
@@ -828,6 +819,9 @@ Function Global:TimerUITick {
                     Initialize-Application
                     If (-not $ReadBalances) { Start-BalancesTracker }
 
+                    $LabelMiningStatus.Text = "Running | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
+
                     $ButtonStop.Enabled = $true
                     $ButtonStart.Enabled = $false
                     $ButtonPause.Enabled = $true
@@ -836,7 +830,7 @@ Function Global:TimerUITick {
 
             $Variables.MiningStatus = $Variables.NewMiningStatus
 
-            Send-MonitoringData
+            If ($Variables.MiningStatus -ne "Idle") { Send-MonitoringData }
         }
         If ($Variables.NewMiningStatus -eq "Running") {
             Start-BrainJob
@@ -1502,7 +1496,7 @@ $ButtonPause.Add_Click(
 
 $ButtonStop.Add_Click(
     { 
-        $Variables.NewMiningStatus = "Stopped"
+        $Variables.NewMiningStatus = "Idle"
         $Variables.RestartCycle = $true
     }
 )

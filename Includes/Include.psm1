@@ -732,6 +732,7 @@ Function Start-Mining {
 
     If (-not $Variables.CoreRunspace) { 
 
+        $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
         $Variables.Pools = $null
         $Variables.Miners = $null
@@ -756,10 +757,8 @@ Function Start-Mining {
 
 Function Stop-Mining { 
 
-    ForEach ($Miner in ($Variables.Miners | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
-        Write-Message -Level Info "Stopping miner '$($Miner.Info)'..."
+    ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
         $Miner.StopMining()
-        $Miner.Best = $false
     }
     $Variables.WatchdogTimers = @()
     $Variables.Summary = ""

@@ -68,64 +68,63 @@
     });
 
     // set the values in the header
-    $(function() {
-      function updateHeader() {
-
-        // get BTC rate of first currency
-        $.ajax({
-          url: '/btc',
-          async: false,
-          success: function(result) {
-            rate = result;
-          }
-        });
-
-        // get page header info
-        $.ajax({
-          url: '/summary',
-          success: function(result) {
-            $("#summary").empty().append('<h5>' + result + '</h5>');
-          }
-        });
-
-        //Set mining button status
-        $.ajax({url: '/functions/mining/getstatus',
-          success: function(result) {
-            switch (result) {
-              case "Running": 
-                document.getElementById('miningstart').disabled = true;
-                document.getElementById('miningstart').title = "Mining processes are already running.";
-                document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
-                document.getElementById('miningstop').disabled = false;
-                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
-                break;
-              case "Paused":
-                document.getElementById('miningstart').disabled = false;
-                document.getElementById('miningstart').title ="Start the mining process.";
-                document.getElementById('miningpause').disabled = true;
-                document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
-                document.getElementById('miningstop').disabled = false;
-                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
-                break;
-              case "Stopped":
-                document.getElementById('miningstart').disabled = false;
-                document.getElementById('miningstart').title ="Start the mining process.";
-                document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
-                document.getElementById('miningstop').disabled = true;
-                document.getElementById('miningstop').title = "All mining processes are already stopped.";
-                break;
-            }
-          }
-        });
-      }
+    $(document).ready(function() {
       updateHeader();
-
       window.setInterval(function() { 
         updateHeader();
       }, 10000);
     });
+
+    function updateHeader() {
+      // get BTC rate of first currency
+      $.ajax({
+        url: '/btc',
+        async: false,
+        success: function(result) {
+          rate = result;
+        }
+      });
+
+      // get page header info
+      $.ajax({
+        url: '/summary',
+        success: function(result) {
+          $("#summary").empty().append('<h5>' + result + '</h5>');
+        }
+      });
+
+      //Set mining button status
+      $.ajax({url: '/functions/mining/getstatus',
+        success: function(result) {
+          switch (result) {
+            case "Running": 
+              document.getElementById('miningstart').disabled = true;
+              document.getElementById('miningstart').title = "Mining processes are already running.";
+              document.getElementById('miningpause').disabled = false;
+              document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
+              document.getElementById('miningstop').disabled = false;
+              document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case "Paused":
+              document.getElementById('miningstart').disabled = false;
+              document.getElementById('miningstart').title ="Start the mining process.";
+              document.getElementById('miningpause').disabled = true;
+              document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
+              document.getElementById('miningstop').disabled = false;
+              document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case "Idle":
+              document.getElementById('miningstart').disabled = false;
+              document.getElementById('miningstart').title ="Start the mining process.";
+              document.getElementById('miningpause').disabled = false;
+              document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
+              document.getElementById('miningstop').disabled = true;
+              document.getElementById('miningstop').title = "All mining processes are already stopped.";
+              break;
+          }
+        }
+      });
+    }
 
   </script>
   <!-- End of page scripts -->
