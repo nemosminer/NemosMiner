@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 public static class CpuID
 {
-    public static byte[] Invoke(nint level)
+    public static byte[] Invoke(int level)
     {
         IntPtr codePointer = IntPtr.Zero;
         try
@@ -60,7 +60,7 @@ public static class CpuID
     }
 
     [UnmanagedFunctionPointerAttribute(CallingConvention.Cdecl)]
-    private delegate void CpuIDDelegate(nint level, byte[] buffer);
+    private delegate void CpuIDDelegate(int level, byte[] buffer);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, AllocationType flAllocationType,
