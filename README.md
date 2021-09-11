@@ -244,7 +244,7 @@ Easy configuration, easy start:
 
 PowerShell Version 7.x is required:
 
-[Windows Powershell 7.1.4 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.4/PowerShell-7.1.4-win-x64.zip)
+[Windows Powershell 7.1.4 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.4/PowerShell-7.1.4-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 
