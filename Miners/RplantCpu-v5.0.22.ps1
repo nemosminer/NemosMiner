@@ -24,7 +24,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YescryptR32";   MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo yescryptr32" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Yespower";      MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo yespower" }
     [PSCustomObject]@{ Algorithm = "Yespower2b";    MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo power2b" }
-    [PSCustomObject]@{ Algorithm = "YespowerARWN";  MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo power2b" }
+    [PSCustomObject]@{ Algorithm = "YespowerARWN";  MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo yespowerarwn" }
     [PSCustomObject]@{ Algorithm = "YespowerIc";    MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo yespowerIC" }
     [PSCustomObject]@{ Algorithm = "YespowerIots";  MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo yespowerIOTS" }
     [PSCustomObject]@{ Algorithm = "YespowerItc";   MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo yespowerITC" }
