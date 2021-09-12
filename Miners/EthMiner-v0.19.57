@@ -7,6 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 # AMD miners may need https://github.com/ethereum-mining/ethminer/issues/2001
+# NVIDIA Enable Hardware-Accelerated GPU Scheduling
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Type = "AMD";    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = "--opencl-devices" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
