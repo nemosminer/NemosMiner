@@ -222,6 +222,9 @@ Function Start-Cycle {
         # Stop BrainJobs for deconfigured pools
         Stop-BrainJob @($Variables.BrainJobs.Keys | Where-Object { $_ -notin ($PoolNames -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")})
 
+        # Faster shutdown
+        If (-not $Variables.NewMiningStatus -eq "Idle") { Return }
+
         # Start Brain jobs (will pick up all newly added pools)
         Start-BrainJob
 
@@ -310,8 +313,8 @@ Function Start-Cycle {
             $Variables.UnprofitableAlgorithms = $null
         }
 
-        # Refresh stats
-        Get-Stat | Out-Null
+        # # Refresh stats
+        # Get-Stat | Out-Null
 
         # Load information about the pools
         If ($PoolNames -and (Test-Path -Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
@@ -337,6 +340,9 @@ Function Start-Cycle {
             Start-Sleep -Seconds 10
             Continue
         }
+
+        # Faster shutdown
+        If (-not $Variables.NewMiningStatus -eq "Idle") { Return }
 
         # Remove de-configured pools
         $Pools = @($Pools | Where-Object Name -in $PoolNames)
@@ -539,6 +545,9 @@ Function Start-Cycle {
     $Variables.Pools = $Pools
     Remove-Variable Pools
 
+    # Faster shutdown
+    If (-not $Variables.NewMiningStatus -eq "Idle") { Return }
+
     # Get new miners
     Write-Message -Level Verbose "Loading miners..."
     $Miners = $Variables.Miners
@@ -619,7 +628,7 @@ Function Start-Cycle {
             $Miner.Intervals = @($Miner.Intervals | Select-Object -Last ($Miner.MinDataSamples * 5)) # Only keep the last MinDataSamples * 5
             $Miner.Intervals += $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
 
-            ForEach ($Worker in $Miner.WorkersRunning) { 
+            ForEach ($Worker in $Miner.Workers) { 
                 $Algorithm = $Worker.Pool.Algorithm
                 $Stat_Name = "$($Miner.Name)_$($Algorithm)_HashRate"
                 # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
@@ -665,6 +674,9 @@ Function Start-Cycle {
         }
     }
     Remove-Variable Miner, Miner_Speeds, PowerUsage, Algorithm, CollectedHashRate, CollectPowerUsage -ErrorAction Ignore
+
+    # Faster shutdown
+    If (-not $Variables.NewMiningStatus -eq "Idle") { Return }
 
     # Retrieve collected miner objects
     $NewMiners = @(
@@ -762,6 +774,9 @@ Function Start-Cycle {
         $_.WarmupTimes[1] += $Config.WarmupTimes[1]
     }
     Remove-Variable Miner, NewMiners -ErrorAction Ignore
+
+    # Faster shutdown
+    If (-not $Variables.NewMiningStatus -eq "Idle") { Return }
 
     # Update data in API
     $Variables.Miners = $Miners
