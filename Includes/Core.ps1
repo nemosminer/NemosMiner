@@ -264,7 +264,7 @@ Function Start-Cycle {
                             If ($Config.PowerUsage.$_) { 
                                 If ($_ -in @($EnabledDevices.Name) -and -not $Hashtable.$_ ) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Will use configured value of $([Double]$Config.PowerUsage.$_) W." }
                                 $Hashtable.$_ = "$Config.PowerUsage.$_ W"
-                                ($Variables.Devices | Where-Object Name -EQ $_).ConfiguredPowerUsage = [Double]$Config.PowerUsage.$_
+                                If ($Variables.Devices | Where-Object Name -EQ $_) { ($Variables.Devices | Where-Object Name -EQ $_).ConfiguredPowerUsage = [Double]$Config.PowerUsage.$_ }
                             }
                         }
 
@@ -658,7 +658,6 @@ Function Start-Cycle {
                 # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
                 If (($Stat = Get-Stat $Stat_Name) -or $Miner.Activated -gt 0) {
                     If ([Double]::IsNaN($PowerUsage)) { $PowerUsage = 0 }
-                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                     If ($Stat.Updated -gt $Miner.StatStart) { 
                         Write-Message "Saved power usage ($($Stat_Name -replace '_PowerUsage$'): $($Stat.Live.ToString("N2"))W)$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                     }
@@ -667,6 +666,7 @@ Function Start-Cycle {
                         Write-Message -Level Warn "$($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
                     }
+                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
 
                 }
             }
@@ -988,7 +988,7 @@ Function Start-Cycle {
         If ($Variables.Summary -ne "") { $Variables.Summary += "<br>" }
 
         # Add currency conversion rates
-        @(@(If ($Config.UsemBTC -eq $true) { "mBTC" } Else { "BTC" }), @($Config.ExtraCurrencies)) | Select-Object -Unique | Where-Object { $Variables.Rates.$_.($Config.Currency) } | ForEach-Object { 
+        @(@(If ($Config.UsemBTC -eq $true) { "mBTC" } Else { "BTC" }) + @($Config.ExtraCurrencies)) | Select-Object -Unique | Where-Object { $Variables.Rates.$_.($Config.Currency) } | ForEach-Object { 
             $Variables.Summary += "1 $_ = {0:N} $($Config.Currency)&ensp;&ensp;&ensp;" -f $Variables.Rates.$_.($Config.Currency)
         }
     }
@@ -1016,11 +1016,17 @@ Function Start-Cycle {
     Remove-Variable CompareMiners, Miners -ErrorAction Ignore
 
     # Kill stray miners
+    $Loops = 0
     While ($StrayMiners = @(Get-CimInstance CIM_Process | Where-Object ExecutablePath | Where-Object { @($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { $Variables.Miners.ProcessID -notcontains $_.ProcessID } | Select-Object -ExpandProperty ProcessID)) { 
-        Start-Sleep -MilliSeconds 100
         $StrayMiners | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction Ignore }
+        Start-Sleep -MilliSeconds 100
+        $Loops ++
+        If ($Loops -gt 100) { 
+            Write-Message -Level Warn "Error stopping stray miner$(If($StrayMiners.Count -gt 1) { "s" }): $($StrayMiners.Name -join '; ')."
+            Return
+        }
     }
-    Remove-Variable StrayMiners
+    Remove-Variable Loops, StrayMiners
 
     If (-not ($Variables.Miners | Where-Object Available -EQ $true)) { 
         Write-Message -Level Warn "No miners available - retrying in 10 seconds..."
