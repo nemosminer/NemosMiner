@@ -894,14 +894,14 @@
         config.ProHashingMiningMode = document.getElementById('ProHashingMiningMode').value;
 
         config.Currency = document.getElementById('Currency').value.trim();
-        config.ExtraCurrencies = document.getElementById('ExtraCurrencies').value.split(',');
+        config.ExtraCurrencies = document.getElementById('ExtraCurrencies').value.replace(" ", "").split(',');
         config.UsemBTC = document.getElementById('UsemBTC').checked;
         config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
 
         config.Interval = parseInt(document.getElementById('Interval').value);
         config.MinInterval = parseInt(document.getElementById('MinInterval').value);
 
-        config.Algorithm = (document.getElementById('Algorithm').value).trim().split(',');
+        config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(',');
 
         config.Donate = parseInt(document.getElementById('Donate').value);
 
@@ -952,7 +952,7 @@
         config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
         config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
         config.MinerSet = parseInt(document.getElementById('MinerSet').value);
-        config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ").split(",");
+        config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
 
         if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";
         if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = "minimized";
