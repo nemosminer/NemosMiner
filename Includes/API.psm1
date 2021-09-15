@@ -22,21 +22,65 @@ Version:        3.9.9.68
 Version date:   10 September 2021
 #>
 
-Function Start-APIServer { 
+Function Initialize-API { 
 
-    If ($Variables.APIRunspace) { 
-        If ($Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
-            $Variables.APIRunspace.Close()
-            $Variables.APIRunspace.PowerShell.EndInvoke($Variables.APIRunspace.AsyncObject)
-            $Variables.APIRunspace.Dispose()
-            $Variables.Remove("APIRunspace")
-            $Variables.Remove("APIVersion")
-            Write-Message -Level Verbose "Restarting API." -Console
-            Start-Sleep -Seconds 2
-        }
+    If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true) { 
+        Stop-APIServer
+        $Variables.Remove("APIVersion")
     }
 
-    $APIVersion = "0.3.9.28"
+    If ($Config.APIPort) { 
+
+        # Initialize API & Web GUI
+        If ($Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
+
+            Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..."
+
+            $TCPClient = New-Object System.Net.Sockets.TCPClient
+            $AsyncResult = $TCPClient.BeginConnect("localhost", $Config.APIPort, $null, $null)
+            If ($AsyncResult.AsyncWaitHandle.WaitOne(100)) { 
+                Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort). Port is in use."
+                Try { $TCPClient.EndConnect($AsyncResult) = $null }
+                Catch { }
+            }
+            Else { 
+                # Start API server
+                Start-APIServer -Port $Config.APIPort
+
+                # Wait for API to get ready
+                $RetryCount = 3
+                While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
+                    Try {
+                        If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
+                            Write-Message -Level Info "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)." -Console
+                            # Start Web GUI (show config edit if no existing config)
+                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })" }
+                            Break
+                        }
+                    }
+                    Catch { }
+                    $RetryCount--
+                    Start-Sleep -Seconds 1
+                }
+                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." -Console }
+                Remove-Variable RetryCount
+            }
+            $TCPClient.Close()
+            Remove-Variable AsyncResult
+            Remove-Variable TCPClient
+        }
+    }
+}
+Function Start-APIServer { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Int]$Port
+    )
+
+    Stop-APIServer
+
+    $APIVersion = "0.3.9.30"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -49,8 +93,12 @@ Function Start-APIServer {
         }
         Catch { }
     }
-    $APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
-    $APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $Variables.APIRunspace = $APIRunspace
+    $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Port }
+
+    $Variables.APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
+    $Variables.APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+
     $PowerShell = [PowerShell]::Create()
     $PowerShell.Runspace = $APIRunspace
     $PowerShell.AddScript(
@@ -76,9 +124,10 @@ Function Start-APIServer {
 
             # Setup the listener
             $Server = New-Object System.Net.HttpListener
+            $Variables.APIRunspace | Add-Member -Force @{ APIServer = $Server }
 
             # Listening on anything other than localhost requires admin privileges
-            $Server.Prefixes.Add("http://localhost:$($Config.APIPort)/")
+            $Server.Prefixes.Add("http://localhost:$($Variables.APIRunspace.APIPort)/")
             $Server.Start()
 
             While ($Server.IsListening) { 
@@ -109,19 +158,7 @@ Function Start-APIServer {
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path) { 
                     "/functions/api/stop" { 
-                        If ($Variables.APIRunspace) { 
-                            Write-Message -Level Verbose "Web GUI: Stopping API." -Console
-                            $Variables.APIRunspace.APIPort = $null
-                            $Response.Headers.Add("Content-Type", $ContentType)
-                            $Response.StatusCode = $StatusCode
-                            $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
-                            $Response.ContentLength64 = $ResponseBuffer.Length
-                            $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
-                            $Response.Close()
-                            $Server.Stop()
-                            $Server.Close()
-                        }
-                        Break
+                        Stop-APIServer
                     }
                     "/functions/balancedata/remove" { 
                         If ($Parameters.Data) { 
@@ -638,6 +675,10 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BrainJobs | Select-Object)
                         Break
                     }
+                    "/coinnames" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.CoinNames | Select-Object)
+                        Break
+                    }
                     "/config" {
                         $Data = ConvertTo-Json -Depth 10 (Get-Content -Path $Variables.ConfigFile | ConvertFrom-Json -Depth 10 | Get-SortedObject)
                         If (-not ($Data | ConvertFrom-Json).ConfigFileVersion) { 
@@ -802,6 +843,14 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Name, Algorithm)
                         Break
                     }
+                    "/pools/lastearnings" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.PoolsLastEarnings)
+                        Break
+                    }
+                    "/pools/lastused" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.PoolsLastUsed)
+                        Break
+                    }
                     "/pools/unavailable" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Name, Algorithm)
                         Break
@@ -816,6 +865,10 @@ Function Start-APIServer {
                     }
                     "/regions" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Regions.PSObject.Properties.Value | Sort-Object -Unique)
+                        Break
+                    }
+                    "/regionsdata" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Regions)
                         Break
                     }
                     "/stats" { 
@@ -918,12 +971,21 @@ Function Start-APIServer {
     ) # End of $APIServer
     $AsyncObject = $PowerShell.BeginInvoke()
 
-    $Variables.APIRunspace = $APIRunspace
     $Variables.APIRunspace | Add-Member -Force @{ 
         PowerShell = $PowerShell
         AsyncObject = $AsyncObject
     }
-    If ($Variables.APIRunspace.AsyncObject.IsCompleted -ne $true) { 
-        $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Config.APIPort }
+}
+
+Function Stop-APIServer {
+    If ($Variables.APIRunspace) { 
+        If ($Variables.APIRunspace.APIServer) { 
+            If ($Variables.APIRunspace.APIServer.IsListening) { $Variables.APIRunspace.APIServer.Stop() }
+            $Variables.APIRunspace.APIServer.Close()
+        }
+        $Variables.APIRunspace.APIPort = $null
+        $Variables.APIRunspace.Close()
+        If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
+        $Variables.Remove("APIRunspace")
     }
 }

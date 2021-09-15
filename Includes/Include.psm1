@@ -861,64 +861,6 @@ Function Stop-RigMonitor {
     }
 }
 
-Function Initialize-API { 
-
-    If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true) { 
-        $Variables.Remove("APIVersion")
-    }
-
-    # Initialize API & Web GUI
-    If ($Config.APIPort -and ($Config.APIPort -ne $Variables.APIRunspace.APIPort)) { 
-        If ($Variables.APIRunspace) { 
-            $Variables.APIRunspace.Close()
-            If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
-            $Variables.Remove("APIRunspace")
-        }
-
-        If (Test-Path -Path .\Includes\API.psm1 -PathType Leaf) { 
-            $TCPClient = New-Object System.Net.Sockets.TCPClient
-            $AsyncResult = $TCPClient.BeginConnect("localhost", $Config.APIPort, $null, $null)
-            If ($AsyncResult.AsyncWaitHandle.WaitOne(100)) { 
-                Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort). Port is in use."
-                Try { $TCPClient.EndConnect($AsyncResult) = $null }
-                Catch { }
-            }
-            Else { 
-                Write-Message -Level Verbose "Initializing API & Web GUI on 'http://localhost:$($Config.APIPort)'..."
-
-                Import-Module .\Includes\API.psm1
-
-                # Required for stat management
-                Get-Stat | Out-Null
-
-                # Start API server
-                Start-APIServer -Port $Config.APIPort
-
-                # Wait for API to get ready
-                $RetryCount = 3
-                While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
-                    Try {
-                        If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
-                            Write-Message -Level Info "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)." -Console
-                            # Start Web GUI
-                            If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })" }
-                            Break
-                        }
-                    }
-                    Catch { }
-                    $RetryCount--
-                    Start-Sleep -Seconds 1
-                }
-                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." -Console }
-                Remove-Variable RetryCount
-            }
-            $TCPClient.Close()
-            Remove-Variable AsyncResult
-            Remove-Variable TCPClient
-        }
-    }
-}
-
 Function Initialize-Application { 
 
     # Keep only the last 10 files
@@ -1427,10 +1369,10 @@ Function Set-Stat {
             If ($Stat.ToleranceExceeded -eq $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "Saved hash rate ($($Name -replace '_HashRate$'): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "Saved power usage ($($Name -replace '_PowerUsage$'): $($Value.ToString("N2"))W). It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                 }
 
