@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.28.3/wildrig-multi-windows-0.28.3.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.29.0/wildrig-multi-windows-0.29.0.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
@@ -31,7 +31,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-pawelhash" }
-    [PSCustomObject]@{ Algorithm = "Phi";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo phi" }
+    [PSCustomObject]@{ Algorithm = "Phi";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo phi" }
     [PSCustomObject]@{ Algorithm = "Phi5";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo phi5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo polytimos" }
     [PSCustomObject]@{ Algorithm = "Sha256csm";   Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo sha256csm" }
@@ -46,7 +46,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x11k" }
     [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16r" } # TeamRed-v0.8.5 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16rt" }
-# [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Error
+    [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo x16rv2" } # Error
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo x17r --protocol ufo2" }
@@ -79,7 +79,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "MTP";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo mtp" } # Trex-v0.21.5 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-padihash" }
-    [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-pawelhash" } # Trex-v0.21.5 is fastest
+    [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo glt-pawelhash" } # Trex-v0.21.5 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo phi" }
     [PSCustomObject]@{ Algorithm = "Phi5";        Type = "NVIDIA"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo phi5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo polytimos" }
@@ -118,7 +118,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 $MinMemGB = $_.MinMemGB
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
-                $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "^AMD Radeon RX 6[0-9]{3}.*" }) # RX 6000 cards are not supported (https://github.com/andru-kun/wildrig-multi/issues/59#issuecomment-874916154)
+                # $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "^AMD Radeon RX 6[0-9]{3}.*" }) # RX 6000 cards are not supported (https://github.com/andru-kun/wildrig-multi/issues/59#issuecomment-874916154)
 
                 If ($Miner_Devices) {
 
