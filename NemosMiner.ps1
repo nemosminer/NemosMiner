@@ -1,4 +1,5 @@
 using module .\Includes\Include.psm1
+using module .\Includes\API.psm1
 
 <#
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -20,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        3.9.9.68
-Version date:   10 September 2021
+Version:        4.0.0 (RC1)
+Version date:   16 September 2021
 #>
 
 [CmdletBinding()]
@@ -254,7 +255,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"3.9.9.68"
+    Version      = [System.Version]"4.0.0"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -323,8 +324,8 @@ If (-not $Variables.Algorithms) {
     Exit
 }
 # Load coin names
-$Variables.Algorithms = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Algorithms) { 
+$Variables.CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.CoinNames) { 
     Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
@@ -459,7 +460,7 @@ $Variables.ShowProfit = $Config.ShowProfit
 $Variables.ShowProfitBias = $Config.ShowProfitBias
 
 If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
-If (-not $Variables.PoolsLastUsed) { $Variables.PoolsLastUsed = @{} }
+If (-not $Variables.PoolsLastUsed) { $Variables.PoolsLastUsed = @{ } }
 If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
 # Rename existing switching log
@@ -902,8 +903,8 @@ Function Global:TimerUITick {
                 If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" } }
                 @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
                 If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
-                If ($Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { $_.Workers.Pool.Currency } } }
-                If ($Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { $_.Workers.Pool.CoinName } } }
+                If ($Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
+                If ($Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
             )
             If ($Variables.CalculatePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | Sort-Object Name | ForEach-Object { 
@@ -1591,12 +1592,16 @@ $MainForm.Add_Shown(
 
 $MainForm.Add_FormClosing(
     { 
+        Write-Message -Level Info "Shutting down NemosMiner..." -Console
+
         $TimerUI.Stop()
 
         Stop-Mining
         Stop-IdleMining
         Stop-BrainJob
         Stop-BalancesTracker
+
+        Stop-Process -Id $PID
     }
 )
 

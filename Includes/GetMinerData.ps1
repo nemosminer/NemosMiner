@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           GetMinerData.ps1
-Version:        3.9.9.68
-Version date:   10 September 2021
+Version:        4.0.0 (RC1)
+Version date:   16 September 2021
 #>
 
 using module ".\Include.psm1"
