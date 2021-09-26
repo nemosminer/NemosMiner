@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        4.0.0 (RC1)
-Version date:   16 September 2021
+Version:        4.0.0.2 (RC2)
+Version date:   26 September 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -60,7 +60,7 @@ If ($PoolConfig.UserName) {
         $Fee = $Request.$_."$($MiningMode)_fee"
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor)
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region

@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.8y4
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Fee = 0.02;   MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v39.4 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Fee = 0.02;   MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v39.5 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=125,4 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=144,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=150,5 --smart-pers --ocX" }

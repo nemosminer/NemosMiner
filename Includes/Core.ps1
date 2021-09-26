@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0 (RC1)
-Version date:   16 September 2021
+Version:        4.0.0.2 (RC2)
+Version date:   26 September 2021
 #>
 
 using module .\Include.psm1
@@ -312,9 +312,6 @@ Function Start-Cycle {
         Else {
             $Variables.UnprofitableAlgorithms = $null
         }
-
-        # # Refresh stats
-        # Get-Stat | Out-Null
 
         # Load information about the pools
         If ($PoolNames -and (Test-Path -Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
@@ -914,7 +911,7 @@ Function Start-Cycle {
             Remove-Variable Miner_Device_Combo -ErrorAction Ignore
 
             # Hack part 2: reverse temporarily forced positive bias
-            $Miners | ForEach-Object { $_."$($SortBy)_Bias" -= $SmallestEarningBias }
+            $Miners | ForEach-Object { $_."$($SortBy)_Bias" -= $SmallestBias }
 
             # Don't penalize active miners, revert running miner bonus
             $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_."$($SortBy)_Bias" /= 1 + $Config.RunningMinerGainPct / 100 }

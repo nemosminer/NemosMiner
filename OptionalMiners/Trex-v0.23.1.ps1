@@ -2,15 +2,15 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.21.6/t-rex-0.21.6-win.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.23.1/t-rex-0.23.1-win.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Autolykos2";   Fee = 0.02; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo autolykos2 --intensity 25" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo etchash --intensity 25" } # GMiner-v2.68 is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo ethash --intensity 25" } # GMiner-v2.68 is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo etchash --intensity 25" } # GMiner-v2.69 is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo ethash --intensity 25" } # GMiner-v2.69 is fastest
+    # [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.12.2 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = "MTPTcr";       Fee = 0.01; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo mtp-tcr --intensity 21" }
@@ -65,8 +65,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
-                    # From now on the username (-u) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
-                    If ($Pools.($_.Algorithm).DAGsize -gt 0 -and ($Pools.($_.Algorithm).User -split "\.").Count -eq 2) { 
+                    # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
+                    If ($Pools.($_.Algorithm).DAGsize -gt 0 -and ($Pools.($_.Algorithm).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm).Name -notmatch "^MiningPoolHub*") { 
                         $User = " --user $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 0) --worker $($Pools.($_.Algorithm).User -split "\." | Select-Object -Index 1)"
                     }
                     Else { 
@@ -83,7 +83,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         DeviceName      = $Miner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$($_.Arguments) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)$User$Pass --no-strict-ssl$(If ($Variables.IsLocalAdmin -eq $true -and $Config.UseMinerTweaks -eq $true) { " --mt 3" }) $Coin --no-watchdog --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-bind-telnet 0 --api-read-only --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments) --url $Stratum$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)$User$Pass --no-strict-ssl$(If ($Variables.IsLocalAdmin -eq $true -and $Config.UseMinerTweaks -eq $true) { " --mt 3" }) $Coin --no-watchdog --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-read-only --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "Trex"
                         Port            = $MinerAPIPort

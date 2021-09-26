@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        4.0.0 (RC1)
-Version date:   16 September 2021
+Version:        4.0.0.2 (RC2)
+Version date:   26 September 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -54,7 +54,7 @@ If ($PoolConfig.UserName) {
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Fee = [Decimal]($_.Fee / 100)
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor)
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
         $Price = $Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
 
@@ -62,10 +62,10 @@ If ($PoolConfig.UserName) {
 
         # Temp fix
         If ($Current.host_list.split(";").count -eq 1) { $PoolRegions = @("N/A") }
-        Switch ($Algorithm_Norm) { 
-            "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-            # Default    { $Port = $Current.algo_switch_port }
-        }
+        # Switch ($Algorithm_Norm) { 
+        #     # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
+        #     # Default    { $Port = $Current.algo_switch_port }
+        # }
 
         ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region

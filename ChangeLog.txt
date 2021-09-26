@@ -6,6 +6,19 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.2 (RC2) 26.09.2021
+=============================================
+
+Fixes:
+- Core: (Earnings|Profit)Bias showed inflated values. Best miner selection  was not affected
+
+Miner updates:
+- GMiner-v2.69
+- NanoMiner-v3.3.12
+- NBMiner-v39.5
+- Trex-v0.23.1
+
+
 Changelog NemosMiner 4.0.0 (RC1) 16.09.2021
 ===========================================
 
@@ -38,7 +51,7 @@ Changelog NemosMiner 3.9.9.68 10.09.2021
 Enhancements:
 - Core: Added config parameter 'IgnoreRejectedShares'
 - Core: Merged config items 'AutoStart' and 'StartPaused' to 'StartupMode'
-- Core: Improve LogViewer (Snaketail) start
+- Core: Improve LogViewer start (Snaketail)
 - Core / Miner APIs: Cleanup code
 
 Fixes:

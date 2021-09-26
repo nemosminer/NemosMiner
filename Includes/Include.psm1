@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0 (RC1)
-Version date:   16 September 2021
+Version:        4.0.0.2 (RC2)
+Version date:   26 September 2021
 #>
 
 # Window handling
@@ -247,7 +247,7 @@ Class Miner {
         $ScriptBlock = { 
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
             Try { 
-                    # Load miner API file
+                # Load miner API file
                 . ".\Includes\MinerAPIs\$($args[0]).ps1"
                 $Miner = ($args[1] | ConvertFrom-Json) -as $args[0]
                 While ($true) { 
