@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/BMiner-v16.4.7-d77cc9b-amd64.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/BMiner/bminer-v16.4.6-d77cc9b-amd64.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 

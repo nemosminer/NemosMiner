@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\CryptoDredge.exe"
-$Uri = "https://github.com/technobyl/CryptoDredge/releases/download/v0.26.0/CryptoDredge_0.26.0_cuda_11.2_windows.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/CryptoDredge/CryptoDredge_0.26.0_cuda_11.2_windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
@@ -23,7 +23,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightZls";    Fee = 0.01; MinMemGB = 1; MinComputeCapability = 5.0; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=cnzls --intensity 8" }
     [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.01; MinMemGB = 3; MinComputeCapability = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo=kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "Lux";               Fee = 0.01; MinMemGB = 2; MinComputeCapability = 5.0; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 5; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo=mtp --intensity 8" } # Trex-v0.23.1 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";               Fee = 0.02; MinMemGB = 5; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(0, 0);  Arguments = " --algo=mtp --intensity 8" } # Trex-v0.23.2 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTcr";            Fee = 0.02; MinMemGB = 5; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo=mtp-tcr --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ninja";             Fee = 0.01; MinMemGB = 6; MinComputeCapability = 5.0; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo ninja --intensity 4" }
 )
