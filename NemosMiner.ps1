@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.2 (RC2)
-Version date:   26 September 2021
+Version:        4.0.0.3 (RC2)
+Version date:   30 September 2021
 #>
 
 [CmdletBinding()]
@@ -255,7 +255,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.2" #RC2
+    Version      = [System.Version]"4.0.0.3" #RC3
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -397,7 +397,7 @@ Get-NMVersion
 
 Write-Host "Importing modules..." -ForegroundColor Yellow
 Import-Module NetSecurity -ErrorAction SilentlyContinue
-Import-Module Defender -ErrorAction SilentlyContinue
+Import-Module Defender -ErrorAction SilentlyContinue -SkipEditionCheck
 
 # Unblock files
 If (Get-Item .\* -Stream Zone.*) { 
@@ -458,6 +458,7 @@ $Variables.ShowPowerCost = $Config.ShowPowerCost
 $Variables.ShowPowerUsage = $Config.ShowPowerUsage
 $Variables.ShowProfit = $Config.ShowProfit
 $Variables.ShowProfitBias = $Config.ShowProfitBias
+$Variables.UIStyle = $Config.UIStyle
 
 If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
 If (-not $Variables.PoolsLastUsed) { $Variables.PoolsLastUsed = @{ } }
@@ -635,7 +636,7 @@ Function Update-TabControl {
                     @{ Name = "$($Config.Currency) in 1h"; Expression = { "{0:N6}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "$($Config.Currency) in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "$($Config.Currency) in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                    @{ Name = "Est. Pay Date"; Expression = { If ($_.EstimatedPayDate -is [DateTime]) { $_.EstimatedPayDate.ToShortDateString() } Else { $_.EstimatedPayDate } } }, 
+                    @{ Name = "Projected paydate"; Expression = { If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToShortDateString() } Else { $_.ProjectedPayDate } } }, 
                     @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance / $_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.Currency))))" } }
                 ) | Sort-Object Pool | Out-DataTable
 
@@ -933,39 +934,42 @@ Function Global:TimerUITick {
 
             If ($ProcessesRunning = @($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
                 Write-Host "Running miner$(If ($ProcessesRunning.Count -eq 1) { ":" } Else { "s: $($ProcessesRunning.Count)" })"
-                $ProcessesRunning | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
-                    @{ Label = "Hashrate"; Expression = { If ($_.Speed_Live) { (($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' } Else { "n/a" } }; Align = "right" }, 
-                    @{ Label = "PowerUsage"; Expression = { If ($_.PowerUsage_Live) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = "right" }, 
-                    @{ Label = "Active (this run)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }, 
-                    @{ Label = "Active (total)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f ($_.TotalMiningDuration) } }, 
-                    @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
+                [System.Collections.ArrayList]$Miner_Table = @(
+                    @{ Label = "Hashrate"; Expression = { If ($_.Speed_Live) { (($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' } Else { "n/a" } }; Align = "right" }
+                    If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ($_.PowerUsage_Live) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
+                    @{ Label = "Active (this run)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
+                    @{ Label = "Active (total)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f ($_.TotalMiningDuration) } }
+                    @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
-                ) | Out-Host
+                )
+                $ProcessesRunning | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table $Miner_Table -Wrap | Out-Host
             }
 
             If ($Variables.UIStyle -eq "Full") { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
                     Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -eq 1) { ":" } Else { "s: $($ProcessesIdle.Count)" }) in the past 24 hrs"
-                    $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table -Wrap (
-                        @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }, 
-                        @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" }, 
-                        @{ Label = "Time since last run"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
-                        @{ Label = "Active (total)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }, 
-                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
+                    [System.Collections.ArrayList]$Miner_Table = @(
+                        @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }
+                        If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
+                        @{ Label = "Time since last run"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                        @{ Label = "Active (total)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }
+                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
-                    ) | Out-Host
+                    )
+                    $ProcessesIdle | Sort-Object { $_.Process.StartTime } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table | Out-Host
                 }
 
                 If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
                     Write-Host -ForegroundColor Red "Failed miner$(If ($ProcessesFailed.Count -eq 1) { ":" } Else { "s: $($ProcessesFailed.Count)" }) in the past 24 hrs"
-                    $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table -Wrap (
-                        @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }, 
-                        @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" }, 
-                        @{ Label = "Time since last fail"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }, 
-                        @{ Label = "Active (total)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }, 
-                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }, 
+                    [System.Collections.ArrayList]$Miner_Table = @(
+                        @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }
+                        If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
+                        @{ Label = "Time since last fail"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                        @{ Label = "Active (total)"; Expression = { "{0:dd} days {0:hh} hrs {0:mm} min {0:ss} sec" -f $_.TotalMiningDuration } }
+                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                         @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
-                    ) | Out-Host
+                    )
+                    $ProcessesFailed | Sort-Object { If ($null -eq $_.Process) { [DateTime]0 } Else { $_.Process.StartTime } } | Format-Table $Miner_Table -Wrap | Out-Host
                 }
             }
 
@@ -1094,8 +1098,7 @@ Function MainForm_Load {
                             Start-Sleep -Seconds 2
                         }
                         "s" { 
-                            If ($Variables.UIStyle -eq "Light") { $Variables.UIStyle = "Full" }
-                            Else { $Variables.UIStyle = "Light" }
+                            $Variables.UIStyle = If ($Variables.UIStyle -eq "Light") { "Full" } Else { "Light" }
                             Write-Host "UI " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle set to " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host " (Information about miners run in the past, failed miners & watchdog timers will " -NoNewline; If ($Variables.UIStyle -eq "Light") { Write-Host "not" -ForegroundColor Red -NoNewline; Write-Host " " -NoNewline }; Write-Host "be shown)."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2

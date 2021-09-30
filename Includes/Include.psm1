@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.2 (RC2)
-Version date:   26 September 2021
+Version:        4.0.0.3 (RC2)
+Version date:   30 September 2021
 #>
 
 # Window handling
@@ -2699,16 +2699,16 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
 
     # Start new instance
-    If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
+    If ($UpdateVersion.RequireRestart -or $NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash) { 
         "Starting updated version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        $StartCommand = ((Get-CimInstance win32_process -Filter "ProcessID=$PID" | Select-Object CommandLine).CommandLine)
+        $StartCommand = (Get-Process -Id $PID).CommandLine
         $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
         Start-Sleep 5
 
         # Giving 10 seconds for process to start
         $Waited = 0
-        While (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction silentlycontinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
-        If (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction silentlycontinue)) { 
+        While (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction SilentlyContinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
+        If (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction SilentlyContinue)) { 
             "Failed to start new instance of $($Variables.CurrentProduct)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
             Return
         }
@@ -2723,7 +2723,7 @@ Function Initialize-Autoupdate {
     # Display changelog
     Notepad .\ChangeLog.txt
 
-    If ($UpdateVersion.RequireRestart -or ($NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash)) { 
+    If ($NewKid.ProcessId) { 
         # Kill old instance
         "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         Start-Sleep -Seconds 2
@@ -2770,6 +2770,7 @@ Function Update-ConfigFile {
                 $Config.Remove("StartPaused")
             }
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
+            "BalancesTrackerConfigFile" { $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
