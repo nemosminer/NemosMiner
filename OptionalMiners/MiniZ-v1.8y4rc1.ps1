@@ -16,7 +16,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 3.0; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=192,7 --pers ZcashPoW --ocX" }
     [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4.0; Fee = 0.0075; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=Ethash --ocX" }
-    # [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 2.0; Fee = 0.0075; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest (disabled; https://bitcointalk.org/index.php?topic=4767892.msg57522310#msg57522310)
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 2.0; Fee = 0.0075; MinerSet = 1; WarmupTimes = @(0, 20); Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest (disabled; https://bitcointalk.org/index.php?topic=4767892.msg57522310#msg57522310)
     [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = 5.0; Fee = 0.0075; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=EtcHash --ocX" }
     [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --par=Kawpow --pers=RAVENCOINKAWPOW --ocX" }
     [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --par=ProgPow --pers=veil --ocX" }
