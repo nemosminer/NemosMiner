@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\wildrig.exe"
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.29.0/wildrig-multi-windows-0.29.0.7z"
+$Uri = "https://github.com/Minerx117/miners/releases/download/WildRig/wildrig-multi-windows-0.29.1.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
