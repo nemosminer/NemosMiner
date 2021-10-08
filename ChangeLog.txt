@@ -6,6 +6,32 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.4 (RC4) 06.10.2021
+=============================================
+
+Enhancements:
+- Core: Faster main loop termination (stop|pause)
+- Web GUI & API: Reduce memory consumption
+- Web GUI: Update bootstrap to version 5.1.1
+
+Fixes:
+- Core: Parsing DAG data from 'https://minerstat.com' failed
+- Web GUI / Miners(Unavailable|Fastest): Show MinerWindow column (Regression from 3.9.9.63)
+- Web GUI / & API: Enable / disable device no longer adds poolsconfig to config file
+- WildRig-v0.29.1: Changed download link to NemosMiner repository
+
+Miner updates:
+- Removed CryptoDredge-v0.16.0 (SSL errors)
+- GMiner-v2.70
+- JayddeeCpu-v3.18.0
+- lolMiner-v1.33
+- MiniZ-v1.8y4rc2
+- NanoMiner-v3.3.13
+- TeamBlackMiner-v1.11 (new)
+- TeamRed-v0.8.6
+- Trex-v0.24.0
+
+
 Changelog NemosMiner 4.0.0.3 (RC3) 30.09.2021
 =============================================
 
@@ -19,7 +45,7 @@ Improvements:
 
 Miner updates:
 - Trex-v0.23.2
-- TTMiner-v6.2.0 (Does not support 'MinerInstancePerDeviceModel')
+- TTMiner-v6.2.0 (does not support 'MinerInstancePerDeviceModel')
 
 
 Changelog NemosMiner 4.0.0.2 (RC2) 26.09.2021
