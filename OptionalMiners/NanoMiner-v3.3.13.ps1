@@ -2,30 +2,29 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.3.12/nanominer-windows-3.3.12-cuda11.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.3.13/nanominer-windows-3.3.13-cuda11.zip"
 $DeviceEnumerator = "Bus_Type_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.05; MinMemGB = 3;  MinerSet = 0; WarmupTimes = @(20, 40); Coin = "Autolykos" }
-    [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Type = "AMD"; Fee = 0.05; MinMemGB = 16; MinerSet = 1; WarmupTimes = @(20, 40); Coin = "Cuckaroo30" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "Etchash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01; MinMemGB = 2;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(30, 40); Coin = "Kawpow" } # TeamRed-v0.8.5 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "Ubqhash" } # PhoenixMiner-v5.7b is fastest
-    # [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "VTC" } # Broken; https://github.com/nanopool/nanominer/issues/286
+    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.05; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(20, 40); Coin = "ERG" } # NBMiner-v39.5 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "ETC" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "ETH" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01; MinMemGB = 2;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "ETH" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(30, 40); Coin = "RVN" } # TeamRed-v0.8.6 is fastest
+    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "UBQ" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(45, 40); Coin = "VTC" } # SRBMinerMulti-v0.8.0 is fastest
 
-    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "Randomx" } # XmRig-v6.12.2 is fastest
-    [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "VerusHash" }
+    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(0, 30); Coin = "XMR" } # XmRig-v6.12.2 is fastest
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(0, 30); Coin = "VRSC" }
 
-    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 120); Coin = "Autolykos" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "Etchash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "Ethash" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "Ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "Kawpow" } # Trex-v0.23.2 is fastest
-    [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "Octopus" } # NBMiner-v39.5 is faster
-    [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "Ubqhash" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 120); Coin = "ERG" } # Trex-v0.23.2 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "ETC" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "ETH" } # PhoenixMiner-v5.7b is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "ETH" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "RVN" } # Trex-v0.23.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "CFX" } # NBMiner-v39.5 is faster
+    [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(0, 40);  Coin = "UBQ" } # PhoenixMiner-v5.7b is fastest
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -39,6 +38,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
                 $MinMemGB = $_.MinMemGB
+                $WarmupTimes =  $_.WarmupTimes
+
                 If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
 
                 If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.Type -ne "NVIDIA" -or [Double]($_.OpenCL.ComputeCapability) -gt 5.0 })) { 
@@ -66,7 +67,7 @@ watchdog=false
 webPort=$($MinerAPIPort)
 useSSL=$($Pools.($_.Algorithm).SSL)
 
-[$($_.Coin)]
+coin=$($_.Coin)
 devices=$(($Miner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')
 pool1=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)
 wallet=$($Pools.($_.Algorithm).User -split '\.' | Select-Object -Index 0)
@@ -74,8 +75,10 @@ $(If ($Pools.($_.Algorithm).DAGSize -gt 0) { "protocol=stratum" } )"
                         }
                     }
 
+                    If ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -PathType Leaf ))) { $WarmupTimes[1] += 600 } # Allow 10 minutes to generate verthash.dat file
+
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
+                        Name        = $Miner_Name -replace " "
                         DeviceName  = $Miner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path
@@ -86,7 +89,7 @@ $(If ($Pools.($_.Algorithm).DAGSize -gt 0) { "protocol=stratum" } )"
                         URI         = $Uri
                         Fee         = $_.Fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)/#/"
-                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                        WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }

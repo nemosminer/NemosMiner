@@ -1,14 +1,13 @@
 <!--#include file="/parts/head.html" -->
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 id="title" class="h2" data-navbaractive="navminersunavailable">Unavailable Miners</h1>
+          <h1 id="title" class="h2" data-navbaractive="navminersbest">Fastest Miners</h1>
         </div>
 
-        <div class="alert alert-info" role="alert">These are all the unavailable miners. The column 'Reason' shows the filter criteria(s) that made the miner unavailable.</div>
+        <div class="alert alert-info" role="alert">These are the fastest miners per algorithm and device.</div>
 
         <div id="toolbar">
-          <button id="re-benchmark" class="btn btn-warning" disabled>Trigger re-benchmarking</button>
-          <button id="re-measure" class="btn btn-warning" disabled>Trigger re-measuring power usage</button>
-          <button id="remove-watchdog" class="btn btn-primary" disabled>Remove watchdog</button>
+          <button id="re-benchmark" class="btn btn-primary" disabled>Trigger re-benchmarking</button>
+          <button id="re-measure" class="btn btn-primary" disabled>Trigger re-measuring power usage</button>
           <!-- <button id="failed" class="btn btn-warning" disabled>Mark Miner as failed</button> -->
           <button id="disable" class="btn btn-danger" disabled>Disable Miner</button>
         </div>
@@ -33,9 +32,7 @@
           data-auto-refresh-status="false"
           data-detail-formatter="detailFormatter"
           data-response-handler="formatMiners"
-          data-url="/miners/unavailable"
-          data-sort-name="tDevices"
-          data-sort-order="asc"
+          data-url="/miners/mostprofitable"
           >
 
           <thead>
@@ -48,7 +45,6 @@
               <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
               <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
               <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
-              <th data-field="tReason" data-sortable="true" data-filter-control="select">Reason</th>
               <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning</th>
               <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Earning Bias</th>
               <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
@@ -83,22 +79,22 @@
             </tr>
           </thead>
         </table>
-<!-- Start of page scripts 'minersunavailable.html' -->
+<!-- Start of page scripts 'minersfastest.html' -->
         <script type='text/javascript'>
           var $table = $('#miners');
           var $querysize = 10000;
 
-          $('#miners tr:eq(0) th:eq(9)').html("Earning (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(10)').html("Earning Bias (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(11)').html("Profit (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(12)').html("Profit Bias (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(13)').html("Power Cost (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(8)').html("Earning (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(9)').html("Earning Bias (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(10)').html("Profit (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(11)').html("Profit Bias (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(12)').html("Power Cost (" + maincurrency + ")");
 
           $table.bootstrapTable({
             // refresh once per interval
             autoRefreshInterval: (parseInt(config.Interval)),
-            height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20,
-          })
+            height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
+          });
 
           $(function(){
             if (config.CalculatePowerCost == true) {
@@ -111,24 +107,6 @@
               $table.bootstrapTable('hideColumn', 'Profit_Bias');
               $table.bootstrapTable('hideColumn', 'PowerUsage');
               $table.bootstrapTable('hideColumn', 'PowerCost');
-            }
-          });
-
-          $('#remove-watchdog').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-              }
-              else {
-                $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#remove-watchdog').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
             }
           });
 
@@ -209,16 +187,14 @@
               if ($table.bootstrapTable('getSelections').length >= 1) {
                 document.getElementById('re-benchmark').disabled = false;
                 document.getElementById('re-measure').disabled = false;
-                document.getElementById('remove-watchdog').disabled = false;
                 document.getElementById('disable').disabled = false;
               } else {
                 document.getElementById('re-benchmark').disabled = true;
                 document.getElementById('re-measure').disabled = true;
-                document.getElementById('remove-watchdog').disabled = true;
                 document.getElementById('disable').disabled = true;
               }
             } catch {}
           });
         </script>
-<!-- End of page scripts 'minersunavailable.html' -->
+<!-- End of page scripts 'minersfastest.html' -->
 <!--#include file="/parts/foot.html" -->

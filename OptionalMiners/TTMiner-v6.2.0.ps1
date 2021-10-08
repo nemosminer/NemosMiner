@@ -53,7 +53,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
+                        Name        = $Miner_Name -replace " "
                         DeviceName  = $Miner_Devices.Name
                         Type        = "NVIDIA"
                         Path        = $Path

@@ -42,7 +42,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
+                        Name        = $Miner_Name -replace " "
                         DeviceName  = $Miner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -62,10 +62,10 @@ If ($PoolConfig.UserName) {
 
         # Temp fix
         If ($Current.host_list.split(";").count -eq 1) { $PoolRegions = @("N/A") }
-        # Switch ($Algorithm_Norm) { 
-        #     # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-        #     # Default    { $Port = $Current.algo_switch_port }
-        # }
+        Switch ($Algorithm_Norm) { 
+            "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
+            # Default    { $Port = $Current.algo_switch_port }
+        }
 
         ForEach ($Region in $PoolRegions) { 
             $Region_Norm = Get-Region $Region

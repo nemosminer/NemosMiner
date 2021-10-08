@@ -61,7 +61,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+tcps" } Else { $Protocol = "stratum+tcp" }
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
+                    Name        = $Miner_Name -replace " "
                     DeviceName  = $Miner_Devices.Name
                     Type        = "CPU"
                     Path        = $Path

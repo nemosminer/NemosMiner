@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 Function Initialize-API { 
@@ -188,7 +188,7 @@ Function Start-APIServer {
                                     $Data += "`n`nNew values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                    $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                                    $Config | Select-Object -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                                     ForEach ($DeviceName in $Values) { 
                                         $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
                                             $_.State = [DeviceState]::Disabled
@@ -219,7 +219,7 @@ Function Start-APIServer {
                                     $Data += "`n`nNew values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                    $Config | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                                    $Config | Select-Object -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
                                     $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { 
                                         $_.State = [DeviceState]::Enabled
                                         If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
@@ -756,47 +756,47 @@ Function Start-APIServer {
                         break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process | Sort-Object Status, DeviceName, Name, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process  | Sort-Object Status, DeviceName, Name)
                         Break
                     }
                     "/miners/available" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/bestminers_combo" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miners/bestminers_combos" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.BestMiners_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miners/failed" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData | SortObject DeviceName, EndTime)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Status -EQ [MinerStatus]::Failed | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | SortObject DeviceName, EndTime)
                         Break
                     }
-                    "/miners/fastest" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.FastestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
+                    "/miners/mostprofitable" { 
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.MostProfitableMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True } )
                         Break
                     }
                     "/miners/running" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, Workers | ConvertTo-Json -Depth 10 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning) 
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object Status -EQ "Running" | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, Workers | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning) 
                         Break
                     }
                     "/miners/sorted" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.SortedMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData, Workers | ConvertTo-Json -Depth 10 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning) 
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.SortedMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process) 
                         Break
                     }
                     "/miners/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miners_device_combos" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, DataReaderProcess, Devices, Process, SwitchingLogData)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miningpowercost" { 
@@ -949,11 +949,15 @@ Function Start-APIServer {
                     }
                 }
 
-                # If $Data is null, the API will just return whatever data was in the previous request.  Instead, show an error
+                # If $Data is null, the API will just return whatever data was in the previous request. Instead, show an error
                 # This happens if the script just started and hasn't filled all the properties in yet. 
                 If ($null -eq $Data) { 
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
+
+                # "********************************* Begin $Path *******************************" >> ".\Debug\API_DATA.TXT"
+                # $Data >> ".\Debug\API_DATA.TXT" # Maybe helps with windows 11?
+                # "********************************* End $Path *******************************" >> ".\Debug\API_DATA.TXT"
 
                 # Send the response
                 $Response.Headers.Add("Content-Type", $ContentType)
@@ -962,7 +966,6 @@ Function Start-APIServer {
                 $Response.ContentLength64 = $ResponseBuffer.Length
                 $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
                 $Response.Close()
-
             }
             # Only gets here if something is wrong and the server couldn't start or stops listening
             $Server.Stop()

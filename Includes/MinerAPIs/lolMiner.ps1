@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 using module ..\Include.psm1
@@ -51,7 +51,7 @@ class lolMiner : Miner {
             "PH/s"  { $HashRate_Unit = [Math]::Pow(10,15) }
             "EH/s"  { $HashRate_Unit = [Math]::Pow(10,18) }
             "ZH/s"  { $HashRate_Unit = [Math]::Pow(10,21) }
-            "ZH/s"  { $HashRate_Unit = [Math]::Pow(10,24) }
+            "YH/s"  { $HashRate_Unit = [Math]::Pow(10,24) }
             Default { $HashRate_Unit = 1 }
         }
         $HashRate_Value = [Double]($Data.Session.Performance_Summary * $HashRate_Unit)

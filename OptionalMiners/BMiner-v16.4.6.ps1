@@ -15,7 +15,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri beam") } # NBMiner-v36.0 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckaroo29m") }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.69 is fastest
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.70 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 30); Protocol = @(" -uri aeternity") }
@@ -62,8 +62,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )
                 $Miner_Devices = @($Miner_Devices | Where-Object { (-not $_.CIM.MaxRefreshRate) -or (($_.OpenCL.GlobalMemSize / 1GB) - 0.5) -ge $MinMemGB } ) # Reserve 512 MB when GPU with connected monitor
-                If ($_.Algorithm[0] -match "^Ethash.*$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "^AMD Radeon RX 5[0-9]{3}.*" }) } # Ethash mining not supported on Navi
-                If ($_.Algorithm[1]) { $Miner_Devices = @($Miner_Devices | Where-Object { $_.OpenCL.Name -notmatch "^AMD Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
+                If ($_.Algorithm[0] -match "^Ethash.*$") { $Miner_Devices = @($Miner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Ethash mining not supported on Navi
+                If ($_.Algorithm[1]) { $Miner_Devices = @($Miner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
 
                 If ($Miner_Devices) { 
 
@@ -99,7 +99,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name
+                        Name        = $Miner_Name -replace " "
                         DeviceName  = $Miner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path

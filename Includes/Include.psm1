@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 # Window handling
@@ -195,7 +195,6 @@ Class Miner {
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
 
     hidden [PSCustomObject[]]$Data = $null
-    hidden [PSCustomObject[]]$Data2 = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
@@ -306,25 +305,26 @@ Class Miner {
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                DateTime     = [String](Get-Date -Format o)
-                Action       = "Launched"
-                Name         = [String]$this.Name
-                Device       = ($this.Devices.Name | Sort-Object) -join "; "
-                Type         = [String]$this.Type
-                Account      = [String]($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
-                Pool         = [String]($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-                Algorithm    = $this.Workers.Pool.Algorithm -join "; "
-                Duration     = ""
-                Earning      = [Double]$this.Earning
-                Earning_Bias = [Double]$this.Earning_Bias
-                Profit       = [Double]$this.Profit
-                Profit_Bias  = [Double]$this.Profit_Bias
-                CommandLine  = $this.CommandLine
+                DateTime       = [String](Get-Date -Format o)
+                Action         = "Launched"
+                Name           = [String]$this.Name
+                Device         = ($this.Devices.Name | Sort-Object) -join "; "
+                Type           = [String]$this.Type
+                Account        = [String]($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
+                Pool           = [String]($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+                Algorithm      = $this.Workers.Pool.Algorithm -join "; "
+                Duration       = ""
+                Earning        = [Double]$this.Earning
+                Earning_Bias   = [Double]$this.Earning_Bias
+                Profit         = [Double]$this.Profit
+                Profit_Bias    = [Double]$this.Profit_Bias
+                CommandLine    = $this.CommandLine
+                LastDataSample = $null
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
-                    If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($this.GetCommandLineParameters())*" }).ProcessId)) { 
+                    If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -eq "$($this.Path) $($this.GetCommandLineParameters())" }).ProcessId)) { 
                         $this.Status = [MinerStatus]::Running
                         Break
                     }
@@ -374,10 +374,9 @@ Class Miner {
     }
 
     hidden StopMining() { 
-        Write-Message "Stopping miner '$($this.Info)'..."
-
         $this.EndTime = (Get-Date).ToUniversalTime()
         If ($this.Status -eq [MinerStatus]::Running) { 
+            Write-Message "Stopping miner '$($this.Info)'..."
             $this.StatusMessage = "Stopping..."
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         }
@@ -398,20 +397,21 @@ Class Miner {
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            DateTime     = [String](Get-Date -Format o)
-            Action       = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
-            Name         = [String]$this.Name
-            Device       = [String]($this.Devices.Name | Sort-Object) -join "; "
-            Type         = [String]$this.Type
-            Account      = [String]($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
-            Pool         = [String]($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm    = [String]$this.WorkersRunning.Pool.Algorithm -join "; "
-            Duration     = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
-            Earning      = [Double]$this.Earning
-            Earning_Bias = [Double]$this.Earning_Bias
-            Profit       = [Double]$this.Profit
-            Profit_Bias  = [Double]$this.Profit_Bias
-            CommandLine  = ""
+            DateTime       = [String](Get-Date -Format o)
+            Action         = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
+            Name           = [String]$this.Name
+            Device         = [String]($this.Devices.Name | Sort-Object) -join "; "
+            Type           = [String]$this.Type
+            Account        = [String]($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
+            Pool           = [String]($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+            Algorithm      = [String]$this.WorkersRunning.Pool.Algorithm -join "; "
+            Duration       = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
+            Earning        = [Double]$this.Earning
+            Earning_Bias   = [Double]$this.Earning_Bias
+            Profit         = [Double]$this.Profit
+            Profit_Bias    = [Double]$this.Profit_Bias
+            CommandLine    = ""
+            LastDataSample = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
         If ($this.Status -eq [MinerStatus]::Running) { 
@@ -732,6 +732,8 @@ Function Start-Mining {
 
     If (-not $Variables.CoreRunspace) { 
 
+        If (-not $Variables.Summary) { $Variables.Summary = "Starting miner processes..." }
+
         $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
         $Variables.Pools = $null
@@ -757,14 +759,15 @@ Function Start-Mining {
 
 Function Stop-Mining { 
 
+    $Variables.Summary = "Stopping miner processes..."
+    Write-Message -Level Info $Variables.Summary
+
     ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
         $Miner.StopMining()
     }
     $Variables.WatchdogTimers = @()
-    $Variables.Summary = ""
 
     If ($Variables.CoreRunspace) { 
-        Write-Message -Level Info "Ending cycle."
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.Remove("Timer")
@@ -772,6 +775,8 @@ Function Stop-Mining {
 
         Write-Message -Level Verbose "Mining processes stopped." -Console
     }
+    $Variables.Summary = "Stopping miner processes..."
+
 }
 
 Function Stop-BrainJob { 
@@ -1908,7 +1913,7 @@ Function Get-Device {
                 }
 
                 $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
-                $Device.Model = (($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
@@ -1993,7 +1998,7 @@ Function Get-Device {
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id + 100))"
                     $Device.Bus = $null
                 }
-                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
+                $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
@@ -2064,7 +2069,7 @@ Function Get-Device {
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id) + 100)"
                         $Device.Bus = $null
                     }
-                    $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
+                    $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.').Trim()
 
                     If ($Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus) { 
                         $Device = $Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus
@@ -2350,10 +2355,7 @@ public static class Kernel32
 
         [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle }
 
-        $ControllerProcess.Handle | Out-Null
-        $Process.Handle | Out-Null
-
-        Do { If ($ControllerProcess.WaitForExit(100)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(500)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
 

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.17.1/cpuminer-opt-3.17.1-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.18.0/cpuminer-opt-3.18.0-windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Miner_Devices = @($Devices | Where-Object Type -EQ "CPU")
@@ -56,7 +56,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
             [PSCustomObject]@{ 
-                Name        = $Miner_Name
+                Name        = $Miner_Name -replace " "
                 DeviceName  = $Miner_Devices.Name
                 Type        = "CPU"
                 Path        = $Path

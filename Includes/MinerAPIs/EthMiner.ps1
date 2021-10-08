@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 using module ..\Include.psm1
@@ -43,7 +43,7 @@ class EthMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]($this.Algorithm[0])
+        $HashRate_Name = [String]$this.Algorithm[0]
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
         If ($Data.result[0] -notmatch "^TT-Miner") { 
             If ($HashRate_Name -eq "EtcHash")          { $HashRate_Value *= 1000 }

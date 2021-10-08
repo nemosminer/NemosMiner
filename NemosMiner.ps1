@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 [CmdletBinding()]
@@ -255,7 +255,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.3" #RC3
+    Version      = [System.Version]"4.0.0.4" #RC3
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -784,8 +784,6 @@ Function Global:TimerUITick {
                     Stop-IdleMining
                     Stop-BalancesTracker
                     Stop-RigMonitor
-
-                    $Variables.Summary = ""
 
                     $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
@@ -1596,7 +1594,7 @@ $MainForm.Add_Shown(
 $MainForm.Add_FormClosing(
     { 
         Write-Message -Level Info "Shutting down NemosMiner..." -Console
-
+        $Variables.NewMiningStatus = "Idle"
         $TimerUI.Stop()
 
         Stop-Mining
@@ -1604,14 +1602,12 @@ $MainForm.Add_FormClosing(
         Stop-BrainJob
         Stop-BalancesTracker
 
-        Stop-Process -Id $PID
-    }
-)
+        Write-Message -Level Info "NemosMiner has shut down." -Console
 
-$MainForm.Add_FormClosed(
-    { 
         # Save window settings
         $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Set-Content ".\Config\WindowSettings.json" -Force -ErrorAction Ignore
+
+        Stop-Process -Id $PID
     }
 )
 

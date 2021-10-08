@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Trex.ps1
-Version:        4.0.0.3 (RC2)
-Version date:   30 September 2021
+Version:        4.0.0.4 (RC4)
+Version date:   06 October 2021
 #>
 
 using module ..\Include.psm1
@@ -47,9 +47,19 @@ class Trex : Miner {
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]($Data.accepted_count)
-        $Shares_Rejected = [Int64]($Data.rejected_count)
+        $Shares_Accepted = [Int64]$Data.accepted_count
+        $Shares_Rejected = [Int64]$Data.rejected_count
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+
+        If ($HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name))  { # Dual algo mining
+            $HashRate_Value = [Double]$Data.dual_stat.hashrate_minute
+            If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.dual_stat.hashrate }
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
+            $Shares_Accepted = [Int64]$Data.dual_stat.accepted_count
+            $Shares_Rejected = [Int64]$Data.dual_stat.rejected_count
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()

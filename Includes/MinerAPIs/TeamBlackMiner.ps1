@@ -17,21 +17,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           Cast.ps1
+File:           lolMiner.ps1
 Version:        4.0.0.4 (RC4)
 Version date:   06 October 2021
 #>
 
 using module ..\Include.psm1
 
-class Cast : Miner { 
+class TeamBlackMiner : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = "http://localhost:$($this.Port)/"
+        $Request = "http://localhost:$($this.Port)/miner"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -42,12 +42,12 @@ class Cast : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithm[0]
-        $HashRate_Value = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
+        $HashRate_Value = [Double]($Data.total_hashrate)
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]$Data.shares.num_accepted
-        $Shares_Rejected = [Int64]($Data.shares.num_rejected + $Data.shares.num_rejected + $Data.shares.num_network_fail + $Data.shares.num_outdated)
+        $Shares_Accepted = [Int64]$Data.total_accepted
+        $Shares_Rejected = [Int64]$Data.total_rejected
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
         If ($this.ReadPowerUsage) { 

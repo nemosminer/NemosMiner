@@ -24,7 +24,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
+                    Name        = $Miner_Name -replace " "
                     DeviceName  = $Miner_Devices.Name
                     Type        = "CPU"
                     Path        = $Path

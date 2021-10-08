@@ -46,7 +46,7 @@ $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object T
                 If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
+                    Name        = $Miner_Name -replace " "
                     DeviceName  = $Miner_Devices.Name
                     Type        = $_.Type
                     Path        = $Path
