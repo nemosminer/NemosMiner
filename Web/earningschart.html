@@ -132,7 +132,7 @@
                           label = " " + label + ": ";
                         }
 
-                        if (context.parsed.y >= 0.001) {
+                        if (context.parsed.y > 0) {
                           label += (context.parsed.y.toFixed(3) + " " + currency);
                           return label;
                         }
