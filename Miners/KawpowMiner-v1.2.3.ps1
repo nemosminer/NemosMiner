@@ -13,27 +13,27 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
-        If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
+        If ($Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
-            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | ForEach-Object {
+            $AlgorithmDefinitions | ConvertTo-Json | ConvertFrom-Json | ForEach-Object {
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    # Get arguments for active miner devices
-                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "pers", "proto") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get arguments for available miner devices
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name -replace " "
-                        DeviceName  = $Miner_Devices.Name
+                        DeviceName  = $AvailableMiner_Devices.Name
                         Type        = "NVIDIA"
                         Path        = $Path
-                        Arguments   = ("--pool stratum$(If ($Pools.($_.Algorithm).SSL) { "s" } )+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).Pass))@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments   = ("--pool stratum$(If ($Pools.($_.Algorithm).SSL) { "s" } )+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).Pass))@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm   = $_.Algorithm
                         API         = "EthMiner"
                         Port        = $MinerAPIPort

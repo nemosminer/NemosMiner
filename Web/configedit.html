@@ -220,8 +220,9 @@
                 </div>
                 <div style="line-height:40%;">
                   <br>
-                </div>                <div title="Pools establish shortest network route based on your GEO location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
-                  <input type="checkbox" id="UseAnycast" name="UseAnycast"> Use Anycast
+                </div>
+                <div title="Pools establish shortest network route based on your GEO location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                  <input style="margin-left:15px" type="checkbox" id="UseAnycast" name="UseAnycast"> Use Anycast
                 </div>
                 <div style="line-height:100%;">
                   <br>
@@ -330,10 +331,10 @@
                   </div>
 
                   <div title="When unticked only the best 5 miners per device are shown&#10;when not benchmarking or measuring power usage&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle&#10;&#10;This will not affect the information available in the in Web GUI">
-                    <input type="checkbox" id="ShowAllMiners" name="ShowAllMiners"> Always show all miners in main text window
+                    <input type="checkbox" id="ShowAllMiners" name="ShowAllMiners"> Show all miners in main text window
                   </div>
                   <div title="When unticked information about previously run & failed miners is only shown&#10;when benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle&#10;&#10;This will not affect the information available in the in Web GUI">
-                    <input type="checkbox" id="UIStyle" name="UIStyle"> Always show full miner information in main text window
+                    <input type="checkbox" id="UIStyle" name="UIStyle"> Show full miner information in main text window
                   </div>
                   <div title="Show the 'Earning' column in the text window&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
                     <input type="checkbox" id="ShowEarning" name="ShowEarning"> Show Earning in main text window
@@ -343,6 +344,12 @@
                   </div>
                   <div title="Show the 'Accuracy' column in the text window&#10;Can be toggled by pressing 'a' in the text window while waiting for the next cycle">
                     <input type="checkbox" id="ShowAccuracy" name="ShowAccuracy"> Show Accuracy in main text window
+                  </div>
+                  <div title="Show the 'CoinName' column in the text window&#10;Can be toggled by pressing 'n' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowCoinName" name="ShowCoinName"> Show CoinName in main text window
+                  </div>
+                  <div title="Show the 'Currency' column in the text window&#10;Can be toggled by pressing 'y' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowCurrency" name="ShowCurrency"> Show Currency in main text window
                   </div>
                   <div style="line-height:100%;">
                     <br>
@@ -633,6 +640,8 @@
             if (config.ShowEarning) document.getElementById('ShowEarning').checked = true;
             if (config.ShowEarningBias) document.getElementById('ShowEarningBias').checked = true;
             if (config.ShowAccuracy) document.getElementById('ShowAccuracy').checked = true;
+            if (config.ShowCoinName) document.getElementById('ShowCoinName').checked = true;
+            if (config.ShowCurrency) document.getElementById('ShowCurrency').checked = true;
 
             if (config.CalculatePowerCost) document.getElementById('CalculatePowerCost').checked = true;
             else {
@@ -969,7 +978,9 @@
                 else config.UIStyle = "Light";
                 config.ShowEarning = document.getElementById('ShowEarning').checked;
                 config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
-                config.ShowAccuracy=  document.getElementById('ShowAccuracy').checked;
+                config.ShowAccuracy =  document.getElementById('ShowAccuracy').checked;
+                config.ShowCoinName =  document.getElementById('ShowCoinName').checked;
+                config.ShowCurrency =  document.getElementById('ShowCurrency').checked;
 
                 config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
                 document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[', '').replace(']', '');

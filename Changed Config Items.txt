@@ -122,11 +122,11 @@ New Config Items
 # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
   "MinerWindowStyleNormalWhenBenchmarking": true, 
 
-# MPH API Key (required to retrieve balance information)
-  "MPHAPIKey": "",
+# MiningPoolHub API Key (required to retrieve balance information)
+  "MinungPoolHubAPIKey": "",
 
-# MPH UserName, if left empty then $UserName is used
-  "MPHUserName": "",
+# MiningPoolHub UserName, if left empty then $UserName is used
+  "MiningPoolHubUserName": "",
 
 # NiceHash API Key (required to retrieve balance information)
   "NicehashAPIKey": "",
@@ -183,6 +183,12 @@ New Config Items
 
 # Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
   "ShowAllMiner": false,
+
+# Show CoinName column in miner overview
+  "ShowCoinName": true,
+
+# Show Currency column in miner overview
+  "ShowCurrency": true,
 
 # Show miner earning column in miner overview
   "ShowEarning": true,

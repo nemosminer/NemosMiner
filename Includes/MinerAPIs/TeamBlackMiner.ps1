@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.0.0.4 (RC4)
-Version date:   06 October 2021
+Version:        4.0.0.5 (RC5)
+Version date:   16 October 2021
 #>
 
 using module ..\Include.psm1
@@ -48,7 +48,8 @@ class TeamBlackMiner : Miner {
         $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]$Data.total_accepted
         $Shares_Rejected = [Int64]$Data.total_rejected
-        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        $Shares_Stale = [Int64]$Data.total_sta
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, ($Shares_Rejected + $Shares_Stale), ($Shares_Accepted + $Shares_Rejected + $Shares_Stale)) }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()

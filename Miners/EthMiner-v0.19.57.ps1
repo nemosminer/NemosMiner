@@ -17,49 +17,50 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
 )
 
-$Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
-    If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
+If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+    $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
+        If ($Miner_Devices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
-        $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object Type -eq $_.Type | Where-Object { $Pools.($_.Algorithm).Host } | ForEach-Object { 
-            $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
-            $MinMemGB = $_.MinMemGB
-            If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+            $AlgorithmDefinitions | Where-Object Type -eq $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-                $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
-                # Get arguments for active miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @() -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$|^ZergPool(|Coins)") { $Protocol = "-P stratum2+tcp" }
-                ElseIf ($Pools.($_.Algorithm).Name -like "HiveON*") { $Protocol = "-P stratum1+tcp" }
-                Else { $Protocol = "-P stratum+tcp" }
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
+                    # Get arguments for available miner devices
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @() -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $WarmupTimes[1] += 30 }
+                    If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$|^ZergPool(|Coins)") { $Protocol = "--pool stratum2+tcp" }
+                    ElseIf ($Pools.($_.Algorithm).Name -like "HiveON*") { $Protocol = "--pool stratum1+tcp" }
+                    Else { $Protocol = "--pool stratum+tcp" }
 
-                $Pass = $($Pools.($_.Algorithm).Pass)
-                If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
-                [PSCustomObject]@{ 
-                    Name        = $Miner_Name -replace " "
-                    DeviceName  = $Miner_Devices.Name
-                    Type        = $_.Type
-                    Path        = $Path
-                    Arguments   = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$Pass@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
-                    Algorithm   = $_.Algorithm
-                    API         = "EthMiner"
-                    Port        = $MinerAPIPort
-                    URI         = $Uri
-                    MinerUri    = "http://localhost:$($MinerAPIPort)"
-                    WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                    If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[1] += 30 }
+
+                    $Pass = $($Pools.($_.Algorithm).Pass)
+                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
+
+                    [PSCustomObject]@{ 
+                        Name        = $Miner_Name -replace " "
+                        DeviceName  = $AvailableMiner_Devices.Name
+                        Type        = $_.Type
+                        Path        = $Path
+                        Arguments   = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$Pass@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ' ')" -replace "\s+", " ").trim()
+                        Algorithm   = $_.Algorithm
+                        API         = "EthMiner"
+                        Port        = $MinerAPIPort
+                        URI         = $Uri
+                        MinerUri    = "http://localhost:$($MinerAPIPort)"
+                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                    }
                 }
             }
         }
     }
 }
-

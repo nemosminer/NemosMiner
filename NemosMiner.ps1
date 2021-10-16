@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.4 (RC4)
-Version date:   06 October 2021
+Version:        4.0.0.5 (RC5)
+Version date:   16 October 2021
 #>
 
 [CmdletBinding()]
@@ -181,6 +181,10 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowEarning = $true, # Show miner earning column in miner overview
     [Parameter(Mandatory = $false)]
+    [Switch]$ShowCoinName = $true, # Show CoinName column in miner overview
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowCurrency = $true, # Show Currency column in miner overview
+    [Parameter(Mandatory = $false)]
     [Switch]$ShowEarningBias = $true, # Show miner earning bias column in miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerFee = $true, # Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
@@ -255,7 +259,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.4" #RC4
+    Version      = [System.Version]"4.0.0.5" #RC5
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -458,6 +462,8 @@ $Variables.ShowPowerCost = $Config.ShowPowerCost
 $Variables.ShowPowerUsage = $Config.ShowPowerUsage
 $Variables.ShowProfit = $Config.ShowProfit
 $Variables.ShowProfitBias = $Config.ShowProfitBias
+$Variables.ShowCoinName = $Config.ShowCoinName
+$Variables.ShowCurrency = $Config.ShowCurrency
 $Variables.UIStyle = $Config.UIStyle
 
 If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
@@ -902,8 +908,8 @@ Function Global:TimerUITick {
                 If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" } }
                 @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
                 If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
-                If ($Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
-                If ($Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
+                If ($Variables.ShowCurrency -and $Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
+                If ($Variables.ShowCoinName -and $Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
             )
             If ($Variables.CalculatePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
             $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { $_.DeviceName } | Sort-Object Name | ForEach-Object { 
@@ -1003,7 +1009,7 @@ Function Global:TimerUITick {
                 }
             }
 
-            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToString('G'))   |   Hot Keys: [abceilmpstru]   |   Press 'h' for help"
+            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToString('G'))   |   Hot Keys: [abceilmnpstruy]   |   Press 'h' for help"
             Write-Host ("-" * $StatusMessage.Length)
             Write-Host -ForegroundColor Yellow $StatusMessage
             Remove-Variable StatusMessage
@@ -1057,13 +1063,15 @@ Function MainForm_Load {
                             Write-Host "c: Toggle Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost column"
                             Write-Host "e: Toggle " -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings column"
                             Write-Host "i: Toggle Earning B" -NoNewline; Write-Host "i" -ForegroundColor Cyan -NoNewline; Write-Host "as column"
-                            Write-Host "l: Toggle listing Al" -NoNewline; Write-Host "l" -ForegroundColor Cyan -NoNewline; Write-Host " available miners"
+                            Write-Host "l: Toggle listing al" -NoNewline; Write-Host "l" -ForegroundColor Cyan -NoNewline; Write-Host " available miners"
                             Write-Host "m: Toggle " -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees column"
+                            Write-Host "n: Toggle Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame column"
                             Write-Host "p: Toggle " -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool Fees column"
                             Write-Host "r: Toggle P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias column"
                             Write-Host "s: Toggle " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle (full or compact)"
                             Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column"
                             Write-Host "u: Toggle Power " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "sage column"
+                            Write-Host "m: Toggle Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host " column"
                         }
                         "i" { 
                             $Variables.ShowEarningBias = -not $Variables.ShowEarningBias
@@ -1080,6 +1088,12 @@ Function MainForm_Load {
                         "m" { 
                             $Variables.ShowMinerFee = -not $Variables.ShowMinerFee
                             Write-Host "Toggled displaying " -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees to " -NoNewline; If ($Variables.ShowMinerFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            $Variables.RefreshNeeded = $true
+                            Start-Sleep -Seconds 2
+                        }
+                        "n" { 
+                            $Variables.ShowCoinName = -not $Variables.ShowCoinName
+                            Write-Host "Toggled displaying Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame to " -NoNewline; If ($Variables.ShowCoinName) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }
@@ -1110,6 +1124,12 @@ Function MainForm_Load {
                         "u" { 
                             $Variables.ShowPowerUsage = -not $Variables.ShowPowerUsage
                             Write-Host "Toggled displaying power " -NoNewline; Write-Host "u" -ForegroundColor Cyan -NoNewline; Write-Host "sage to " -NoNewline; If ($Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            $Variables.RefreshNeeded = $true
+                            Start-Sleep -Seconds 2
+                        }
+                        "y" { 
+                            $Variables.ShowCurrency = -not $Variables.ShowCurrency
+                            Write-Host "Toggled displaying Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host " to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }

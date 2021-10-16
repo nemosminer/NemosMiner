@@ -30,24 +30,21 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     $Devices | Where-Object Type -EQ "NVIDIA" | Select-Object Model -Unique | ForEach-Object { 
 
-        If ($SelectedDevices = @($Devices | Where-Object Model -EQ $_.Model)) { 
+        If ($Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model)) { 
 
-            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | ForEach-Object {
+            $AlgorithmDefinitions | ConvertTo-Json | ConvertFrom-Json | ForEach-Object {
 
-                $Arguments = $_.Arguments
                 $MinMemGB = If ($Pools.($_.Algorithm[0]).DAGSize -gt 0 -and -not $_.Algorithm[1]) { ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
-                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    If ($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
-
-                    # Get arguments for active miner devices
-                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "lhr-algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    If ($AvailableMiner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                    # Get arguments for available miner devices
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "lhr-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
                         $Stratum = "stratum2"
@@ -77,27 +74,27 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     $Pass = " --pass $($Pools.($_.Algorithm[0]).Pass)"
-                    If ($Pools.($_.Algorithm[0]).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
-                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub*") { $WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
-                    If ($Arguments -notmatch "--kernel [0-9]") { $WarmupTimes[1] += 15 } # Allow extra seconds for kernel auto tuning
+                    If ($Pools.($_.Algorithm[0]).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub*") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
+                    If ($_.Arguments -notmatch "--kernel [0-9]") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for kernel auto tuning
 
                     If ($_.Algorithm[1]) { 
-                        $Arguments += " --url2 $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "stratum+ssl://" } Else { "stratum+tcp://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user2 $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) --pass2 $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
+                        $_.Arguments += " --url2 $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "stratum+ssl://" } Else { "stratum+tcp://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user2 $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) --pass2 $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
                     }
 
                     [PSCustomObject]@{ 
                         Name            = $Miner_Name -replace " "
-                        DeviceName      = $Miner_Devices.Name
+                        DeviceName      = $AvailableMiner_Devices.Name
                         Type            = "NVIDIA"
                         Path            = $Path
-                        Arguments       = ("$Arguments --url $Stratum$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)$User$Pass --no-strict-ssl$(If ($Variables.IsLocalAdmin -eq $true -and $Config.UseMinerTweaks -eq $true) { " --mt 3" }) $Coin --no-watchdog --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-read-only --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --devices $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments) --url $Stratum$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)$User$Pass --no-strict-ssl$(If ($Variables.IsLocalAdmin -eq $true -and $Config.UseMinerTweaks -eq $true) { " --mt 3" }) $Coin --no-watchdog --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-read-only --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --devices $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API             = "Trex"
                         Port            = $MinerAPIPort
                         URI             = $Uri
                         Fee             = $_.Fee # Dev fee
                         MinerUri        = "http://localhost:$($MinerAPIPort)/trex"
-                        WarmupTimes     = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                        WarmupTimes     = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }

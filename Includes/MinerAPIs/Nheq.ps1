@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Nheq.ps1
-Version:        4.0.0.4 (RC4)
-Version date:   06 October 2021
+Version:        4.0.0.5 (RC5)
+Version date:   16 October 2021
 #>
 
 using module ..\Include.psm1
@@ -43,7 +43,7 @@ class Nheq : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithm[0]
-        $HashRate_Value = [Double]($Data.result.speed_ips | Measure-Object -Sum).Sum
+        $HashRate_Value = [Double]($Data.result.speed_ips | Measure-Object -Sum).Sum * 1e6
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }

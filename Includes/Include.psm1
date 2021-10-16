@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.4 (RC4)
-Version date:   06 October 2021
+Version:        4.0.0.5 (RC5)
+Version date:   16 October 2021
 #>
 
 # Window handling
@@ -277,7 +277,7 @@ Class Miner {
 
     hidden StartMining() { 
         $this.Status = [MinerStatus]::Failed
-        $this.StatusMessage = "Launching..."
+        $this.StatusMessage = "Launching {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}..."
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.New = $true
         $this.Activated++
@@ -422,9 +422,6 @@ Class Miner {
             If ($_.State -eq [DeviceState]::Disabled) { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
             Else { $_.Status = $this.StatusMessage }
         }
-
-        $this.WorkersRunning = @()
-        $this.Info = ""
     }
 
     [DateTime]GetActiveLast() { 

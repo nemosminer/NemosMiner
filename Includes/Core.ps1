@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.4 (RC4)
-Version date:   06 October 2021
+Version:        4.0.0.5 (RC5)
+Version date:   16 October 2021
 #>
 
 using module .\Include.psm1
@@ -596,7 +596,7 @@ Function Start-Cycle {
             Else { 
                 Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
                 $Miner.SetStatus([MinerStatus]::Failed)
-                $Miner.StatusMessage = "Exited unexpectedly."
+                $Miner.StatusMessage = "Error: {$(($Miner.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} exited unexpectedly"
             }
         }
 
@@ -702,7 +702,7 @@ Function Start-Cycle {
         }
     )
 
-    $CompareMiners = [Miner[]](Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Algorithm, Name, Path -IncludeEqual)
+    $CompareMiners = [Miner[]](Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Algorithm -IncludeEqual)
 
     $NewMiners_Jobs | ForEach-Object { $_ | Remove-Job -Force }
 
@@ -1010,8 +1010,10 @@ Function Start-Cycle {
         Else { 
             Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
             $Miner.SetStatus([MinerStatus]::Failed)
-            $Miner.StatusMessage = "Exited unexpectedly."
+            $Miner.StatusMessage = "Error: {$(($Miner.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} exited unexpectedly"
         }
+        $Miner.WorkersRunning = @()
+        $Miner.Info = ""
     }
     Remove-Variable CompareMiners, Miners -ErrorAction Ignore
 
@@ -1168,13 +1170,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 # Miner crashed
                 Write-Message -Level Error "Miner '$($Miner.Info)' exited unexpectedly."
                 $Miner.SetStatus([MinerStatus]::Failed)
-                $Miner.StatusMessage = "Exited unexpectedly."
+                $Miner.StatusMessage = "Error: {$(($Miner.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} exited unexpectedly"
             }
             ElseIf ($Miner.DataReaderJob.State -ne [MinerStatus]::Running) { 
                 # Miner data reader process failed
                 Write-Message -Level Error "Miner data reader '$($Miner.Info)' exited unexpectedly."
-                $Miner.StatusMessage = "Miner data reader exited unexpectedly."
                 $Miner.SetStatus([MinerStatus]::Failed)
+                $Miner.StatusMessage = "Error: {$(($Miner.WorkersRunning.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')} Miner data reader exited unexpectedlye"
             }
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                 # Set miner priority

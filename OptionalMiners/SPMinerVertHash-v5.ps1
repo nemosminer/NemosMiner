@@ -14,39 +14,38 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
-        If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
+        If ($Miner_Devices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
             $MinerAPIPort = 0 # Miner has no API Port
 
-            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
-                $Arguments = $_.Arguments
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+
                 $MinMemGB = $_.MinMemGB
-                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
 
                 If ($_.Algorithm -eq "VertHash" -and (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf ))) { 
                     If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
-                    $WarmupTimes[0] += 480; $WarmupTimes[1] += 480 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
+                    $_.WarmupTimes[0] += 480; $_.WarmupTimes[1] += 480 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
                 }
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )) { 
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )) { 
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    # Get arguments for active miner devices
-                    # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get arguments for available miner devices
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name -replace " "
-                        DeviceName  = $Miner_Devices.Name
+                        DeviceName  = $AvailableMiner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path
-                        Arguments   = ("$Arguments $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',') --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)" -replace "\s+", " ").trim()
+                        Arguments   = ("$($_.Arguments) $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',') --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)" -replace "\s+", " ").trim()
                         Algorithm   = $_.Algorithm
                         API         = "NoAPI"
                         Port        = $MinerAPIPort
                         URI         = $Uri
                         Fee         = 0.01
-                        WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }

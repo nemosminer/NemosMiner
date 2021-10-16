@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.4 (RC4)
-Version date:   06 October 2021
+Version:        4.0.0.5 (RC5)
+Version date:   16 October 2021
 #>
 
 Function Initialize-API { 
@@ -954,10 +954,6 @@ Function Start-APIServer {
                 If ($null -eq $Data) { 
                     $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                 }
-
-                # "********************************* Begin $Path *******************************" >> ".\Debug\API_DATA.TXT"
-                # $Data >> ".\Debug\API_DATA.TXT" # Maybe helps with windows 11?
-                # "********************************* End $Path *******************************" >> ".\Debug\API_DATA.TXT"
 
                 # Send the response
                 $Response.Headers.Add("Content-Type", $ContentType)

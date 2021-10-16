@@ -31,22 +31,19 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
-        If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
+        If ($Miner_Devices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
-            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-                $MinMemGB = $_.MinMemGB
-                $WarmupTimes =  $_.WarmupTimes
+                $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
-                If ($Pools.($_.Algorithm).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.Type -ne "NVIDIA" -or [Double]($_.OpenCL.ComputeCapability) -gt 5.0 })) { 
 
-                If ($Miner_Devices = @($SelectedDevices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } | Where-Object { $_.Type -ne "NVIDIA" -or [Double]($_.OpenCL.ComputeCapability) -gt 5.0 })) { 
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
-
-                    $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Algorithm) + @($($Pools.($_.Algorithm).Name -replace "24hr$|Coins$|Plus$|CoinsPlus$")) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) + @(($Miner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($Miner_Devices | Sort-Object Name | Where-Object Model -EQ $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').ini")
+                    $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Algorithm) + @($($Pools.($_.Algorithm).Name -replace "24hr$|Coins$|Plus$|CoinsPlus$")) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -EQ $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').ini")
                     If ($Config.UseMinerTweaks -eq $true) { $ConfigFileName = $ConfigFileName -replace '\.ini$', '-memTweak.ini' }
                     $Arguments = [PSCustomObject]@{ 
                         Arguments  = $ConfigFileName
@@ -62,16 +59,16 @@ mport=0
 noLog=true
 powerLimits=0
 rigName=$($Config.WorkerName)
-rigPassword=$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { ",1=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })
+rigPassword=$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { ",1=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })
 watchdog=false
 webPort=$($MinerAPIPort)
 useSSL=$($Pools.($_.Algorithm).SSL)
 
 coin=$($_.Coin)
-devices=$(($Miner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')
+devices=$(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')
 pool1=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)
 wallet=$($Pools.($_.Algorithm).User -split '\.' | Select-Object -Index 0)
-$(If ($Pools.($_.Algorithm).DAGSize -gt 0) { "protocol=stratum" } )"
+$(If ($Pools.($_.Algorithm).DAGSize -gt 0 -and $Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$|^NiceHash$") { "protocol=stratum" } )"
                         }
                     }
 
@@ -79,7 +76,7 @@ $(If ($Pools.($_.Algorithm).DAGSize -gt 0) { "protocol=stratum" } )"
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name -replace " "
-                        DeviceName  = $Miner_Devices.Name
+                        DeviceName  = $AvailableMiner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path
                         Arguments   = $Arguments | ConvertTo-Json -Depth 10 -Compress
@@ -89,7 +86,7 @@ $(If ($Pools.($_.Algorithm).DAGSize -gt 0) { "protocol=stratum" } )"
                         URI         = $Uri
                         Fee         = $_.Fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)/#/"
-                        WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }

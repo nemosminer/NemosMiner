@@ -6,6 +6,28 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.5 (RC5) 16.10.2021
+=============================================
+
+Enhancements:
+- Miners: Optimize code, improve readability
+- Web GUI: Update bootstrap to version 5.1.2
+- Web GUI: Dashboard show launched (instead of running) miners
+- Web GUI / Config Editor: add config items 'ShowCoinName' & 'ShowCurrency'
+
+Fixes:
+- NHec miner API: Reported HashRate in H/s instead of MH/s
+- Trex-v0.24.0: Dual mining broken
+- Web GUI: Revert bootstrap to version 4.6.1
+
+Miner updates:
+- BMiner-v16.4.7
+- JayddeeCpu-v3.18.1
+- SgMinerFancyIX-v0.7.6
+- TeamBlackMiner-v1.15
+- Trex-v0.24.2
+
+
 Changelog NemosMiner 4.0.0.4 (RC4) 06.10.2021
 =============================================
 

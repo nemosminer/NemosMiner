@@ -44,75 +44,72 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
     $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
-        If ($SelectedDevices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
+        If ($Miner_Devices = @($Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model)) { 
 
-            $MinerAPIPort = [UInt16]($Config.APIPort + ($SelectedDevices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+            $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-                $Arguments = $_.Arguments
-                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
-                $MinMemGB = $_.MinMemGB
-                If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { $MinMemGB = ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum }
+                $MinMemGB = If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
-                $Miner_Devices = @($SelectedDevices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
+                $AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
 
-                If ($_.Algorithm[1]) { $Miner_Devices = @($Miner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX (5|6)[0-9]{3}.*" }) } # Dual mining not supported on Navi
+                If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX (5|6)[0-9]{3}.*" }) } # Dual mining not supported on Navi
 
-                If ($Miner_Devices) { 
+                If ($AvailableMiner_Devices) { 
 
-                    $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
 
-                    # Get arguments for active miner devices
-                    # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("amd", "eres", "nvidia") -DeviceIDs $Miner_Devices.$DeviceEnumerator
+                    # Get arguments for available miner devices
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("amd", "eres", "nvidia") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     $Pass = $($Pools.($_.Algorithm[0]).Pass)
-                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($SelectedDevices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
-                    $Arguments += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $Pass"
+                    $_.Arguments += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $Pass"
 
                     If ($Pools.($_.Algorithm[0]).DAGsize -gt 0) {
                         If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { 
-                            $Arguments += " -proto 1"
+                            $_.Arguments += " -proto 1"
                         }
                         If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$") { 
-                            $Arguments += " -proto 4"
+                            $_.Arguments += " -proto 4"
                         }
                     }
 
-                    If (($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB -ge 2 * $MinMemGB) { # Faster kernels require twice as much VRAM
-                        If ($Miner_Devices.Vendor -eq "AMD" -and -not $_.Algorithm[1]) { # Dual mining on AMD not supported
-                            $Arguments += " -clkernel 3"
+                    If (($AvailableMiner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB -ge 2 * $MinMemGB) { # Faster kernels require twice as much VRAM
+                        If ($AvailableMiner_Devices.Vendor -eq "AMD" -and -not $_.Algorithm[1]) { # Dual mining on AMD not supported
+                            $_.Arguments += " -clkernel 3"
                         }
-                        ElseIf ($Miner_Devices.Vendor -eq "NVIDIA") { 
-                            $Arguments += " -nvkernel 3" # Miner will switch to nvKernel 2 if unsuported
+                        ElseIf ($AvailableMiner_Devices.Vendor -eq "NVIDIA") { 
+                            $_.Arguments += " -nvkernel 3" # Miner will switch to nvKernel 2 if unsuported
                         }
                     }
 
                     If ($_.Algorithm[1]) { 
-                        $Arguments += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
+                        $_.Arguments += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
                     }
 
                     If ($Config.UseMinerTweaks -eq $true) { 
-                        $Arguments += $_.Tuning
+                        $_.Arguments += $_.Tuning
                     }
 
-                    If (-not $_.Intensity) { $WarmupTimes[0] += 45; $WarmupTimes[1] += 45 } # Allow extra seconds for auto-tuning
-                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { $WarmupTimes[0] += 15; $WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
+                    If (-not $_.Intensity) { $_.WarmupTimes[0] += 45; $_.WarmupTimes[1] += 45 } # Allow extra seconds for auto-tuning
+                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[0] += 15; $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name -replace " "
-                        DeviceName  = $Miner_Devices.Name
+                        DeviceName  = $AvailableMiner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path
-                        Arguments   = ("$Arguments -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($Miner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments   = ("$($_.Arguments) -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:d}' -f ($_.$DeviceEnumerator + 1) }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm   = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
                         API         = "EthMiner"
                         Port        = $MinerAPIPort
                         URI         = $Uri
                         Fee         = $_.Fee # Dev fee
                         MinerUri    = "http://localhost:$($MinerAPIPort)"
-                        WarmupTimes = $WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
+                        WarmupTimes = $_.WarmupTimes # First value: warmup time (in seconds) until miner sends stable hashrates that will count for benchmarking; second value: extra time (added to $Config.Warmuptimes[1] in seconds) until miner must send first sample, if no sample is received miner will be marked as failed
                     }
                 }
             }
