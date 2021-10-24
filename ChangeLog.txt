@@ -13,7 +13,7 @@ Enhancements:
 - Core: Optimize mail loop processing, do other things whils waiting for pool data
 - Web GUI: Update jquery to version 3.6.0
 
-Miner Uodates:
+Miner Updates:
 - JayddeeCpu-v3.18.2
 - lolMiner-v1.34
 - NanoMiner-v3.3.14
