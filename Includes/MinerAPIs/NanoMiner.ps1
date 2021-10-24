@@ -18,11 +18,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.0.0.5 (RC5)
-Version date:   16 October 2021
+Version:        4.0.0.6 (RC6)
+Version date:   24 October 2021
 #>
-
-using module ..\Include.psm1
 
 class NanoMiner : Miner { 
     CreateConfigFiles() { 
@@ -33,6 +31,10 @@ class NanoMiner : Miner {
             #Write config files. Do not overwrite existing files to preserve optional manual customization
             If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
                 $Parameters.ConfigFile.Content | Set-Content $ConfigFile -ErrorAction SilentlyContinue -Force
+            }
+            # Link to VertHash.dat file
+            If ($this.Name -like "NanoMiner*" -and $this.Workers.Pool.Algorithm -eq "VertHash" -and ((Get-Item "$(Split-Path $this.Path)\VertHash.dat" -ErrorAction Ignore).length -ne 1283457024) -and (Test-Path ".\Cache\VertHash.dat" -ErrorAction Ignore)) { 
+                New-Item -ItemType HardLink -Path "$(Split-Path $this.Path)\VertHash.dat" -Target ".\Cache\VertHash.dat" -ErrorAction Ignore | Out-Null
             }
         }
         Catch { 

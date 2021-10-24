@@ -10,9 +10,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo beamhashIII --cuda 0 --opencl 1" } # Algorithm not supported on AMD
     # [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo C30CTX --cuda 0 --opencl 1" } # Algorithm not supported on AMD
     # [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckoo29 --cuda 0 --opencl 1" } # Algorithm not supported on AMD
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.33 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.33 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash210_9 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.33 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.34 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.34 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash210_9 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.34 is fastest
     [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.7b may be faster, but I see lower speed at the pool
@@ -52,7 +52,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 If ($AvailableMiner_Devices) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator

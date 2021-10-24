@@ -2,13 +2,13 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\lolminer.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.33/lolMiner_v1.33_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.34/lolMiner_v1.34_Win64.zip"
 $DeviceEnumerator = "Bus"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.015; MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo AUTOLYKOS2" }
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algo BEAM-III" }
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "AMD"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo BEAM-III" }
     [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "AMD"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(30, 30); Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "AMD"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "AMD"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-32" }
@@ -26,7 +26,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.007; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(60, 60); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.7b is faster
 
     [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "NVIDIA"; Fee = 0.015; MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo AUTOLYKOS2" }
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 0);   Arguments = " --algo BEAM-III" } # NBMiner-v39.5 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algo BEAM-III" } # NBMiner-v39.5 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(30, 30); Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algo CR29-32" }
@@ -63,7 +63,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "coin") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator

@@ -84,7 +84,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "NVIDIA"; MinMemGB = 4;    MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = 3;    MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo kawpow" } # Trex-v0.24.2 is fastest, but has 1% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = 3;    MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo kawpow" } # Trex-v0.24.4 is fastest, but has 1% miner fee
     [PSCustomObject]@{ Algorithm = "Randomx";              Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo rx/0" }
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "NVIDIA"; MinMemGB = 1;    MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo rx/kev" }
@@ -107,7 +107,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { $_.Type -eq "CPU" -or ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                     If ($_.Type -eq "AMD") { $_.Arguments += " --no-cpu --opencl --opencl-devices=$(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')" }
                     If ($_.Type -eq "CPU") { $_.Arguments += " --threads=$($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1)" }

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.18.1/cpuminer-opt-3.18.1-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.18.2/cpuminer-opt-3.18.2-windows.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AvailableMiner_Devices = @($Devices | Where-Object Type -EQ "CPU")
@@ -29,7 +29,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
     $AvailableMiner_Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $MinerAPIPort = [UInt16]($Config.APIPort + ($AvailableMiner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
-        $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+        $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
         $AlgorithmDefinitions | ConvertTo-Json | ConvertFrom-Json | ForEach-Object {
 

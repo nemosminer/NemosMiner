@@ -6,6 +6,22 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.6 (RC6) 24.10.2021
+=============================================
+
+Enhancements:
+- Core: Optimize mail loop processing, do other things whils waiting for pool data
+- Web GUI: Update jquery to version 3.6.0
+
+Miner Uodates:
+- JayddeeCpu-v3.18.2
+- lolMiner-v1.34
+- NanoMiner-v3.3.14
+- SRBMinerMulti-v0.8.1
+- TeamBlackMiner-v1.18
+- TeamRed-v0.8.6.2
+
+
 Changelog NemosMiner 4.0.0.5 (RC5) 16.10.2021
 =============================================
 
@@ -25,7 +41,7 @@ Miner updates:
 - JayddeeCpu-v3.18.1
 - SgMinerFancyIX-v0.7.6
 - TeamBlackMiner-v1.15
-- Trex-v0.24.2
+- Trex-v0.24.4
 
 
 Changelog NemosMiner 4.0.0.4 (RC4) 06.10.2021

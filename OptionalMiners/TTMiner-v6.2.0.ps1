@@ -12,7 +12,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v5.7b is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.7b is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.7b is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo KAWPOW" } # Trex-v0.24.2 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo KAWPOW" } # Trex-v0.24.4 is fastest
     [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
     [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo PROGPOW" } # Sero
     [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo UBQHASH -intensity 15" }
@@ -33,7 +33,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
 
                     If ($AvailableMiner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -le 2 }) { $_.Arguments = $_.Arguments -replace " -intensity [0-9\.]+" }
                     # Get arguments for available miner devices

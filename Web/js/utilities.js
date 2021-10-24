@@ -11,49 +11,45 @@ function formatMiners(data) {
     // that is easier to display and manipulate in a table
     $.each(data, function(index, item) {
       // Format miner link
-      if (item.MinerUri) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
+      if (item.MinerUri != null) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
       else item.tName = item.Name;
   
       // Format the device(s)
-      if (item.DeviceName) item.tDevices = item.DeviceName.toString();
+      if (item.DeviceName != null) item.tDevices = item.DeviceName.toString();
       else item.tDevices = '';
 
       // Format the algorithm data
-      if (item.Algorithm.length > 0) {
-        item.tPrimaryAlgorithm = item.Algorithm[0];
-        if (item.Algorithm.length > 1) item.tSecondaryAlgorithm = item.Algorithm[1];
-        else item.tSecondaryAlgorithm = "";
-      }
+      if (item.Algorithm[0] != null) item.tPrimaryAlgorithm = item.Algorithm[0];
       else item.tPrimaryAlgorithm = "";
-
+      if (item.Algorithm[1] != null) item.tSecondaryAlgorithm = item.Algorithm[1];
+      else item.tSecondaryAlgorithm = "";
+ 
       // Format the pool data
-      if (item.Workers.length > 0) {
+      if (item.Workers[0] != null) {
+        item.tPrimaryAlgorithm = item.Algorithm[0];
         item.tPrimaryMinerFee = item.Workers[0].Fee;
         item.tPrimarySpeed = item.Workers[0].Speed;
-        if (item.Workers[0].Pool) {
-          item.tPrimaryPool = item.Workers[0].Pool.Name;
-          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
-        }
-        if (item.Workers.length > 1) {
-          item.tSecondaryMinerFee = item.Workers[1].Fee;
-          item.tSecondarySpeed = item.Workers[1].Speed;
-          if (item.Workers[1].Pool) {
-            item.tSecondaryPool = item.Workers[1].Pool.Name;
-            item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
-          }
-        }
-        else {
-          item.tSecondaryPool = "";
-          item.tSecondaryPoolFee = null;
-          item.tSecondaryMinerFee = null;
-          item.tSecondarySpeed = null;
-        }
+        item.tPrimaryPool = item.Workers[0].Pool.Name;
+        item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
       }
       else {
         item.tPrimaryPool = "";
         item.tPrimaryPoolFee = null;
         item.tPrimaryMinerFee = null;
         item.tPrimarySpeed = null;
+      }
+      if (item.Workers[1] != null) {
+        item.tSecondaryAlgorithm = item.Algorithm[1]
+        item.tSecondaryMinerFee = item.Workers[1].Fee;
+        item.tSecondarySpeed = item.Workers[1].Speed;
+        item.tSecondaryPool = item.Workers[1].Pool.Name;
+        item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+      }
+      else {
+        item.tSecondaryPool = "";
+        item.tSecondaryPoolFee = null;
+        item.tSecondaryMinerFee = null;
+        item.tSecondarySpeed = null;
       }
 
       // Format margin of error
@@ -67,7 +63,7 @@ function formatMiners(data) {
       item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
 
       // Format the reason(s)
-      if (item.Reason) item.tReason = item.Reason.join('; ');
+      if (item.Reason != null) item.tReason = item.Reason.join('; ');
       else item.tReason = '';
 
       // Format status
@@ -209,7 +205,7 @@ function formatTimeSpan(timespan) {
 
 function createUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-     return v.toString(16);
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
   });
 }

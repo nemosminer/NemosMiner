@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.5 (RC5)
-Version date:   16 October 2021
+Version:        4.0.0.6 (RC6)
+Version date:   24 October 2021
 #>
 
 using module .\Include.psm1
@@ -228,12 +228,41 @@ Function Start-Cycle {
         # Start Brain jobs (will pick up all newly added pools)
         Start-BrainJob
 
+        # Clear pools if pools config has changed to avoid double pools with different wallets/usernames
+        If (($Config.PoolsConfig | ConvertTo-Json -Depth 10 -Compress) -ne ($Variables.PoolsConfigCached | ConvertTo-Json -Depth 10 -Compress)) { $Variables.Pools = [Miner]::Pools }
+
+        # Load information about the pools
+        If ($PoolNames -and (Test-Path -Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
+            Write-Message -Level Verbose "Waiting for pool data ($($PoolNames -join ', '))..."
+            $NewPools_Jobs = @(
+                $PoolNames | ForEach-Object { 
+                    If ($ReadPools) { 
+                        $TmpPools = Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
+                    }
+                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
+                }
+            )
+
+            # Retrieve collected pool data
+            $NewPools = @($NewPools_Jobs | ForEach-Object { $_ | Get-Job | Wait-Job -Timeout ([Int]$Config.PoolTimeout) | Receive-Job } | ForEach-Object { If (-not $_.Content.Name) { $_.Content | Add-Member Name $_.Name -Force }; $_.Content -as [Pool] } )
+            $NewPools_Jobs | ForEach-Object { $_ | Get-Job | Remove-Job -Force }
+            Remove-Variable NewPools_Jobs
+
+            If ($PoolNoData = @($PoolNames | ForEach-Object { If (-not ($NewPools | Where-Object Name -EQ $_ )) { $_ } })) { 
+                Write-Message -Level Warn "No data received from pool$(If ($PoolNoData.Count -gt 1) { "s" } ) ($($PoolNoData -join ', '))." -Console
+            }
+            Remove-Variable PoolNoData
+        }
+        Else { 
+            Write-Message -Level Warn "No configured pools - retrying in 10 seconds..."
+            Start-Sleep -Seconds 10
+            Continue
+        }
+
         # Load currency exchange rates from min-api.cryptocompare.com
         $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
         $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
-        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.BalancesTrackerPollInterval -lt 1) { 
-            Get-Rate
-        }
+        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.BalancesTrackerPollInterval -lt 1) { Get-Rate }
 
         # Power cost preparations
         $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
@@ -301,9 +330,6 @@ Function Start-Cycle {
         $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
         $Variables.BasePowerCostBTC = [Double]($Config.IdlePowerUsageW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
 
-        # Clear pools if pools config has changed to avoid double pools with different wallets/usernames
-        If (($Config.PoolsConfig | ConvertTo-Json -Depth 10 -Compress) -ne ($Variables.PoolsConfigCached | ConvertTo-Json -Depth 10 -Compress)) { $Variables.Pools = [Miner]::Pools }
-
         # Load unprofitable algorithms
         If (Test-Path -Path ".\Data\UnprofitableAlgorithms.json" -PathType Leaf -ErrorAction Ignore) { 
             $Variables.UnprofitableAlgorithms = Get-Content ".\Data\UnprofitableAlgorithms.json" | ConvertFrom-Json -ErrorAction SilentlyContinue -AsHashtable | Get-SortedObject
@@ -313,30 +339,11 @@ Function Start-Cycle {
             $Variables.UnprofitableAlgorithms = $null
         }
 
-        # Load information about the pools
-        If ($PoolNames -and (Test-Path -Path ".\Pools" -PathType Container -ErrorAction Ignore)) { 
-            Write-Message -Level Verbose "Waiting for pool data ($($PoolNames -join ', '))..."
-            $NewPools_Jobs = @(
-                $PoolNames | ForEach-Object { 
-                    Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
-                }
-            )
+        # Read all stats, will remove those from memory that no longer exist as file
+        Get-Stat
 
-            # Retrieve collected pool data
-            $NewPools = @($NewPools_Jobs | ForEach-Object { $_ | Get-Job | Wait-Job -Timeout ([Int]$Config.PoolTimeout) | Receive-Job } | ForEach-Object { If (-not $_.Content.Name) { $_.Content | Add-Member Name $_.Name -Force }; $_.Content -as [Pool] } )
-            $NewPools_Jobs | ForEach-Object { $_ | Get-Job | Remove-Job -Force }
-            Remove-Variable NewPools_Jobs
-
-            If ($PoolNoData = @($PoolNames | ForEach-Object { If (-not ($NewPools | Where-Object Name -EQ $_ )) { $_ } })) { 
-                Write-Message -Level Warn "No data received from pool$(If ($PoolNoData.Count -gt 1) { "s" } ) ($($PoolNoData -join ', '))." -Console
-            }
-            Remove-Variable PoolNoData
-        }
-        Else { 
-            Write-Message -Level Warn "No configured pools - retrying in 10 seconds..."
-            Start-Sleep -Seconds 10
-            Continue
-        }
+        # Send data to monitoring server
+        If ($Config.ReportToServer) { Send-MonitoringData }
 
         # Faster shutdown
         If ($Variables.NewMiningStatus -ne "Running") { Return }
@@ -1248,5 +1255,4 @@ While ($Variables.NewMiningStatus -eq "Running") {
     If ($Variables.NewMiningStatus -eq "Running") { Write-Message -Level Info "$($Message)Ending cycle." }
 
     Remove-Variable Message, RunningMiners, FailedMiners, BenchmarkingMiners -ErrorAction SilentlyContinue
-    Send-MonitoringData
 }

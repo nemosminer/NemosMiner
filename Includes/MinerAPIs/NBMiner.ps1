@@ -18,11 +18,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NBMiner.ps1
-Version:        4.0.0.5 (RC5)
-Version date:   16 October 2021
+Version:        4.0.0.6 (RC6)
+Version date:   24 October 2021
 #>
-
-using module ..\Include.psm1
 
 class NBMiner : Miner { 
     [Object]GetMinerData () { 

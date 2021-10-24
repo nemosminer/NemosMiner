@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.5 (RC5)
-Version date:   16 October 2021
+Version:        4.0.0.6 (RC6)
+Version date:   24 October 2021
 #>
 
 Function Initialize-API { 
@@ -188,7 +188,7 @@ Function Start-APIServer {
                                     $Data += "`n`nNew values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                    $Config | Select-Object -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                                    Write-Config -ConfigFile $Variables.ConfigFile -NewConfig $Config
                                     ForEach ($DeviceName in $Values) { 
                                         $Variables.Devices | Where-Object Name -EQ $DeviceName | ForEach-Object { 
                                             $_.State = [DeviceState]::Disabled
@@ -219,7 +219,7 @@ Function Start-APIServer {
                                     $Data += "`n`nNew values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Data += "`n`nUpdated configFile`n$($Variables.ConfigFile)"
-                                    $Config | Select-Object -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                                    Write-Config -ConfigFile $Variables.ConfigFile -NewConfig $Config
                                     $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { 
                                         $_.State = [DeviceState]::Enabled
                                         If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
@@ -240,8 +240,8 @@ Function Start-APIServer {
                     }
                     "/functions/config/set" { 
                         Try { 
-                            Copy-Item -Path $Variables.ConfigFile -Destination "$($Variables.ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
-                            $Key | ConvertFrom-Json | Select-Object -Property * -ExcludeProperty PoolsConfig | Get-SortedObject | ConvertTo-Json | Out-File -FilePath $Variables.ConfigFile -Encoding UTF8
+                            $Key > Key.txt
+                            Write-Config -ConfigFile $Variables.ConfigFile -NewConfig ($Key | ConvertFrom-Json)
                             Read-Config -ConfigFile $Variables.ConfigFile
                             $Variables.Devices | Select-Object | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { 
                                 If ($_.Name -in @($Config.ExcludeDeviceName)) { 
@@ -723,24 +723,29 @@ Function Start-APIServer {
                         Break
                     }
                     "/displayworkers" { 
-                        Receive-MonitoringData
-                        $DisplayWorkers = [System.Collections.ArrayList]@(
-                            $Variables.Workers | Select-Object @(
-                                @{ Name = "Worker"; Expression = { $_.worker } }, 
-                                @{ Name = "Status"; Expression = { $_.status } }, 
-                                @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
-                                @{ Name = "Version"; Expression = { $_.version } }, 
-                                @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
-                                @{ Name = "EstimatedProfit"; Expression = { [Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
-                                @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
-                                @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
-                                @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace "Internal$", " (Internal)" -replace "External", " (External)" }) -join " & "}) -join "<br/>" } }, 
-                                @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
-                                @{ Name = "Live Hashrate"; Expression = { If ($_.data.CurrentSpeed) { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join "<br/>" } Else { "" } } }, 
-                                @{ Name = "Benchmark Hashrate"; Expression = { If ($_.data.EstimatedSpeed) { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join "<br/>" } Else { "" } } }
-                                ) | Sort-Object "Worker Name"
-                        )
-                        $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
+                        If ($Config.ReportToServer -and $Config.MonitoringUser -and $Config.MonitoringServer) { 
+                            Receive-MonitoringData
+                            $DisplayWorkers = [System.Collections.ArrayList]@(
+                                $Variables.Workers | Select-Object @(
+                                    @{ Name = "Worker"; Expression = { $_.worker } }, 
+                                    @{ Name = "Status"; Expression = { $_.status } }, 
+                                    @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
+                                    @{ Name = "Version"; Expression = { $_.version } }, 
+                                    @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                    @{ Name = "EstimatedProfit"; Expression = { [Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                    @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
+                                    @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
+                                    @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace "Internal$", " (Internal)" -replace "External", " (External)" }) -join " & "}) -join "<br/>" } }, 
+                                    @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
+                                    @{ Name = "Live Hashrate"; Expression = { If ($_.data.CurrentSpeed) { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join "<br/>" } Else { "" } } }, 
+                                    @{ Name = "Benchmark Hashrate"; Expression = { If ($_.data.EstimatedSpeed) { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join "<br/>" } Else { "" } } }
+                                    ) | Sort-Object "Worker Name"
+                            )
+                            $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
+                        }
+                        Else { 
+                            $Data = $null
+                        }
                         Break
                     }
                     "/earningschartdata" { 
@@ -756,7 +761,7 @@ Function Start-APIServer {
                         break
                     }
                     "/miners" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process  | Sort-Object Status, DeviceName, Name)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process  | Sort-Object Status, DeviceName, Name)
                         Break
                     }
                     "/miners/available" { 
@@ -960,7 +965,11 @@ Function Start-APIServer {
                 $Response.StatusCode = $StatusCode
                 $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
                 $Response.ContentLength64 = $ResponseBuffer.Length
+
+                "$($Path): $($ResponseBuffer.Length)" >> .\Logs\API_LOG.txt
                 $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
+
+                "$($Path): $($ResponseBuffer.Length)" >> .\Logs\API_LOG.txt
                 $Response.Close()
             }
             # Only gets here if something is wrong and the server couldn't start or stops listening

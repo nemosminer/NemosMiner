@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.5 (RC5)
-Version date:   16 October 2021
+Version:        4.0.0.6 (RC6)
+Version date:   24 October 2021
 #>
 
 # Window handling
@@ -1018,53 +1018,51 @@ Function Send-MonitoringData {
     If (-not $Config.MonitoringServer) { Return }
     If (-not $Config.MonitoringUser) { Return }
 
-    If ($Config.ReportToServer) { 
-        $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
-        $Status = $Variables.MiningStatus
-        $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
+    $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
+    $Status = $Variables.MiningStatus
+    $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
 
-        # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
-        # reveal someone's windows username or other system information they might not want sent
-        # For the ones that can be an array, comma separate them
-        $Data = @(
-            $RunningMiners | Sort-Object DeviceName | ForEach-Object { 
-                [PSCustomObject]@{ 
-                    Name           = $_.Name
-                    Path           = Resolve-Path -Relative $_.Path
-                    Type           = $_.Type -join ','
-                    Algorithm      = $_.Algorithm -join ','
-                    Pool           = $_.WorkersRunning.Pool.Name -join ','
-                    CurrentSpeed   = $_.Speed_Live
-                    EstimatedSpeed = $_.Workers.Speed
-                    Earning        = $_.Earning
-                    Profit         = $_.Profit
-                    Currency       = $Config.Currency
-                }
-            }
-        )
-
-        $Body = @{ 
-            user    = $Config.MonitoringUser
-            worker  = $Config.WorkerName
-            version = $Version
-            status  = $Status
-            profit  = [String][Math]::Round(($data | Measure-Object Earning -Sum).Sum, 8) # Earnings is NOT profit! Needs to be changed in mining monitor server
-            data    = ConvertTo-Json $Data
-        }
-
-        # Send the request
-        Try { 
-            $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
-            If ($Response -eq "Success") { 
-                Write-Message -Level Verbose "Reported worker status to monitoring server '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
-            }
-            Else { 
-                Write-Message -Level Verbose "Reporting worker status to monitoring server '$($Config.MonitoringServer)' failed: [$($Response)]."
+    # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
+    # reveal someone's windows username or other system information they might not want sent
+    # For the ones that can be an array, comma separate them
+    $Data = @(
+        $RunningMiners | Sort-Object DeviceName | ForEach-Object { 
+            [PSCustomObject]@{ 
+                Name           = $_.Name
+                Path           = Resolve-Path -Relative $_.Path
+                Type           = $_.Type -join ','
+                Algorithm      = $_.Algorithm -join ','
+                Pool           = $_.WorkersRunning.Pool.Name -join ','
+                CurrentSpeed   = $_.Speed_Live
+                EstimatedSpeed = $_.Workers.Speed
+                Earning        = $_.Earning
+                Profit         = $_.Profit
+                Currency       = $Config.Currency
             }
         }
-        Catch { 
-            Write-Message -Level Warn "Monitoring: Unable to send status to '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
+    )
+
+    $Body = @{ 
+        user    = $Config.MonitoringUser
+        worker  = $Config.WorkerName
+        version = $Version
+        status  = $Status
+        profit  = [String][Math]::Round(($data | Measure-Object Earning -Sum).Sum, 8) # Earnings is NOT profit! Needs to be changed in mining monitor server
+        data    = ConvertTo-Json $Data
+    }
+
+    # Send the request
+    Try { 
+        $Response = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/report.php" -Method Post -Body $Body -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
+        If ($Response -eq "Success") { 
+            Write-Message -Level Verbose "Reported worker status to monitoring server '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
+        Else { 
+            Write-Message -Level Verbose "Reporting worker status to monitoring server '$($Config.MonitoringServer)' failed: [$($Response)]."
+        }
+    }
+    Catch { 
+        Write-Message -Level Warn "Monitoring: Unable to send status to '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
     }
 }
 
@@ -1136,7 +1134,7 @@ Function Read-Config {
 
     # Load the configuration
     If (Test-Path -PathType Leaf $ConfigFile) { 
-        $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore
+        $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore | Select-Object
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
             Copy-Item -Path $ConfigFile "$($ConfigFile).corrupt" -Force
             Write-Message -Level Warn "Configuration file '$($ConfigFile)' is corrupt."
@@ -1173,8 +1171,7 @@ Function Read-Config {
 
     # Ensure parameter format
     $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
-        If ($Variables.AllCommandLineParameters.$_ -is [Array]) { 
-            $Local:Config.$_ = @($Local:Config.$_ -replace " " -split ",") } # Enforce array
+        If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Local:Config.$_ -isnot [Array]) { $Local:Config.$_ = @($Local:Config.$_ -replace " " -split ",") } # Enforce array
     }
 
     # Load default pool data, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
@@ -1254,8 +1251,18 @@ Function Read-Config {
 Function Write-Config { 
     Param(
         [Parameter(Mandatory = $true)]
-        [String]$ConfigFile
+        [String]$ConfigFile,
+        [Parameter(Mandatory = $false)]
+        [PSCustomObject]$NewConfig = $Config
     )
+
+    $Header = 
+"// This file was initially generated by NemosMiner
+// It should still be usable in newer versions, but newer versions might have additional
+// settings or changes
+
+// NemosMiner will automatically add / convert / rename / update new settings when updating to a new version
+"
 
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
 
@@ -1264,12 +1271,12 @@ Function Write-Config {
         Get-ChildItem -Path "$($ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse # Keep 10 backup copies
     }
 
-    $SortedConfig = $Config | Get-SortedObject
+    $SortedConfig = $NewConfig | Get-SortedObject
     $ConfigTmp = [Ordered]@{ }
     $SortedConfig.Keys | Where-Object { $_ -notlike "PoolsConfig" } | ForEach-Object { 
         $ConfigTmp[$_] = $SortedConfig.$_
     }
-    $ConfigTmp | ConvertTo-Json -Depth 10 | Out-File $ConfigFile -Encoding UTF8 -Force
+    "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File $ConfigFile -Encoding UTF8 -Force
 }
 
 Function Get-SortedObject { 
@@ -1345,6 +1352,8 @@ Function Set-Stat {
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
         If ($Duration -le 0) { Return $Stat }
 
+        If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
+
         If ($FaultDetection) { 
             $FaultFactor = If ($Name -match ".+_HashRate$") { 0.1 } Else { 0.2 }
             $ToleranceMin = $Stat.Week * (1 - $FaultFactor)
@@ -1354,22 +1363,20 @@ Function Set-Stat {
             $ToleranceMin = $ToleranceMax = $Value
         }
 
-        If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
-
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
         If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Failed saving hash rate ($($Name -replace '_HashRate$'): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Failed saving hash rate ($($Name -replace '_HashRate$'): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Failed saving power usage ($($Name -replace '_PowerUsage$'): $($Value.ToString("N2"))W). It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of 3 until enforced update]."
+                Write-Message -Level Warn "Failed saving power usage ($($Name -replace '_PowerUsage$'): $($Value.ToString("N2"))W). It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
         }
         Else { 
-            If ($Stat.ToleranceExceeded -eq $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
-                If ($Value) { 
+            If ($Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
+                If ($Value -gt 0) { 
                     If ($Name -match ".+_HashRate$") { 
                         Write-Message -Level Warn "It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
