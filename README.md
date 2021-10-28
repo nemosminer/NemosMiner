@@ -260,16 +260,17 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows AMD driver**
 
-[Windows 10 AMD GPU Driver 21.2.2](https://drivers.amd.com/drivers/non-whql-radeon-software-adrenalin-2020-21.2.2-win10-64bit-feb11.exe)
+[Windows 10 AMD GPU Driver 21.10.2](https://www.guru3d.com/index.php?ct=files&action=download&)
 
    NemosMiner is currently tested on the following Rigs: 
 
       windows10-1xGTX-1660Super/RYZEN-3700x (Test PC) 
 
-      windows10-9xAMD-5700XT/Octominer (test Rig 1)
-      windows8.1-6xRTX-3070/RYZEN-3700x (test Rig 2)
-      windows10-6xRTX-3080/RYZEN-3700x (test Rig 3)
+      windows10-7xAMD-6700XT/Octominer (test Rig 1)
+      windows10-6xRTX-3070/RYZEN-3700x (test Rig 2)
+      windows10-6xRTX-3060ti/RYZEN-3700x (test Rig 3)
       windows10-1xGTX-1060Super/1xGTX750Ti-2GB/1xRX580-8GB/RX5700/Inteli5-8600K (test Rig 4)
+      windows10-7xAMD-6600XT/Octominer (test Rig 5)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
 
