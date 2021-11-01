@@ -260,7 +260,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows AMD driver**
 
-[Windows 10 AMD GPU Driver 21.10.2](https://www.guru3d.com/index.php?ct=files&action=download&)
+[Windows 10 AMD GPU Driver 21.10.2](https://www.amd.com/en/support)
 
    NemosMiner is currently tested on the following Rigs: 
 
