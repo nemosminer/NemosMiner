@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           ZergPool.ps1
-Version:        4.0.0.6 (RC6)
+File:           ZergPoolCoins.ps1
+Version:        4.0.0.7 (RC7)
 Version date:   24 October 2021
 #>
 
@@ -39,7 +39,7 @@ $HostSuffix = "mine.zergpool.com"
 # $PriceField = "Plus_Price"
 # $PriceField = "actual_last24h"
 $PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
+$DivisorMultiplier = 1000000000
 
 $PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
