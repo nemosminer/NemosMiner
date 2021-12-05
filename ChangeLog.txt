@@ -6,11 +6,43 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.7 (RC7) 05.12.2021
+=============================================
+
+Enhancements:
+- Core: Do not enforce 'MinIntervals' when benchmarking or measuring power usage
+- Core & Web GUI: Add 'Disable miner' feature
+- Web GUI: Add CIM Version to devices information
+
+Fixes:
+- Core: Parameter 'MinerWindowStyle' ignored (Regression from 3.9.9.63)
+- MiningPoolHubCoins: VertHash & Yescrypt broken (Error in pool API data)
+- Core: Added regions 'Japan' & 'Russia'
+
+Miner Updates:
+- BMiner-v16.4.9
+- CcminerKlausT-v8.26
+- ClaymoreDualME-v2.7
+- GMiner-v2.73
+- lolMiner-v1.38
+- NanoMiner-v3.4.4
+- NBMiner-v40.1
+- PhoenixMiner-v5.9d
+- SgMinerFancyIX-v0.8.0
+- SRBMinerMulti-v0.8.4
+- Suprminer-v2.31v2
+- TeamBlackMiner-v1.30
+- TeamRedMiner-v0.8.6.3
+- Trex-v0.24.7
+- Wildrig-v0.31.1
+- XmRig-v6.16.2
+
+
 Changelog NemosMiner 4.0.0.6 (RC6) 24.10.2021
 =============================================
 
 Enhancements:
-- Core: Optimize mail loop processing, do other things whils waiting for pool data
+- Core: Optimize mail loop processing, do other things while waiting for pool data
 - Web GUI: Update jquery to version 3.6.0
 
 Miner Updates:

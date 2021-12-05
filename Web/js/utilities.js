@@ -13,61 +13,60 @@ function formatMiners(data) {
       // Format miner link
       if (item.MinerUri != null) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
       else item.tName = item.Name;
-  
+
       // Format the device(s)
       if (item.DeviceName != null) item.tDevices = item.DeviceName.toString();
       else item.tDevices = '';
 
       // Format the algorithm data
-      if (item.Algorithm[0] != null) item.tPrimaryAlgorithm = item.Algorithm[0];
+      if (item.Algorithm.length > 0) item.tPrimaryAlgorithm = item.Algorithm[0];
       else item.tPrimaryAlgorithm = "";
-      if (item.Algorithm[1] != null) item.tSecondaryAlgorithm = item.Algorithm[1];
+      if (item.Algorithm.length > 1) item.tSecondaryAlgorithm = item.Algorithm[1];
       else item.tSecondaryAlgorithm = "";
  
       // Format the pool data
-      if (item.Workers[0] != null) {
-        item.tPrimaryAlgorithm = item.Algorithm[0];
+      if (item.Workers.length > 0) {
         item.tPrimaryMinerFee = item.Workers[0].Fee;
         item.tPrimarySpeed = item.Workers[0].Speed;
-        item.tPrimaryPool = item.Workers[0].Pool.Name;
-        item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+        if (item.Workers[0].Pool) {
+          item.tPrimaryPool = item.Workers[0].Pool.Name;
+          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+        }
       }
       else {
-        item.tPrimaryPool = "";
-        item.tPrimaryPoolFee = null;
-        item.tPrimaryMinerFee = null;
-        item.tPrimarySpeed = null;
+        item.tSecondaryMinerFee = '';
+        item.tPrimaryPool = '';
+        item.tPrimaryPoolFee = '';
       }
-      if (item.Workers[1] != null) {
-        item.tSecondaryAlgorithm = item.Algorithm[1]
+
+      if (item.Workers.length > 1) {
         item.tSecondaryMinerFee = item.Workers[1].Fee;
         item.tSecondarySpeed = item.Workers[1].Speed;
-        item.tSecondaryPool = item.Workers[1].Pool.Name;
-        item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+        if (item.Workers[1].Pool) {
+          item.tSecondaryPool = item.Workers[1].Pool.Name;
+          item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+        }
       }
       else {
-        item.tSecondaryPool = "";
-        item.tSecondaryPoolFee = null;
-        item.tSecondaryMinerFee = null;
-        item.tSecondarySpeed = null;
+        item.tSecondaryMinerFee = '';
+        item.tSecondaryPool = '';
+        item.tSecondaryPoolFee = '';
       }
 
       // Format margin of error
       item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
 
       // Format the live speed(s)
-      item.tPrimarySpeedLive = item.Speed_Live[0];
-      item.tSecondarySpeedLive = item.Speed_Live[1];
+      if (item.Speed_Live != null) {
+        if (item.Speed_Live.length > 0) item.tPrimarySpeedLive = item.Speed_Live[0];
+        if (item.Speed_Live.length > 1) item.tSecondarySpeedLive = item.Speed_Live[1];
+      }
 
       // Format Total Mining Duration (TimeSpan)
       item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
 
-      // Format the reason(s)
-      if (item.Reason != null) item.tReason = item.Reason.join('; ');
-      else item.tReason = '';
-
       // Format status
-      const enumstatus = ["Running", "Idle", "Failed"];
+      const enumstatus = ["Running", "Idle", "Failed", "Disabled"];
       item.tStatus = enumstatus[item.Status];
   });
   return data;
@@ -126,7 +125,7 @@ function formatHashRate(value) {
 function formatmBTC(value) {
   if (value == null) return ''
   if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
-  if (value == 0) return parseFloat(0).toFixed(8);
+  if (value == 0) return (0).toFixed(8);
   if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
   return 'N/A';
 };
@@ -134,7 +133,7 @@ function formatmBTC(value) {
 function formatBTC(value) {
   if (value == null) return ''
   if (value > 0) return parseFloat(value * rate).toFixed(8);
-  if (value == 0) return parseFloat(0).toFixed(8);
+  if (value == 0) return (0).toFixed(8);
   if (value < 0) return parseFloat(value * rate).toFixed(8);
   return 'N/A';
 };
@@ -148,14 +147,14 @@ function formatDate(value) {
 };
 
 function formatWatt(value) {
-  if (value == 0) return parseFloat(0).toFixed(2) + ' W';
+  if (value == 0) return (0).toFixed(2) + ' W';
   if (value > 0) return parseFloat(value).toFixed(2) + ' W';
   return 'N/A';
 };
 
 function formatPercent(value) {
-  if (isNaN(value)) return 'N/A';
-  if (value != null) return parseFloat(value * 100).toFixed(2) + ' %';
+  if (value === 0) return '0.00 %';
+  if (parseFloat(value)) return parseFloat(value * 100).toFixed(2) + ' %';
   return '';
 };
 
@@ -192,15 +191,14 @@ function formatBytes(bytes) {
 }
 
 function formatTimeSpan(timespan) {
-  var duration = '';
+  var duration = '-';
   if (timespan) {
     duration = timespan.Days + ' days ';
     duration = duration + timespan.Hours + ' hrs ';
     duration = duration + timespan.Minutes + ' min ';
     duration = duration + timespan.Seconds + ' sec ';
-    return duration
   }
-  else return '-'
+  return duration;
 }
 
 function createUUID() {

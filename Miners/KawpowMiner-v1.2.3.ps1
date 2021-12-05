@@ -6,7 +6,7 @@ $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/ka
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 2; WarmupTimes = @(0, 15); Arguments = "" } # XmRig-v6.12.2 is faster
+   [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = 3; MinerSet = 2; WarmupTimes = @(0, 15); Arguments = "" } # XmRig-v6.16.2 is faster
 )
 
 If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -21,15 +21,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name -replace " "
+                        Name        = $Miner_Name
                         DeviceName  = $AvailableMiner_Devices.Name
                         Type        = "NVIDIA"
                         Path        = $Path

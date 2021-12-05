@@ -42,8 +42,9 @@
       <th data-field="tMemory" data-sortable="true">Memory</th>
       <th data-field="tCores" data-sortable="true">Cores/Stream Processors</th>
       <th data-field="tClockSpeed" data-sortable="true">Clock Speed</th>
-      <th data-field="ConfiguredPowerUsage" data-visible="false" data-align="right" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
-      <th data-field="tDriverVersion">Driver Version</th>
+      <th data-field="tDriverVersionCIM">Driver Version (CIM)</th>
+      <th data-field="tDriverVersionOpenCL">Driver Version (OpenCL)</th>
+      <th data-field="ConfiguredPowerUsage" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
       <th data-field="Bus" data-visible="false" data-sortable="true">PCI Bus Id</th>
       <th data-field="Bus_Index" data-visible="false" data-sortable="true">Bus_Index</th>
       <th data-field="Bus_Type_Index" data-visible="false" data-sortable="true">Bus_Type_Index</th>
@@ -107,8 +108,9 @@
       <th data-field="tMemory" data-sortable="true">Memory</th>
       <th data-field="tCores" data-sortable="true">Cores/Stream Processors</th>
       <th data-field="tClockSpeed" data-sortable="true">Clock Speed</th>
-      <th data-field="ConfiguredPowerUsage" data-visible="false" data-align="right" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
-      <th data-field="tDriverVersion">Driver Version</th>
+      <th data-field="tDriverVersionCIM">Driver Version (CIM)</th>
+      <th data-field="tDriverVersionOpenCL">Driver Version (OpenCL)</th>
+      <th data-field="ConfiguredPowerUsage" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
       <th data-field="Bus" data-visible="false" data-sortable="true">PCI Bus Id</th>
       <th data-field="Bus_Index" data-visible="false" data-sortable="true">Bus_Index</th>
       <th data-field="Bus_Type_Index" data-visible="false" data-sortable="true">Bus_Type_Index</th>
@@ -168,8 +170,9 @@
         <th data-field="tMemory" data-sortable="true">Memory</th>
         <th data-field="tCores" data-sortable="true">Cores/Stream Processors</th>
         <th data-field="tClockSpeed" data-sortable="true">Clock Speed</th>
-        <th data-field="tDriverVersion">Driver Version</th>
-        <th data-field="ConfiguredPowerUsage" data-visible="false" data-align="right" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
+        <th data-field="tDriverVersionCIM">Driver Version (CIM)</th>
+        <th data-field="tDriverVersionOpenCL">Driver Version (OpenCL)</th>
+        <th data-field="ConfiguredPowerUsage" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
         <th data-field="Bus" data-visible="false" data-sortable="true">PCI Bus Id</th>
         <th data-field="Bus_Index" data-visible="false" data-sortable="true">Bus_Index</th>
         <th data-field="Bus_Type_Index" data-visible="false" data-sortable="true">Bus_Type_Index</th>
@@ -248,8 +251,11 @@
       else if (item.CIM) item.tClockSpeed = item.CIM.MaxClockSpeed;
       else item.tClockSpeed = 'N/A';
 
-      if (item.OpenCL) item.tDriverVersion = item.OpenCL.DriverVersion;
-      else item.tDriverVersion = 'N/A';
+      if (item.CIM) item.tDriverVersionCIM = item.CIM.DriverVersion;
+      else item.tDriverVersionCIM = 'N/A';
+
+      if (item.OpenCL) item.tDriverVersionOpenCL = item.OpenCL.DriverVersion;
+      else item.tDriverVersionOpenCL = 'N/A';
 
       if (item.OpenCL) item.tCores = item.OpenCL.MaxComputeUnits;
       else if (item.CIM) item.tCores = item.CIM.NumberOfLogicalProcessors;

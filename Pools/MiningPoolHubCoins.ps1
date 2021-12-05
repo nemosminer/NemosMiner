@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
 Version:        4.0.0.7 (RC7)
-Version date:   24 October 2021
+Version date:   05 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -64,6 +64,9 @@ If ($PoolConfig.UserName) {
         If ($Current.host_list.split(";").count -eq 1) { $PoolRegions = @("N/A") }
         Switch ($Algorithm_Norm) { 
             "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
+            "Skein" { $Current.host_list = $Current.host } # Error in API
+            "VertHash" { $Current.host_list = $Current.host } # Error in API
+            "Yescrypt" { $Current.host_list = $Current.host } # Error in API
             # Default    { $Port = $Current.algo_switch_port }
         }
 

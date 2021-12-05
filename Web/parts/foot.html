@@ -13,12 +13,18 @@
     });
 
     // set the footer
-    $.ajax({
-      url: '/version',
-      success: function(result) {
-        $("#footer").empty().append(result.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools API&nbsp;/&nbsp&copy; www.nemosminer.com');
-      }
-    });
+    if (version == "") {
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/version',
+        success: function(result) {
+          version = result
+          $("#footer").empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools API&nbsp;/&nbsp&copy; www.nemosminer.com');
+        }
+      });
+    }
 
     $('#miningpause').click(function () {
       $command = '/functions/mining/pause';

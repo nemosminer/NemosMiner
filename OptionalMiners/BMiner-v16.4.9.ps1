@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\bminer.exe"
-$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.4.7-cccd70d-amd64.zip"
+$Uri = "https://www.bminercontent.com/releases/bminer-v16.4.9-c80288d-amd64.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -57,14 +57,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
-                $AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )
-                $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { (-not $_.CIM.MaxRefreshRate) -or (($_.OpenCL.GlobalMemSize / 1GB) - 0.5) -ge $MinMemGB } ) # Reserve 512 MB when GPU with connected monitor
+                $AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB } )
+                $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { (-not $_.CIM.MaxRefreshRate) -or ([Uint]($_.OpenCL.GlobalMemSize / 1GB) - 0.5) -ge $MinMemGB } ) # Reserve 512 MB when GPU with connected monitor
                 # If ($_.Algorithm[0] -match "^Ethash.*$") { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Ethash mining not supported on Navi
                 If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
 
                 If ($AvailableMiner_Devices) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-' -replace ' '
 
                     $Arguments = ""
                     $Pass = $($Pools.($_.Algorithm[0]).Pass)
@@ -94,7 +94,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name -replace " "
+                        Name        = $Miner_Name
                         DeviceName  = $AvailableMiner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path

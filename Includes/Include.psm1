@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.6 (RC6)
-Version date:   24 October 2021
+Version:        4.0.0.7 (RC7)
+Version date:   05 December 2021
 #>
 
 # Window handling
@@ -122,7 +122,6 @@ Class Pool {
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Nullable[Int]]$Workers
     [Boolean]$Available = $true
-    [Boolean]$Disabled = $false
     [String[]]$Reason = @("")
     [Boolean]$Best = $false
 
@@ -148,6 +147,7 @@ Enum MinerStatus {
     Running
     Idle
     Failed
+    Disabled
 }
 
 Class Miner { 
@@ -155,7 +155,6 @@ Class Miner {
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
     [Device[]]$Devices = @()
-
     [String]$Type
 
     [String]$Name
@@ -176,14 +175,13 @@ Class Miner {
     [Double]$Profit = [Double]::NaN
     [Double]$Profit_Bias = [Double]::NaN
 
-    [Boolean]$Benchmark = $false # derived from stats
+    [Boolean]$Benchmark = $true # derived from stats
 
     [Double]$PowerUsage = [Double]::NaN
     [Double]$PowerUsage_Live = [Double]::NaN
     [Double]$PowerCost = [Double]::NaN
     [Boolean]$ReadPowerUsage = $false
-    
-    [Boolean]$MeasurePowerUsage = $false
+    [Boolean]$MeasurePowerUsage = $true
 
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
@@ -301,7 +299,7 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -532,24 +530,26 @@ Class Miner {
         }
     }
 
-    Refresh([Double]$PowerCostBTCperW) { 
+    Refresh([Double]$PowerCostBTCperW, [Boolean]$CalculatePowerCost) { 
         $this.Reason = @()
         $this.Available = $true
         $this.Benchmark = $false
         $this.Best = $false
+        $this.Disabled = $false
 
         $this.Earning = 0
         $this.Earning_Bias = 0
         $this.Earning_Accuracy = 0
 
         $this.Workers | ForEach-Object { 
-            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
+            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") {
                 $_.Speed = $Stat.Hour
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
                 $_.Earning_Accuracy = [Double](1 - $_.Pool.MarginOfError)
                 $_.TotalMiningDuration = $Stat.Duration
+                $_.Disabled = $Stat.Disabled
             }
             Else { 
                 $this.Benchmark = $true
@@ -563,14 +563,23 @@ Class Miner {
             $this.Earning_Bias += $_.Earning_Bias
         }
 
-        $this.Disabled = $this.Workers | Where-Object Speed -EQ 0
+        If ($this.Workers | Where-Object Disabled) { 
+            $this.Available = $false
+            $this.Disabled = $true
+            $this.Status = [MinerStatus]::Disabled
+        }
+        ElseIf ($this.Workers | Where-Object Speed -EQ 0) { 
+            $this.Available = $false
+            $this.Disabled = $false
+            $this.Status = [MinerStatus]::Failed
+        }
 
         If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 } 
         Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
-        If ($this.ReadPowerUsage) { 
+        If ($CalculatePowerCost) { 
             If ($Stat = Get-Stat "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
                 $this.MeasurePowerUsage = $false
                 $this.PowerUsage = $Stat.Week
@@ -612,7 +621,7 @@ Function Start-BrainJob {
             }
         }
     }
-    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))." }
+    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) for '$(($JobNames | Sort-Object) -join ", ")'." }
 }
 Function Start-IdleMining {
  
@@ -1344,6 +1353,8 @@ Function Set-Stat {
 
     $Path = "Stats\$Name.txt"
     $SmallestValue = 1E-20
+    $Disabled = $Value -eq -1
+    If ($Value -eq -1) { $Value = [Double]::NaN }
 
     $Stat = Get-Stat -Name $Name
 
@@ -1351,6 +1362,7 @@ Function Set-Stat {
         If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
         If ($Duration -le 0) { Return $Stat }
+        If ($Disabled) { $Value = [Decimal]$Stat.Live }
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
@@ -1368,20 +1380,20 @@ Function Set-Stat {
 
         If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Failed saving hash rate ($($Name -replace '_HashRate$'): $(($Value | ConvertTo-Hash) -replace '\s+', '')). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Failed saving hash rate for '$($Name -replace '_HashRate$')': $(($Value | ConvertTo-Hash) -replace '\s+', ''). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Failed saving power usage ($($Name -replace '_PowerUsage$'): $($Value.ToString("N2"))W). It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Attempt $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Failed saving power usage for '$($Name -replace '_PowerUsage$')': $($Value.ToString("N2"))W. It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
         }
         Else { 
             If ($Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value -gt 0) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "It was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "HashRate was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "It was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Power usage was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                 }
 
@@ -1412,6 +1424,7 @@ Function Set-Stat {
                 $Stat.Week = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
                 $Stat.Duration = $Stat.Duration + $Duration
                 $Stat.Updated = $Updated
+                $Stat.Disabled = $Disabled
                 $Stat.Timer = $Timer
                 $Stat.ToleranceExceeded = [UInt16]0
             }
@@ -1439,6 +1452,7 @@ Function Set-Stat {
                Week_Fluctuation      = [Double]0
                Duration              = [TimeSpan]$Duration
                Updated               = [DateTime]$Updated
+               Disabled              = [Boolean]$Disabled
                ToleranceExceeded     = [UInt16]0
                Timer                 = [DateTime]$Timer
            }
@@ -1461,6 +1475,7 @@ Function Set-Stat {
         Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
+        Disabled              = [Boolean]$Stat.Disabled
     } | ConvertTo-Json | Set-Content $Path
 
     $Stat
@@ -1513,6 +1528,7 @@ Function Get-Stat {
                         Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
                         Duration              = [TimeSpan]$Stat.Duration
                         Updated               = [DateTime]$Stat.Updated
+                        Disabled              = [Boolean]$Stat.Disabled
                         ToleranceExceeded     = [UInt16]0
                     }
                 )
@@ -1534,7 +1550,7 @@ Function Remove-Stat {
     )
 
     $Name | Sort-Object -Unique | ForEach-Object { 
-       Remove-Item -Path "Stats\$_.txt" -Force -Confirm:$false -ErrorAction SilentlyContinue
+        Remove-Item -Path "Stats\$_.txt" -Force -Confirm:$false -ErrorAction SilentlyContinue
         If ($Global:Stats.$_) { $Global:Stats.Remove($_) }
     }
 }
@@ -1917,7 +1933,7 @@ Function Get-Device {
                 }
 
                 $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
-                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]').Trim()
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '  ', ' ').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
@@ -2002,7 +2018,7 @@ Function Get-Device {
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id + 100))"
                     $Device.Bus = $null
                 }
-                $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.').Trim()
+                $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.' -replace '  ', ' ').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
@@ -2073,7 +2089,7 @@ Function Get-Device {
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f ($Device.Type_Id) + 100)"
                         $Device.Bus = $null
                     }
-                    $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.').Trim()
+                    $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([Int]($Device.Memory / 1GB))GB") + "$([Int]($Device.Memory / 1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.' -replace '  ', ' ').Trim()
 
                     If ($Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus) { 
                         $Device = $Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus

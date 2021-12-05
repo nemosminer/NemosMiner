@@ -34,6 +34,8 @@
           data-url="/pools/unavailable"
           data-sort-name="Algorithm"
           data-sort-order="asc"
+          data-remember-order="true"
+          data-maintain-meta-data="true"
           >
 
           <thead>
@@ -53,15 +55,14 @@
               <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
               <th data-field="EstimateFactor" data-sortable="true" data-filter-control="input" data-formatter="formatPercent" data-width=2>Estimate Factor</th>
               <th data-field="EarningsAdjustmentFactor" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2 data-visible="false">Earnings Adjustment Factor</th>
-              <th data-field="Region" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-width=1>Region</th>
+              <th data-field="Region" data-sortable="true" data-filter-control="select" data-width=1>Region</th>
               <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4>SSL</th>
-              <th data-field="Fee" data-sortable="true" data-filter-control="input" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
+              <th data-field="Fee" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
               <th data-field="Workers" data-sortable="true" data-visible="false">Workers</th>
               <th data-field="DAGsize" data-sortable="true" data-visible="false" data-formatter="formatBytes" data-visible="false">DAG Size</th>
               <th data-field="Epoch" data-sortable="true" data-visible="false" data-visible="false">Epoch</th>
               <th data-field="BlockHeight" data-sortable="true" data-visible="false" data-visible="false">Block Height</th>
               <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince">Last Updated</th>
-              <th data-field="Disabled" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Disabled</th>
             </tr>
           </thead>
         </table>
@@ -79,7 +80,7 @@
           $('#remove-watchdog').click(function () {
             var $data = $table.bootstrapTable('getSelections');
             if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
               if ($data.length >= $querysize) {
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
               }
@@ -97,7 +98,7 @@
           $('#reset-data').click(function () {
             var $data = $table.bootstrapTable('getSelections');
             if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
               if ($data.length >= $querysize) {
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
               }
@@ -115,7 +116,7 @@
           $('#enable').click(function () {
             var $data = $table.bootstrapTable('getSelections');
             if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
               if ($data.length >= $querysize) {
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
               }
@@ -133,7 +134,7 @@
           $('#disable').click(function () {
             var $data = $table.bootstrapTable('getSelections');
             if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
               if ($data.length >= $querysize) {
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
               }

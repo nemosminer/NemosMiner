@@ -18,11 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.6 (RC6)
-version date:   24 October 2021
+version:        4.0.0.7 (RC7)
+version date:   05 December 2021
 #>
 
-Set-Location ($args[0])
+#Set-Location ($args[0])
+Set-Location "C:\Users\Stephan\Desktop\NemosMiner\Brains\ZergPool"
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -110,6 +111,7 @@ While ($true) {
 
             $CurrenciesArray | Group-Object algo | ForEach-Object { 
                 $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -Index 0)
+                $BestCurrency | Add-Member coinname ($BestCurrency.name -replace 'coin$', 'Coin' -replace 'hash$', 'Hash') -Force
                 $BestCurrency | Add-Member name $BestCurrency.algo -Force
                 $BestCurrency | Add-Member estimate_last24h $BestCurrency.estimate_last24
                 $BestCurrency.PSObject.Properties.Remove("algo")

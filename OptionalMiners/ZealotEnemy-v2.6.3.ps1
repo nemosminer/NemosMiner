@@ -9,7 +9,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo aergo --intensity 23" }
     [PSCustomObject]@{ Algorithm = "BCD";        MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo bitcore --intensity 22" }
-    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo c11" }
+    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo c11" }
     [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo hex --intensity 24" }
     [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = 3; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo kawpow --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 3; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo phi" }
@@ -37,15 +37,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
             $AlgorithmDefinitions | ConvertTo-Json | ConvertFrom-Json | ForEach-Object {
                 $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
-                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name -replace " "
+                        Name        = $Miner_Name
                         DeviceName  = $AvailableMiner_Devices.Name
                         Type        = "NVIDIA"
                         Path        = $Path

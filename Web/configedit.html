@@ -518,7 +518,7 @@
                 devices = result;
                 $.each(devices, function (key, value) {
                   $('<input/>', { type: 'checkbox', id: ('device-' + value.Name).toLowerCase(), value: value.Name }).appendTo(devicescontainer);
-                  $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model + ' (Id ' + value.Id + ')'), style: "margin-left:4px" }).appendTo(devicescontainer);
+                  $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model), style: "margin-left:4px" }).appendTo(devicescontainer);
                   $('<br>').appendTo(devicescontainer);
                   if (value.State == 0) document.getElementById(('device-' + value.Name).toLowerCase()).checked = true;
                   if (value.State == 2) {

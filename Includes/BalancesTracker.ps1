@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.6 (RC6)
-Version date:   24 October 2021
+Version:        4.0.0.7 (RC7)
+Version date:   05 December 2021
 #>
 
 # Start transcript log
@@ -82,7 +82,7 @@ While ($true) {
         $Now = (Get-Date).ToUniversalTime()
 
         # Fetch balances data from pools
-        Write-Message "Balances Tracker is requesting data ($($PoolsToTrack -join ', '))..."
+        If ($PoolsToTrack) { Write-Message "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..." }
         $PoolsToTrack | ForEach-Object { 
             $BalanceObjects += @(& ".\Balances\$($_).ps1")
         }

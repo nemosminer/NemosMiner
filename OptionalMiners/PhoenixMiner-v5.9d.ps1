@@ -2,22 +2,22 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
-$Uri = "https://phoenixminer.info/downloads/beta/PhoenixMiner_5.7b_Windows.zip"
+$Uri = "https://phoenixminer.info/downloads/PhoenixMiner_5.9d_Windows.zip"
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(0, 30); Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.70 is just as fast, PhoenixMiner-v5.7b is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 3.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(0, 30); Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinMemGB = 5.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(0, 30); Arguments = " -amd -eres 1" } # GMiner-v2.70 is just as fast, PhoenixMiner-v5.7b is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");       Type = "AMD"; Fee = @(0.0065);   MinMemGB = 2.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(0, 20); Arguments = " -amd -eres 1" } # GMiner-v2.70 is just as fast, PhoenixMiner-v5.7b is maybe faster, but I see lower speed at the pool
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 5.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(0, 30); Arguments = " -amd -eres 1 -coin ETH -dcoin blake2s" } # Dual mininig ETH with AMD is broken (https://bitcointalk.org/index.php?topic=2647654.msg57622839#msg57622839)
-    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 4.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(0, 30); Arguments = " -amd -eres 1 -coin UBQ" }
-    # [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 4.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(0, 30); Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" } # Dual mininig UBQ with AMD is broken (https://bitcointalk.org/index.php?topic=2647654.msg57622839#msg57622839)
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(03, 0); Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.73 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 3.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
+    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinMemGB = 5.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1" } # GMiner-v2.73 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");       Type = "AMD"; Fee = @(0.0065);   MinMemGB = 2.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1" } # GMiner-v2.73 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 5.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1 -coin ETH -dcoin blake2s" } # Dual mininig ETH with AMD is broken (https://bitcointalk.org/index.php?topic=2647654.msg57622839#msg57622839)
+    [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 4.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1 -coin UBQ" }
+    [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 4.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" } # Dual mininig UBQ with AMD is broken (https://bitcointalk.org/index.php?topic=2647654.msg57622839#msg57622839)
 
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 3.0; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v2.70 is just as fast, PhoenixMiner-v5.7b is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 3.0; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v2.73 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 3.0; MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 5.0; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1" } # GMiner-v2.70 is just as fast, PhoenixMiner-v5.7b is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 5.0; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1" } # GMiner-v2.73 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");  Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = 5.0; MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1 -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");       Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 2.0; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = @("UbqHash");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = 4.0; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(0, 30); Arguments = " -nvidia -eres 1 -coin UBQ" }
@@ -52,13 +52,17 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
-                $AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
+                $AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })
 
-                If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX (5|6)[0-9]{3}.*" }) } # Dual mining not supported on Navi
+                If ($_.Type -eq "AMD" -and $_.Algorithm[1]) { 
+                    If ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB) -gt 4) { Return } # AMD: doesn't support Blake2s dual mining with DAG above 4GB
+                    $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX (5|6)[0-9]{3}.*" }) # Dual mining not supported on Navi(2)
+                    $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { [Version]$_.CIM.DriverVersion -le [Version]"27.20.22023.1004" }) # doesn't support Blake2s dual mining on drivers newer than 21.8.1 (27.20.22023.1004)
+                }
 
                 If ($AvailableMiner_Devices) { 
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-' -replace ' '
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("amd", "eres", "nvidia") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -68,36 +72,26 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $_.Arguments += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $Pass"
 
                     If ($Pools.($_.Algorithm[0]).DAGsize -gt 0) {
-                        If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { 
-                            $_.Arguments += " -proto 1"
-                        }
-                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$") { 
-                            $_.Arguments += " -proto 4"
-                        }
+                        If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { $_.Arguments += " -proto 1" }
+                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$") { $_.Arguments += " -proto 4" }
                     }
 
                     If (($AvailableMiner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB -ge 2 * $MinMemGB) { # Faster kernels require twice as much VRAM
-                        If ($AvailableMiner_Devices.Vendor -eq "AMD" -and -not $_.Algorithm[1]) { # Dual mining on AMD not supported
-                            $_.Arguments += " -clkernel 3"
-                        }
-                        ElseIf ($AvailableMiner_Devices.Vendor -eq "NVIDIA") { 
-                            $_.Arguments += " -nvkernel 3" # Miner will switch to nvKernel 2 if unsuported
-                        }
+                        # clkernel 3 does not support dual mining
+                        If ($AvailableMiner_Devices.Vendor -eq "AMD" -and -not $_.Algorithm[1]) { $_.Arguments += " -clkernel 3" }
+                        # Miner will switch to nvKernel 2 if unsuported
+                        ElseIf ($AvailableMiner_Devices.Vendor -eq "NVIDIA") { $_.Arguments += " -nvkernel 3" }
                     }
 
-                    If ($_.Algorithm[1]) { 
-                        $_.Arguments += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)"
-                    }
+                    If ($_.Algorithm[1]) { $_.Arguments += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)" }
 
-                    If ($Config.UseMinerTweaks -eq $true) { 
-                        $_.Arguments += $_.Tuning
-                    }
+                    If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                     If (-not $_.Intensity) { $_.WarmupTimes[0] += 45; $_.WarmupTimes[1] += 45 } # Allow extra seconds for auto-tuning
                     If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[0] += 15; $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
 
                     [PSCustomObject]@{ 
-                        Name        = $Miner_Name -replace " "
+                        Name        = $Miner_Name
                         DeviceName  = $AvailableMiner_Devices.Name
                         Type        = $_.Type
                         Path        = $Path

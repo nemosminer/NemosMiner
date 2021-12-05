@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\wildrig.exe"
-$Uri = "https://github.com/Minerx117/miners/releases/download/WildRig/wildrig-multi-windows-0.29.1.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.31.1/wildrig-multi-windows-0.31.1.7z"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
@@ -12,11 +12,13 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo blake2b-glt" }
     [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo bmw512" } # CcminerBmw512-v2.2.5 is fastest
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo bitcore" }
-    [PSCustomObject]@{ Algorithm = "C11";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo c11" }
+    [PSCustomObject]@{ Algorithm = "C11";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo c11" }
     [PSCustomObject]@{ Algorithm = "Dedal";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo dedal" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo exosis" } 
     [PSCustomObject]@{ Algorithm = "Geek";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo geek" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo ghostrider" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-globalhash" }
+    [PSCustomObject]@{ Algorithm = "HeavyHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo honeycomb" } # Algo broken
@@ -61,11 +63,13 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo blake2b-glt" }
     [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo bmw512" } # CcminerBmw512-v2.2.5 is fastest
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo bitcore" }
-    [PSCustomObject]@{ Algorithm = "C11";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo c11" }
+    [PSCustomObject]@{ Algorithm = "C11";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 45); Arguments = " --algo c11" }
     [PSCustomObject]@{ Algorithm = "Dedal";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo dedal" } # CryptoDredge-v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo exosis" }
     [PSCustomObject]@{ Algorithm = "Geek";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo geek" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo ghostrider" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo glt-globalhash" }
+    [PSCustomObject]@{ Algorithm = "HeavyHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
 #    [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo honeycomb" } # Algo broken, last working version is 0.17.6
@@ -117,15 +121,15 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { ($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 1GB) -ge $MinMemGB })) {
 
-                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-'
+                    $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' ' -replace ' '
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     [PSCustomObject]@{
-                        Name       = $Miner_Name -replace " "
+                        Name       = $Miner_Name
                         DeviceName = $AvailableMiner_Devices.Name
                         Type       = $_.Type
                         Path       = $Path

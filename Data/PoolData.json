@@ -189,7 +189,8 @@
       "DASH",
       "DGB",
       "KMD",
-      "LTC"
+      "LTC",
+      "RVN"
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {

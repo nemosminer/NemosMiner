@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.0.0.6 (RC6)
-Version date:   24 October 2021
+Version:        4.0.0.7 (RC7)
+Version date:   05 December 2021
 #>
 
 class SRBMiner : Miner { 
@@ -41,8 +41,11 @@ class SRBMiner : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithm[0]
-        If ($Data.algorithms) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.now }
-        Else { $HashRate_Value = [Double]$Data.hashrate_total_now }
+        $HashRate_Value = [Double]0
+        If ($Data.algorithms) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.gpu.total }
+        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.cpu.total }
+        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.now }
+        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.hashrate_total_now }
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
