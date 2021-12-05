@@ -10,6 +10,7 @@ Changelog NemosMiner 4.0.0.7 (RC7) 05.12.2021
 =============================================
 
 Enhancements:
+- Core: Added regions 'Japan' & 'Russia'
 - Core: Do not enforce 'MinIntervals' when benchmarking or measuring power usage
 - Core & Web GUI: Add 'Disable miner' feature
 - Web GUI: Add CIM Version to devices information
@@ -17,7 +18,6 @@ Enhancements:
 Fixes:
 - Core: Parameter 'MinerWindowStyle' ignored (Regression from 3.9.9.63)
 - MiningPoolHubCoins: VertHash & Yescrypt broken (Error in pool API data)
-- Core: Added regions 'Japan' & 'Russia'
 
 Miner Updates:
 - BMiner-v16.4.9
