@@ -52,7 +52,7 @@
               <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
               <th data-field="EstimateFactor" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2>Estimate Factor</th>
               <th data-field="EarningsAdjustmentFactor" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2 data-visible="false">Earnings Adjustment Factor</th>
-              <th data-field="Region" data-sortable="true" data-filter-control="select" data-width=1>Region</th>
+              <th data-field="Region" data-sortable="true" data-filter-control="select">Region</th>
               <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4>SSL</th>
               <th data-field="Fee" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
               <th data-field="Workers" data-sortable="true" data-visible="false">Workers</th>
@@ -77,7 +77,7 @@
           $('#reset-data').click(function () {
             var $data = $table.bootstrapTable('getSelections');
             if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
+              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Region: $element.Region})));
               if ($data.length >= $querysize) {
                 alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
               }

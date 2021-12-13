@@ -170,6 +170,8 @@
       "DOGE",
       "ETH",
       "LTC",
+      "MATIC",
+      "SHIB",
       "USDT"
     ],
     "PayoutCurrency": "[Default]",

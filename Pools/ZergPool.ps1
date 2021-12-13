@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.0.7 (RC7)
-Version date:   05 December 2021
+Version:        4.0.0.8 (RC8)
+Version date:   13 December 2021
 #>
 
 using module ..\Includes\Include.psm1

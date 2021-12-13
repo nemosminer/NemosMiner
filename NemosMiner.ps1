@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.7 (RC7)
-Version date:   05 December 2021
+Version:        4.0.0.8 (RC8)
+Version date:   13 December 2021
 #>
 
 [CmdletBinding()]
@@ -259,7 +259,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.7" #RC7
+    Version      = [System.Version]"4.0.0.8" #RC8
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -363,9 +363,10 @@ If (-not $Variables.Donation) {
 # Read configuration
 Read-Config -ConfigFile $Variables.ConfigFile
 
-$AllCommandLineParameters | ForEach-Object { 
+$AllCommandLineParameters.Keys | ForEach-Object { 
     Remove-Variable $_ -ErrorAction Ignore
 }
+Remove-Variable AllCommandLineParameters -ErrorAction Ignore
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
@@ -433,9 +434,15 @@ If ($Variables.FreshConfig -eq $true) { $Config.MinerInstancePerDeviceModel = ($
 
 Write-Host "Setting variables..." -ForegroundColor Yellow
 $Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
-$Variables.DriverVersion = @{ }
-$Variables.DriverVersion | Add-Member AMD ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
-$Variables.DriverVersion | Add-Member NVIDIA ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion = [PSCustomObject]@{ }
+$Variables.DriverVersion | Add-Member "CIM" ([PSCustomObject]@{ })
+$Variables.DriverVersion.CIM | Add-Member "CPU" ((($Variables.Devices | Where-Object { $_.Type -EQ "CPU" }).CIM.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion.CIM | Add-Member "AMD" ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).CIM.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion.CIM | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).CIM.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion | Add-Member "OpenCL" ([PSCustomObject]@{ })
+$Variables.DriverVersion.OpenCL | Add-Member "CPU" ((($Variables.Devices | Where-Object { $_.Type -EQ "CPU" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion.OpenCL | Add-Member "AMD" ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion.OpenCL | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
 $Variables.BrainJobs = @{ }
 $Variables.EndLoopTime = (Get-Date).AddSeconds($Config.Interval)
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
@@ -686,7 +693,7 @@ Function Update-TabControl {
                     If ($TimeSinceLastReport.Days -ge 1) { $TimeSinceLastReportText += " {0:N0} day$(If ($TimeSinceLastReport.Days -ne 1) { "s" } )" -f $TimeSinceLastReport.Days }
                     If ($TimeSinceLastReport.Hours -ge 1) { $TimeSinceLastReportText += " {0:N0} hour$(If ($TimeSinceLastReport.Hours -ne 1) { "s" } )" -f $TimeSinceLastReport.Hours }
                     If ($TimeSinceLastReport.Minutes -ge 1) { $TimeSinceLastReportText += " {0:N0} minute$(If ($TimeSinceLastReport.Minutes -ne 1) { "s" } )" -f $TimeSinceLastReport.Minutes }
-                    If ($TimeSinceLastReport.Seconds -ge 1) { $TimeSinceLastReportText += " {0:N0} second$(If ($TimeSinceLastReport.Seconds -ne 1) { "s" } )" -f $TimeSinceLastReport.Seconds }
+                    If ($TimeSinceLastReport.Seconds -ge 1) { $T4imeSinceLastReportText += " {0:N0} second$(If ($TimeSinceLastReport.Seconds -ne 1) { "s" } )" -f $TimeSinceLastReport.Seconds }
                     If ($TimeSinceLastReportText) { $_ | Add-Member -Force @{ TimeSinceLastReportText = "$($TimeSinceLastReportText.trim()) ago" } }
                     Else  { $_ | Add-Member -Force @{ TimeSinceLastReportText = "just now" } }
                 }
@@ -1009,7 +1016,7 @@ Function Global:TimerUITick {
                 }
             }
 
-            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToString('G'))   |   Hot Keys: [abceilmnpstruy]   |   Press 'h' for help"
+            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceilmnprstuy]" } Else { "[abeilmnpsy]" })   |   Press 'h' for help"
             Write-Host ("-" * $StatusMessage.Length)
             Write-Host -ForegroundColor Yellow $StatusMessage
             Remove-Variable StatusMessage
@@ -1045,10 +1052,12 @@ Function MainForm_Load {
                             Start-Sleep -Seconds 2
                         }
                         "c" { 
-                            $Variables.ShowPowerCost = -not $Variables.ShowPowerCost
-                            Write-Host "Toggled displaying Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost to " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                            $Variables.RefreshNeeded = $true
-                            Start-Sleep -Seconds 2
+                            If ($Variables.CalculatePowerCost) { 
+                                $Variables.ShowPowerCost = -not $Variables.ShowPowerCost
+                                Write-Host "Toggled displaying Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost to " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                                $Variables.RefreshNeeded = $true
+                                Start-Sleep -Seconds 2
+                            }
                         }
                         "e" { 
                             $Variables.ShowEarning = -not $Variables.ShowEarning
@@ -1060,17 +1069,23 @@ Function MainForm_Load {
                             Write-Host "Hot key legend:"
                             Write-Host "a: Toggle " -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy column"
                             Write-Host "b: Toggle Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances"
-                            Write-Host "c: Toggle Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost column"
+                            If ($Variables.CalculatePowerCost) { 
+                                Write-Host "c: Toggle Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost column"
+                            }
                             Write-Host "e: Toggle " -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings column"
                             Write-Host "i: Toggle Earning B" -NoNewline; Write-Host "i" -ForegroundColor Cyan -NoNewline; Write-Host "as column"
                             Write-Host "l: Toggle listing al" -NoNewline; Write-Host "l" -ForegroundColor Cyan -NoNewline; Write-Host " available miners"
                             Write-Host "m: Toggle " -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees column"
                             Write-Host "n: Toggle Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame column"
                             Write-Host "p: Toggle " -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool Fees column"
-                            Write-Host "r: Toggle P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias column"
+                            If ($Variables.CalculatePowerCost) { 
+                                Write-Host "r: Toggle P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias column"
+                            }
                             Write-Host "s: Toggle " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle (full or compact)"
-                            Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column"
-                            Write-Host "u: Toggle Power " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "sage column"
+                            If ($Variables.CalculatePowerCost) { 
+                                Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column"
+                                Write-Host "u: Toggle Power " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "sage column"
+                            }
                             Write-Host "m: Toggle Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host " column"
                         }
                         "i" { 
@@ -1104,10 +1119,12 @@ Function MainForm_Load {
                             Start-Sleep -Seconds 2
                         }
                         "r" { 
-                            $Variables.ShowProfitBias = -not $Variables.ShowProfitBias
-                            Write-Host "Toggled displaying P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias to " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                            $Variables.RefreshNeeded = $true
-                            Start-Sleep -Seconds 2
+                            If ($Variables.CalculatePowerCost) { 
+                                $Variables.ShowProfitBias = -not $Variables.ShowProfitBias
+                                Write-Host "Toggled displaying P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias to " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                                $Variables.RefreshNeeded = $true
+                                Start-Sleep -Seconds 2
+                            }
                         }
                         "s" { 
                             $Variables.UIStyle = If ($Variables.UIStyle -eq "Light") { "Full" } Else { "Light" }
@@ -1116,16 +1133,20 @@ Function MainForm_Load {
                             Start-Sleep -Seconds 2
                         }
                         "t" { 
-                            $Variables.ShowProfit = -not $Variables.ShowProfit
-                            Write-Host "Toggled displaying " -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "rofit to " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                            $Variables.RefreshNeeded = $true
-                            Start-Sleep -Seconds 2
+                            If ($Variables.CalculatePowerCost) { 
+                                $Variables.ShowProfit = -not $Variables.ShowProfit
+                                Write-Host "Toggled displaying " -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "rofit to " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                                $Variables.RefreshNeeded = $true
+                                Start-Sleep -Seconds 2
+                            }
                         }
                         "u" { 
-                            $Variables.ShowPowerUsage = -not $Variables.ShowPowerUsage
-                            Write-Host "Toggled displaying power " -NoNewline; Write-Host "u" -ForegroundColor Cyan -NoNewline; Write-Host "sage to " -NoNewline; If ($Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                            $Variables.RefreshNeeded = $true
-                            Start-Sleep -Seconds 2
+                            If ($Variables.CalculatePowerCost) { 
+                                $Variables.ShowPowerUsage = -not $Variables.ShowPowerUsage
+                                Write-Host "Toggled displaying power " -NoNewline; Write-Host "u" -ForegroundColor Cyan -NoNewline; Write-Host "sage to " -NoNewline; If ($Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                                $Variables.RefreshNeeded = $true
+                                Start-Sleep -Seconds 2
+                            }
                         }
                         "y" { 
                             $Variables.ShowCurrency = -not $Variables.ShowCurrency
@@ -1317,6 +1338,7 @@ $RunningMinersDGV = New-Object System.Windows.Forms.DataGridView
 $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, 232)
 $RunningMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
+$RunningMinersDGV.DataGridViewColumnHeadersHeightSizeMode = "AutoSize"
 $RunningMinersDGV.RowHeadersVisible = $false
 $RunningMinersDGV.AllowUserToAddRows = $false
 $RunningMinersDGV.AllowUserToOrderColumns = $true
@@ -1350,6 +1372,7 @@ $EarningsDGV = New-Object System.Windows.Forms.DataGridView
 $EarningsDGV.Location = [System.Drawing.Point]::new(2, 167)
 $EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EarningsDGV.AutoSizeColumnsMode = "Fill"
+$EarningsDGV.DataGridViewColumnHeadersHeightSizeMode = "AutoSize"
 $EarningsDGV.RowHeadersVisible = $false
 $EarningsDGV.AllowUserToAddRows = $false
 $EarningsDGV.AllowUserToOrderColumns = $true
@@ -1457,6 +1480,7 @@ $BenchmarksDGV = New-Object System.Windows.Forms.DataGridView
 $BenchmarksDGV.Location = [System.Drawing.Point]::new(2, 22)
 $BenchmarksDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $BenchmarksDGV.AutoSizeColumnsMode = "Fill"
+$BenchmarksDGV.DataGridViewColumnHeadersHeightSizeMode = "AutoSize"
 $BenchmarksDGV.RowHeadersVisible = $false
 $BenchmarksDGV.ColumnHeadersVisible = $true
 $BenchmarksDGV.AllowUserToAddRows = $false
@@ -1483,6 +1507,7 @@ $WorkersDGV = New-Object System.Windows.Forms.DataGridView
 $WorkersDGV.Location = [System.Drawing.Point]::new(2, 22)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $WorkersDGV.AutoSizeColumnsMode = "Fill"
+$WorkersDGV.DataGridViewColumnHeadersHeightSizeMode = "AutoSize"
 $WorkersDGV.AutoSizeRowsMode = "AllCells"
 $WorkersDGV.DefaultCellStyle= @{ WrapMode = "True" }
 $WorkersDGV.RowHeadersVisible = $false

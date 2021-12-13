@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.7 (RC7)
-Version date:   05 December 2021
+Version:        4.0.0.8 (RC8)
+Version date:   13 December 2021
 #>
 
 # Window handling
@@ -139,7 +139,7 @@ Class Worker {
     [Double]$Earning
     [Double]$Earning_Bias
     [Double]$Earning_Accuracy
-    [Boolean]$Disabled = $false
+    [Boolean]$Disabled
     [TimeSpan]$TotalMiningDuration
 }
 
@@ -169,23 +169,23 @@ Class Miner {
     [String[]]$Algorithm = @() # derived from workers
     [Double[]]$Speed_Live = @()
 
-    [Double]$Earning = [Double]::NaN # derived from pool and stats
-    [Double]$Earning_Bias = [Double]::NaN # derived from pool and stats
-    [Double]$Earning_Accuracy = [Double]::NaN # derived from pool and stats
-    [Double]$Profit = [Double]::NaN
-    [Double]$Profit_Bias = [Double]::NaN
+    [Boolean]$Benchmark = $false # derived from stats
 
-    [Boolean]$Benchmark = $true # derived from stats
+    [Double]$Earning # derived from pool and stats
+    [Double]$Earning_Bias # derived from pool and stats
+    [Double]$Earning_Accuracy # derived from pool and stats
+    [Double]$Profit
+    [Double]$Profit_Bias
 
-    [Double]$PowerUsage = [Double]::NaN
-    [Double]$PowerUsage_Live = [Double]::NaN
-    [Double]$PowerCost = [Double]::NaN
     [Boolean]$ReadPowerUsage = $false
-    [Boolean]$MeasurePowerUsage = $true
+    [Boolean]$MeasurePowerUsage = $false
+
+    [Double]$PowerUsage
+    [Double]$PowerUsage_Live
+    [Double]$PowerCost
 
     [Boolean]$Fastest = $false
     [Boolean]$Best = $false
-    [Boolean]$New = $false
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
     [String[]]$Reason
@@ -196,9 +196,6 @@ Class Miner {
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
-
-    # [Runspace]$GetMinerDataRunspace = $null
-    # [PowerShell]$GetMinerDataPowerShell = $null
 
     [Int32]$ProcessId = 0
     [Int]$ProcessPriority = -1
@@ -277,7 +274,6 @@ Class Miner {
         $this.Status = [MinerStatus]::Failed
         $this.StatusMessage = "Launching {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}..."
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-        $this.New = $true
         $this.Activated++
         $this.Intervals = @()
 
@@ -477,7 +473,7 @@ Class Miner {
         Return $TotalPowerUsage
     }
 
-    [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.New) { 
+    [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.Benchmark) { 
         # Returns an array of two values (safe, unsafe)
 
         $HashRates_Count = [Int]0
@@ -492,7 +488,7 @@ Class Miner {
         $HashRates_Variance = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
-            If ($HashRates_Count -lt 3 -or $HashRates_Variance -gt 0.05) { 
+            If ($HashRates_Count -lt 3 -or $HashRates_Variance -gt 0.1) { 
                 Return @(0, $HashRates_Average)
             }
             Else { 
@@ -504,7 +500,7 @@ Class Miner {
         }
     }
 
-    [Double[]]CollectPowerUsage([Boolean]$Safe = $this.New) { 
+    [Double[]]CollectPowerUsage([Boolean]$Safe = $this.MeasurePowerUsage) { 
         # Returns an array of two values (safe, unsafe)
 
         $PowerUsages_Count = [Int]0
@@ -533,13 +529,21 @@ Class Miner {
     Refresh([Double]$PowerCostBTCperW, [Boolean]$CalculatePowerCost) { 
         $this.Reason = @()
         $this.Available = $true
-        $this.Benchmark = $false
         $this.Best = $false
         $this.Disabled = $false
+
+        $this.Benchmark = $false
 
         $this.Earning = 0
         $this.Earning_Bias = 0
         $this.Earning_Accuracy = 0
+
+        $this.MeasurePowerUsage = $false
+
+        $this.PowerUsage = [Double]::NaN
+        $this.PowerCost = [Double]::NaN
+        $this.Profit = [Double]::NaN
+        $this.Profit_Bias = [Double]::NaN
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") {
@@ -550,38 +554,41 @@ Class Miner {
                 $_.Earning_Accuracy = [Double](1 - $_.Pool.MarginOfError)
                 $_.TotalMiningDuration = $Stat.Duration
                 $_.Disabled = $Stat.Disabled
+                $this.Earning += $_.Earning
+                $this.Earning_Bias += $_.Earning_Bias
             }
             Else { 
-                $this.Benchmark = $true
+                $_.Disabled = $false
                 $_.Speed = [Double]::NaN
-                $_.Earning = [Double]::NaN
-                $_.Earning_Bias = [Double]::NaN
-                $_.Earning_Accuracy = [Double]::Nan
-                $_.TotalMiningDuration = New-TimeSpan
             }
-            $this.Earning += $_.Earning
-            $this.Earning_Bias += $_.Earning_Bias
         }
 
         If ($this.Workers | Where-Object Disabled) { 
+            $this.Status = [MinerStatus]::Disabled
             $this.Available = $false
             $this.Disabled = $true
-            $this.Status = [MinerStatus]::Disabled
+        }
+        ElseIf ($this.Workers | Where-Object { [Double]::IsNaN($_.Speed) }) { 
+            $this.Benchmark = $true
+            $this.Earning = [Double]::NaN
+            $this.Earning_Bias = [Double]::NaN
+            $this.Earning_Accuracy = [Double]::NaN
         }
         ElseIf ($this.Workers | Where-Object Speed -EQ 0) { 
+            $this.Status = [MinerStatus]::Failed
             $this.Available = $false
             $this.Disabled = $false
-            $this.Status = [MinerStatus]::Failed
+            $this.Earning = [Double]::NaN
+            $this.Earning_Bias = [Double]::NaN
+            $this.Earning_Accuracy = [Double]::NaN
         }
-
-        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 } 
         Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
+        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
         If ($CalculatePowerCost) { 
             If ($Stat = Get-Stat "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
-                $this.MeasurePowerUsage = $false
                 $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
@@ -589,18 +596,7 @@ Class Miner {
             }
             Else { 
                 $this.MeasurePowerUsage = $true
-                $this.PowerUsage = [Double]::NaN
-                $this.PowerCost = [Double]::NaN
-                $this.Profit = [Double]::NaN
-                $this.Profit_Bias = [Double]::NaN
             }
-        }
-        Else { 
-            $this.MeasurePowerUsage = $false
-            $this.PowerUsage = [Double]::NaN
-            $this.PowerCost = [Double]::NaN
-            $this.Profit = [Double]::NaN
-            $this.Profit_Bias = [Double]::NaN
         }
     }
 }
@@ -628,7 +624,7 @@ Function Start-IdleMining {
     # Function tracks how long the system has been idle and controls the paused state
     $IdleRunspace = [runspacefactory]::CreateRunspace()
     $IdleRunspace.Open()
-    Get-Variable -Scope Global | ForEach-Object { 
+    Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
         Try { 
             $IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
         }
@@ -1354,14 +1350,13 @@ Function Set-Stat {
     $Path = "Stats\$Name.txt"
     $SmallestValue = 1E-20
     $Disabled = $Value -eq -1
-    If ($Value -eq -1) { $Value = [Double]::NaN }
-
     $Stat = Get-Stat -Name $Name
 
     If ($Stat -is [Hashtable] -and $Stat.IsSynchronized) { 
         If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
         If ($Duration -le 0) { Return $Stat }
+
         If ($Disabled) { $Value = [Decimal]$Stat.Live }
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
@@ -1380,20 +1375,20 @@ Function Set-Stat {
 
         If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Failed saving hash rate for '$($Name -replace '_HashRate$')': $(($Value | ConvertTo-Hash) -replace '\s+', ''). It is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Failed saving hash rate for '$($Name -replace '_HashRate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', '') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Failed saving power usage for '$($Name -replace '_PowerUsage$')': $($Value.ToString("N2"))W. It is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Failed saving power usage for '$($Name -replace '_PowerUsage$')'. $($Value.ToString("N2"))W is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
         }
         Else { 
             If ($Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value -gt 0) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "HashRate was forcefully updated because it was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "HashRate  '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "Power usage was forcefully updated because it was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Power usage  for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($ToleranceMin.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
                     }
                 }
 
@@ -1431,32 +1426,36 @@ Function Set-Stat {
         }
     }
     Else { 
+        If ($Disabled) { 
+            Write-message -LEVEL WARN "2: $($Name): $($Stat | ConvertTo-Json) / $($Variables.MainPath)"
+            $Value = [Decimal]$Stat.Live
+        }
 
-       If (-not $Duration) { $Duration = [TimeSpan]::FromMinutes(1) }
+        If (-not $Duration) { $Duration = [TimeSpan]::FromMinutes(1) }
 
-       $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
-           @{ 
-               Name                  = [String]$Name
-               Live                  = [Double]$Value
-               Minute                = [Double]$Value
-               Minute_Fluctuation    = [Double]0
-               Minute_5              = [Double]$Value
-               Minute_5_Fluctuation  = [Double]0
-               Minute_10             = [Double]$Value
-               Minute_10_Fluctuation = [Double]0
-               Hour                  = [Double]$Value
-               Hour_Fluctuation      = [Double]0
-               Day                   = [Double]$Value
-               Day_Fluctuation       = [Double]0
-               Week                  = [Double]$Value
-               Week_Fluctuation      = [Double]0
-               Duration              = [TimeSpan]$Duration
-               Updated               = [DateTime]$Updated
-               Disabled              = [Boolean]$Disabled
-               ToleranceExceeded     = [UInt16]0
-               Timer                 = [DateTime]$Timer
-           }
-       )
+        $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(
+            @{ 
+                Name                  = [String]$Name
+                Live                  = [Double]$Value
+                Minute                = [Double]$Value
+                Minute_Fluctuation    = [Double]0
+                Minute_5              = [Double]$Value
+                Minute_5_Fluctuation  = [Double]0
+                Minute_10             = [Double]$Value
+                Minute_10_Fluctuation = [Double]0
+                Hour                  = [Double]$Value
+                Hour_Fluctuation      = [Double]0
+                Day                   = [Double]$Value
+                Day_Fluctuation       = [Double]0
+                Week                  = [Double]$Value
+                Week_Fluctuation      = [Double]0
+                Duration              = [TimeSpan]$Duration
+                Updated               = [DateTime]$Updated
+                Disabled              = [Boolean]$Disabled
+                ToleranceExceeded     = [UInt16]0
+                Timer                 = [DateTime]$Timer
+            }
+        )
     }
 
     @{ 
@@ -1486,16 +1485,17 @@ Function Get-Stat {
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
             & { 
-                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -File -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
+                [String[]]$StatFiles = (Get-ChildItem -Path "Stats" -File -ErrorAction Ignore | Select-Object -ExpandProperty BaseName | Sort-Object -Unique)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
             }
         )
     )
 
-    $Name | Sort-Object -Unique | ForEach-Object { 
+    $Name | ForEach-Object { 
         $Stat_Name = $_
-        If ($Global:Stats.$Stat_Name -isnot [Hashtable] -or -not $Global:Stats.$Stat_Name.IsSynchronized) { 
+
+        If ($Stats.$Stat_Name -isnot [Hashtable] -or -not $Global:Stats.$Stat_Name.IsSynchronized) { 
             If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
                 $Global:Stats = [Hashtable]::Synchronized(@{ })
             }

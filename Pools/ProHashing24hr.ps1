@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing24hr.ps1
-Version:        4.0.0.7 (RC7)
-Version date:   05 December 2021
+Version:        4.0.0.8 (RC8)
+Version date:   13 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -53,7 +53,7 @@ If ($PoolConfig.UserName) {
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $PoolPort = $Request.$_.port
 
-        $Pass = @("a=$Algorithm", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
 
         $Currency = $Request.$_.currency
 
@@ -62,7 +62,9 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
-        ForEach ($Region in $PoolConfig.Region) { 
+        $Regions = If ($Algorithm_Norm -in @("Chia", "Etchash", "Ethash", "EthashLowMem")) { "US" } Else { $PoolConfig.Region }
+ 
+        ForEach ($Region in $Regions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{
@@ -72,7 +74,7 @@ If ($PoolConfig.UserName) {
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$(If ($Region -eq "eu") { "eu." })$PoolHost"
+                Host                     = "$(If ($Region_Norm -eq "EU") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolConfig.UserName
                 Pass                     = [String]($Pass -join ',')

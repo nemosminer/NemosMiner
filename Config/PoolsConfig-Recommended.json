@@ -21,7 +21,22 @@
         "+KawPoW"
     ]
   },
-  "NiceHash": {
+  "NiceHash External": {
+    "Algorithm": [
+        "+Cuckaroom",
+        "+Cuckaroo29bfc",
+        "+Cuckarooz29",
+        "+Cuckoocycle",
+        "+Cuckaroo29",
+        "+Cuckarood29",
+        "+Cuckatoo31",
+        "+Cuckatoo32",
+        "+Eaglesong",
+        "+Ethash",
+        "+Handshake"
+    ]
+  },
+  "NiceHash Internal": {
     "Algorithm": [
         "+Cuckaroom",
         "+Cuckaroo29bfc",

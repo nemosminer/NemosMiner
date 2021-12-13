@@ -74,7 +74,6 @@
               <th data-field="Available" data-sortable="true" data-filter-control="select">Available</th>
               <th data-field="Benchmark" data-sortable="true" data-filter-control="select">Benchmark</th>
               <th data-field="MeasurePowerUsage" data-sortable="true" data-filter-control="select">Measure PowerUsage</th>
-              <th data-field="New" data-sortable="true" data-filter-control="select" data-visible="false">New</th>
               <th data-field="Best" data-sortable="true" data-filter-control="select" data-visible="false">Best</th>
               <th data-field="Fastest" data-sortable="true" data-filter-control="select" data-visible="false">Fastest</th>
               <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-visible="false">Disabled</th>
@@ -97,7 +96,7 @@
           $table.bootstrapTable({
             // refresh once per interval
             autoRefreshInterval: (parseInt(config.Interval)),
-            height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
+            // height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
           });
 
           if (config.CalculatePowerCost == true) {

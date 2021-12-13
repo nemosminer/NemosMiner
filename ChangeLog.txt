@@ -6,6 +6,29 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.8 (RC8) 13.12.2021
+=============================================
+
+Enhancements:
+- API: Add CIM and OpenCL ('/driverversion')
+- Core: Minor Speed optimization
+- Core: Reduce memory footprint
+- Core: Set EthashLowMem min. memory to 4'000'000'000 bytes
+- Web GUI: Update boostrap to version 4.6.1
+
+Fixes:
+- Web GUI / Pools: Reset pool stat data broken (Regression from 4.0.0.6)
+- Prohashing(24hr/Plus) pool: Fix eu pools (not available for Chia, Etchash, Ethash & EthashLowMem)
+- Trex-v0.24.7: Invalid command line (regression from v4.0.0.6)
+- Zergpool: Added more guaranteed payout currencies
+
+Miner Updates:
+- NanoMiner-v3.4.8
+- TeamBlackMiner-v1.32
+- TeamRedMiner-v0.9.0
+- Trex-v0.24.8
+
+
 Changelog NemosMiner 4.0.0.7 (RC7) 05.12.2021
 =============================================
 

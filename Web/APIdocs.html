@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.0.7 (RC7)
-version date:   05 December 2021-->
+version:        4.0.0.8 (RC8)
+version date:   13 December 2021-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.3.9.40)</h1>
+  <h1>NemosMiner API (version 0.3.9.42)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -97,6 +97,9 @@ version date:   05 December 2021-->
   <a href="http://localhost:3999/displayworkers">/displayworkers</a>
   <p>Shows the rig data as reported by the monitoring server.</p>
   <br>
+  <a href="http://localhost:3999/driverversion">/driverversion</a>
+  <p>Returns the installed CIM & OpenCL driver version numbers.</p>
+  <br>
   <a href="http://localhost:3999/earningschartdata">/earningschartdata</a>
   <p>Returns the data required for earnings chart.</p>
   <br>
@@ -115,8 +118,11 @@ version date:   05 December 2021-->
   <a href="http://localhost:3999/miners/bestminers_combo">/miners/bestminers_combo</a>
   <p>Shows the bestminers_combo data, use for debugging.</p>
   <br>
-  <a href="http://localhost:3999/miners/mostprofitables">/miners/mostprofitable</a>
+  <a href="http://localhost:3999/miners/mostprofitable">/miners/mostprofitable</a>
   <p>Shows the most profitable miners data, use for debugging.</p>
+  <br>
+  <a href="http://localhost:3999/miners/disabled">/miners/disabled</a>
+  <p>Shows the disabled miners data, use for debugging.</p>
   <br>
   <a href="http://localhost:3999/miners/failed">/miners/failed</a>
   <p>Shows the failed miners data, use for debugging.</p>
@@ -137,7 +143,7 @@ version date:   05 December 2021-->
   <p>Shows current mining earning.</p>
   <br>
   <a href="http://localhost:3999/miningpowercost">/miningpowercost</a>
-  <p>Shows current mining power cost.
+  <p>Shows current mining power cost.</p>
   <br>
   <a href="http://localhost:3999/miningprofit">/miningprofit</a>
   <p>Shows current mining profit.</p>
