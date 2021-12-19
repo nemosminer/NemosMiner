@@ -22,8 +22,7 @@ version:        4.0.0.9 (RC9)
 version date:   19 December 2021
 #>
 
-#Set-Location ($args[0])
-Set-Location "C:\Users\Stephan\Desktop\NemosMiner\Brains\ZergPool"
+Set-Location ($args[0])
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
