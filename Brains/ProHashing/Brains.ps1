@@ -23,7 +23,6 @@ version date:   19 December 2021
 #>
 
 Set-Location ($args[0])
-#Set-Location c:\Users\Stephan\Desktop\NemosMiner\Brains\ProHashing\
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
