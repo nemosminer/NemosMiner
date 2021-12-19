@@ -40,8 +40,8 @@ function formatMiners(data) {
       }
 
       if (item.Workers.length > 1) {
-        item.tSecondaryMinerFee = item.Workers[1].Fee;
         item.tSecondarySpeed = item.Workers[1].Speed;
+        item.tSecondaryMinerFee = item.Workers[1].Fee;
         if (item.Workers[1].Pool) {
           item.tSecondaryPool = item.Workers[1].Pool.Name;
           item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;

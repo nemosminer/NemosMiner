@@ -26,6 +26,8 @@
           data-show-columns="true"
           data-show-toggle="true"
           data-show-refresh="true"
+          data-auto-refresh="true"
+          data-auto-refresh-status="false"
           data-detail-view="true"
           data-detail-formatter="detailFormatter"
           data-response-handler="formatMiners"
@@ -271,164 +273,164 @@
           });
 
           function updatePoolBalances() {
-              var balances = document.getElementById("balances");
-              var data_sum = {
-                name: "Total from all Pools",
-                balances: {},
-                total: true
-              };
-              var rates = {};
+            var balances = document.getElementById("balances");
+            var data_sum = {
+              name: "Total from all Pools",
+              balances: {},
+              total: true
+            };
+            var rates = {};
 
-              $.ajax({
-                url: '/rates',
-                success: function(result) {
-                  if (result != null) {
-                    rates = result;
+            $.ajax({
+              url: '/rates',
+              success: function(result) {
+                if (result != null) {
+                  rates = result;
 
-                    $.ajax({url: '/allcurrencies',
-                      success: function(result) {
-                        if (result != null) { 
-                          currencies = result;
+                  $.ajax({url: '/allcurrencies',
+                    success: function(result) {
+                      if (result != null) { 
+                        currencies = result;
 
-                          $.ajax({url: '/balances',
-                            success: function(result) {
-                              if (result != null) { 
-                                document.getElementById("balances").style.display = "block";
-                                $("#balanceboxes").empty();
-                                var outdatedicon = "";
-                                var template = Handlebars.compile($("#poolbalance_template").html());
-                                var footer = new RegExp("-.+|=.+");
-                                var growth1_sum   = 0;
-                                var growth6_sum   = 0;
-                                var growth24_sum  = 0;
-                                var growth168_sum = 0;
-                                var growth720_sum = 0;
-                                var avghourlygrowth_sum  = 0;
-                                var avgdailygrowth_sum  = 0;
-                                var avgweeklygrowth_sum = 0;
-                                var avgmonthlygrowth_sum = 0;
+                        $.ajax({url: '/balances',
+                          success: function(result) {
+                            if (result != null) { 
+                              document.getElementById("balances").style.display = "block";
+                              $("#balanceboxes").empty();
+                              var outdatedicon = "";
+                              var template = Handlebars.compile($("#poolbalance_template").html());
+                              var footer = new RegExp("-.+|=.+");
+                              var growth1_sum   = 0;
+                              var growth6_sum   = 0;
+                              var growth24_sum  = 0;
+                              var growth168_sum = 0;
+                              var growth720_sum = 0;
+                              var avghourlygrowth_sum  = 0;
+                              var avgdailygrowth_sum  = 0;
+                              var avgweeklygrowth_sum = 0;
+                              var avgmonthlygrowth_sum = 0;
 
-                                $.each(result, function(index, item) {
-                                  item.Currencies = [item.Currency];
-                                  item.Currencies = (item.Currencies).concat(currencies);
-                                  item.Currencies = Array.from(new Set(item.Currencies));
+                              $.each(result, function(index, item) {
+                                item.Currencies = [item.Currency];
+                                item.Currencies = (item.Currencies).concat(currencies);
+                                item.Currencies = Array.from(new Set(item.Currencies));
 
-                                  if (config.UsemBTC == true) {
-                                    (item.Currencies).splice((item.Currencies).indexOf('BTC'), 1, 'mBTC')
+                                if (config.UsemBTC == true) {
+                                  (item.Currencies).splice((item.Currencies).indexOf('BTC'), 1, 'mBTC')
+                                }
+                                // Remove duplicated currencies, keep first in list
+                                item.Currencies = [...new Set(item.Currencies)];
+
+                                growth1_sum   += item.Growth1   * rates[item.Currency]['BTC'];
+                                growth6_sum   += item.Growth6   * rates[item.Currency]['BTC'];
+                                growth24_sum  += item.Growth24  * rates[item.Currency]['BTC'];
+                                growth168_sum += item.Growth168 * rates[item.Currency]['BTC'];
+                                growth720_sum += item.Growth720 * rates[item.Currency]['BTC'];
+
+                                avghourlygrowth_sum += item.AvgHourlyGrowth * rates[item.Currency]['BTC'];
+                                avgdailygrowth_sum  += item.AvgDailyGrowth  * rates[item.Currency]['BTC'];
+                                avgweeklygrowth_sum += item.AvgWeeklyGrowth * rates[item.Currency]['BTC'];
+
+                                if (!(footer.test(item.Pool))) {
+                                  if (config.UsemBTC && item.Currency == "BTC") {
+                                    var factor = 1000;
+                                  } else {
+                                    var factor = 1;
                                   }
-                                  // Remove duplicated currencies, keep first in list
-                                  item.Currencies = [...new Set(item.Currencies)];
+                                  var data = {
+                                    name: (item.Pool + " (" + item.Currency + ")"),
+                                    updated: formatDate(item.LastUpdated),
+                                    payoutthreshold: item.PayoutThreshold,
+                                    thresholdcurrency: item.PayoutThresholdCurrency,
+                                    currency: item.Currency,
+                                    uri: item.Uri,
+                                    balances: {},
+                                    paydate: formatDate(item.ProjectedPayDate),
+                                    percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency]).toFixed(2),
+                                    growth1:item.Growth1 * factor,
+                                    growth6: item.Growth6 * factor,
+                                    growth24: item.Growth24 * factor,
+                                    growth168: item.Growth168 * factor,
+                                    growth720: item.Growth720 * factor,
+                                    avghourlygrowth: item.AvgHourlyGrowth * factor,
+                                    avgdailygrowth: item.AvgDailyGrowth * factor,
+                                    avgweeklygrowth: item.AvgWeeklyGrowth * factor,
+                                    maincurrency: maincurrency,
+                                    rates: rates
+                                  };
 
-                                  growth1_sum   += item.Growth1   * rates[item.Currency]['BTC'];
-                                  growth6_sum   += item.Growth6   * rates[item.Currency]['BTC'];
-                                  growth24_sum  += item.Growth24  * rates[item.Currency]['BTC'];
-                                  growth168_sum += item.Growth168 * rates[item.Currency]['BTC'];
-                                  growth720_sum += item.Growth720 * rates[item.Currency]['BTC'];
-
-                                  avghourlygrowth_sum += item.AvgHourlyGrowth * rates[item.Currency]['BTC'];
-                                  avgdailygrowth_sum  += item.AvgDailyGrowth  * rates[item.Currency]['BTC'];
-                                  avgweeklygrowth_sum += item.AvgWeeklyGrowth * rates[item.Currency]['BTC'];
-
-                                  if (!(footer.test(item.Pool))) {
-                                    if (config.UsemBTC && item.Currency == "BTC") {
-                                      var factor = 1000;
-                                    } else {
-                                      var factor = 1;
-                                    }
-                                    var data = {
-                                      name: (item.Pool + " (" + item.Currency + ")"),
-                                      updated: formatDate(item.LastUpdated),
-                                      payoutthreshold: item.PayoutThreshold,
-                                      thresholdcurrency: item.PayoutThresholdCurrency,
-                                      currency: item.Currency,
-                                      uri: item.Uri,
-                                      balances: {},
-                                      paydate: formatDate(item.ProjectedPayDate),
-                                      percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency]).toFixed(2),
-                                      growth1:item.Growth1 * factor,
-                                      growth6: item.Growth6 * factor,
-                                      growth24: item.Growth24 * factor,
-                                      growth168: item.Growth168 * factor,
-                                      growth720: item.Growth720 * factor,
-                                      avghourlygrowth: item.AvgHourlyGrowth * factor,
-                                      avgdailygrowth: item.AvgDailyGrowth * factor,
-                                      avgweeklygrowth: item.AvgWeeklyGrowth * factor,
-                                      maincurrency: maincurrency,
-                                      rates: rates
-                                    };
-
-                                    // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
-                                    if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.PoolBalancesUpdateInterval + 1) * 60) {
-                                      outdatedicon = " &#9888;&#65039;";
-                                      data.updated += outdatedicon;
-                                    }
-
-                                    $.each(item.Currencies, function(cindex, currency) {
-                                      data["balances"][currency] = (item.Balance * rates[item.Currency][currency]);
-                                      if (!(data_sum["balances"][currency])) {data_sum["balances"][currency] = 0}
-                                      data_sum["balances"][currency] += item.Balance * rates[item.Currency][currency];
-                                    });
-                                    $("#balanceboxes").append(template(data));
+                                  // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
+                                  if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.PoolBalancesUpdateInterval + 1) * 60) {
+                                    outdatedicon = " &#9888;&#65039;";
+                                    data.updated += outdatedicon;
                                   }
-                                });
 
-                                data_sum["name"] = (data_sum["name"] + outdatedicon);
-                                data_sum["firstcurrency"] = maincurrency;
-                                if (growth1_sum > 0) {
-                                  data_sum["growth1summbtc"] = growth1_sum * 1000;
-                                  data_sum["growth1sum"] = growth1_sum * rates['BTC'][maincurrency];
-                                } else { 
-                                  data_sum["growth1summbtc"] = 0;
-                                  data_sum["growth1sum"] = 0;
-                                };
-                                if (growth6_sum > 0) {
-                                  data_sum["growth6summbtc"] = growth6_sum * 1000;
-                                  data_sum["growth6sum"] = growth6_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth6summbtc"] = 0;
-                                  data_sum["growth6sum"] = 0;
-                                };
-                                if (growth24_sum > 0) {
-                                  data_sum["growth24summbtc"] = growth24_sum * 1000;
-                                  data_sum["growth24sum" ] = growth24_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth24summbtc"] = 0;
-                                  data_sum["growth24sum"] = 0;
-                                };
-                                if (growth168_sum > 0) {
-                                  data_sum["growth168summbtc"] = growth168_sum * 1000;
-                                  data_sum["growth168sum"] = growth168_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth168summbtc"] = 0;
-                                  data_sum["growth168sum"] = 0;
-                                };
-                                if (growth720_sum > 0) {
-                                  data_sum["growth720summbtc"] = growth720_sum * 1000;
-                                  data_sum["growth720sum"] = growth720_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth720summbtc"] = 0;
-                                  data_sum["growth720sum"] = 0;
-                                };
+                                  $.each(item.Currencies, function(cindex, currency) {
+                                    data["balances"][currency] = (item.Balance * rates[item.Currency][currency]);
+                                    if (!(data_sum["balances"][currency])) {data_sum["balances"][currency] = 0}
+                                    data_sum["balances"][currency] += item.Balance * rates[item.Currency][currency];
+                                  });
+                                  $("#balanceboxes").append(template(data));
+                                }
+                              });
 
-                                data_sum["avghourlygrowthsummbtc"] = avghourlygrowth_sum * 1000;
-                                data_sum["avgdailygrowthsummbtc"]  = avgdailygrowth_sum * 1000;
-                                data_sum["avgweeklygrowthsummbtc"] = avgweeklygrowth_sum * 1000;
-                                data_sum["avghourlygrowthsum"] = avghourlygrowth_sum  * rates['BTC'][maincurrency];
-                                data_sum["avgdailygrowthsum"] = avgdailygrowth_sum  * rates['BTC'][maincurrency];
-                                data_sum["avgweeklygrowthsum"] = avgweeklygrowth_sum * rates['BTC'][maincurrency];
+                              data_sum["name"] = (data_sum["name"] + outdatedicon);
+                              data_sum["firstcurrency"] = maincurrency;
+                              if (growth1_sum > 0) {
+                                data_sum["growth1summbtc"] = growth1_sum * 1000;
+                                data_sum["growth1sum"] = growth1_sum * rates['BTC'][maincurrency];
+                              } else { 
+                                data_sum["growth1summbtc"] = 0;
+                                data_sum["growth1sum"] = 0;
+                              };
+                              if (growth6_sum > 0) {
+                                data_sum["growth6summbtc"] = growth6_sum * 1000;
+                                data_sum["growth6sum"] = growth6_sum * rates['BTC'][maincurrency];
+                              } else {
+                                data_sum["growth6summbtc"] = 0;
+                                data_sum["growth6sum"] = 0;
+                              };
+                              if (growth24_sum > 0) {
+                                data_sum["growth24summbtc"] = growth24_sum * 1000;
+                                data_sum["growth24sum" ] = growth24_sum * rates['BTC'][maincurrency];
+                              } else {
+                                data_sum["growth24summbtc"] = 0;
+                                data_sum["growth24sum"] = 0;
+                              };
+                              if (growth168_sum > 0) {
+                                data_sum["growth168summbtc"] = growth168_sum * 1000;
+                                data_sum["growth168sum"] = growth168_sum * rates['BTC'][maincurrency];
+                              } else {
+                                data_sum["growth168summbtc"] = 0;
+                                data_sum["growth168sum"] = 0;
+                              };
+                              if (growth720_sum > 0) {
+                                data_sum["growth720summbtc"] = growth720_sum * 1000;
+                                data_sum["growth720sum"] = growth720_sum * rates['BTC'][maincurrency];
+                              } else {
+                                data_sum["growth720summbtc"] = 0;
+                                data_sum["growth720sum"] = 0;
+                              };
 
-                                $("#balanceboxes").append(template(data_sum));
+                              data_sum["avghourlygrowthsummbtc"] = avghourlygrowth_sum * 1000;
+                              data_sum["avgdailygrowthsummbtc"]  = avgdailygrowth_sum * 1000;
+                              data_sum["avgweeklygrowthsummbtc"] = avgweeklygrowth_sum * 1000;
+                              data_sum["avghourlygrowthsum"] = avghourlygrowth_sum  * rates['BTC'][maincurrency];
+                              data_sum["avgdailygrowthsum"] = avgdailygrowth_sum  * rates['BTC'][maincurrency];
+                              data_sum["avgweeklygrowthsum"] = avgweeklygrowth_sum * rates['BTC'][maincurrency];
 
-                              }
+                              $("#balanceboxes").append(template(data_sum));
+                              $('#miners').bootstrapTable('refresh');
                             }
-                          });
-                        }
+                          }
+                        });
                       }
-                    });
-                  }
+                    }
+                  });
                 }
-              });
-            }
+              }
+            });
+          }
           updatePoolBalances();
 
           window.setInterval(function() { 

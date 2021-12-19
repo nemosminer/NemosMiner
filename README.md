@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 13 December 2021
+Updated 19 December 2021
 
 
 Copyright (c) 2018-2021 Nemo, MrPlus & UselessGuru
@@ -244,7 +244,7 @@ Easy configuration, easy start:
 
 PowerShell Version 7.x is required:
 
-[Windows Powershell 7.1.5 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.1.5/PowerShell-7.1.5-win-x64.msi)
+[Windows Powershell 7.2.1 (Recommended)](https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/PowerShell-7.2.1-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 

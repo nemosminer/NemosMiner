@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.0.8 (RC8)
-Version date:   13 December 2021
+Version:        4.0.0.9 (RC9)
+Version date:   19 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,12 +45,12 @@ If ($Config.Wallets) {
 
     $Request.cryptoCurrencies | Where-Object { $Config.Wallets.($_.Name) } | ForEach-Object { 
 
-        $Currency = $_.name
+        $Currency = $_.name.Trim()
         $Algorithm_Norm = Get-Algorithm $Currency
 
         $Divisor = [Double]$_.profitPerPower
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.stats.$Currency.expectedReward24H * $Variables.Rates.$Currency.BTC / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.$Currency.expectedReward24H * $Variables.Rates.$Currency.BTC / $Divisor) -FaultDetection $false
 
         Try { $EstimateFactor = [Decimal]($Request.stats.$Currency.expectedReward24H / $Request.stats.$Currency.meanExpectedReward24H) }
         Catch { $EstimateFactor = 1 }

@@ -421,8 +421,8 @@
                     <br>
                   </div>
 
-                  <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 80%&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0%, max=100% [Default: 100%])" for="EarningsAdjustmentFactor"> Earnings Adjustment Factor
-                    <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=100 value=100 step=1 size=4> %
+                  <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pool are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=1.00 [Default: 1.00])" for="EarningsAdjustmentFactor"> Earnings Adjustment Factor
+                    <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=1 value=1 step=0.01 size=4>
                   </div>
                   <div style="line-height:100%;">
                     <br>
@@ -676,7 +676,7 @@
             if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
             if (config.IgnorePoolFee) document.getElementById('IgnorePoolFee').checked = true;
 
-            document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor) * 100;
+            document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor);
 
             document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
 
@@ -825,7 +825,7 @@
                 },
                 EarningsAdjustmentFactor: {
                   required: true,
-                  step: "1"
+                  step: "0.01"
                 },
                 RunningMinerGainPct: {
                   required: true,
@@ -1012,7 +1012,7 @@
                 config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
                 config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
 
-                config.EarningsAdjustmentFactor = parseFloat(document.getElementById('EarningsAdjustmentFactor').value) / 100;
+                config.EarningsAdjustmentFactor = parseFloat(document.getElementById('EarningsAdjustmentFactor').value);
 
                 config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
 

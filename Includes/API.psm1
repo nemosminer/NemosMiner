@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.8 (RC8)
-Version date:   13 December 2021
+Version:        4.0.0.9 (RC9)
+Version date:   19 December 2021
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.3.9.42"
+    $APIVersion = "0.3.9.50"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -197,7 +197,7 @@ Function Start-APIServer {
                                             Else { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
                                         }
                                     }
-                                    Write-Message -Level Verbose "Web GUI: Device '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated." -Console
+                                    Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated." -Console
                                 }
                                 Catch { 
                                     $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
@@ -226,7 +226,7 @@ Function Start-APIServer {
                                         If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
                                         Else { $_.Status = "Idle" }
                                     }
-                                    Write-Message -Level Verbose "Web GUI: Device $($Values -join '; ') enabled. Config file '$($Variables.ConfigFile)' updated." -Console
+                                    Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' enabled. Config file '$($Variables.ConfigFile)' updated." -Console
                                 }
                                 Catch { 
                                     $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
@@ -439,7 +439,7 @@ Function Start-APIServer {
                         If ($Parameters.Pools) { 
                             If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Name, Region)) { 
                                 $Pools | Sort-Object Name | ForEach-Object { 
-                                    $Stat_Name = If ($_.Name -like "*Coins") { "$($_.Name)_$($_.Algorithm)-$($_.Currency)" } Else { "$($_.Name)_$($_.Algorithm)" }
+                                    $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($Currency) { "-$($Currency)" })"
                                     $Data += "`n$($Stat_Name) ($($_.Region))"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Reason = [String[]]@()
@@ -757,8 +757,8 @@ Function Start-APIServer {
                     }
                     "/minersmin" { 
                         # Remove as much data as possible. bootstrap table data-url='/miners' fails to process large datasets (approx. more than 1.4MB)
-                        $Data = ConvertTo-Json @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, intervals | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { 
-                            If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, Intervals | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { 
+                            If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }
                             $Pool = $_.Workers[0].Pool
                             $_.Workers[0].PSObject.Properties.Remove("Disabled")
                             $_.Workers[0].PSObject.Properties.Remove("Pool")
@@ -768,6 +768,7 @@ Function Start-APIServer {
                             $_.Workers[0].PSObject.Properties.Remove("Earning_Accuracy")
                             $_.Workers[0] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
                             If ($_.Workers[1]) { 
+                                $Pool = $_.Workers[1].Pool
                                 $_.Workers[1].PSObject.Properties.Remove("Disabled")
                                 $_.Workers[1].PSObject.Properties.Remove("Pool")
                                 $_.Workers[1].PSObject.Properties.Remove("TotalMiningDuration")
@@ -777,7 +778,7 @@ Function Start-APIServer {
                                 $_.Workers[1] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
                             }
                             $_
-                        } | Select-Object -Property * -ExcludeProperty Arguments, BeginTime, EndTime, Info, KeepRunning, LastSample, MeasurePowerUsage, StatEnd, StatStart, StatusMessage, Speed_Live, PowerUsage_Live, ReadPowerUsage, URI, WorkersRunning | Sort-Object Status, DeviceName, Name)
+                        } | Select-Object -Property * -ExcludeProperty Arguments, BeginTime, EndTime, Info, LastSample, ProcessID, StatEnd, StatStart, StatusMessage, Speed_Live, PowerUsage_Live, ReadPowerUsage, URI, WorkersRunning | Sort-Object Status, DeviceName, Name)
                         Break
                     }
                     "/miners/available" { 

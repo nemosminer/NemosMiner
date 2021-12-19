@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\sgminer.exe"
-$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.8.0-2/sgminer-fancyIX-win64-0.8.0.zip"
+$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.8.1/sgminer-fancyIX-win64-0.8.1.zip"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(

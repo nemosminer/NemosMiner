@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.8 (RC8)
-Version date:   13 December 2021
+Version:        4.0.0.9 (RC9)
+Version date:   19 December 2021
 #>
 
 # Window handling
@@ -179,6 +179,7 @@ Class Miner {
 
     [Boolean]$ReadPowerUsage = $false
     [Boolean]$MeasurePowerUsage = $false
+    [Boolean]$Prioritized = $false # derived from BalancesKeepAlive
 
     [Double]$PowerUsage
     [Double]$PowerUsage_Live
@@ -475,20 +476,17 @@ Class Miner {
 
     [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.Benchmark) { 
         # Returns an array of two values (safe, unsafe)
-
         $HashRates_Count = [Int]0
         $HashRates_Average = [Double]0
         $HashRates_Variance = [Double]0
 
         $Hashrates_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
 
-
-        $HashRates_Count = $Hashrates_Samples.Count
         $HashRates_Average = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average | Select-Object -ExpandProperty Average
         $HashRates_Variance = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
-            If ($HashRates_Count -lt 3 -or $HashRates_Variance -gt 0.1) { 
+            If ($Hashrates_Samples.Count -lt 3 -or $HashRates_Variance -gt 0.1) { 
                 Return @(0, $HashRates_Average)
             }
             Else { 
@@ -502,19 +500,17 @@ Class Miner {
 
     [Double[]]CollectPowerUsage([Boolean]$Safe = $this.MeasurePowerUsage) { 
         # Returns an array of two values (safe, unsafe)
-
         $PowerUsages_Count = [Int]0
         $PowerUsages_Average = [Double]0
         $PowerUsages_Variance = [Double]0
 
         $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage) # Do not use 0 valued samples
 
-        $PowerUsages_Count = $PowerUsages_Samples.Count
         $PowerUsages_Average = $PowerUsages_Samples.PowerUsage | Measure-Object -Average | Select-Object -ExpandProperty Average
         $PowerUsages_Variance = $PowerUsages_Samples.PowerUsage | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
-            If ($PowerUsages_Count -lt 3 -or $PowerUsages_Variance -gt 0.1) { 
+            If ($PowerUsages_Samples.Count -lt 3 -or $PowerUsages_Variance -gt 0.1) { 
                 Return @(0, $PowerUsages_Average)
             }
             Else { 
@@ -539,6 +535,7 @@ Class Miner {
         $this.Earning_Accuracy = 0
 
         $this.MeasurePowerUsage = $false
+        $this.Prioritized = $false
 
         $this.PowerUsage = [Double]::NaN
         $this.PowerCost = [Double]::NaN
@@ -561,6 +558,7 @@ Class Miner {
                 $_.Disabled = $false
                 $_.Speed = [Double]::NaN
             }
+            If ($_.Pool.Reason -contains "Prioritized by BalancesKeepAlive") { $this.Prioritized = $true }
         }
 
         If ($this.Workers | Where-Object Disabled) { 
@@ -777,7 +775,7 @@ Function Stop-Mining {
 
         Write-Message -Level Verbose "Mining processes stopped." -Console
     }
-    $Variables.Summary = "Stopping miner processes..."
+    $Variables.Summary = "Mining processes stopped."
 
 }
 
@@ -1385,10 +1383,10 @@ Function Set-Stat {
             If ($Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value -gt 0) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "HashRate  '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "HashRate  '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { "for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "Power usage  for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($ToleranceMin.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) for $($Stats.($Stat.Name).ToleranceExceeded) times in a row."
+                        Write-Message -Level Warn "Power usage  for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($Value.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W)$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                 }
 
@@ -1426,11 +1424,6 @@ Function Set-Stat {
         }
     }
     Else { 
-        If ($Disabled) { 
-            Write-message -LEVEL WARN "2: $($Name): $($Stat | ConvertTo-Json) / $($Variables.MainPath)"
-            $Value = [Decimal]$Stat.Live
-        }
-
         If (-not $Duration) { $Duration = [TimeSpan]::FromMinutes(1) }
 
         $Global:Stats.$Name = $Stat = [Hashtable]::Synchronized(

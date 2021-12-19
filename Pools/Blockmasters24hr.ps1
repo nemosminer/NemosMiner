@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters24hr.ps1
-Version:        4.0.0.8 (RC8)
-Version date:   13 December 2021
+Version:        4.0.0.9 (RC9)
+Version date:   19 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -58,12 +58,12 @@ If ($Wallet) {
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
-        $Currency = $Request.$_.currency
+        $Currency = $Request.$_.currency.Trim()
 
         $Fee = $Request.$_.Fees / 100
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
         Catch { $EstimateFactor = 1 }

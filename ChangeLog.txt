@@ -6,6 +6,21 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
+Changelog NemosMiner 4.0.0.9 (RC9) 19.12.2021
+=============================================
+
+Fixes:
+- Core: 'BalancesKeepAlive' not working
+- NLPool: PayoutThreshold set to 1 mBTC
+
+Miner Updates:
+- NanoMiner-v3.5.1
+- SgMinerFancyIX-v0.8.1
+- SRBMinerMulti-v0.8.7
+- TeamBlackMiner-v1.34
+- Wildrig-v0.31.2
+
+
 Changelog NemosMiner 4.0.0.8 (RC8) 13.12.2021
 =============================================
 
@@ -14,7 +29,7 @@ Enhancements:
 - Core: Minor Speed optimization
 - Core: Reduce memory footprint
 - Core: Set EthashLowMem min. memory to 4'000'000'000 bytes
-- Web GUI: Update boostrap to version 4.6.1
+- Web GUI: Update bootstrap to version 4.6.1
 
 Fixes:
 - Web GUI / Pools: Reset pool stat data broken (Regression from 4.0.0.6)

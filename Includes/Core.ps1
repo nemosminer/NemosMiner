@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.8 (RC8)
-Version date:   13 December 2021
+Version:        4.0.0.9 (RC9)
+Version date:   19 December 2021
 #>
 
 using module .\Include.psm1
@@ -503,11 +503,11 @@ Function Start-Cycle {
             If ($BalancesKeepAliveDays -gt 0 -and $Variables.PoolsLastEarnings.$PoolBaseName -and (((Get-Date).TouniversalTime() - $Variables.PoolsLastEarnings.$PoolBaseName).Days) -ge $BalancesKeepAliveDays) { 
                 If (-not $Variables.PoolsLastUsed.$PoolBaseName) { 
                     $PoolsToKeepBalancesAlive += $Pool.Name
-                    Write-Message -Level Warn "Pool ($($Pool.Name)) priorized to avoid forfeiting balance (pool would clear balance after $($BalancesKeepAliveDays) days of inactivity)."
+                    Write-Message -Level Warn "Pool ($($Pool.Name)) prioritized to avoid forfeiting balance (pool would clear balance after $($BalancesKeepAliveDays) days of inactivity)."
                 }
                 ElseIf (((Get-Date).ToUniversalTime() - $Variables.PoolsLastUsed.$PoolBaseName).Days -ge $BalancesKeepAliveDays - 1) { 
                     $PoolsToKeepBalancesAlive += $Pool.Name
-                    Write-Message -Level Warn "Pool ($($Pool.Name)) priorized to avoid forfeiting balance (pool would clear balance tomorrow)."
+                    Write-Message -Level Warn "Pool ($($Pool.Name)) prioritized to avoid forfeiting balance (pool would clear balance tomorrow)."
                 }
             }
         }
