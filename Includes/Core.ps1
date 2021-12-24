@@ -709,15 +709,16 @@ Function Start-Cycle {
     $Miners | ForEach-Object { 
         If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Algorithm -ExcludeDifferent | Select-Object -ExcludeProperty SideIndicator) {
             # Update existing miners
-            $_.KeepRunning = $false
-            $_.Restart = $_.Arguments -ne $Miner.Arguments
-
             If ($_.Status -eq [MinerStatus]::Running -and $_.BeginTime.AddSeconds($Config.Interval * ($Config.MinInterval -1)) -gt $Variables.Timer -and -not $Variables.DonateRandom) { 
                 # Minimum numbers of full cycles not yet reached
                 $_.KeepRunning = $true
                 $_.Restart = $false
             }
-            ElseIf ($_.Restart) { 
+            Else { 
+                $_.KeepRunning = $false
+                $_.Restart = $_.Arguments -ne $Miner.Arguments
+            }
+            If ($_.Restart) { 
                 $_.Arguments = $Miner.Arguments
                 $_.Devices = $Miner.Devices
                 $_.DeviceName = $Miner.DeviceName
@@ -1113,7 +1114,6 @@ Function Start-Cycle {
     # Cache pools config for next cycle
     $Variables.PoolsConfigCached = $Config.PoolsConfig
 
-    If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) { Write-Message "Collecting miner data while waiting for next cycle..." }
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
 }
 
@@ -1135,6 +1135,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
     $Interval = ($RunningMiners.DataCollectInterval | Measure-Object -Minimum).Minimum
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
     $ExitLoopMessage = ""
+
+    If (($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners)) { Write-Message "Collecting miner data while waiting for next cycle..." }
 
     While ($Variables.NewMiningStatus -eq "Running" -and ((Get-Date) -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners)) {
         $NextLoop = (Get-Date).AddSeconds($Interval)
