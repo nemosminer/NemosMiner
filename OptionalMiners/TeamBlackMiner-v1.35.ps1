@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\TBMiner.exe"
-$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.34/TeamBlackMiner_1_34_cuda_11_5.7z"
+$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.35/TeamBlackMiner_1_35_cuda_11_5.7z"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $DeviceEnumerator = "Type_Vendor_Index"
 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -46,13 +46,13 @@ Else {
 $PoolHost = "nicehash.com"
 $PoolConfig = $PoolsConfig.$PoolBaseName
 
-$PayoutCurrency = $PoolConfig.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
+$PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -TimeoutSec $Config.PoolTimeout -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }
-        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -TimeoutSec $Config.PoolTimeout -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }
+        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
+        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
         $Request.miningAlgorithms | ForEach-Object { $Algo = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algo } } }
     }
     Catch { Return }
@@ -63,10 +63,10 @@ If ($Wallet) {
 
     $Request.miningAlgorithms | Where-Object speed -GT 0 | Where-Object { $_.algodetails.order -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
-        $PoolPort = $_.algodetails.port
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $DivisorMultiplier = 1000000000
-        $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.marketFactor
+        $Port = $_.algodetails.port
+        # $DivisorMultiplier = 1000000000
+        # $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.priceFactor
         $Divisor = 100000000
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
@@ -82,11 +82,11 @@ If ($Wallet) {
                 MarginOfError            = [Double]0
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
-                Port                     = [UInt16]$PoolPort
+                Port                     = [UInt16]$Port
                 User                     = [String]$User
                 Pass                     = "x"
                 Region                   = [String]$Region_Norm
-                SSL                      = [Boolean]$false
+                SSL                      = $false
                 Fee                      = [Decimal]$PoolConfig.Fee
                 EstimateFactor           = [Decimal]1
             }

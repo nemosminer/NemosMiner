@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 Function Initialize-API { 
@@ -39,7 +39,7 @@ Function Initialize-API {
             $TCPClient = New-Object System.Net.Sockets.TCPClient
             $AsyncResult = $TCPClient.BeginConnect("localhost", $Config.APIPort, $null, $null)
             If ($AsyncResult.AsyncWaitHandle.WaitOne(100)) { 
-                Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort). Port is in use."
+                Write-Message -Level Error "Error initializing API & Web GUI on port $($Config.APIPort). Port is in use."
                 Try { $TCPClient.EndConnect($AsyncResult) = $null }
                 Catch { }
             }
@@ -62,7 +62,7 @@ Function Initialize-API {
                     $RetryCount--
                     Start-Sleep -Seconds 1
                 }
-                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error starting Web GUI and API on port $($Config.APIPort)." -Console }
+                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error initializing API & Web GUI on port $($Config.APIPort)." -Console }
                 Remove-Variable RetryCount
             }
             $TCPClient.Close()
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.3.9.50"
+    $APIVersion = "0.3.9.60"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -393,11 +393,11 @@ Function Start-APIServer {
                             Notepad.exe $Variables.PoolsConfigFile
                         }
                         If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
-                            $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
                             # Check if the window isn't already in foreground
                             While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
                                 $FGWindowPid  = [IntPtr]::Zero
                                 [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
+                                $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
                                 If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
                                     If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
                                         [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
@@ -456,7 +456,7 @@ Function Start-APIServer {
                             }
                             Break
                         }
-                        If ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
+                        ElseIf ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) { 
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     If ($_.Status -EQ [MinerStatus]::Running) { 
@@ -493,7 +493,7 @@ Function Start-APIServer {
                             }
                             Break
                         }
-                        If ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
+                        ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
                             If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) { 
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     If ($_.Status -EQ [MinerStatus]::Running) { $_.Data = @() }
@@ -766,7 +766,7 @@ Function Start-APIServer {
                             $_.Workers[0].PSObject.Properties.Remove("Earning")
                             $_.Workers[0].PSObject.Properties.Remove("Earning_Bias")
                             $_.Workers[0].PSObject.Properties.Remove("Earning_Accuracy")
-                            $_.Workers[0] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
+                            $_.Workers[0] | Add-Member Pool @{ BaseName = $Pool.BaseName; Fee = $Pool.Fee }
                             If ($_.Workers[1]) { 
                                 $Pool = $_.Workers[1].Pool
                                 $_.Workers[1].PSObject.Properties.Remove("Disabled")
@@ -775,7 +775,7 @@ Function Start-APIServer {
                                 $_.Workers[1].PSObject.Properties.Remove("Earning")
                                 $_.Workers[1].PSObject.Properties.Remove("Earning_Bias")
                                 $_.Workers[1].PSObject.Properties.Remove("Earning_Accuracy")
-                                $_.Workers[1] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
+                                $_.Workers[1] | Add-Member Pool @{ BaseName = $Pool.BaseName; Fee = $Pool.Fee }
                             }
                             $_
                         } | Select-Object -Property * -ExcludeProperty Arguments, BeginTime, EndTime, Info, LastSample, ProcessID, StatEnd, StatStart, StatusMessage, Speed_Live, PowerUsage_Live, ReadPowerUsage, URI, WorkersRunning | Sort-Object Status, DeviceName, Name)

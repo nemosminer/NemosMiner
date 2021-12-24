@@ -29,7 +29,7 @@ function formatMiners(data) {
         item.tPrimaryMinerFee = item.Workers[0].Fee;
         item.tPrimarySpeed = item.Workers[0].Speed;
         if (item.Workers[0].Pool) {
-          item.tPrimaryPool = item.Workers[0].Pool.Name;
+          item.tPrimaryPool = item.Workers[0].Pool.BaseName;
           item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
         }
       }
@@ -43,7 +43,7 @@ function formatMiners(data) {
         item.tSecondarySpeed = item.Workers[1].Speed;
         item.tSecondaryMinerFee = item.Workers[1].Fee;
         if (item.Workers[1].Pool) {
-          item.tSecondaryPool = item.Workers[1].Pool.Name;
+          item.tSecondaryPool = item.Workers[1].Pool.BaseName;
           item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
         }
       }

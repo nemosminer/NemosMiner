@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/TT-Miner/TT-Miner-
 $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
-If ($Config.MinerInstancePerDeviceModel) { Return } # Error 'No cuda shared libraries found' if more than one active instance
+If ($Config.MinerInstancePerDeviceModel -and (($Devices | Where-Object Type -EQ "NVIDIA").Model | Select-Object -Unique).Count -gt 1) { Return } # Error 'No cuda shared libraries found' if more than one active instance
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v5.9d is fastest

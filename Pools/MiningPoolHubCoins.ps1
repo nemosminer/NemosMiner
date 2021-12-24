@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHubCoins.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -38,7 +38,7 @@ $PoolRegions = $PoolConfig.Region
 
 If ($PoolConfig.UserName) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
+        $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 
@@ -50,24 +50,25 @@ If ($PoolConfig.UserName) {
 
     $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
+
         $Algorithm = $_.algo -replace "-"
         $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Currency = "$($Current.symbol)".Trim()
         $Fee = [Decimal]($_.Fee / 100)
+        $Port = $Current.port
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($_.symbol)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
         $Price = $Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
 
-        $PoolRegions = $PoolConfig.Region
-
         # Temp fix
-        If ($Current.host_list.split(";").count -eq 1) { $PoolRegions = @("N/A") }
+        $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
         Switch ($Algorithm_Norm) { 
             "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
             "Skein" { $Current.host_list = $Current.host } # Error in API
             "VertHash" { $Current.host_list = $Current.host } # Error in API
             "Yescrypt" { $Current.host_list = $Current.host } # Error in API
-            # Default    { $Port = $Current.algo_switch_port }
+            # Default    { $Port = $Current.port }
         }
 
         ForEach ($Region in $PoolRegions) { 
@@ -75,17 +76,17 @@ If ($PoolConfig.UserName) {
 
             [PSCustomObject]@{ 
                 Algorithm                = [String]$Algorithm_Norm
-                Currency                 = [String]$Current.symbol
+                Currency                 = [String]$Currency
                 Price                    = [Double]$Price
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                Port                     = [UInt16]$Current.port
+                Port                     = [UInt16]$Port
                 User                     = [String]$User
                 Pass                     = "x"
                 Region                   = [String]$Region_Norm
-                SSL                      = [Boolean]$false
+                SSL                      = $false
                 Fee                      = $Fee
                 EstimateFactor           = [Decimal]1
             }

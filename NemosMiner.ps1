@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 [CmdletBinding()]
@@ -38,7 +38,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Boolean]$AutoUpdate = $false, # Autoupdate
     [Parameter(Mandatory = $false)]
-    [Boolean]$BalancesKeepAlive = $true, # If true Nemosminer will force mining at a pool to protect your eranings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
+    [Boolean]$BalancesKeepAlive = $true, # If true Nemosminer will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
     [Parameter(Mandatory = $false)]
     [String[]]$BalancesTrackerIgnorePool, # Balances tracker will not track these pools
     [Parameter(Mandatory = $false)]
@@ -259,7 +259,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.9" #RC9
+    Version      = [System.Version]"4.0.0.10" #RC10
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -1188,7 +1188,7 @@ Function CheckedListBoxPools_Click ($Control) {
 }
 
 $MainForm = New-Object System.Windows.Forms.Form
-$MainForm.Icon = New-Object System.Drawing.Icon ("$($PWD)\Data\NM.ICO")
+$MainForm.Icon = New-Object System.Drawing.Icon (".\Data\NM.ICO")
 $MainForm.MinimumSize = [System.Drawing.Size]::new(756, 501) # best to keep under 800x600
 $MainForm.Text = "NemosMiner"
 $MainForm.TopMost = $false

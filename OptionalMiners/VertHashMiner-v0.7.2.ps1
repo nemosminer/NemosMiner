@@ -19,7 +19,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $MinerAPIPort = 0 # Miner has no API
 
-            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
+
                 $MinMemGB = $_.MinMemGB
 
                 If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 0.99GB) -ge $MinMemGB } )) { 

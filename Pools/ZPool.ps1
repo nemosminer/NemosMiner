@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,27 +41,26 @@ $HostSuffix = "mine.zpool.ca"
 $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
 
-$PayoutCurrency = $PoolsConfig.$Name_Norm.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
+$PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($Wallet) { 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") -ErrorAction Stop | ConvertFrom-Json
     }
     Catch { Return }
 
     If (-not $Request) { Return }
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
+    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+        $Currency = "$($Request.$_.currency)".Trim()
+        $Fee = $Request.$_.Fees / 100
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
-        $Currency = $Request.$_.currency.Trim()
-
-        $Fee = $Request.$_.Fees / 100
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
@@ -83,7 +82,7 @@ If ($Wallet) {
                 User                     = [String]$Wallet
                 Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                 Region                   = [String]$Region_Norm
-                SSL                      = [Boolean]$false
+                SSL                      = $false
                 Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]$EstimateFactor
                 Updated                  = [DateTime]$Updated

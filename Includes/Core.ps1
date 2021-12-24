@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module .\Include.psm1
@@ -42,7 +42,7 @@ Function Start-Cycle {
     Write-Message "Started new cycle."
 
     # Skip stuff if previous cycle was shorter than half of what it should
-    If (-not $Variables.Timer -or $Variables.Timer.AddSeconds([Int]($Config.Interval / 2)) -lt (Get-Date).ToUniversalTime()) { 
+    If (-not $Variables.Pools -or -not $Variables.Miners -or $Variables.Timer.AddSeconds([Int]($Config.Interval / 2)) -lt (Get-Date).ToUniversalTime() -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies) { 
 
         # Set master timer
         $Variables.Timer = (Get-Date).ToUniversalTime()
@@ -236,9 +236,6 @@ Function Start-Cycle {
             Write-Message -Level Verbose "Waiting for pool data from '$($PoolNames -join ', ')'..."
             $NewPools_Jobs = @(
                 $PoolNames | ForEach-Object { 
-                    If ($ReadPools) { 
-                        $TmpPools = Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
-                    }
                     Get-ChildItemContent ".\Pools\$($_).*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object Best -EQ $true | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                 }
             )
@@ -262,7 +259,8 @@ Function Start-Cycle {
         # Load currency exchange rates from min-api.cryptocompare.com
         $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
         $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
-        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.BalancesTrackerPollInterval -lt 1) { Get-Rate }
+        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies -or $Config.BalancesTrackerPollInterval -lt 1) { Get-Rate }
+        $Variables.ExtraCurrencies = $Config.ExtraCurrencies 
 
         # Power cost preparations
         $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
@@ -440,7 +438,7 @@ Function Start-Cycle {
         #Estimate factor exceeded
         If ($Config.EstimateCorrection -eq $true ) { $Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Reason += "EstimateFactor -lt 50%" } }
         # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algorithm & currency, NiceHash & MPH are always right
-        If ($Config.UnrealPoolPriceFactor -gt 1) { 
+        If ($Config.UnrealPoolPriceFactor -gt 1 -and ($Pools.Name | Sort-Object -Unique).Count -gt 1) { 
             $Pools | Where-Object Price -GT 0 | Where-Object { $_.Name -notmatch "^NiceHash$|^MiningPoolHub(|Coins)$" } | Group-Object -Property Algorithm | ForEach-Object { 
                 If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
                     $_.Group | Where-Object Price_Bias -GT $PriceThreshold | ForEach-Object { $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than average price of all other pools)" }
@@ -494,7 +492,7 @@ Function Start-Cycle {
     If ($Config.PoolBalancesUpdateInterval -gt 0 -and $Config.BalancesKeepAlive -eq $true) { 
         # Keep pool balances alive; force mining at pool even if it is not the best for the algo
         $PoolsToKeepBalancesAlive = @()
-        ForEach ($Pool in ($Pools | Where-Object Available -EQ $true | Where-Object { $Variables.PoolsLastEarnings.($_.Basename) } | Sort-Object { $_.BaseName } -Unique)) { 
+        ForEach ($Pool in ($Pools | Where-Object { $Variables.PoolsLastEarnings.($_.Basename) } | Sort-Object { $_.BaseName } -Unique)) { 
 
             $PoolBaseName = If ($Pool.BaseName -eq "NiceHash") { If ($Config.NiceHashWalletIsInternal -eq $true) { "NiceHash Internal" } Else { "NiceHash External" } } Else { $Pool.BaseName }
 
@@ -517,29 +515,29 @@ Function Start-Cycle {
                 Else { $_.Reason += "BalancesKeepAlive prioritizes other pools" }
             }
         }
-        Remove-Variable PoolName, PoolBaseName, BalancesKeepAlive, PoolsToKeepBalancesAlive -ErrorAction Ignore
+        Remove-Variable PoolName, PoolBaseName, BalancesKeepAliveDays -ErrorAction Ignore
     }
 
     # Sort best pools
-    [Pool[]]$AvailablePools = $Pools | Where-Object Available | Sort-Object { - $_.StablePrice * (1 - $_.MarginOfError) }, { $_.SSL -ne $Config.SSL }, { $Variables.Regions.($Config.Region).IndexOf($_.Region) }
-    (($AvailablePools | Where-Object Available -EQ $true).Algorithm | Select-Object -Unique) | ForEach-Object { 
-        $AvailablePools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
+    [Pool[]]$SortedAvailablePools = $Pools | Where-Object Available | Sort-Object { $_.Name -notin $PoolsToKeepBalancesAlive }, { - $_.StablePrice * (1 - $_.MarginOfError) }, { $_.SSL -ne $Config.SSL }, { $Variables.Regions.($Config.Region).IndexOf($_.Region) }
+    (($SortedAvailablePools | Where-Object Available -EQ $true).Algorithm | Select-Object -Unique) | ForEach-Object { 
+        $SortedAvailablePools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
     }
 
     # Update data in API
     $Variables.Pools = $Pools
-    Remove-Variable Pools
+    Remove-Variable Pools, PoolsToKeepBalancesAlive
 
     # For legacy miners
     $MinerPools = [PSCustomObject]@{ }
     $PoolsPrimaryAlgorithm = [PSCustomObject]@{ }
     $PoolsSecondaryAlgorithm = [PSCustomObject]@{ }
-    $AvailablePools | Where-Object Best -EQ $true | Sort-Object Algorithm | ForEach-Object { 
+    $SortedAvailablePools | Where-Object Best -EQ $true | Sort-Object Algorithm | ForEach-Object { 
         $MinerPools | Add-Member $_.Algorithm $_
         If ($_.Reason -ne "Unprofitable Primary Algorithm") { $PoolsPrimaryAlgorithm | Add-Member $_.Algorithm $_ } # Allow unprofitable algos for primary algorithm
         If ($_.Reason -ne "Unprofitable Secondary Algorithm") { $PoolsSecondaryAlgorithm | Add-Member $_.Algorithm $_ } # Allow unprofitable algos for secondary algorithm
     }
-    Remove-Variable AvailablePools
+    Remove-Variable SortedAvailablePools
 
     # Faster shutdown
     If ($Variables.NewMiningStatus -ne "Running") { Return }
@@ -877,7 +875,7 @@ Function Start-Cycle {
             $Miners | ForEach-Object { $_."$($SortBy)_Bias" += $SmallestBias }
 
             # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
-            $Variables.SortedMiners = @($Miners | Where-Object Available -EQ $true | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, "$($SortBy)_Bias") # pre-sort
+            $Variables.SortedMiners = @($Miners | Where-Object Available -EQ $true | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, "$($SortBy)_Bias", Activated) # pre-sort
             $Variables.MostProfitableMiners = @($Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; $Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.Fastest = $true; $_ } }) # use a smaller subset of miners
             $Variables.BestMiners = @($Variables.MostProfitableMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; $Variables.MostProfitableMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName).Count -eq 0 } | Select-Object -First 1 })
 
@@ -1036,10 +1034,10 @@ Function Start-Cycle {
             If ($Miner.Type -eq "AMD" -and (Test-Path -Path ".\Utils\Prerun\AMDPrerun.bat" -PathType Leaf)) { 
                 Start-Process ".\Utils\Prerun\AMDPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
             }
-            If ($Miner.Type -eq "NVIDIA" -and (Test-Path -Path ".\Utils\Prerun\NVIDIAPrerun.bat" -PathType Leaf)) { 
+            ElseIf ($Miner.Type -eq "NVIDIA" -and (Test-Path -Path ".\Utils\Prerun\NVIDIAPrerun.bat" -PathType Leaf)) { 
                 Start-Process ".\Utils\Prerun\NVIDIAPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
             }
-            If ($Miner.Type -eq "CPU" -and (Test-Path -Path ".\Utils\Prerun\CPUPrerun.bat" -PathType Leaf)) { 
+            ElseIf ($Miner.Type -eq "CPU" -and (Test-Path -Path ".\Utils\Prerun\CPUPrerun.bat" -PathType Leaf)) { 
                 Start-Process ".\Utils\Prerun\CPUPrerun.bat" -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
             }
             If ($Miner.Type -ne "CPU") { 
@@ -1171,9 +1169,10 @@ While ($Variables.NewMiningStatus -eq "Running") {
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                 # Set miner priority
                 If ($Process = Get-Process | Where-Object Id -EQ $Miner.ProcessId) { 
-                    $MinerProcessPriority = If ($Miner.Type -eq "CPU") { $PriorityNames.($Config.CPUMinerProcessPriority) } Else { $PriorityNames.($Config.GPUMinerProcessPriority) }
-                    If ($Process.PriorityClass -ne $MinerProcessPriority) { $Process.PriorityClass = $MinerProcessPriority }
+                    If ($Process.PriorityClass -ne $Global:PriorityNames.($Miner.ProcessPriority)) { $Process.PriorityClass = $Global:PriorityNames.($Miner.ProcessPriority) }
                 }
+                Remove-Variable Process -ErrorAction Ignore
+
                 $Miner.Data += $Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object)
                 $Sample = $Samples | Select-Object -Last 1
 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -37,7 +37,7 @@ $PoolConfig = $PoolsConfig.$Name_Norm
 
 If ($PoolConfig.UserName) { 
     Try {
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") -ErrorAction Stop | ConvertFrom-Json
     }
     Catch { Return }
 
@@ -48,17 +48,15 @@ If ($PoolConfig.UserName) {
     $PriceField = "estimate_current"
     # $PriceField = "Plus_Price"
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
+    $Request.PSObject.Properties.Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Currency = "$($Request.$_.currency)".Trim()
+        $Divisor = [Double]$Request.$_.mbtc_mh_factor
+        $Fee = $Request.$_."$($PoolConfig.MiningMode)_fee"
         $PoolPort = $Request.$_.port
 
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
-
-        $Currency = $Request.$_.currency
-
-        $Fee = $Request.$_."$($MiningMode)_fee"
-        $Divisor = [Double]$Request.$_.mbtc_mh_factor
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)") -join ','
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
@@ -77,9 +75,9 @@ If ($PoolConfig.UserName) {
                 Host                     = "$(If ($Region_Norm -eq "EU") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolConfig.UserName
-                Pass                     = [String]($Pass -join ',')
+                Pass                     = [String]$Pass
                 Region                   = [String]$Region_Norm
-                SSL                      = [Boolean]$false
+                SSL                      = $false
                 Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]1
             }

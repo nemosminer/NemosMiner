@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashingPlus.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -48,17 +48,14 @@ If ($PoolConfig.UserName) {
     # $PriceField = "estimate_current"
     $PriceField = "Plus_Price"
 
-    $Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object {
+    $Request.PSObject.Properties.Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } -ErrorAction Stop | ForEach-Object {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $PoolPort = $Request.$_.port
-
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)")
-
-        $Currency = $Request.$_.currency.Trim()
-
-        $Fee = $Request.$_."$($MiningMode)_fee"
+        $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
+        $Fee = $Request.$_."$($PoolConfig.MiningMode)_fee"
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)") -join ','
+        $PoolPort = $Request.$_.port
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
@@ -77,9 +74,9 @@ If ($PoolConfig.UserName) {
                 Host                     = "$(If ($Region_Norm -eq "EU") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolConfig.UserName
-                Pass                     = [String]($Pass -join ',')
+                Pass                     = [String]$Pass
                 Region                   = [String]$Region_Norm
-                SSL                      = [Boolean]$false
+                SSL                      = $false
                 Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]1
             }

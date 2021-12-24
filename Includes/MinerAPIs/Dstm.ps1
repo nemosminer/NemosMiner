@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Dstm.ps1
 Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version date:   24 December 2021
 #>
 
 class Dstm : Miner { 

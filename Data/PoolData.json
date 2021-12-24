@@ -141,6 +141,7 @@
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
+      "LTC": 0.05,
       "mBTC": 1
     },
     "Region": "US"

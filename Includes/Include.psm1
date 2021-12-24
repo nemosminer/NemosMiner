@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 # Window handling
@@ -179,7 +179,7 @@ Class Miner {
 
     [Boolean]$ReadPowerUsage = $false
     [Boolean]$MeasurePowerUsage = $false
-    [Boolean]$Prioritized = $false # derived from BalancesKeepAlive
+    [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
 
     [Double]$PowerUsage
     [Double]$PowerUsage_Live
@@ -297,6 +297,8 @@ Class Miner {
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
+            $this.Status = [MinerStatus]::Running
+            Write-Message -Level Verbose $this.CommandLine
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
@@ -320,16 +322,13 @@ Class Miner {
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
                     If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -eq "$($this.Path) $($this.GetCommandLineParameters())" }).ProcessId)) { 
-                        $this.Status = [MinerStatus]::Running
                         Break
                     }
                     Start-Sleep -Milliseconds 100
                 }
-                Remove-Variable WaitForPID
             }
 
             $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-            Write-Message -Level Verbose $this.CommandLine
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
             $this.StartDataReader()
@@ -476,49 +475,47 @@ Class Miner {
 
     [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.Benchmark) { 
         # Returns an array of two values (safe, unsafe)
-        $HashRates_Count = [Int]0
-        $HashRates_Average = [Double]0
-        $HashRates_Variance = [Double]0
+        $HashRate_Average = [Double]0
+        $HashRate_Variance = [Double]0
 
-        $Hashrates_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
+        $HashRate_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
 
-        $HashRates_Average = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average | Select-Object -ExpandProperty Average
-        $HashRates_Variance = $Hashrates_Samples.HashRate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
+        $HashRate_Average = $HashRate_Samples.HashRate.$Algorithm | Measure-Object -Average | Select-Object -ExpandProperty Average
+        $HashRate_Variance = $HashRate_Samples.HashRate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
-            If ($Hashrates_Samples.Count -lt 3 -or $HashRates_Variance -gt 0.1) { 
-                Return @(0, $HashRates_Average)
+            If ($HashRate_Samples.Count -lt 3 -or $HashRate_Variance -gt 0.1) { 
+                Return @(0, $HashRate_Average)
             }
             Else { 
-                Return @(($HashRates_Average * (1 + $HashRates_Variance / 2)), $HashRates_Average)
+                Return @(($HashRate_Average * (1 + $HashRate_Variance / 2)), $HashRate_Average)
             }
         }
         Else { 
-            Return @($HashRates_Average, $HashRates_Average)
+            Return @($HashRate_Average, $HashRate_Average)
         }
     }
 
     [Double[]]CollectPowerUsage([Boolean]$Safe = $this.MeasurePowerUsage) { 
         # Returns an array of two values (safe, unsafe)
-        $PowerUsages_Count = [Int]0
-        $PowerUsages_Average = [Double]0
-        $PowerUsages_Variance = [Double]0
+        $PowerUsage_Average = [Double]0
+        $PowerUsage_Variance = [Double]0
 
-        $PowerUsages_Samples = @($this.Data | Where-Object PowerUsage) # Do not use 0 valued samples
+        $PowerUsage_Samples = @($this.Data | Where-Object PowerUsage) # Do not use 0 valued samples
 
-        $PowerUsages_Average = $PowerUsages_Samples.PowerUsage | Measure-Object -Average | Select-Object -ExpandProperty Average
-        $PowerUsages_Variance = $PowerUsages_Samples.PowerUsage | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
+        $PowerUsage_Average = $PowerUsage_Samples.PowerUsage | Measure-Object -Average | Select-Object -ExpandProperty Average
+        $PowerUsage_Variance = $PowerUsage_Samples.PowerUsage | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
-            If ($PowerUsages_Samples.Count -lt 3 -or $PowerUsages_Variance -gt 0.1) { 
-                Return @(0, $PowerUsages_Average)
+            If ($PowerUsage_Samples.Count -lt 3 -or $PowerUsage_Variance -gt 0.1) { 
+                Return @(0, $PowerUsage_Average)
             }
             Else { 
-                Return @(($PowerUsages_Average * (1 + $PowerUsages_Variance / 2)), $PowerUsages_Average)
+                Return @(($PowerUsage_Average * (1 + $PowerUsage_Variance / 2)), $PowerUsage_Average)
             }
         }
         Else { 
-            Return @($PowerUsages_Average, $PowerUsages_Average)
+            Return @($PowerUsage_Average, $PowerUsage_Average)
         }
     }
 
@@ -535,7 +532,7 @@ Class Miner {
         $this.Earning_Accuracy = 0
 
         $this.MeasurePowerUsage = $false
-        $this.Prioritized = $false
+        $this.Prioritize = $false
 
         $this.PowerUsage = [Double]::NaN
         $this.PowerCost = [Double]::NaN
@@ -558,7 +555,7 @@ Class Miner {
                 $_.Disabled = $false
                 $_.Speed = [Double]::NaN
             }
-            If ($_.Pool.Reason -contains "Prioritized by BalancesKeepAlive") { $this.Prioritized = $true }
+            If ($_.Pool.Reason -contains "Prioritized by BalancesKeepAlive") { $this.Prioritize = $true }
         }
 
         If ($this.Workers | Where-Object Disabled) { 
@@ -1634,8 +1631,9 @@ Function Get-ChildItemContent {
                 }
             }
             ElseIf ($Expression -is [PSCustomObject]) { 
-                $Expression | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-                    $Expression.$_ = Invoke-ExpressionRecursive $Expression.$_
+                # $Expression | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+                $Expression.PSObject.Properties.Name | ForEach-Object { 
+                        $Expression.$_ = Invoke-ExpressionRecursive $Expression.$_
                 }
             }
             Return $Expression
@@ -2368,7 +2366,7 @@ public static class Kernel32
 
         [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle }
 
-        Do { If ($ControllerProcess.WaitForExit(500)) { $Process.CloseMainWindow() | Out-Null } }
+        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
         While ($Process.HasExited -eq $false)
     }
 
@@ -2483,26 +2481,6 @@ Function Get-Region {
     If ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -Index 0) }
     Else { $Region }
 }
-
-# Function Get-CoinName { 
-#     Param(
-#         [Parameter(Mandatory = $false)]
-#         [String]$Currency
-#     )
-
-#     If (-not (Test-Path Variable:Global:CoinsDB -ErrorAction SilentlyContinue)) { 
-#         $Global:CoinsDB = Get-Content ".\Includes\CoinsDB.json" | ConvertFrom-Json
-#     }
-
-#     If ($Global:CoinsDB.$Currency) { 
-#        Return $Global:CoinsDB.$Currency.Name
-#     }
-#     If ($Currency) { 
-#         "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
-#         $Global:CoinsDB = Get-Content ".\Includes\CoinsDB.json" | ConvertFrom-Json
-#     }
-#     Return $null
-# }
 
 Function Get-CoinName { 
     Param(

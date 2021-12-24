@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   19 December 2021
+Version:        4.0.0.10 (RC10)
+Version date:   24 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -35,24 +35,23 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
 $PoolConfig = $PoolsConfig.$Name_Norm
 
-If ($Config.Wallets) { 
+If ($PoolConfig.Wallets) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } -TimeoutSec $Config.PoolTimeout
+        $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
     }
     Catch { Return }
 
     If (-not $Request) { Return }
 
-    $Request.cryptoCurrencies | Where-Object { $Config.Wallets.($_.Name) } | ForEach-Object { 
-
-        $Currency = $_.name.Trim()
+    $Request.cryptoCurrencies | Where-Object { $PoolConfig.Wallets.($_.Name) } | ForEach-Object { 
+        $Currency = "$($_.name)".Trim()
         $Algorithm_Norm = Get-Algorithm $Currency
-
         $Divisor = [Double]$_.profitPerPower
+        $Workers = $Request.stats.($_.name).workers
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.$Currency.expectedReward24H * $Variables.Rates.$Currency.BTC / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        Try { $EstimateFactor = [Decimal]($Request.stats.$Currency.expectedReward24H / $Request.stats.$Currency.meanExpectedReward24H) }
+        Try { $EstimateFactor = [Decimal]($Request.stats.($_.name).expectedReward24H / $Request.stats.($_.name).meanExpectedReward24H) }
         Catch { $EstimateFactor = 1 }
 
         ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region } )) {
@@ -67,12 +66,13 @@ If ($Config.Wallets) {
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = [String]$Server.host
                 Port                     = [UInt16]$Server.ports[0]
-                User                     = "$($Config.Wallets.$Currency).$($PoolConfig.WorkerName)"
+                User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
                 Pass                     = "x"
                 Region                   = [String]$Region_Norm
-                SSL                      = [Boolean]$false
+                SSL                      = $false
                 Fee                      = [Decimal]0
                 EstimateFactor           = [Decimal]$EstimateFactor
+                Workers                  = [Int]$Workers
             }
         }
     }

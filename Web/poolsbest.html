@@ -40,6 +40,7 @@
             <tr>
               <th data-field="state" data-checkbox="true"></th>
               <th data-field="Name" data-sortable="true" data-filter-control="select">Name</th>
+              <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Base Name</th>
               <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
               <th data-field="Reason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Reason</th>
               <th data-field="User" data-sortable="true" data-filter-control="select" data-visible="false">Wallet / UserName</th>
@@ -76,7 +77,7 @@
           })
 
           if (config.EstimateCorrection == true) {
-            $table.bootstrapTable('showColumn', 'ProEstimateFactorfit');
+            $table.bootstrapTable('showColumn', 'EstimateFactor');
           } else {
             $table.bootstrapTable('hideColumn', 'EstimateFactor');
           }
