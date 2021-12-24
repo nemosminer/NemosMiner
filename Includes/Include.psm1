@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.10 (RC10)
+Version:        4.0.0.11 (RC11)
 Version date:   24 December 2021
 #>
 
@@ -1380,10 +1380,10 @@ Function Set-Stat {
             If ($Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value -gt 0) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "HashRate  '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { "for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
+                        Write-Message -Level Warn "HashRate '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { "for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
-                        Write-Message -Level Warn "Power usage  for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($Value.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W)$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
+                        Write-Message -Level Warn "Power usage for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($Value.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W)$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                 }
 
@@ -2630,7 +2630,7 @@ Function Initialize-Autoupdate {
     }
 
     # Copy files
-    "Copying new files ..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    "Copying new files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
         $DestPath = $_.FullName.Replace($UpdateFilePath -replace "^\.", "")
         If ($_.Attributes -eq "Directory") { 
