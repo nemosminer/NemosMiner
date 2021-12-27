@@ -21,7 +21,7 @@ Fixes:
 - Pools: ZergPools brains not working
 
 Miner Updates:
-- NanoMiner-v3.5.2: User CUDA11 version
+- NanoMiner-v3.5.2: Use CUDA11 version
 
 
 Changelog NemosMiner 4.0.0.10 (RC10) 24.12.2021
