@@ -138,12 +138,12 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $_.Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
 
                     If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl true" }
-                    If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $_.Arguments += " --nicehash true" }
-                    If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).Name -match "^ProHashing.+") { $_.Arguments += " --esm 1" }
-                    If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
+                    If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).BaseName -match "^NiceHash$|^MiningPoolHub$") { $_.Arguments += " --nicehash true" }
+                    If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).BaseName -match "^ProHashing$") { $_.Arguments += " --esm 1" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^MiningPoolHub$") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
 
                     $Pass = " --password $($Pools.($_.Algorithm).Pass)"
-                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

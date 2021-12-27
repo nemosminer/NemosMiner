@@ -48,7 +48,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "lhr-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                    $Stratum = If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { "stratum2" } Else { "stratum" }
+                    $Stratum = If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -match "^NiceHash$|^MiningPoolHub$") { "stratum2" } Else { "stratum" }
                     If ($Pools.($_.Algorithm[0]).SSL -eq $true) { $Stratum += "+ssl://" } Else { $Stratum += "+tcp://" }
 
                     If ($_.Algorithm -eq "ProgPoW" -or $_.Algorithm -eq "Zano" ) { 
@@ -65,8 +65,8 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                     $User = If ($Pools.($_.Algorithm[0]).DAGsize -gt 0 -and ($Pools.($_.Algorithm[0]).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm[0]).Name -notmatch "^MiningPoolHub*") { " --user $($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -Index 0) --worker $($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -Index 1)" } Else { " --user $($Pools.($_.Algorithm[0]).User)" }
                     $Pass = " --pass $($Pools.($_.Algorithm[0]).Pass)"
-                    If ($Pools.($_.Algorithm[0]).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
-                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub*") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
+                    If ($Pools.($_.Algorithm[0]).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm[0]).BaseName -match "^MiningPoolHub$") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
                     If ($_.Arguments -notmatch "--kernel [0-9]") { $_.WarmupTimes[1] += 15 } # Allow extra seconds for kernel auto tuning
                     If ($_.Algorithm[1]) { $_.Arguments += " --url2 $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "stratum+ssl://" } Else { "stratum+tcp://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user2 $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) --pass2 $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)" }
 

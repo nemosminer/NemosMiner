@@ -6,7 +6,7 @@ $Uri = "https://github.com/Minerx117/miners/releases/download/CryptoDredge/Crypt
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 15); Arguments = " --algo allium --intensity 8" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 30); Arguments = " --algo allium --intensity 8" } # CryptoDredge v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo exosis --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo dedal --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(0, 45); Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest

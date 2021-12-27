@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.3.9.60"
+    $APIVersion = "0.3.9.70"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -290,7 +290,7 @@ Function Start-APIServer {
                     "/functions/mining/pause" { 
                         If ($Variables.MiningStatus -ne "Paused") { 
                             $Variables.NewMiningStatus = "Paused"
-                            $Data = "Mining is paused.`n$(If ($Variables.MiningStatus -ne "Running" -and $Config.RigMonitorPollInterval) { "Rig Monitor" } )$(If ($Variables.MiningStatus -ne "Running" -and $Config.RigMonitorPollInterval -and $Config.BalancesTrackerPollInterval) { " and " } )$( If ($Variables.MiningStatus -ne "Running" -and $Config.BalancesTrackerPollInterval) { "Balances Tracker" } )$(If ($Variables.MiningStatus -ne "Running" -and $Config.RigMonitorPollInterval -or $Config.BalancesTrackerPollInterval) { " running." } )"
+                            $Data = "Mining is being paused...`n$(If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting." } Else { "Balances Tracker running." })"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -299,7 +299,7 @@ Function Start-APIServer {
                     "/functions/mining/start" { 
                         If ($Variables.MiningStatus -ne "Running") { 
                             $Variables.NewMiningStatus = "Running"
-                            $Data = "Mining processes started.`n$(If ($Variables.RigMonitorRunspace) { "Rig Monitor" } )$(If ($Variables.RigMonitorRunspace -and $Variables.BalancesTrackerRunspace) { " and " } )$( If ($Variables.BalancesTrackerRunspace) { "Balances Tracker" } )$(If ($Variables.RigMonitorRunspace -or $Variables.BalancesTrackerRunspace) { " running." } )"
+                            $Data = "Mining processes starting...`n$(If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting." } Else { "Balances Tracker running." })"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -308,7 +308,7 @@ Function Start-APIServer {
                     "/functions/mining/stop" { 
                         If ($Variables.MiningStatus -ne "Idle") { 
                             $Variables.NewMiningStatus = "Idle"
-                            $Data = "NemosMiner is idle.`n$(If ($Variables.RigMonitorRunspace) { "Rig Monitor" } )$(If ($Variables.RigMonitorRunspace -and $Variables.BalancesTrackerRunspace) { " and " } )$( If ($Variables.BalancesTrackerRunspace) { "Balances Tracker" } )$(If ($Variables.RigMonitorRunspace -or $Variables.BalancesTrackerRunspace) { " stopped." } )"
+                            $Data = "NemosMiner is getting idle...`n$(If ($Variables.BalancesTrackerRunspace) { "Balances Tracker stopped." })"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -575,7 +575,7 @@ Function Start-APIServer {
                     }
                     "/functions/variables/get" { 
                         If ($Key) { 
-                            $Data = $Variables.($Key -Replace '\\|/','.' -split '\.' | Select-Object -Last 1) | Get-SortedObject | ConvertTo-Json -Depth 10
+                            $Data = $Variables.($Key -replace '\\|/','.' -split '\.' | Select-Object -Last 1) | Get-SortedObject | ConvertTo-Json -Depth 10
                         }
                         Else { 
                             $Data = $Variables.Keys | Sort-Object | ConvertTo-Json -Depth 1
@@ -766,7 +766,7 @@ Function Start-APIServer {
                             $_.Workers[0].PSObject.Properties.Remove("Earning")
                             $_.Workers[0].PSObject.Properties.Remove("Earning_Bias")
                             $_.Workers[0].PSObject.Properties.Remove("Earning_Accuracy")
-                            $_.Workers[0] | Add-Member Pool @{ BaseName = $Pool.BaseName; Fee = $Pool.Fee }
+                            $_.Workers[0] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
                             If ($_.Workers[1]) { 
                                 $Pool = $_.Workers[1].Pool
                                 $_.Workers[1].PSObject.Properties.Remove("Disabled")
@@ -775,7 +775,7 @@ Function Start-APIServer {
                                 $_.Workers[1].PSObject.Properties.Remove("Earning")
                                 $_.Workers[1].PSObject.Properties.Remove("Earning_Bias")
                                 $_.Workers[1].PSObject.Properties.Remove("Earning_Accuracy")
-                                $_.Workers[1] | Add-Member Pool @{ BaseName = $Pool.BaseName; Fee = $Pool.Fee }
+                                $_.Workers[1] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
                             }
                             $_
                         } | Select-Object -Property * -ExcludeProperty Arguments, BeginTime, EndTime, Info, LastSample, ProcessID, StatEnd, StatStart, StatusMessage, Speed_Live, PowerUsage_Live, ReadPowerUsage, URI, WorkersRunning | Sort-Object Status, DeviceName, Name)

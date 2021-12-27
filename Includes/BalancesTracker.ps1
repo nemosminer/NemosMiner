@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.9 (RC9)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 # Start transcript log
@@ -68,7 +68,7 @@ While ($true) {
     If ($Config.BalancesTrackerPollInterval -gt 0) { 
 
         # Get pools to track
-        $PoolsToTrack = @(Get-ChildItem ".\Balances\*.ps1" -File).BaseName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$" | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
+        $PoolsToTrack = @(Get-PoolName (Get-ChildItem ".\Balances\*.ps1" -File).BaseName) | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
 
         If ($Now.Date -ne (Get-Date).Date) {
             # Keep a copy on start & at date change

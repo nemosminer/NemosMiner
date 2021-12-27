@@ -35,16 +35,16 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @() -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                    If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$|^ZergPool(|Coins)") { $Protocol = "--pool stratum2+tcp" }
-                    ElseIf ($Pools.($_.Algorithm).Name -like "HiveON*") { $Protocol = "--pool stratum1+tcp" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^NiceHash$|^MiningPoolHub$|^ZergPool$") { $Protocol = "--pool stratum2+tcp" }
+                    ElseIf ($Pools.($_.Algorithm).BaseName -like "HiveON") { $Protocol = "--pool stratum1+tcp" }
                     Else { $Protocol = "--pool stratum+tcp" }
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
-                    If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[1] += 30 }
+                    If ($Pools.($_.Algorithm).BaseName -match "^MiningPoolHub$") { $_.WarmupTimes[1] += 30 }
 
                     $Pass = $($Pools.($_.Algorithm).Pass)
-                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

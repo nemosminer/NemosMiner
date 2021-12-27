@@ -61,7 +61,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "autotune") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                    If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { $_.Arguments += " --eth_stratum_mode=nicehash" }
+                    If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).BaseName -match "^NiceHash$|^MiningPoolHub$") { $_.Arguments += " --eth_stratum_mode=nicehash" }
 
                     If ($Pools.($_.Algorithm).SSL) { $Protocol = "stratum+ssl" } Else { $Protocol = "stratum+tcp" }
 
@@ -73,7 +73,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     }
 
                     $Pass = " --pass $($Pools.($_.Algorithm).Pass)"
-                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

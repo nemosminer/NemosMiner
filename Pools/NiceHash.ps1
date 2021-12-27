@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,19 +32,18 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.$Name
 
-If ($Config.NiceHashWalletIsInternal -eq $true) { 
-    $PoolBaseName = "NiceHash Internal"
+If ($Variables.NiceHashWalletIsInternal -eq $true) { 
+    $PoolName = "NiceHash Internal"
     $Fee = 0.02
 }
 Else { 
-    $PoolBaseName = "NiceHash External"
+    $PoolName = "NiceHash External"
     $Fee = 0.05
 }
 
 $PoolHost = "nicehash.com"
-$PoolConfig = $PoolsConfig.$PoolBaseName
+$PoolConfig = $PoolsConfig.$PoolName
 
 $PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
@@ -75,7 +74,8 @@ If ($Wallet) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                BaseName                 = [String]$PoolBaseName
+                Name                     = [String]$PoolName
+                BaseName                 = [String]$Name
                 Algorithm                = [String]$Algorithm_Norm
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Live # No fluctuation, always use live price

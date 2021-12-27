@@ -4,32 +4,28 @@
     "Wallets": {
       "BTC": "134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy"
     },
-    "MiningPoolHubUserName": "MrPlus",
-    "PayoutCurrency": "BTC"
+    "MiningPoolHubUserName": "MrPlus"
   },
   {
     "Name": "Nemo",
     "Wallets": {
       "BTC": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
     },
-    "MiningPoolHubUserName": "nemo",
-    "PayoutCurrency": "BTC"
+    "MiningPoolHubUserName": "nemo"
   },
   {
     "Name": "aaronsace",
     "Wallets": {
       "BTC": "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"
     },
-    "MiningPoolHubUserName": "aaronsace",
-    "PayoutCurrency": "BTC"
+    "MiningPoolHubUserName": "aaronsace"
   },
   {
     "Name": "grantemsley",
     "Wallets": {
       "BTC": "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"
     },
-    "MiningPoolHubUserName": "grantemsley",
-    "PayoutCurrency": "BTC"
+    "MiningPoolHubUserName": "grantemsley"
   },
   {
     "Name": "uselessguru",
@@ -38,7 +34,6 @@
       "ETC": "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"
     },
     "MiningPoolHubUserName": "uselessguru",
-    "ProHashingUserName": "uselessguru",
-    "PayoutCurrency": "BTC"
+    "ProHashingUserName": "uselessguru"
   }
 ]

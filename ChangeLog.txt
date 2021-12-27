@@ -7,7 +7,24 @@ Breaking changes (from main code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
 Changelog NemosMiner 4.0.0.10 (RC10) 24.12.2021
-=============================================
+===============================================
+
+Enhancements:
+- Fix EstimateFactor
+- Utils: Updated 7-Zip to version 21.06
+
+Fixes:
+- Core: Device enumeration broken (Type_PlatformId_Index)
+- Core: Donation not working (donation data not loaded), regression from v3.9.9.68
+- Core: Rewrite NiceHash pool naming handling
+- Pools: AHashPool, Blockmasters, HiveOn, ProHashing, ZergPool, ZPool; fix EstimateFactor
+
+Miner Updates:
+- NanoMiner-v3.5.2: User CUDA11 version
+
+
+Changelog NemosMiner 4.0.0.10 (RC10) 24.12.2021
+===============================================
 
 Fixes:
 - Pools: AHashPool, Blockmasters, HiveOn, ProHashing, ZPool, ZergPool; fixed earnings reported by pool
@@ -39,7 +56,7 @@ Changelog NemosMiner 4.0.0.8 (RC8) 13.12.2021
 =============================================
 
 Enhancements:
-- API: Add CIM and OpenCL ('/driverversion')
+- API: Add CIM and OpenCL driver version ('/driverversion')
 - Core: Minor Speed optimization
 - Core: Reduce memory footprint
 - Core: Set EthashLowMem min. memory to 4'000'000'000 bytes

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\nanominer.exe"
-$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.5.2/nanominer-windows-3.5.2.zip"
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.5.2/nanominer-windows-3.5.2-cuda11.zip"
 $DeviceEnumerator = "Bus_Type_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -45,7 +45,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
-                    $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Algorithm) + @($($Pools.($_.Algorithm).Name -replace "24hr$|Coins$|Plus$|CoinsPlus$")) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -EQ $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').ini")
+                    $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Algorithm) + @($(Get-PoolName $Pools.($_.Algorithm).Name)) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -EQ $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').ini")
                     If ($Config.UseMinerTweaks -eq $true) { $ConfigFileName = $ConfigFileName -replace '\.ini$', '-memTweak.ini' }
                     $Arguments = [PSCustomObject]@{ 
                         Arguments  = $ConfigFileName
@@ -61,7 +61,7 @@ mport=0
 noLog=true
 powerLimits=0
 rigName=$($Config.WorkerName)
-rigPassword=$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { ",1=$((($AvailableMiner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })
+rigPassword=$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { ",1=$((($AvailableMiner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })
 watchdog=false
 webPort=$($MinerAPIPort)
 useSSL=$($Pools.($_.Algorithm).SSL)
@@ -70,7 +70,7 @@ coin=$($_.Coin)
 devices=$(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')
 pool1=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)
 wallet=$($Pools.($_.Algorithm).User -split '\.' | Select-Object -Index 0)
-$(If ($Pools.($_.Algorithm).DAGSize -gt 0 -and $Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$|^NiceHash$") { "protocol=stratum" } )"
+$(If ($Pools.($_.Algorithm).DAGSize -gt 0 -and $Pools.($_.Algorithm).BaseName -match "^MiningPoolHub$|^NiceHash$") { "protocol=stratum" } )"
                         }
                     }
 

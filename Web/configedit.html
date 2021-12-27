@@ -408,7 +408,7 @@
           <div title="Allowed ratio of bad shares (total / bad) as reported by the miner.&#10;If the ratio exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])"> Allowed ratio of bad shares
             <input type="number" step=1 min=0 max=99 value=10 size=3 id="AllowedBadShareRatio" name="AllowedBadShareRatio"> %
           </div>
-          <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / estimate_last24h)&#10;to counter pool overestimated profitability">
+          <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / actual price)&#10;to counter pool overestimated profitability">
             <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
           </div>
           <div title="NemosMiner will ignore the miner fee for earning & profit calculation">

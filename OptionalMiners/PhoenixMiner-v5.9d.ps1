@@ -67,13 +67,13 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("amd", "eres", "nvidia") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                    $Pass = If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { "$($Pools.($_.Algorithm[0]).Pass),l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" } Else { $($Pools.($_.Algorithm[0]).Pass) }
+                    $Pass = If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { "$($Pools.($_.Algorithm[0]).Pass),l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" } Else { $($Pools.($_.Algorithm[0]).Pass) }
 
                     $_.Arguments += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $Pass"
 
                     If ($Pools.($_.Algorithm[0]).DAGsize -gt 0) {
-                        If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { $_.Arguments += " -proto 1" }
-                        If ($Pools.($_.Algorithm[0]).Name -match "^NiceHash$") { $_.Arguments += " -proto 4" }
+                        If ($Pools.($_.Algorithm[0]).BaseName -match "^MiningPoolHub$") { $_.Arguments += " -proto 1" }
+                        If ($Pools.($_.Algorithm[0]).BaseName -match "^NiceHash$") { $_.Arguments += " -proto 4" }
                     }
 
                     If (($AvailableMiner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum / 1GB -ge 2 * $MinMemGB) { # Faster kernels require twice as much VRAM
@@ -88,7 +88,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                     If (-not $_.Intensity) { $_.WarmupTimes[0] += 45; $_.WarmupTimes[1] += 45 } # Allow extra seconds for auto-tuning
-                    If ($Pools.($_.Algorithm[0]).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[0] += 15; $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
+                    If ($Pools.($_.Algorithm[0]).BaseName -match "^MiningPoolHub$") { $_.WarmupTimes[0] += 15; $_.WarmupTimes[1] += 15 } # Allow extra seconds for MPH because of long connect issue
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

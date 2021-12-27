@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,7 +32,7 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
+$Name_Norm = Get-PoolName $Name
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 If ($PoolConfig.UserName) { 
@@ -44,7 +44,7 @@ If ($PoolConfig.UserName) {
     If (-not $Request) { Return }
 
     $PoolHost = "prohashing.com"
-    # $PriceField = "actual_last24h"
+    # $PriceField = "estimate_last24h"
     $PriceField = "estimate_current"
     # $PriceField = "Plus_Price"
 
@@ -60,12 +60,17 @@ If ($PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
+        Try { $EstimateFactor = $Request.$_.actual_last24h * 1000 / $Request.$_.$PriceField }
+        Catch { $EstimateFactor = 1 }
+
         $Regions = If ($Algorithm_Norm -in @("Chia", "Etchash", "Ethash", "EthashLowMem")) { "US" } Else { $PoolConfig.Region }
- 
+
         ForEach ($Region in $Regions) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{
+                Name                     = [String]$Name
+                BaseName                 = [String]$Name_Norm
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
@@ -79,7 +84,7 @@ If ($PoolConfig.UserName) {
                 Region                   = [String]$Region_Norm
                 SSL                      = $false
                 Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]1
+                EstimateFactor           = [Decimal]$EstimateFactor
             }
         }
     }

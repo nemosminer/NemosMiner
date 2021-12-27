@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool24hr.ps1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,12 +32,12 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
+$Name_Norm = Get-PoolName $Name
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 $HostSuffix = "mine.zpool.ca"
 # $PriceField = "Plus_Price"
-$PriceField = "actual_last24h"
+$PriceField = "estimate_last24h"
 # $PriceField = "estimate_current"
 $DivisorMultiplier = 1000000
 
@@ -64,13 +64,15 @@ If ($Wallet) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
-        Try { $EstimateFactor = [Decimal]($Request.$_.$PriceField / $Request.$_.estimate_last24h) }
+        Try { $EstimateFactor = $Request.$_.actual_last24h / $Request.$_.$PriceField }
         Catch { $EstimateFactor = 1 }
 
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
+                Name                     = [String]$Name
+                BaseName                 = [String]$Name_Norm
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live

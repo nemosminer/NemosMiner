@@ -47,7 +47,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     If ($_.Algorithm -match "^EtcHash$|^Ethash.*|^Cuck.*") { 
-                        If ($Pools.($_.Algorithm).Name -match "^NiceHash$|^MiningPoolHub(|Coins)$") { 
+                        If ($Pools.($_.Algorithm).BaseName -match "^NiceHash$|^MiningPoolHub$") { 
                             $Protocol = "nicehash+tcp://"
                         }
                         Else { 
@@ -61,7 +61,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $_.Arguments += " --url $($Protocol)$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --password $($Pools.($_.Algorithm).Pass)"
 
-                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $_.Arguments += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $_.Arguments += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                     # Optionally disable dev fee mining
                     If ($Config.DisableMinerFee) { 
@@ -69,7 +69,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         $_.Arguments += " --fee 0"
                     }
 
-                    If ($Pools.($_.Algorithm).Name -match "^MiningPoolHub(|Coins)$") { $_.WarmupTimes[0] += 30; $_.WarmupTimes[1] += 15 } # Seconds longer for MPH because of long connect issue
+                    If ($Pools.($_.Algorithm).BaseName -match "^MiningPoolHub$") { $_.WarmupTimes[0] += 30; $_.WarmupTimes[1] += 15 } # Seconds longer for MPH because of long connect issue
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

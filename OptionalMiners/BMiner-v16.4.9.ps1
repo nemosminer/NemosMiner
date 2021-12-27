@@ -68,10 +68,10 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $Arguments = ""
                     $Pass = $($Pools.($_.Algorithm[0]).Pass)
-                    If ($Pools.($_.Algorithm).Name -match "^ProHashing.*$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
+                    If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                     $Protocol = $_.Protocol[0]
-                    If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).Name -match "^NiceHash$|^MiningPoolHub(Coins)$|^ProHashing.+$") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
+                    If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -match "^NiceHash$|^MiningPoolHub$|^ProHashing$") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
 
                     $Arguments += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"

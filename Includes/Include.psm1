@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 # Window handling
@@ -88,7 +88,7 @@ Class Device {
     [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [DeviceState]$State = [DeviceState]::Enabled
     [Boolean]$ReadPowerUsage = $false
-    [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage in sensors
+    [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage
 }
 
 Enum DeviceState {
@@ -442,10 +442,6 @@ Class Miner {
         }
     }
 
-    [Int]GetActivateCount() { 
-        Return $this.Activated
-    }
-
     [Double]GetPowerUsage() { 
         [Device]$Device = $null
         $RegistryData = [PSCustomObject]@{ }
@@ -602,7 +598,7 @@ Function Start-BrainJob {
     $JobNames = @()
 
     $Config.PoolName | Select-Object | ForEach-Object { 
-        $_ = $_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
+        $_ = Get-PoolName $_
         If (-not $Variables.BrainJobs.$_) { 
             $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
             $BrainName = "$BrainPath\Brains.ps1"
@@ -759,12 +755,11 @@ Function Stop-Mining {
     $Variables.Summary = "Stopping miner processes..."
     Write-Message -Level Info $Variables.Summary
 
-    ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
-        $Miner.StopMining()
-    }
-    $Variables.WatchdogTimers = @()
-
     If ($Variables.CoreRunspace) { 
+        ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
+            $Miner.StopMining()
+        }
+        $Variables.WatchdogTimers = @()
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.Remove("Timer")
@@ -777,6 +772,7 @@ Function Stop-Mining {
 }
 
 Function Stop-BrainJob { 
+
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Jobs = $Variables.BrainJobs.Keys
@@ -786,7 +782,7 @@ Function Stop-BrainJob {
 
     # Stop Brains if necessary
     $Jobs | Select-Object | ForEach-Object { 
-        $_ = $_ -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
+        $_ = Get-PoolName $_
         $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
         $Variables.BrainJobs.Remove($_)
         $JobNames += $_
@@ -820,7 +816,7 @@ Function Start-BalancesTracker {
 }
 
 Function Stop-BalancesTracker {
- 
+
     If ($Variables.BalancesTrackerRunspace) { 
         $Variables.BalancesTrackerRunspace.Close()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
@@ -834,17 +830,17 @@ Function Start-RigMonitor {
     If (-not $Variables.RigMonitorRunspace) { 
 
         Try { 
-            $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
-            $BalancesTrackerRunspace.Open()
-            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
-            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+            $RigMonitorRunspace = [runspacefactory]::CreateRunspace()
+            $RigMonitorRunspace.Open()
+            $RigMonitorRunspace.SessionStateProxy.SetVariable('Config', $Config)
+            $RigMonitorRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+            $RigMonitorRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
             $PowerShell = [PowerShell]::Create()
-            $PowerShell.Runspace = $BalancesTrackerRunspace
+            $PowerShell.Runspace = $RigMonitorRunspace
             $PowerShell.AddScript("$($Variables.MainPath)\Includes\RigMonitor.ps1")
             $PowerShell.BeginInvoke()
 
-            $Variables.RigMonitorRunspace = $BalancesTrackerRunspace
+            $Variables.RigMonitorRunspace = $RigMonitorRunspace
             $Variables.RigMonitorRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
         }
         Catch { 
@@ -891,10 +887,7 @@ Function Get-DefaultAlgorithm {
             $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
         }
     # }
-    If ($PoolsAlgos) { 
-        $PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @($Config.PoolName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")
-        Return  $PoolsAlgos.Value | Sort-Object -Unique
-    }
+    If ($PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @(Get-PoolName $Config.PoolName)) { Return $PoolsAlgos.Value | Sort-Object -Unique }
     Return
 }
 
@@ -904,9 +897,7 @@ Function Get-CommandLineParameters {
         [String]$Arguments
     )
 
-    If (Test-Json $Arguments -ErrorAction Ignore) { 
-        Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Arguments
-    }
+    If (Test-Json $Arguments -ErrorAction Ignore) { Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Arguments }
     Return $Arguments
 }
 
@@ -1107,7 +1098,7 @@ Function Merge-Hashtable {
 
     $HT2.Keys | ForEach-Object { 
         If ($HT1.$_ -is [Hashtable]) { 
-            $HT1.$_ = Merge-Hashtable -HT1 $HT1.$_ -Ht2 $HT2.$_ -Unique $Unique -Replace $Replace
+            $HT1.$_ = Merge-Hashtable -HT1 $HT1.$_ -Ht2 $HT2.$_ -Unique $Unique -replace $Replace
         }
         ElseIf ($HT1.$_ -is [Array] -and $_ -notin $NoMerge) { 
             $HT1.$_ += $HT2.$_
@@ -1194,7 +1185,7 @@ Function Read-Config {
 
     # Build in memory pool config
     $PoolsConfig = [Ordered]@{ }
-    @(@((Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$") + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
+    @(@(Get-PoolName (Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName) + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         If ($PoolConfig = $DefaultPoolData.$PoolName) { 
             # Merge default pool data with custom pool config
@@ -1249,6 +1240,7 @@ Function Read-Config {
 }
 
 Function Write-Config { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile,
@@ -1280,6 +1272,7 @@ Function Write-Config {
 }
 
 Function Get-SortedObject { 
+
     Param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [Object]$Object
@@ -1300,7 +1293,6 @@ Function Get-SortedObject {
 
                 If ($Object.$Property -is [Hashtable] -or $Object.$Property -is [PSCustomObject]) { $SortedObject[$Property] = Get-SortedObject $Object.$Property }
                 ElseIf ($Object.$Property -is [Array]) { $SortedObject[$Property] = $Object.$Property -as $Object.$Property.GetType().Name }
-                # ElseIf ($Object.$Property -is [Array]) { $SortedObject[$Property] = @($Object.$Property) }
                 Else { $SortedObject[$Property] = $Object.$Property }
             }
         }
@@ -1323,6 +1315,7 @@ Function Get-SortedObject {
 }
 
 Function Set-Stat { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Name, 
@@ -1471,6 +1464,7 @@ Function Set-Stat {
 }
 
 Function Get-Stat { 
+
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
@@ -1534,6 +1528,7 @@ Function Get-Stat {
 }
 
 Function Remove-Stat { 
+
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @(Get-ChildItem -Path "Stats" -Directory -ErrorAction Ignore | Select-Object -ExpandProperty BaseName)
@@ -1598,6 +1593,7 @@ Function Get-ArgumentsPerDevice {
 }
 
 Function Get-ChildItemContent { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Path, 
@@ -1631,9 +1627,8 @@ Function Get-ChildItemContent {
                 }
             }
             ElseIf ($Expression -is [PSCustomObject]) { 
-                # $Expression | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
                 $Expression.PSObject.Properties.Name | ForEach-Object { 
-                        $Expression.$_ = Invoke-ExpressionRecursive $Expression.$_
+                    $Expression.$_ = Invoke-ExpressionRecursive $Expression.$_
                 }
             }
             Return $Expression
@@ -1644,13 +1639,8 @@ Function Get-ChildItemContent {
             $Content = @()
             If ($_.Extension -eq ".ps1") { 
                 $Content = & { 
-                    If ($Parameters.Count) { 
-                        $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-                        & $_.FullName @Parameters
-                    }
-                    Else { 
-                        & $_.FullName
-                    }
+                    $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
+                    & $_.FullName @Parameters
                 }
             }
             Else { 
@@ -1672,7 +1662,7 @@ Function Get-ChildItemContent {
     }
 
     If ($Threaded) { 
-        Return (Start-ThreadJob -Name "Get-ChildItemContent_$($Path -Replace '\.\\|\.\*' -Replace '\\', '_')"  -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority)
+        Return (Start-ThreadJob -Name "Get-ChildItemContent_$($Path -replace '\.\\|\.\*' -replace '\\', '_')" -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority)
     }
     Else { 
         Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
@@ -1835,6 +1825,7 @@ Function Get-CpuId {
 }
 
 Function Get-Device { 
+
     Param(
         [Parameter(Mandatory = $false)]
         [String[]]$Name = @(), 
@@ -1916,6 +1907,10 @@ Function Get-Device {
                     Memory = $null
                 }
 
+                If (-not $Type_Vendor_Id.($Device.Type)) { 
+                    $Type_Vendor_Id.($Device.Type) = @{ }
+                }
+
                 $Device | Add-Member @{ 
                     Id             = [Int]$Id
                     Type_Id        = [Int]$Type_Id.($Device.Type)
@@ -1925,10 +1920,6 @@ Function Get-Device {
 
                 $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                 $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '  ', ' ').Trim()
-
-                If (-not $Type_Vendor_Id.($Device.Type)) { 
-                    $Type_Vendor_Id.($Device.Type) = @{ }
-                }
 
                 $Id++
                 $Vendor_Id.($Device.Vendor)++
@@ -1995,6 +1986,10 @@ Function Get-Device {
                     }
                 }
 
+                If (-not $Type_Vendor_Id.($Device.Type)) { 
+                    $Type_Vendor_Id.($Device.Type) = @{ }
+                }
+
                 $Device | Add-Member @{ 
                     Id             = [Int]$Id
                     Type_Id        = [Int]$Type_Id.($Device.Type)
@@ -2010,10 +2005,6 @@ Function Get-Device {
                     $Device.Bus = $null
                 }
                 $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.' -replace '  ', ' ').Trim()
-
-                If (-not $Type_Vendor_Id.($Device.Type)) { 
-                    $Type_Vendor_Id.($Device.Type) = @{ }
-                }
 
                 $Id++
                 $Vendor_Id.($Device.Vendor)++
@@ -2066,6 +2057,10 @@ Function Get-Device {
                         Memory = [UInt64]$Device_OpenCL.GlobalMemSize
                     }
 
+                    If (-not $Type_Vendor_Id.($Device.Type)) { 
+                        $Type_Vendor_Id.($Device.Type) = @{ }
+                    }
+
                     $Device | Add-Member @{ 
                         Id             = [Int]$Id
                         Type_Id        = [Int]$Type_Id.($Device.Type)
@@ -2088,18 +2083,20 @@ Function Get-Device {
                     ElseIf ($Device.Type -eq "GPU" -and ($Device.Vendor -eq "AMD" -or $Device.Vendor -eq "NVIDIA")) { 
                         $Variables.Devices += $Device
 
-                        If (-not $Type_Vendor_Id.($Device.Type)) { 
-                            $Type_Vendor_Id.($Device.Type) = @{ }
-                        }
-
                         $Id++
                         $Vendor_Id.($Device.Vendor)++
                         $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
                         If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { $Type_Id.($Device.Type)++ }
                     }
 
+                    If (-not $Type_Vendor_Index.($Device.Type)) { 
+                        $Type_Vendor_Index.($Device.Type) = @{ }
+                    }
+                    If (-not $Type_PlatformId_Index.($Device.Type)) { 
+                        $Type_PlatformId_Index.($Device.Type) = @{ }
+                    }
+
                     # Add OpenCL specific data
-                    $tmp = [Int]$PlatformId_Index.($PlatformId) # temp fix. PlatformId_Index is broken without this
                     $Device | Add-Member @{ 
                         Index                 = [Int]$Index
                         Type_Index            = [Int]$Type_Index.($Device.Type)
@@ -2114,13 +2111,6 @@ Function Get-Device {
                     $Device | Add-Member @{ 
                         OpenCL = $Device_OpenCL
                     } -Force
-
-                    If (-not $Type_Vendor_Index.($Device.Type)) { 
-                        $Type_Vendor_Index.($Device.Type) = @{ }
-                    }
-                    If (-not $Type_PlatformId_Index.($Device.Type)) { 
-                        $Type_PlatformId_Index.($Device.Type) = @{ }
-                    }
 
                     $Index++
                     $Type_Index.($Device.Type)++
@@ -2173,6 +2163,7 @@ Function Get-Device {
 }
 
 Filter ConvertTo-Hash { 
+
     $Units = " kMGTPEZY " # k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs([Double]$_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
@@ -2225,6 +2216,7 @@ Function ConvertTo-LocalCurrency {
 }
 
 Function Get-Combination { 
+ 
     Param(
         [Parameter(Mandatory = $true)]
         [Array]$Value, 
@@ -2374,6 +2366,7 @@ public static class Kernel32
 }
 
 Function Start-SubProcess { 
+
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
@@ -2404,6 +2397,7 @@ Function Start-SubProcess {
 }
 
 Function Expand-WebRequest { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Uri, 
@@ -2434,7 +2428,7 @@ Function Expand-WebRequest {
 
         If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
 
-        # use first (topmost) directory in case, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
+        # use first (topmost) directory, some miners, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
         $Path_Old = (Get-ChildItem -Path $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -Index 0
 
         If ($Path_Old) { 
@@ -2449,9 +2443,10 @@ Function Expand-WebRequest {
 }
 
 Function Get-Algorithm { 
+
     Param(
         [Parameter(Mandatory = $false)]
-        [String]$Algorithm = ""
+        [String]$Algorithm
     )
 
     If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) {
@@ -2465,6 +2460,7 @@ Function Get-Algorithm {
 }
 
 Function Get-Region { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Region,
@@ -2483,6 +2479,7 @@ Function Get-Region {
 }
 
 Function Get-CoinName { 
+
     Param(
         [Parameter(Mandatory = $false)]
         [String]$Currency
@@ -2502,6 +2499,15 @@ Function Get-CoinName {
     Return $null
 }
 
+Function Get-PoolName { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String[]]$PoolNames
+    )
+
+    $PoolNames -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
+}
 Function Get-NMVersion { 
 
     # Check if new version is available
@@ -2531,6 +2537,7 @@ Function Get-NMVersion {
 }
 
 Function Initialize-Autoupdate { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [PSCustomObject]$UpdateVersion
@@ -2624,7 +2631,7 @@ Function Initialize-Autoupdate {
     }
 
     # Stop Snaketail
-    If ($Variables.SnakeTailExe) { 
+    If (Get-CimInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe) { 
         "Stopping SnakeTail..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         (Get-CimInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -Id $_ }
     }
@@ -2636,12 +2643,12 @@ Function Initialize-Autoupdate {
         If ($_.Attributes -eq "Directory") { 
             If (-not (Test-Path -Path $DestPath -PathType Container)) { 
                 New-Item -Path $DestPath -ItemType Directory -Force
-                "Created directory '$DestPath'"
+                "Created directory '$DestPath'."
             }
         }
         Else { 
             Copy-Item -Path $_ -Destination $DestPath -Force -ErrorAction Ignore
-            "Copied '$($_.Name)' to '$Destpath'" | Out-File -FilePath $UpdateLog -Append
+            "Copied '$($_.Name)' to '$Destpath'." | Out-File -FilePath $UpdateLog -Append
         }
     }
 
@@ -2672,7 +2679,7 @@ Function Initialize-Autoupdate {
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteStatFiles | ForEach-Object { 
             Remove-Item -Path $_ -Force
-            "Removed '$_'" | Out-File -FilePath $UpdateLog -Append
+            "Removed '$_'." | Out-File -FilePath $UpdateLog -Append
         }
     }
 
@@ -2688,8 +2695,8 @@ Function Initialize-Autoupdate {
         Remove-Item ".\PostUpdateActions.ps1" -Force
         "Removed '.\PostUpdateActions.ps1'."
     }
-    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append }
 
     # Start new instance
     If ($UpdateVersion.RequireRestart -or $NemosMinerFileHash -ne (Get-FileHash ".\NemosMiner.ps1").Hash) { 
@@ -2724,7 +2731,8 @@ Function Initialize-Autoupdate {
     }
 }
 
-Function Start-LogReader {
+Function Start-LogReader { 
+
     If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
         $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
         $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
@@ -2742,7 +2750,7 @@ Function Start-LogReader {
     }
 }
 
-Function Update-ConfigFile {
+Function Update-ConfigFile { 
 
     Param(
         [Parameter(Mandatory = $true)]
@@ -2830,13 +2838,13 @@ Function Update-ConfigFile {
     If (-not (Get-Region $Config.Region -List)) { 
         # Write message about new mining regions
         Switch ($Config.Region) { 
-            "India"    { $Config.Region = "Japan" }
-            "HongKong" { $Config.Region = "Japan" }
-            "Japan"    { $Config.Region = "Japan" }
-            "Europe"   { $Config.Region = "Europe West" }
-            "Russia"   { $Config.Region = "Europe East" }
-            "US"       { $Config.Region = "USA West" }
             "Brazil"   { $Config.Region = "USA West" }
+            "Europe"   { $Config.Region = "Europe West" }
+            "HongKong" { $Config.Region = "Asia" }
+            "India"    { $Config.Region = "Asia" }
+            "Japan"    { $Config.Region = "Japan" }
+            "Russia"   { $Config.Region = "Russia" }
+            "US"       { $Config.Region = "USA West" }
             Default    { $Config.Region = "Europe West" }
         }
         Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration." -Console
@@ -2849,6 +2857,7 @@ Function Update-ConfigFile {
 }
 
 Function Test-Prime { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [Double]$Number
@@ -2860,6 +2869,7 @@ Function Test-Prime {
 }
 
 Function Get-DAGsize { 
+
     Param(
         [Parameter(Mandatory = $false)]
         [Double]$Block = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
@@ -2884,7 +2894,8 @@ Function Get-DAGsize {
     Return $Size
 }
 
-Function Out-DataTable {
+Function Out-DataTable { 
+
     <#
     .SYNOPSIS
     Creates a DataTable for an object

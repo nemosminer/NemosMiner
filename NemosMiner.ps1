@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 [CmdletBinding()]
@@ -259,7 +259,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.10" #RC10
+    Version      = [System.Version]"4.0.0.11" #RC11
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -349,13 +349,11 @@ Catch {
     Exit
 }
 # Load PoolsLastUsed data
-Try { $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
-Catch { 
-    $Variables.PoolsLastUsed = @{ }
-}
+Try { $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore) }
+Catch { $Variables.PoolsLastUsed = @{ } }
 # Verify donation data
-$Variables.Donation = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Donation) { 
+$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.DonationData) { 
     Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
@@ -615,7 +613,7 @@ Function Update-TabControl {
                     @{ Name = "Account"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join ' & ' } }, 
                     @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
                     @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { ($_.Profit * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
-                    @{ Name = "Pool"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
+                    @{ Name = "Pool"; Expression = { ($_.WorkersRunning.Pool | ForEach-Object { (@(@($_.BaseName | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
                     @{ Name = "Hashrate"; Expression = { If ($_.Speed_Live -contains $null) { ($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join ' & ' } Else { ($_.Workers.Speed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join ' & ' } } }, 
                     @{ Name = "Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }, 
                     @{ Name = "Total Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
@@ -639,6 +637,7 @@ Function Update-TabControl {
             Else { $LabelRunningMiners.Text = "Waiting for data..." }
         }
         "Earnings" { 
+
             Get-Chart
 
             If ($Variables.Balances) { 
@@ -913,7 +912,7 @@ Function Global:TimerUITick {
                 If ($Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value $_.Profit -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
                 If ($Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If (-not [Double]::IsNaN($_.Profit_Bias)) { ConvertTo-LocalCurrency -Value $_.Profit_Bias -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
                 If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.MarginOfError | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" } }
-                @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
+                @{ Label = "Pool"; Expression = { $_.Workers.Pool.BaseName -join " & " } }
                 If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee )) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
                 If ($Variables.ShowCurrency -and $Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
                 If ($Variables.ShowCoinName -and $Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
@@ -1177,14 +1176,6 @@ Function MainForm_Load {
     $TimerUI.Interval = 50
     $TimerUI.Stop()
     $TimerUI.Enabled = $true
-}
-
-Function CheckedListBoxPools_Click ($Control) { 
-    If ($Control.SelectedItem -in $Control.CheckedItems) { 
-        $Control.CheckedItems | Where-Object { $_ -ne $Control.SelectedItem -and ($_ -replace "24hr$|Coins$|Plus$|CoinsPlus$") -like "$($Control.SelectedItem -replace "24hr$|Coins$|Plus$|CoinsPlus$")" } | ForEach-Object { 
-            $Control.SetItemChecked($Control.Items.IndexOf($_), $false)
-        }
-    }
 }
 
 $MainForm = New-Object System.Windows.Forms.Form

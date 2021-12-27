@@ -23,7 +23,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
-                If ($Pools.($_.Algorithm).Name -match "NiceHash*|MiningPoolHub*") { $AlgorithmDefinitions.$_ += " --nicehash" } 
+                If ($Pools.($_.Algorithm).BaseName -match "^NiceHash$|^MiningPoolHub$") { $AlgorithmDefinitions.$_ += " --nicehash" } 
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name

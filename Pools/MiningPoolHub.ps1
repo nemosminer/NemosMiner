@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.0.10 (RC10)
-Version date:   24 December 2021
+Version:        4.0.0.11 (RC11)
+Version date:   27 December 2021
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,7 +32,7 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = $Name -replace "24hr$|Coins$|Plus$|CoinsPlus$"
+$Name_Norm = Get-PoolName $Name
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 If ($PoolConfig.UserName) { 
@@ -50,8 +50,7 @@ If ($PoolConfig.UserName) {
     $Request.return | Where-Object profit | ForEach-Object { 
         $Current = $_
 
-        $Algorithm = $_.algo -replace "-"
-        $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Algorithm_Norm = Get-Algorithm $_.algo
         $Port = $Current.algo_switch_port
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
@@ -70,6 +69,8 @@ If ($PoolConfig.UserName) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
+                Name                     = [String]$Name
+                BaseName                 = [String]$Name_Norm
                 Algorithm                = [String]$Algorithm_Norm
                 CoinName                 = [String]$CoinName
                 Currency                 = [String]$Current.current_mining_coin_symbol
