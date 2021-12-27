@@ -6,7 +6,7 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory 
 
-Changelog NemosMiner 4.0.0.10 (RC10) 24.12.2021
+Changelog NemosMiner 4.0.0.11 (RC11) 27.12.2021
 ===============================================
 
 Enhancements:
@@ -18,6 +18,7 @@ Fixes:
 - Core: Donation not working (donation data not loaded), regression from v3.9.9.68
 - Core: Rewrite NiceHash pool naming handling
 - Pools: AHashPool, Blockmasters, HiveOn, ProHashing, ZergPool, ZPool; fix EstimateFactor
+- Pools: ZergPools brains not working
 
 Miner Updates:
 - NanoMiner-v3.5.2: User CUDA11 version
