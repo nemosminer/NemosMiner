@@ -17,7 +17,7 @@ Else { Return }
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo hmq1725" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(0, 15); Arguments = " --algo lyra2z330" }
     [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(0, 0);  Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
     [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo sha3d" }
     [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(0, 0);  Arguments = " --algo scrypt(N,1,1)" }
