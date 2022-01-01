@@ -259,7 +259,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.12" #RC12
+    Version      = [System.Version]"4.0.0.13" #RC13
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -1306,8 +1306,8 @@ $RunPageControls = @()
 
 $Variables.LabelStatus = New-Object System.Windows.Forms.TextBox
 $Variables.LabelStatus.MultiLine = $true
-$Variables.LabelStatus.Scrollbars = "Both"
-$Variables.LabelStatus.WordWrap = $false
+$Variables.LabelStatus.Scrollbars = "Vertical"
+$Variables.LabelStatus.WordWrap = $true
 $Variables.LabelStatus.Text = ""
 $Variables.LabelStatus.AutoSize = $true
 $Variables.LabelStatus.Height = 202
