@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.11 (RC11)
-Version date:   27 December 2021
+Version:        4.0.0.12 (RC12)
+Version date:   01 January 2022
 #>
 
 Function Initialize-API { 
@@ -308,7 +308,7 @@ Function Start-APIServer {
                     "/functions/mining/stop" { 
                         If ($Variables.MiningStatus -ne "Idle") { 
                             $Variables.NewMiningStatus = "Idle"
-                            $Data = "NemosMiner is getting idle...`n$(If ($Variables.BalancesTrackerRunspace) { "Balances Tracker stopped." })"
+                            $Data = "$($Variables.CurrentProduct) is getting idle...`n$(If ($Variables.BalancesTrackerRunspace) { "Balances Tracker stopped." })"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -922,7 +922,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/version" { 
-                        $Data = @("NemosMiner Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())") | ConvertTo-Json
+                        $Data = @("$($Variables.CurrentProduct) Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())") | ConvertTo-Json
                         Break
                     }
                     Default { 

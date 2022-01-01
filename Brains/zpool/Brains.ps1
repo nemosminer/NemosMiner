@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.11 (RC11)
-version date:   27 December 2021
+version:        4.0.0.12 (RC12)
+version date:   01 January 2022
 #>
 
 Set-Location ($args[0])
@@ -191,7 +191,7 @@ While ($true) {
     If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
 
     $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-        If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
+        If ([Double]($AlgoData.$_.hashrate_last24h) -gt 0) { 
             $AlgoData.$_ | Add-Member Updated $CurDate -Force
         }
         Else { 

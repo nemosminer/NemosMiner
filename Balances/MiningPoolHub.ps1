@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.0.11 (RC11)
-Version date:   27 December 2021
+Version:        4.0.0.12 (RC12)
+Version date:   01 January 2022
 #>
 
 using module ..\Includes\Include.psm1

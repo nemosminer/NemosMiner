@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool.ps1
-Version:        4.0.0.11 (RC11)
+Version:        4.0.0.12 (RC12)
 Version date:   24 October 2021
 #>
 

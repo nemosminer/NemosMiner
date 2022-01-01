@@ -7,7 +7,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(03, 0); Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.74 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = @("EtcHash");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = 3.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v2.74 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = 3.0; MinerSet = 0; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("Ethash");             Type = "AMD"; Fee = @(0.0065);   MinMemGB = 5.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1" } # GMiner-v2.74 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");       Type = "AMD"; Fee = @(0.0065);   MinMemGB = 2.0; MinerSet = 1; Tuning = " -mi 12"; WarmupTimes = @(30, 0); Arguments = " -amd -eres 1" } # GMiner-v2.74 is just as fast, PhoenixMiner-v5.9d is maybe faster, but I see lower speed at the pool
@@ -59,6 +59,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX (5|6)[0-9]{3}.*" }) # Dual mining not supported on Navi(2)
                     $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { [Version]$_.CIM.DriverVersion -le [Version]"27.20.22023.1004" }) # doesn't support Blake2s dual mining on drivers newer than 21.8.1 (27.20.22023.1004)
                 }
+                If ($_.Type -eq "NVIDIA" -and $_.Intensity) { $_.Intensity *= 5 } # Nvidia allows much higher intensity
 
                 If ($AvailableMiner_Devices) { 
 

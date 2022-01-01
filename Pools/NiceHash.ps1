@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.11 (RC11)
-Version date:   27 December 2021
+Version:        4.0.0.12 (RC12)
+Version date:   01 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -78,8 +78,8 @@ If ($Wallet) {
                 BaseName                 = [String]$Name
                 Algorithm                = [String]$Algorithm_Norm
                 Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Live # No fluctuation, always use live price
-                MarginOfError            = [Double]0
+                StablePrice              = [Double]$Stat.Week
+                MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
                 Port                     = [UInt16]$Port

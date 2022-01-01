@@ -2,14 +2,15 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.8.7/SRBMiner-Multi-0-8-7-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.8.8/SRBMiner-Multi-0-8-8-win64.zip"
 $Miner_Devices = $Devices 
 $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
 # Algorithm parameter values are case sensitive!
 $AlgorithmDefinitions = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 45);  Arguments = " --algorithm argon2d_dynamic --gpu-intensity 31 --gpu-boost 50" } # Does not start mining
+    [PSCustomObject]@{ Algorithm = "Argon2d16000";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 45);  Arguments = " --algorithm argon2d_16000 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 45);  Arguments = " --algorithm argon2d_dynamic --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algorithm argon2id_chukwa --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";     Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 0);   Arguments = " --algorithm argon2id_ninja --gpu-intensity 31 --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "AMD"; Fee = 0.02;   MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm autolykos2 --gpu-intensity 31 --gpu-boost 50" }
@@ -39,7 +40,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "VertHash";          Type = "AMD"; Fee = 0.0125; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm verthash --verthash-dat-path ..\..\Cache\VertHash.dat" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(0, 75);  Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
 
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 45);  Arguments = " --algorithm argon2d_dynamic" } # Does not start mining
+    
+    [PSCustomObject]@{ Algorithm = "Argon2d16000";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 45);  Arguments = " --algorithm argon2d_16000c" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 45);  Arguments = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2idNinja";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm argon2id_ninja" }
     [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "CPU"; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm autolykos2" }
@@ -95,7 +98,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerLtncg";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerltncg" }
     [PSCustomObject]@{ Algorithm = "YespowerMgpc";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowermgpc" }
     [PSCustomObject]@{ Algorithm = "YespowerR16";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerr16" }
-    [PSCustomObject]@{ Algorithm = "YespowerRes";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerr16" }
+    [PSCustomObject]@{ Algorithm = "YespowerRes";       Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerr16" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowersugar" }
     [PSCustomObject]@{ Algorithm = "YespowerTide";      Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowertide" }
     [PSCustomObject]@{ Algorithm = "YespowerUrx";       Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(0, 15);  Arguments = " --algorithm yespowerurx" }

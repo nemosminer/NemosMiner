@@ -19,14 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.11 (RC11)
-Version date:   27 December 2021
+Version:        4.0.0.12 (RC12)
+Version date:   01 January 2022
 #>
 
 using module .\Include.psm1
 
 Function Start-Cycle { 
-    $Variables.LogFile = "$($Variables.MainPath)\Logs\NemosMiner_$(Get-Date -Format "yyyy-MM-dd").log"
+    $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # Always get the latest config
     Read-Config -ConfigFile $Variables.ConfigFile
@@ -180,7 +180,7 @@ Function Start-Cycle {
                     $PoolConfig = [PSCustomObject]@{ }
                     $PoolConfig | Add-Member EarningsAdjustmentFactor 1
                     $PoolConfig | Add-Member Region ($Config.PoolsConfig.$_.Region)
-                    $PoolConfig | Add-Member WorkerName "NemosMiner-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
+                    $PoolConfig | Add-Member WorkerName "$($Variables.CurrentProduct)-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)" -Force
                     Switch ($_) { 
                         "MiningPoolHub" { 
                             If ($Variables.DonateRandom.MiningPoolHubUserName) { 
@@ -221,7 +221,7 @@ Function Start-Cycle {
                     $PoolNames = $Variables.DonatePoolsConfig.Keys
                     $PoolsConfig = $Variables.DonatePoolsConfig
                     $Variables.NiceHashWalletIsInternal = $false
-                    Write-Message "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" }). NemosMiner will use these pools while donating: $($PoolNames -join ', ')."
+                    Write-Message "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" }). $($Variables.CurrentProduct) will use these pools while donating: $($PoolNames -join ', ')."
                 }
                 ElseIf ((Get-Date) -gt $Variables.DonateEnd) { 
                     $Variables.DonatePoolsConfig = $null
@@ -648,7 +648,7 @@ Function Start-Cycle {
                     }
                     $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                     If ($Stat.Updated -gt $Miner.StatStart) { 
-                        Write-Message "Saved hash rate for '$($Stat_Name -replace '_Hashrate$')': $(($Stat.Live | ConvertTo-Hash) -replace ' ')$(If ($Factor -lt 1) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), Rejected: $($LastSharesData.$Algorithm[1])])" } )$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                        Write-Message "Saved hash rate for '$($Stat_Name -replace '_Hashrate$')': $(($Stat.Live | ConvertTo-Hash) -replace ' ')$(If ($Factor -lt 1) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), rejected: $($LastSharesData.$Algorithm[1])])" } )$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                         $Miner.StatStart = $Miner.StatEnd
                         $Variables.PoolsLastUsed.(Get-PoolName $Worker.Pool.Name) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                     }
@@ -771,7 +771,7 @@ Function Start-Cycle {
         }
         $_.DataCollectInterval = $DataCollectInterval
 
-        $_.MinDataSamples = [Int]($Config.MinDataSamples * (1, ($_.Algorithm | Where-Object { $Config.MinDataSamplesAlgoMultiplier.$_ } | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
+        $_.MinDataSamples = [Int]($Config.MinDataSamples * (($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum)
         $_.ProcessPriority = If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority }
         $_.WindowStyle = If ($_.Benchmark -eq $true -and $Config.MinerWindowStyleNormalWhenBenchmarking -eq $true) { "normal" } Else { $Config.MinerWindowStyle }
 
@@ -862,7 +862,7 @@ Function Start-Cycle {
                 If (Get-Command "Get-NetFirewallRule" -ErrorAction Ignore) { 
                     $MinerFirewallRules = @(Get-NetFirewallApplicationFilter | Select-Object -ExpandProperty Program)
                     If (Compare-Object $MinerFirewallRules @($Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ "=>") { 
-                        Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$(Compare-Object $MinerFirewallRules @($Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object { New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by NemosMiner $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner' }" -replace '"', '\"') -Verb runAs
+                        Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$(Compare-Object $MinerFirewallRules @($Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object { New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by $($Variables.CurrentProduct) $($Variables.CurrentVersion) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner' }" -replace '"', '\"') -Verb runAs
                     }
                     Remove-Variable MinerFirewallRules
                 }
@@ -885,14 +885,13 @@ Function Start-Cycle {
             $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_."$($SortBy)_Bias" *= (1 + $Config.RunningMinerGainPct / 100) }
 
             # Hack: temporarily make all bias positive, BestMiners_Combos(_Comparison) produces wrong sort order when earnings or profits are negative
-            $SmallestBias = [Double][Math]::Abs((($Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_."$($SortBy)_Bias" ) })."$($SortBy)_Bias"  | Measure-Object -Minimum).Minimum) * 2
+            $SmallestBias = [Double][Math]::Abs((($Miners | Where-Object Available -EQ $true | Where-Object { -not [Double]::IsNaN($_."$($SortBy)_Bias" ) })."$($SortBy)_Bias" | Measure-Object -Minimum).Minimum) * 2
             $Miners | ForEach-Object { $_."$($SortBy)_Bias" += $SmallestBias }
 
             # Get most profitable miner combination i.e. AMD+NVIDIA+CPU
             $Variables.SortedMiners = @($Miners | Where-Object Available -EQ $true | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, "$($SortBy)_Bias", Activated) # pre-sort
-            $Variables.MostProfitableMiners = @($Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; $Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.Fastest = $true; $_ } }) # use a smaller subset of miners
-            $Variables.BestMiners = @($Variables.MostProfitableMiners | Select-Object DeviceName -Unique | ForEach-Object { $Miner = $_; $Variables.MostProfitableMiners | Where-Object { (Compare-Object $Miner.DeviceName $_.DeviceName).Count -eq 0 } | Select-Object -First 1 })
-
+            $Variables.MostProfitableMiners = @($Variables.SortedMiners | Select-Object DeviceName, Algorithm -Unique | ForEach-Object { $Miner = $_; $Variables.SortedMiners | Where-Object { -not (Compare-Object $Miner $_ -Property DeviceName, Algorithm) } | Select-Object -First 1 | ForEach-Object { $_.MostProfitable = $true; $_ } }) # use a smaller subset of miners
+            $Variables.BestMiners = @($Variables.MostProfitableMiners | Group-Object { $_.DeviceName } | ForEach-Object { $_.Group | Select-Object -First 1 })
             $Variables.Miners_Device_Combos = @(Get-Combination @($Variables.BestMiners | Select-Object DeviceName -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceName -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceName) | Measure-Object).Count -eq 0 })
 
             $Variables.BestMiners_Combos = @(

@@ -46,10 +46,10 @@
               <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
               <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
               <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
+              <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning Bias</th>
               <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Earning</th>
-              <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Earning Bias</th>
+              <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit Bias</th>
               <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Profit</th>
-              <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)" data-visible="false">Profit Bias</th>
               <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip = "per 24hrs (estimated)">Power Cost</th>
               <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-title-tooltip = "per 24hrs (estimated)">Power Usage</th>
               <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
@@ -72,7 +72,6 @@
               <th data-field="WindowStyle" data-sortable="true" data-filter-control="select" data-visible="false">WindowStyle</th>
               <th data-field="Benchmark" data-sortable="true" data-filter-control="select" data-visible="false">Benchmark</th>
               <th data-field="Best" data-sortable="true" data-filter-control="select" data-visible="false">Best</th>
-              <th data-field="Fastest" data-sortable="true" data-filter-control="select" data-visible="false">Fastest</th>
               <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-visible="false">Disabled</th>
               <th data-field="Restart" data-sortable="true" data-filter-control="select" data-visible="false">Restart</th>
               <th data-field="KeepRunning" data-sortable="true" data-filter-control="select" data-visible="false">Keep Running</th>
@@ -80,15 +79,15 @@
             </tr>
           </thead>
         </table>
-<!-- Start of page scripts 'minersfastest.html' -->
+<!-- Start of page scripts 'minersmostprofitable.html' -->
         <script type='text/javascript'>
           var $table = $('#miners');
           var $querysize = 10000;
 
-          $('#miners tr:eq(0) th:eq(8)').html("Earning (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(9)').html("Earning Bias (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(10)').html("Profit (" + maincurrency + ")");
-          $('#miners tr:eq(0) th:eq(11)').html("Profit Bias (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(8)').html("Earning Bias (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(9)').html("Earning (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(10)').html("Profit Bias (" + maincurrency + ")");
+          $('#miners tr:eq(0) th:eq(11)').html("Profit (" + maincurrency + ")");
           $('#miners tr:eq(0) th:eq(12)').html("Power Cost (" + maincurrency + ")");
 
           $table.bootstrapTable({
@@ -197,5 +196,5 @@
             } catch {}
           });
         </script>
-<!-- End of page scripts 'minersfastest.html' -->
+<!-- End of page scripts 'minersmostprofitable.html' -->
 <!--#include file="/parts/foot.html" -->

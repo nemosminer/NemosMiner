@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        4.0.0.11 (RC11)
-Version date:   27 December 2021
+Version:        4.0.0.12 (RC12)
+Version date:   01 January 2022
 #>
 
 class Fireice : Miner { 
@@ -49,9 +49,9 @@ class Fireice : Miner {
                 $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
                 If ($this.Process) { 
-                    $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
                     For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
-                        If (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf) { 
+                        $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
+                        If ($this.ProcessId  -and (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
                             #Read hw config created by miner
                             $ThreadsConfig = (Get-Content -Path $PlatformThreadsConfigFile) -replace '^\s*//.*' | Out-String
                             #Set bfactor to 11 (default is 6 which makes PC unusable)

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashingPlus.ps1
-Version:        4.0.0.11 (RC11)
-Version date:   27 December 2021
+Version:        4.0.0.12 (RC12)
+Version date:   01 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -76,7 +76,7 @@ If ($PoolConfig.UserName) {
                 StablePrice              = [Double]$Stat.Week
                 MarginOfError            = [Double]$Stat.Week_Fluctuation
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$(If ($Region_Norm -eq "EU") { "eu." })$PoolHost"
+                Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort
                 User                     = [String]$PoolConfig.UserName
                 Pass                     = [String]$Pass

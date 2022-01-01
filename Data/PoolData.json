@@ -144,7 +144,7 @@
       "LTC": 0.05,
       "mBTC": 1
     },
-    "Region": "US"
+    "Region": "eu-west"
   },
   "ProHashing": {
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
