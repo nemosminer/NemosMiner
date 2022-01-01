@@ -2,7 +2,7 @@
 
 NemosMiner Monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 29 November 2020
+Updated 01 January 2022
 
 [![Github All Releases](https://img.shields.io/github/downloads/nemosminer/Nemosminer/total.svg)](https://github.com/nemosminer/Nemosminer/releases) +
 [![Github All Releases](https://img.shields.io/github/downloads/Minerx117/Nemosminer/total.svg)](https://github.com/Minerx117/Nemosminer/releases)
@@ -13,7 +13,7 @@ Updated 29 November 2020
 [![GitHub stars](https://img.shields.io/github/stars/Minerx117/Nemosminer.svg)](https://github.com/Minerx117/Nemosminer/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/nemosminer/Nemosminer.svg)](https://github.com/nemosminer/Nemosminer/network)
 
-Copyright (c) 2018-2020 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
 
 This is free software, and you are welcome to redistribute it
 under certain conditions.
