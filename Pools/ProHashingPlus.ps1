@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashingPlus.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -36,7 +36,7 @@ $Name_Norm = Get-PoolName $Name
 $PoolConfig = $PoolsConfig.$Name_Norm
 
 If ($PoolConfig.UserName) { 
-    Try {
+    Try { 
         $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") | ConvertFrom-Json
     }
     Catch { Return }
@@ -48,7 +48,7 @@ If ($PoolConfig.UserName) {
     # $PriceField = "estimate_current"
     $PriceField = "Plus_Price"
 
-    $Request.PSObject.Properties.Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } -ErrorAction Stop | ForEach-Object {
+    $Request.PSObject.Properties.Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } -ErrorAction Stop | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
@@ -67,7 +67,7 @@ If ($PoolConfig.UserName) {
         ForEach ($Region in $Regions) { 
             $Region_Norm = Get-Region $Region
 
-            [PSCustomObject]@{
+            [PSCustomObject]@{ 
                 Name                     = [String]$Name
                 BaseName                 = [String]$Name_Norm
                 Algorithm                = [String]$Algorithm_Norm

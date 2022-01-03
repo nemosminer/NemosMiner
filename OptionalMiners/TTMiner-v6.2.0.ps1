@@ -27,7 +27,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | ConvertTo-Json | ConvertFrom-Json | ForEach-Object {
+            $AlgorithmDefinitions | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
                 $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 

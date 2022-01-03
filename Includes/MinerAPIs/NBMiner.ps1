@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NBMiner.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 class NBMiner : Miner { 

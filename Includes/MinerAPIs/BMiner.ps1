@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BMiner.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 class BMiner : Miner { 
@@ -59,7 +59,7 @@ class BMiner : Miner {
 
         [Int]$Index = 0
 
-        $this.Algorithm | ForEach-Object {
+        $this.Algorithm | ForEach-Object { 
             $Index = $this.Algorithm.IndexOf($_)
             $HashRate_Name = $_
             $HashRate_Value = [Double](($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.hash_rate | Measure-Object -Sum).Sum

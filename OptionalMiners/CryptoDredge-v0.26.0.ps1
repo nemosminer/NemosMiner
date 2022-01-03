@@ -36,7 +36,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | ForEach-Object {
+            $AlgorithmDefinitions | ForEach-Object { 
 
                 $MinComputeCapability = $_.MinComputeCapability
                 $MinMemGB = $_.MinMemGB

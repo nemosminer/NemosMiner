@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 # Start transcript log
@@ -46,7 +46,7 @@ If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { $Variables
 Else { $Variables.PoolsLastEarnings = [Ordered]@{ } }
 
 # Read existing earning data, use data from last file
-ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) {
+ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) { 
     $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json) | Where-Object Balance -NE $null
     If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { 
         $Variables.BalanceData = $AllBalanceObjects
@@ -70,7 +70,7 @@ While ($true) {
         # Get pools to track
         $PoolsToTrack = @(Get-PoolName (Get-ChildItem ".\Balances\*.ps1" -File).BaseName) | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
 
-        If ($Now.Date -ne (Get-Date).Date) {
+        If ($Now.Date -ne (Get-Date).Date) { 
             # Keep a copy on start & at date change
             If (Test-Path -Path ".\Data\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Data\BalancesTrackerData.json" -Destination ".\Data\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" }
             If (Test-Path -Path ".\Data\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Data\DailyEarnings.csv" -Destination ".\Data\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" }
@@ -246,7 +246,7 @@ While ($true) {
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddHours(-1) }) { 
                     $AvgHourlyGrowth = [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalHours)
                 }
-                Else {
+                Else { 
                     $AvgHourlyGrowth = $Growth1
                 }
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-1) }) { 
@@ -320,7 +320,7 @@ While ($true) {
                 If ($PoolTodayEarning) { 
                     $StartValue = [Double]$PoolTodayEarning.EndValue
                 }
-                Else {
+                Else { 
                     $StartValue = [Double]$EarningsObject.Earnings
                 }
 
@@ -376,7 +376,7 @@ While ($true) {
             }
         }
 
-        $Variables.EarningsChartData = [PSCustomObject]@{
+        $Variables.EarningsChartData = [PSCustomObject]@{ 
             # CumulatedEarnings = $CumulatedEarnings 
             Currency = $Config.Currency
             BTCrate = [Double]$Variables.Rates.BTC.($Config.Currency)

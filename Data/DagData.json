@@ -1,37 +1,37 @@
 {
   "Currency": {
     "ETH": {
-      "BlockHeight": 13919888,
-      "DAGsize": 4957666432,
-      "Epoch": 463.0
+      "BlockHeight": 13933366,
+      "DAGsize": 4966054784,
+      "Epoch": 464.0
     },
     "EGEM": {
-      "BlockHeight": 9509158,
-      "DAGsize": 3724541056,
-      "Epoch": 316.0
+      "BlockHeight": 9523930,
+      "DAGsize": 3732925568,
+      "Epoch": 317.0
     },
     "CLO": {
-      "BlockHeight": 9010623,
+      "BlockHeight": 9024477,
       "DAGsize": 3590324096,
       "Epoch": 300.0
     },
     "QKC": {
-      "BlockHeight": 8613628,
+      "BlockHeight": 8631943,
       "DAGsize": 3481268864,
       "Epoch": 287.0
     },
     "ETHO": {
-      "BlockHeight": 8339549,
-      "DAGsize": 3397384576,
-      "Epoch": 277.0
+      "BlockHeight": 8353008,
+      "DAGsize": 3405774208,
+      "Epoch": 278.0
     },
     "MOAC": {
-      "BlockHeight": 8290463,
+      "BlockHeight": 8304111,
       "DAGsize": 3388997504,
       "Epoch": 276.0
     },
     "ETC": {
-      "BlockHeight": 14245892,
+      "BlockHeight": 14259718,
       "DAGsize": 3061837696,
       "Epoch": 237.0
     },
@@ -41,57 +41,57 @@
       "Epoch": 236.0
     },
     "REOSC": {
-      "BlockHeight": 6771098,
-      "DAGsize": 2961177728,
-      "Epoch": 225.0
+      "BlockHeight": 6783097,
+      "DAGsize": 2969565568,
+      "Epoch": 226.0
     },
     "ESN": {
-      "BlockHeight": 6328860,
+      "BlockHeight": 6329108,
       "DAGsize": 2835349376,
       "Epoch": 210.0
     },
     "AKA": {
-      "BlockHeight": 6194196,
+      "BlockHeight": 6196250,
       "DAGsize": 2801794432,
       "Epoch": 206.0
     },
     "NILU": {
-      "BlockHeight": 6095202,
+      "BlockHeight": 6095503,
       "DAGsize": 2776625536,
       "Epoch": 203.0
     },
     "ETP": {
-      "BlockHeight": 6097062,
+      "BlockHeight": 6105445,
       "DAGsize": 2776625536,
       "Epoch": 203.0
     },
     "EXP": {
-      "BlockHeight": 5735110,
+      "BlockHeight": 5743423,
       "DAGsize": 2675965312,
       "Epoch": 191.0
     },
     "ATH": {
-      "BlockHeight": 5112946,
+      "BlockHeight": 5121265,
       "DAGsize": 2499803776,
       "Epoch": 170.0
     },
     "ERG": {
-      "BlockHeight": 654453,
+      "BlockHeight": 655887,
       "DAGsize": 1249902464,
       "Epoch": 21.0
     },
     "PGC": {
-      "BlockHeight": 4291290,
+      "BlockHeight": 4296993,
       "DAGsize": 2273312128,
       "Epoch": 143.0
     },
     "UBQ": {
-      "BlockHeight": 1783425,
+      "BlockHeight": 1785463,
       "DAGsize": 1568669056,
       "Epoch": 59.0
     },
     "DBIX": {
-      "BlockHeight": 1606505,
+      "BlockHeight": 1608483,
       "DAGsize": 1518337664,
       "Epoch": 53.0
     },
@@ -101,16 +101,16 @@
       "Epoch": 16.0
     },
     "RVN": {
-      "BlockHeight": 2085658,
+      "BlockHeight": 2088726,
       "DAGsize": 3405774208,
       "Epoch": 278
     },
     "*": {
-      "BlockHeight": 14245892,
-      "DAGsize": 4957666432,
-      "Epoch": 463
+      "BlockHeight": 14259718,
+      "DAGsize": 4966054784,
+      "Epoch": 464
     }
   },
-  "Updated_Minerstat": "2022-01-01T13:54:16.7726814Z",
-  "Updated_Ravencoin": "2022-01-01T13:54:17.1736707Z"
+  "Updated_Minerstat": "2022-01-03T17:10:28.1953476Z",
+  "Updated_Ravencoin": "2022-01-03T17:10:28.5843375Z"
 }

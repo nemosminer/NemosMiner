@@ -117,18 +117,18 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object {
+            $AlgorithmDefinitions | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
                 $MinMemGB = $_.MinMemGB
 
-                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 0.99GB) -ge $MinMemGB })) {
+                If ($AvailableMiner_Devices = @($Miner_Devices | Where-Object { [Uint]($_.OpenCL.GlobalMemSize / 0.99GB) -ge $MinMemGB })) { 
 
                     $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' ' -replace ' '
 
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                    [PSCustomObject]@{
+                    [PSCustomObject]@{ 
                         Name       = $Miner_Name
                         DeviceName = $AvailableMiner_Devices.Name
                         Type       = $_.Type

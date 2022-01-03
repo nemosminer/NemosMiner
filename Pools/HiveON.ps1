@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -54,7 +54,7 @@ If ($PoolConfig.Wallets) {
         Try { $EstimateFactor = $Request.stats.($_.name).expectedReward24H / $Request.stats.($_.name).meanExpectedReward24H }
         Catch { $EstimateFactor = 1 }
 
-        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region } )) {
+        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region } )) { 
             $Region_Norm = Get-Region $Server.Region
 
             [PSCustomObject]@{ 

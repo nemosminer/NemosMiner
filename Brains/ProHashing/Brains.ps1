@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.12 (RC12)
-version date:   01 January 2022
+version:        4.0.0.13 (RC13)
+version date:   03 January 2022
 #>
 
 Set-Location ($args[0])
@@ -28,25 +28,25 @@ Set-Location ($args[0])
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
 Function Get-Trendline { 
-    Param($Data) 
-    $n = $Data.count 
+    Param($Data)
+    $n = $Data.count
     If ($n -le 1) { Return 0 }
-    $SumX = 0 
-    $SumX2 = 0 
-    $SumXY = 0 
-    $SumY = 0 
+    $SumX = 0
+    $SumX2 = 0
+    $SumXY = 0
+    $SumY = 0
     For ($i = 1; $i -le $n; $i++) { 
-        $SumX += $i 
-        $SumX2 += ([Math]::Pow($i, 2)) 
-        $SumXY += ($i) * ($Data[$i - 1]) 
-        $SumY += $Data[$i - 1] 
-    } 
+        $SumX += $i
+        $SumX2 += ([Math]::Pow($i, 2))
+        $SumXY += ($i) * ($Data[$i - 1])
+        $SumY += $Data[$i - 1]
+    }
     $b = [math]::Round(($SumXY - $SumX * $SumY / $n) / ($SumX2 - $SumX * $SumX / $n), 15)
     $a = [math]::Round($SumY / $n - $b * ($SumX / $n), 15)
-    Return @($a, $b) 
+    Return @($a, $b)
 }
 
-Function Get-Median {
+Function Get-Median { 
     Param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
         [Double[]]
@@ -55,13 +55,13 @@ Function Get-Median {
     $NumberSeries += @()
     $NumberSeries += $Number
     $SortedNumbers = @($NumberSeries | Sort-Object)
-    If ($NumberSeries.Count % 2) {
+    If ($NumberSeries.Count % 2) { 
         $SortedNumbers[($SortedNumbers.Count / 2) - 1]
     }
-    Else {
+    Else { 
         ($SortedNumbers[($SortedNumbers.Count / 2)] + $SortedNumbers[($SortedNumbers.Count / 2) - 1]) / 2
-    }                        
-} 
+    }
+}
 
 $AlgoObject = @()
 $CurrenciesData = @()
@@ -75,8 +75,8 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-While ($true) {
-    If (Test-Path ".\BrainConfig.xml") {
+While ($true) { 
+    If (Test-Path ".\BrainConfig.xml") { 
         $Config = Import-Clixml ".\BrainConfig.xml"
         $SampleSizeMinutes = $Config.SampleSizeMinutes
         $TrendSpanSizeMinutes = $Config.TrendSpanSizeMinutes
@@ -98,19 +98,19 @@ While ($true) {
     $CurDate = (Get-Date).ToUniversalTime()
     $RetryInterval = 0
 
-    Try {
+    Try { 
 #        $AlgoData = (Invoke-RestMethod -Uri $PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" }).data
 #        $CurrenciesData = (Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" }).data
         $AlgoData = (Invoke-RestMethod -Uri $PoolStatusUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).data
         $CurrenciesData = (Invoke-RestMethod -Uri $PoolCurrenciesUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).data
         $APICallFails = 0
     }
-    Catch {
+    Catch { 
         $APICallFails++
         $RetryInterval = $Interval * [math]::max(0, $APICallFails - $AllowedAPIFailureCount)
     }
 
-    ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)) {
+    ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)) { 
         $Currencies = @($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
         $Currency = If ($Currencies.Count -eq 1) { $Currencies[0] -replace '-.+'} Else { "" }
         $AlgoData.$Algo | Add-Member @{ currency = $Currency.Trim() }
@@ -119,7 +119,7 @@ While ($true) {
         If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]($AlgoData.$Algo.actual_last24h / 1000) }
         $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]$AlgoData.$Algo.actual_last24h } Else { [Double]$AlgoData.$Algo.estimate_last24h }
         $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($PerAPIFailPercentPenalty * [math]::max(0, $APICallFails - $AllowedAPIFailureCount) / 100))))
-        $AlgoObject += [PSCustomObject]@{
+        $AlgoObject += [PSCustomObject]@{ 
             Date               = $CurDate
             Name               = $AlgoData.$Algo.name
             Port               = $AlgoData.$Algo.port
@@ -151,26 +151,26 @@ While ($true) {
     $GroupMedSampleSizeHalf = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizeHalfts) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
     $GroupMedSampleSizeNoPercent = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24Drift } }
 
-    ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)) {
+    ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)) { 
         $PenaltySampleSize = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Median)
         $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
         $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
         $Penalty = ($PenaltySampleSizeHalf * $SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower + 1)
         $LiveTrend = ((Get-Trendline ($AlgoObjects | Where-Object { $_.Name -eq $Name }).estimate_current)[1])
-        # $Price = (($Penalty) + ($CurAlgoObject | Where-Object {$_.Name -eq $Name}).actual_last24h) 
+        # $Price = (($Penalty) + ($CurAlgoObject | Where-Object {$_.Name -eq $Name}).actual_last24h)
         $Price = [math]::max( 0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
-        If ( $UseFullTrust ) {
-            If ( $Penalty -gt 0 ) {
+        If ($UseFullTrust) { 
+            If ( $Penalty -gt 0 ) { 
                 $Price = [Math]::max([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
             }
-            Else {
+            Else { 
                 $Price = [Math]::min([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
             }
         }
         $AlgoData.($Name) | Add-Member -Force @{ Plus_Price = $Price }
 
         If ($EnableLog) { 
-            $MathObject += [PSCustomObject]@{
+            $MathObject += [PSCustomObject]@{ 
                 Name         = $Name
                 DriftAvg     = (($CurAlgoObject | Where-Object { $_.Name -eq $Name }).Last24DriftPercent | Measure-Object -Average).Average
                 TimeSpan     = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).TimeSpan

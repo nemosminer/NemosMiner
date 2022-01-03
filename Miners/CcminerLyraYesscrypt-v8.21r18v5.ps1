@@ -22,7 +22,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $AlgorithmDefinitions | ForEach-Object {
+            $AlgorithmDefinitions | ForEach-Object { 
 
                 If ($_.Algorithm -eq "Lyra2RE3" -and $Pools.($_.Algorithm).Name -like "MiningPoolHub*") { Return } # Temp fix
                 If ($_.Algorithm -eq "Yescrypt" -and $Pools.($_.Algorithm).Currency -ne "BSTY") { Return } # Temp fix

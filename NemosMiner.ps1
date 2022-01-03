@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 [CmdletBinding()]
@@ -301,15 +301,15 @@ New-Variable Config ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -
 New-Variable Stats ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Force -ErrorAction Stop
 
+$Variables.CurrentProduct = $Branding.ProductLabel
+$Variables.CurrentVersion = $Branding.Version
+
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
 $Variables.LogFile = ".\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
-
-$Variables.CurrentProduct = $Branding.ProductLabel
-$Variables.CurrentVersion = $Branding.Version
 
 # Get command line parameters, required in Read-Config
 $AllCommandLineParameters = [Ordered]@{ }
@@ -383,7 +383,7 @@ $Prerequisites = @(
     "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
 )
 
-If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_ -PathType Leaf) })) {
+If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_ -PathType Leaf) })) { 
     $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." -Console }
     Write-Message -Level Error "Please install the required runtime modules. Download and extract" -Console
     Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip" -Console
@@ -499,7 +499,7 @@ If ($Config.WebGUI -eq $true) {
 
 Function Get-Chart { 
 
-    Function Get-NextColor {
+    Function Get-NextColor { 
         Param(
             [Parameter(Mandatory = $true)]
             [Byte[]]$Colors, 
@@ -582,7 +582,7 @@ Function Get-Chart {
 
         $EarningsChart2.Series.Clear()
         $Colors = @(255, 255, 255, 255) #"FFFFFF"
-        ForEach ($Pool in ($Datasource.Pool)) {
+        ForEach ($Pool in ($Datasource.Pool)) { 
             $Colors = (Get-NextColor -Colors $Colors -Factors -0, -20, -20, -20)
 
             [Void]$EarningsChart2.Series.Add($Pool)
@@ -605,7 +605,7 @@ Function Update-TabControl {
             If ($Variables.Miners) { 
                 $RunningMinersDGV.DataSource = $Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @(
                     @{ Name = "Device(s)"; Expression = { $_.DeviceName -join "; " } }, 
-                    @{ Name = "Miner"; Expression = { $_.Info } }, 
+                    @{ Name = "Miner"; Expression = { "$($_.Name) $($_.Info)" } }, 
                     @{ Name = "Account"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join ' & ' } }, 
                     @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
                     @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { ($_.Profit * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
@@ -840,7 +840,7 @@ Function Global:TimerUITick {
 
             If ($Variables.MiningStatus -ne "Idle") { Send-MonitoringData }
         }
-        If ($Variables.NewMiningStatus -eq "Running") {
+        If ($Variables.NewMiningStatus -eq "Running") { 
             Start-BrainJob
             If ($Config.MineWhenIdle) { 
                 If (-not $Variables.IdleRunspace) { Start-IdleMining }
@@ -1582,7 +1582,6 @@ Function MainForm_Resize {
 
     If ($MainForm.Width -gt 722) { 
         $EarningsChart1.Width = ($TabControl.Width - 14) * 0.75
-
         $EarningsChart2.Left = $EarningsChart1.Width + 20
         $EarningsChart2.Width = ($TabControl.Width - $EarningsChart1.Width - 50)
         $EarningsChart1.Height = $EarningsChart2.Height = ($TabControl.Height - 60) * 0.4
@@ -1597,7 +1596,7 @@ Function MainForm_Resize {
 
 $MainForm.Add_Load(
     { 
-        If (Test-Path ".\Config\WindowSettings.json" -PathType Leaf) {
+        If (Test-Path ".\Config\WindowSettings.json" -PathType Leaf) { 
             $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore
             If ($WindowSettings.Height -ge $MainForm.MinimumSize.Height -and $WindowSettings.Width -ge $MainForm.MinimumSize.Width) { 
                 # Restore window size

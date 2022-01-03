@@ -4,7 +4,23 @@ Breaking changes (from main code base):
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
-If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 3.9.x.x to a new directory
+If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
+
+
+Changelog NemosMiner 4.0.0.13 (RC13) 03.01.2022
+===============================================
+
+Fixes:
+- Core / Log: Startup messages written to broken log file name (Regression from 4.0.0.12)
+- Core: Miner Property 'CommandLine' wrong after switching pools
+- Fix file encoding (CRLF & UTF-8)
+
+Pools:
+- BrainJobs: Restart on pool variant change
+- ZPool: read currency data from brain data
+
+Various:
+- Removed aaronsace & grantemsley from donation list
 
 
 Changelog NemosMiner 4.0.0.12 (RC12) 01.01.2022

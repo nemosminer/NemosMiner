@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.12 (RC12)
-Version date:   01 January 2022
+Version:        4.0.0.13 (RC13)
+Version date:   03 January 2022
 #>
 
 # Window handling
@@ -28,7 +28,7 @@ Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
 
-public static class Win32 {
+public static class Win32 { 
     [DllImport("user32.dll")]
     public static extern int SetWindowText(IntPtr hWnd, string strTitle);
 
@@ -91,7 +91,7 @@ Class Device {
     [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage
 }
 
-Enum DeviceState {
+Enum DeviceState { 
     Enabled
     Disabled
     Unsupported
@@ -273,13 +273,13 @@ Class Miner {
 
     hidden StartMining() { 
         $this.Status = [MinerStatus]::Failed
-        $this.StatusMessage = "Launching {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}..."
+        $this.Info = "{$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+        $this.StatusMessage = "Launched $($this.Info)"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
         $this.Intervals = @()
 
-        $this.Info = "$($this.Name) {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-        Write-Message "Starting miner '$($this.Info)'..."
+        Write-Message "Starting miner '$($this.Name) $($this.Info)'..."
 
         If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
@@ -296,7 +296,7 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Name -LogFile $this.LogFile
             $this.Status = [MinerStatus]::Running
             Write-Message -Level Verbose $this.CommandLine
 
@@ -328,7 +328,7 @@ Class Miner {
                 }
             }
 
-            $this.StatusMessage = "Warming up {$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+            $this.StatusMessage = "Warming up $($this.Info)"
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
             $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
             $this.StartDataReader()
@@ -370,7 +370,7 @@ Class Miner {
     hidden StopMining() { 
         $this.EndTime = (Get-Date).ToUniversalTime()
         If ($this.Status -eq [MinerStatus]::Running) { 
-            Write-Message "Stopping miner '$($this.Info)'..."
+            Write-Message "Stopping miner '$($this.Name) $($this.Info)'..."
             $this.StatusMessage = "Stopping..."
             $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         }
@@ -536,7 +536,7 @@ Class Miner {
         $this.Profit_Bias = [Double]::NaN
 
         $this.Workers | ForEach-Object { 
-            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") {
+            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
                 $_.Speed = $Stat.Hour
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
@@ -597,10 +597,9 @@ Function Start-BrainJob {
     # Starts Brains if necessary
     $JobNames = @()
 
-    $Config.PoolName | Select-Object | ForEach-Object { 
-        $_ = Get-PoolName $_
+    $Config.PoolName | ForEach-Object { 
         If (-not $Variables.BrainJobs.$_) { 
-            $BrainPath = "$($Variables.MainPath)\Brains\$($_)"
+            $BrainPath = "$($Variables.MainPath)\Brains\$(Get-PoolName $_)"
             $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
                 $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
@@ -610,8 +609,8 @@ Function Start-BrainJob {
     }
     If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) for '$(($JobNames | Sort-Object) -join ", ")'." }
 }
-Function Start-IdleMining {
- 
+Function Start-IdleMining { 
+
     # Function tracks how long the system has been idle and controls the paused state
     $IdleRunspace = [runspacefactory]::CreateRunspace()
     $IdleRunspace.Open()
@@ -637,35 +636,35 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace PInvoke.Win32 {
+namespace PInvoke.Win32 { 
 
-    public static class UserInput {
+    public static class UserInput { 
 
         [DllImport("user32.dll", SetLastError=false)]
         private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct LASTINPUTINFO {
+        private struct LASTINPUTINFO { 
             public uint cbSize;
             public int dwTime;
         }
 
-        public static DateTime LastInput {
-            get {
+        public static DateTime LastInput { 
+            get { 
                 DateTime bootTime = DateTime.UtcNow.AddMilliseconds(-Environment.TickCount);
                 DateTime lastInput = bootTime.AddMilliseconds(LastInputTicks);
                 return lastInput;
             }
         }
 
-        public static TimeSpan IdleTime {
-            get {
+        public static TimeSpan IdleTime { 
+            get { 
                 return DateTime.UtcNow.Subtract(LastInput);
             }
         }
 
-        public static int LastInputTicks {
-            get {
+        public static int LastInputTicks { 
+            get { 
                 LASTINPUTINFO lii = new LASTINPUTINFO();
                 lii.cbSize = (uint)Marshal.SizeOf(typeof(LASTINPUTINFO));
                 GetLastInputInfo(ref lii);
@@ -781,8 +780,7 @@ Function Stop-BrainJob {
     $JobNames = @()
 
     # Stop Brains if necessary
-    $Jobs | Select-Object | ForEach-Object { 
-        $_ = Get-PoolName $_
+    $Jobs | ForEach-Object { 
         $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
         $Variables.BrainJobs.Remove($_)
         $JobNames += $_
@@ -815,7 +813,7 @@ Function Start-BalancesTracker {
     }
 }
 
-Function Stop-BalancesTracker {
+Function Stop-BalancesTracker { 
 
     If ($Variables.BalancesTrackerRunspace) { 
         $Variables.BalancesTrackerRunspace.Close()
@@ -849,8 +847,8 @@ Function Start-RigMonitor {
     }
 }
 
-Function Stop-RigMonitor {
- 
+Function Stop-RigMonitor { 
+
     If ($Variables.RigMonitorRunspace) { 
         $Variables.RigMonitorRunspace.Close()
         If ($Variables.RigMonitorRunspace.PowerShell) { $Variables.RigMonitorRunspace.PowerShell.Dispose() }
@@ -876,7 +874,7 @@ Function Initialize-Application {
     Else { $PSDefaultParameterValues["*:Proxy"] = $Config.Proxy }
 }
 
-Function Get-DefaultAlgorithm {
+Function Get-DefaultAlgorithm { 
 
     # Try { 
     #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
@@ -901,7 +899,7 @@ Function Get-CommandLineParameters {
     Return $Arguments
 }
 
-Function Get-Rate {
+Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
@@ -923,7 +921,7 @@ Function Get-Rate {
                     $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
                 }
             }
-            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object {
+            $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
                 $Currency = $_
                 $Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
                     $mCurrency = "m$($_)"
@@ -1261,7 +1259,7 @@ Function Write-Config {
 
     If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
 
-    If (Test-Path $ConfigFile -PathType Leaf) {
+    If (Test-Path $ConfigFile -PathType Leaf) { 
         Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
         Get-ChildItem -Path "$($ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse # Keep 10 backup copies
     }
@@ -1286,7 +1284,7 @@ Function Get-SortedObject {
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
 
-    Switch -Regex ($Object.GetType().Name) {
+    Switch -Regex ($Object.GetType().Name) { 
         "PSCustomObject" { 
             Get-Member -Type NoteProperty -InputObject $Object | Sort-Object Name | ForEach-Object { 
                 # Upper / lower case conversion (Web GUI is case sensitive)
@@ -1309,7 +1307,7 @@ Function Get-SortedObject {
                 $SortedObject[$Key] = If ($Object.$Key -is [Hashtable] -or $Object.$Key -is [PSCustomObject]) { Get-SortedObject $Object.$Key } Else { $Object.$Key }
             }
         }
-        Default {
+        Default { 
             $SortedObject = $Object
         }
     }
@@ -2175,7 +2173,7 @@ Filter ConvertTo-Hash {
     "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
 }
 
-Function Get-DigitsFromValue {
+Function Get-DigitsFromValue { 
 
     # To get same numbering scheme regardless of value base currency value (size) to determine formatting
 
@@ -2221,7 +2219,7 @@ Function ConvertTo-LocalCurrency {
 }
 
 Function Get-Combination { 
- 
+
     Param(
         [Parameter(Mandatory = $true)]
         [Array]$Value, 
@@ -2253,7 +2251,7 @@ Function Get-Combination {
     }
 }
 
-Function Invoke-CreateProcess {
+Function Invoke-CreateProcess { 
 
     # Based on https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Invoke-CreateProcess.ps1
 
@@ -2295,13 +2293,13 @@ using System.Runtime.InteropServices;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct PROCESS_INFORMATION
-{
+{ 
     public IntPtr hProcess; public IntPtr hThread; public uint dwProcessId; public uint dwThreadId;
 }
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 public struct STARTUPINFO
-{
+{ 
     public uint cb; public string lpReserved; public string lpDesktop; public string lpTitle;
     public uint dwX; public uint dwY; public uint dwXSize; public uint dwYSize; public uint dwXCountChars;
     public uint dwYCountChars; public uint dwFillAttribute; public uint dwFlags; public short wShowWindow;
@@ -2311,12 +2309,12 @@ public struct STARTUPINFO
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SECURITY_ATTRIBUTES
-{
+{ 
     public int length; public IntPtr lpSecurityDescriptor; public bool bInheritHandle;
 }
 
 public static class Kernel32
-{
+{ 
     [DllImport("kernel32.dll", SetLastError=true)]
     public static extern bool CreateProcess(
         string lpApplicationName, string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes, 
@@ -2327,7 +2325,7 @@ public static class Kernel32
 "@
 
         $ShowWindow = $(
-            Switch ($MinerWindowStyle) {
+            Switch ($MinerWindowStyle) { 
                 "hidden" { "0x0000" } # SW_HIDE
                 "normal" { "0x0001" } # SW_SHOWNORMAL
                 Default  { "0x0007" } # SW_SHOWMINNOACTIVE
@@ -2454,7 +2452,7 @@ Function Get-Algorithm {
         [String]$Algorithm
     )
 
-    If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) {
+    If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) { 
         $Global:Algorithms = Get-Content ".\Data\Algorithms.json" | ConvertFrom-Json
     }
 
@@ -2578,7 +2576,7 @@ Function Initialize-Autoupdate {
         Return
     }
 
-    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion.Version -ge [System.Version]"3.9.9.17") {
+    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion.Version -ge [System.Version]"3.9.9.17") { 
         # Balances & earnings files are no longer compatible
         Write-Message -Level Warn "Balances & Earnings files are no longer compatible and will be reset."
     }
@@ -2600,7 +2598,7 @@ Function Initialize-Autoupdate {
     Stop-IdleMining
     Stop-BalancesTracker
 
-    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") {
+    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
         # Remove balances & earnings files that are no longer compatible
         If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
         If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
@@ -2882,7 +2880,7 @@ Function Get-DAGsize {
         [String]$Coin
     )
 
-    Switch ($Coin) {
+    Switch ($Coin) { 
         "ETC"   { $Epoch_Length = If ($Block -ge 11700000 ) { 60000 } Else { 30000 } }
         "RVN"   { $Epoch_Length = 7500 }
         Default { $Epoch_Length = 30000 }

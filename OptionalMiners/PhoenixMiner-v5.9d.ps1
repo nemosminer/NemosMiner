@@ -72,7 +72,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
 
                     $_.Arguments += " -pool $(If ($Pools.($_.Algorithm[0]).SSL) { "ssl://" })$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) -wal $($Pools.($_.Algorithm[0]).User) -pass $Pass"
 
-                    If ($Pools.($_.Algorithm[0]).DAGsize -gt 0) {
+                    If ($Pools.($_.Algorithm[0]).DAGsize -gt 0) { 
                         If ($Pools.($_.Algorithm[0]).BaseName -match "^MiningPoolHub$") { $_.Arguments += " -proto 1" }
                         If ($Pools.($_.Algorithm[0]).BaseName -match "^NiceHash$") { $_.Arguments += " -proto 4" }
                     }
