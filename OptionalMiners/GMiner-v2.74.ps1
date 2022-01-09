@@ -10,9 +10,9 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = "BeamV3";        Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo beamhashIII --cuda 0 --opencl 1" } # Algorithm not supported on AMD
     # [PSCustomObject]@{ Algorithm = "Cuckaroo30CTX"; Fee = 0.05;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo C30CTX --cuda 0 --opencl 1" } # Algorithm not supported on AMD
     # [PSCustomObject]@{ Algorithm = "Cuckoo29";      Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo cuckoo29 --cuda 0 --opencl 1" } # Algorithm not supported on AMD
-    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.36a is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.36a is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash210_9 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.36a is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1445";  Fee = 0.02;   MinMemGB = 1.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.41a is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.41a is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash2109";  Fee = 0.02;   MinMemGB = 2.8; Type = "AMD"; MinerSet = 1; WarmupTimes = @(0, 0); Arguments = " --algo equihash210_9 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.41a is fastest
     [PSCustomObject]@{ Algorithm = "EquihashBTG";   Fee = 0.02;   MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 0); Arguments = " --algo 144_5 --pers BgoldPoW --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";       Fee = 0.0065; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";        Fee = 0.0065; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; WarmupTimes = @(0, 30); Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
@@ -55,7 +55,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                     # Get arguments for available miner devices
-                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "cuda", "opencl", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     $_.Arguments += " --server $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)"
                     If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $_.Arguments += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
@@ -66,7 +66,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                     # Contest ETH address (if ETH wallet is specified in config)
-                    $_.Arguments += If ($Config.Wallets.ETH) { " --contest_wallet $($Config.Wallets.ETH)" } Else { " --contest_wallet 0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }
+                    # $_.Arguments += If ($Config.Wallets.ETH) { " --contest_wallet $($Config.Wallets.ETH)" } Else { " --contest_wallet 0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }
 
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name

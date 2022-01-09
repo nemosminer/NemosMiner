@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.3.9.70"
+    $APIVersion = "0.4.0.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
 
@@ -290,7 +290,7 @@ Function Start-APIServer {
                     "/functions/mining/pause" { 
                         If ($Variables.MiningStatus -ne "Paused") { 
                             $Variables.NewMiningStatus = "Paused"
-                            $Data = "Mining is being paused...`n$(If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting." } Else { "Balances Tracker running." })"
+                            $Data = "Mining is being paused...`n$(If ($Variables.BalancesTrackerPollInterval -gt 0) { If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting..." } Else { "Balances Tracker running." } })"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -299,7 +299,7 @@ Function Start-APIServer {
                     "/functions/mining/start" { 
                         If ($Variables.MiningStatus -ne "Running") { 
                             $Variables.NewMiningStatus = "Running"
-                            $Data = "Mining processes starting...`n$(If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting." } Else { "Balances Tracker running." })"
+                            $Data = "Mining processes starting...`n$(If ($Variables.BalancesTrackerPollInterval -gt 0) { If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting..." } Else { "Balances Tracker running." } })"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -308,7 +308,7 @@ Function Start-APIServer {
                     "/functions/mining/stop" { 
                         If ($Variables.MiningStatus -ne "Idle") { 
                             $Variables.NewMiningStatus = "Idle"
-                            $Data = "$($Variables.CurrentProduct) is getting idle...`n$(If ($Variables.BalancesTrackerRunspace) { "Balances Tracker stopped." })"
+                            $Data = "$($Variables.CurrentProduct) is getting idle...`n"
                         }
                         $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
@@ -418,14 +418,14 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/stat/get" { 
-                        If ($Parameters.Value -ne $null) { $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) }
-                        Else { $TempStats = @($Stats) }
+                        $TempStats = If ($Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) }
 
                         If ($TempStats) { 
                             If ($Parameters.Value -ne $null) { 
                                 $TempStats | Sort-Object Name | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
-                                $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)$($Parameters.Unit) $($Parameters.Type)."
-                            }
+                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
+                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                                }
                             Else { 
                                 $Data = $TempStats | ConvertTo-Json
                             }
@@ -582,50 +582,10 @@ Function Start-APIServer {
                         }
                         Break
                     }
-                    "/functions/watchdogtimers/remove" { 
-                        $Data = @()
-                        ForEach ($WatchdogTimer in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Miner suspended by watchdog (all algorithms)" })) {
-                                # Remove watchdog timers
-                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
-
-                                # Update miner
-                                $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
-                                    If (-not $_.Reason) { $_.Available = $true }
-                                }
-                            }
-                        }
-                        ForEach ($WatchdogTimer in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Pool suspended by watchdog" })) {
-                                # Remove watchdog timers
-                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
-
-                                # Update pool
-                                $Variables.Pools | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
-                                    If (-not $_.Reason) { $_.Available = $true }
-                                }
-                            }
-                        }
-                        If ($WatchdogTimers) { 
-                            $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
-                            Write-Message -Level Verbose "Web GUI: $Message" -Console
-                            $Data += "`n`n$Message"
-                        }
-                        Else { 
-                            $Data = "`nNo matching watchdog timers found."
-                        }
-                        Break
-                    }
                     "/functions/watchdogtimers/reset" { 
-                        $Variables.WatchdogTimersReset = $true
                         $Variables.WatchDogTimers = @()
-                        $Variables.Miners | Where-Object { $_.Reason -like "Miner suspended by watchdog *" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
-                        $Variables.Pools | Where-Object { $_.Reason -like "*Pool suspended by watchdog" } | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Rason } | ForEach-Object { $_.Available = $true }
+                        $Variables.Miners | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
+                        $Variables.Pools | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
                         Write-Message -Level Verbose "Web GUI: All watchdog timers reset." -Console
                         $Data = "`nThe watchdog timers will be recreated on next cycle."
                         Break
@@ -694,7 +654,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/devices/enabled" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.EnabledDevices | Select-Object)
                         Break
                     }
                     "/devices/disabled" { 
@@ -813,10 +773,6 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Status -EQ [MinerStatus]::Running } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, Workers | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { $_ | Add-Member Workers $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning)
                         Break
                     }
-                    "/miners/sorted" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.SortedMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
-                        Brea
-                    }
                     "/miners/unavailable" { 
                         $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
@@ -861,12 +817,20 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
+                    "/pools/added" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.AddedPools | Select-Object | Sort-Object Name, Algorithm)
+                        Break
+                    }
                     "/pools/available" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/pools/best" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Name, Algorithm)
+                        Break
+                    }
+                    "/pools/new" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.NewPools | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/pools/lastearnings" { 
@@ -879,6 +843,10 @@ Function Start-APIServer {
                     }
                     "/pools/unavailable" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Name, Algorithm)
+                        Break
+                    }
+                    "/pools/updated" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.UpdatedPools | Select-Object | Sort-Object Name, Algorithm)
                         Break
                     }
                     "/poolreasons" { 
@@ -918,7 +886,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/watchdogexpiration" { 
-                        $Data = ConvertTo-Json -Depth 10 @("$([math]::Floor($Variables.WatchdogReset / 60)) minutes $($Variables.WatchdogRest % 60) second$(If ($Variables.WatchdogRest % 60 -ne 1) { "s" })")
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.WatchdogReset)
                         Break
                     }
                     "/version" { 

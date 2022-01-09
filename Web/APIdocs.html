@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.0.13 (RC13)
-version date:   03 January 2022-->
+version:        4.0.0.14 (RC14)
+version date:   09 January 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.3.9.70)</h1>
+  <h1>NemosMiner API (version 0.4.0.0)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -130,9 +130,6 @@ version date:   03 January 2022-->
   <a href="http://localhost:3999/miners/running">/miners/running</a>
   <p>Shows the running miners data, use for debugging.</p>
   <br>
-  <a href="http://localhost:3999/miners/sorted">/miners/sorted</a>
-  <p>Shows the sortedminers data, use for debugging.</p>
-  <br>
   <a href="http://localhost:3999/miners/unavailable">/miners/unavailable</a>
   <p>Shows the unavailable miners data, use for debugging.</p>
   <br>
@@ -155,13 +152,22 @@ version date:   03 January 2022-->
   <p>Shows the pool configuration entries.</p>
   <br>
   <a href="http://localhost:3999/pools">/pools</a>
-  <p>Shows all pool data entries.</p>
+  <p>Shows all pool entries.</p>
   <br>
-  <a href="http://localhost:3999/pools/best">/pools/best</a>
-  <p>Shows the best pool configuration entries.</p>
+  <a href="http://localhost:3999/pools/added">/pools/added</a>
+  <p>Shows the added pool entries.</p>
   <br>
   <a href="http://localhost:3999/pools/available">/pools/available</a>
-  <p>Shows the available pool configuration entries.</p>
+  <p>Shows the available pool entries.</p>
+  <br>
+  <a href="http://localhost:3999/pools/best">/pools/best</a>
+  <p>Shows the best pool entries.</p>
+  <br>
+  <a href="http://localhost:3999/pools/new">/pools/new</a>
+  <p>Shows the new pool entries.</p>
+  <br>
+  <a href="http://localhost:3999/pools/updated">/pools/updated</a>
+  <p>Shows the updated pool entries.</p>
   <br>
   <a href="http://localhost:3999/pools/unavailable">/pools/unavailable</a>
   <p>Shows the unavailable pool configuration entries.</p>
@@ -193,27 +199,90 @@ version date:   03 January 2022-->
   <a href="http://localhost:3999/unprofitablealgorithms">/unprofitablealgorithms</a>
   <p>Shows the list of unprofitable algorithms (defined in '\Data\UnprofitableAlgorithms.json').</p>
   <br>
+  <a href="http://localhost:3999/watchdogexpiration">/watchdogexpiration</a>
+  <p>Shows the watchdog expiration duration (in seconds).</p>
+  <br>
   <a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a>
   <p>Shows the watchdog timers.</p>
   <br>
   <h2>Functions</h2>
-  <p>/functions/api/stop</p>
-  <p>/functions/config/set</p>
-  <p>/functions/log/get</p>
-  <p>/functions/mining/getstatus</p>
-  <p>/functions/mining/pause</p>
-  <p>/functions/mining/start</p>
-  <p>/functions/mining/stop</p>
-  <p>/functions/log/clear</p>
-  <p>/functions/stat/get</p>
-  <p>/functions/stat/remove</p>
-  <p>/functions/pool/enable</p>
-  <p>/functions/pool/disable</p>
-  <p>/functions/switchinglog/clear</p>
-  <p>/functions/variables/get</p>
-  <p>/functions/watchdogtimers/remove</p>
-  <p>/functions/watchdogtimers/reset</p>
-
+  <br>
+  <br>Parameters look like '[url]?a=b&c=d&message=Hello%20world' (as [URI]::EscapeDataString)
+  <br>
+  <br>/functions/api/stop
+  <br>Stop running API instance
+  <br>Parameters: none
+  <br>
+  <br>/functions/config/set
+  <br>Write fill config
+  <br>Parameters: full config (JSON)
+  <br>e.g.: /functions/config/set?{"Algorithm"%3A%5B""%5D%2C"AllowedBadShareRatio"%3A0.1%2C"APILogfile"%3A"c%3A%5C%5CUsers%5C%5CStephan%5C%5CDesktop%5C%5CNemosMiner%5C%5CLogs%5C%5CAPI.log"%2C"APIPort"%3A3999%2C"AutoUpdate"%3Afalse%2C"BalancesKeepAlive"%3Atrue%2C"BalancesTrackerIgnorePool"%3Anull%2C"BalancesTrackerLog"%3Afalse%2C"BalancesTrackerPollInterval"%3A10%2C"CalculatePowerCost"%3Atrue%2C"ConfigFile"%3A".%5C%5CConfig%5C%5CConfig.json"%2C"ConfigFileVersion"%3A"4.0.0.13"%2C"CPUMinerProcessPriority"%3A-2%2C"Currency"%3A"CHF"%2C"Delay"%3A0%2C"DisableDualAlgoMining"%3Afalse%2C"DisableMinerFee"%3Afalse%2C"DisableMinersWithFee"%3Afalse%2C"DisableSingleAlgoMining"%3Afalse%2C"Donate"%3A13%2C"EarningsAdjustmentFactor"%3A1%2C"EstimateCorrection"%3Afalse%2C"ExcludeDeviceName"%3A%5B%5D%2C"ExcludeMinerName"%3A%5B""%5D%2C"ExtraCurrencies"%3A%5B"USD"%2C"ETC"%2C"mBTC"%5D%2C"GPUMinerProcessPriority"%3A-1%2C"IdlePowerUsageW"%3A60%2C"IdleSec"%3A120%2C"IgnoreMinerFee"%3Afalse%2C"IgnorePoolFee"%3Afalse%2C"IgnorePowerCost"%3Afalse%2C"IgnoreRejectedShares"%3Atrue%2C"IncludeLegacyMiners"%3Atrue%2C"IncludeOptionalMiners"%3Atrue%2C"IncludeRegularMiners"%3Atrue%2C"Interval"%3A90%2C"LogBalanceAPIResponse"%3Afalse%2C"LogToFile"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%2C"Debug"%5D%2C"LogToScreen"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%2C"Debug"%5D%2C"MinAccuracy"%3A0.5%2C"MinDataSamples"%3A20%2C"MinDataSamplesAlgoMultiplier"%3A{"X16r"%3A3}%2C"MinerInstancePerDeviceModel"%3Afalse%2C"MinerSet"%3A1%2C"MinerWindowStyle"%3A"minimized"%2C"MinerWindowStyleNormalWhenBenchmarking"%3Atrue%2C"MineWhenIdle"%3Afalse%2C"MiningPoolHubAPIKey"%3A""%2C"MiningPoolHubUserName"%3A"Nemo"%2C"MinInterval"%3A0%2C"MinWorker"%3A10%2C"MonitoringServer"%3A""%2C"MonitoringUser"%3A""%2C"NiceHashAPIKey"%3A""%2C"NiceHashAPISecret"%3A""%2C"NiceHashOrganizationId"%3A""%2C"NiceHashWallet"%3A""%2C"NiceHashWalletIsInternal"%3Afalse%2C"OpenFirewallPorts"%3Atrue%2C"PayoutCurrency"%3A"BTC"%2C"PoolBalancesUpdateInterval"%3A15%2C"PoolName"%3A%5B"Blockmasters"%2C"MiningPoolHub"%2C"ZergPool"%2C"ZPool"%5D%2C"PoolsConfigFile"%3A".%5C%5CConfig%5C%5CPoolsConfig.json"%2C"PoolTimeout"%3A20%2C"PowerPricekWh"%3A{"00%3A00"%3A0.26%2C"12%3A00"%3A0.3}%2C"PowerUsage"%3A{}%2C"ProfitabilityThreshold"%3A-99%2C"ProHashingAPIKey"%3A""%2C"ProHashingMiningMode"%3A"PPS"%2C"ProHashingUserName"%3A"nemos"%2C"Proxy"%3A""%2C"Region"%3A"Europe West"%2C"ReportToServer"%3Afalse%2C"RunningMinerGainPct"%3A12%2C"ShowAccuracy"%3Atrue%2C"ShowAllMiners"%3Afalse%2C"ShowCoinName"%3Atrue%2C"ShowCurrency"%3Atrue%2C"ShowEarning"%3Atrue%2C"ShowEarningBias"%3Atrue%2C"ShowMinerFee"%3Atrue%2C"ShowPoolBalances"%3Afalse%2C"ShowPoolFee"%3Atrue%2C"ShowPowerCost"%3Atrue%2C"ShowPowerUsage"%3Atrue%2C"ShowProfit"%3Atrue%2C"ShowProfitBias"%3Atrue%2C"ShowWorkerStatus"%3Atrue%2C"SnakeTailConfig"%3A".%5C%5CUtils%5C%5CNemosMiner_LogReader.xml"%2C"SnakeTailExe"%3A".%5C%5CUtils%5C%5CSnakeTail.exe"%2C"SSL"%3Afalse%2C"StartGUIMinimized"%3Atrue%2C"StartupMode"%3A"Idle"%2C"SyncWindow"%3A3%2C"Transcript"%3Afalse%2C"UIStyle"%3A"Light"%2C"UnrealMinerEarningFactor"%3A5%2C"UnrealPoolPriceFactor"%3A1.5%2C"UseAnycast"%3Afalse%2C"UsemBTC"%3Atrue%2C"UseMinerTweaks"%3Afalse%2C"Wallets"%3A{"BTC"%3A"1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"%2C"ETC"%3A"0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"%2C"ETH"%3A"0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"}%2C"WarmupTimes"%3A%5B0%2C15%5D%2C"Watchdog"%3Atrue%2C"WatchdogCount"%3A3%2C"WebGUI"%3Atrue%2C"WorkerName"%3A"ID%3Dtesting"}
+  <br>
+  <br>/functions/log/get
+  <br>Get the last [n] lines of the log file (default 100)
+  <br>Parameters: number of lines (optional)
+  <br>e.g.: /functions/log/get?lines=45
+  <br>Returns: log lines (UTF-8)
+  <br>
+  <br>/functions/mining/getstatus
+  <br>Get the current mining status
+  <br>Parameters: none
+  <br>Returns: Mining status (Idle / Paused / Running)
+  <br>
+  <br>/functions/mining/pause
+  <br>Pause mining (Balances Tracker & Brainjobs running, Miners stopped)
+  <br>Parameters: none
+  <br>
+  <br>/functions/mining/start
+  <br>Start mining (Balances Tracker & Brainjobs running, Miners running)
+  <br>Parameters: none
+  <br>
+  <br>/functions/mining/stop
+  <br>Stop mining (Balances Tracker & Brainjobs stopped, Miners stopped)
+  <br>Parameters: none
+  <br>
+  <br>/functions/stat/get
+  <br>Retrieve stats data
+  <br>Parameters: Stat filter (Optional), Type=[HashRate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type is returned)
+  <br>e.g.: /functions/stat/get?Type=HashRate&Value=0
+  <br>Returns: array of stats
+  <br>
+  <br>/functions/stat/remove
+  <br>Remove stats data
+  <br>Parameters: Stat filter; Type=[HashRate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type are removed)
+  <br>e.g.: /functions/stat/remove?Type=HashRate&Value=0
+  <br>
+  <br>/functions/stat/set
+  <br>Set miner hashrate value (not useful for pool stats)
+  <br>Parameters: Miner stat filter; Name=StatName, Algorithm=Algorithm(s), Type=HashRate, Value (0=failed; -1=disabled)
+  <br>e.g.: /functions/stat/set?Miners=%5B{"Name"%3A"PhoenixMiner-v5.9d-1xRadeonRX5808GB-EtcHash%26Blake2s-40"%2C"Algorithm"%3A%5B"EtcHash"%2C"Blake2s"%5D}%5D&Type=HashRate&Value=-1
+  <br>
+  <br>/functions/poolsconfig/edit
+  <br>Opens notepad to edit pools config file.
+  <br>
+  <br>/functions/pool/enable
+  <br>Enable disabled pool
+  <br>Parameters: array of pools (JSON, pool list as array, requires properties Name & Algorithm)
+  <br>e.g.: /functions/pool/enable?Pools=%5B{"Name"%3A"Blockmasters"%2C"Algorithm"%3A"CpuPower"}%5D
+  <br>
+  <br>/functions/pool/disable
+  <br>Disable enabled pool
+  <br>Parameters: array of pools (JSON, pool list as array, requires properties Name & Algorithm)
+  <br>e.g.: /functions/pool/disable?Pools=%5B{"Name"%3A"Blockmasters"%2C"Algorithm"%3A"CpuPower"}%5D
+  <br>
+  <br>/functions/switchinglog/clear
+  <br>Clear switching log data
+  <br>
+  <br>/functions/variables/get
+  <br>Retrieve variable value
+  <br>Parameters: Variable name (optional, if omitted a list of all available variable is returned)
+  <br>e.g.: /functions/variables/get?CurrentVersion
+  <br>Returns: Variable value or variable list (JSON)
+  <br>
+  <br>/functions/watchdogtimers/reset
+  <br>Clear watchdog timers data
+  <br>Parameters: none
+  <br>
   <a href="https://nemosminer.com">NemosMiner.com</a>
 </body>
 

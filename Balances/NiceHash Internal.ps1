@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash External.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,7 +32,7 @@ $Key = $Config.NicehashAPIKey
 $OrganizationID = $Config.NicehashOrganizationID
 $Secret = $Config.NicehashAPISecret
 
-Function Get-NiceHashRequest {
+Function Get-NiceHashRequest { 
     Param(
         [Parameter(Mandatory = $true)]
         [String]$EndPoint = "", 
@@ -53,7 +53,7 @@ Function Get-NiceHashRequest {
     $Sha = [System.Security.Cryptography.KeyedHashAlgorithm]::Create("HMACSHA256")
     $Sha.Key = [System.Text.Encoding]::UTF8.Getbytes($Secret)
     $Sign = [System.BitConverter]::ToString($Sha.ComputeHash([System.Text.Encoding]::UTF8.Getbytes(${str})))
-    $Headers = [Hashtable]@{
+    $Headers = [Hashtable]@{ 
         "X-Time"            = $Timestamp
         "X-Nonce"           = $Uuid
         "X-Organization-Id" = $OrganizationId
@@ -68,7 +68,7 @@ $RetryDelay = 10
 
 While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
     $RetryCount--
-    Try {
+    Try { 
         $Method = "GET"
         $EndPoint = "/main/api/v2/accounting/account2/BTC/"
 
@@ -76,7 +76,7 @@ While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Config.NicehashAPIKey -a
 
         If ($Config.LogBalanceAPIResponse -eq $true) { 
             $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-            $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
         }
 
         If ($APIResponse.active) { 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   24 October 2021
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1

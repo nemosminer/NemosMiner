@@ -70,16 +70,14 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Pass = $($Pools.($_.Algorithm[0]).Pass)
                     If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
-                    $Protocol = $_.Protocol[0]
-                    If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -match "^NiceHash$|^MiningPoolHub$|^ProHashing$") { $Protocol = $Protocol -replace "ethproxy", "ethstratum" }
-                    If ($Pools.($_.Algorithm[0]).SSL) { $Protocol = "$($Protocol)+ssl" }
+                    If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -match "^NiceHash$|^MiningPoolHub$|^ProHashing$") { $_.Protocol[0] = $_.Protocol[0] -replace "ethproxy", "ethstratum" }
+                    If ($Pools.($_.Algorithm[0]).SSL) { "$($_.Protocol[0])+ssl" }
 
-                    $Arguments += "$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
+                    $Arguments += "$($_.Protocol[0])://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
 
                     If ($_.Algorithm[1]) { 
-                        $Protocol2 = $_.Protocol[1]
-                        If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $Protocol2 = "$($Protocol2)+ssl" }
-                        $Arguments += "$($Protocol2)://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)"
+                        If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $_.Protocol[1] = "$($_.Protocol[1])+ssl" }
+                        $Arguments += "$($_.Protocol[1])://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)"
                     }
 
                     # Optionally disable dev fee mining

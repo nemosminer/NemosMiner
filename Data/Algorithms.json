@@ -180,7 +180,7 @@
   "sha256asicboost": "Sha256AsicBoost",
   "skunk": "SkunkHash",
   "swap": "Cuckaroo29S",
-  "tonpow": "TonCoin",
+  "tonpow": "SHA256ton",
   "ubqhash": "UbqHash",
   "verthash": "VertHash",
   "verus": "VerusHash",

@@ -68,28 +68,28 @@
 <!-- Start of page scripts 'stats.html' -->
         <script type="text/javascript">
           $("#showzerohashrateminers").on("click",function() {
-            $(".modal-body").load("functions/stat/get?Type=HashRate&Value=0&Unit=H/s", function() {
+            $(".modal-body").load("functions/stat/get?Type=HashRate&Value=0", function() {
               $(".modal-title").text($("#showzerohashrateminers").text());
               $("#myModal").modal({show:true});
             });
           });
 
           $("#resetzerohashrateminers").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=0&Unit=H/s", function() {
+            $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=0", function() {
               $(".modal-title").text($("#resetzerohashrateminers").text());
               $("#myModal").modal({show:true});
             });
           });
 
           $("#showzeropowerusageminers").on("click",function() {
-            $(".modal-body").load("functions/stat/get?Type=PowerUsage&Value=0&Unit=W", function() {
+            $(".modal-body").load("functions/stat/get?Type=PowerUsage&Value=0", function() {
               $(".modal-title").text($("#showzeropowerusageminers").text());
               $("#myModal").modal({show:true});
             });
           });
 
           $("#resetzeropowerusageminers").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=PowerUsage&Value=0&Unit=H/s", function() {
+            $(".modal-body").load("functions/stat/remove?Type=PowerUsage&Value=0", function() {
               $(".modal-title").text($("#resetzeropowerusageminers").text());
               $("#myModal").modal({show:true});
             });

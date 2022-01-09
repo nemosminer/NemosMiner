@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -63,6 +63,21 @@ If ($Wallet) {
     $Request.miningAlgorithms | Where-Object speed -GT 0 | Where-Object { $_.algodetails.order -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
         $Algorithm_Norm = Get-Algorithm $Algorithm
+
+        $Currency = Switch ($Algorithm_Norm) {
+            "BeamHash3"         { "BEAM" }
+            "CuckooCycle"       { "AE" }
+            "Cuckaroo29"        { "XBG" }
+            "Cuckarood29"       { "MWC" }
+            "$Grin29_Algorithm" { "GRIN" }
+            "Eaglesong"         { "CKB" }
+            "EquihashR25x5x3"   { "BEAM" }
+            "Lbry"              { "LBC" }
+            "RandomX"           { "XMR" }
+            "Octopus"           { "CFX" }
+            Default             { "" }
+        }
+
         $Port = $_.algodetails.port
         # $DivisorMultiplier = 1000000000
         # $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.priceFactor
@@ -73,22 +88,26 @@ If ($Wallet) {
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region
 
-            [PSCustomObject]@{ 
-                Name                     = [String]$PoolName
-                BaseName                 = [String]$Name
-                Algorithm                = [String]$Algorithm_Norm
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
-                MarginOfError            = [Double]$Stat.Week_Fluctuation
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
-                Port                     = [UInt16]$Port
-                User                     = [String]$User
-                Pass                     = "x"
-                Region                   = [String]$Region_Norm
-                SSL                      = $false
-                Fee                      = [Decimal]$PoolConfig.Fee
-                EstimateFactor           = [Decimal]1
+            # ForEach ($SSL in @($false <#, $true#>)) { 
+            ForEach ($SSL in @($false, $true)) { 
+                [PSCustomObject]@{ 
+                    Name                     = [String]$PoolName
+                    BaseName                 = [String]$Name
+                    Algorithm                = [String]$Algorithm_Norm
+                    Currency                 = [String]$Currency
+                    Price                    = [Double]$Stat.Live
+                    StablePrice              = [Double]$Stat.Week
+                    MarginOfError            = [Double]$Stat.Week_Fluctuation
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
+                    Port                     = [UInt16]$Port
+                    User                     = [String]$User
+                    Pass                     = "x"
+                    Region                   = [String]$Region_Norm
+                    SSL                      = $SSL
+                    Fee                      = [Decimal]$PoolConfig.Fee
+                    EstimateFactor           = [Decimal]1
+                }
             }
         }
     }

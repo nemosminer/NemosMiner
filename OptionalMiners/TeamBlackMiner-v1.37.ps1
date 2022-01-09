@@ -2,16 +2,16 @@ using module ..\Includes\Include.psm1
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\TBMiner.exe"
-$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.35/TeamBlackMiner_1_35_cuda_11_5.7z"
+$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.37/TeamBlackMiner_1_37_cuda_11_5.7z"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $DeviceSelector = @{ AMD = " --cl-devices"; NVIDIA = " --cuda-devices" }
 
 $AlgorithmDefinitions = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.005; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo etchash" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.005; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.005; MinMemGB = 2.0; Type = "AMD"; MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo ethash"} # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.005; MinMemGB = 3.0; Type = "AMD"; MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(30, 30); Arguments = " --algo etchash" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.005; MinMemGB = 5.0; Type = "AMD"; MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(30, 30); Arguments = " --algo ethash" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.005; MinMemGB = 2.0; Type = "AMD"; MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(30, 30); Arguments = " --algo ethash"} # TTMiner-v5.0.3 is fastest
     # [PSCustomObject]@{ Algorithm = "VertHash";     Fee = 0.01;  MinMemGB = 4.0; Type = "AMD"; MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 180); Arguments = " --algo vertcoin" }
 
     [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.005; MinMemGB = 3.0; Type = "NVIDIA"; MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo etchash" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
@@ -37,7 +37,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                     $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                     # Get arguments for available miner devices
-                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     $_.Arguments += " --hostname $($Pools.($_.Algorithm).Host) --port $($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User) --worker-name $($Config.Workername) --server-passwd $($Pools.($_.Algorithm).Pass)"
                     If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $_.Arguments += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }

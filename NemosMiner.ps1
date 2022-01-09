@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 [CmdletBinding()]
@@ -259,7 +259,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.13" #RC13
+    Version      = [System.Version]"4.0.0.14" #RC14
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -303,6 +303,7 @@ New-Variable Variables ([Hashtable]::Synchronized( @{ } )) -Scope "Global" -Forc
 
 $Variables.CurrentProduct = $Branding.ProductLabel
 $Variables.CurrentVersion = $Branding.Version
+Remove-Variable Branding -ErrorAction Ignore
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
@@ -311,14 +312,13 @@ $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProv
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
-# Get command line parameters, required in Read-Config
-$AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfigFile", "BalancesTrackerConfigFile", "Verbose", "Debug", "ErrorAction", "WarningAction", "InformationAction", "ErrorVariable", "WarningVariable", "InformationVariable", "OutVariable", "OutBuffer", "PipelineVariable") } | Sort-Object | ForEach-Object { 
-    $AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction SilentlyContinue
-    If ($AllCommandLineParameters.$_ -is [Switch]) { $AllCommandLineParameters.$_ = [Boolean]$AllCommandLineParameters.$_ }
+# Verify donation data
+$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.DonationData) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download." -Console
+    Start-Sleep -Seconds 10
+    Exit
 }
-$Variables.AllCommandLineParameters = $AllCommandLineParameters
-
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
@@ -350,25 +350,21 @@ Catch {
 # Load PoolsLastUsed data
 Try { $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore) }
 Catch { $Variables.PoolsLastUsed = @{ } }
-# Verify donation data
-$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.DonationData) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download." -Console
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Read configuration
-Read-Config -ConfigFile $Variables.ConfigFile
 
-$AllCommandLineParameters.Keys | ForEach-Object { 
+$Variables.AllCommandLineParameters = [Ordered]@{ }
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
+    $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction Ignore
+    If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
     Remove-Variable $_ -ErrorAction Ignore
 }
-Remove-Variable AllCommandLineParameters -ErrorAction Ignore
+
+# Read configuration
+Read-Config -ConfigFile $Variables.ConfigFile
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
-Write-Message -Level Info "Starting $($Branding.ProductLabel)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru" -Console
+Write-Message -Level Info "Starting $($Variables.CurrentProduct)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru" -Console
 If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." -Console }
 Write-Host ""
 
@@ -378,8 +374,8 @@ Start-LogReader
 #Prerequisites check
 Write-Message -Level Verbose "Verifying pre-requisites..." -Console
 $Prerequisites = @(
-    "$env:SystemRoot\System32\MSVCR120.dll",
-    "$env:SystemRoot\System32\VCRUNTIME140.dll",
+    "$env:SystemRoot\System32\MSVCR120.dll", 
+    "$env:SystemRoot\System32\VCRUNTIME140.dll", 
     "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
 )
 
@@ -392,7 +388,7 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
     Exit
 }
 Else { Write-Message -Level Verbose "Pre-requisites check OK." -Console }
-Remove-Variable PrerequisitesMissing, Prerequisites
+Remove-Variable Prerequisites, PrerequisitesMissing
 
 # Check if new version is available
 Get-NMVersion
@@ -793,15 +789,17 @@ Function Global:TimerUITick {
                     Stop-BalancesTracker
                     Stop-RigMonitor
 
-                    $LabelMiningStatus.Text = "Stopped | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Stopped | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
-                    Write-Message -Level Info "$($Branding.ProductLabel) is idle." -Console
+                    Write-Message -Level Info "$($Variables.CurrentProduct) is idle." -Console
 
                     $ButtonPause.Enabled = $true
                     $ButtonStart.Enabled = $true
                 }
                 "Paused" { 
+                    $TimerUI.Stop
+
                     If ($Variables.MiningStatus -eq "Running") { 
                         Stop-Mining
                         Stop-BrainJob
@@ -809,16 +807,14 @@ Function Global:TimerUITick {
                     }
                     Else { 
                         Initialize-Application
-                        Start-BalancesTracker
                     }
 
-                    $LabelMiningStatus.Text = "Paused | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Paused | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
 
-                    $TimerUI.Stop
 
                     Write-Host "`n"
-                    Write-Message -Level Info "Mining is paused." -Console
+                    Write-Message -Level Info "$($Variables.CurrentProduct) is paused." -Console
 
                     $ButtonStop.Enabled = $true
                     $ButtonStart.Enabled = $true
@@ -833,6 +829,9 @@ Function Global:TimerUITick {
                     $ButtonStop.Enabled = $true
                     $ButtonStart.Enabled = $false
                     $ButtonPause.Enabled = $true
+
+                    Write-Host "`n"
+                    Write-Message -Level Info "$($Variables.CurrentProduct) is running." -Console
                 }
             }
 
@@ -853,7 +852,7 @@ Function Global:TimerUITick {
     }
 
     If ($Variables.RefreshNeeded -and $Variables.MiningStatus -eq "Running") { 
-        $host.UI.RawUI.WindowTitle = $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
+        $host.UI.RawUI.WindowTitle = $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
 
         If (-not ($Variables.Miners | Where-Object Status -eq "Running")) { Write-Message "No miners running. Waiting for next cycle." }
 
@@ -941,7 +940,7 @@ Function Global:TimerUITick {
             }
 
             If ($ProcessesRunning = @($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
-                Write-Host "Running miner$(If ($ProcessesRunning.Count -eq 1) { ":" } Else { "s: $($ProcessesRunning.Count)" })"
+                Write-Host "Running $(If ($ProcessesRunning.Count -eq 1) { "miner:" } Else { "miners: $($ProcessesRunning.Count)" })"
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Hashrate"; Expression = { If ($_.Speed_Live) { (($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' } Else { "n/a" } }; Align = "right" }
                     If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ($_.PowerUsage_Live) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
@@ -955,7 +954,7 @@ Function Global:TimerUITick {
 
             If ($Variables.UIStyle -eq "Full") { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
-                    Write-Host "Previously executed miner$(If ($ProcessesIdle.Count -eq 1) { ":" } Else { "s: $($ProcessesIdle.Count)" }) in the past 24 hrs"
+                    Write-Host "Previously executed $(If ($ProcessesIdle.Count -eq 1) { "miner:" } Else { "miners: $($ProcessesIdle.Count)" }) in the past 24 hrs"
                     [System.Collections.ArrayList]$Miner_Table = @(
                         @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }
                         If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
@@ -968,7 +967,7 @@ Function Global:TimerUITick {
                 }
 
                 If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
-                    Write-Host -ForegroundColor Red "Failed miner$(If ($ProcessesFailed.Count -eq 1) { ":" } Else { "s: $($ProcessesFailed.Count)" }) in the past 24 hrs"
+                    Write-Host -ForegroundColor Red "Failed $(If ($ProcessesFailed.Count -eq 1) { "miner:" } Else { "miners: $($ProcessesFailed.Count)" }) in the past 24 hrs"
                     [System.Collections.ArrayList]$Miner_Table = @(
                         @{ Label = "Hashrate"; Expression = { (($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ' ) -replace '\s+', ' ' }; Align = "right" }
                         If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage)) { "$($_.PowerUsage.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
@@ -1026,8 +1025,8 @@ Function Global:TimerUITick {
 }
 
 Function MainForm_Load { 
-    $MainForm.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion)"
-    $LabelMiningStatus.Text = "$($Branding.ProductLabel) $($Variables.CurrentVersion)"
+    $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+    $LabelMiningStatus.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
     $MainForm.Number = 0
     $TimerUI.Add_Tick(
         { 
@@ -1637,7 +1636,7 @@ $MainForm.Add_FormClosing(
         Stop-BalancesTracker
 
         # Save window settings
-        $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Set-Content ".\Config\WindowSettings.json" -Force -ErrorAction Ignore
+        $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
 
         Write-Message -Level Info "$($Variables.CurrentProduct) has shut down." -Console
 

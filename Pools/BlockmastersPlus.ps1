@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlockmastersPlus.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -55,7 +55,7 @@ If ($Wallet) {
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = $Request.$_.currency.Trim()
+        $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
         $PoolPort = $Request.$_.port

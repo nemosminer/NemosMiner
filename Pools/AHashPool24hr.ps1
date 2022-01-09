@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           AHashPool24hr.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -39,7 +39,6 @@ $HostSuffix = "mine.ahashpool.com"
 # $PriceField = "Plus_Price"
 $PriceField = "estimate_last24h"
 # $PriceField = "estimate_current"
-$DivisorMultiplier = 1000000000
 $DivisorMultiplier = 1000000
 
 $PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0

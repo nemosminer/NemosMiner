@@ -2,7 +2,7 @@
 
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\lolminer.exe"
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.39/lolMiner_v1.39_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.41/lolMiner_v1.41b_Win64.zip"
 $DeviceEnumerator = "Bus"
 $DAGmemReserve = [Math]::Pow(2, 23) * 17 # Number of epochs 
 
@@ -24,7 +24,7 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(60, 60); Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.9d is faster
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.9d is faster
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.007; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.9d is faster
-    [PSCustomObject]@{ Algorithm = "TonCoin";       Type = "AMD"; Fee = 0.015; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo TON" }
+    [PSCustomObject]@{ Algorithm = "SHA256ton";     Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo TON" }
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo UBQHASH" }
 
     [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "NVIDIA"; Fee = 0.015; MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(30, 30); Arguments = " --algo AUTOLYKOS2" }
@@ -44,11 +44,11 @@ $AlgorithmDefinitions = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 3.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v5.9d is faster
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = 0.007; MinMemGB = 5.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.9d is faster
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = 0.007; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo ETHASH" } # PhoenixMiner-v5.9d is faster
-    [PSCustomObject]@{ Algorithm = "TonCoin";       Type = "NVIDIA"; Fee = 0.015; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo TON" }
+    [PSCustomObject]@{ Algorithm = "SHA256ton";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo TON" }
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "NVIDIA"; Fee = 0.007; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo UBQHASH" }
 )
 
-If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host } | Where-Object { -not $Pools.($_.Algorithm).SSL }) { 
+If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 
     $Devices | Where-Object Type -in @($AlgorithmDefinitions.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -82,7 +82,7 @@ If ($AlgorithmDefinitions = $AlgorithmDefinitions | Where-Object MinerSet -LE $C
                         DeviceName      = $AvailableMiner_Devices.Name
                         Type            = $_.Type
                         Path            = $Path
-                        Arguments       = ("$($_.Arguments)$(If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } ) --log off --apiport $MinerAPIPort --shortstats=5 --longstats=30 --dns-over-https 1 --devicesbypcie --devices $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments       = ("$($_.Arguments)$(if ($_.Algorithm -ne "SHA256ton") { If ($Pools.($_.Algorithm).SSL) { " --tls on" } Else { " --tls off" } }) --log off --apiport $MinerAPIPort --shortstats 7 --longstats 30 --watchdog exit --dns-over-https 1 --devicesbypcie --devices $(($AvailableMiner_Devices | Sort-Object $DeviceEnumerator -Unique | ForEach-Object { '{0}:0' -f $_.$DeviceEnumerator }) -join ',')" -replace "\s+", " ").trim()
                         Algorithm       = $_.Algorithm
                         API             = "lolMiner"
                         Port            = $MinerAPIPort

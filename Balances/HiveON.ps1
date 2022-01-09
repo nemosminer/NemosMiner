@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveON.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -42,7 +42,7 @@ $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select
 
             If ($Config.LogBalanceAPIResponse -eq $true) { 
                 $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-                $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
             }
 
             If ($APIResponse.earningStats) { 

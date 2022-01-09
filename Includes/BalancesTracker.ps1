@@ -21,16 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 # Start transcript log
 If ($Config.Transcript) { Start-Transcript -Path ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_-$(Get-Date -Format "yyyy-MM-dd").log" -Append -Force | Out-Null }
 
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
-
-Write-Message -Level Info "Balances Tracker started."
 
 $Balances = [Ordered]@{ }
 $BalanceObjects = @()
@@ -351,14 +349,7 @@ While ($true) {
             $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = ($Variables.PoolsLastEarnings.($_ -replace ' \(.+'), $Balances.$_.LastEarnings | Measure-Object -Maximum).Maximum
         }
         $Variables.PoolsLastEarnings = $Variables.PoolsLastEarnings | Get-SortedObject
-        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File ".\Data\PoolsLastEarnings.json" -Force
-
-        Try { 
-            $Earnings | Export-Csv ".\Data\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
-        }
-        Catch { 
-            Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."
-        }
+        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastEarnings.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
 
         # Build chart data (used in Web GUI) for last 30 days
         $PoolChartData = [PSCustomObject]@{ }
@@ -389,7 +380,7 @@ While ($true) {
             Earnings = $PoolChartData
         }
 
-        $Variables.EarningsChartData | ConvertTo-Json | Out-File ".\Data\EarningsChartData.json" -Force -Encoding UTF8 -ErrorAction Ignore
+        $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
 
         # At least 31 days are needed for Growth720
         If ($AllBalanceObjects.Count -gt 1) { 
@@ -402,7 +393,14 @@ While ($true) {
             ) | Sort-Object DateTime -Descending
         }
 
-        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File ".\Data\BalancesTrackerData.json" -Force -ErrorAction Ignore }
+        Try { 
+            $Earnings | Export-Csv ".\Data\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
+        }
+        Catch { 
+            Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."
+        }
+
+        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue }
         $Variables.BalanceData = $AllBalanceObjects
 
         If ($ReadBalances) { Return } # Debug stuff
@@ -413,4 +411,4 @@ While ($true) {
 
 }
 
-Write-Message "Balances Tracker stopped."
+Write-Message -Level INFO "Balances Tracker stopped." -Console

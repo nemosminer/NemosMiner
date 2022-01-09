@@ -8,7 +8,9 @@
       "mBTC": 3
     },
     "PayoutCurrency": "BTC",
-    "Region": "US"
+    "Region": [
+      "US"
+    ]
   },
   "BlockMasters": {
     "BalancesKeepAlive": 120, // Old accounts are purged every 120 Days
@@ -144,7 +146,9 @@
       "LTC": 0.05,
       "mBTC": 1
     },
-    "Region": "eu-west"
+    "Region": [
+      "eu-west"
+    ]
   },
   "ProHashing": {
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)

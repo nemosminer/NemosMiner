@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -48,17 +48,16 @@ If ($PoolConfig.UserName) {
     $PriceField = "estimate_current"
     # $PriceField = "Plus_Price"
 
-    $Request.PSObject.Properties.Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } | ForEach-Object { 
+    $Request.PSObject.Properties.Name | Where-Object { [Double]($Request.$_.estimate_current) -gt 0 } -ErrorAction Stop | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_."$($PoolConfig.MiningMode)_fee"
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)") -join ','
         $PoolPort = $Request.$_.port
 
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)") -join ','
-
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         Try { $EstimateFactor = $Request.$_.actual_last24h * 1000 / $Request.$_.$PriceField }
         Catch { $EstimateFactor = 1 }

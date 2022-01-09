@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.13 (RC13)
-Version date:   03 January 2022
+Version:        4.0.0.14 (RC14)
+Version date:   09 January 2022
 #>
 
 # Window handling
@@ -591,24 +591,6 @@ Class Miner {
         }
     }
 }
-
-Function Start-BrainJob { 
-
-    # Starts Brains if necessary
-    $JobNames = @()
-
-    $Config.PoolName | ForEach-Object { 
-        If (-not $Variables.BrainJobs.$_) { 
-            $BrainPath = "$($Variables.MainPath)\Brains\$(Get-PoolName $_)"
-            $BrainName = "$BrainPath\Brains.ps1"
-            If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
-                $JobNames += $_
-            }
-        }
-    }
-    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Started Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) for '$(($JobNames | Sort-Object) -join ", ")'." }
-}
 Function Start-IdleMining { 
 
     # Function tracks how long the system has been idle and controls the paused state
@@ -676,7 +658,7 @@ namespace PInvoke.Win32 {
 '@
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..." -Console
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
@@ -716,15 +698,15 @@ Function Stop-IdleMining {
         $Variables.IdleRunspace.Close()
         If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
         $Variables.Remove("IdleRunspace")
-        Write-Message -Level Verbose "Stopped idle detection."
+        Write-Message -Level Verbose "Stopped idle detection." -Console
     }
 }
 
 Function Start-Mining { 
 
     If (-not $Variables.CoreRunspace) { 
-
-        If (-not $Variables.Summary) { $Variables.Summary = "Starting miner processes..." }
+        $Variables.Summary = "Starting mining processes..."
+        Write-Message -Level Info $Variables.Summary -Console
 
         $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
@@ -745,16 +727,17 @@ Function Start-Mining {
         $Variables.CoreRunspace = $CoreRunspace
         $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 
-        Write-Message -Level Verbose "Mining processes started." -Console
+        $Variables.Summary = "Mining processes are running."
+        Write-Host $Variables.Summary
     }
 }
 
 Function Stop-Mining { 
 
-    $Variables.Summary = "Stopping miner processes..."
-    Write-Message -Level Info $Variables.Summary
-
     If ($Variables.CoreRunspace) { 
+        $Variables.Summary = "Stopping mining processes..."
+        Write-Message -Level Info $Variables.Summary -Console
+
         ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
             $Miner.StopMining()
         }
@@ -764,10 +747,28 @@ Function Stop-Mining {
         $Variables.Remove("Timer")
         $Variables.Remove("CoreRunspace")
 
-        Write-Message -Level Verbose "Mining processes stopped." -Console
+        $Variables.Summary = "Mining processes stopped."
+        Write-Host $Variables.Summary
     }
-    $Variables.Summary = "Mining processes stopped."
+}
 
+
+Function Start-BrainJob { 
+
+    # Starts Brains if necessary
+    $JobNames = @()
+
+    $Config.PoolName | ForEach-Object { 
+        If (-not $Variables.BrainJobs.$_) { 
+            $BrainPath = "$($Variables.MainPath)\Brains\$(Get-PoolName $_)"
+            $BrainName = "$BrainPath\Brains.ps1"
+            If (Test-Path $BrainName -PathType Leaf) { 
+                $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
+                $JobNames += $_
+            }
+        }
+    }
+    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) for '$(($JobNames | Sort-Object) -join ", ")' running." }
 }
 
 Function Stop-BrainJob { 
@@ -777,16 +778,18 @@ Function Stop-BrainJob {
         [String[]]$Jobs = $Variables.BrainJobs.Keys
     )
 
-    $JobNames = @()
+    If ($Jobs) { 
+        $JobNames = @()
 
-    # Stop Brains if necessary
-    $Jobs | ForEach-Object { 
-        $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
-        $Variables.BrainJobs.Remove($_)
-        $JobNames += $_
+        # Stop Brains if necessary
+        $Jobs | ForEach-Object { 
+            $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
+            $Variables.BrainJobs.Remove($_)
+            $JobNames += $_
+        }
+
+        If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", ")) stopped." -Console }
     }
-
-    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Stopped Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", "))." }
 }
 
 Function Start-BalancesTracker { 
@@ -794,6 +797,9 @@ Function Start-BalancesTracker {
     If (-not $Variables.BalancesTrackerRunspace) { 
 
         Try { 
+            $Variables.Summary = "Starting Balances Tracker..."
+            Write-Message -Level Info $Variables.Summary -Console
+
             $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
             $BalancesTrackerRunspace.Open()
             $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
@@ -816,44 +822,13 @@ Function Start-BalancesTracker {
 Function Stop-BalancesTracker { 
 
     If ($Variables.BalancesTrackerRunspace) { 
+        $Variables.Summary += "\nStopping Balances Tracker..."
+        Write-Message -Level Info "Stopping Balances Tracker..." -Console
+
         $Variables.BalancesTrackerRunspace.Close()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
+
         $Variables.Remove("BalancesTrackerRunspace")
-        Write-Message "Stopped Balances Tracker."
-    }
-}
-
-Function Start-RigMonitor { 
-
-    If (-not $Variables.RigMonitorRunspace) { 
-
-        Try { 
-            $RigMonitorRunspace = [runspacefactory]::CreateRunspace()
-            $RigMonitorRunspace.Open()
-            $RigMonitorRunspace.SessionStateProxy.SetVariable('Config', $Config)
-            $RigMonitorRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $RigMonitorRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-            $PowerShell = [PowerShell]::Create()
-            $PowerShell.Runspace = $RigMonitorRunspace
-            $PowerShell.AddScript("$($Variables.MainPath)\Includes\RigMonitor.ps1")
-            $PowerShell.BeginInvoke()
-
-            $Variables.RigMonitorRunspace = $RigMonitorRunspace
-            $Variables.RigMonitorRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-        }
-        Catch { 
-            Write-Message -Level Error "Failed to start Rig Monitor [$Error[0]]."
-        }
-    }
-}
-
-Function Stop-RigMonitor { 
-
-    If ($Variables.RigMonitorRunspace) { 
-        $Variables.RigMonitorRunspace.Close()
-        If ($Variables.RigMonitorRunspace.PowerShell) { $Variables.RigMonitorRunspace.PowerShell.Dispose() }
-        $Variables.Remove("RigMonitorRunspace")
-        Write-Message "Stopped Rig Monitor."
     }
 }
 
@@ -878,7 +853,7 @@ Function Get-DefaultAlgorithm {
 
     # Try { 
     #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
-    #     $PoolsAlgos | ConvertTo-Json | Out-File ".\Config\PoolsAlgos.json" 
+    #     $PoolsAlgos | ConvertTo-Json | Out-File -FilePath ".\Config\PoolsAlgos.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
     # }
     # Catch { 
         If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType Leaf) { 
@@ -988,7 +963,7 @@ Function Write-Message {
 
                 $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-                "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding UTF8
+                "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8 -ErrorAction SilentlyContinue
                 $Mutex.ReleaseMutex()
             }
             Else { 
@@ -1085,11 +1060,11 @@ Function Receive-MonitoringData {
 Function Merge-Hashtable { 
     Param(
         [Parameter(Mandatory = $true)]
-        [Hashtable]$HT1,
+        [Hashtable]$HT1, 
         [Parameter(Mandatory = $true)]
-        [Hashtable]$HT2,
+        [Hashtable]$HT2, 
         [Parameter(Mandatory = $false)]
-        [Boolean]$Unique = $false,
+        [Boolean]$Unique = $false, 
         [Parameter(Mandatory = $false)]
         [String[]]$Replace = @() # Replace, not merge property
     )
@@ -1244,7 +1219,7 @@ Function Write-Config {
 
     Param(
         [Parameter(Mandatory = $true)]
-        [String]$ConfigFile,
+        [String]$ConfigFile, 
         [Parameter(Mandatory = $false)]
         [PSCustomObject]$NewConfig = $Config
     )
@@ -1256,9 +1231,6 @@ Function Write-Config {
 
 // $($Variables.CurrentProduct) will automatically add / convert / rename / update new settings when updating to a new version
 "
-
-    If ($Global:Config.ManualConfig) { Write-Message "Manual config mode - Not saving config"; Return }
-
     If (Test-Path $ConfigFile -PathType Leaf) { 
         Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
         Get-ChildItem -Path "$($ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse # Keep 10 backup copies
@@ -1269,7 +1241,7 @@ Function Write-Config {
     $SortedConfig.Keys | Where-Object { $_ -notlike "PoolsConfig" } | ForEach-Object { 
         $ConfigTmp[$_] = $SortedConfig.$_
     }
-    "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File $ConfigFile -Encoding UTF8 -Force
+    "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction Ignore
 }
 
 Function Get-SortedObject { 
@@ -1459,7 +1431,7 @@ Function Set-Stat {
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
         Disabled              = [Boolean]$Stat.Disabled
-    } | ConvertTo-Json | Set-Content $Path
+    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8 -ErrorAction SilentlyContinue
 
     $Stat
 }
@@ -2257,24 +2229,24 @@ Function Invoke-CreateProcess {
 
     Param (
         [Parameter(Mandatory = $true)]
-        [String]$BinaryPath,
+        [String]$BinaryPath, 
         [Parameter(Mandatory = $false)]
-        [String]$ArgumentList = $null,
+        [String]$ArgumentList = $null, 
         [Parameter(Mandatory = $false)]
         [String]$WorkingDirectory = "", 
         [Parameter(Mandatory = $false)]
         [ValidateRange(-2, 3)]
         [Int]$Priority = 0, # NORMAL
         [Parameter(Mandatory = $false)]
-        [String[]]$EnvBlock = "",
+        [String[]]$EnvBlock = "", 
         [Parameter(Mandatory = $false)]
         [String]$CreationFlags = 0x00000010, # CREATE_NEW_CONSOLE
         [Parameter(Mandatory = $false)]
-        [String]$MinerWindowStyle = "minimized",
+        [String]$MinerWindowStyle = "minimized", 
         [Parameter(Mandatory = $false)]
         [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
         [Parameter(Mandatory = $false)]
-        [String]$JobName,
+        [String]$JobName, 
         [Parameter(Mandatory = $false)]
         [String]$LogFile
     )
@@ -2581,6 +2553,9 @@ Function Initialize-Autoupdate {
         Write-Message -Level Warn "Balances & Earnings files are no longer compatible and will be reset."
     }
 
+    # Stop processes
+    $Variables.NewMiningStatus = "Idle"
+
     # Backup current version folder in zip file; exclude existing zip files and download folder
     "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!logs -x!cache -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
@@ -2600,8 +2575,8 @@ Function Initialize-Autoupdate {
 
     If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
         # Remove balances & earnings files that are no longer compatible
-        If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
-        If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+        If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue} }
+        If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
     }
 
     # Move data files from '\Logs' to '\Data'
@@ -2617,9 +2592,9 @@ Function Initialize-Autoupdate {
     # }
 
     # Empty folders
-    If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
-    If (Test-Path -Path ".\Pools") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
-    If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+    If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
+    If (Test-Path -Path ".\Pools") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
+    If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
 
     # Unzip in child folder excluding config
     "Unzipping update..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
@@ -2651,7 +2626,7 @@ Function Initialize-Autoupdate {
         }
         Else { 
             Copy-Item -Path $_ -Destination $DestPath -Force -ErrorAction Ignore
-            "Copied '$($_.Name)' to '$Destpath'." | Out-File -FilePath $UpdateLog -Append
+            "Copied '$($_.Name)' to '$Destpath'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue
         }
     }
 
@@ -2661,33 +2636,33 @@ Function Initialize-Autoupdate {
     # Post update actions
     If (Test-Path  -Path ".\OptionalMiners" -PathType Container) { 
         # Remove any obsolete Optional miner file (ie. not in new version OptionalMiners)
-        Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+        Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
         # Update Optional Miners to Miners If in use
-        Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append }
+        Get-ChildItem -Path ".\OptionalMiners" -File | Where-Object { $_.name -in (Get-ChildItem -Path ".\Miners" -File).name } | ForEach-Object { Copy-Item -Path $_.FullName -Destination ".\Miners" -Force; "Copied $($_.Name) to '.\Miners'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
     }
 
     # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
-    If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append } }
+    If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
 
     # Get all miner names and remove obsolete stat files from miners that no longer exist
     $MinerNames = @( )
     If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
     If (Test-Path -Path ".\OptionalMiners" -PathType Container) { Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
     If (Test-Path -Path ".\Stats" -PathType Container) { 
-        Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
-        Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append }
+        Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
+        Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
     }
 
     If ($ObsoleteStatFiles.Count -gt 0) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteStatFiles | ForEach-Object { 
             Remove-Item -Path $_ -Force
-            "Removed '$_'." | Out-File -FilePath $UpdateLog -Append
+            "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue
         }
     }
 
     # Remove temp files
-    "Removing temporary files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    "Removing temporary files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
     Remove-Item .\$UpdateFileName -Force -Recurse
     Remove-Item ".\$($UpdateFileName).zip" -Force
     If (Test-Path -Path ".\PreUpdateActions.ps1" -PathType Leaf) { 
@@ -2698,8 +2673,8 @@ Function Initialize-Autoupdate {
         Remove-Item ".\PostUpdateActions.ps1" -Force
         "Removed '.\PostUpdateActions.ps1'."
     }
-    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append }
-    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append }
+    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
+    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
 
     # Start new instance
     If ($UpdateVersion.RequireRestart -or $NemosMinerFileHash -ne (Get-FileHash ".\$($Variables.CurrentProduct).ps1").Hash) { 
@@ -2719,7 +2694,7 @@ Function Initialize-Autoupdate {
 
     $VersionTable = (Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json -AsHashtable
     $VersionTable | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force
-    $VersionTable | ConvertTo-Json | Out-File ".\Version.txt"
+    $VersionTable | ConvertTo-Json | Out-File -FilePath ".\Version.txt" -Force -Encoding utf8 -ErrorAction SilentlyContinue
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
@@ -2826,7 +2801,7 @@ Function Update-ConfigFile {
                 $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
         }
-        $PoolsConfig | ConvertTo-Json | Set-Content .\Config\PoolsConfig.json -Force
+        $PoolsConfig | ConvertTo-Json | Out-File -FilePath .\Config\PoolsConfig.json -Force -Encoding utf8 -ErrorAction SilentlyContinue
     }
 
     # Rename MPH to MiningPoolHub
@@ -2894,7 +2869,7 @@ Function Get-DAGsize {
     $Size -= $MIX_BYTES
     While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
 
-    Return $Size
+    Return [Int64]$Size
 }
 
 Function Out-DataTable { 
@@ -2929,7 +2904,11 @@ Function Out-DataTable {
 
     [CmdletBinding()]
     Param(
-        [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+        [Parameter(
+            Position = 0, 
+            Mandatory = $true, 
+            ValueFromPipeline = $true
+        )]
         [PSObject[]]$InputObject
     )
 

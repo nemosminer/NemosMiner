@@ -6,7 +6,7 @@
         <div id="watchdog" class="alert alert-info" role="alert"></div>
 
         <div id="toolbar">
-          <button id="resetwatchdog" class="btn btn-warning">Reset all watchdog timers</button>
+          <button id="removewatchdogs" class="btn btn-warning">Remove all watchdog timers</button>
         </div>
 
         <table id="watchdogtimers" class="table"
@@ -51,22 +51,22 @@
           $('#watchdogtimers').bootstrapTable({
             // refresh once per interval
             autoRefreshInterval: (parseInt(config.Interval)),
-            height: (($(window).height()) - $('h1').outerHeight(true) - 185) * 0.985 - 20,
+            height: ($(window).height()) - $('h1').outerHeight(true) - 210,
           })
 
           // Get watchdog expiry time
           $.ajax({
             url: '/watchdogexpiration',
             async: false,
-            success: function(result) {
-              $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + result + ").");
+            success: function(minutes) {
+              $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + formatTime(minutes) + ").");
             }
           });
 
-          $("#resetwatchdog").click(function () {
+          $("#removewatchdogs").click(function () {
             $command = '/functions/watchdogtimers/reset';
               $('.modal-body').load($command, function() {
-                $('.modal-title').text($('#resetwatchdog').text());
+                $('.modal-title').text($('#removewatchdogs').text());
                 $('#myModal').modal({show:true});
               });
               $('#watchdogtimers').bootstrapTable('refresh');

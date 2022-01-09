@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.13 (RC13)
-version date:   03 January 2022
+version:        4.0.0.14 (RC14)
+version date:   09 January 2022
 #>
 
 Set-Location ($args[0])
@@ -27,18 +27,21 @@ Set-Location ($args[0])
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-Function Get-Trendline{ 
-    Param($Data)
+Function Get-Trendline { 
+    Param(
+        $Data
+    )
+
     $n = $Data.count
     If ($n -le 1) { Return 0 }
     $SumX = 0
     $SumX2 = 0
     $SumXY = 0
     $SumY = 0
-    For ($i = 1; $i -le $n; $i++){ 
+    For ($i = 1; $i -le $n; $i++) { 
         $SumX += $i
-        $SumX2 += ([Math]::Pow($i, 2))
-        $SumXY += ($i) * ($Data[$i - 1])
+        $SumX2 += [Math]::Pow($i, 2)
+        $SumXY += $i * ($Data[$i - 1])
         $SumY += $Data[$i - 1]
     }
     $b = [math]::Round(($SumXY - $SumX * $SumY / $n) / ($SumX2 - $SumX * $SumX / $n), 15)
@@ -46,12 +49,13 @@ Function Get-Trendline{
     Return @($a, $b)
 }
 
-Function Get-Median{ 
+Function Get-Median { 
     Param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
         [Double[]]
         $Number
     )
+
     $NumberSeries += @()
     $NumberSeries += $Number
     $SortedNumbers = @($NumberSeries | Sort-Object)
@@ -98,7 +102,7 @@ While ($true){
     $RetryInterval = 0
 
     Try{ 
-        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }
+        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck
         If ($args[1] -match "Coins(|Plus)$"){ 
             $AlgoData = [PSCustomObject]@{ }
             $CurrenciesArray = @()
@@ -120,7 +124,7 @@ While ($true){
             }
         }
         Else{ 
-             $AlgoData = Invoke-RestMethod -Uri $PoolStatusUri -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }
+             $AlgoData = Invoke-RestMethod -Uri $PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck
         }
         $APICallFails = 0
     }
@@ -132,7 +136,7 @@ While ($true){
     ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)){ 
         If (-not $AlgoData.$Algo.currency){ 
             $Currencies = @($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
-            $Currency = If ($Currencies.Count -eq 1) { $Currencies.symbol } Else { ($Currencies | Sort-Object Estimate)[-1].Symbol }
+            $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
             $AlgoData.$Algo | Add-Member @{ currency = ($Currency -replace '-.+').Trim() }
         }
 
@@ -213,7 +217,10 @@ While ($true){
         }
     }
 
-    If ($EnableLog) { $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath }
+    If ($EnableLog) { 
+        $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath
+        $MathObject = @()
+    }
 
     $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object{ 
         If ([Double]($AlgoData.$_.actual_last24h_shared) -gt 0){ 
@@ -228,6 +235,5 @@ While ($true){
     # Limit to only sample size + 10 minutes min history
     $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinutes + 10)) }
 
-    $MathObject = @()
     Start-Sleep ($Interval + $RetryInterval - (Get-Date).Second)
 }

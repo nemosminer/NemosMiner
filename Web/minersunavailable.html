@@ -98,7 +98,7 @@
           $table.bootstrapTable({
             // refresh once per interval
             autoRefreshInterval: (parseInt(config.Interval)),
-            height: (($(window).height()) - $('h1').outerHeight(true) - 160) * 0.985 - 20
+            height: ($(window).height()) - $('h1').outerHeight(true) - 210,
           });
 
           if (config.CalculatePowerCost == true) {
