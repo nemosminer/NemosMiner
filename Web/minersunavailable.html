@@ -95,130 +95,132 @@
           $('#miners tr:eq(0) th:eq(12)').html("Profit (" + maincurrency + ")");
           $('#miners tr:eq(0) th:eq(13)').html("Power Cost (" + maincurrency + ")");
 
-          $table.bootstrapTable({
-            // refresh once per interval
-            autoRefreshInterval: (parseInt(config.Interval)),
-            height: ($(window).height()) - $('h1').outerHeight(true) - 210,
-          });
+          $(document).ready(function () {
+            $table.bootstrapTable({
+              // refresh once per interval
+              autoRefreshInterval: (parseInt(config.Interval)),
+              height: ($(window).height()) - $('h1').outerHeight(true) - 190,
+            });
 
-          if (config.CalculatePowerCost == true) {
-            $table.bootstrapTable('showColumn', 'Profit');
-            $table.bootstrapTable('showColumn', 'Profit_Bias');
-            $table.bootstrapTable('showColumn', 'PowerUsage');
-            $table.bootstrapTable('showColumn', 'PowerCost');
-          } else {
-            $table.bootstrapTable('hideColumn', 'Profit');
-            $table.bootstrapTable('hideColumn', 'Profit_Bias');
-            $table.bootstrapTable('hideColumn', 'PowerUsage');
-            $table.bootstrapTable('hideColumn', 'PowerCost');
-          }
-
-          $('#remove-watchdog').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
-              }
-              else {
-                $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#remove-watchdog').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
+            if (config.CalculatePowerCost == true) {
+              $table.bootstrapTable('showColumn', 'Profit');
+              $table.bootstrapTable('showColumn', 'Profit_Bias');
+              $table.bootstrapTable('showColumn', 'PowerUsage');
+              $table.bootstrapTable('showColumn', 'PowerCost');
+            } else {
+              $table.bootstrapTable('hideColumn', 'Profit');
+              $table.bootstrapTable('hideColumn', 'Profit_Bias');
+              $table.bootstrapTable('hideColumn', 'PowerUsage');
+              $table.bootstrapTable('hideColumn', 'PowerCost');
             }
-          });
 
-          $('#re-benchmark').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            $('#remove-watchdog').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#remove-watchdog').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#re-benchmark').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $('#re-measure').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            $('#re-benchmark').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#re-benchmark').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#re-measure').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $('#failed').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            $('#re-measure').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#re-measure').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#failed').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $('#disable').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
+            $('#failed').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#failed').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=-1';
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#disable').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $table.on('all.bs.table', function () {
-            try {
-              if ($table.bootstrapTable('getSelections').length >= 1) {
-                document.getElementById('re-benchmark').disabled = false;
-                document.getElementById('re-measure').disabled = false;
-                document.getElementById('remove-watchdog').disabled = false;
-                document.getElementById('disable').disabled = false;
-                document.getElementById('failed').disabled = false;
-              } else {
-                document.getElementById('re-benchmark').disabled = true;
-                document.getElementById('re-measure').disabled = true;
-                document.getElementById('remove-watchdog').disabled = true;
-                document.getElementById('disable').disabled = true;
-                document.getElementById('failed').disabled = true;
+            $('#disable').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')')
+                }
+                else {
+                  $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=-1';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#disable').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-            } catch {}
+            });
+
+            $table.on('all.bs.table', function () {
+              try {
+                if ($table.bootstrapTable('getSelections').length >= 1) {
+                  document.getElementById('re-benchmark').disabled = false;
+                  document.getElementById('re-measure').disabled = false;
+                  document.getElementById('remove-watchdog').disabled = false;
+                  document.getElementById('disable').disabled = false;
+                  document.getElementById('failed').disabled = false;
+                } else {
+                  document.getElementById('re-benchmark').disabled = true;
+                  document.getElementById('re-measure').disabled = true;
+                  document.getElementById('remove-watchdog').disabled = true;
+                  document.getElementById('disable').disabled = true;
+                  document.getElementById('failed').disabled = true;
+                }
+              } catch {}
+            });
           });
         </script>
 <!-- End of page scripts 'minersunavailable.html' -->

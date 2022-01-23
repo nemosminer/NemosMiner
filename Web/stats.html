@@ -67,52 +67,54 @@
         </div>
 <!-- Start of page scripts 'stats.html' -->
         <script type="text/javascript">
-          $("#showzerohashrateminers").on("click",function() {
-            $(".modal-body").load("functions/stat/get?Type=HashRate&Value=0", function() {
-              $(".modal-title").text($("#showzerohashrateminers").text());
-              $("#myModal").modal({show:true});
+          $(document).ready(function () {
+            $("#showzerohashrateminers").on("click",function() {
+              $(".modal-body").load("functions/stat/get?Type=HashRate&Value=0", function() {
+                $(".modal-title").text($("#showzerohashrateminers").text());
+                $("#myModal").modal({show:true});
+              });
             });
-          });
 
-          $("#resetzerohashrateminers").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=0", function() {
-              $(".modal-title").text($("#resetzerohashrateminers").text());
-              $("#myModal").modal({show:true});
+            $("#resetzerohashrateminers").on("click",function() {
+              $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=0", function() {
+                $(".modal-title").text($("#resetzerohashrateminers").text());
+                $("#myModal").modal({show:true});
+              });
             });
-          });
 
-          $("#showzeropowerusageminers").on("click",function() {
-            $(".modal-body").load("functions/stat/get?Type=PowerUsage&Value=0", function() {
-              $(".modal-title").text($("#showzeropowerusageminers").text());
-              $("#myModal").modal({show:true});
+            $("#showzeropowerusageminers").on("click",function() {
+              $(".modal-body").load("functions/stat/get?Type=PowerUsage&Value=0", function() {
+                $(".modal-title").text($("#showzeropowerusageminers").text());
+                $("#myModal").modal({show:true});
+              });
             });
-          });
 
-          $("#resetzeropowerusageminers").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=PowerUsage&Value=0", function() {
-              $(".modal-title").text($("#resetzeropowerusageminers").text());
-              $("#myModal").modal({show:true});
+            $("#resetzeropowerusageminers").on("click",function() {
+              $(".modal-body").load("functions/stat/remove?Type=PowerUsage&Value=0", function() {
+                $(".modal-title").text($("#resetzeropowerusageminers").text());
+                $("#myModal").modal({show:true});
+              });
             });
-          });
 
-          $("#resetallprofit").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=Profit", function() {
-              $(".modal-title").text($("#resetallprofit").text());
-              $("#myModal").modal({show:true});
+            $("#resetallprofit").on("click",function() {
+              $(".modal-body").load("functions/stat/remove?Type=Profit", function() {
+                $(".modal-title").text($("#resetallprofit").text());
+                $("#myModal").modal({show:true});
+              });
             });
-          });
 
-          $("#resetallbenchmarks").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=HashRate", function() {
-              $(".modal-title").text($("#resetallbenchmarks").text());
-              $("#myModal").modal({show:true});
+            $("#resetallbenchmarks").on("click",function() {
+              $(".modal-body").load("functions/stat/remove?Type=HashRate", function() {
+                $(".modal-title").text($("#resetallbenchmarks").text());
+                $("#myModal").modal({show:true});
+              });
             });
-          });
 
-          $("#resetallpowerusage").on("click",function() {
-            $(".modal-body").load("functions/stat/remove?Type=PowerUsage", function() {
-              $(".modal-title").text($("#resetallpowerusage").text());
-              $("#myModal").modal({show:true});
+            $("#resetallpowerusage").on("click",function() {
+              $(".modal-body").load("functions/stat/remove?Type=PowerUsage", function() {
+                $(".modal-title").text($("#resetallpowerusage").text());
+                $("#myModal").modal({show:true});
+              });
             });
           });
         </script>

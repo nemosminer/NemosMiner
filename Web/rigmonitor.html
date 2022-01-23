@@ -79,64 +79,73 @@
             $table.bootstrapTable("refresh");
           }, parseInt(config.Interval) * 1000 * 60);
 
-          // Get config file name
-          $.ajax({url: '/configfile',
-            success: function(result) {
-              $('#configfilename').text("Current configuration file: '" + result + "'");
+          $(document).ready(function () {
+            // Get config file name
+            $.ajax({url: '/configfile',
+              success: function(result) {
+                $('#configfilename').text("Current configuration file: '" + result + "'");
+              }
+            });
+
+            // Get current config
+            document.getElementById('ShowWorkerStatus').checked = config.ShowWorkerStatus;
+            if (config.ReportToServer) {
+              document.getElementById('ReportToServer').checked = true;
+              if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
+              else document.getElementById('workerlist').style.visibility="hidden";
             }
-          });
-
-          // Get current config
-          document.getElementById('ShowWorkerStatus').checked = config.ShowWorkerStatus;
-          if (config.ReportToServer) {
-            document.getElementById('ReportToServer').checked = true;
-            if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
             else document.getElementById('workerlist').style.visibility="hidden";
-          }
-          else document.getElementById('workerlist').style.visibility="hidden";
-          document.getElementById('MonitoringServer').value = config.MonitoringServer;
-          document.getElementById('MonitoringUser').value = config.MonitoringUser;
+            document.getElementById('MonitoringServer').value = config.MonitoringServer;
+            document.getElementById('MonitoringUser').value = config.MonitoringUser;
 
-          // Report to server stuff
-          document.getElementById('MonitoringServer').disabled = !(document.getElementById('ReportToServer').checked);
-          document.getElementById('MonitoringUser').disabled = !(document.getElementById('ReportToServer').checked);
-          document.getElementById('new-guid').disabled = !(document.getElementById('ReportToServer').checked);
-          document.getElementById('ShowWorkerStatus').disabled = !(document.getElementById('ReportToServer').checked);
-
-          $(document.getElementById('ReportToServer')).click(function (event) {
+            // Report to server stuff
             document.getElementById('MonitoringServer').disabled = !(document.getElementById('ReportToServer').checked);
             document.getElementById('MonitoringUser').disabled = !(document.getElementById('ReportToServer').checked);
             document.getElementById('new-guid').disabled = !(document.getElementById('ReportToServer').checked);
             document.getElementById('ShowWorkerStatus').disabled = !(document.getElementById('ReportToServer').checked);
-            if (document.getElementById('ShowWorkerStatus').checked == true) {
-              if (document.getElementById('ReportToServer').checked == true) document.getElementById('workerlist').style.visibility="visible";
-              else document.getElementById('workerlist').style.visibility="hidden";
-            };
-          });
 
-          $(document.getElementById('ShowWorkerStatus')).click(function (event) {
-            if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
-            else document.getElementById('workerlist').style.visibility="hidden";
-          });
-
-          $('#save-button').click(function () {
-            config.ReportToServer = document.getElementById('ReportToServer').checked;
-            if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
-            config.MonitoringServer = document.getElementById('MonitoringServer').value;
-            config.MonitoringUser = document.getElementById('MonitoringUser').value;
-            config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
-
-            //Write current config
-            var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
-            $('.modal-body').load($command, function() {
-              $('.modal-title').text($('#save-button').text());
-              $('#myModal').modal({show:true});
+            $(document.getElementById('ReportToServer')).click(function (event) {
+              document.getElementById('MonitoringUser').disabled = !(document.getElementById('ReportToServer').checked);
+              document.getElementById('new-guid').disabled = !(document.getElementById('ReportToServer').checked);
+              document.getElementById('ShowWorkerStatus').disabled = !(document.getElementById('ReportToServer').checked);
+              if (document.getElementById('ShowWorkerStatus').checked == true) {
+                if (document.getElementById('ReportToServer').checked == true) document.getElementById('workerlist').style.visibility="visible";
+                else document.getElementById('workerlist').style.visibility="hidden";
+              };
             });
-          });
 
-          //Get new guid
-          $('#new-guid').click(function () {
-            document.getElementById('MonitoringUser').value = createUUID();
+            $(document.getElementById('MonitoringServer')).change(function (event) {
+              document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '');
+              document.getElementById('MonitoringUser').disabled = (document.getElementById('MonitoringServer').value == '');
+              document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '');
+              document.getElementById('new-guid').disabled = (document.getElementById('MonitoringServer').value == '');
+              if (document.getElementById('MonitoringServer').value == '') document.getElementById('ReportToServer').checked = false;
+            });
+
+            $(document.getElementById('ShowWorkerStatus')).click(function (event) {
+              if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
+              else document.getElementById('workerlist').style.visibility="hidden";
+            });
+
+            $('#save-button').click(function () {
+              config.ReportToServer = document.getElementById('ReportToServer').checked;
+              if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
+              config.MonitoringServer = document.getElementById('MonitoringServer').value;
+              config.MonitoringUser = document.getElementById('MonitoringUser').value;
+              config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
+
+              //Write current config
+              var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+              $('.modal-body').load($command, function() {
+                $('.modal-title').text($('#save-button').text());
+                $('#myModal').modal({show:true});
+              });
+            });
+
+            //Get new guid
+            $('#new-guid').click(function () {
+              document.getElementById('MonitoringUser').value = createUUID();
+            });
           });
         </script>
 <!-- End of page scripts 'rigmonitor.html' -->

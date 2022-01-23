@@ -49,7 +49,7 @@
               <th data-field="Price" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day</th>
               <th data-field="Price_Bias" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">Bias BTC/GH/Day</th>
               <th data-field="StablePrice" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day (Week)</th>
-              <th data-field="MarginOfError" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2>MarginOfError</th>
+              <th data-field="Accuracy" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2>Accuracy</th>
               <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
               <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
               <th data-field="EstimateFactor" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2>Estimate Factor</th>
@@ -82,72 +82,74 @@
             $table.bootstrapTable('hideColumn', 'EstimateFactor');
           }
 
-          $('#reset-data').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Region: $element.Region})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+          $(document).ready(function () {
+            $('#reset-data').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Region: $element.Region})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#reset-data').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#reset-data').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $('#enable').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            $('#enable').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/pool/enable?Pools=' + encodeURIComponent($data);
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#enable').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/pool/enable?Pools=' + encodeURIComponent($data);
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#enable').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $('#disable').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            $('#disable').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/pool/disable?Pools=' + encodeURIComponent($data);
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#disable').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/pool/disable?Pools=' + encodeURIComponent($data);
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#disable').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $table.on('all.bs.table', function () {
-            try {
-              if ($table.bootstrapTable('getSelections').length >= 1) {
-                document.getElementById('reset-data').disabled = false;
-                document.getElementById('enable').disabled = false;
-                document.getElementById('disable').disabled = false;
-              } else {
-                document.getElementById('reset-data').disabled = true;
-                document.getElementById('enable').disabled = true;
-                document.getElementById('disable').disabled = true;
-              }
-            } catch {}
+            $table.on('all.bs.table', function () {
+              try {
+                if ($table.bootstrapTable('getSelections').length >= 1) {
+                  document.getElementById('reset-data').disabled = false;
+                  document.getElementById('enable').disabled = false;
+                  document.getElementById('disable').disabled = false;
+                } else {
+                  document.getElementById('reset-data').disabled = true;
+                  document.getElementById('enable').disabled = true;
+                  document.getElementById('disable').disabled = true;
+                }
+              } catch {}
+            });
           });
         </script>
 <!-- End of page scripts 'poolsbest.html' -->

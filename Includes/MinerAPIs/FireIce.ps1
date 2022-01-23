@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        4.0.0.14 (RC14)
-Version date:   09 January 2022
+Version:        4.0.0.15 (RC15)
+Version date:   22 January 2022
 #>
 
 class Fireice : Miner { 

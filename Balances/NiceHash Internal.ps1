@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash External.ps1
-Version:        4.0.0.14 (RC14)
-Version date:   09 January 2022
+Version:        4.0.0.15 (RC15)
+Version date:   22 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,9 +28,9 @@ $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty Ba
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "https://www.nicehash.com/my/miner/$Wallet"
-$Key = $Config.NicehashAPIKey
-$OrganizationID = $Config.NicehashOrganizationID
-$Secret = $Config.NicehashAPISecret
+$Key = $Config.NiceHashAPIKey
+$OrganizationID = $Config.NiceHashOrganizationID
+$Secret = $Config.NiceHashAPISecret
 
 Function Get-NiceHashRequest { 
     Param(
@@ -66,7 +66,7 @@ Function Get-NiceHashRequest {
 $RetryCount = 3
 $RetryDelay = 10
 
-While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Config.NicehashAPIKey -and $Config.NicehashAPISecret -and $Config.NicehashOrganizationID) { 
+While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and $Config.NiceHashAPISecret -and $Config.NiceHashOrganizationID) { 
     $RetryCount--
     Try { 
         $Method = "GET"

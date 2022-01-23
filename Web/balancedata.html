@@ -1,4 +1,4 @@
-﻿<!--#include file="/parts/head.html" -->
+<!--#include file="/parts/head.html" -->
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
           <h1 id="title" data-navbaractive="navbalancedata" class="h2">Balance Data</h1>
         </div>
@@ -56,41 +56,43 @@
           var $table = $('#balanceobjects');
           var $querysize = 16000;
 
-          $table.bootstrapTable({
-            height: ($(window).height()) - $('h1').outerHeight(true) - 210,
-          });
+          $(document).ready(function () {
+            $table.bootstrapTable({
+              height: ($(window).height()) - $('h1').outerHeight(true) - 210,
+            });
 
-          // refresh once per pool balance update interval
-          window.setInterval(function() { 
-            $table.bootstrapTable("refresh");
-          }, (parseInt(config.PoolBalancesUpdateInterval) * 1000 * 60));
+            // refresh once per pool balance update interval
+            window.setInterval(function() { 
+              $table.bootstrapTable("refresh");
+            }, (parseInt(config.PoolBalancesUpdateInterval) * 1000 * 60));
 
-          $('#remove-entry').click(function () {
-            var $data = $table.bootstrapTable('getSelections');
-            if ($data.length >= 1) {
-              $data = JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})));
-              if ($data.length >= $querysize) {
-                alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+            $('#remove-entry').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + '/' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#remove-entry').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
               }
-              else {
-                $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#remove-entry').text());
-                  $('#myModal').modal({show:true});
-                });
-                $table.bootstrapTable('refresh');
-              }
-            }
-          });
+            });
 
-          $('#balanceobjects').on('all.bs.table', function () {
-            try {
-              if ($('#balanceobjects').bootstrapTable('getSelections').length >= 1) {
-                document.getElementById('remove-entry').disabled = false;
-              } else {
-                document.getElementById('remove-entry').disabled = true;
-              }
-            } catch {}
+            $('#balanceobjects').on('all.bs.table', function () {
+              try {
+                if ($('#balanceobjects').bootstrapTable('getSelections').length >= 1) {
+                  document.getElementById('remove-entry').disabled = false;
+                } else {
+                  document.getElementById('remove-entry').disabled = true;
+                }
+              } catch {}
+            });
           });
         </script>
 <!-- End of page scripts 'balalancedata.html' -->

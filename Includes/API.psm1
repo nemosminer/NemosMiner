@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.14 (RC14)
-Version date:   09 January 2022
+Version:        4.0.0.15 (RC15)
+Version date:   22 January 2022
 #>
 
 Function Initialize-API { 
@@ -80,9 +80,9 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.0.0"
+    $APIVersion = "0.4.1.0"
 
-    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding UTF8 -Force }
+    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -135,10 +135,10 @@ Function Start-APIServer {
                 $Context = $Server.GetContext()
                 $Request = $Context.Request
 
-                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding UTF8 }
-
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
+
+                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)$($Request.Url.Query)" | Out-File $Config.APILogFile -Append -Encoding utf8 }
 
                 # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                 $Parameters = @{ }
@@ -159,7 +159,7 @@ Function Start-APIServer {
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path) { 
                     "/functions/api/stop" { 
-                        Stop-APIServer
+                        Return
                     }
                     "/functions/balancedata/remove" { 
                         If ($Parameters.Data) { 
@@ -239,6 +239,11 @@ Function Start-APIServer {
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
+                    "/functions/config/edit" { 
+                        $Data = Edit-File $Variables.ConfigFile
+                        $Data = "<pre>$Data</pre>"
+                        Break
+                    }
                     "/functions/config/set" { 
                         Try { 
                             Write-Config -ConfigFile $Variables.ConfigFile -NewConfig ($Key | ConvertFrom-Json)
@@ -276,6 +281,10 @@ Function Start-APIServer {
                             $Data = "Error saving config file`n'$($Variables.ConfigFile)'."
                         }
                         $Data = "<pre>$Data</pre>"
+                        Break
+                    }
+                    "/functions/file/edit" {
+                        $Data = Edit-File $Parameters.FileName
                         Break
                     }
                     "/functions/log/get" { 
@@ -387,45 +396,19 @@ Function Start-APIServer {
                             Break
                         }
                     }
-                    "/functions/poolsconfig/edit" {
-                        $PoolsConfigFileWriteTime = (Get-Item -Path $Variables.PoolsConfigFile -ErrorAction Ignore).LastWriteTime
-                        If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)"))) { 
-                            Notepad.exe $Variables.PoolsConfigFile
-                        }
-                        If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
-                            # Check if the window isn't already in foreground
-                            While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
-                                $FGWindowPid  = [IntPtr]::Zero
-                                [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
-                                $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
-                                If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
-                                    If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
-                                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
-                                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
-                                    }
-                                }
-                                Start-Sleep -MilliSeconds 100
-                            }
-                        }
-                        If ($PoolsConfigFileWriteTime -ne (Get-Item -Path $Variables.PoolsConfigFile -ErrorAction Ignore).LastWriteTime) { 
-                            $Data = "Saved '$(($Variables.PoolsConfigFile))'`nChanges will become active in next cycle."
-                            Write-Message -Level Verbose "Web GUI: Saved '$(($Variables.PoolsConfigFile))'. Changes will become active in next cycle." -Console
-                        }
-                        Else { 
-                            $Data = ""
-                        }
-                        Remove-Variable NotepadProcess, NotepadMainWindowHandle, PoolsConfigFileWriteTime -ErrorAction Ignore
+                    "/functions/poolsconfig/edit" { 
+                        $Data = Edit-File $Variables.PoolsConfigFile
                         Break
                     }
                     "/functions/stat/get" { 
-                        $TempStats = If ($Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) }
+                        $TempStats = If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) }
 
                         If ($TempStats) { 
                             If ($Parameters.Value -ne $null) { 
                                 $TempStats | Sort-Object Name | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
                                 If ($Parameters.Type -eq "Hashrate") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
                                 ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
-                                }
+                            }
                             Else { 
                                 $Data = $TempStats | ConvertTo-Json
                             }
@@ -443,7 +426,7 @@ Function Start-APIServer {
                                     $Data += "`n$($Stat_Name) ($($_.Region))"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Reason = [String[]]@()
-                                    $_.Price = $_.Price_Bias = $_.StablePrice = $_.MarginOfError = $_.EstimateFactor = [Double]::Nan
+                                    $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = $_.EstimateFactor = [Double]::Nan
                                     $_.Available = $true
                                     $_.Disabled = $false
                                 }
@@ -461,7 +444,6 @@ Function Start-APIServer {
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
                                     If ($_.Status -EQ [MinerStatus]::Running) { 
                                         $Variables.EndLoopTime = Get-Date # End loop immediately
-                                        $Variables.EndLoop = $true
                                     }
                                     If ($_.Earning -eq 0) { $_.Available = $true }
                                     $_.Earning_Accuracy = [Double]::NaN
@@ -503,7 +485,6 @@ Function Start-APIServer {
                                         $_.Activated = 0 # To allow 3 attempts
                                         If ($_.Status -EQ [MinerStatus]::Running) { 
                                             $Variables.EndLoopTime = Get-Date # End loop immediately
-                                            $Variables.EndLoop = $true
                                         }
                                     }
                                     $Stat_Name = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
@@ -519,7 +500,7 @@ Function Start-APIServer {
                             }
                             Break
                         }
-                        If ($Parameters.Value) { $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Minute -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) }
+                        If ($Parameters.Value) { $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) }
                         Else { $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ }) } 
                         If ($TempStats) {
                             $TempStats | Sort-Object Name | ForEach-Object { 
@@ -527,7 +508,8 @@ Function Start-APIServer {
                                 $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
                             }
                             Write-Message "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
-                            $Data += "`n`nRemoved $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" } with $($Parameters.Value)$($Parameters.Unit) $($Parameters.Type))."
+                            If ($Parameters.Type -eq "Hashrate") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
+                            ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
                         }
                         Else { 
                             $Data = "`nNo matching stats found."
@@ -579,6 +561,45 @@ Function Start-APIServer {
                         }
                         Else { 
                             $Data = $Variables.Keys | Sort-Object | ConvertTo-Json -Depth 1
+                        }
+                        Break
+                    }
+                    "/functions/watchdogtimers/remove" { 
+                        $Data = @()
+                        ForEach ($WatchdogTimer in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Miner suspended by watchdog (all algorithms)" })) {
+                                # Remove watchdog timers
+                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
+                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+
+                                # Update miner
+                                $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
+                                    If (-not $_.Reason) { $_.Available = $true }
+                                }
+                            }
+                        }
+                        ForEach ($WatchdogTimer in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Pool suspended by watchdog" })) {
+                                # Remove watchdog timers
+                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
+                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+
+                                # Update pool
+                                $Variables.Pools | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
+                                    If (-not $_.Reason) { $_.Available = $true }
+                                }
+                            }
+                        }
+                        If ($WatchdogTimers) { 
+                            $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
+                            Write-Message -Level Verbose "Web GUI: $Message" -Console
+                            $Data += "`n`n$Message"
+                        }
+                        Else { 
+                            $Data = "`nNo matching watchdog timers found."
                         }
                         Break
                     }
@@ -654,7 +675,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/devices/enabled" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.EnabledDevices | Select-Object)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Devices | Where-Object State -EQ "Enabled" | Select-Object)
                         Break
                     }
                     "/devices/disabled" { 
@@ -713,32 +734,6 @@ Function Start-APIServer {
                     }
                     "/miners" { 
                         $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, intervals | ForEach-Object { If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object Status, DeviceName, Name)
-                        Break
-                    }
-                    "/minersmin" { 
-                        # Remove as much data as possible. bootstrap table data-url='/miners' fails to process large datasets (approx. more than 1.4MB)
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, Intervals | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { 
-                            If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }
-                            $Pool = $_.Workers[0].Pool
-                            $_.Workers[0].PSObject.Properties.Remove("Disabled")
-                            $_.Workers[0].PSObject.Properties.Remove("Pool")
-                            $_.Workers[0].PSObject.Properties.Remove("TotalMiningDuration")
-                            $_.Workers[0].PSObject.Properties.Remove("Earning")
-                            $_.Workers[0].PSObject.Properties.Remove("Earning_Bias")
-                            $_.Workers[0].PSObject.Properties.Remove("Earning_Accuracy")
-                            $_.Workers[0] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
-                            If ($_.Workers[1]) { 
-                                $Pool = $_.Workers[1].Pool
-                                $_.Workers[1].PSObject.Properties.Remove("Disabled")
-                                $_.Workers[1].PSObject.Properties.Remove("Pool")
-                                $_.Workers[1].PSObject.Properties.Remove("TotalMiningDuration")
-                                $_.Workers[1].PSObject.Properties.Remove("Earning")
-                                $_.Workers[1].PSObject.Properties.Remove("Earning_Bias")
-                                $_.Workers[1].PSObject.Properties.Remove("Earning_Accuracy")
-                                $_.Workers[1] | Add-Member Pool @{ Name = $Pool.Name; Fee = $Pool.Fee }
-                            }
-                            $_
-                        } | Select-Object -Property * -ExcludeProperty Arguments, BeginTime, EndTime, Info, LastSample, ProcessID, StatEnd, StatStart, StatusMessage, Speed_Live, PowerUsage_Live, ReadPowerUsage, URI, WorkersRunning | Sort-Object Status, DeviceName, Name)
                         Break
                     }
                     "/miners/available" { 

@@ -1,17 +1,4 @@
 {
-  "AHashPool": {
-    "BalancesKeepAlive": 90, // Addresses without any mining activity and shares submitted for 90 days are considered inactive
-    "GuaranteedPayoutCurrencies": [
-      "BTC"
-    ],
-    "PayoutThreshold": {
-      "mBTC": 3
-    },
-    "PayoutCurrency": "BTC",
-    "Region": [
-      "US"
-    ]
-  },
   "BlockMasters": {
     "BalancesKeepAlive": 120, // Old accounts are purged every 120 Days
     "GuaranteedPayoutCurrencies": [
@@ -170,6 +157,7 @@
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "GuaranteedPayoutCurrencies": [
       "BCH",
+      "BNB",
       "BTC",
       "DASH",
       "DOGE",

@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.14 (RC14)
-version date:   09 January 2022
+version:        4.0.0.15 (RC15)
+version date:   22 January 2022
 #>
 
 Set-Location ($args[0])
@@ -79,25 +79,22 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-While ($true) { 
-    If (Test-Path ".\BrainConfig.xml") { 
-        $Config = Import-Clixml ".\BrainConfig.xml"
-        $SampleSizeMinutes = $Config.SampleSizeMinutes
-        $TrendSpanSizeMinutes = $Config.TrendSpanSizeMinutes
-        $SampleHalfPower = $Config.SampleHalfPower
-        $ManualPriceFactor = $Config.ManualPriceFactor
-        $Interval = $Config.Interval
-        $LogDataPath = $Config.LogDataPath
-        $TransferFile = $Config.TransferFile
-        $EnableLog = $Config.EnableLog
-        $PoolName = $Config.PoolName
-        $PoolStatusUri = $Config.PoolStatusUri
-        $PoolCurrenciesUri = $Config.PoolCurrenciesUri
-        $PerAPIFailPercentPenalty = $Config.PerAPIFailPercentPenalty
-        $AllowedAPIFailureCount = $Config.AllowedAPIFailureCount
-        $UseFullTrust = $Config.UseFullTrust
-    }
-    Else { Return }
+While (Test-Path ".\BrainConfig.xml") { 
+    $Config = Import-Clixml ".\BrainConfig.xml"
+    $SampleSizeMinutes = $Config.SampleSizeMinutes
+    $TrendSpanSizeMinutes = $Config.TrendSpanSizeMinutes
+    $SampleHalfPower = $Config.SampleHalfPower
+    $ManualPriceFactor = $Config.ManualPriceFactor
+    $Interval = $Config.Interval
+    $LogDataPath = $Config.LogDataPath
+    $TransferFile = $Config.TransferFile
+    $EnableLog = $Config.EnableLog
+    $PoolName = $Config.PoolName
+    $PoolStatusUri = $Config.PoolStatusUri
+    $PoolCurrenciesUri = $Config.PoolCurrenciesUri
+    $PerAPIFailPercentPenalty = $Config.PerAPIFailPercentPenalty
+    $AllowedAPIFailureCount = $Config.AllowedAPIFailureCount
+    $UseFullTrust = $Config.UseFullTrust
 
     $CurDate = (Get-Date).ToUniversalTime()
     $RetryInterval = 0
@@ -171,30 +168,6 @@ While ($true) {
                 }
             }
             $AlgoData.($Name) | Add-Member -Force @{ Plus_Price = $Price }
-
-            If ($EnableLog) { 
-                $MathObject += [PSCustomObject]@{ 
-                    Name         = $Name
-                    DriftAvg     = (($CurAlgoObject | Where-Object { $_.Name -eq $Name }).Last24DriftPercent | Measure-Object -Average).Average
-                    TimeSpan     = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).TimeSpan
-                    UpDriftAvg   = ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Avg
-                    DownDriftAvg = ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Avg
-                    Penalty      = $Penalty
-                    PlusPrice    = $Price
-                    PlusPriceRaw = [math]::max( 0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
-                    PlusPriceMax = $Price
-                    CurrentLive  = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current
-                    Current24hr  = ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h
-                    Date         = $CurDate
-                    LiveTrend    = $LiveTrend
-                    APICallFails = $APICallFails
-                }
-            }
-        }
-
-        If ($EnableLog) { 
-            $MathObject | Export-Csv -NoTypeInformation -Append $LogDataPath
-            $MathObject = @()
         }
 
         $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
@@ -205,7 +178,7 @@ While ($true) {
                 $AlgoData.PSObject.Properties.Remove($_)
             }
         }
-        ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Set-Content $TransferFile
+        ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
 
         # Limit to only sample size + 10 minutes min history
         $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinutes + 10)) }

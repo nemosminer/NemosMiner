@@ -7,6 +7,34 @@ Breaking changes (from main code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+Changelog NemosMiner 4.0.0.15 (RC15) 15.01.2022
+===============================================
+
+Core:
+- Fixed BalancesKeepAlive prioritizing incorrect pool
+- Merge 'Miners' & 'OptionalMiners' to 'Miners' folder
+- Minor code improvements
+
+Fixes:
+- PoolConfig for in NiceHash (Internal or External) not working for all config items
+
+Miner Updates:
+- Fix Ethash stratum for NiceHash
+- JayddeeCpu-v3.19.4
+- lolMiner-v1.42
+- TeamBlackMiner-v1.39
+
+Pool updates:
+- Brain jobs: Removed obsolete code
+- NiceHash: Resolve more Currency & CoinNames
+- Removed AHashPool (is dead since 01.01.2022)
+- Zergpool: Added 'BNB' as guaranteed payout currency
+
+
+Web GUI:
+- Config Editor: Regrouped config items, removed obsolete config items
+
+
 Changelog NemosMiner 4.0.0.14 (RC14) 09.01.2022
 ===============================================
 

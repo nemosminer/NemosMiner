@@ -56,22 +56,23 @@
         <script type="text/javascript">
           var $table = $('#switchinglog')
 
-          $table.bootstrapTable({
-            // refresh once per interval
-            autoRefreshInterval: (parseInt(config.Interval)),
-            height: ($(window).height()) - $('h1').outerHeight(true) - 210,
-          })
+          $(document).ready(function () {
+            $table.bootstrapTable({
+              // refresh once per interval
+              autoRefreshInterval: (parseInt(config.Interval)),
+              height: ($(window).height()) - $('h1').outerHeight(true) - 210,
+            })
 
-          $('#clear-log').click(function () {
-            $command = '/functions/switchinglog/clear';
-            $('.modal-body').load($command, function() {
-              $('.modal-title').text($('#clear-log').text());
-              $('#myModal').modal({show:true});
+            $('#clear-log').click(function () {
+              $command = '/functions/switchinglog/clear';
+              $('.modal-body').load($command, function() {
+                $('.modal-title').text($('#clear-log').text());
+                $('#myModal').modal({show:true});
+              });
+              $('#myModal').on('hidden.bs.modal', function () {
+                $table.bootstrapTable('refresh');
+              });
             });
-          });
-
-          $('#myModal').on('hidden.bs.modal', function () {
-              $table.bootstrapTable('refresh');
           });
         </script>
 <!-- End of page scripts 'switchinglog.html' -->

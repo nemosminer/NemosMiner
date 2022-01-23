@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.0.0.14 (RC14)
-Version date:   09 January 2022
+Version:        4.0.0.15 (RC15)
+Version date:   22 January 2022
 #>
 
 class NanoMiner : Miner { 
@@ -31,10 +31,6 @@ class NanoMiner : Miner {
             #Write config files. Do not overwrite existing files to preserve optional manual customization
             If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
                 $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
-            }
-            # Link to VertHash.dat file
-            If ($this.Name -like "NanoMiner*" -and $this.Workers.Pool.Algorithm -eq "VertHash" -and ((Get-Item "$(Split-Path $this.Path)\VertHash.dat" -ErrorAction Ignore).length -ne 1283457024) -and (Test-Path ".\Cache\VertHash.dat" -ErrorAction Ignore)) { 
-                New-Item -ItemType HardLink -Path "$(Split-Path $this.Path)\VertHash.dat" -Target ".\Cache\VertHash.dat" -ErrorAction Ignore | Out-Null
             }
         }
         Catch { 

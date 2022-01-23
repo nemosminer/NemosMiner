@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.14 (RC14)
-Version date:   09 January 2022
+Version:        4.0.0.15 (RC15)
+Version date:   22 January 2022
 #>
 
 # Window handling
@@ -129,7 +129,7 @@ Class Pool {
     [Double]$Price
     [Double]$Price_Bias
     [Double]$StablePrice
-    [Double]$MarginOfError
+    [Double]$Accuracy
 }
 
 Class Worker { 
@@ -541,7 +541,7 @@ Class Miner {
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
-                $_.Earning_Accuracy = [Double](1 - $_.Pool.MarginOfError)
+                $_.Earning_Accuracy = [Double](1 - $_.Pool.Accuracy)
                 $_.TotalMiningDuration = $Stat.Duration
                 $_.Disabled = $Stat.Disabled
                 $this.Earning += $_.Earning
@@ -658,7 +658,7 @@ namespace PInvoke.Win32 {
 '@
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..." -Console
+            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..." -Console
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
@@ -671,7 +671,7 @@ namespace PInvoke.Win32 {
                     $LabelMiningStatus.Text = "Idle | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
 
-                    Write-Message -Level Verbose "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" } )..."
+                    Write-Message -Level Verbose "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
                 }
                 # Check if system has been idle long enough to unpause
                 If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
@@ -768,7 +768,7 @@ Function Start-BrainJob {
             }
         }
     }
-    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) for '$(($JobNames | Sort-Object) -join ", ")' running." }
+    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' running." }
 }
 
 Function Stop-BrainJob { 
@@ -788,7 +788,7 @@ Function Stop-BrainJob {
             $JobNames += $_
         }
 
-        If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" } ) ($(($JobNames | Sort-Object) -join ", ")) stopped." -Console }
+        If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) ($(($JobNames | Sort-Object) -join ", ")) stopped." -Console }
     }
 }
 
@@ -812,6 +812,8 @@ Function Start-BalancesTracker {
 
             $Variables.BalancesTrackerRunspace = $BalancesTrackerRunspace
             $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+
+            Write-Host "Balances Tracker is running."
         }
         Catch { 
             Write-Message -Level Error "Failed to start Balances Tracker [$Error[0]]."
@@ -878,7 +880,7 @@ Function Get-Rate {
     # Read exchange rates from min-api.cryptocompare.com
     # Returned decimal values contain as many digits as the native currency
     Try { 
-        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } ) | Select-Object -Unique) -join ',')&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
+        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
             $Currencies = $Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name
             $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                 $Currency = $_
@@ -1238,10 +1240,49 @@ Function Write-Config {
 
     $SortedConfig = $NewConfig | Get-SortedObject
     $ConfigTmp = [Ordered]@{ }
-    $SortedConfig.Keys | Where-Object { $_ -notlike "PoolsConfig" } | ForEach-Object { 
+    $SortedConfig.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfig") } | ForEach-Object { 
         $ConfigTmp[$_] = $SortedConfig.$_
     }
     "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction Ignore
+}
+Function Edit-File { 
+
+    # Opens file in notepad. Notepad will remain in foreground until notepad is closed.
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String]$FileName
+    )
+
+    If ($FileWriteTime = (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
+        If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
+            Notepad.exe $FileName
+        }
+        If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
+            # Check if the window is not already in foreground
+            While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
+                $FGWindowPid  = [IntPtr]::Zero
+                [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
+                $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
+                If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
+                    If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
+                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
+                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                    }
+                }
+                Start-Sleep -MilliSeconds 100
+            }
+        }
+
+        If ($FileWriteTime -ne (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
+            Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle." -Console
+            Return "Saved '$(($FileName))'`nChanges will become active in next cycle."
+        }
+        Else { 
+            Return "No changes to '$(($FileName))' made."
+        }
+    }
+    Return "Cannot locate config file '$(($FileName))'."
 }
 
 Function Get-SortedObject { 
@@ -1343,14 +1384,17 @@ Function Set-Stat {
             }
         }
         Else { 
-            If ($Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
+            If ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value -gt 0) { 
                     If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "HashRate '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { "for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
+                        Write-Message -Level Warn "HashRate '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
                         Write-Message -Level Warn "Power usage for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($Value.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W)$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
+                }
+                Else {
+                    Start-Sleep 0
                 }
 
                 Remove-Stat -Name $Name
@@ -2489,25 +2533,26 @@ Function Get-NMVersion {
     Try { 
         # $UpdateVersion = Invoke-WebRequest -Uri "https://nemosminer.com/data/Initialize-Autoupdate.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
         $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
-    }
-    Catch { 
-    }
 
-    If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
-        If ($UpdateVersion.AutoUpdate -eq $true) { 
-            If ($Config.AutoUpdate) { 
-                Initialize-Autoupdate -UpdateVersion $UpdateVersion
+        If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
+            If ($UpdateVersion.AutoUpdate -eq $true) { 
+                If ($Config.AutoUpdate) { 
+                    Initialize-Autoupdate -UpdateVersion $UpdateVersion
+                }
+                Else { 
+                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Auto Update is disabled in config - You must update manually." -Console
+                }
             }
             Else { 
-                Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Auto Update is disabled in config - You must update manually."
+                Write-Message -Level Verbose "$($UpdateVersion.Product) $($UpdateVersion.Version) does not support auto-update. You must update manually." -Console
             }
         }
         Else { 
-            Write-Message -Level Verbose "$($UpdateVersion.Product) $($UpdateVersion.Version) does not support auto-update. You must update manually."
+            Write-Message -Level Verbose "Version checker: $($Variables.CurrentProduct) $($Variables.CurrentVersion) is current - no update available." -Console
         }
     }
-    Else { 
-        Write-Message -Level Verbose "Version checker: $($Variables.CurrentProduct) $($Variables.CurrentVersion) is current - no update available."
+    Catch { 
+        Write-Message -Level Warn "Version checker could not contact update server. $($Variables.CurrentProduct) will automatically retry with 24hrs." -Console
     }
 }
 
@@ -2719,7 +2764,7 @@ Function Start-LogReader {
             $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
             If (@($SnaketailMainWindowHandle).Count -eq 1) { 
                 [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 6) # HIDE 
-                [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 4) # SHOWNOACTIVATE 
+                [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 9) # RESTORE
             }
         }
         Else { 
@@ -2771,8 +2816,8 @@ Function Update-ConfigFile {
                 $Config.Wallets.BTC = $Config.$_
                 $Config.Remove($_)
             }
-            "WaitForMinerData" { $Config.WarmupTimes = @(0, $Config.$_); $Config.Remove($_) }
-            "WarmupTime" { $Config.WarmupTimes = @(0, $Config.$_); $Config.Remove($_) }
+            "WaitForMinerData" { $Config.Remove($_) }
+            "WarmupTime" { $Config.Remove($_) }
             Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config item
         }
     }
@@ -2827,6 +2872,9 @@ Function Update-ConfigFile {
         }
         Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration." -Console
     }
+
+    # Remove AHashPool
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
 
     $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile

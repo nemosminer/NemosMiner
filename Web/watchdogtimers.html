@@ -48,28 +48,30 @@
         </table>
 <!-- Start of page scripts 'watchdogtimers.html' -->
         <script type="text/javascript">
-          $('#watchdogtimers').bootstrapTable({
-            // refresh once per interval
-            autoRefreshInterval: (parseInt(config.Interval)),
-            height: ($(window).height()) - $('h1').outerHeight(true) - 210,
-          })
+          $(document).ready(function () {
+            $('#watchdogtimers').bootstrapTable({
+              // refresh once per interval
+              autoRefreshInterval: (parseInt(config.Interval)),
+              height: ($(window).height()) - $('h1').outerHeight(true) - 210,
+            })
 
-          // Get watchdog expiry time
-          $.ajax({
-            url: '/watchdogexpiration',
-            async: false,
-            success: function(minutes) {
-              $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + formatTime(minutes) + ").");
-            }
-          });
+            // Get watchdog expiry time
+            $.ajax({
+              url: '/watchdogexpiration',
+              async: false,
+              success: function(minutes) {
+                $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + formatTime(minutes) + ").");
+              }
+            });
 
-          $("#removewatchdogs").click(function () {
-            $command = '/functions/watchdogtimers/reset';
+            $("#removewatchdogs").click(function () {
+              $command = '/functions/watchdogtimers/reset';
               $('.modal-body').load($command, function() {
                 $('.modal-title').text($('#removewatchdogs').text());
                 $('#myModal').modal({show:true});
               });
               $('#watchdogtimers').bootstrapTable('refresh');
+            });
           });
         </script>
 <!-- End of page scripts 'watchdogtmiers.html' -->

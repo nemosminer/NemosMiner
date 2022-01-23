@@ -8,22 +8,25 @@
         </pre>
 <!-- Start of page scripts 'configrunning.html' -->
         <script type="text/javascript">
-          // Get config file names
-          $.ajax({
-            url: '/poolsconfigfile',
-            async: false,
-            success: function (result) {
-              poolsconfigfile = result;
-              $('#poolsconfigfilename').text("This is the full configuration NemosMiner is currently using (including 'PoolsConfig' built from the optional '" + poolsconfigfile + "' file)");
-            }
-          });
 
-          $(function() {
-            $.ajax({url: '/configrunning',
-              success: function(result) {
-                $("#configrunning").empty();
-                $("#configrunning").append(JSON.stringify(result, undefined, 4));
+          $(document).ready(function () {
+            // Get config file names
+            $.ajax({
+              url: '/poolsconfigfile',
+              async: false,
+              success: function (result) {
+                poolsconfigfile = result;
+                $('#poolsconfigfilename').text("This is the full configuration NemosMiner is currently using (including 'PoolsConfig' built from the optional '" + poolsconfigfile + "' file)");
               }
+            });
+
+            $(function() {
+              $.ajax({url: '/configrunning',
+                success: function(result) {
+                  $("#configrunning").empty();
+                  $("#configrunning").append(JSON.stringify(result, undefined, 4));
+                }
+              });
             });
           });
         </script>

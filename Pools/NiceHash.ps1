@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.14 (RC14)
-Version date:   09 January 2022
+Version:        4.0.0.15 (RC15)
+Version date:   22 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -48,10 +48,10 @@ $PoolConfig = $PoolsConfig.$PoolName
 $PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
-If ($Wallet) { 
+If ($true -or $Wallet) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
-        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
+        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" #-Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
+        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" #-Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
         $Request.miningAlgorithms | ForEach-Object { $Algo = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algo } } }
     }
     Catch { Return }
@@ -64,18 +64,20 @@ If ($Wallet) {
         $Algorithm = $_.Algorithm
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
-        $Currency = Switch ($Algorithm_Norm) {
-            "BeamHash3"         { "BEAM" }
-            "CuckooCycle"       { "AE" }
-            "Cuckaroo29"        { "XBG" }
-            "Cuckarood29"       { "MWC" }
-            "$Grin29_Algorithm" { "GRIN" }
-            "Eaglesong"         { "CKB" }
-            "EquihashR25x5x3"   { "BEAM" }
-            "Lbry"              { "LBC" }
-            "RandomX"           { "XMR" }
-            "Octopus"           { "CFX" }
-            Default             { "" }
+        $Currency = Switch -Regex ($Algorithm_Norm) {
+            "BeamHash3"                 { "BEAM" }
+            "CuckooCycle"               { "AE" }
+            "Cuckaroo29"                { "XBG" }
+            "Cuckarood29"               { "MWC" }
+            "^Cuckatoo31$|^Cuckatoo32$" { "GRIN" }
+            "Eaglesong"                 { "CKB" }
+            "EquihashR25x5x3"           { "BEAM" }
+            "EquihashBTG"               { "BTG" }
+            "KawPoW"                    { "RVN" }
+            "Lbry"                      { "LBC" }
+            "RandomX"                   { "XMR" }
+            "Octopus"                   { "CFX" }
+            Default                     { "" }
         }
 
         $Port = $_.algodetails.port
