@@ -65,7 +65,8 @@ If ($PoolConfig.UserName) {
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
                 "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-                "Skein" { $Current.host_list = $Current.host } # Error in API
+                "Lyra2v2"  { $Current.host_list = $Current.host } # Error in API
+                "Skein"    { $Current.host_list = $Current.host } # Error in API
                 "VertHash" { $Current.host_list = $Current.host } # Error in API
                 "Yescrypt" { $Current.host_list = $Current.host } # Error in API
                 # Default    { $Port = $Current.port }
