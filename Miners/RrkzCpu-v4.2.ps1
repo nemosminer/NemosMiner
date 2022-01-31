@@ -8,7 +8,7 @@ $Path = ".\Bin\$()$Name)\cpuminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.8.8 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.8.9 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo power2b" }
 )
 

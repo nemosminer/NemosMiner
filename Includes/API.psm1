@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.15 (RC15)
-Version date:   22 January 2022
+Version:        4.0.0.16 (RC16)
+Version date:   31 January 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.1.0"
+    $APIVersion = "0.4.2.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
 
@@ -287,6 +287,10 @@ Function Start-APIServer {
                         $Data = Edit-File $Parameters.FileName
                         Break
                     }
+                    "/functions/file/showcontent" {
+                        $Data = (Get-Content -Path $Parameters.FileName -Raw -ErrorAction Ignore)  -replace "(?<!\x0d)\x0a", "<br>"
+                        Break
+                    }
                     "/functions/log/get" { 
                         $Lines = If ([Int]$Parameters.Lines) { [Int]$Parameters.Lines } Else { 100 }
                         $Data = " $(Get-Content -Path $Variables.LogFile -Tail $Lines | ForEach-Object { "$($_)`n" } )"
@@ -343,7 +347,7 @@ Function Start-APIServer {
                                         $_.Reason += $Reason
                                         $_.Available = $false
                                     }
-                                    $Data += "`n$Algorithm@$PoolName ($((($Variables.Pools | Where-Object BaseName -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))"
+                                    $Data += "`n$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))"
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
@@ -379,7 +383,7 @@ Function Start-APIServer {
                                         $_.Reason = @($_.Reason | Where-Object { $_ -ne $Reason })
                                         If (-not $_.Reason) { $_.Available = $true }
                                     }
-                                    $Data += "`n$Algorithm@$PoolName ($((($Variables.Pools | Where-Object BaseName -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))"
+                                    $Data += "`n$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))"
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
@@ -420,9 +424,9 @@ Function Start-APIServer {
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Pools) { 
-                            If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Name, Region)) { 
+                            If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Currency, Name, Region)) { 
                                 $Pools | Sort-Object Name | ForEach-Object { 
-                                    $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($Currency) { "-$($Currency)" })"
+                                    $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                     $Data += "`n$($Stat_Name) ($($_.Region))"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Reason = [String[]]@()
@@ -430,7 +434,7 @@ Function Start-APIServer {
                                     $_.Available = $true
                                     $_.Disabled = $false
                                 }
-                                $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
+                                $Message = "Reset pool stats for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
                                 Write-Message -Level Verbose "Web GUI: $Message" -Console
                                 $Data += "`n`n$Message"
                             }
@@ -508,8 +512,9 @@ Function Start-APIServer {
                                 $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
                             }
                             Write-Message "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
-                            If ($Parameters.Type -eq "Hashrate") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
-                            ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                            If ($Parameters.Type -eq "Hashrate") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
+                            ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                            ElseIf ($Parameters.Type -eq "Profit") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" })." }
                         }
                         Else { 
                             $Data = "`nNo matching stats found."
@@ -568,7 +573,7 @@ Function Start-APIServer {
                         $Data = @()
                         ForEach ($WatchdogTimer in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
                             If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Miner suspended by watchdog (all algorithms)" })) {
-                                # Remove watchdog timers
+                                # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
 
@@ -581,7 +586,7 @@ Function Start-APIServer {
                         }
                         ForEach ($WatchdogTimer in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
                             If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Pool suspended by watchdog" })) {
-                                # Remove watchdog timers
+                                # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
 
@@ -804,9 +809,17 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 ($Variables.PoolsConfigFile)
                         Break
                     }
+                    "/pooldata" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.PoolData)
+                        break
+                    }
+                    "/pooldata" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.PoolData)
+                        break
+                    }
                     "/poolnames" { 
-                        $Data = ConvertTo-Json -Depth 10 @((Get-ChildItem -Path ".\Pools" -File).BaseName | Sort-Object -Unique)
-                        Break
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.PoolNames)
+                        break
                     }
                     "/pools" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Name, Algorithm)
@@ -847,6 +860,10 @@ Function Start-APIServer {
                     "/poolreasons" { 
                         $Data = ConvertTo-Json -Depth 10 @(($Variables.Pools | Where-Object Available -NE $true).Reason | Sort-Object -Unique)
                         Break
+                    }
+                    "/poolvariants" { 
+                        $Data = ConvertTo-Json -Depth 10 ($Variables.PoolVariants)
+                        break
                     }
                     "/rates" { 
                         $Data = ConvertTo-Json -Depth 10 ($Variables.Rates | Select-Object)

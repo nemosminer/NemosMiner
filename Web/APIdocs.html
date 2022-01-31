@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.0.15 (RC15)
-version date:   22 January 2022-->
+version:        4.0.0.16 (RC16)
+version date:   31 January 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.1.0)</h1>
+  <h1>NemosMiner API (version 0.4.2.0)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -151,6 +151,9 @@ version date:   22 January 2022-->
   <a href="http://localhost:3999/poolsconfig">/poolsconfig</a>
   <p>Shows the pool configuration entries.</p>
   <br>
+  <a href="http://localhost:3999/pooldata">/pooldata</a>
+  <p>Shows pool data.</p>
+  <br>
   <a href="http://localhost:3999/pools">/pools</a>
   <p>Shows all pool entries.</p>
   <br>
@@ -180,6 +183,9 @@ version date:   22 January 2022-->
   <br>
   <a href="http://localhost:3999/pools/lastused">/pools/lastused</a>
   <p>Date & time when pools were last used (data is stored in '\Data\PoolsLastUsed.json').</p>
+  <br>
+  <a href="http://localhost:3999/poolvariants">/poolvariants</a>
+  <p>Shows all pool variants (defined in '\Data\PoolConfig.json').</p>
   <br>
   <a href="http://localhost:3999/regions">/regions</a>
   <p>Shows the list of supported regions (defined in '\Data\Regions.json').</p>

@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.15 (RC15)
-Version date:   22 January 2022
+Version:        4.0.0.16 (RC16)
+Version date:   31 January 2022
 #>
 
 # Start transcript log
@@ -57,7 +57,7 @@ ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -D
     $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
     If ($Earnings.Count -gt $PoolData.Count / 2) { Break }
 }
-Remove-Variable Filename
+Remove-Variable FileName -ErrorAction Ignore
 
 While ($true) { 
 
@@ -92,12 +92,10 @@ While ($true) {
         # Read exchange rates
         $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
         $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique)) | Select-Object -Unique)
-        Get-Rate
+        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies -or $Config.BalancesTrackerPollInterval -lt 1 -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-3))) { Get-Rate }
 
         $BalanceObjects | Where-Object { $_.DateTime -gt $Now } | ForEach-Object { 
             $PoolBalanceObject = $_
-
-            $PoolConfig = $Config.PoolsConfig.($PoolBalanceObject.Pool)
 
             $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object DateTime)
 
@@ -105,15 +103,20 @@ While ($true) {
             $PayoutThresholdCurrency = $PoolBalanceObject.Currency
             $PayoutThreshold = $PoolBalanceObject.PayoutThreshold
 
-            If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency) }
+            If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
+            If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold.$PayoutThresholdCurrency) }
+            If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
 
             If (-not $PayoutThreshold -and $PoolBalanceObject.Currency -eq "BTC") { 
                 $PayoutThresholdCurrency = "mBTC"
-                $PayoutThreshold = [Double]($PoolConfig.PayoutThreshold.$PayoutThresholdCurrency)
+                $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency)
+                If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
+                If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold.$PayoutThresholdCurrency) }
+                If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
             }
 
             If (-not $PayoutThreshold) { 
-                $PayoutThreshold = If ($PoolConfig.PayoutThreshold."*" -like "* *") { [Double](($PoolConfig.PayoutThreshold."*" -split ' ' | Select-Object -Index 0) * $Variables.Rates.$PayoutThresholdCurrency.($PoolConfig.PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
+                $PayoutThreshold = If ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -like "* *") { [Double](($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 0) * $Variables.Rates.$PayoutThresholdCurrency.($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
             }
 
             If ($PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC -eq $true) { 
@@ -200,7 +203,7 @@ While ($true) {
                     }
                 }
                 Else { 
-                    # AHashPool, BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool
+                    # BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
                     # Current 'Unpaid' is smaller
                     If ($Delta -lt 0) { 
@@ -298,8 +301,6 @@ While ($true) {
                 $PoolTodayEarning.Payout = [Double]$PoolTodayEarning.Payout + [Double]$PoolBalanceObject.Payout
             }
             Else { 
-                $StartValue = If ($PoolTodayEarning) { [Double]$PoolTodayEarning.EndValue } Else { [Double]$EarningsObject.Earnings }
-
                 $Earnings += [PSCustomObject]@{ 
                     Date          = $Now.ToLocalTime().ToString("yyyy-MM-dd")
                     Pool          = $EarningsObject.Pool
@@ -307,7 +308,7 @@ While ($true) {
                     Wallet        = $PoolBalanceObject.Wallet
                     DailyEarnings = [Double]$GrowthToday
                     StartTime     = $Now.ToLocalTime().ToString("T")
-                    StartValue    = [Double]$StartValue
+                    StartValue    = If ($PoolTodayEarning) { [Double]$PoolTodayEarning.EndValue } Else { [Double]$EarningsObject.Earnings }
                     EndTime       = $Now.ToLocalTime().ToString("T")
                     EndValue      = [Double]$EarningsObject.Earnings
                     Balance       = [Double]$EarningsObject.Balance
@@ -340,7 +341,7 @@ While ($true) {
 
         # Fill dataset
         ForEach ($PoolEarnings in $ChartData) { 
-            $PoolChartData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object { 
+            $PoolChartData.PSObject.Properties.Name | ForEach-Object { 
                 $PoolChartData.$_ += ($PoolEarnings.Group | Where-Object Pool -EQ $_ | ForEach-Object { [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).BTC } | Measure-Object -Sum).Sum
             }
         }
@@ -380,6 +381,8 @@ While ($true) {
 
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue }
         $Variables.BalanceData = $AllBalanceObjects
+
+        If ($ReadBalances) { Return } # Debug stuff
 
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }

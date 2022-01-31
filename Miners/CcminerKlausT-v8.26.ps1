@@ -11,7 +11,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
     [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo lyra2v2" }
     [PSCustomObject]@{ Algorithm = "NeoScrypt"; MinMemGB = 2; MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest

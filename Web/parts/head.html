@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.1/bootstrap-table.min.css" integrity="sha512-lFGN3x4xygECLcf8l10RSIffeSDq1qAhTP8TDIL1ced1pnCY8+8A66dl3Xr6iKROeBPYzXTy3Kf/e1B1R6oT8Q==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.1/extensions/filter-control/bootstrap-table-filter-control.css" integrity="sha512-UvIZ/uxxxVzqs3x/n6L6kCMqMEkDat2cbNqa5/4yHaxPcoxganp4XwqQkclJ3kM38Iov7hChj3LH0WJtp6dRqA==" crossorigin="anonymous" />
 
-    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.css" integrity="sha512-4wfcoXlib1Aq0mUtsLLM74SZtmB73VHTafZAvxIp/Wk9u1PpIsrfmTvK0+yKetghCL8SHlZbMyEcV8Z21v42UQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/dashboard.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js" integrity="sha512-n/4gHW3atM3QqRcbCn6ewmpxcLAHGaDjpEBu4xZd47N0W2oQ+6q7oc3PXstrJYXcbNU1OHdQ1T7pAP+gi5Yu8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
@@ -26,6 +26,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" integrity="sha512-Tn2m0TIpgVyTzzvmxLNuqbSJH3JP8jm+Cy3hvHrW7ndTDcJ1w5mBiksqDBb8GpE2ksktFvDB/ykZ0mDpsZj20w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js" integrity="sha512-5vwN8yor2fFT9pgPS9p9R7AszYaNn0LkQElTXIsZFCL7ucT8zDCAqlQXDdaqgA1mZP47hdvztBMsIoFxq/FyyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js" integrity="sha512-TW5s0IT/IppJtu76UbysrBH9Hy/5X41OTAbQuffZFU6lQ1rdcLHzpU5BzVvr/YFykoiMYZVWlr/PX1mDcfM9Qg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js" integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg==" crossorigin="anonymous"></script>
 
@@ -63,26 +64,26 @@
       }
     });
 
-    // get BTC rate of first currency
-    $.ajax({
-      async: false,
-      dataType: 'json',
-      timeout: 10,
-      url: '/btc',
-      success: function(result) {
-        rate = result;
-
-        // set the values in the header
-        $(document).ready(function() {
-          updateHeader();
-        });
-        window.setInterval(function() { 
-          updateHeader();
-        }, 10000);
-      }
+    $(document).ready(function() {
+      // set the values in the header
+      updateHeader();
+      window.setInterval(function() { 
+        updateHeader();
+      }, 10000);
     });
 
     function updateHeader() {
+      // get BTC rate of first currency
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/btc',
+        success: function(result) {
+          rate = result;
+        }
+      });
+
       // get page header info
       $.ajax({
         async: false,
@@ -90,7 +91,7 @@
         timeout: 10,
         url: '/summary',
         success: function(result) {
-          $("#summary").empty().append('<h5>' + result + '</h5>');
+          $("#summary").empty().append(result);
         }
       });
 
@@ -140,7 +141,7 @@
         <button id="miningpause" class="btn btn-info btn-lg" disabled>Pause mining</button>
         <button id="miningstop" class="btn btn-danger btn-lg" disabled>Stop mining</button>
       </div>
-      <div class="d-flex align-items-center navbar-summary text-white" id="summary"></div>
+      <div class="justify-content-between navbar-summary" id="summary"></div>
     </nav>
 
     <div class="container-fluid">
@@ -151,12 +152,12 @@
               <li class="nav-item" title="Shows information about the running miners as well as the reported earning data">
                 <a id="navdashboard" class="nav-link" href="/">
                   <span data-feather="home"></span>
-                  <i class="fas fa-tachometer-alt" aria-hidden="true"></i> Dashboard
+                  <i class="fas fa-tachometer-alt" aria-hidden="true" style="margin-right:15px"></i>Dashboard
                 </a>
               </li>
               <li class="nav-item" title="Displays a bar graph of the reported earnings">
                 <a id="navearningschart" class="nav-link" href="earningschart.html">
-                  <i class="fas fa-chart-bar" aria-hidden="true"></i> Earnings Chart
+                  <i class="fas fa-chart-bar" aria-hidden="true" style="margin-right:15px"></i>Earnings Chart
                 </a>
               </li>
             </ul>
@@ -168,17 +169,17 @@
             <ul class="nav flex-column mb-2">
               <li class="nav-item" title="Shows a list of the miners that were calculated as the most profitable">
                 <a id="navminersmostprofitable" class="nav-link" href="minersmostprofitable.html">
-                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(48, 192, 48);"></i> Most Profitable Miners
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(48, 192, 48); margin-right:15px"></i>Most Profitable Miners
                 </a>
               </li>
               <li class="nav-item" title="Shows a list of all unavailable miners">
                 <a id="navminersunavailable" class="nav-link" href="minersunavailable.html">
-                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(224, 32, 32);"></i> Unavailable Miners
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(224, 32, 32); margin-right:15px"></i>Unavailable Miners
                 </a>
               </li>
               <li class="nav-item" title="Shows a list of all miners">
                 <a id="navminers" class="nav-link" href="miners.html">
-                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(0, 0, 0);"></i> All Miners
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(0, 0, 0); margin-right:15px"></i>All Miners
                 </a>
               </li>
             </ul>
@@ -190,17 +191,17 @@
             <ul class="nav flex-column mb-2">
               <li class="nav-item" title="Shows a list of the pools that were calculated as the most profitable">
                 <a id="navpoolsbest" class="nav-link" href="poolsbest.html">
-                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(48, 192, 48);"></i> Best Pools
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(48, 192, 48); margin-right:15px"></i>Best Pools
                 </a>
               </li>
               <li class="nav-item" title="Shows a list of all unavailable pools">
                 <a id="navpoolsunavailable" class="nav-link" href="poolsunavailable.html">
-                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(224, 32, 32);"></i> Unavailable Pools
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(224, 32, 32); margin-right:15px"></i>Unavailable Pools
                 </a>
               </li>
               <li class="nav-item" title="Shows a list of all pools">
                 <a id="navallpools" class="nav-link" href="pools.html">
-                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0);"></i> All Pools
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0); margin-right:15px"></i>All Pools
                 </a>
               </li>
             </ul>
@@ -212,27 +213,22 @@
             <ul class="nav flex-column mb-2">
               <li class="nav-item" title="Display and configure the devices (GPUs and CPUs)">
                 <a id="navdevices" class="nav-link" href="devices.html">
-                  <i class="fa fa-microchip" aria-hidden="true"></i> Devices
+                  <i class="fa fa-microchip" aria-hidden="true" style="margin-right:15px"></i>Devices
                 </a>
               </li>
               <li class="nav-item" title="Simple configuration editor&#10;Allows you to edit the most common configuration items">
                 <a id="navconfigedit" class="nav-link" href="configedit.html">
-                  <i class="fas fa-cogs" aria-hidden="true"></i> Edit Configuration
+                  <i class="fas fa-cogs" aria-hidden="true" style="margin-right:15px"></i>Edit Configuration
                 </a>
               </li>
               <li class="nav-item" title="View and reset common stat data">
                 <a id="navminerstats" class="nav-link" href="stats.html">
-                  <i class="fa fa-list-ul" aria-hidden="true"></i> Manage Stats
-                </a>
-              </li>
-              <li class="nav-item" title="Rig Monitor configuration & Rig status">
-                <a id="navrigmonitor" class="nav-link" href="rigmonitor.html">
-                  <i class="fas far fa-eye" aria-hidden="true"></i> Rig Monitor
+                  <i class="fa fa-list-ul" aria-hidden="true" style="margin-right:15px"></i>Manage Stats
                 </a>
               </li>
               <li class="nav-item" title="Edit the list of unprofitable algorithms">
                 <a id="navunprofitablealgorithms" class="nav-link" href="unprofitablealgorithms.html">
-                  <i class="fa fa-list-ol" aria-hidden="true"></i> Unprofitable Algorithms
+                  <i class="fa fa-list-ol" aria-hidden="true" style="margin-right:15px"></i>Unprofitable Algorithms
                 </a>
               </li>
             </ul>
@@ -242,29 +238,34 @@
             </h6>
 
             <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Rig Monitor configuration & Rig status">
+                <a id="navrigmonitor" class="nav-link" href="rigmonitor.html">
+                  <i class="fas far fa-eye" aria-hidden="true" style="margin-right:15px"></i> Rig Monitor
+                </a>
+              </li>
               <li class="nav-item" title="Lists the executed miners and the command lines used to do so (last 1000 entries)">
                 <a id="navswitchinglog" class="nav-link" href="switchinglog.html">
-                  <i class="fas fa-random" aria-hidden="true"></i> Switching Log
+                  <i class="fas fa-random" aria-hidden="true" style="margin-right:15px"></i>Switching Log
                 </a>
               </li>
               <li class="nav-item" title="Shows the last 40 lines of the NemosMiner log">
                 <a id="navtaillog" class="nav-link" href="logviewer.html">
-                  <i class="fa fa-align-left" aria-hidden="true"></i> System Log
+                  <i class="fa fa-align-left" aria-hidden="true" style="margin-right:15px"></i>System Log
                 </a>
               </li>
               <li class="nav-item" title="Shows the running configuration">
                 <a id="navconfigrunning" class="nav-link" href="configrunning.html">
-                  <i class="fas fa-running" aria-hidden="true"></i> Running Configuration
+                  <i class="fas fa-running" aria-hidden="true" style="margin-right:15px"></i>Running Configuration
                 </a>
               </li>
               <li class="nav-item" title="Displays the watchdog timers information">
                 <a id="navwatchdogtimers" class="nav-link" href="watchdogtimers.html">
-                  <i class="fas fa-dog" aria-hidden="true"></i> Watchdog Timers
+                  <i class="fas fa-dog" aria-hidden="true" style="margin-right:15px"></i>Watchdog Timers
                 </a>
               </li>
               <li class="nav-item" title="Shows the balance data that was collected by the balance tracker (last 30 days)">
                 <a id="navbalancedata" class="nav-link" href="balancedata.html">
-                  <i class="fas fa-money-bill-alt" aria-hidden="true"></i> Balance Data
+                  <i class="fas fa-money-bill-alt" aria-hidden="true" style="margin-right:15px"></i>Balance Data
                 </a>
               </li>
             </ul>
@@ -276,35 +277,35 @@
             <ul class="nav flex-column mb-2">
               <li class="nav-item" title="Open the NemosMiner homepage in a new browser window">
                 <a class="nav-link" href="https://nemosminer.com/" target="_blank">
-                  <i class="fa fa-external-link-alt" aria-hidden="true"></i> Website
+                  <i class="fa fa-external-link-alt" aria-hidden="true" style="margin-right:15px"></i>Website
                 </a>
               </li>
               <li class="nav-item" title="Open the NemosMiner repository on Github in a new browser window">
                 <a class="nav-link" href="https://github.com/Minerx117/NemosMiner/tree/testing" target="_blank">
-                  <i class="fab fa-github" aria-hidden="true"></i> Github
+                  <i class="fab fa-github" aria-hidden="true" style="margin-right:15px"></i>Github
                 </a>
               </li>
               <li class="nav-item" title="Open the NemosMiner API documentation in a new browser window">
                 <a class="nav-link" href="APIDocs.html" target="_blank">
-                  <i class="fa fa-book" aria-hidden="true"></i> API Documentation
+                  <i class="fa fa-book" aria-hidden="true" style="margin-right:15px"></i>API Documentation
                 </a>
               </li>
             </ul>
           </div>
         </nav>
-        <main role="main" class="main col-sm-12">
 
-        <div class="modal" id="myModal" role="dialog">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title"></h4>
-              </div>
-              <div class="modal-body">
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+        <main role="main" class="main col-sm-12">
+          <div class="modal" id="myModal" role="dialog">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>

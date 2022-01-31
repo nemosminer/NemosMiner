@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.15 (RC15)
-Version date:   22 January 2022
+Version:        4.0.0.16 (RC16)
+Version date:   31 January 2022
 #>
 
 [CmdletBinding()]
@@ -231,6 +231,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$WebGUI = $true, # If true launch Web GUI (recommended)
     [Parameter(Mandatory = $false)]
+    [Switch]$WebGUIUseColor = $true, # If true Miners in the Web GUI will be shown with colored background depending on status
+    [Parameter(Mandatory = $false)]
     [String]$WorkerName = "ID=$($env:computername)"
 )
 
@@ -332,13 +334,16 @@ If (-not $Variables.Regions) {
     Start-Sleep -Seconds 10
     Exit
 }
-# Verify pool data
-Try { [Void](Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) }
-Catch { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\PoolData.json' is not a valid JSON file. Please restore it from your original download." -Console
+# Load pool data
+$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Get-SortedObject
+$Variables.PoolNames = @($Variables.PoolData.Keys)
+$Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
+If (-not $Variables.PoolVariants) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\PoolData.json' is not a valid $($Variables.CurrentProduct) JSON data file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
+
 # Load PoolsLastUsed data
 Try { $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore) }
 Catch { $Variables.PoolsLastUsed = @{ } }
@@ -911,7 +916,7 @@ Function Global:TimerUITick {
             If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If (-not [Double]::IsNaN($_.Profit)) { ConvertTo-LocalCurrency -Value $_.Profit -Rate $Variables.Rates.BTC.($Config.Currency) -Offset 1 } Else { "Unknown" } }; Align = "right" } }
             If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
             If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ($Variables.PowerPricekWh -eq 0) { (0).ToString("N$(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -Offset 1)") } Else { If (-not [Double]::IsNaN($_.PowerUsage)) { "-$(ConvertTo-LocalCurrency -Value ($_.PowerCost) -Rate ($Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) -Offset 1)" } Else { "Unknown" } } }; Align = "right" } }
-            If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double](1 - $_) } }; Align = "right" } }
+            If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
             @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
             If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
             If ($Variables.ShowCurrency -and $Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { "$(If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency })" -replace '{, }' } } }
@@ -1015,7 +1020,7 @@ Function Global:TimerUITick {
             }
         }
 
-        $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceilmnprstuy]" } Else { "[abeilmnpsy]" })   |   Press 'h' for help"
+        $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceilmnprstuy]" } Else { "[abeilmnpsy]" })   |   Press 'h' for help"
         Write-Host ("-" * $StatusMessage.Length)
         Write-Host -ForegroundColor Yellow $StatusMessage
         Remove-Variable StatusMessage

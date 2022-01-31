@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.15 (RC15)
-Version date:   22 January 2022
+Version:        4.0.0.16 (RC16)
+Version date:   31 January 2022
 #>
 
 # Window handling
@@ -167,6 +167,7 @@ Class Miner {
     [UInt16]$Port
     [String[]]$DeviceName = @() # derived from devices
     [String[]]$Algorithm = @() # derived from workers
+    [String[]]$Pool = @() # derived from workers
     [Double[]]$Speed_Live = @()
 
     [Boolean]$Benchmark = $false # derived from stats
@@ -272,9 +273,9 @@ Class Miner {
     }
 
     hidden StartMining() { 
-        $this.Status = [MinerStatus]::Failed
+        $this.Status = [MinerStatus]::Idle
         $this.Info = "{$(($this.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
-        $this.StatusMessage = "Launched $($this.Info)"
+        $this.StatusMessage = "Starting $($this.Info)"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
         $this.Intervals = @()
@@ -322,18 +323,22 @@ Class Miner {
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
                     If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -eq "$($this.Path) $($this.GetCommandLineParameters())" }).ProcessId)) { 
+                        $this.StatusMessage = "Warming up $($this.Info)"
+                        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+                        $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+                        $this.StartDataReader()
+                        $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]::NaN })
+                        $this.WorkersRunning = $this.Workers
                         Break
                     }
                     Start-Sleep -Milliseconds 100
                 }
             }
-
-            $this.StatusMessage = "Warming up $($this.Info)"
-            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-            $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-            $this.StartDataReader()
-            $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]::NaN })
-            $this.WorkersRunning = $this.Workers
+            Else { 
+                $this.Status = [MinerStatus]::Failed
+                $this.StatusMessage = "Failed $($this.Info)"
+                $this.Devices | ForEach-Object { $_.Status = "Failed" }
+            }
         }
     }
 
@@ -371,8 +376,7 @@ Class Miner {
         $this.EndTime = (Get-Date).ToUniversalTime()
         If ($this.Status -eq [MinerStatus]::Running) { 
             Write-Message "Stopping miner '$($this.Name) $($this.Info)'..."
-            $this.StatusMessage = "Stopping..."
-            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+            $this.StatusMessage = "Stopping $($this.Info)"
         }
 
         # Stop Miner data reader
@@ -411,10 +415,17 @@ Class Miner {
         If ($this.Status -eq [MinerStatus]::Running) { 
             $this.Status = [MinerStatus]::Idle
             $this.StatusMessage = "Idle"
+            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         }
+        Else { 
+            $this.Status = [MinerStatus]::Failed
+            $this.StatusMessage = "Failed $($this.Info)"
+            $this.Devices | ForEach-Object { $_.Status = "Failed" }
+        }
+
         $this.Devices | ForEach-Object { 
             If ($_.State -eq [DeviceState]::Disabled) { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
-            Else { $_.Status = $this.StatusMessage }
+            Else { $_.Status = ($this.StatusMessage -replace " .*") }
         }
     }
 
@@ -541,7 +552,7 @@ Class Miner {
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
-                $_.Earning_Accuracy = [Double](1 - $_.Pool.Accuracy)
+                $_.Earning_Accuracy = [Double]$_.Pool.Accuracy
                 $_.TotalMiningDuration = $Stat.Duration
                 $_.Disabled = $Stat.Disabled
                 $this.Earning += $_.Earning
@@ -574,7 +585,7 @@ Class Miner {
             $this.Earning_Accuracy = [Double]::NaN
         }
         Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
-        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 1 }
+        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
@@ -907,6 +918,7 @@ Function Get-Rate {
             }
             Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
             $Variables.Rates = $Rates
+            $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
         }
         Else { 
             Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
@@ -933,20 +945,22 @@ Function Write-Message {
     Begin { }
     Process { 
 
-        If ((-not $Variables.LogFile) -or (-not $Config.LogToScreen) -or ($Level -in $Config.LogToScreen)) { 
-
+        If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
                 $Variables.LabelStatus.Lines += $Message
 
-                # Keep only 250 lines, more lines impact performance
-                $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 250)
+                # Keep only 100 lines, more lines impact performance
+                $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
 
                 $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
                 $Variables.LabelStatus.ScrollToCaret()
                 $Variables.LabelStatus.Refresh()
             }
+        }
 
+        If ($Console -and $Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
+            # Write to console
             Switch ($Level) { 
                 "Error"   { Write-Host $Message -ForegroundColor "Red" }
                 "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
@@ -955,7 +969,8 @@ Function Write-Message {
                 "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
             }
         }
-        If ($Variables.LogFile -and ((-not $Config.LogToFile) -or ($Level -in $Config.LogToFile))) { 
+
+        If ($Variables.LogFile -and $Config.LogToFile -and $Level -in $Config.LogToFile) { 
             # Get mutex named $($Variables.CurrentProduct)WriteLog. Mutexes are shared across all threads and processes. 
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, "$($Variables.CurrentProduct)WriteMessage")
@@ -1093,9 +1108,6 @@ Function Read-Config {
         [String]$ConfigFile
     )
 
-    If ($Global:Config -isnot [Hashtable]) { 
-        New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
-    }
     $Local:Config = $Global:Config
 
     # Load the configuration
@@ -1143,10 +1155,7 @@ Function Read-Config {
         If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Local:Config.$_ -isnot [Array]) { $Local:Config.$_ = @($Local:Config.$_ -replace " " -split ",") } # Enforce array
     }
 
-    # Load default pool data, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
-    $DefaultPoolData = [Ordered]@{ }
-    $Temp = Get-Content ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashtable -ErrorAction Ignore
-    $Temp.Keys | Sort-Object | ForEach-Object { $DefaultPoolData += @{ $_ = $Temp.$_ } }
+    $DefaultPoolData = $Variables.PoolData
 
     # Build custom pools configuation, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
@@ -1163,7 +1172,7 @@ Function Read-Config {
 
     # Build in memory pool config
     $PoolsConfig = [Ordered]@{ }
-    @(@(Get-PoolName (Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName) + @((Get-ChildItem -Path ".\Balances\*.ps1" -File).BaseName)) | Where-Object { $_ -ne "NiceHash" } | Sort-Object -Unique | ForEach-Object { 
+    (Get-ChildItem -Path ".\Pools\*.ps1" -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         If ($PoolConfig = $DefaultPoolData.$PoolName) { 
             # Merge default pool data with custom pool config
@@ -1186,15 +1195,13 @@ Function Read-Config {
                 "MiningPoolHub" { 
                     If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.MiningPoolHubUserName }
                 }
-                "NiceHash External" { 
-                    If (-not $Local:Config.NiceHashWalletIsInternal) { 
-                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
+                "NiceHash" { 
+                    If (-not $PoolConfig.Variant."Nicehash Internal".Wallets.BTC) { 
+                        If ($Local:Config.NiceHashWallet -and $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash Internal".Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
                     }
-                    If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.Wallets.BTC } }
-                }
-                "NiceHash Internal" { 
-                    If ($Local:Config.NiceHashWalletIsInternal -eq $true -and $Local:Config.NiceHashWallet) { 
-                        If (-not $PoolConfig.Wallets.BTC) { $PoolConfig.Wallets =[PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
+                    If (-not $PoolConfig.Variant."Nicehash External".Wallets.BTC) { 
+                        If ($Local:Config.NiceHashWallet -and -not $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash External".Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
+                        ElseIf ($Config.Wallets.BTC) { $PoolConfig.Variant."NiceHash External".Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.Wallets.BTC } }
                     }
                 }
                 "ProHashing" { 
@@ -1263,11 +1270,11 @@ Function Edit-File {
             While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
                 $FGWindowPid  = [IntPtr]::Zero
                 [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
-                $NotepadMainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
+                $MainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
                 If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
-                    If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
-                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
-                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                    If ([Win32]::GetForegroundWindow() -ne $MainWindowHandle) { 
+                        [Void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
+                        [Void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
                     }
                 }
                 Start-Sleep -MilliSeconds 100
@@ -2527,6 +2534,7 @@ Function Get-PoolName {
 
     $PoolNames -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
 }
+
 Function Get-NMVersion { 
 
     # Check if new version is available
@@ -2761,10 +2769,10 @@ Function Start-LogReader {
         $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
         If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
             # Activate existing Snaketail window
-            $SnaketailMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+            $MainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
             If (@($SnaketailMainWindowHandle).Count -eq 1) { 
-                [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 6) # HIDE 
-                [Void][Win32]::ShowWindowAsync($SnaketailMainWindowHandle, 9) # RESTORE
+                [Void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
+                [Void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
             }
         }
         Else { 
@@ -2850,12 +2858,8 @@ Function Update-ConfigFile {
     }
 
     # Rename MPH to MiningPoolHub
-    If ($Config.PoolName -contains @("MPH")) { 
-        $Config.PoolName = @($Config.PoolName | Where-Object { $_ -ne "MPH" }), "MiningPoolHub"
-    }
-    If ($Config.PoolName -contains @("MPHCoins")) { 
-        $Config.PoolName = $Config.PoolName | Where-Object { $_ -ne "MPHCoins" }, "MiningPoolHubCoins"
-    }
+    $Config.PoolName -replace "MPH", "MiningPoolHub"
+    $Config.PoolName -replace "MPHCoins", "MiningPoolHubCoins"
 
     # Available regions have changed
     If (-not (Get-Region $Config.Region -List)) { 

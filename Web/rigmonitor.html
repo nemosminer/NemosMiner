@@ -1,152 +1,151 @@
 <!--#include file="/parts/head.html" -->
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Monitoring Settings</h1>
-        </div>
-
-        <div id="configfilename" class="alert alert-info" role="alert"> </div>
-
-        <div  title="Tick to enable reporting rig status to monitoring server">
-          <input type="checkbox" id="ReportToServer" name="ReportToServer">
-          <label for="ReportToServer">Report to Monitoring Server</label>
-          <input title="Monitoring Server host name" type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
-        </div>
-
-        <div title="Monitoring userID &#10;must be identical on each monitored mining rig">
-          <label style="margin-left:20px" for="MonitoringUser">Monitoring UserID</label>
-          <input type="text" id="MonitoringUser" name="MonitoringUser" value="" pattern="[0-9A-Fa-f\-]{36}" size=36>
-          <button id="new-guid" class="btn btn-secondary" title="">Generate new UserID</button>
-        </div>
-        <div title="Show workers of other mining rigs &#10; `Report to Monitoring Server` must be enabled on these rigs&#10; using the same userID">
-          <input style="margin-left:20px" type="checkbox" id="ShowWorkerStatus" name="ShowWorkerStatus">
-          <label for="ShowWorkerStatus">Show other Rigs</label>
-        </div>
-        <br>
-
-        <button id="save-button" class="btn btn-success">Apply Configuration</button>
-        <br><br>
-
-        <div id="workerlist">
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Rig Monitor</h1>
+            <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Monitoring Settings</h1>
           </div>
 
-          <div class="alert alert-info" role="alert">Shows status of all reporting rigs</div>
+          <div id="configfilename" class="alert alert-info" role="alert"> </div>
 
-          <table id="workers" class="table"
-            data-icons="icons"
-            data-url="/displayworkers"
-            data-cache="false"
-            data-toggle="table"
-            data-show-button-text="true"
-            data-remember-order="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-detail-view="true"
-            data-show-refresh="true"
-            data-sort-name="LastSeen"
-            data-sort-order="desc"
-            data-click-to-select="true"
-            data-detail-formatter="detailFormatter"
-            >
+          <div  title="Tick to enable reporting rig status to monitoring server">
+            <input type="checkbox" id="ReportToServer" name="ReportToServer">
+            <label for="ReportToServer">Report to Monitoring Server</label>
+            <input title="Monitoring Server host name" type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
+          </div>
 
-            <thead>
-              <tr>
-                <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
-                <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
-                <th data-field="LastSeen" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatTimeSince">Last seen</th>
-                <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
-                <th data-field="Currency" data-sortable="true">Currency</th>
-                <th data-field="EstimatedEarning" data-sortable="true">Estimated earning/day</th>
-                <th data-field="EstimatedProfit" data-sortable="true">Estimated profit/day</th>
-                <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
-                <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
-                <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
-                <th data-field="Live Hashrate" data-sortable="true">Live Hashrate(s)</th>
-                <th data-field="Benchmark Hashrate" data-sortable="true">Benchmark Hashrate(s)</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
+          <div title="Monitoring userID &#10;must be identical on each monitored mining rig">
+            <label style="margin-left:20px" for="MonitoringUser">Monitoring UserID</label>
+            <input type="text" id="MonitoringUser" name="MonitoringUser" value="" pattern="[0-9A-Fa-f\-]{36}" size=36>
+            <button id="new-guid" class="btn btn-secondary" title="">Generate new UserID</button>
+          </div>
+          <div title="Show workers of other mining rigs &#10; `Report to Monitoring Server` must be enabled on these rigs&#10; using the same userID">
+            <input style="margin-left:20px" type="checkbox" id="ShowWorkerStatus" name="ShowWorkerStatus">
+            <label for="ShowWorkerStatus">Show other Rigs</label>
+          </div>
+          <br>
+
+          <button id="save-button" class="btn btn-success">Apply Configuration</button>
+          <br><br>
+
+          <div id="workerlist">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Rig Monitor</h1>
+            </div>
+
+            <div class="alert alert-info" role="alert">Shows status of all reporting rigs</div>
+
+            <table id="workers" class="table"
+              data-icons="icons"
+              data-url="/displayworkers"
+              data-cache="false"
+              data-toggle="table"
+              data-show-button-text="true"
+              data-filter-control="true"
+              data-disable-control-when-search="true"
+              data-show-search-clear-button="true"
+              data-show-columns="true"
+              data-show-toggle="true"
+              data-detail-view="true"
+              data-show-refresh="true"
+              data-sort-name="LastSeen"
+              data-sort-order="desc"
+              data-click-to-select="true"
+              data-detail-formatter="detailFormatter"
+              >
+
+              <thead>
+                <tr>
+                  <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
+                  <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
+                  <th data-field="LastSeen" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatTimeSince">Last seen</th>
+                  <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
+                  <th data-field="Currency" data-sortable="true">Currency</th>
+                  <th data-field="EstimatedEarning" data-sortable="true">Estimated earning/day</th>
+                  <th data-field="EstimatedProfit" data-sortable="true">Estimated profit/day</th>
+                  <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
+                  <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
+                  <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
+                  <th data-field="Live Hashrate" data-sortable="true">Live Hashrate(s)</th>
+                  <th data-field="Benchmark Hashrate" data-sortable="true">Benchmark Hashrate(s)</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
 <!-- Start of page scripts 'rigmonitor.html' -->
-        <script type="text/javascript">
-          var $table = $('#workers');
+          <script type="text/javascript">
+            var $table = $('#workers');
 
-          // refresh once per cycle
-          window.setInterval(function() { 
-            $table.bootstrapTable("refresh");
-          }, parseInt(config.Interval) * 1000 * 60);
+            // refresh once per cycle
+            window.setInterval(function() { 
+              $table.bootstrapTable("refresh");
+            }, parseInt(config.Interval) * 1000 * 60);
 
-          $(document).ready(function () {
-            // Get config file name
-            $.ajax({url: '/configfile',
-              success: function(result) {
-                $('#configfilename').text("Current configuration file: '" + result + "'");
+            $(document).ready(function () {
+              // Get config file name
+              $.ajax({url: '/configfile',
+                success: function(result) {
+                  $('#configfilename').text("Current configuration file: '" + result + "'");
+                }
+              });
+
+              // Get current config
+              document.getElementById('ShowWorkerStatus').checked = config.ShowWorkerStatus;
+              if (config.ReportToServer) {
+                document.getElementById('ReportToServer').checked = true;
+                if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
+                else document.getElementById('workerlist').style.visibility="hidden";
               }
-            });
-
-            // Get current config
-            document.getElementById('ShowWorkerStatus').checked = config.ShowWorkerStatus;
-            if (config.ReportToServer) {
-              document.getElementById('ReportToServer').checked = true;
-              if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
               else document.getElementById('workerlist').style.visibility="hidden";
-            }
-            else document.getElementById('workerlist').style.visibility="hidden";
-            document.getElementById('MonitoringServer').value = config.MonitoringServer;
-            document.getElementById('MonitoringUser').value = config.MonitoringUser;
+              document.getElementById('MonitoringServer').value = config.MonitoringServer;
+              document.getElementById('MonitoringUser').value = config.MonitoringUser;
 
-            // Report to server stuff
-            document.getElementById('MonitoringServer').disabled = !(document.getElementById('ReportToServer').checked);
-            document.getElementById('MonitoringUser').disabled = !(document.getElementById('ReportToServer').checked);
-            document.getElementById('new-guid').disabled = !(document.getElementById('ReportToServer').checked);
-            document.getElementById('ShowWorkerStatus').disabled = !(document.getElementById('ReportToServer').checked);
-
-            $(document.getElementById('ReportToServer')).click(function (event) {
+              // Report to server stuff
+              document.getElementById('MonitoringServer').disabled = !(document.getElementById('ReportToServer').checked);
               document.getElementById('MonitoringUser').disabled = !(document.getElementById('ReportToServer').checked);
               document.getElementById('new-guid').disabled = !(document.getElementById('ReportToServer').checked);
               document.getElementById('ShowWorkerStatus').disabled = !(document.getElementById('ReportToServer').checked);
-              if (document.getElementById('ShowWorkerStatus').checked == true) {
-                if (document.getElementById('ReportToServer').checked == true) document.getElementById('workerlist').style.visibility="visible";
+
+              $(document.getElementById('ReportToServer')).click(function (event) {
+                document.getElementById('MonitoringUser').disabled = !(document.getElementById('ReportToServer').checked);
+                document.getElementById('new-guid').disabled = !(document.getElementById('ReportToServer').checked);
+                document.getElementById('ShowWorkerStatus').disabled = !(document.getElementById('ReportToServer').checked);
+                if (document.getElementById('ShowWorkerStatus').checked == true) {
+                  if (document.getElementById('ReportToServer').checked == true) document.getElementById('workerlist').style.visibility="visible";
+                  else document.getElementById('workerlist').style.visibility="hidden";
+                };
+              });
+
+              $(document.getElementById('MonitoringServer')).change(function (event) {
+                document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '');
+                document.getElementById('MonitoringUser').disabled = (document.getElementById('MonitoringServer').value == '');
+                document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '');
+                document.getElementById('new-guid').disabled = (document.getElementById('MonitoringServer').value == '');
+                if (document.getElementById('MonitoringServer').value == '') document.getElementById('ReportToServer').checked = false;
+              });
+
+              $(document.getElementById('ShowWorkerStatus')).click(function (event) {
+                if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
                 else document.getElementById('workerlist').style.visibility="hidden";
-              };
-            });
+              });
 
-            $(document.getElementById('MonitoringServer')).change(function (event) {
-              document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '');
-              document.getElementById('MonitoringUser').disabled = (document.getElementById('MonitoringServer').value == '');
-              document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '');
-              document.getElementById('new-guid').disabled = (document.getElementById('MonitoringServer').value == '');
-              if (document.getElementById('MonitoringServer').value == '') document.getElementById('ReportToServer').checked = false;
-            });
+              $('#save-button').click(function () {
+                config.ReportToServer = document.getElementById('ReportToServer').checked;
+                if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
+                config.MonitoringServer = document.getElementById('MonitoringServer').value;
+                config.MonitoringUser = document.getElementById('MonitoringUser').value;
+                config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
 
-            $(document.getElementById('ShowWorkerStatus')).click(function (event) {
-              if (document.getElementById('ShowWorkerStatus').checked == true) document.getElementById('workerlist').style.visibility="visible";
-              else document.getElementById('workerlist').style.visibility="hidden";
-            });
+                //Write current config
+                var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+                $('.modal-body').load($command, function() {
+                  $('.modal-title').text($('#save-button').text());
+                  $('#myModal').modal({show:true});
+                });
+              });
 
-            $('#save-button').click(function () {
-              config.ReportToServer = document.getElementById('ReportToServer').checked;
-              if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
-              config.MonitoringServer = document.getElementById('MonitoringServer').value;
-              config.MonitoringUser = document.getElementById('MonitoringUser').value;
-              config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
-
-              //Write current config
-              var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
-              $('.modal-body').load($command, function() {
-                $('.modal-title').text($('#save-button').text());
-                $('#myModal').modal({show:true});
+              //Get new guid
+              $('#new-guid').click(function () {
+                document.getElementById('MonitoringUser').value = createUUID();
               });
             });
-
-            //Get new guid
-            $('#new-guid').click(function () {
-              document.getElementById('MonitoringUser').value = createUUID();
-            });
-          });
-        </script>
+          </script>
 <!-- End of page scripts 'rigmonitor.html' -->
 <!--#include file="/parts/foot.html" -->

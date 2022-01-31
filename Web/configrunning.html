@@ -1,34 +1,34 @@
 <!--#include file="/parts/head.html" -->
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 id="title" data-navbaractive="navconfigrunning" class="h2">Running Configuration</h1>
-        </div>
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 id="title" data-navbaractive="navconfigrunning" class="h2">Running Configuration</h1>
+          </div>
 
-        <div id="poolsconfigfilename" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
-        <pre id="configrunning">
-        </pre>
+          <div id="poolsconfigfilename" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
+          <pre id="configrunning">
+          </pre>
 <!-- Start of page scripts 'configrunning.html' -->
-        <script type="text/javascript">
+          <script type="text/javascript">
 
-          $(document).ready(function () {
-            // Get config file names
-            $.ajax({
-              url: '/poolsconfigfile',
-              async: false,
-              success: function (result) {
-                poolsconfigfile = result;
-                $('#poolsconfigfilename').text("This is the full configuration NemosMiner is currently using (including 'PoolsConfig' built from the optional '" + poolsconfigfile + "' file)");
-              }
-            });
-
-            $(function() {
-              $.ajax({url: '/configrunning',
-                success: function(result) {
-                  $("#configrunning").empty();
-                  $("#configrunning").append(JSON.stringify(result, undefined, 4));
+            $(document).ready(function () {
+              // Get config file names
+              $.ajax({
+                url: '/poolsconfigfile',
+                async: false,
+                success: function (result) {
+                  poolsconfigfile = result;
+                  $('#poolsconfigfilename').text("This is the full configuration NemosMiner is currently using (including 'PoolsConfig' built from the optional '" + poolsconfigfile + "' file)");
                 }
               });
+
+              $(function() {
+                $.ajax({url: '/configrunning',
+                  success: function(result) {
+                    $("#configrunning").empty();
+                    $("#configrunning").append(JSON.stringify(result, undefined, 4));
+                  }
+                });
+              });
             });
-          });
-        </script>
+          </script>
 <!-- End of page scripts 'configrunning.html' -->
 <!--#include file="/parts/foot.html" -->

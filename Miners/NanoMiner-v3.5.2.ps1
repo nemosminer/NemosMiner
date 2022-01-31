@@ -17,11 +17,11 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01; MinMemGB = 2;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";       Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "FIRO" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(75, 30); Coin = "RVN" } # TeamRed-v0.8.6 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(75, 30); Coin = "RVN" } # TeamRedMiner-v0.9.1 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "UBQ" } # PhoenixMiner-v5.9d is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "VTC" } # SRBMinerMulti-v0.8.8 is fastest
+    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "VTC" } # SRBMinerMulti-v0.8.9 is fastest
 
-    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(45, 0); Coin = "XMR" } # XmRig-v6.16.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(45, 0); Coin = "XMR" } # XmRig-v6.16.3 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(45, 0); Coin = "VRSC" }
 
     [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "ERG" } # Trex-v0.24.8 is fastest
@@ -47,7 +47,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }) { 
-                If ($AvailableMiner_Devices.Type -eq "AMD" -and $Pools.($_.Algorithm).DAGSize -gt 0 -and $AvailableMiner_Devices.OpenCL.Architecture -in @("gfx930", "gfx1010") -and $DriverVersion.CIM.AMD -ge "26.20.15015.1007") { Return } # Cannot buid binaries for gfx930, gfx1010
+                If ($AvailableMiner_Devices.Type -eq "AMD" -and $_.Algorithm -in @("EtcHash", "Ethash", "EthashLowMem", "FiroPoW", "UbqHash") -and $AvailableMiner_Devices.OpenCL.Architecture -in @("gfx930", "gfx1010") -and $DriverVersion.CIM.AMD -ge "26.20.15015.1007") { Return } # Cannot buid binaries for gfx930, gfx1010
                 If ($AvailableMiner_Devices.Type -eq "AMD" -and $_.Algorithm -eq "VertHash" -and $AvailableMiner_Devices.OpenCL.Architecture -in @("gfx1010") -and $DriverVersion.CIM.AMD -ge "26.20.15015.1007") { Return } # VertHash crashing on gfx1010
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '

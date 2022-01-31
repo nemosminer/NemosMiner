@@ -131,7 +131,7 @@ function formatHashRate(value) {
 
 function formatmBTC(value) {
   if (value == null) return ''
-  if (value > 0) return parseFloat(value * rate / 1000).toFixed(8);
+  if (value > 0) return parseFloat(value * rates / 1000).toFixed(8);
   if (value == 0) return (0).toFixed(8);
   if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
   return 'N/A';

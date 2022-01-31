@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.0.0.15 (RC15)
-Version date:   22 January 2022
+Version:        4.0.0.16 (RC16)
+Version date:   31 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,29 +28,27 @@ using module ..\Includes\Include.psm1
 param(
     [PSCustomObject]$Config,
     [PSCustomObject]$PoolsConfig,
+    [String]$PoolVariant,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = Get-PoolName $Name
-$PoolConfig = $PoolsConfig.$Name_Norm
-
-$HostSuffix = "mine.zpool.ca"
-# $PriceField = "Plus_Price"
-# $PriceField = "estimate_last24h"
-$PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
-
+$PoolConfig = $PoolsConfig.(Get-PoolName $Name)
+$PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
+$DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
 $PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
-If ($Wallet) { 
+If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
+
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name_Norm)\$($Name_Norm).json") -ErrorAction Stop | ConvertFrom-Json
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name)\$($Name).json") -ErrorAction Stop | ConvertFrom-Json
     }
     Catch { Return }
 
     If (-not $Request) { Return }
+
+    $HostSuffix = "mine.zpool.ca"
 
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $_
@@ -62,7 +60,7 @@ If ($Wallet) {
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         Try { $EstimateFactor = $Request.$_.actual_last24h / $Request.$_.$PriceField }
         Catch { $EstimateFactor = 1 }
@@ -71,13 +69,13 @@ If ($Wallet) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                Name                     = [String]$Name
-                BaseName                 = [String]$Name_Norm
+                Name                     = [String]$PoolVariant
+                BaseName                 = [String]$Name
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
-                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
                 Port                     = [UInt16]$PoolPort

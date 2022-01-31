@@ -1,6 +1,7 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1rem;
+  /* zoom: 0.9; */
 }
 
 .detail-icon:before {
@@ -10,27 +11,24 @@ body {
 .svg-inline--fa {
   width: 16px;
   height: 16px;
-  vertical-align: text-bottom;
-  margin-right: 1rem;
 }
 
 /*
  * Sidebar
  */
 .sidebar {
-  width: 250px;
+  width: 260px;
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 10; /* Behind the navbar */
   padding: 75px 0 0; /* Height of navbar */
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
 @media (min-width: 768px) {
   .main {
-    padding-right: 40px;
+    padding-right: 30px;
     padding-left: 290px;
   }
 }
@@ -38,12 +36,13 @@ body {
 .sidebar-sticky {
   position: relative;
   top: 0;
+  height: calc(110vh - 75px); zoom 0.9
   height: calc(100vh - 75px);
-  padding-top: 1.6rem;
+  padding-top: 1.5rem;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
   padding-bottom: 1.1rem;
-  padding-left: 1rem;
+  padding-left: 15px;
 }
 
 @supports ((position: -webkit-sticky) or (position: sticky)) {
@@ -55,11 +54,10 @@ body {
 
 .sidebar .nav-link {
   font-weight: 500;
-  color: #333;
+  color: black;
 }
 
 .sidebar .nav-link .feather {
-  margin-right: 4px;
   color: #999;
 }
 
@@ -100,17 +98,6 @@ body {
   font-size: 1.4rem;
 }
 
-.form-control-dark {
-  color: #fff;
-  background-color: rgba(255, 255, 255, .25);
-  border-color: rgba(255, 255, 255, .1);
-}
-
-.form-control-dark:focus {
-  border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
-}
-
 .navbar-button {
   position: absolute;
   left: 290px;
@@ -118,10 +105,12 @@ body {
 
 .navbar-summary {
   position: absolute;
-  padding-top: 1.6rem;
+  padding-top: 1.2rem;
   padding-bottom: 1.1rem;
   padding-right: 20px;
-  left: 800px;
+  left: 770px;
+  color: white;
+  font-size: 1.2rem;
 }
 
 /*
@@ -147,7 +136,7 @@ body {
 */
 .modal {
   padding: 1%;
-  top: 25%;
+  top: 20%;
   white-space: pre-wrap; /* allow \n for new line */
 }
 
@@ -156,12 +145,43 @@ body {
   max-width: fit-content;
 }
 
+.modal-dialog {
+  overflow-y: initial !important
+}
+
+.modal-body {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
 /*
 * Form
 */
 form .error {
   color: #ff0000;
   display: inline;
+}
+
+legend {
+  background-color: #d1ecf1;
+  padding: 3px 6px;
+  border-radius: 3px;
+}
+
+/*
+* Table colors
+*/
+.miner-disabled {
+  background-color: rgb(255, 241, 195);
+}
+.miner-failed {
+  background-color: rgb(255, 224, 224);
+}
+.miner-idle {
+  background-color: rgb(230, 248, 252);
+}
+.miner-running {
+  background-color: rgb(239, 250, 239);
 }
 
 /*

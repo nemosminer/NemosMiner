@@ -7,11 +7,40 @@ Breaking changes (from main code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
-Changelog NemosMiner 4.0.0.15 (RC15) 15.01.2022
+Changelog NemosMiner 4.0.0.16 (RC16) 31.01.2022
 ===============================================
 
 Core:
+- Unified pools, variants defined in PoolData.json
+
+Fixes:
+- '-Algorithm' in pool config not disabling pool 
+- Web GUI: Pools (All, Unavailable, Best) 'Reset pool stat data' not working for pools with currency
+
+Miner Updates:
+- SRBMinerMulti-v0.8.9
+- TeamBlackMiner-v1.47
+- XmRig-v6.16.3
+
+Pool Changes:
+- ZergPool (all variants): Exclude non-autotradable coins ('noautotrade=1) for which there is no payout wallet configured
+  Added more guaranteed payout currencies
+
+WebGUI:
+- Added config item 'WebGUIUseColor'. If true Miners in the Web GUI will be shown with colored background depending on status.
+- Config Editor: Regrouped config items, removed obsolete config items
+
+
+Changelog NemosMiner 4.0.0.15 (RC15) 22.01.2022
+===============================================
+
+BalancesTracker:
+- Make 'BalancesTrackerIgnorePool' dynamic
+
+Core:
+- Add CUDA Version to version info table
 - Fixed BalancesKeepAlive prioritizing incorrect pool
+- Fixed 'MinWorker = 0' (regression from 4.0.0.14, all pools with $null workers were marked as unavailable)
 - Merge 'Miners' & 'OptionalMiners' to 'Miners' folder
 - Minor code improvements
 
@@ -20,16 +49,17 @@ Fixes:
 
 Miner Updates:
 - Fix Ethash stratum for NiceHash
+- GMiner-v2.75
 - JayddeeCpu-v3.19.4
 - lolMiner-v1.42
-- TeamBlackMiner-v1.39
+- TeamBlackMiner-v1.43 (CUDA specific binaries)
+- TeamRedMiner-v0.9.1
 
 Pool updates:
 - Brain jobs: Removed obsolete code
 - NiceHash: Resolve more Currency & CoinNames
 - Removed AHashPool (is dead since 01.01.2022)
 - Zergpool: Added 'BNB' as guaranteed payout currency
-
 
 Web GUI:
 - Config Editor: Regrouped config items, removed obsolete config items

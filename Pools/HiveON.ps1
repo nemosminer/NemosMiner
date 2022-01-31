@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.0.15 (RC15)
-Version date:   22 January 2022
+Version:        4.0.0.16 (RC16)
+Version date:   31 January 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,12 +28,12 @@ using module ..\Includes\Include.psm1
 param(
     [PSCustomObject]$Config,
     [PSCustomObject]$PoolsConfig,
+    [String]$PoolVariant,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Name_Norm = Get-PoolName $Name
-$PoolConfig = $PoolsConfig.$Name_Norm
+$PoolConfig = $PoolsConfig.(Get-PoolName $Name)
 
 If ($PoolConfig.Wallets) { 
     Try { 
@@ -48,23 +48,24 @@ If ($PoolConfig.Wallets) {
         $Algorithm_Norm = Get-Algorithm $Currency
         $Divisor = [Double]$_.profitPerPower
         $Workers = $Request.stats.($_.name).workers
+        $_.Servers | ForEach-Object { $_.Region = $_.Region -replace 'all', 'N/A' }
 
-        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
         Try { $EstimateFactor = $Request.stats.($_.name).expectedReward24H / $Request.stats.($_.name).meanExpectedReward24H }
         Catch { $EstimateFactor = 1 }
 
-        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region } )) { 
+        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region -or  $_.Region -eq "N/A" } )) { 
             $Region_Norm = Get-Region $Server.Region
 
             [PSCustomObject]@{ 
-                Name                     = [String]$Name
-                BaseName                 = [String]$Name_Norm
+                Name                     = [String]$PoolVariant
+                BaseName                 = [String]$Name
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
-                MarginOfError            = [Double]$Stat.Week_Fluctuation
+                Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = [String]$Server.host
                 Port                     = [UInt16]$Server.ports[0]

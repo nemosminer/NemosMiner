@@ -1,99 +1,99 @@
 {
   "Currency": {
     "ETH": {
-      "BlockHeight": 14004603,
-      "DAGsize": 4982831488,
-      "Epoch": 466
+      "BlockHeight": 14111827,
+      "DAGsize": 5016386432,
+      "Epoch": 470
     },
     "EGEM": {
-      "BlockHeight": 9603502,
-      "DAGsize": 3758091136,
-      "Epoch": 320
+      "BlockHeight": 9721796,
+      "DAGsize": 3791650432,
+      "Epoch": 324
     },
     "CLO": {
-      "BlockHeight": 9097336,
-      "DAGsize": 3615488384,
-      "Epoch": 303
+      "BlockHeight": 9207499,
+      "DAGsize": 3640646528,
+      "Epoch": 306
     },
     "QKC": {
-      "BlockHeight": 8728180,
-      "DAGsize": 3506434432,
-      "Epoch": 290
+      "BlockHeight": 8871929,
+      "DAGsize": 3548380288,
+      "Epoch": 295
     },
     "ETHO": {
-      "BlockHeight": 8425103,
-      "DAGsize": 3422551936,
-      "Epoch": 280
+      "BlockHeight": 8532545,
+      "DAGsize": 3456104576,
+      "Epoch": 284
     },
     "MOAC": {
-      "BlockHeight": 8377342,
-      "DAGsize": 3414163072,
-      "Epoch": 279
+      "BlockHeight": 8487581,
+      "DAGsize": 3439328384,
+      "Epoch": 282
     },
     "ETC": {
-      "BlockHeight": 14332512,
-      "DAGsize": 3070228352,
-      "Epoch": 238
+      "BlockHeight": 14442159,
+      "DAGsize": 3087003776,
+      "Epoch": 240
     },
     "NUKO": {
-      "BlockHeight": 7109984,
-      "DAGsize": 3053452928,
-      "Epoch": 236
+      "BlockHeight": 7217546,
+      "DAGsize": 3087003776,
+      "Epoch": 240
     },
     "REOSC": {
-      "BlockHeight": 6850748,
-      "DAGsize": 2986338944,
-      "Epoch": 228
+      "BlockHeight": 6951500,
+      "DAGsize": 3011508352,
+      "Epoch": 231
     },
-    "ESN": {
-      "BlockHeight": 6330237,
+    "AKA": {
+      "BlockHeight": 6359122,
       "DAGsize": 2843734144,
       "Epoch": 211
     },
-    "AKA": {
-      "BlockHeight": 6250966,
-      "DAGsize": 2818571648,
-      "Epoch": 208
+    "ESN": {
+      "BlockHeight": 6331646,
+      "DAGsize": 2843734144,
+      "Epoch": 211
     },
     "ETP": {
-      "BlockHeight": 6149846,
-      "DAGsize": 2785017728,
-      "Epoch": 204
+      "BlockHeight": 6216356,
+      "DAGsize": 2810182016,
+      "Epoch": 207
     },
     "NILU": {
-      "BlockHeight": 6097793,
+      "BlockHeight": 6107491,
       "DAGsize": 2776625536,
       "Epoch": 203
     },
     "EXP": {
-      "BlockHeight": 5786975,
-      "DAGsize": 2684352896,
-      "Epoch": 192
+      "BlockHeight": 5842662,
+      "DAGsize": 2701130624,
+      "Epoch": 194
     },
     "ATH": {
-      "BlockHeight": 5164255,
-      "DAGsize": 2516582272,
-      "Epoch": 172
+      "BlockHeight": 5222887,
+      "DAGsize": 2533359232,
+      "Epoch": 174
     },
     "ERG": {
-      "BlockHeight": 663700,
+      "BlockHeight": 675773,
       "DAGsize": 1258290304,
       "Epoch": 22
     },
     "PGC": {
-      "BlockHeight": 4324614,
-      "DAGsize": 2281701248,
-      "Epoch": 144
+      "BlockHeight": 4369258,
+      "DAGsize": 2290086272,
+      "Epoch": 145
     },
     "UBQ": {
-      "BlockHeight": 1808137,
-      "DAGsize": 1577056384,
-      "Epoch": 60
+      "BlockHeight": 1873932,
+      "DAGsize": 1593831296,
+      "Epoch": 62
     },
     "DBIX": {
-      "BlockHeight": 1618979,
-      "DAGsize": 1518337664,
-      "Epoch": 53
+      "BlockHeight": 1635023,
+      "DAGsize": 1526726528,
+      "Epoch": 54
     },
     "ERE": {
       "BlockHeight": 484111,
@@ -101,16 +101,16 @@
       "Epoch": 16
     },
     "RVN": {
-      "BlockHeight": 2104409,
-      "DAGsize": 3422551936,
-      "Epoch": 280
+      "BlockHeight": 2128056,
+      "DAGsize": 3447714176,
+      "Epoch": 283
     },
     "*": {
-      "BlockHeight": 14332512,
-      "DAGsize": 4982831488,
-      "Epoch": 466
+      "BlockHeight": 14442159,
+      "DAGsize": 5016386432,
+      "Epoch": 470
     }
   },
-  "Updated_Minerstat": "2022-01-14T16:54:53.5019545Z",
-  "Updated_Ravencoin": "2022-01-14T16:54:53.8917714Z"
+  "Updated_Minerstat": "2022-01-31T05:52:43.9601252Z",
+  "Updated_Ravencoin": "2022-01-31T05:52:44.3343328Z"
 }
