@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $AvailableMiner_Devices = @($Devices | Where-Object Type -EQ "CPU")
 
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.4/cpuminer-opt-3.19.4-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.5/cpuminer-opt-3.19.5-windows.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 $DeviceEnumerator = "Type_Vendor_Index"

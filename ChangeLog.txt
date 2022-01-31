@@ -10,6 +10,19 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Changelog NemosMiner 4.0.0.16 (RC16) 31.01.2022
 ===============================================
 
+Fixes:
+- BalancesTracker not working on fresh balances dataset
+- Core: Not selecting most profitable miner in some scenarios (regression from 4.0.0.16)
+- Core: Benchmarking miners with 0 hashrate were not stopped (regression from 4.0.0.15)
+
+Miner updates:
+- JayddeeCpu-v3.19.5
+- T-Rex: Fixed mining @ MiningPoolHubCoins, fixed dual algorithm mining (invalid miner name)
+
+
+Changelog NemosMiner 4.0.0.16 (RC16) 31.01.2022
+===============================================
+
 Core:
 - Unified pools, variants defined in PoolData.json
 
@@ -29,7 +42,6 @@ Pool Changes:
 WebGUI:
 - Added config item 'WebGUIUseColor'. If true Miners in the Web GUI will be shown with colored background depending on status.
 - Config Editor: Regrouped config items, removed obsolete config items
-
 
 Changelog NemosMiner 4.0.0.15 (RC15) 22.01.2022
 ===============================================

@@ -28,6 +28,7 @@ using module .\Include.psm1
 $ProgressPreference = "SilentlyContinue"
 
 Function Start-Cycle { 
+Try { 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # Always get the latest config
@@ -560,6 +561,16 @@ Function Start-Cycle {
         # Get new miners
         If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners..." }
         Write-Message -Level Verbose "Loading miners..."
+
+        If ($ReadMiners) { 
+            $TmpMiners += Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $Variables.EnabledDevices; DriverVersion = $Variables.DriverVersion } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+        }
+        If ($ReadCustomMiners) { 
+            $TmpMiners += Get-ChildItemContent  ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $Variables.EnabledDevices; DriverVersion = $Variables.DriverVersion } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+        }
+        If ($ReadTempMiners) { 
+            $TmpMiners = Get-ChildItemContent ".\Miners_Dev" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $Variables.EnabledDevices; DriverVersion = $Variables.DriverVersion } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+        }
         $NewMiners_Jobs = @(
             Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $Variables.EnabledDevices; DriverVersion = $Variables.DriverVersion } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
             If (Test-Path -Path ".\CustomMiners\.ps1" -PathType Leaf) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Devices = $Variables.EnabledDevices; DriverVersion = $Variables.DriverVersion } -Threaded -Priority $(If ($Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
@@ -983,7 +994,6 @@ Function Start-Cycle {
     # Stop running miners
     ForEach ($Miner in @((@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -EQ "<=" } <# miner object is gone #>)))) { 
         If ($Miner.Status -eq [MinerStatus]::Failed) { 
-            $Miner.SetStatus([MinerStatus]::Failed) # Stop miner (may be set as failed in miner.refresh() because of 0 hash rate)
             $Miner.Info = ""
             $Miner.WorkersRunning = @()
         }
@@ -1115,11 +1125,16 @@ Function Start-Cycle {
     }
     Remove-Variable MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
 
+    If ($ReadBalances) { . .\Includes\BalancesTracker.ps1 }
+
     Get-Job -State "Completed" | Remove-Job -Force -ErrorAction Ignore
     Get-Job -State "Stopped" | Remove-Job -Force -ErrorAction Ignore
 
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
-
+}
+Catch {
+    Start-Sleep 0
+}
     $Error.Clear()
 }
 
@@ -1188,8 +1203,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         Break
                     }
                     ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds(3.5 * $Miner.DataCollectInterval) -lt (Get-Date).ToUniversalTime()) { 
-                        # Miner stuck - no sample 10 seconds
-                        Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' got stopped because it has not updated data for more than 10 seconds."
+                        # Miner stuck - no sample for > 3.5 * $Miner.DataCollectInterval seconds
+                        Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' got stopped because it has not updated data for more than $(3 * $Miner.DataCollectInterval) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
                         Break
                     }

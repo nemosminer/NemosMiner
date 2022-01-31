@@ -20,7 +20,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --algo kawpow --platform 2" } # XmRig-v6.16.3 is almost as fast but has no fee
  
     [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3.0; MinMemGBWin10 = 3.0;  MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo beamv3 --platform 1" }
-    [PSCustomObject]@{ Algorithm = "Cuckatoo32";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = 8.0; MinMemGBWin10 = 10.0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo cuckatoo32 --platform 1" }
     [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 6.0;  MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo cuckoo_ae --platform 1" } # GMiner-v2.75 is fastest
     [PSCustomObject]@{ Algorithm = "Ergo";         Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5.0; MinMemGBWin10 = 5.0;  MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo ergo --platform 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3.0; MinMemGBWin10 = 4.0;  MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo etchash --platform 1 --enable-dag-cache" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
@@ -39,7 +38,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
-            If ($Pools.($_.Algorithm[0]).DAGsize -gt 0 -and (($Miner_Devices.Model | Sort-Object -Unique) -join '' -match '^Radeon RX (5300|5500|5600|5700).*\d.*GB$')) { Return } # Ethash on Navi is slow
+            If ($Pools.($_.Algorithm).DAGsize -gt 0 -and (($Miner_Devices.Model | Sort-Object -Unique) -join '' -match '^Radeon RX (5300|5500|5600|5700).*\d.*GB$')) { Return } # Ethash on Navi is slow
 
             $MinComputeCapability = $_.MinComputeCapability
 

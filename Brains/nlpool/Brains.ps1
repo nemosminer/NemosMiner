@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.16 (RC16)
+version:        4.0.0.17 (RC17)
 version date:   31 January 2022
 #>
 

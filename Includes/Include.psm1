@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.16 (RC16)
+Version:        4.0.0.17 (RC17)
 Version date:   31 January 2022
 #>
 
@@ -374,7 +374,7 @@ Class Miner {
 
     hidden StopMining() { 
         $this.EndTime = (Get-Date).ToUniversalTime()
-        If ($this.Status -eq [MinerStatus]::Running) { 
+        If ($this.GetStatus() -eq [MinerStatus]::Running) { 
             Write-Message "Stopping miner '$($this.Name) $($this.Info)'..."
             $this.StatusMessage = "Stopping $($this.Info)"
         }
@@ -2581,7 +2581,7 @@ Function Initialize-Autoupdate {
     $NemosMinerFileHash = (Get-FileHash ".\$($Variables.CurrentProduct).ps1").Hash
 
     "Version checker: New version $($UpdateVersion.Version) found. " | Tee-Object $UpdateLog | Write-Message -Level Verbose
-    "Starting auto update - Logging changes to '$UpdateLog'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
+    "Starting auto update - Logging changes to '$($UpdateLog.Replace("$(Convert-Path '.\')\", ''))'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
 
     # Setting autostart to true
     If ($Variables.MiningStatus -eq [MinerStatus]::Running) { $Config.AutoStart = $true }
@@ -2645,6 +2645,7 @@ Function Initialize-Autoupdate {
     # }
 
     # Empty folders
+    If (Test-Path -Path ".\Balances") { Get-ChildItem -Path ".\Balances" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
     If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
     If (Test-Path -Path ".\Pools") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }
     If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue } }

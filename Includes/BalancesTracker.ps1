@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.16 (RC16)
+Version:        4.0.0.17 (RC17)
 Version date:   31 January 2022
 #>
 
@@ -109,7 +109,6 @@ While ($true) {
 
             If (-not $PayoutThreshold -and $PoolBalanceObject.Currency -eq "BTC") { 
                 $PayoutThresholdCurrency = "mBTC"
-                $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency)
                 If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
                 If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold.$PayoutThresholdCurrency) }
                 If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
@@ -365,7 +364,7 @@ While ($true) {
         If ($AllBalanceObjects.Count -gt 1) { 
             $AllBalanceObjects = @(
                 $AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays(-31) | Sort-Object DateTime | ForEach-Object { 
-                    If ($_.Delta -ne 0) { $_ } # keep with delta <> 0
+                    If ($_.Delta -ne 0 -or $_.DateTime.Date -eq $Now.Date) { $_ } # keep with delta <> 0
                     ElseIf ($Record -and $_.DateTime.Date -ne $Record.DateTime.Date) { $_ } # keep the newest one per day
                     $Record = $_
                 }
