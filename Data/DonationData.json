@@ -13,20 +13,6 @@
     },
     "MiningPoolHubUserName": "nemo"
   },
-  // {
-  //   "Name": "aaronsace",
-  //   "Wallets": {
-  //     "BTC": "1Q24z7gHPDbedkaWDTFqhMF8g7iHMehsCb"
-  //   },
-  //   "MiningPoolHubUserName": "aaronsace"
-  // },
-  // {
-  //   "Name": "grantemsley",
-  //   "Wallets": {
-  //     "BTC": "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"
-  //   },
-  //   "MiningPoolHubUserName": "grantemsley"
-  // },
   {
     "Name": "uselessguru",
     "Wallets": {

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.17 (RC17)
+Version:        4.0.0.18 (RC18)
 Version date:   31 January 2022
 #>
 
@@ -27,7 +27,7 @@ using module .\Include.psm1
 
 $ProgressPreference = "SilentlyContinue"
 
-Function Start-Cycle { 
+Function Core-Loop { 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # Always get the latest config
@@ -53,7 +53,7 @@ Function Start-Cycle {
 
         $Variables.CycleStarts += $Variables.Timer
         $Variables.CycleStarts = @($Variables.CycleStarts | Select-Object -Last (3, ($Config.SyncWindow + 1) | Measure-Object -Maximum).Maximum)
-        $Variables.SyncWindowDuration = (($Variables.CycleStarts | Select-Object -Last 1) - ($Variables.CycleStarts | Select-Object -Index 0))
+        $Variables.SyncWindowDuration = (($Variables.CycleStarts | Select-Object -Last 1) - ($Variables.CycleStarts | Select-Object -First 1))
 
         # Set minimum Watchdog minimum count 3
         $Variables.WatchdogCount = (3, $Config.WatchdogCount | Measure-Object -Maximum).Maximum
@@ -176,7 +176,7 @@ Function Start-Cycle {
                 # Add pool config to config (in-memory only)
                 $Variables.DonateRandom = $Variables.DonationData | Get-Random
                 $Variables.DonatePoolsConfig = [Ordered]@{ }
-                Get-PoolName ((Get-ChildItem .\Pools\*.ps1 -File).BaseName -replace "NiceHash", "NiceHash External") | Sort-Object -Unique | ForEach-Object { 
+                (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
                     $PoolConfig = [PSCustomObject]@{ }
                     $PoolConfig | Add-Member EarningsAdjustmentFactor 1
                     $PoolConfig | Add-Member Region ($Config.PoolsConfig.$_.Region)
@@ -663,7 +663,7 @@ Function Start-Cycle {
             }
             If ($Miner.ReadPowerUsage -eq $true -and ($Stat.Updated -gt $Miner.StatStart -or $Miner.Activatd -gt $Variables.WatchdogCount)) { 
                 If ([Double]::IsNaN($PowerUsage)) { $PowerUsage = 0 }
-                $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage"
+                $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage"
                 $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                 If ($Stat.Updated -gt $Miner.StatStart) { 
                     Write-Message "Saved power usage for '$($Stat_Name -replace '_PowerUsage$')': $($Stat.Live.ToString("N2"))W$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
@@ -687,7 +687,7 @@ Function Start-Cycle {
         $NewMiners_Jobs | ForEach-Object { $_ | Get-Job -ErrorAction Ignore | Wait-Job -Timeout 60 | Receive-Job } | Where-Object { $_.Content.API } | ForEach-Object { 
             [PSCustomObject]@{ 
                 Name        = [String]$_.Content.Name
-                BaseName    = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
+                BaseName    = [String]($_.Content.Name -split '-' | Select-Object -First 1)
                 Version     = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
                 Path        = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
                 Algorithm   = [String[]]$_.Content.Algorithm
@@ -712,7 +712,7 @@ Function Start-Cycle {
     $CompareMiners = Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Arguments, Name, Pool -IncludeEqual
     # Remove gone miners
     $Miners = $CompareMiners | Where-Object SideIndicator -NE "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
- 
+
     If ($Miners) { 
         $Miners | Select-Object | ForEach-Object { 
             $_.Restart = $false
@@ -895,7 +895,7 @@ Function Start-Cycle {
                     }
                 }
             )
-            $Variables.BestMiners_Combo = @($Variables.BestMiners_Combos | Sort-Object -Descending { @($_.Combination | Where-Object { [Double]::IsNaN($_.$SortBy) }).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.$Sortby -ne 0 } | Measure-Object).Count } | Select-Object -Index 0 | Select-Object -ExpandProperty Combination)
+            $Variables.BestMiners_Combo = @($Variables.BestMiners_Combos | Sort-Object -Descending { @($_.Combination | Where-Object { [Double]::IsNaN($_.$SortBy) }).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.$Sortby -ne 0 } | Measure-Object).Count } | Select-Object -First 1 | Select-Object -ExpandProperty Combination)
             Remove-Variable Miner_Device_Combo, Miner_Device_Count, Miner_Device_Regex -ErrorAction Ignore
 
             # Hack part 2: reverse temporarily forced positive bias
@@ -1126,7 +1126,7 @@ Function Start-Cycle {
 Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
 
 While ($Variables.NewMiningStatus -eq "Running") { 
-    Start-Cycle
+    Core-Loop
 
     $Variables.RefreshNeeded = $true
 
@@ -1156,9 +1156,6 @@ While ($Variables.NewMiningStatus -eq "Running") {
             [Void][Win32]::SetWindowText((Get-Process -Id $Miner.ProcessId -ErrorAction Ignore).mainWindowHandle, $WindowTitle)
             Remove-Variable WindowTitle
 
-            If ($GetMinerData) { 
-                $Miner.GetMinerData()
-            }
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 # Miner crashed
                 Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."

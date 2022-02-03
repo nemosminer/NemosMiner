@@ -114,6 +114,9 @@
   "NiceHash": {
     "BalancesKeepAlive": 180, // Your NiceHash Account may be deactivated due to your inactivity
     "EarningsAdjustmentFactor": 1.0, // NiceHash earnings estimates are always correct
+    "GuaranteedPayoutCurrencies": [
+      "BTC" // Required here for donation
+    ],
     "Region": [
       "eu-west",
       "eu-east",
