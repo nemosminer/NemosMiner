@@ -24,12 +24,12 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(45, 0); Coin = "XMR" } # XmRig-v6.16.3 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(45, 0); Coin = "VRSC" }
 
-    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "ERG" } # Trex-v0.24.8 is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "ERG" } # Trex-v0.25.2 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "ETC" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "ETH" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "ETH" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(75, 0);  Coin = "FIRO" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "RVN" } # Trex-v0.24.8 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "RVN" } # Trex-v0.25.2 is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02; MinMemGB = 6; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "CFX" } # NBMiner-v40.1 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "UBQ" } # PhoenixMiner-v5.9d is fastest
 )
@@ -76,7 +76,7 @@ useSSL=$($Pools.($_.Algorithm).SSL)
 coin=$($_.Coin)
 devices=$(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')
 pool1=$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)
-wallet=$($Pools.($_.Algorithm).User -split '\.' | Select-Object -Index 0)
+wallet=$($Pools.($_.Algorithm).User -split '\.' | Select-Object -First 1)
 $(If ($Pools.($_.Algorithm).DAGSize -gt 0 -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "protocol=stratum" } )"
                     }
                 }

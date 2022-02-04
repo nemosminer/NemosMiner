@@ -30,7 +30,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.007; MinMemGB = 2.0; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo UBQHASH" }
 
     [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "NVIDIA"; Fee = 0.015; MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
-    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo BEAM-III" } # NBMiner-v39.5 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";        Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo BEAM-III" } # NBMiner-v40.1 is fastest
     [PSCustomObject]@{ Algorithm = "Cuckoo29";      Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29B";   Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = "Cuckaroo29S";   Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6.0; MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-32" }

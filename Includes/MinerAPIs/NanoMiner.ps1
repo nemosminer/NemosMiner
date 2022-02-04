@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 class NanoMiner : Miner { 
@@ -34,7 +34,7 @@ class NanoMiner : Miner {
             }
         }
         Catch { 
-            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -Index 0)']."
+            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -First 1)']."
             Return
         }
     }

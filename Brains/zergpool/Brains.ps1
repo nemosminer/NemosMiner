@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.17 (RC17)
-version date:   31 January 2022
+version:        4.0.0.18 (RC18)
+version date:   04 February 2022
 #>
 
 Set-Location ($args[0])
@@ -68,9 +68,6 @@ Function Get-Median {
 }
 
 $AlgoObject = @()
-$MathObject = @()
-$TestDisplay = @()
-$PrevTrend = 0
 
 # Remove progress info from job.childjobs.Progress to avoid memory leak
 $ProgressPreference = "SilentlyContinue"
@@ -81,14 +78,9 @@ $ProgressPreference = "SilentlyContinue"
 While (Test-Path ".\BrainConfig.xml"){ 
     $Config = Import-Clixml ".\BrainConfig.xml"
     $SampleSizeMinutes = $Config.SampleSizeMinutes
-    $TrendSpanSizeMinutes = $Config.TrendSpanSizeMinutes
     $SampleHalfPower = $Config.SampleHalfPower
-    $ManualPriceFactor = $Config.ManualPriceFactor
     $Interval = $Config.Interval
-    $LogDataPath = $Config.LogDataPath
     $TransferFile = $Config.TransferFile
-    $EnableLog = $Config.EnableLog
-    $PoolName = $Config.PoolName
     $PoolStatusUri = $Config.PoolStatusUri
     $PoolCurrenciesUri = $Config.PoolCurrenciesUri
     $PerAPIFailPercentPenalty = $Config.PerAPIFailPercentPenalty
@@ -110,7 +102,7 @@ While (Test-Path ".\BrainConfig.xml"){
             }
 
             $CurrenciesArray | Group-Object algo | ForEach-Object{ 
-                $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -Index 0)
+                $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -First 1)
                 $BestCurrency | Add-Member coinname ($BestCurrency.name -replace 'coin$', 'Coin' -replace 'hash$', 'Hash') -Force
                 $BestCurrency | Add-Member name $BestCurrency.algo -Force
                 $BestCurrency | Add-Member estimate_last24h $BestCurrency.estimate_last24
@@ -160,14 +152,12 @@ While (Test-Path ".\BrainConfig.xml"){
             Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
             Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
             FirstDate          = $AlgoObject[0].Date
-            TimeSpan           = If ($AlgoObject.Date -ne $null) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
+            TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
         }
     }
 
     # Created here For performance optimization, minimize # of lookups
-    $FirstAlgoObject = $AlgoObject[0] # | Where-Object {$_.date -eq ($AlgoObject.Date | Measure-Object -Minimum).Minimum}
     $CurAlgoObject = $AlgoObject | Where-Object { $_.date -eq $CurDate }
-    $TrendSpanSizets = New-TimeSpan -Minutes $TrendSpanSizeMinutes
     $SampleSizets = New-TimeSpan -Minutes $SampleSizeMinutes
     $SampleSizeHalfts = New-TimeSpan -Minutes ($SampleSizeMinutes / 2)
     $GroupAvgSampleSize = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name, Last24DriftSign | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
@@ -177,12 +167,9 @@ While (Test-Path ".\BrainConfig.xml"){
     $GroupMedSampleSizeNoPercent = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24Drift } }
 
     ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)){ 
-        $PenaltySampleSize = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Median)
         $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
         $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
         $Penalty = ($PenaltySampleSizeHalf * $SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower + 1)
-        $LiveTrend = ((Get-Trendline ($AlgoObjects | Where-Object { $_.Name -eq $Name }).estimate_current)[1])
-        # $Price = (($Penalty) + ($CurAlgoObject | Where-Object {$_.Name -eq $Name}).actual_last24h)
         $Price = [math]::max( 0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h) )
         If ($UseFullTrust){ 
             If ($Penalty -gt 0){ 

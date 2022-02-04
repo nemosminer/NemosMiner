@@ -18,14 +18,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NLPool.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
-$PayoutCurrency = $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -Index 0
+$PayoutCurrency = $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Select-Object -First 1
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "https://www.nlpool.nl/?address=$Wallet"
 

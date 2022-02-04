@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -36,7 +36,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolName $Name)
 $PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
-$PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -Index 0
+$PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 

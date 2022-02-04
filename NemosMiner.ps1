@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 [CmdletBinding()]
@@ -253,7 +253,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.17" #RC17
+    Version      = [System.Version]"4.0.0.18" #RC18
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -348,6 +348,9 @@ If (-not $Variables.PoolVariants) {
 Try { $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore) }
 Catch { $Variables.PoolsLastUsed = @{ } }
 
+# Load EarningsChart data to make it available early in Web GUI
+If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
+
 $Variables.AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction Ignore
@@ -432,13 +435,13 @@ $Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | S
 # Build driver version table
 $Variables.DriverVersion = [PSCustomObject]@{ }
 $Variables.DriverVersion | Add-Member "CIM" ([PSCustomObject]@{ })
-$Variables.DriverVersion.CIM | Add-Member "CPU" ((($Variables.Devices | Where-Object Type -EQ "CPU").CIM.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
-$Variables.DriverVersion.CIM | Add-Member "AMD" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "AMD" }).CIM.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
-$Variables.DriverVersion.CIM | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "NVIDIA" }).CIM.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion.CIM | Add-Member "CPU" ((($Variables.Devices | Where-Object Type -EQ "CPU").CIM.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
+$Variables.DriverVersion.CIM | Add-Member "AMD" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "AMD" }).CIM.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
+$Variables.DriverVersion.CIM | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "NVIDIA" }).CIM.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
 $Variables.DriverVersion | Add-Member "OpenCL" ([PSCustomObject]@{ })
-$Variables.DriverVersion.OpenCL | Add-Member "CPU" ((($Variables.Devices | Where-Object Type -EQ "CPU").OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
-$Variables.DriverVersion.OpenCL | Add-Member "AMD" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
-$Variables.DriverVersion.OpenCL | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -Index 0) -split ' ' | Select-Object -Index 0)
+$Variables.DriverVersion.OpenCL | Add-Member "CPU" ((($Variables.Devices | Where-Object Type -EQ "CPU").OpenCL.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
+$Variables.DriverVersion.OpenCL | Add-Member "AMD" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "AMD" }).OpenCL.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
+$Variables.DriverVersion.OpenCL | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
 $Variables.DriverVersion | Add-Member "CUDA" $(Switch ([System.Version]$Variables.DriverVersion.OpenCL.NVIDIA) { { $_ -ge [System.Version]"510.39.01" } { "11.6"; Break }; { $_ -ge [System.Version]"495.29.05" } { "11.5"; Break }; { $_ -ge [System.Version]"470.57.02" } { "11.4"; Break }; { $_ -ge [System.Version]"465.19.01" } { "11.3"; Break }; { $_ -ge [System.Version]"460.27.04" } { "11.2"; Break }; { $_ -ge [System.Version]"455.23.05" } { "11.1"; Break }; { $_ -ge [System.Version]"450.36.06" } { "11.0"; Break };{ $_ -ge [System.Version]"418.40.04" } { "10.1"; Break }; { $_ -ge [System.Version]"410.48.00" } { "10.0"; Break }; { $_ -ge [System.Version]"396.00" } { "9.2"; Break }; { $_ -ge [System.Version]"390.00" } { "9.1"; Break }; { $_ -ge [System.Version]"384.00" } { "9.0"; Break }; Default { $null } })
 $Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" } | ForEach-Object { $_ | Add-Member CUDAVersion $Variables.DriverVersion.CUDA }
 
@@ -481,10 +484,6 @@ If ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }          
 If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }           # For AMD
 If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
 If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
-
-If (Test-Path -Path ".\Data\PoolsLastUsed.json" -PathType Leaf) { $Variables.PoolsLastUsed = Get-Content ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore }
-If (-not $Variables.PoolsLastUsed) { $Variables.PoolsLastUsed = @{ } }
-If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
@@ -560,7 +559,7 @@ Function Get-Chart {
         $EarningsChart1.BringToFront()
 
         $Datasource = $DatasourceRaw | Where-Object Date -eq (Get-Date).Date | Where-Object DailyEarnings -gt 0 | Sort-Object DailyEarnings -Descending
-        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]($_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency)) }
+        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency) }
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $ChartTitle.Text = "Todays earnings per pool"
@@ -609,7 +608,7 @@ Function Update-TabControl {
                 $RunningMinersDGV.DataSource = $Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @(
                     @{ Name = "Device(s)"; Expression = { $_.DeviceName -join "; " } }, 
                     @{ Name = "Miner"; Expression = { "$($_.Name) $($_.Info)" } }, 
-                    @{ Name = "Account"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -Index 0 } | Select-Object -Unique) -join ' & ' } }, 
+                    @{ Name = "Account"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -First 1 } | Select-Object -Unique) -join ' & ' } }, 
                     @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
                     @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { ($_.Profit * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
                     @{ Name = "Pool"; Expression = { ($_.WorkersRunning.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
@@ -933,7 +932,7 @@ Function Global:TimerUITick {
                 $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
                 $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
                 $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
-                $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index 0) * 0.5) <#Always list the better 50% miners per device group#>
+                $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -First 1) * 0.5) <#Always list the better 50% miners per device group#>
             } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_.KeepRunning -eq $true }; Descending = $true }, @{ Expression = { $_.Prioritize -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } | 
             Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ', ') [$(($Variables.Devices | Where-Object Name -In $_.DeviceName).Model -join ', ')]" } } | Out-Host
 

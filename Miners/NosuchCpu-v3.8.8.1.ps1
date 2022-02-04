@@ -5,7 +5,6 @@ If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { R
 $Uri = "https://github.com/patrykwnosuch/cpuminer-nosuch/releases/download/3.8.8.1-nosuch-m4/cpu-nosuch-m4-win64.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse2.exe"
-$DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "BinariumV1"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo binarium-v1" }

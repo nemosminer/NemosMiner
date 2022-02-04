@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 class Fireice : Miner { 
@@ -70,7 +70,7 @@ class Fireice : Miner {
                     $this.Process = $null
                 }
                 Else { 
-                    Write-Message -Level Error "Running temporary miner failed - cannot create threads config file '$($this.Info)' [Error: '$($Error | Select-Object -Index 0)']."
+                    Write-Message -Level Error "Running temporary miner failed - cannot create threads config file '$($this.Info)' [Error: '$($Error | Select-Object -First 1)']."
                     Return
                 }
             }
@@ -86,7 +86,7 @@ class Fireice : Miner {
             }
         }
         catch { 
-            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -Index 0)']."
+            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -First 1)']."
             Return
         }
     }

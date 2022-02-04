@@ -5,7 +5,6 @@ If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { R
 $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpuminer-RKZ.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$()$Name)\cpuminer.exe"
-$DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.8.9 is fastest, but has 0.85% miner fee

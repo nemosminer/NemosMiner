@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 Version:        4.0.0.18 (RC18)
-Version date:   31 January 2022
+Version date:   04 February 2022
 #>
 
 using module .\Include.psm1
@@ -465,8 +465,8 @@ Function Core-Loop {
             # Region exclusions
             $Pools | Where-Object { $PoolsConfig.$(Get-PoolName $_).ExcludeRegion -and (Compare-Object @($PoolsConfig.$(Get-PoolName $_).ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Reason += "Region excluded (in $(Get-PoolName $_) pool config)" }
             # MinWorkers
-            $Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -lt $PoolsConfig.$(Get-PoolName $_).MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$(Get-PoolName $_).MinWorker)`` in $(Get-PoolName $_) pool config)" }
-            $Pools | Where-Object { $_.Workers -ne $null -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
+            $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$(Get-PoolName $_).MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$(Get-PoolName $_).MinWorker)`` in $(Get-PoolName $_) pool config)" }
+            $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
 
             # Update pools last used, required for BalancesKeepAlive
             If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue}

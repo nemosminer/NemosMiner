@@ -5,7 +5,6 @@ If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { R
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v1.3.7.1-GLT/CPUMiner-Multi.1.3.7.1-GLT.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer.exe" 
-$DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ArcticHash"; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo arctichash" }

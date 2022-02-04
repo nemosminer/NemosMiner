@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 # Window handling
@@ -308,7 +308,7 @@ Class Miner {
                 Name           = [String]$this.Name
                 Device         = ($this.Devices.Name | Sort-Object) -join "; "
                 Type           = [String]$this.Type
-                Account        = [String]($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
+                Account        = [String]($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
                 Pool           = [String]($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Algorithm      = $this.Workers.Pool.Algorithm -join "; "
                 Duration       = ""
@@ -400,7 +400,7 @@ Class Miner {
             Name           = [String]$this.Name
             Device         = [String]($this.Devices.Name | Sort-Object) -join "; "
             Type           = [String]$this.Type
-            Account        = [String]($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -Index 0 } | Select-Object -Unique) -join "; "
+            Account        = [String]($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
             Pool           = [String]($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
             Algorithm      = [String]$this.WorkersRunning.Pool.Algorithm -join "; "
             Duration       = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
@@ -465,7 +465,7 @@ Class Miner {
             $RegistryData = Get-ItemProperty $RegistryHive
             ForEach ($Device in $this.Devices) { 
                 If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match $Device.Name }) { 
-                    $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -Index 0)
+                    $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -First 1)
                 }
                 Else { 
                     $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage # Use configured value
@@ -590,7 +590,7 @@ Class Miner {
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
 
         If ($CalculatePowerCost) { 
-            If ($Stat = Get-Stat "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -Index 0)" })_PowerUsage") { 
+            If ($Stat = Get-Stat "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage") { 
                 $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
@@ -1299,7 +1299,7 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json -NoEnumerate
+    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json -NoEnumerate -ErrorAction Ignore
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
@@ -1591,12 +1591,12 @@ Function Get-ArgumentsPerDevice {
         $Values = ""
 
         If ($Token -match "(?:^\s[-=]+)" <#supported prefix characters are listed in brackets [-=]#>) { 
-            $Prefix = "$($Token -split $Matches[0] | Select-Object -Index 0)$($Matches[0])"
+            $Prefix = "$($Token -split $Matches[0] | Select-Object -First 1)$($Matches[0])"
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
             If ($Token -match "(?:[ =]+)" <#supported separators are listed in brackets [ =]#>) { 
                 $ParameterSeparator = $Matches[0]
-                $Parameter = $Token -split $ParameterSeparator | Select-Object -Index 0
+                $Parameter = $Token -split $ParameterSeparator | Select-Object -First 1
                 $Values = $Token.Substring(("$Parameter$($ParameterSeparator)").length)
 
                 If ($Parameter -notin $ExcludeArguments -and $Values -match "(?:[,; ]{1})" <#supported separators are listed in brackets [,; ]#>) { 
@@ -1863,7 +1863,7 @@ Function Get-Device {
         $DeviceList = Get-Content ".\Data\Devices.json" | ConvertFrom-Json
         $Name_Devices = $Name | ForEach-Object { 
             $Name_Split = $_ -split '#'
-            $Name_Split = @($Name_Split | Select-Object -Index 0) + @($Name_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
+            $Name_Split = @($Name_Split | Select-Object -First 1) + @($Name_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
             $Name_Split += @("*") * (100 - $Name_Split.Count)
 
             $Name_Device = $DeviceList.("{0}" -f $Name_Split) | Select-Object *
@@ -1877,7 +1877,7 @@ Function Get-Device {
         If (-not $DeviceList) { $DeviceList = Get-Content -Path ".\Data\Devices.json" | ConvertFrom-Json }
         $ExcludeName_Devices = $ExcludeName | ForEach-Object { 
             $ExcludeName_Split = $_ -split '#'
-            $ExcludeName_Split = @($ExcludeName_Split | Select-Object -Index 0) + @($ExcludeName_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
+            $ExcludeName_Split = @($ExcludeName_Split | Select-Object -First 1) + @($ExcludeName_Split | Select-Object -Skip 1 | ForEach-Object { [Int]$_ })
             $ExcludeName_Split += @("*") * (100 - $ExcludeName_Split.Count)
 
             $ExcludeName_Device = $DeviceList.("{0}" -f $ExcludeName_Split) | Select-Object *
@@ -2355,7 +2355,7 @@ public static class Kernel32
             }
         )
         # Set local environment
-        $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
+        $EnvBlock | Select-Object | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -First 1)" "$($_ -split '=' | Select-Object -Index 1)" -Force }
 
         # StartupInfo Struct
         $StartupInfo = New-Object STARTUPINFO
@@ -2410,7 +2410,7 @@ Function Start-SubProcess {
         [String[]]$EnvBlock
     )
 
-    If ($EnvBlock) { $EnvBlock | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -Index 0)" "$($_ -split '=' | Select-Object -Index 1)" -Force } }
+    If ($EnvBlock) { $EnvBlock | ForEach-Object { Set-Item -Path "Env:$($_ -split '=' | Select-Object -First 1)" "$($_ -split '=' | Select-Object -Index 1)" -Force } }
 
     $ScriptBlock = "Set-Location '$WorkingDirectory'; (Get-Process -Id `$PID).PriorityClass = '$(@{-2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime"}[$Priority])'; "
     $ScriptBlock += "& '$FilePath'"
@@ -2455,7 +2455,7 @@ Function Expand-WebRequest {
         If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
 
         # use first (topmost) directory, some miners, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
-        $Path_Old = (Get-ChildItem -Path $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -Index 0
+        $Path_Old = (Get-ChildItem -Path $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -First 1
 
         If ($Path_Old) { 
             Move-Item $Path_Old $Path_New -PassThru | ForEach-Object -Process { $_.LastWriteTime = Get-Date }
@@ -2500,7 +2500,7 @@ Function Get-Region {
 
     If ($List) { Return $Global:Regions.$Region }
 
-    If ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -Index 0) }
+    If ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -First 1) }
     Else { $Region }
 }
 
@@ -2843,7 +2843,7 @@ Function Update-ConfigFile {
 
     # Change currency names, remove mBTC
     If ($Config.Currency -is [Array]) { 
-        $Config.Currency = $Config.Currency | Select-Object -Index 0
+        $Config.Currency = $Config.Currency | Select-Object -First 1
         $Config.ExtraCurrencies = @($Config.Currency | Select-Object -Skip 1 | Where-Object { $_ -ne "mBTC" } | Select-Object)
     }
 

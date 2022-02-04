@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -35,7 +35,7 @@ param(
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolName $Name)
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
-$PayoutCurrency = $PoolConfig.Variant.$PoolVariant.Wallets.PSObject.Properties.Name | Select-Object -Index 0
+$PayoutCurrency = $PoolConfig.Variant.$PoolVariant.Wallets.PSObject.Properties.Name | Select-Object -First 1
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 

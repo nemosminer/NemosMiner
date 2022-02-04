@@ -7,7 +7,25 @@ Breaking changes (from main code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
-Changelog NemosMiner 4.0.0.16 (RC16) 31.01.2022
+Changelog NemosMiner 4.0.0.18 (RC18) 04.02.2022
+===============================================
+
+Core:
+- Minor code cleanup, no functional changes
+
+Fixes:
+- Donaton information broken (regression from 4.0.0.13)
+- Legacy GUI: 'Earnings / Todays earnings per pool' graph not working
+
+Miner updates:
+- TeamBlackMiner-v1.49
+- Trex-v0.25.2
+
+Web GUI:
+- Earnings chart shows only data for pools to track
+
+
+Changelog NemosMiner 4.0.0.17 (RC17) 31.01.2022
 ===============================================
 
 Fixes:

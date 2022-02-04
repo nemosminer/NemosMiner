@@ -5,7 +5,6 @@ If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { R
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.22/cpuminer-opt-win.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-sse42.exe"
-$DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Balloon";       MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo balloon" }

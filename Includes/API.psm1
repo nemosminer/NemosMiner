@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 Function Initialize-API { 
@@ -408,7 +408,7 @@ Function Start-APIServer {
                         $TempStats = If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) }
 
                         If ($TempStats) { 
-                            If ($Parameters.Value -ne $null) { 
+                            If ($null -ne $Parameters.Value) { 
                                 $TempStats | Sort-Object Name | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
                                 If ($Parameters.Type -eq "Hashrate") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
                                 ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
@@ -546,7 +546,7 @@ Function Start-APIServer {
                                             If ($_.Reason -notcontains "Disabled by user") { $_.Reason += "Disabled by user" }
                                             $_.Status = [MinerStatus]::Disabled
                                         }
-                                        $Stat = Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false
+                                        Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
                                     }
                                 }
                                 Write-Message -Level Verbose "Web GUI: Disabled $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose

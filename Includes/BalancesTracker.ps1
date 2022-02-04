@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 # Start transcript log
@@ -115,7 +115,7 @@ While ($true) {
             }
 
             If (-not $PayoutThreshold) { 
-                $PayoutThreshold = If ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -like "* *") { [Double](($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 0) * $Variables.Rates.$PayoutThresholdCurrency.($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
+                $PayoutThreshold = If ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -like "* *") { [Double](($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -First 1) * $Variables.Rates.$PayoutThresholdCurrency.($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
             }
 
             If ($PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC -eq $true) { 
@@ -233,11 +233,11 @@ While ($true) {
                 }
                 Else { 
                     # Only calculate if current balance data
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) })   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) })   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) })  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) } | Sort-Object Date | Select-Object -Index 0).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) })   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) } | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) })   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) } | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) })  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) } | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) } | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) } | Sort-Object Date | Select-Object -First 1).Earnings) }
                 }
 
 
@@ -246,7 +246,7 @@ While ($true) {
                 $AvgWeeklyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-7) } ) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
-                    $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date } | Sort-Object Date | Select-Object -Index 0).Earnings)
+                    $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date } | Sort-Object Date | Select-Object -First 1).Earnings)
                     If ($GrowthToday -lt 0) { $GrowthToday = 0 } # to avoid negative numbers
                 }
 
@@ -331,7 +331,7 @@ While ($true) {
 
         # Build chart data (used in Web GUI) for last 30 days
         $PoolChartData = [PSCustomObject]@{ }
-        $ChartData = $Earnings | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 # days
+        $ChartData = $Earnings | Where-Object Pool -in $PoolsToTrack | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 # days
 
         # One dataset per pool
         $ChartData.Group.Pool | Sort-Object -Unique | ForEach-Object { 

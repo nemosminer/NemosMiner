@@ -14,19 +14,19 @@ $Algorithms = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake");       Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
     # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Handshake"); Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
 
-    [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri beam") } # NBMiner-v36.0 is faster but has 2% fee
+    [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri beam") } # NBMiner-v40.1 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29m") }
     [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.75 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri aeternity") }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -pers auto -uri equihash1445") } # MiniZ-v1.6x is fastest
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -pers auto -uri equihash1445") } # MiniZ-v1.8x is fastest
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri zhash") }
     [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");  Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
-    # [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri raven") } # Error
-    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri conflux") } # NBMiner-v39.5 is faster is faster but has 2% fee
+    [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(60, 30);  Protocol = @(" -uri raven") } # Error
+    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri conflux") } # NBMiner-v40.1 is faster is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri sero") }
 )
 

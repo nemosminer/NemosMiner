@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           XmRig.ps1
-Version:        4.0.0.17 (RC17)
-Version date:   31 January 2022
+Version:        4.0.0.18 (RC18)
+Version date:   04 February 2022
 #>
 
 class XmRig : Miner { 
@@ -40,10 +40,10 @@ class XmRig : Miner {
                 #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
                 $ThreadsConfig = Get-Content $ThreadsConfigFile -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
                 If ($ThreadsConfig.Count -lt 1) { 
-                    If (Test-Path "$(Split-Path $this.Path)\$($this.Algorithm | Select-Object -Index 0)-*.json" -PathType Leaf) { 
+                    If (Test-Path "$(Split-Path $this.Path)\$($this.Algorithm | Select-Object -First 1)-*.json" -PathType Leaf) { 
                         #Remove old config files, thread info is no longer valid
                         Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner '$($this.Info)'."
-                        Remove-Item "$(Split-Path $this.Path)\ThreadsConfig-$($this.Algorithm | Select-Object -Index 0)-*.json" -Force -ErrorAction SilentlyContinue
+                        Remove-Item "$(Split-Path $this.Path)\ThreadsConfig-$($this.Algorithm | Select-Object -First 1)-*.json" -Force -ErrorAction SilentlyContinue
                     }
                     #Temporarily start miner with pre-config file (without threads config). Miner will then update hw config file with threads info
                     $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
@@ -67,7 +67,7 @@ class XmRig : Miner {
                         $this.Process = $null
                     }
                     Else { 
-                        Write-Message -Level Error "Running temporary miner failed - cannot create threads config files for '$($this.Info)' [Error: '$($Error | Select-Object -Index 0)']."
+                        Write-Message -Level Error "Running temporary miner failed - cannot create threads config files for '$($this.Info)' [Error: '$($Error | Select-Object -First 1)']."
                         Return
                     }
                 }
@@ -87,14 +87,14 @@ class XmRig : Miner {
                         $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
                     }
                     Else { 
-                        Write-Message -Level Error "Error parsing threads config file - cannot create miner config files for '$($this.Info)' [Error: '$($Error | Select-Object -Index 0)']."
+                        Write-Message -Level Error "Error parsing threads config file - cannot create miner config files for '$($this.Info)' [Error: '$($Error | Select-Object -First 1)']."
                         Return
                     }
                 }
             }
         }
         Catch { 
-            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -Index 0)']."
+            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -First 1)']."
             Return
         }
     }

@@ -5,7 +5,6 @@ If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { R
 $Uri = "https://github.com/Raptor3um/cpuminer-opt/releases/download/v2.0/cpuminer-take2-windows.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
-$DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ghostrider"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo gr" }

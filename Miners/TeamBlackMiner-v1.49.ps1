@@ -4,9 +4,9 @@ If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -e
 
 $Uri = Switch ($DriverVersion.CUDA) { 
     # { $_ -ge "11.6" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.39/TeamBlackMiner_1_39_cuda_11_6.7z" }
-    { $_ -ge "11.5" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.47/TeamBlackMiner_1_47_cuda_11_5.7z" }
+    { $_ -ge "11.5" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.49/TeamBlackMiner_1_49_cuda_11_5.7z" }
     # { $_ -ge "11.4" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.39/TeamBlackMiner_1_39_cuda_11_4.7z" }
-    Default           { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.47/TeamBlackMiner_1_47_cuda_11_4.7z" }
+    Default           { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.49/TeamBlackMiner_1_49_cuda_11_4.7z" }
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\TBMiner.exe"
@@ -47,7 +47,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --hostname $($Pools.($_.Algorithm).Host) --port $($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User -split '\.' | Select-Object -Index 0) --worker-name $($Config.Workername) --server-passwd $($Pools.($_.Algorithm).Pass)"
+                $_.Arguments += " --hostname $($Pools.($_.Algorithm).Host) --port $($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User -split '\.' | Select-Object -First 1) --worker-name $($Config.Workername) --server-passwd $($Pools.($_.Algorithm).Pass)"
                 If ($Pools.($_.Algorithm).BaseName -match "^ProHashing$" -and $_.Algorithm -eq "EthashLowMem") { $_.Arguments += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl" }
