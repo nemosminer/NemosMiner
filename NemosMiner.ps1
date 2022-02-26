@@ -900,6 +900,9 @@ Function Global:TimerUITick {
                 Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
             }
         }
+        Else { 
+            $Variables.UIStyle = $Config.UIStyle
+        }
 
         # Display available miners list
         [System.Collections.ArrayList]$Miner_Table = @(
@@ -1088,7 +1091,7 @@ Function MainForm_Load {
                             If ($Variables.CalculatePowerCost) { 
                                 Write-Host "r: Toggle P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias column"
                             }
-                            Write-Host "s: Toggle " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle (full or compact)"
+                            Write-Host "s: Toggle " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle (full or light)"
                             If ($Variables.CalculatePowerCost) { 
                                 Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column"
                                 Write-Host "u: Toggle Power " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "sage column"
