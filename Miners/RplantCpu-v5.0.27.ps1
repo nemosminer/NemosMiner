@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CpuPower";      MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo cpupower" }
     [PSCustomObject]@{ Algorithm = "CryptoVantaA";  MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo cryptovantaa" }
     # [PSCustomObject]@{ Algorithm = "CurveHash";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo curvehash" } # reported hash rates too high (https://github.com/rplant8/cpuminer-opt-rplant/issues/21)
-    [PSCustomObject]@{ Algorithm = "Decred";        MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo Decred" } # ASIC
+    # [PSCustomObject]@{ Algorithm = "Decred";        MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo Decred" } # ASIC
     [PSCustomObject]@{ Algorithm = "DMDGr";         MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo dmd-gr" }
     [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo gr" }
     # [PSCustomObject]@{ Algorithm = "Groestl";       MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo groestl" } # ASIC
