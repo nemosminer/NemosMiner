@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 Function Initialize-API { 
@@ -52,7 +52,7 @@ Function Initialize-API {
                 While (-not ($Variables.APIVersion) -and $RetryCount -gt 0) { 
                     Try {
                         If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -UseBasicParsing -TimeoutSec 1 -ErrorAction Stop)) { 
-                            Write-Message -Level Info "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)." -Console
+                            Write-Message -Level Info "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
                             # Start Web GUI (show config edit if no existing config)
                             If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig -eq $true) { "configedit.html" })" }
                             Break
@@ -62,7 +62,7 @@ Function Initialize-API {
                     $RetryCount--
                     Start-Sleep -Seconds 1
                 }
-                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error initializing API & Web GUI on port $($Config.APIPort)." -Console }
+                If (-not $Variables.APIVersion) { Write-Message -Level Error "Error initializing API & Web GUI on port $($Config.APIPort)." }
                 Remove-Variable RetryCount
             }
             $TCPClient.Close()
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.2.0"
+    $APIVersion = "0.4.2.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
 
@@ -169,7 +169,7 @@ Function Start-APIServer {
                             If ($BalanceDataEntries.Count -gt 0) { 
                                 $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore
                                 $Message = "$($BalanceDataEntries.Count) $(If ($BalanceDataEntries.Count -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
-                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n`n$Message"
                             }
                             Else { 
@@ -197,7 +197,7 @@ Function Start-APIServer {
                                             Else { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
                                         }
                                     }
-                                    Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated." -Console
+                                    Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
                                 Catch { 
                                     $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
@@ -226,7 +226,7 @@ Function Start-APIServer {
                                         If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
                                         Else { $_.Status = "Idle" }
                                     }
-                                    Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' enabled. Config file '$($Variables.ConfigFile)' updated." -Console
+                                    Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' enabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
                                 Catch { 
                                     $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
@@ -274,7 +274,7 @@ Function Start-APIServer {
                             $Variables.ShowProfit = $Config.ShowProfit
                             $Variables.ShowProfitBias = $Config.ShowProfitBias
 
-                            Write-Message -Level Verbose "Web GUI: Configuration applied." -Console
+                            Write-Message -Level Verbose "Web GUI: Configuration applied."
                             $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
                         }
                         Catch { 
@@ -358,7 +358,7 @@ Function Start-APIServer {
                                 # Write PoolsConfig
                                 $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
                                 $Message = "$DisabledPoolsCount $(If ($DisabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) disabled."
-                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n`n$Message"
                             }
                             Break
@@ -394,7 +394,7 @@ Function Start-APIServer {
                                 # Write PoolsConfig
                                 $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
                                 $Message = "$EnabledPoolsCount $(If ($EnabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) enabled."
-                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n`n$Message"
                             }
                             Break
@@ -435,7 +435,7 @@ Function Start-APIServer {
                                     $_.Disabled = $false
                                 }
                                 $Message = "Reset pool stats for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
-                                Write-Message -Level Verbose "Web GUI: $Message" -Console
+                                Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n`n$Message"
                             }
                             Else { 
@@ -471,7 +471,7 @@ Function Start-APIServer {
                                     Remove-Stat -Name "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                                 }
-                                Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Console
+                                Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
                                 $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
                             }
                             Else { 
@@ -600,7 +600,7 @@ Function Start-APIServer {
                         }
                         If ($WatchdogTimers) { 
                             $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
-                            Write-Message -Level Verbose "Web GUI: $Message" -Console
+                            Write-Message -Level Verbose "Web GUI: $Message"
                             $Data += "`n`n$Message"
                         }
                         Else { 
@@ -612,7 +612,7 @@ Function Start-APIServer {
                         $Variables.WatchDogTimers = @()
                         $Variables.Miners | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
                         $Variables.Pools | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
-                        Write-Message -Level Verbose "Web GUI: All watchdog timers reset." -Console
+                        Write-Message -Level Verbose "Web GUI: All watchdog timers reset."
                         $Data = "`nThe watchdog timers will be recreated on next cycle."
                         Break
                     }

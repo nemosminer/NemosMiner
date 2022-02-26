@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -66,23 +66,29 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         ForEach ($Region in $Regions) { 
             $Region_Norm = Get-Region $Region
 
-            [PSCustomObject]@{ 
-                Name                     = [String]$PoolVariant
-                BaseName                 = [String]$Name
-                Algorithm                = [String]$Algorithm_Norm
-                Currency                 = [String]$Currency
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
-                Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
-                Port                     = [UInt16]$PoolPort
-                User                     = [String]$PoolConfig.UserName
-                Pass                     = [String]$Pass
-                Region                   = [String]$Region_Norm
-                SSL                      = $false
-                Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]$EstimateFactor
+            Try { 
+                [PSCustomObject]@{ 
+                    Name                     = [String]$PoolVariant
+                    BaseName                 = [String]$Name
+                    Algorithm                = [String]$Algorithm_Norm
+                    Currency                 = [String]$Currency
+                    Price                    = [Double]$Stat.Live
+                    StablePrice              = [Double]$Stat.Week
+                    Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
+                    Port                     = [UInt16]$PoolPort
+                    User                     = [String]$PoolConfig.UserName
+                    Pass                     = [String]$Pass
+                    Region                   = [String]$Region_Norm
+                    SSL                      = $false
+                    Fee                      = [Decimal]$Fee
+                    EstimateFactor           = [Decimal]$EstimateFactor
+                }
+            }
+            Catch {
+                $Error[0] >> ProHashing.JSON
+                $Request | ConvertTo-Json >> ProHashing.JSON
             }
         }
     }

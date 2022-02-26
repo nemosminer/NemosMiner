@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Devices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.25.2/t-rex-0.25.2-win.zip"
+$Uri = "https://trex-miner.com/download/t-rex-0.25.8-win.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
@@ -11,20 +11,20 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Autolykos2");           Fee = @(0.02); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo autolykos2 --intensity 25" }
     [PSCustomObject]@{ Algorithm = @("Blake3");               Fee = @(0.02); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo blake3 --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Autolykos2"); Fee = @(0.01, 0.02); MinMemGB = 8;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --lhr-algo autolykos2 --lhr-tune -1 --lhr-autotune-interval 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake3");     Fee = @(0.01, 0.01); MinMemGB = 5;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --lhr-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
-    [PSCustomObject]@{ Algorithm = @("EtcHash");              Fee = @(0.01); MinMemGB = 3;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --intensity 25" } # GMiner-v2.75 is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.01); MinMemGB = 5;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v2.75 is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Autolykos2"); Fee = @(0.01, 0.02); MinMemGB = 8;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo autolykos2 --lhr-tune -1 --lhr-autotune-interval 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake3");     Fee = @(0.01, 0.01); MinMemGB = 5;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash");              Fee = @(0.01); MinMemGB = 3;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --intensity 25" } # GMiner-v2.81 is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.01); MinMemGB = 5;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v2.81 is fastest
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Fee = @(0.01); MinMemGB = 2;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = @("FiroPoW");              Fee = @(0.01); MinMemGB = 5;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo firopow --intensity 25" }
     [PSCustomObject]@{ Algorithm = @("KawPoW");               Fee = @(0.01); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.16.3 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = @("Ethash", "FiroPoW");    Fee = @(0.01, 0.01); MinMemGB = 10; MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --lhr-algo firopow --lhr-tune -1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "KawPoW");     Fee = @(0.01, 0.01); MinMemGB = 10; MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --lhr-algo kawpow --lhr-tune -1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "FiroPoW");    Fee = @(0.01, 0.01); MinMemGB = 10; MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo firopow --lhr-tune -1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "KawPoW");     Fee = @(0.01, 0.01); MinMemGB = 10; MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo kawpow --lhr-tune -1" }
     [PSCustomObject]@{ Algorithm = @("MTP");                  Fee = @(0.01); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo mtp --intensity 21" }
     [PSCustomObject]@{ Algorithm = @("MTPTcr");               Fee = @(0.01); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo mtp-tcr --intensity 21" }
     [PSCustomObject]@{ Algorithm = @("Multi");                Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo multi --intensity 25" }
     [PSCustomObject]@{ Algorithm = @("Octopus");              Fee = @(0.02); MinMemGB = 6.1;      MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo octopus" } # 6GB is not enough
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Octopus");    Fee = @(0.01, 0.02); MinMemGB = 8;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --lhr-algo octopus --lhr-tune -1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Octopus");    Fee = @(0.01, 0.02); MinMemGB = 8;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo octopus --lhr-tune -1" }
     [PSCustomObject]@{ Algorithm = @("ProgPoW");              Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow" }
     [PSCustomObject]@{ Algorithm = @("Tensority");            Fee = @(0.03); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo tensority --intensity 25" }
     [PSCustomObject]@{ Algorithm = @("Veil");                 Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veil --intensity 24" }
@@ -50,7 +50,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 If ($AvailableMiner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 1GB -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "lhr-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "dual-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $Stratum = If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2" } Else { "stratum" }
                 If ($Pools.($_.Algorithm[0]).SSL -eq $true) { $Stratum += "+ssl://" } Else { $Stratum += "+tcp://" }

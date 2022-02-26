@@ -8,7 +8,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo verus" } # NheqMiner-v0.8.2 is faster, SRBMinerMulti-v0.8.9 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "VerusHash"; MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo verus" } # NheqMiner-v0.8.2 is faster, SRBMinerMulti-v0.9.3 is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host } | Where-Object { -not $Pools.($_.Algorithm).SSL }) { 

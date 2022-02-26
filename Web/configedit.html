@@ -44,7 +44,7 @@
                   <div title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from Bitcoin wallet address &#10">
                     <label for="NiceHashWallet">NiceHash Bitcoin Wallet Address</label>
                     <input type="text" id="NiceHashWallet" name="NiceHashWallet" maxlength=35 size=40>
-                    <input class="title=" Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
+                    <input title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" type="checkbox" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
                     <label title="Wallet is a NiceHash internal wallet&#10;(lower pool fees)" for="NiceHashWalletIsInternal">is internal</label>
                   </div>
                   <div title="Your NiceHash API Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash internal wallet" for="NiceHashAPIKey">
@@ -409,6 +409,13 @@
 
                     <!-- Main Text Window Display Options -->
                     <legend class=h6 title="These options will not affect the information available in the in Web GUI"><b>Main Text Window Display Options</b></legend>
+                    <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except when benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle">
+                      <label for="UIStyle">UI Style </label>
+                      <select name="UIStyle" id="UIStyle">
+                        <option value='Full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">Full</option>
+                        <option value='Light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">Light</option>
+                      </select>
+                    </div>
                     <div title="Show the 'PowerCost' column in the text window&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle&#10;(requires 'Calculate Power Cost' to be enabled)">
                       <input type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in Main Text Window
                     </div>
@@ -423,9 +430,6 @@
                     </div>
                     <div title="When unticked only the best 5 miners per device are shown&#10;when not benchmarking or measuring power usage&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle">
                       <input type="checkbox" id="ShowAllMiners" name="ShowAllMiners"> Show all Miners in Main Text Window
-                    </div>
-                    <div title="When unticked information about previously run & failed miners is only shown&#10;when benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="UIStyle" name="UIStyle"> Show full Miner Information in Main Text Window
                     </div>
                     <div title="Show the 'Earning' column in the text window&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
                       <input type="checkbox" id="ShowEarning" name="ShowEarning"> Show Earning in Main Text Window
@@ -788,13 +792,13 @@
               document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
 
               // Main Text Window Display Options
+              if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').value = 'Full';
+              else document.getElementById('UIStyle').value = 'Light';
               if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
               if (config.ShowPowerUsage) document.getElementById('ShowPowerUsage').checked = true;
               if (config.ShowProfit) document.getElementById('ShowProfit').checked = true;
               if (config.ShowProfitBias) document.getElementById('ShowProfitBias').checked = true;
               if (config.ShowAllMiners) document.getElementById('ShowAllMiners').checked = true;
-              if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').checked = true;
-              else document.getElementById('UIStyle').checked = false;
               if (config.ShowEarning) document.getElementById('ShowEarning').checked = true;
               if (config.ShowEarningBias) document.getElementById('ShowEarningBias').checked = true;
               if (config.ShowAccuracy) document.getElementById('ShowAccuracy').checked = true;
@@ -1104,13 +1108,12 @@
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
 
                   // Main Text Window display options
+                  config.UIStyle = document.getElementById('UIStyle').value;
                   config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
                   config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
                   config.ShowProfit = document.getElementById('ShowProfit').checked;
                   config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
                   config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
-                  if (document.getElementById('UIStyle').checked) config.UIStyle = "Full";
-                  else config.UIStyle = "Light";
                   config.ShowEarning = document.getElementById('ShowEarning').checked;
                   config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
                   config.ShowAccuracy =  document.getElementById('ShowAccuracy').checked;

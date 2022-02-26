@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,8 +41,8 @@ $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
 If ($Wallet) { 
     Try { 
-        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" #-Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
-        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" #-Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
+        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
+        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout
         $Request.miningAlgorithms | ForEach-Object { $Algo = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algo } } }
     }
     Catch { Return }
@@ -72,8 +72,6 @@ If ($Wallet) {
         }
 
         $Port = $_.algodetails.port
-        # $DivisorMultiplier = 1000000000
-        # $Divisor = $DivisorMultiplier * [Double]$_.Algodetails.priceFactor
         $Divisor = 100000000
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
@@ -81,8 +79,26 @@ If ($Wallet) {
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region
 
-            # ForEach ($SSL in @($false <#, $true#>)) { 
-            ForEach ($SSL in @($false, $true)) { 
+            [PSCustomObject]@{ 
+                Name                     = [String]$PoolVariant
+                BaseName                 = [String]$Name
+                Algorithm                = [String]$Algorithm_Norm
+                Currency                 = [String]$Currency
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
+                Port                     = [UInt16]$Port
+                User                     = [String]$User
+                Pass                     = "x"
+                Region                   = [String]$Region_Norm
+                SSL                      = $false
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]1
+            }
+
+            If ($Algorithm_Norm -in @("BeamV3", "CryptonightR", "Equihash", "EquihashBTG", "Ethash", "RandomX")) { 
                 [PSCustomObject]@{ 
                     Name                     = [String]$PoolVariant
                     BaseName                 = [String]$Name
@@ -93,12 +109,12 @@ If ($Wallet) {
                     Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
-                    Port                     = [UInt16]$Port
+                    Port                     = [UInt16]($Port + 30000)
                     User                     = [String]$User
                     Pass                     = "x"
                     Region                   = [String]$Region_Norm
-                    SSL                      = $SSL
-                    Fee                      = [Decimal]$PoolConfig.Fee
+                    SSL                      = $true
+                    Fee                      = [Decimal]$Fee
                     EstimateFactor           = [Decimal]1
                 }
             }

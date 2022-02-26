@@ -5,12 +5,7 @@ body {
 }
 
 .detail-icon:before {
-  content: "+";
-}
-
-.svg-inline--fa {
-  width: 16px;
-  height: 16px;
+  content: "\00B1";
 }
 
 /*
@@ -24,11 +19,12 @@ body {
   left: 0;
   z-index: 10; /* Behind the navbar */
   padding: 75px 0 0; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
 @media (min-width: 768px) {
   .main {
-    padding-right: 30px;
+    padding-right: 35px;
     padding-left: 290px;
   }
 }
@@ -42,7 +38,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
   padding-bottom: 1.1rem;
-  padding-left: 15px;
+  padding-left: 1rem;
 }
 
 @supports ((position: -webkit-sticky) or (position: sticky)) {
@@ -181,7 +177,13 @@ legend {
   background-color: rgb(230, 248, 252);
 }
 .miner-running {
+  background-color: rgb(223, 247, 223);
+}
+.miner-warmingup {
   background-color: rgb(239, 250, 239);
+}
+.miner-measuring {
+  background-color: rgb(248, 233, 223);
 }
 
 /*

@@ -17,7 +17,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri beam") } # NBMiner-v40.1 is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri bfc") }
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29m") }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.75 is fastest
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.81 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckatoo31") }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckatoo32") }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri aeternity") }
@@ -73,12 +73,12 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" }
 
                 If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Protocol[0] = $_.Protocol[0] -replace "ethproxy", "ethstratum" }
-                If ($Pools.($_.Algorithm[0]).SSL) { "$($_.Protocol[0])+ssl" }
+                If ($Pools.($_.Algorithm[0]).SSL) { $_.Protocol[0] += "+ssl" }
 
                 $Arguments += "$($_.Protocol[0])://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm[0]).User)):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
 
                 If ($_.Algorithm[1]) { 
-                    If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $_.Protocol[1] = "$($_.Protocol[1])+ssl" }
+                    If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { $_.Protocol[1] += "+ssl" }
                     $Arguments += "$($_.Protocol[1])://$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User)):$([System.Web.HttpUtility]::UrlEncode($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass))@$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port)"
                 }
 

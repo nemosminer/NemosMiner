@@ -6,6 +6,34 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.19 (RC19) 25.02.2022
+===============================================
+
+BalancesTracker:
+- ProHashing does not send balance if all is paid -> remove from balances
+
+Core:
+- Detect and rebuild broken 'PoolsLastUsed.json' file
+- Fix 'End Loop' message
+- Remove obsolete miner property 'Intervals'
+
+Fixes:
+- BMiner: Fix SSL
+- NiceHash pool: Fix pool fee (regression from 4.0.0.16)
+
+Miner changes:
+- GMiner-v2.81
+- JayddeeCpu-v3.19.6
+- lolMiner-v1.46 (also change miner API)
+- RplantCpu-v5.0.27
+- SRBMinerMulti-v0.9.1
+- TeamBlackMiner-v1.56a
+- TeamRedMiner-v0.9.4
+- Trex-v0.25.8
+
+Pools:
+- Nicehash: Add SLL port for supported algorithms ("BeamV3", "CryptonightR", "Equihash", "EquihashBTG", "Ethash", "RandomX")
+
 
 Changelog NemosMiner 4.0.0.18 (RC18) 04.02.2022
 ===============================================
@@ -14,7 +42,7 @@ Core:
 - Minor code cleanup, no functional changes
 
 Fixes:
-- Donaton information broken (regression from 4.0.0.13)
+- Donation information broken (regression from 4.0.0.13)
 - Legacy GUI: 'Earnings / Todays earnings per pool' graph not working
 
 Miner updates:

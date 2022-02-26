@@ -34,7 +34,6 @@
             data-sort-name="tDevices"
             data-sort-order="asc"
             data-maintain-meta-data="true"
-            data-multiple-select-row="true"
             >
 
             <thead>
@@ -292,8 +291,14 @@
               if (config.WebGUIUseColor == true) {
                 $("#miners td:nth-child(5)").each(function () {
                   switch(this.innerText) {
-                    case this.innerText.match(/^Mining|^Warming/)?.input:
+                    case this.innerText.match(/^Mining/)?.input:
                       $(this).parent("tr").addClass('miner-running');
+                      break;
+                    case this.innerText.match(/^Warming/)?.input:
+                      $(this).parent("tr").addClass('miner-warmingup');
+                      break;
+                    case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
+                      $(this).parent("tr").addClass('miner-measuring');
                       break;
                     case this.innerText.match(/^Failed/)?.input:
                       $(this).parent("tr").addClass('miner-failed');

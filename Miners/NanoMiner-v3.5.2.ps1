@@ -17,19 +17,19 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01; MinMemGB = 2;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";       Type = "AMD"; Fee = 0.01; MinMemGB = 5;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "FIRO" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(75, 30); Coin = "RVN" } # TeamRedMiner-v0.9.1 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(75, 30); Coin = "RVN" } # TeamRedMiner-v0.9.2.2 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01; MinMemGB = 4;  MinerSet = 1; WarmupTimes = @(55, 45); Coin = "UBQ" } # PhoenixMiner-v5.9d is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "VTC" } # SRBMinerMulti-v0.8.9 is fastest
+    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01; MinMemGB = 3;  MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "VTC" } # SRBMinerMulti-v0.9.3 is fastest
 
     [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(45, 0); Coin = "XMR" } # XmRig-v6.16.3 is fastest
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(45, 0); Coin = "VRSC" }
 
-    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "ERG" } # Trex-v0.25.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.05; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "ERG" } # Trex-v0.25.8 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "ETC" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "ETH" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "ETH" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(75, 0);  Coin = "FIRO" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "RVN" } # Trex-v0.25.2 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "RVN" } # Trex-v0.25.8 is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02; MinMemGB = 6; MinerSet = 1; WarmupTimes = @(125, 0); Coin = "CFX" } # NBMiner-v40.1 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(55, 0);  Coin = "UBQ" } # PhoenixMiner-v5.9d is fastest
 )

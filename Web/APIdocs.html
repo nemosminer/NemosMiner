@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.0.18 (RC18)
-version date:   04 February 2022-->
+version:        4.0.0.19 (RC19)
+version date:   25 February 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.2.0)</h1>
+  <h1>NemosMiner API (version 0.4.2.1)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -43,12 +43,6 @@ version date:   04 February 2022-->
   <a href="http://localhost:3999/apiversion">/apiversion</a>
   <p>Returns the version number of NemosMiner API.</p>
   <br>
-  <a href="http://localhost:3999/rates">/rates</a>
-  <p>Shows the current BTC exchange rate.</p>
-  <br>
-  <a href="http://localhost:3999/btc">/btc</a>
-  <p>Shows all current exchange rates in main currency.</p>
-  <br>
   <a href="http://localhost:3999/balances">/balances</a>
   <p>Returns the current balance information calculated by the balance tracker.</p>
   <br>
@@ -57,6 +51,9 @@ version date:   04 February 2022-->
   <br>
   <a href="http://localhost:3999/brainjobs">/brainjobs</a>
   <p>Returns the brainjobs information.</p>
+  <br>
+  <a href="http://localhost:3999/btc">/btc</a>
+  <p>Shows the BTC to main currency exchange rate.</p>
   <br>
   <a href="http://localhost:3999/coinnames">/coinnames</a>
   <p>Shows the Currency / CoinName mapping (defined in '\Data\CoinNames.json').</p>
@@ -137,13 +134,13 @@ version date:   04 February 2022-->
   <p>Shows the miners_device_combos data, use for debugging.</p>
   <br>
   <a href="http://localhost:3999/miningearning">/miningearning</a>
-  <p>Shows current mining earning.</p>
+  <p>Shows current mining earning (in BTC).</p>
   <br>
   <a href="http://localhost:3999/miningpowercost">/miningpowercost</a>
-  <p>Shows current mining power cost.</p>
+  <p>Shows current mining power cost (in BTC).</p>
   <br>
   <a href="http://localhost:3999/miningprofit">/miningprofit</a>
-  <p>Shows current mining profit.</p>
+  <p>Shows current mining profit (in BTC).</p>
   <br>
   <a href="http://localhost:3999/poolreasons">/poolreasons</a>
   <p>Shows all reasons why pools are unavailable.</p>
@@ -186,6 +183,9 @@ version date:   04 February 2022-->
   <br>
   <a href="http://localhost:3999/poolvariants">/poolvariants</a>
   <p>Shows all pool variants (defined in '\Data\PoolConfig.json').</p>
+  <br>
+  <a href="http://localhost:3999/rates">/rates</a>
+  <p>Shows the current exchange rate for all configured currencies.</p>
   <br>
   <a href="http://localhost:3999/regions">/regions</a>
   <p>Shows the list of supported regions (defined in '\Data\Regions.json').</p>

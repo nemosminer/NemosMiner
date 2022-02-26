@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/TeamRedMiner/teamredminer-v0.9.1-win.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/TeamRedMiner/teamredminer-v0.9.4-win.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
@@ -12,7 +12,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Autolykos2";           Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = "Chukwa2";              Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # SRBMinerMulti-v0.8.9 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" } # SRBMinerMulti-v0.9.3 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Fee = 0.025; MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cnv8_rwz --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Fee = 0.025; MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id $($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = "CuckarooD29";          Fee = 0.025; MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cuckarood29_grin" } # 2GB is not enough
-    [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.42a is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckatoo31";           Fee = 0.025; MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.46a is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";              Fee = 0.01;  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=etchash" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";               Fee = 0.01;  MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" } # PhoenixMiner-v5.9d is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = 0.01;  MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" }

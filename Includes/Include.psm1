@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 # Window handling
@@ -208,7 +208,7 @@ Class Miner {
     [String]$Info
     [DateTime]$StatStart
     [DateTime]$StatEnd
-    [TimeSpan[]]$Intervals = @()
+    # [TimeSpan[]]$Intervals = @()
     [Int]$DataCollectInterval = 5 # Seconds
     [String]$WindowStyle = "minimized"
     # [String[]]$Environment = @()
@@ -278,7 +278,7 @@ Class Miner {
         $this.StatusMessage = "Starting $($this.Info)"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
-        $this.Intervals = @()
+        # $this.Intervals = @()
 
         Write-Message "Starting miner '$($this.Name) $($this.Info)'..."
 
@@ -669,7 +669,7 @@ namespace PInvoke.Win32 {
 '@
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..." -Console
+            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
@@ -709,7 +709,7 @@ Function Stop-IdleMining {
         $Variables.IdleRunspace.Close()
         If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
         $Variables.Remove("IdleRunspace")
-        Write-Message -Level Verbose "Stopped idle detection." -Console
+        Write-Message -Level Verbose "Stopped idle detection."
     }
 }
 
@@ -717,7 +717,7 @@ Function Start-Mining {
 
     If (-not $Variables.CoreRunspace) { 
         $Variables.Summary = "Starting mining processes..."
-        Write-Message -Level Info $Variables.Summary -Console
+        Write-Message -Level Info $Variables.Summary
 
         $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
@@ -747,7 +747,7 @@ Function Stop-Mining {
 
     If ($Variables.CoreRunspace) { 
         $Variables.Summary = "Stopping mining processes..."
-        Write-Message -Level Info $Variables.Summary -Console
+        Write-Message -Level Info $Variables.Summary
 
         ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
             $Miner.StopMining()
@@ -799,7 +799,7 @@ Function Stop-BrainJob {
             $JobNames += $_
         }
 
-        If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) ($(($JobNames | Sort-Object) -join ", ")) stopped." -Console }
+        If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) ($(($JobNames | Sort-Object) -join ", ")) stopped." }
     }
 }
 
@@ -809,7 +809,7 @@ Function Start-BalancesTracker {
 
         Try { 
             $Variables.Summary = "Starting Balances Tracker..."
-            Write-Message -Level Info $Variables.Summary -Console
+            Write-Message -Level Info $Variables.Summary
 
             $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
             $BalancesTrackerRunspace.Open()
@@ -836,7 +836,7 @@ Function Stop-BalancesTracker {
 
     If ($Variables.BalancesTrackerRunspace) { 
         $Variables.Summary += "\nStopping Balances Tracker..."
-        Write-Message -Level Info "Stopping Balances Tracker..." -Console
+        Write-Message -Level Info "Stopping Balances Tracker..."
 
         $Variables.BalancesTrackerRunspace.Close()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
@@ -945,7 +945,7 @@ Function Write-Message {
     Begin { }
     Process { 
 
-        If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
+        If ($Level -in $Config.LogToScreen) { 
             # Update status text box in GUI
             If ($Variables.LabelStatus) { 
                 $Variables.LabelStatus.Lines += $Message
@@ -957,9 +957,7 @@ Function Write-Message {
                 $Variables.LabelStatus.ScrollToCaret()
                 $Variables.LabelStatus.Refresh()
             }
-        }
 
-        If ($Console -and $Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
             # Write to console
             Switch ($Level) { 
                 "Error"   { Write-Host $Message -ForegroundColor "Red" }
@@ -1282,7 +1280,7 @@ Function Edit-File {
         }
 
         If ($FileWriteTime -ne (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
-            Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle." -Console
+            Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle."
             Return "Saved '$(($FileName))'`nChanges will become active in next cycle."
         }
         Else { 
@@ -1392,16 +1390,13 @@ Function Set-Stat {
         }
         Else { 
             If ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
-                If ($Value -gt 0) { 
+                If ($Value -gt 0 -and $Stat.ToleranceExceeded -ge $ToleranceExceeded) { 
                     If ($Name -match ".+_HashRate$") { 
                         Write-Message -Level Warn "HashRate '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
                         Write-Message -Level Warn "Power usage for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($Value.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W)$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
-                }
-                Else {
-                    Start-Sleep 0
                 }
 
                 Remove-Stat -Name $Name
@@ -1591,7 +1586,7 @@ Function Get-ArgumentsPerDevice {
         $Values = ""
 
         If ($Token -match "(?:^\s[-=]+)" <#supported prefix characters are listed in brackets [-=]#>) { 
-            $Prefix = "$($Token -split $Matches[0] | Select-Object -First 1)$($Matches[0])"
+            $Prefix = $Matches[0]
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
             If ($Token -match "(?:[ =]+)" <#supported separators are listed in brackets [ =]#>) { 
@@ -2498,9 +2493,8 @@ Function Get-Region {
         $Global:Regions = Get-Content ".\Data\Regions.json" | ConvertFrom-Json
     }
 
-    If ($List) { Return $Global:Regions.$Region }
-
-    If ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -First 1) }
+    If ($List) { $Global:Regions.$Region }
+    ElseIf ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -First 1) }
     Else { $Region }
 }
 
@@ -2548,19 +2542,19 @@ Function Get-NMVersion {
                     Initialize-Autoupdate -UpdateVersion $UpdateVersion
                 }
                 Else { 
-                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Auto Update is disabled in config - You must update manually." -Console
+                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Auto Update is disabled in config - You must update manually."
                 }
             }
             Else { 
-                Write-Message -Level Verbose "$($UpdateVersion.Product) $($UpdateVersion.Version) does not support auto-update. You must update manually." -Console
+                Write-Message -Level Verbose "$($UpdateVersion.Product) $($UpdateVersion.Version) does not support auto-update. You must update manually."
             }
         }
         Else { 
-            Write-Message -Level Verbose "Version checker: $($Variables.CurrentProduct) $($Variables.CurrentVersion) is current - no update available." -Console
+            Write-Message -Level Verbose "Version checker: $($Variables.CurrentProduct) $($Variables.CurrentVersion) is current - no update available."
         }
     }
     Catch { 
-        Write-Message -Level Warn "Version checker could not contact update server. $($Variables.CurrentProduct) will automatically retry with 24hrs." -Console
+        Write-Message -Level Warn "Version checker could not contact update server. $($Variables.CurrentProduct) will automatically retry with 24hrs."
     }
 }
 
@@ -2875,7 +2869,7 @@ Function Update-ConfigFile {
             "US"       { $Config.Region = "USA West" }
             Default    { $Config.Region = "Europe West" }
         }
-        Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration." -Console
+        Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration."
     }
 
     # Remove AHashPool

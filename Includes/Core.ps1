@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 using module .\Include.psm1
@@ -602,15 +602,15 @@ Function Core-Loop {
                     $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
                         $LastSharesData = ($Miner.Data | Select-Object -Last 1).Shares
                         If ($LastSharesData.$_ -and $LastSharesData.$_[1] -gt 0 -and $LastSharesData.$_[2] -gt [Int](1 / $Config.AllowedBadShareRatio) -and $LastSharesData.$_[1] / $LastSharesData.$_[2] -gt $Config.AllowedBadShareRatio) { 
-                            Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($LastSharesData.$_[2]), Rejected = $($LastSharesData.$_[1]))." 
                             $Miner.SetStatus([MinerStatus]::Failed)
+                            Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($LastSharesData.$_[2]), Rejected = $($LastSharesData.$_[1]))." 
                         }
                     }
                 }
             }
             Else { 
-                Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
                 $Miner.SetStatus([MinerStatus]::Failed)
+                Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
             }
         }
 
@@ -637,8 +637,7 @@ Function Core-Loop {
             # We don't want to store hashrates if we have less than $MinDataSamples
             If ($Miner.Data.Count -ge $Miner.MinDataSamples -or $Miner.Activated -gt $Variables.WatchdogCount) { 
                 $Miner.StatEnd = (Get-Date).ToUniversalTime()
-                $Miner.Intervals = @($Miner.Intervals | Select-Object -Last ($Miner.MinDataSamples * 5)) # Only keep the last MinDataSamples * 5
-                $Miner.Intervals += $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
+                $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
 
                 ForEach ($Worker in $Miner.WorkersRunning) { 
                     $Algorithm = $Worker.Pool.Algorithm
@@ -656,8 +655,8 @@ Function Core-Loop {
                         $Variables.PoolsLastUsed.(Get-PoolName $Worker.Pool.Name) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                     }
                     ElseIf ($Miner_Speeds.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -gt $Stat.Week * 2 -or $Miner_Speeds.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
-                        Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                         $Miner.SetStatus([MinerStatus]::Failed)
+                        Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                     }
                 }
             }
@@ -670,8 +669,8 @@ Function Core-Loop {
                 }
                 ElseIf ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt $Stat.Week * 2 -or $PowerUsage -lt $Stat.Week / 2)) { 
                     # Stop miner if new value is outside ±200% of current value
-                    Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                     $Miner.SetStatus([MinerStatus]::Failed)
+                    Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                 }
             }
             Remove-Variable Factor, LastSharesData, Stat_Name, Stat_Span, Stat -ErrorAction Ignore
@@ -831,8 +830,9 @@ Function Core-Loop {
             If ($Variables.Downloader.State -ne "Running") { 
                 Write-Message "Some miners binaries are missing, starting downloader..."
                 $Downloader_Parameters = @{ 
-                    Logfile      = $Variables.Logfile
+                    Config = $Config
                     DownloadList = @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; @($Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
+                    Variables = $Variables
                 }
                 $Variables.Downloader = Start-ThreadJob -ThrottleLimit 99 -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
                 Remove-Variable Downloader_Parameters
@@ -988,8 +988,8 @@ Function Core-Loop {
             $Miner.WorkersRunning = @()
         }
         ElseIf ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
-            Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
             $Miner.SetStatus([MinerStatus]::Failed)
+            Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
             $Miner.StatusMessage = "Failed"
             $Miner.Info = ""
             $Miner.WorkersRunning = @()
@@ -1158,13 +1158,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 # Miner crashed
-                Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
                 $Miner.SetStatus([MinerStatus]::Failed)
+                Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
             }
             ElseIf ($Miner.DataReaderJob.State -ne [MinerStatus]::Running) { 
                 # Miner data reader process failed
-                Write-Message -Level Error "Miner data reader '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
                 $Miner.SetStatus([MinerStatus]::Failed)
+                Write-Message -Level Error "Miner data reader '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
             }
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                 # Set miner priority
@@ -1180,14 +1180,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     # We must have data samples by now
                     If (($Miner.Data | Select-Object -Last 1).Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
-                        Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' got stopped because it has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
+                        Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                         Break
                     }
                     ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds(3.5 * $Miner.DataCollectInterval) -lt (Get-Date).ToUniversalTime()) { 
                         # Miner stuck - no sample 10 seconds
-                        Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' got stopped because it has not updated data for more than 10 seconds."
                         $Miner.SetStatus([MinerStatus]::Failed)
+                        Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than 10 seconds."
                         Break
                     }
                 }
@@ -1232,7 +1232,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         While ((Get-Date) -le $NextLoop) { Start-Sleep -Milliseconds 100 }
     }
 
-    Remove-Variable BenchmarkingOrMeasuringMiners, ExitLoopMessage, FailedMiners, Interval, Message, Miner, NextLoop, RunningMiners, Sample, Samples -ErrorAction SilentlyContinue
-
     If ($Variables.NewMiningStatus -eq "Running") { Write-Message -Level Info "Ending cycle$($ExitLoopMessage)." }
+
+    Remove-Variable BenchmarkingOrMeasuringMiners, ExitLoopMessage, FailedMiners, Interval, Message, Miner, NextLoop, RunningMiners, Sample, Samples -ErrorAction SilentlyContinue
 }

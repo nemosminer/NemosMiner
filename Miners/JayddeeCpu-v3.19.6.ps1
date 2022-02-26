@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 $AvailableMiner_Devices = @($Devices | Where-Object Type -EQ "CPU")
 
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.5/cpuminer-opt-3.19.5-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.6/cpuminer-opt-3.19.6-windows.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
@@ -15,7 +15,7 @@ ElseIf ($AvailableMiner_Devices.CpuFeatures -match "sse2")   { $Path = ".\Bin\$(
 Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo hmq1725" }
     [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo lyra2z330" }
     [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
     [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo sha3d" }

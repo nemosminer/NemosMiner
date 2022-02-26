@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 class lolMiner : Miner { 
@@ -41,7 +41,7 @@ class lolMiner : Miner {
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithm[0]
         $HashRate_Unit = [Int64]1
-        Switch ($Data.Session.Performance_Unit) { 
+        Switch ($Data.Algorithms[0].Performance_Unit) { 
             "kh/s"  { $HashRate_Unit = [Math]::Pow(10,3) }
             "Mh/s"  { $HashRate_Unit = [Math]::Pow(10,6) }
             "GH/s"  { $HashRate_Unit = [Math]::Pow(10,9) }
@@ -52,13 +52,36 @@ class lolMiner : Miner {
             "YH/s"  { $HashRate_Unit = [Math]::Pow(10,24) }
             Default { $HashRate_Unit = 1 }
         }
-        $HashRate_Value = [Double]($Data.Session.Performance_Summary * $HashRate_Unit)
+        $HashRate_Value = [Double]($Data.Algorithms[0].Total_Performance * $HashRate_Unit)
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]$Data.Session.Accepted
-        $Shares_Rejected = [Int64]($Data.Session.Submitted - $Data.Session.Accepted)
+        $Shares_Accepted = [Int64]$Data.Algorithms[0].Total_Accepted
+        $Shares_Rejected = [Int64]$Data.Algorithms[0].Total_Rejected
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+
+        If ($this.Algorithm[1]) { 
+            $HashRate_Name = [String]$this.Algorithm[1]
+            $HashRate_Unit = [Int64]1
+            Switch ($Data.Algorithms[1].Performance_Unit) { 
+                "kh/s"  { $HashRate_Unit = [Math]::Pow(10,3) }
+                "Mh/s"  { $HashRate_Unit = [Math]::Pow(10,6) }
+                "GH/s"  { $HashRate_Unit = [Math]::Pow(10,9) }
+                "TH/s"  { $HashRate_Unit = [Math]::Pow(10,12) }
+                "PH/s"  { $HashRate_Unit = [Math]::Pow(10,15) }
+                "EH/s"  { $HashRate_Unit = [Math]::Pow(10,18) }
+                "ZH/s"  { $HashRate_Unit = [Math]::Pow(10,21) }
+                "YH/s"  { $HashRate_Unit = [Math]::Pow(10,24) }
+                Default { $HashRate_Unit = 1 }
+            }
+            $HashRate_Value = [Double]($Data.Algorithms[1].Total_Performance * $HashRate_Unit)
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
+            $Shares = [PSCustomObject]@{ }
+            $Shares_Accepted = [Int64]$Data.Algorithms[1].Total_Accepted
+            $Shares_Rejected = [Int64]$Data.Algorithms[1].Total_Rejected
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()

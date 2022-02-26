@@ -18,17 +18,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        4.0.0.18 (RC18)
-Version date:   04 February 2022
+Version:        4.0.0.19 (RC19)
+Version date:   25 February 2022
 #>
 
 using module .\Includes\Include.psm1
 
-$Variables = $args
+$Config = $args.Config
+$DownloadList = $args.DownloadList
+$Variables = $args.Variables
 
 $ProgressPreference = "SilentlyContinue"
 
-$Variables.DownloadList | Select-Object | ForEach-Object { 
+$DownloadList | Select-Object | ForEach-Object { 
     $URI = $_.URI
     $Path = $_.Path
     $Searchable = $_.Searchable
@@ -49,8 +51,8 @@ $Variables.DownloadList | Select-Object | ForEach-Object {
         Catch { 
             $Path_Old = $null
 
-            If ($URI) { Write-Message -Level Warn  "Downloader: Cannot download '$(Split-Path $Path -Leaf)' distributed at '$URI'." }
-            Else { Write-Message -Level Warn  "Downloader: Cannot download'$(Split-Path $Path -Leaf)'." }
+            If ($URI) { Write-Message -Level Warn "Downloader: Cannot download '$(Split-Path $Path -Leaf)' distributed at '$URI'." }
+            Else { Write-Message -Level Warn "Downloader: Cannot download'$(Split-Path $Path -Leaf)'." }
 
             If ($Searchable) { 
                 Write-Message "Downloader: Searching for $(Split-Path $Path -Leaf) on local computer..."
