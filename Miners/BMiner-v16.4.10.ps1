@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Devices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
-$Uri = "https://www.bminercontent.com/releases/bminer-v16.4.9-c80288d-amd64.zip"
+$Uri = "https://www.bminercontent.com/releases/bminer-lite-v16.4.10-1884bde-amd64.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\bminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
@@ -25,7 +25,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri zhash") }
     [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");  Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
-    [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(60, 30);  Protocol = @(" -uri raven") } # Error
+    # [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(60, 30); Protocol = @(" -uri raven") } # Error
     [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri conflux") } # NBMiner-v40.1 is faster is faster but has 2% fee
     [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri sero") }
 )
@@ -62,7 +62,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             $AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }
             $AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object { -not $_.CIM.MaxRefreshRate -or $_.OpenCL.GlobalMemSize / 0.99GB - 0.5 -ge $MinMemGB } # Reserve 512 MB when GPU with connected monitor
             # If ($_.Algorithm[0] -like "Ethash*") { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Ethash mining not supported on Navi
-            If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
+            # If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
 
             If ($AvailableMiner_Devices) { 
 
