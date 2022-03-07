@@ -3,8 +3,9 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.OpenCl.ComputeCapability -ge "5.0") })) { Return }
 
 $Uri = Switch ($DriverVersion.CUDA) { 
-    { $_ -ge "11.5" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.57/TeamBlackMiner_1_57_cuda_11_5.7z"; Break }
-    { $_ -ge "11.4" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.57/TeamBlackMiner_1_57_cuda_11_4.7z"; Break }
+    { $_ -ge "11.6" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.58/TeamBlackMiner_1_58_cuda_11_6.7z"; Break }
+    { $_ -ge "11.5" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.58/TeamBlackMiner_1_58_cuda_11_5.7z"; Break }
+    { $_ -ge "11.4" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.58/TeamBlackMiner_1_58_cuda_11_4.7z"; Break }
     Default { Return }
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
