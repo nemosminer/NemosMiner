@@ -208,7 +208,6 @@ Class Miner {
     [String]$Info
     [DateTime]$StatStart
     [DateTime]$StatEnd
-    # [TimeSpan[]]$Intervals = @()
     [Int]$DataCollectInterval = 5 # Seconds
     [String]$WindowStyle = "minimized"
     # [String[]]$Environment = @()
@@ -393,6 +392,9 @@ Class Miner {
         }
 
         $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
+        $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
+        $this.Devices | ForEach-Object { $_.Status = $this.Status }
+        $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled} | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
@@ -412,11 +414,6 @@ Class Miner {
             CommandLine    = ""
             LastDataSample = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
-
-        $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
-
-        $this.Devices | ForEach-Object { $_.Status = $this.Status }
-        $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled} | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
     }
 
     [DateTime]GetActiveLast() { 
@@ -1162,7 +1159,6 @@ Function Read-Config {
             # Merge default pool data with custom pool config
             If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true }
 
-            If (-not $PoolConfig.MinWorker) { $PoolConfig.MinWorker = $Local:Config.MinWorker }
             If (-not $PoolConfig.EarningsAdjustmentFactor) { $PoolConfig.EarningsAdjustmentFactor = $Local:Config.EarningsAdjustmentFactor }
             If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Local:Config.WorkerName }
             If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
