@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 class lolMiner : Miner { 
@@ -77,7 +77,6 @@ class lolMiner : Miner {
             $HashRate_Value = [Double]($Data.Algorithms[1].Total_Performance * $HashRate_Unit)
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            $Shares = [PSCustomObject]@{ }
             $Shares_Accepted = [Int64]$Data.Algorithms[1].Total_Accepted
             $Shares_Rejected = [Int64]$Data.Algorithms[1].Total_Rejected
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }

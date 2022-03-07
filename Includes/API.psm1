@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.2.1"
+    $APIVersion = "0.4.3.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
 
@@ -446,9 +446,6 @@ Function Start-APIServer {
                         ElseIf ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
                             If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) { 
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                    If ($_.Status -EQ [MinerStatus]::Running) { 
-                                        $Variables.EndLoopTime = Get-Date # End loop immediately
-                                    }
                                     If ($_.Earning -eq 0) { $_.Available = $true }
                                     $_.Earning_Accuracy = [Double]::NaN
                                     $_.Activated = 0 # To allow 3 attempts
@@ -462,14 +459,18 @@ Function Start-APIServer {
                                     ForEach ($Algorithm in $_.Algorithm) { 
                                         Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                         $_.Disabled = $false
-                                        $_.Status = [MinerStatus]::Idle
-                                        $_.Reason = @($_.Reason | Where-Object { $_ -ne "Disabled by user" })
-                                        $_.Reason = @($_.Reason | Where-Object { $_ -ne "0 H/s Stat file" })
-                                        If (-not $_.Reason) { $_.Available = $true }
                                     }
                                     # Also clear power usage
                                     Remove-Stat -Name "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -ne "Disabled by user" })
+                                    $_.Reason = @($_.Reason | Where-Object { $_ -ne "0 H/s Stat file" })
+                                    If (-not $_.Reason) { $_.Available = $true }
+
+                                    If ($_.Status -EQ [MinerStatus]::Running) { 
+                                        $Variables.EndLoopTime = Get-Date # End loop immediately
+                                    }
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
                                 $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
@@ -482,19 +483,20 @@ Function Start-APIServer {
                         ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
                             If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) { 
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
-                                    If ($_.Status -EQ [MinerStatus]::Running) { $_.Data = @() }
                                     If ($_.Earning -eq 0) { $_.Available = $true }
                                     If ($Variables.CalculatePowerCost) { 
                                         $_.MeasurePowerUsage = $true
                                         $_.Activated = 0 # To allow 3 attempts
-                                        If ($_.Status -EQ [MinerStatus]::Running) { 
-                                            $Variables.EndLoopTime = Get-Date # End loop immediately
-                                        }
                                     }
                                     $Stat_Name = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
                                     $Data += "`n$Stat_Name"
                                     Remove-Stat -Name "$($Stat_Name)_PowerUsage"
-                                    $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = [Double]::NaN
+                                    $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
+
+                                    If ($_.Status -EQ [MinerStatus]::Running) { 
+                                        $_.Data = @()
+                                        $Variables.EndLoopTime = Get-Date # End loop immediately
+                                    }
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose
                                 $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."

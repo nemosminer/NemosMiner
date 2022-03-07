@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 # Window handling
@@ -303,19 +303,19 @@ Class Miner {
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                DateTime       = [String](Get-Date -Format o)
+                DateTime       = (Get-Date -Format o)
                 Action         = "Launched"
-                Name           = [String]$this.Name
+                Name           = $this.Name
                 Device         = ($this.Devices.Name | Sort-Object) -join "; "
-                Type           = [String]$this.Type
-                Account        = [String]($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-                Pool           = [String]($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+                Type           = $this.Type
+                Account        = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+                Pool           = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Algorithm      = $this.Workers.Pool.Algorithm -join "; "
                 Duration       = ""
-                Earning        = [Double]$this.Earning
-                Earning_Bias   = [Double]$this.Earning_Bias
-                Profit         = [Double]$this.Profit
-                Profit_Bias    = [Double]$this.Profit_Bias
+                Earning        = $this.Earning
+                Earning_Bias   = $this.Earning_Bias
+                Profit         = $this.Profit
+                Profit_Bias    = $this.Profit_Bias
                 CommandLine    = $this.CommandLine
                 LastDataSample = $null
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
@@ -344,12 +344,10 @@ Class Miner {
 
     [MinerStatus]GetStatus() { 
         If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
-            $this.Status = [MinerStatus]::Running
-            Return $this.Status
+            Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq [MinerStatus]::Running) { 
-            $this.Status = [MinerStatus]::Failed
-            Return $this.Status
+            Return [MinerStatus]::Failed
         }
         Else { 
             Return $this.Status
@@ -366,21 +364,22 @@ Class Miner {
                 $this.StopMining()
             }
             Default { 
-                $this.Status = $Status
+                $this.Status = [MinerStatus]::Failed
                 $this.StopMining()
             }
         }
     }
 
     hidden StopMining() { 
-        $this.EndTime = (Get-Date).ToUniversalTime()
-        If ($this.GetStatus() -eq [MinerStatus]::Running) { 
+        If ($this.GetStatus() -ne [MinerStatus]::Failed) { 
             Write-Message "Stopping miner '$($this.Name) $($this.Info)'..."
             $this.StatusMessage = "Stopping $($this.Info)"
         }
 
         # Stop Miner data reader
         $this.StopDataReader()
+
+        $this.EndTime = (Get-Date).ToUniversalTime()
 
         If ($this.ProcessId) { 
             If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
@@ -393,40 +392,31 @@ Class Miner {
             $this.Process = $null 
         }
 
+        $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
+
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            DateTime       = [String](Get-Date -Format o)
-            Action         = If ($this.Status -eq [MinerStatus]::Failed) { "Failed" } Else { "Stopped" }
-            Name           = [String]$this.Name
-            Device         = [String]($this.Devices.Name | Sort-Object) -join "; "
-            Type           = [String]$this.Type
-            Account        = [String]($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-            Pool           = [String]($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm      = [String]$this.WorkersRunning.Pool.Algorithm -join "; "
-            Duration       = "{0:hh\:mm\:ss}" -f  ($this.EndTime - $this.BeginTime)
-            Earning        = [Double]$this.Earning
-            Earning_Bias   = [Double]$this.Earning_Bias
-            Profit         = [Double]$this.Profit
-            Profit_Bias    = [Double]$this.Profit_Bias
+            DateTime       = (Get-Date -Format o)
+            Action         = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
+            Name           = $this.Name
+            Device         = ($this.Devices.Name | Sort-Object) -join "; "
+            Type           = $this.Type
+            Account        = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            Pool           = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+            Algorithm      = $this.WorkersRunning.Pool.Algorithm -join "; "
+            Duration       = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
+            Earning        = $this.Earning
+            Earning_Bias   = $this.Earning_Bias
+            Profit         = $this.Profit
+            Profit_Bias    = $this.Profit_Bias
             CommandLine    = ""
             LastDataSample = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
-        If ($this.Status -eq [MinerStatus]::Running) { 
-            $this.Status = [MinerStatus]::Idle
-            $this.StatusMessage = "Idle"
-            $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-        }
-        Else { 
-            $this.Status = [MinerStatus]::Failed
-            $this.StatusMessage = "Failed $($this.Info)"
-            $this.Devices | ForEach-Object { $_.Status = "Failed" }
-        }
+        $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
 
-        $this.Devices | ForEach-Object { 
-            If ($_.State -eq [DeviceState]::Disabled) { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
-            Else { $_.Status = ($this.StatusMessage -replace " .*") }
-        }
+        $this.Devices | ForEach-Object { $_.Status = $this.Status }
+        $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled} | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
     }
 
     [DateTime]GetActiveLast() { 
@@ -576,7 +566,8 @@ Class Miner {
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
-        ElseIf ($this.Workers | Where-Object Speed -EQ 0) { 
+        # ElseIf ($this.Workers | Where-Object Speed -EQ 0) { 
+        ElseIf ($this.Workers[0].Speed -EQ 0) { # Allow 0 hashrate on secondary algorithm
             $this.Status = [MinerStatus]::Failed
             $this.Available = $false
             $this.Disabled = $false
@@ -749,8 +740,8 @@ Function Stop-Mining {
         $Variables.Summary = "Stopping mining processes..."
         Write-Message -Level Info $Variables.Summary
 
-        ForEach ($Miner in ($Variables.Miners | Select-Object | Where-Object { $_.GetStatus() -EQ [MinerStatus]::Running })) { 
-            $Miner.StopMining()
+        $Variables.Miners | Where-Object ProcessID | ForEach-Object { 
+            $_.SetStatus([MinerStatus]::Idle)
         }
         $Variables.WatchdogTimers = @()
         $Variables.CoreRunspace.Close()
@@ -942,51 +933,46 @@ Function Write-Message {
         [Switch]$Console = $false
     )
 
-    Begin { }
-    Process { 
+    If ($Level -in $Config.LogToScreen) { 
+        # Update status text box in GUI
+        If ($Variables.LabelStatus) { 
+            $Variables.LabelStatus.Lines += $Message
 
-        If ($Level -in $Config.LogToScreen) { 
-            # Update status text box in GUI
-            If ($Variables.LabelStatus) { 
-                $Variables.LabelStatus.Lines += $Message
+            # Keep only 100 lines, more lines impact performance
+            $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
 
-                # Keep only 100 lines, more lines impact performance
-                $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
-
-                $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
-                $Variables.LabelStatus.ScrollToCaret()
-                $Variables.LabelStatus.Refresh()
-            }
-
-            # Write to console
-            Switch ($Level) { 
-                "Error"   { Write-Host $Message -ForegroundColor "Red" }
-                "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
-                "Info"    { Write-Host $Message -ForegroundColor "White" }
-                "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
-                "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
-            }
+            $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
+            $Variables.LabelStatus.ScrollToCaret()
+            $Variables.LabelStatus.Refresh()
         }
 
-        If ($Variables.LogFile -and $Config.LogToFile -and $Level -in $Config.LogToFile) { 
-            # Get mutex named $($Variables.CurrentProduct)WriteLog. Mutexes are shared across all threads and processes. 
-            # This lets us ensure only one thread is trying to write to the file at a time. 
-            $Mutex = New-Object System.Threading.Mutex($false, "$($Variables.CurrentProduct)WriteMessage")
-
-            # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
-            If ($Mutex.WaitOne(1000)) { 
-
-                $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-
-                "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8 -ErrorAction SilentlyContinue
-                $Mutex.ReleaseMutex()
-            }
-            Else { 
-                Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
-            }
+        # Write to console
+        Switch ($Level) { 
+            "Error"   { Write-Host $Message -ForegroundColor "Red" }
+            "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
+            "Info"    { Write-Host $Message -ForegroundColor "White" }
+            "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
+            "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
         }
     }
-    End { }
+
+    If ($Variables.LogFile -and $Config.LogToFile -and $Level -in $Config.LogToFile) { 
+        # Get mutex named $($Variables.CurrentProduct)WriteLog. Mutexes are shared across all threads and processes. 
+        # This lets us ensure only one thread is trying to write to the file at a time. 
+        $Mutex = New-Object System.Threading.Mutex($false, "$($Variables.CurrentProduct)WriteMessage")
+
+        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
+        If ($Mutex.WaitOne(1000)) { 
+
+            $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+            "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8 -ErrorAction SilentlyContinue
+            $Mutex.ReleaseMutex()
+        }
+        Else { 
+            Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
+        }
+    }
 }
 
 Function Send-MonitoringData { 
@@ -1214,7 +1200,6 @@ Function Read-Config {
             }
             If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
             If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = @($PoolConfig.Algorithm -replace " " -split ",") }
-            $PoolConfig.Region = $PoolConfig.Region | Where-Object { $_ -notin @($PoolConfig.ExcludeRegion) }
         }
         $PoolsConfig.$PoolName = $PoolConfig
     }
@@ -1359,7 +1344,7 @@ Function Set-Stat {
     $Disabled = $Value -eq -1
     $Stat = Get-Stat -Name $Name
 
-    If ($Stat -is [Hashtable] -and $Stat.IsSynchronized) { 
+    If ($Stat -is [Hashtable] -and $Stat.IsSynchronized -and -not [Double]::IsNaN($Stat.Minute_Fluctuation)) { 
         If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
         If ($Duration -le 0) { Return $Stat }
@@ -2512,10 +2497,6 @@ Function Get-CoinName {
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
     }
-    If ($Currency) { 
-        "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
-        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
-    }
     Return $null
 }
 
@@ -2575,7 +2556,7 @@ Function Initialize-Autoupdate {
     $NemosMinerFileHash = (Get-FileHash ".\$($Variables.CurrentProduct).ps1").Hash
 
     "Version checker: New version $($UpdateVersion.Version) found. " | Tee-Object $UpdateLog | Write-Message -Level Verbose
-    "Starting auto update - Logging changes to '$($UpdateLog.Replace("$(Convert-Path '.\')\", ''))'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
+    "Starting auto update - Logging changes to '.\$($UpdateLog.Replace("$(Convert-Path '.\')\", ''))'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
 
     # Setting autostart to true
     If ($Variables.MiningStatus -eq [MinerStatus]::Running) { $Config.AutoStart = $true }
@@ -2604,7 +2585,7 @@ Function Initialize-Autoupdate {
     $Variables.NewMiningStatus = "Idle"
 
     # Backup current version folder in zip file; exclude existing zip files and download folder
-    "Backing up current version as '$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+    "Backing up current version as '.\$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
     Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!logs -x!cache -x!$UpdateLog -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
     Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
     Remove-Item -Path "$($UpdateLog)_tmp" -Force
@@ -2809,6 +2790,7 @@ Function Update-ConfigFile {
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindows" { $Config.MinerWindowStyle = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindowsNormalWhenBenchmarking" { $Config.MinerWindowStyleNormalWhenBenchmarking = $Config.$_; $Config.Remove($_) }
+            "SSL" { $Config.Remove($_) }
             "UserName" { 
                 If (-not $Config.MiningPoolHubUserName) { $Config.MiningPoolHubUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
@@ -2853,8 +2835,8 @@ Function Update-ConfigFile {
     }
 
     # Rename MPH to MiningPoolHub
-    $Config.PoolName -replace "MPH", "MiningPoolHub"
-    $Config.PoolName -replace "MPHCoins", "MiningPoolHubCoins"
+    $Config.PoolName = $Config.PoolName -replace "MPH", "MiningPoolHub"
+    $Config.PoolName = $Config.PoolName -replace "MPHCoins", "MiningPoolHubCoins"
 
     # Available regions have changed
     If (-not (Get-Region $Config.Region -List)) { 

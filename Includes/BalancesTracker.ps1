@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 # Start transcript log
@@ -92,7 +92,7 @@ While ($true) {
 
         # Read exchange rates
         $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
-        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies | Sort-Object -Unique)) | Select-Object -Unique)
+        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
         If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies -or $Config.BalancesTrackerPollInterval -lt 1 -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-3))) { Get-Rate }
 
         $BalanceObjects | Where-Object { $_.DateTime -gt $Now } | ForEach-Object { 

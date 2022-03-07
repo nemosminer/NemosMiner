@@ -3,7 +3,7 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Devices | Where-Object Type -EQ "NVIDIA")) { Return }
 
 $Uri = Switch ($DriverVersion.CUDA) { 
-    { $_ -ge "11.2" } { "https://github.com/Minerx117/miners/releases/download/CryptoDredge/CryptoDredge_0.26.0_cuda_11.2_windows.zip" }
+    { $_ -ge "11.2" } { "https://github.com/Minerx117/miners/releases/download/CryptoDredge/CryptoDredge_0.26.0_cuda_11.2_windows.zip"; Break }
     Default { Return }
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -39,7 +39,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) * 2 + 1)
 
         $Algorithms | ForEach-Object { 
 

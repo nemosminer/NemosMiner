@@ -6,6 +6,27 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.20 (RC20) 07.03.2022
+===============================================
+
+Core:
+- Remove 'SSL' config item (only NiceHash supports SSL & Non SSL connections on some algorithms)
+
+Fixes:
+- Core: Do not add failed miners twice ('failed' & 'stopped') to switching log.
+- lolMiner API: Rejected shares count in dual algorithm mode broken (regression from 4.0.0.19)
+- WebGUI / Config editor: Fix typos
+
+Miner changes:
+. CcminerKlausT-v8.26x
+- GMiner-v2.84
+- SRBMinerMulti-v0.9.2
+- TeamBlackMiner-v1.57, disable SSL (Sorry. SSL is not fully implemented yet)
+
+Pools:
+- Added TonPool & TonWales
+
+
 Changelog NemosMiner 4.0.0.19 (RC19) 25.02.2022
 ===============================================
 
@@ -13,8 +34,10 @@ BalancesTracker:
 - ProHashing does not send balance if all is paid -> remove from balances
 
 Core:
+- Added region 'HongKong'
 - Detect and rebuild broken 'PoolsLastUsed.json' file
 - Fix 'End Loop' message
+- All miners: allow 2 TCP ports per miner (to support dual algorithm mining for miners like TeamRedMiner)
 - Remove obsolete miner property 'Intervals'
 
 Fixes:

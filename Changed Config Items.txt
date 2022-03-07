@@ -276,6 +276,7 @@ Removed Config Items
   "MarginOfError": 0,4, obsolete
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
+  "SSL": obsolete (only NiceHash supports SSL & non-SSL connections on some algorithms)
   "Type": ["AMD", "CPU", "NVIDIA"],  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "TypeAMD": true, obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "TypeCPU": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"

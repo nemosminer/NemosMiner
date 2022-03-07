@@ -1,11 +1,12 @@
 @echo off
 cd /d %~dp0
-set /p execute=This process will delete all unnecessary log files created by the miners and MultiPoolMiner to free up space. Are you sure you want to continue? [Y/N]
+set /p execute=This process will delete all unnecessary log files created by the miners and NemosMiner to free up space. Are you sure you want to continue? [Y/N]
 IF /I "%execute%"=="Y" (
-	if exist "Bin\Cryptonight-Claymore\*_log.txt" del "Bin\Cryptonight-Claymore\*_log.txt"
-	if exist "Bin\Equihash-Claymore\*_log.txt" del "Bin\Equihash-Claymore\*_log.txt"
-	if exist "Bin\Ethash-Claymore\*_log.txt" del "Bin\Ethash-Claymore\*_log.txt"
-	for /f "skip=1 eol=: delims=" %%F in ('dir /b /o-d "Logs\*.txt"') do @del "Logs\%%F"
+	cd .\Bin
+	for /f "delims=" %%F in ('dir /b /s "*.log"') do @del "%%F"
+	cd ..\Logs
+	for /f "delims=" %%F in ('dir /b /s "*.log"') do @del "%%F"
+	cd ..
 	ECHO All existing log files have been successfully deleted. 
 	PAUSE
 )

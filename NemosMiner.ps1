@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 [CmdletBinding()]
@@ -167,7 +167,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, # I)f true will report worker status to central monitoring server
     [Parameter(Mandatory = $false)]
-    [Double]$RunningMinerGainPct = 12, # As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
+    [Double]$RunningMinerGainPct = 10, # As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
@@ -200,8 +200,6 @@ param(
     [String]$SnakeTailExe = ".\Utils\SnakeTail.exe", # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net], leave empty to disable
     [Parameter(Mandatory = $false)]
     [String]$SnakeTailConfig = ".\Utils\NemosMiner_LogReader.xml", # Path to SnakeTail session config file
-    [Parameter(Mandatory = $false)]
-    [Switch]$SSL = $false, # If true will prefer pools which support SSL connections
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
@@ -253,7 +251,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.19" #RC19
+    Version      = [System.Version]"4.0.0.20" #RC20
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }

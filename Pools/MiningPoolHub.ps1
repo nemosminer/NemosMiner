@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -34,7 +34,6 @@ param(
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolName $Name)
-$PoolRegions = $PoolConfig.Region
 
 If ($PoolConfig.UserName) { 
     If ($PoolVariant -match "Coins$") { 
@@ -59,13 +58,11 @@ If ($PoolConfig.UserName) {
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
-            $Price = $Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
-
             # Temp fix
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
                 "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-                "Lyra2v2"  { $Current.host_list = $Current.host } # Error in API
+                "Lyra2RE2" { $Current.host_list = $Current.host } # Error in API
                 "Skein"    { $Current.host_list = $Current.host } # Error in API
                 "VertHash" { $Current.host_list = $Current.host } # Error in API
                 "Yescrypt" { $Current.host_list = $Current.host } # Error in API
@@ -80,7 +77,7 @@ If ($PoolConfig.UserName) {
                     BaseName                 = [String]$Name
                     Algorithm                = [String]$Algorithm_Norm
                     Currency                 = [String]$Currency
-                    Price                    = [Double]$Price
+                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                     StablePrice              = [Double]$Stat.Week
                     Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -116,8 +113,6 @@ If ($PoolConfig.UserName) {
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
-            $Price = $Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
-
             # Temp fix
             $PoolRegions = If ($Current.all_host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
@@ -134,7 +129,7 @@ If ($PoolConfig.UserName) {
                     BaseName                 = [String]$Name
                     Algorithm                = [String]$Algorithm_Norm
                     Currency                 = [String]$Current.current_mining_coin_symbol
-                    Price                    = [Double]$Price
+                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
                     StablePrice              = [Double]$Stat.Week
                     Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor

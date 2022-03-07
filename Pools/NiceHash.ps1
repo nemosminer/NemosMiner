@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -96,27 +96,7 @@ If ($Wallet) {
                 SSL                      = $false
                 Fee                      = [Decimal]$Fee
                 EstimateFactor           = [Decimal]1
-            }
-
-            If ($Algorithm_Norm -in @("BeamV3", "CryptonightR", "Equihash", "EquihashBTG", "Ethash", "RandomX")) { 
-                [PSCustomObject]@{ 
-                    Name                     = [String]$PoolVariant
-                    BaseName                 = [String]$Name
-                    Algorithm                = [String]$Algorithm_Norm
-                    Currency                 = [String]$Currency
-                    Price                    = [Double]$Stat.Live
-                    StablePrice              = [Double]$Stat.Week
-                    Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
-                    Port                     = [UInt16]($Port + 30000)
-                    User                     = [String]$User
-                    Pass                     = "x"
-                    Region                   = [String]$Region_Norm
-                    SSL                      = $true
-                    Fee                      = [Decimal]$Fee
-                    EstimateFactor           = [Decimal]1
-                }
+                Updated                  = [DateTime]$Stat.Updated
             }
         }
     }

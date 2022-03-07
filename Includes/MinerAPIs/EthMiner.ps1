@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 class EthMiner : Miner { 
@@ -49,7 +49,7 @@ class EthMiner : Miner {
             ElseIf ($HashRate_Name -eq "EthashLowMem") { $HashRate_Value *= 1000 }
             ElseIf ($HashRate_Name -eq "UbqHash")      { $HashRate_Value *= 1000 }
         }
-        If ($HashRate_Name -eq "NeoScrypt")           { $HashRate_Value *= 1000 }
+        If ($HashRate_Name -eq "Neoscrypt")           { $HashRate_Value *= 1000 }
         ElseIf ($HashRate_Name -eq "BitcoinInterest") { $HashRate_Value *= 1000 }
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 

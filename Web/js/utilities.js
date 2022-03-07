@@ -11,11 +11,11 @@ function formatMiners(data) {
     // that is easier to display and manipulate in a table
     $.each(data, function(index, item) {
       // Format miner link
-      if (item.MinerUri != null) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
+      if (item.MinerUri) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
       else item.tName = item.Name;
 
       // Format the device(s)
-      if (item.DeviceName != null) item.tDevices = item.DeviceName.toString();
+      if (item.DeviceName) item.tDevices = item.DeviceName.toString();
       else item.tDevices = '';
 
       // Format the algorithm data
@@ -57,7 +57,7 @@ function formatMiners(data) {
       item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
 
       // Format the live speed(s)
-      if (item.Speed_Live != null) {
+      if (item.Speed_Live) {
         if (item.Speed_Live.length > 0) item.tPrimarySpeedLive = item.Speed_Live[0];
         if (item.Speed_Live.length > 1) item.tSecondarySpeedLive = item.Speed_Live[1];
       }

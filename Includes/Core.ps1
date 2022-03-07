@@ -19,15 +19,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.19 (RC19)
-Version date:   25 February 2022
+Version:        4.0.0.20 (RC20)
+Version date:   07 March 2022
 #>
 
 using module .\Include.psm1
+using module .\API.psm1
 
 $ProgressPreference = "SilentlyContinue"
 
-Function Core-Loop { 
+Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
+
+While ($Variables.NewMiningStatus -eq "Running") { 
     $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # Always get the latest config
@@ -256,9 +259,9 @@ Function Core-Loop {
 
         # Load currency exchange rates from min-api.cryptocompare.com
         $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
-        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
+        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
         If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies -or $Config.BalancesTrackerPollInterval -lt 1 -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-3))) { Get-Rate }
-        $Variables.ExtraCurrencies = $Config.ExtraCurrencies 
+        $Variables.ExtraCurrencies = $Config.ExtraCurrencies
 
         # Power cost preparations
         $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
@@ -388,7 +391,7 @@ Function Core-Loop {
                 $_.Best = $false
                 $_.Reason = $null
 
-                If ($Pool = $Variables.NewPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Host -EQ $_.Host | Where-Object Port -EQ $_.Port | Where-Object SSL -EQ $_.SSL | Select-Object -First 1) { 
+                If ($Pool = $Variables.NewPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Host -EQ $_.Host | Where-Object Port -EQ $_.Port | Select-Object -First 1) { 
                     $_.CoinName                 = $Pool.CoinName
                     $_.Currency                 = $Pool.Currency
                     $_.EarningsAdjustmentFactor = $Pool.EarningsAdjustmentFactor
@@ -458,14 +461,14 @@ Function Core-Loop {
             Remove-Variable PriceThreshold -ErrorAction SilentlyContinue
             # Algorithms disabled
             $Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in generic config)" }
-            $Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.$(Get-PoolName $_.BaseName).Algorithm } | ForEach-Object { $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in $(Get-PoolName $_) pool config)" }
+            $Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.$(Get-PoolName $_.BaseName).Algorithm } | ForEach-Object { $_.Reason += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.BaseName) pool config)" }
             # Algorithms not enabled
             If ($Config.Algorithm -like "+*") { $Pools | Where-Object { "+$($_.Algorithm)" -notin $Config.Algorithm } | ForEach-Object { $_.Reason += "Algorithm not enabled (in generic config)" } }
-            $Pools | Where-Object { $PoolsConfig.$(Get-PoolName $_).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.$(Get-PoolName $_).Algorithm } | ForEach-Object { $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $(Get-PoolName $_) pool config)" }
+            $Pools | Where-Object { $PoolsConfig.$($_.BaseName).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.$($_.BaseName).Algorithm } | ForEach-Object { $_.Reason += "Algorithm not enabled (``-$($_.Algorithm)``in $($_.BaseName) pool config)" }
             # Region exclusions
-            $Pools | Where-Object { $PoolsConfig.$(Get-PoolName $_).ExcludeRegion -and (Compare-Object @($PoolsConfig.$(Get-PoolName $_).ExcludeRegion | Select-Object) @($_.Region) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { $_.Reason += "Region excluded (in $(Get-PoolName $_) pool config)" }
+            $Pools | Where-Object { $PoolsConfig.$($_.BaseName).ExcludeRegion -and $_.Region -in @($PoolsConfig.$($_.BaseName).ExcludeRegion) } | ForEach-Object { $_.Reason += "Region excluded (``$($_.Region)`` in $($_.BaseName) pool config)" }
             # MinWorkers
-            $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$(Get-PoolName $_).MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$(Get-PoolName $_).MinWorker)`` in $(Get-PoolName $_) pool config)" }
+            $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$($_.BaseName).MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
             $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reason += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
 
             # Update pools last used, required for BalancesKeepAlive
@@ -532,7 +535,7 @@ Function Core-Loop {
             }
 
             # Sort best pools
-            [Pool[]]$SortedAvailablePools = $Pools | Where-Object Available -EQ $true | Sort-Object { $_.Name -notin $PoolNamesToKeepBalancesAlive }, { - $_.StablePrice * $_.Accuracy }, { $_.SSL -ne $Config.SSL }, { $Variables.Regions.($Config.Region).IndexOf($_.Region) }
+            [Pool[]]$SortedAvailablePools = $Pools | Where-Object Available -EQ $true | Sort-Object { $_.Name -notin $PoolNamesToKeepBalancesAlive }, { - $_.StablePrice * $_.Accuracy }, { $Variables.Regions.($Config.Region).IndexOf($_.Region) }
             (($SortedAvailablePools | Where-Object Available  -EQ $true).Algorithm | Select-Object -Unique) | ForEach-Object { 
                 $SortedAvailablePools | Where-Object Available -EQ $true | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
             }
@@ -602,15 +605,15 @@ Function Core-Loop {
                     $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
                         $LastSharesData = ($Miner.Data | Select-Object -Last 1).Shares
                         If ($LastSharesData.$_ -and $LastSharesData.$_[1] -gt 0 -and $LastSharesData.$_[2] -gt [Int](1 / $Config.AllowedBadShareRatio) -and $LastSharesData.$_[1] / $LastSharesData.$_[2] -gt $Config.AllowedBadShareRatio) { 
-                            $Miner.SetStatus([MinerStatus]::Failed)
                             Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' stopped. Reason: Too many bad shares (Shares Total = $($LastSharesData.$_[2]), Rejected = $($LastSharesData.$_[1]))." 
+                            $Miner.SetStatus([MinerStatus]::Failed)
                         }
                     }
                 }
             }
             Else { 
-                $Miner.SetStatus([MinerStatus]::Failed)
                 Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
+                $Miner.SetStatus([MinerStatus]::Failed)
             }
         }
 
@@ -655,8 +658,8 @@ Function Core-Loop {
                         $Variables.PoolsLastUsed.(Get-PoolName $Worker.Pool.Name) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                     }
                     ElseIf ($Miner_Speeds.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Speeds.$Algorithm -gt $Stat.Week * 2 -or $Miner_Speeds.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
+                        Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' '))."
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' ')). Stopping miner..."
                     }
                 }
             }
@@ -669,8 +672,8 @@ Function Core-Loop {
                 }
                 ElseIf ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt $Stat.Week * 2 -or $PowerUsage -lt $Stat.Week / 2)) { 
                     # Stop miner if new value is outside ±200% of current value
+                    Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W)."
                     $Miner.SetStatus([MinerStatus]::Failed)
-                    Write-Message -Level Warn "$($Miner.Name) $($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W). Stopping miner..."
                 }
             }
             Remove-Variable Factor, LastSharesData, Stat_Name, Stat_Span, Stat -ErrorAction Ignore
@@ -773,7 +776,7 @@ Function Core-Loop {
 
         # Filter miners
         $Miners | Where-Object Disabled -EQ $true | ForEach-Object { $_.Reason += "Disabled by user" }
-        $Miners | Where-Object { $_.Workers | Where-Object Speed -EQ 0 } | ForEach-Object { $_.Reason += "0 H/s Stat file" }
+        $Miners | Where-Object { $_.Workers[0].Speed -EQ 0 } | ForEach-Object { $_.Reason += "0 H/s Stat file" } # Allow 0 hashrate for secondary algorithm
         If ($Config.ExcludeMinerName.Count) { $Miners | Where-Object { (Compare-Object $Config.ExcludeMinerName @($_.BaseName, "$($_.BaseName)-$($_.Version)", $_.Name | Select-Object -Unique) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | ForEach-Object { $_.Reason += "ExcludeMinerName ($($Config.ExcludeMinerName -Join '; '))" } }
         If ($Config.ExcludeDeviceName.Count) { $Miners | Where-Object { (Compare-Object $Config.ExcludeDeviceName @($_.DeviceName | Select-Object) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 } | ForEach-Object { $_.Reason += "ExcludeDeviceName ($($Config.ExcludeDeviceName -Join '; '))" }}
         $Miners | Where-Object Available -EQ $true | Where-Object Earning -EQ 0 | ForEach-Object { $_.Reason += "Earning -eq 0" }
@@ -981,15 +984,15 @@ Function Core-Loop {
     }
 
     # Stop running miners
-    ForEach ($Miner in @((@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -EQ "<=" } <# miner object is gone #>)))) { 
+    ForEach ($Miner in @(@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -EQ "<=" } <# miner object is gone #>))) { 
         If ($Miner.Status -eq [MinerStatus]::Failed) { 
-            $Miner.SetStatus([MinerStatus]::Failed) # Stop miner (may be set as failed in miner.refresh() because of 0 hash rate)
+            If ($Miner.ProcessID) { $Miner.SetStatus([MinerStatus]::Failed) } # Stop miner (may be set as failed in miner.refresh() because of 0 hash rate)
             $Miner.Info = ""
             $Miner.WorkersRunning = @()
         }
         ElseIf ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
-            $Miner.SetStatus([MinerStatus]::Failed)
             Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
+            $Miner.SetStatus([MinerStatus]::Failed)
             $Miner.StatusMessage = "Failed"
             $Miner.Info = ""
             $Miner.WorkersRunning = @()
@@ -1007,7 +1010,6 @@ Function Core-Loop {
             $Miner.WorkersRunning = @()
         }
     }
-    Remove-Variable CompareMiners, Miner, Miners, WatchdogTimer, Worker -ErrorAction Ignore
 
     # Kill stray miners
     $Loops = 0
@@ -1030,6 +1032,8 @@ Function Core-Loop {
         Start-Sleep -Seconds 10
         Continue
     }
+
+    Remove-Variable CompareMiners, Miner, Miners, WatchdogTimer, Worker -ErrorAction Ignore
 
     # Optional delay to avoid blue screens
     Start-Sleep -Seconds $Config.Delay -ErrorAction Ignore
@@ -1119,18 +1123,9 @@ Function Core-Loop {
     Get-Job -State "Stopped" | Remove-Job -Force -ErrorAction Ignore
 
     $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
-
-    $Error.Clear()
-}
-
-Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
-
-While ($Variables.NewMiningStatus -eq "Running") { 
-    Core-Loop
-
     $Variables.RefreshNeeded = $true
 
-    $RunningMiners = @($Variables.Miners | Where-Object Best -EQ $true | Sort-Object -Descending Benchmark, MeasurePowerUsage)
+    $RunningMiners = @($Variables.Miners | Where-Object WorkersRunning | Sort-Object -Descending Benchmark, MeasurePowerUsage)
     $Interval = ($RunningMiners.DataCollectInterval | Measure-Object -Minimum).Minimum
     $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
     $ExitLoopMessage = ""
@@ -1158,13 +1153,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 # Miner crashed
-                $Miner.SetStatus([MinerStatus]::Failed)
                 Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
+                $Miner.SetStatus([MinerStatus]::Failed)
             }
             ElseIf ($Miner.DataReaderJob.State -ne [MinerStatus]::Running) { 
                 # Miner data reader process failed
-                $Miner.SetStatus([MinerStatus]::Failed)
                 Write-Message -Level Error "Miner data reader '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
+                $Miner.SetStatus([MinerStatus]::Failed)
             }
             ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                 # Set miner priority
@@ -1180,14 +1175,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     # We must have data samples by now
                     If (($Miner.Data | Select-Object -Last 1).Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
                         # Miner has not provided first sample on time
-                        $Miner.SetStatus([MinerStatus]::Failed)
                         Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
+                        $Miner.SetStatus([MinerStatus]::Failed)
                         Break
                     }
                     ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds(3.5 * $Miner.DataCollectInterval) -lt (Get-Date).ToUniversalTime()) { 
                         # Miner stuck - no sample 10 seconds
-                        $Miner.SetStatus([MinerStatus]::Failed)
                         Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than 10 seconds."
+                        $Miner.SetStatus([MinerStatus]::Failed)
                         Break
                     }
                 }
@@ -1235,4 +1230,5 @@ While ($Variables.NewMiningStatus -eq "Running") {
     If ($Variables.NewMiningStatus -eq "Running") { Write-Message -Level Info "Ending cycle$($ExitLoopMessage)." }
 
     Remove-Variable BenchmarkingOrMeasuringMiners, ExitLoopMessage, FailedMiners, Interval, Message, Miner, NextLoop, RunningMiners, Sample, Samples -ErrorAction SilentlyContinue
+    $Error.Clear()
 }

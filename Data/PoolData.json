@@ -199,6 +199,39 @@
       }
     }
   },
+  "TonPool": { 
+    "GuaranteedPayoutCurrencies": [
+      "TON"
+    ],
+    "PayoutCurrency": "TON",
+    "Region": [
+      "asia",
+      "eu",
+      "hk",
+      "na"
+    ],
+    "Variant": { 
+      "TonPool": { 
+        "DivisorMultiplier": 1000000000000000000,
+        "PriceField": "last_24h"
+      }
+    }
+  },
+  "TonWhales": { 
+    "GuaranteedPayoutCurrencies": [
+      "TON"
+    ],
+    "PayoutCurrency": "TON",
+    "Region": [
+      "ru"
+    ],
+    "Variant": { 
+      "TonWhales": { 
+        "DivisorMultiplier": 1000000000000000000,
+        "PriceField": "profitabilityPerGh"
+      }
+    }
+  },
   "ZergPool": {
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "GuaranteedPayoutCurrencies": [
