@@ -19,7 +19,7 @@ Fixes:
 
 Miner changes:
 . CcminerKlausT-v8.26x
-- GMiner-v2.84
+- GMiner-v2.85
 - SRBMinerMulti-v0.9.2
 - TeamBlackMiner-v1.57, disable SSL (Sorry. SSL is not fully implemented yet)
 
