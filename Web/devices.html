@@ -259,13 +259,15 @@
               });
 
               $(function() {
-                $.ajax({url: '/devices/unsupported', success: function(result) {
-                  if (result == "") {
-                    document.getElementById("unsupporteddevices").style.visibility="hidden";
-                  } else {
-                    document.getElementById("unsupporteddevices").style.visibility="visible";
+                $.ajax({url: '/devices/unsupported', 
+                  success: function(result) {
+                    if (result == "") {
+                      document.getElementById("unsupporteddevices").style.visibility="hidden";
+                    } else {
+                      document.getElementById("unsupporteddevices").style.visibility="visible";
+                    }
                   }
-                }});
+                });
               });
 
               $('#enableddevices').on('all.bs.table', function () {

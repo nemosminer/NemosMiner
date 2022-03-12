@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { Return }
+If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $Uri = "https://github.com/Raptor3um/cpuminer-opt/releases/download/v2.0/cpuminer-take2-windows.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

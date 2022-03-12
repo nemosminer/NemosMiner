@@ -62,6 +62,24 @@
                 height: ($(window).height()) - $('h1').outerHeight(true) - 210
               })
 
+              if (config.WebGUIUseColor == true) {
+                $('#switchinglog').on('all.bs.table', function () {
+                  $("#switchinglog td:nth-child(3)").each(function () {
+                    switch(this.innerText) {
+                      case this.innerText.match('Launched')?.input:
+                        $(this).parent("tr").addClass('miner-running');
+                        break;
+                        case this.innerText.match('Stopped')?.input:
+                        $(this).parent("tr").addClass('miner-idle');
+                        break;
+                      case this.innerText.match('Failed')?.input:
+                        $(this).parent("tr").addClass('miner-measuring');
+                        break;
+                    };
+                  });
+                });
+              };
+    
               $('#clear-log').click(function () {
                 $command = '/functions/switchinglog/clear';
                 $('.modal-body').load($command, function() {

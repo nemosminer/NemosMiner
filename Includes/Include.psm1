@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.20 (RC20)
-Version date:   07 March 2022
+Version:        4.0.0.21 (RC21)
+Version date:   12 March 2022
 #>
 
 # Window handling
@@ -1138,7 +1138,7 @@ Function Read-Config {
 
     $DefaultPoolData = $Variables.PoolData
 
-    # Build custom pools configuation, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
+    # Build custom pools configuration, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
         $CustomPoolsConfig = [Ordered]@{ }
         Try { 
@@ -2492,6 +2492,10 @@ Function Get-CoinName {
 
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
+    }
+    If ($Currency) { 
+        "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
+        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
     }
     Return $null
 }

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.20 (RC20)
-Version date:   07 March 2022
+Version:        4.0.0.21 (RC21)
+Version date:   12 March 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.3.0"
+    $APIVersion = "0.4.4.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
 
@@ -236,11 +236,6 @@ Function Start-APIServer {
                                 $Data = "No configuration change"
                             }
                         }
-                        $Data = "<pre>$Data</pre>"
-                        Break
-                    }
-                    "/functions/config/edit" { 
-                        $Data = Edit-File $Variables.ConfigFile
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
@@ -400,12 +395,8 @@ Function Start-APIServer {
                             Break
                         }
                     }
-                    "/functions/poolsconfig/edit" { 
-                        $Data = Edit-File $Variables.PoolsConfigFile
-                        Break
-                    }
                     "/functions/stat/get" { 
-                        $TempStats = If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) }
+                        $TempStats = @(If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) })
 
                         If ($TempStats) { 
                             If ($null -ne $Parameters.Value) { 

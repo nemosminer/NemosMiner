@@ -6,6 +6,26 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.21 (RC21) 12.03.2022
+===============================================
+
+Fixes:
+- Core: Do not apply generic config value 'MinWorker' to all pool config entries
+- Core: Increase 'MinWorker' default to 25
+
+Miner changes:
+- BMiner-v16.4.10
+- CcminerKlausT-v8.26x2
+- GMiner-v2.86
+- PhoenixMiner-v6.0c
+- SRBMinerMulti-v0.9.3
+- TeamBlackMiner-v1.58
+- TeamRedMiner-v0.9.4.2
+
+Web GUI:
+- Config editor: Added button 'Edit Unprofitable Algorithms File'
+
+
 Changelog NemosMiner 4.0.0.20 (RC20) 07.03.2022
 ===============================================
 
@@ -18,7 +38,7 @@ Fixes:
 - WebGUI / Config editor: Fix typos
 
 Miner changes:
-. CcminerKlausT-v8.26x
+- CcminerKlausT-v8.26x
 - GMiner-v2.85
 - SRBMinerMulti-v0.9.2
 - TeamBlackMiner-v1.57, disable SSL (Sorry. SSL is not fully implemented yet)

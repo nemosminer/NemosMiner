@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object Type -EQ "NVIDIA")) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
 $Uri = "https://github.com/Minerx117/ccmineralexis78/releases/download/v1.5.2/ccmineralexis78.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

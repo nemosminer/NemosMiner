@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object Type -eq "NVIDIA")) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -eq "NVIDIA")) { Return }
 
 $Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.8y4rc2_win-x64.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -lt 8.6 <# No response in API with RTX cards #>})) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -lt 8.6 <# No response in API with RTX cards #>})) { Return }
 
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.3/ttminer503.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -10,8 +10,8 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo EAGLESONG" }
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = 4; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(40, 15); Arguments = " -algo KAWPOW" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo LYRA2V3" }
     [PSCustomObject]@{ Algorithm = "MTP";          MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster

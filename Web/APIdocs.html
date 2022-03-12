@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.0.20 (RC20)
-version date:   07 March 2022-->
+version:        4.0.0.21 (RC21)
+version date:   12 March 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.3.0)</h1>
+  <h1>NemosMiner API (version 0.4.4.4)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -233,10 +233,6 @@ version date:   07 March 2022-->
   <br>Parameters: List of device names to disable
   <br>e.g.: /functions/config/device/enable?DeviceName=CPU%2300?DeviceName=CPU%2300
   <br>
-  <br>/functions/config/edit
-  <br>Opens notepad to edit current config file. Notepad will remain in foreground until notepad is closed.
-  <br>Parameters: none
-  <br>
   <br>/functions/config/set
   <br>Write full config
   <br>Parameters: full config (JSON)
@@ -289,11 +285,7 @@ version date:   07 March 2022-->
   <br>/functions/stat/set
   <br>Set miner hashrate value (not useful for pool stats)
   <br>Parameters: Miner stat filter; Name=StatName, Algorithm=Algorithm(s), Type=HashRate, Value (0=failed; -1=disabled)
-  <br>e.g.: /functions/stat/set?Miners=%5B{"Name"%3A"PhoenixMiner-v5.9d-1xRadeonRX5808GB-EtcHash%26Blake2s-40"%2C"Algorithm"%3A%5B"EtcHash"%2C"Blake2s"%5D}%5D&Type=HashRate&Value=-1
-  <br>
-  <br>/functions/poolsconfig/edit
-  <br>Opens notepad to edit current pools config file. Notepad will remain in foreground until notepad is closed.
-  <br>Parameters: none
+  <br>e.g.: /functions/stat/set?Miners=%5B{"Name"%3A"PhoenixMiner-v6.0c-1xRadeonRX5808GB-EtcHash%26Blake2s-40"%2C"Algorithm"%3A%5B"EtcHash"%2C"Blake2s"%5D}%5D&Type=HashRate&Value=-1
   <br>
   <br>/functions/pool/enable
   <br>Enable disabled pool

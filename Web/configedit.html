@@ -176,6 +176,7 @@
                   </div>
                   <button type="button" id="editconfig-button" name="editconfig-button" title="Edit Config file&#10;It will become active in next cycle.">Edit Config File</button>
                   <button type="button" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig File</button>
+                  <button type="button" id="editunprofitablealgorithms-button" name="editunprofitablealgorithms-button" title="Edit Unprofitable Algorithms file&#10;It will become active in next cycle.">Edit Unprofitable Algorithms File</button>
                   <div style="line-height:150%;">
                     <br>
                   </div>
@@ -253,7 +254,10 @@
                     <div title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
                       <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable Single Algorithm Miners
                     </div>
-                    <div style="line-height:70%;">
+                    <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude Miners
+                      <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=64>
+                    </div>
+                    <div style="line-height:30%;">
                       <br>
                     </div>
                     <div title="Select miner set to be used by NemosMiner">Use
@@ -262,9 +266,6 @@
                         <option title="recommended, select to ensure best profitability" value=1>optimal Miners (more than one per Algorithm and Device)</option>
                         <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all Miners per Algorithm and Device (incl. those in UnprofitableAlgorithms.json)</option>
                       </select>
-                    </div>
-                    <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude Miners
-                      <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=64>
                     </div>
                     <div style="line-height:100%;">
                       <br>
@@ -475,7 +476,7 @@
             $(document).ready(function () {
               //Edit config file
               $('#editconfig-button').click(function () {
-                $('.modal-body').load('/functions/config/edit', function () {
+                $('.modal-body').load('/functions/file/edit?FileName=' + configfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
                     $('#myModal').modal({ 
@@ -490,9 +491,21 @@
 
               //Edit poolsconfig file
               $('#editpoolsconfig-button').click(function () {
-                $('.modal-body').load('/functions/poolsconfig/edit', function () {
+                $('.modal-body').load('/functions/file/edit?FileName=' + poolsconfigfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit PoolsConfig file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                  }
+                });
+              });
+
+              //Edit unprofitablealgorithms file
+              $('#editunprofitablealgorithms-button').click(function () {
+                $('.modal-body').load('/functions/file/edit?FileName=.\\Data\\UnprofitableAlgorithms.json', function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit Unprofitable Algorithms file');
                     $('#myModal').modal({ 
                       show: true
                     });
@@ -723,9 +736,9 @@
               $(document.getElementById('DisableSingleAlgoMining')).click(function (event) {
                 if (document.getElementById('DisableSingleAlgoMining').checked) document.getElementById('DisableDualAlgoMining').checked = false;
               });
+              if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
               if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 2) document.getElementById('MinerSet').value = config.MinerSet;
               else document.getElementById('MinerSet').value = 1;
-              if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
 
               // Miners Runtime Options
               if (config.MinerWindowStyle.toLowerCase() == "hidden") document.getElementById('MinerWindowStyleHidden').checked = true;
@@ -1058,8 +1071,8 @@
                   config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
                   config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
-                  config.MinerSet = parseInt(document.getElementById('MinerSet').value);
                   config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
+                  config.MinerSet = parseInt(document.getElementById('MinerSet').value);
 
                   // Miner Runtime Options
                   if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";

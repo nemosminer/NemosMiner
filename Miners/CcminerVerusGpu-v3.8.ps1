@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -ge 7.5 })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -ge 7.5 })) { Return }
 
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.8/ccminerGPU38.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

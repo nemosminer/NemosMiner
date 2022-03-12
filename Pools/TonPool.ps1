@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           TonPool.ps1
-Version:        4.0.0.20 (RC20)
-Version date:   07 March 2022
+Version:        4.0.0.21 (RC21)
+Version date:   12 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -39,7 +39,7 @@ $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMulti
 $PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
-If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
+If ($DivisorMultiplier -and $PriceField -and $Wallet -and $Variables.Rates.BTC.TON) { 
 
     Try { 
         $Request = Invoke-RestMethod -Uri "https://next.ton-pool.com/stats" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolTimeout

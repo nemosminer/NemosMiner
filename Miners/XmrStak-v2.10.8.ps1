@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.ComputeCapability -lt 8.6})) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.ComputeCapability -lt 8.6})) { Return }
 
 $Uri = "https://github.com/fireice-uk/xmr-stak/releases/download/2.10.8/xmr-stak-win64-2.10.8.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -9,7 +9,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGB = 4; Type = "AMD"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGB = 3; Type = "AMD"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v0.9.2 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGB = 3; Type = "AMD"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v0.9.3 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGB = 1; Type = "AMD"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGB = 1; Type = "AMD"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGB = 1; Type = "AMD"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noCPU --noNVIDIA --amd" }

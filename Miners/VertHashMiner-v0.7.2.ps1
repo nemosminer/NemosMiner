@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or ($_.Type -eq "NVIDIA" -and $_.OpenCl.ComputeCapability -ge "3.0") })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or ($_.Type -eq "NVIDIA" -and $_.OpenCl.ComputeCapability -ge "3.0") })) { Return }
 
 $Uri = "https://github.com/Minerx117/miners/releases/download/VertHashMiner/VertHashMiner_0.7.2.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

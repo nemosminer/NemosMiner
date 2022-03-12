@@ -1,8 +1,8 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object Type -EQ "NVIDIA")) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = Switch ($DriverVersion.CUDA) { 
+$Uri = Switch ($Variables.DriverVersion.CUDA) { 
     { $_ -ge "10.0" } { "https://github.com/Minerx117/miners/releases/download/CryptoDredge/CryptoDredge_0.16.0_cuda_10.0_windows.zip"; Break }
     Default { Return }
 }

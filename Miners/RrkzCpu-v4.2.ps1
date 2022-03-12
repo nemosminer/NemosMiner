@@ -1,13 +1,13 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { Return }
+If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $Uri = "https://github.com/RickillerZ/cpuminer-RKZ/releases/download/V4.2b/cpuminer-RKZ.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$()$Name)\cpuminer.exe"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.9.2 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.9.3 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo power2b" }
 )
 

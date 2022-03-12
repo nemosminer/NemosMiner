@@ -1,9 +1,11 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -lt 6.0 })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -ge 6.0 })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "10.0" -and $_ -lt "10.2" } { "https://github.com/KlausT/ccminer/releases/download/8.25/ccminer-825-cuda100-x64.zip"; Break }
+    { $_ -ge "11.6" } { "https://github.com/Minerx117/miners/releases/download/CcminerKlaust/ccminerklaust-826x2-cuda116-x64.7z"; Break }
+    { $_ -ge "11.5" } { "https://github.com/Minerx117/miners/releases/download/CcminerKlaust/ccminerklaust-826x2-cuda115-x64.7z"; Break }
+    { $_ -ge "10.2" } { "https://github.com/Minerx117/miners/releases/download/CcminerKlaust/ccminerklaust-826x2-cuda102-x64.7z"; Break }
     Default { Return }
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -11,16 +13,17 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
-    [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
-    [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo lyra2v2" }
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 2; MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 2; MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo skein" } # CcminerAlexis78-v1.5.2 is fastest
-    [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Whirlcoin"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo whirlcoin" }
-    [PSCustomObject]@{ Algorithm = "Whirlpool"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo whirlpool" }
-    [PSCustomObject]@{ Algorithm = "X11evo";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo x11evo --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "X17";       MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 15); Arguments = " --algo x17 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+    [PSCustomObject]@{ Algorithm = "C11";           MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+    [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo lyra2v2" }
+    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Skein";         MinMemGB = 2; MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo skein" } # CcminerAlexis78-v1.5.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Whirlcoin";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo whirlcoin" }
+    [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo whirlpool" }
+    [PSCustomObject]@{ Algorithm = "X11evo";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo x11evo --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "X17";           MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 15); Arguments = " --algo x17 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host } | Where-Object { -not $Pools.($_.Algorithm).SSL }) { 

@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -EQ "CPU")) { Return }
+If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $Uri = "https://github.com/fireworm71/veriumMiner/releases/download/v1.4/cpuminer_1.4_windows_x64_O2_GCC7.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

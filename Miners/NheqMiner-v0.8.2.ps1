@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -eq "CPU")) { Return }
+If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -eq "CPU")) { Return }
 
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/0.8.2/nheqminer082.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

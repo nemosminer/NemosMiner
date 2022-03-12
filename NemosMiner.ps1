@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.20 (RC20)
-Version date:   07 March 2022
+Version:        4.0.0.21 (RC21)
+Version date:   12 March 2022
 #>
 
 [CmdletBinding()]
@@ -121,7 +121,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$MinInterval = 1, # Minimum number of full cycles a miner must mine the same available algorithm@pool continously before switching is allowed (e.g. 3 would force a miner to stick mining algorithm@pool for min. 3 intervals before switching to another algorithm or pool)
     [Parameter(Mandatory = $false)]
-    [Int]$MinWorker = 10, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per pool setting configurable in 'PoolsConfig.json'
+    [Int]$MinWorker = 25, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per pool setting configurable in 'PoolsConfig.json'
     [Parameter(Mandatory = $false)]
     [String]$MonitoringServer = "", # Monitoring server hostname, default "https://nemosminer.com"
     [Parameter(Mandatory = $false)]
@@ -251,7 +251,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.20" #RC20
+    Version      = [System.Version]"4.0.0.21" #RC21
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -416,7 +416,7 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
 
 If ($Config.WebGUI -eq $true) { 
     Initialize-API
-    Start-LogReader # To bring SnakeTail bock in focus
+    Start-LogReader # To bring SnakeTail back in focus
 }
 
 $Variables.Summary = "Loading miner device information..."
@@ -475,13 +475,15 @@ $Variables.ShowCoinName = $Config.ShowCoinName
 $Variables.ShowCurrency = $Config.ShowCurrency
 $Variables.UIStyle = $Config.UIStyle
 
-If ($env:CUDA_DEVICE_ORDER -ne 'PCI_BUS_ID') { $env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID' } # Align CUDA id with nvidia-smi order
-If ($env:GPU_FORCE_64BIT_PTR -ne 1) { $env:GPU_FORCE_64BIT_PTR = 1 }                   # For AMD
-If ($env:GPU_MAX_HEAP_SIZE -ne 100) { $env:GPU_MAX_HEAP_SIZE = 100 }                   # For AMD
-If ($env:GPU_USE_SYNC_OBJECTS -ne 1) { $env:GPU_USE_SYNC_OBJECTS = 1 }                 # For AMD
-If ($env:GPU_MAX_ALLOC_PERCENT -ne 100) { $env:GPU_MAX_ALLOC_PERCENT = 100 }           # For AMD
-If ($env:GPU_SINGLE_ALLOC_PERCENT -ne 100) { $env:GPU_SINGLE_ALLOC_PERCENT = 100 }     # For AMD
-If ($env:GPU_MAX_WORKGROUP_SIZE -ne 256) { $env:GPU_MAX_WORKGROUP_SIZE = 256 }         # For AMD
+# Align CUDA id with nvidia-smi order
+$env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID'
+# For AMD
+$env:GPU_FORCE_64BIT_PTR = 1
+$env:GPU_MAX_HEAP_SIZE = 100
+$env:GPU_USE_SYNC_OBJECTS = 1
+$env:GPU_MAX_ALLOC_PERCENT = 100
+$env:GPU_SINGLE_ALLOC_PERCENT = 100
+$env:GPU_MAX_WORKGROUP_SIZE = 256
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }

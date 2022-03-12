@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($AvailableMiner_Devices = $Devices | Where-Object Type -in "AMD", "NVIDIA")) { Return }
+If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -in "AMD", "NVIDIA")) { Return }
 
 $Uri = "https://github.com/Minerx117/miners/releases/download/SPMinerVertHash/SPMinerVertHash_v5.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"

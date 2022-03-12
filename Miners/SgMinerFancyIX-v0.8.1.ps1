@@ -1,6 +1,7 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "AMD"})) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD"})) { Return }
+If ($Devices.Model -match "^Radeon RX [56]\d\d\d" -and $Device.Model -notmatch "^Radeon RX [56]\d\d\d") { Return } # Current code cannot auto handle both navi and pre-navi cards (https://github.com/fancyIX/sgminer-phi2-branch/issues/251)
 
 $Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.8.1/sgminer-fancyIX-win64-0.8.1.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -11,8 +12,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 23 --kernel heavyhash" }
     [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel neoscrypt-xaya" }
 )
-
-If ($Devices.Model -match "^Radeon RX [56]\d\d\d" -and $Device.Model -notmatch "^Radeon RX [56]\d\d\d") { Return } # Current code cannot auto handle both navi and pre-navi cards (https://github.com/fancyIX/sgminer-phi2-branch/issues/251)
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
 

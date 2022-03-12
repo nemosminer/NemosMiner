@@ -1,6 +1,6 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "AMD" -or $_.Type -eq "NVIDIA" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or $_.Type -eq "NVIDIA" })) { Return }
 
 $Uri = "https://github.com/just-a-miner/moreepochs/releases/download/v2.7/MoreEpochs_Mod_of_Claymore_ETH_Miner_v15Win_by_JustAMiner_v2.7.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -9,11 +9,11 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
 
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.006; MinMemGB = 5; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(45, 0); Arguments = " -platform 1" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.006; MinMemGB = 2; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(20, 15); Arguments = " -platform 1" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.006; MinMemGB = 5; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(45, 0); Arguments = " -platform 1" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.006; MinMemGB = 2; Type = "AMD"; MinerSet = 1; Tuning = " -rxboost 1"; WarmupTimes = @(20, 15); Arguments = " -platform 1" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.006; MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(45, 0); Arguments = " -platform 2" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.006; MinMemGB = 2; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(20, 15); Arguments = " -platform 2" } # PhoenixMiner-v5.9d may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.006; MinMemGB = 5; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(45, 0); Arguments = " -platform 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.006; MinMemGB = 2; Type = "NVIDIA"; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(20, 15); Arguments = " -platform 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -44,6 +44,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " -checkcert 0" }
 
+                # Apply tuning parameters
+                If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                
                 $_.Arguments += " -epool $Protocol$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -ewal $($Pools.($_.Algorithm).User)"
                 $_.Arguments += " -epsw $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" })"
 

@@ -1,3 +1,8 @@
+// Syntax:
+// "AlgorithmName": "*" = Algorithm is unprofitable as primary AND secondary algorithm
+// "AlgorithmName": "1" = Algorithm is unprofitable as primary algorithm, but profitable as secondary algorithm
+// "AlgorithmName": "2" = Algorithm is unprofitable as secondary algorithm, but profitable as primary algorithm
+
 {
   "AstralHash":  "*",
   "Bitcoin":  "*",

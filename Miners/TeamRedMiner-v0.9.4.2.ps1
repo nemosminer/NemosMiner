@@ -1,8 +1,8 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Devices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/TeamRedMiner/teamredminer-v0.9.4-win.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/TeamRedMiner/teamredminer-v0.9.4.2-win.zip"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
@@ -12,7 +12,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Autolykos2");           Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithm = @("Chukwa");               Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = @("Chukwa2");              Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithm = @("CryptonightCcx");       Fee = @(0.025);  MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" } # SRBMinerMulti-v0.9.2 is fastest
+    [PSCustomObject]@{ Algorithm = @("CryptonightCcx");       Fee = @(0.025);  MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" } # SRBMinerMulti-v0.9.3 is fastest
     [PSCustomObject]@{ Algorithm = @("CryptonightHeavy");     Fee = @(0.025);  MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = @("CryptonightHaven");     Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = @("CryptonightHeavyTube"); Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" }
@@ -25,8 +25,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("CryptonightUpx");       Fee = @(0.025);  MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cnv8_upx2 --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" }
     [PSCustomObject]@{ Algorithm = @("CuckarooD29");          Fee = @(0.025);  MinMemGB = 2.1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=cuckarood29_grin" } # 2GB is not enough
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");           Fee = @(0.025);  MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " --algo=cuckatoo31_grin" } # lolMiner-v1.46a is fastest
-    [PSCustomObject]@{ Algorithm = @("EtcHash");              Fee = @(0.0075); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=etchash" } # PhoenixMiner-v5.9d is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.0075); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" } # PhoenixMiner-v5.9d is fastest
+    [PSCustomObject]@{ Algorithm = @("EtcHash");              Fee = @(0.0075); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=etchash" } # PhoenixMiner-v6.0c is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.0075); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" } # PhoenixMiner-v6.0c is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "SHA256ton");  Fee = @(0.0075); MinMemGB = 5.0; MinerSet = 0; WarmupTimes = @(45, 90); Arguments = " --algo=ethash" }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Fee = @(0.0075); MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" }
     [PSCustomObject]@{ Algorithm = @("FiroPoW");              Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(45, 75); Arguments = " --algo=firopow" } # Wildrig-v0.31.2 is fastest on Polaris
@@ -81,7 +81,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     }
                 }
                 Else { 
-                    $_.Arguments += " --url=$(If ($Pools.($_.Algorithm[0]).SSL) { "stratum+ssl" } Else { $Protocol = "stratum+tcp" })://$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
+                    $_.Arguments += " --url=$(If ($Pools.($_.Algorithm[0]).SSL) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port)"
                     If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --eth_stratum_mode=nicehash" }
 
                     If ($_.Algorithm[0] -match "^Et(c)hash.+" -and $AvailableMiner_Devices.Model -notmatch "^Radeon RX [0-9]{3}.*") { $_.Fee = 0.0075 } # Polaris cards 0.75%
