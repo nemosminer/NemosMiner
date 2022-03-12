@@ -87,11 +87,11 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxEpic";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomepic" }
     [PSCustomObject]@{ Algorithm = "RandomGrft";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomgrft --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomHash2";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "RandomKeva";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomkeva --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomL";           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm randoml --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomSfx";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomWow";         Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomwow --randomx-use-1gb-pages" }
-    [PSCustomObject]@{ Algorithm = "Randomx";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # XmRig-v6.16.3 is fastest
+    # [PSCustomObject]@{ Algorithm = "RandomX";           Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # Not profitable at all
+    [PSCustomObject]@{ Algorithm = "RandomxKeva";       Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomkeva --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = "RandomxL";          Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomxl --randomx-use-1gb-pages" } # XmRig-v6.16.3 is fastest
     [PSCustomObject]@{ Algorithm = "RandomYada";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomyada" }
     [PSCustomObject]@{ Algorithm = "ScryptN2";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm scryptn2" }

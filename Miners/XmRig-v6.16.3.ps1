@@ -29,7 +29,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "AMD"; MinMemGB = 4;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/zls" } 
     [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "AMD"; MinMemGB = 3;    MinerSet = 2; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # NBMiner-v40.1 is fastest, but has 2% miner fee
-    # [PSCustomObject]@{ Algorithm = "Randomx";              Type = "AMD"; MinMemGB = 3;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # Not profitable at all
+    # [PSCustomObject]@{ Algorithm = "RandomX";              Type = "AMD"; MinMemGB = 3;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "AMD"; MinMemGB = 4;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "AMD"; MinMemGB = 1;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/keva" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "AMD"; MinMemGB = 2;    MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/loki" }
@@ -62,7 +62,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo cn/zls" }
-    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" }
+    # [PSCustomObject]@{ Algorithm = "RandomX";              Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/arq" } # SRBMinerMulti-v0.9.3 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/keva" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/loki" }
@@ -91,7 +91,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "NVIDIA"; MinMemGB = 4;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo cn/zls" } 
     [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = 3;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # Trex-v0.25.8 is fastest, but has 1% miner fee
-    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "NVIDIA"; MinMemGB = 3;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" }
+    # [PSCustomObject]@{ Algorithm = "RandomX";              Type = "NVIDIA"; MinMemGB = 3;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "NVIDIA"; MinMemGB = 4;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "NVIDIA"; MinMemGB = 1;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/keva" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "NVIDIA"; MinMemGB = 2;    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/loki" }
