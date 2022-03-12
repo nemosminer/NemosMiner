@@ -29,8 +29,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.0075); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" } # PhoenixMiner-v6.0c is fastest
     [PSCustomObject]@{ Algorithm = @("Ethash", "SHA256ton");  Fee = @(0.0075); MinMemGB = 5.0; MinerSet = 0; WarmupTimes = @(45, 90); Arguments = " --algo=ethash" }
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Fee = @(0.0075); MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 75); Arguments = " --algo=ethash" }
-    [PSCustomObject]@{ Algorithm = @("FiroPoW");              Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(45, 75); Arguments = " --algo=firopow" } # Wildrig-v0.31.2 is fastest on Polaris
-    [PSCustomObject]@{ Algorithm = @("KawPoW");               Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(60, 75); Arguments = " --algo=kawpow" } # Wildrig-v0.31.2 is fastest on Polaris
+    [PSCustomObject]@{ Algorithm = @("FiroPoW");              Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(45, 75); Arguments = " --algo=firopow" } # Wildrig-v0.31.3 is fastest on Polaris
+    [PSCustomObject]@{ Algorithm = @("KawPoW");               Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 0; WarmupTimes = @(60, 75); Arguments = " --algo=kawpow" } # Wildrig-v0.31.3 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = @("Lyra2z");               Fee = @(0.03);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " --algo=lyra2z" } # XmRig-v6.16.3 is faster
     [PSCustomObject]@{ Algorithm = @("Lyra2RE3");             Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = @("MTP");                  Fee = @(0.025);  MinMemGB = 2.0; MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo=mtp" }
