@@ -2,12 +2,13 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA"})) { Return }
 
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.31.2/wildrig-multi-windows-0.31.2.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.31.3/wildrig-multi-windows-0.31.3.7z"
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
 $Path = ".\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
+    [PSCustomObject]@{ Algorithm = "0x10";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo 0x10" }
     [PSCustomObject]@{ Algorithm = "AstralHash";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-astralhash" }
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc"; Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo blake2b-btcc" }
@@ -59,6 +60,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X33";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x33" }
     [PSCustomObject]@{ Algorithm = "WildKeccak";  Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo wildkeccak" }
 
+    [PSCustomObject]@{ Algorithm = "0x10";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo 0x10" }
     [PSCustomObject]@{ Algorithm = "AstralHash";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-astralhash" }
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc"; Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo blake2b-btcc" }
