@@ -442,12 +442,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
             $Pools | Where-Object Disabled -EQ $true | ForEach-Object { $_.Reason += "Disabled (by Stat file)" }
             # Min accuracy not reached
             $Pools | Where-Object Accuracy -LT $Config.MinAccuracy | ForEach-Object { $_.Reason += "MinAccuracy ($($Config.MinAccuracy * 100)%) not reached" }
-            # Filter pools on miner set
-            If ($Config.MinerSet -lt 2) { 
-                $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq "*" } | ForEach-Object { $_.Reason += "Unprofitable Algorithm" }
-                $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq 1 } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" } # Keep available
-                $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq 2 } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" } # Keep available
-            }
+            # Unavailable algorithms
+            $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq "*" } | ForEach-Object { $_.Reason += "Unprofitable Algorithm" }
             # Pool price 0
             $Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Reason += "Price -eq 0" }
             # No price data
@@ -502,6 +498,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Make pools unavailable
             $Pools | Where-Object Reason | ForEach-Object { $_.Available = $false }
+
+            # Filter pools on miner set
+            If ($Config.MinerSet -lt 2) { 
+                $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq 1 } | ForEach-Object { $_.Reason += "Unprofitable Primary Algorithm" }
+                $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq 2 } | ForEach-Object { $_.Reason += "Unprofitable Secondary Algorithm" }
+            }
+
             If ($Variables.PoolsCount -gt 0) { 
                 Write-Message -Level Verbose "Had $($Pools.Count) pool$(If ($Pools.Count -ne 1) { "s" }), found new $($Variables.AddedPools.Count) pool$(If ($Variables.AddedPools.Count -ne 1) { "s" }), updated $($Variables.UpdatedPools.Count) pool$(If ($Variables.UpdatedPools.Count -ne 1) { "s" }). $(@($Pools | Where-Object Available -EQ $true).Count) available pool$(If (@($Pools | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
             }
