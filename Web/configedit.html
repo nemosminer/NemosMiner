@@ -476,6 +476,9 @@
             $(document).ready(function () {
               //Edit config file
               $('#editconfig-button').click(function () {
+                document.getElementById('editconfig-button').disabled = true;
+                document.getElementById('editpoolsconfig-button').disabled = true;
+                document.getElementById('editunprofitablealgorithms-button').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + configfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
@@ -486,11 +489,17 @@
                       location.reload(true);
                     })
                   }
+                  document.getElementById('editconfig-button').disabled = false;
+                  document.getElementById('editpoolsconfig-button').disabled = false;
+                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
                 });
               });
 
               //Edit poolsconfig file
               $('#editpoolsconfig-button').click(function () {
+                document.getElementById('editconfig-button').disabled = true;
+                document.getElementById('editpoolsconfig-button').disabled = true;
+                document.getElementById('editunprofitablealgorithms-button').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + poolsconfigfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit PoolsConfig file');
@@ -498,11 +507,17 @@
                       show: true
                     });
                   }
+                  document.getElementById('editconfig-button').disabled = false;
+                  document.getElementById('editpoolsconfig-button').disabled = false;
+                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
                 });
               });
 
               //Edit unprofitablealgorithms file
               $('#editunprofitablealgorithms-button').click(function () {
+                document.getElementById('editconfig-button').disabled = true;
+                document.getElementById('editpoolsconfig-button').disabled = true;
+                document.getElementById('editunprofitablealgorithms-button').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=.\\Data\\UnprofitableAlgorithms.json', function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Unprofitable Algorithms file');
@@ -510,6 +525,9 @@
                       show: true
                     });
                   }
+                  document.getElementById('editconfig-button').disabled = false;
+                  document.getElementById('editpoolsconfig-button').disabled = false;
+                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
                 });
               });
 
