@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "HeavyHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
-#    [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo honeycomb" } # Algo broken, last working version is 0.17.6
+    # [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo honeycomb" } # Algo broken, last working version is 0.17.6
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-jeonghash" }
     [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow" } # TeamRedMiner-v0.9.4.1 is fastest on Navi
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2v3" } # TeamRedMiner-v0.9.4.1 is fastest
@@ -56,7 +56,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x17r --protocol ufo2" }
     [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo x21s" } # TeamRedMiner-v0.9.4.1 is fastest
-    #[PSCustomObject]@{ Algorithm = "X22i";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo x22i" } # No results
+    # [PSCustomObject]@{ Algorithm = "X22i";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo x22i" } # No results
     [PSCustomObject]@{ Algorithm = "X33";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x33" }
     [PSCustomObject]@{ Algorithm = "WildKeccak";  Type = "AMD"; Fee = @(0.02); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo wildkeccak" }
 
@@ -76,7 +76,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "HeavyHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hex";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
-#    [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo honeycomb" } # Algo broken, last working version is 0.17.6
+    # [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo honeycomb" } # Algo broken, last working version is 0.17.6
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-jeonghash" } # Trex-v0.25.8 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow" } # NBMiner-v40.1 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2v3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
@@ -145,6 +145,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Fee        = $_.Fee # subtract devfee
                     MinerUri   = "http://localhost:$($MinerAPIPort)"
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    EnvVars     = @("GPU_MAX_WORKGROUP_SIZE=256")
                 }
             }
         }
