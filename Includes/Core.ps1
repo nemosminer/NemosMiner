@@ -705,6 +705,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 Type        = [String]$_.Content.Type
                 Port        = [UInt16]$_.Content.Port
                 URI         = [String]$_.Content.URI
+                EnvVars     = [String[]]$_.Content.EnvVars
                 WarmupTimes = [Int[]]$_.Content.WarmupTimes
                 MinerUri    = [String]$_.Content.MinerUri
                 LogFile     = [String]$_.Content.LogFile

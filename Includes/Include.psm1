@@ -210,7 +210,7 @@ Class Miner {
     [DateTime]$StatEnd
     [Int]$DataCollectInterval = 5 # Seconds
     [String]$WindowStyle = "minimized"
-    # [String[]]$Environment = @()
+    [String[]]$EnvVars = @()
     [Int]$MinDataSamples # for safe hashrate values
     [PSCustomObject]$LastSample # last hash rate sample
     [Int[]]$WarmupTimes # First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
@@ -296,7 +296,7 @@ Class Miner {
 
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = $null } # When benchmarking clear data on each miner start
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Name -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
             $this.Status = [MinerStatus]::Running
             Write-Message -Level Verbose $this.CommandLine
 
@@ -448,19 +448,12 @@ Class Miner {
         $TotalPowerUsage = [Double]0
 
         # Read power usage
-        If (Test-Path $RegistryHive) { 
-            $RegistryData = Get-ItemProperty $RegistryHive
-            ForEach ($Device in $this.Devices) { 
-                If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { $_.Value -match $Device.Name }) { 
-                    $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -First 1)
-                }
-                Else { 
-                    $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage # Use configured value
-                }
+        $RegistryData = Get-ItemProperty $RegistryHive -ErrorAction Ignore
+        ForEach ($Device in $this.Devices) { 
+            If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { ($_.Value -split " ") -contains $Device.Name }) { 
+                $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -First 1)
             }
-        }
-        Else { 
-            ForEach ($Device in $this.Devices) { 
+            Else { 
                 $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage # Use configured value
             }
         }
@@ -563,7 +556,6 @@ Class Miner {
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
-        # ElseIf ($this.Workers | Where-Object Speed -EQ 0) { 
         ElseIf ($this.Workers[0].Speed -EQ 0) { # Allow 0 hashrate on secondary algorithm
             $this.Status = [MinerStatus]::Failed
             $this.Available = $false
@@ -2492,10 +2484,6 @@ Function Get-CoinName {
 
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
-    }
-    If ($Currency) { 
-        "CoinName missing for '$Currency'" >> .\Logs\CoinNameMissing.txt
-        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
     }
     Return $null
 }
