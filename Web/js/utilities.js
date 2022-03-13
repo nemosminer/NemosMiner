@@ -176,6 +176,12 @@ function formatArrayAsString(value) {
   return value.sort().join('; <br>');
 };
 
+
+function formatDigits3(value) {
+  if (value > 0) return (value).toFixed(3);
+  return '';
+};
+
 function detailFormatter(index, row) {
   var html = [];
   $.each(row, function (key, value) {

@@ -449,7 +449,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             # No price data
             $Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Reason += "No price data" }
             #Estimate factor exceeded
-            If ($Config.EstimateCorrection -eq $true) { $Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Reason += "EstimateFactor -lt 50%" } }
+            If ($Config.EstimateCorrection -eq $true) { $Pools | Where-Object EstimateFactor -LT 0.5 | ForEach-Object { $_.Reason += "EstimateFactor -lt 0.500" } }
             # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algorithm & currency, NiceHash & MPH are always right
             If ($Config.UnrealPoolPriceFactor -gt 1 -and ($Pools.Name | Sort-Object -Unique).Count -gt 1) { 
                 $Pools | Where-Object Price -GT 0 | Where-Object { $_.BaseName -notmatch "NiceHash*|MiningPoolHub" } | Group-Object -Property Algorithm | ForEach-Object { 
