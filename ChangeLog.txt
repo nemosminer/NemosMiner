@@ -6,6 +6,26 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.22 (RC22) 14.03.2022
+===============================================
+
+Core:
+- Miners: Added 'EnvVars' property
+- Added more algorithms to unprofitable algorithms list (UnprofitableAlgorithms.json)
+
+Fixes
+- Core: Donation run not stopping
+- Core: Dual algorithm mining broken if 'MinerSet -LE 2' (use best or optimal miners) was set
+
+Miner changes:
+- TeamBlackMiner-v1.59
+- Wildrig-v0.31.3
+
+WebGUI:
+- Config editor: Hide buttons while editing config files
+- Pools: Display 'EstimateFactor' as number with digits (instead of %)
+
+
 Changelog NemosMiner 4.0.0.21 (RC21) 12.03.2022
 ===============================================
 

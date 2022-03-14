@@ -31,6 +31,8 @@ $ProgressPreference = "SilentlyContinue"
 Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
 
 While ($Variables.NewMiningStatus -eq "Running") { 
+Try { 
+
     $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # Always get the latest config
@@ -572,6 +574,16 @@ While ($Variables.NewMiningStatus -eq "Running") {
         # Get new miners
         If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners..." }
         Write-Message -Level Verbose "Loading miners..."
+
+        If ($ReadMiners) { 
+            $TmpMiners += Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+        }
+        If ($ReadCustomMiners) { 
+            $TmpMiners += Get-ChildItemContent  ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+        }
+        If ($ReadDevMiners) { 
+            $TmpMiners = Get-ChildItemContent ".\Miners_Dev" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
+        }
         $NewMiners_Jobs = @(
             Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
             If (Test-Path -Path ".\CustomMiners\.ps1" -PathType Leaf) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
@@ -1129,6 +1141,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
     }
     Remove-Variable MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
 
+    If ($ReadBalances) { . .\Includes\BalancesTracker.ps1 }
+
     Get-Job -State "Completed" | Remove-Job -Force -ErrorAction Ignore
     Get-Job -State "Stopped" | Remove-Job -Force -ErrorAction Ignore
 
@@ -1161,6 +1175,9 @@ While ($Variables.NewMiningStatus -eq "Running") {
             [Void][Win32]::SetWindowText((Get-Process -Id $Miner.ProcessId -ErrorAction Ignore).mainWindowHandle, $WindowTitle)
             Remove-Variable WindowTitle
 
+            If ($GetMinerData) { 
+                $Miner.GetMinerData()
+            }
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                 # Miner crashed
                 Write-Message -Level Error "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
@@ -1240,5 +1257,9 @@ While ($Variables.NewMiningStatus -eq "Running") {
     If ($Variables.NewMiningStatus -eq "Running") { Write-Message -Level Info "Ending cycle$($ExitLoopMessage)." }
 
     Remove-Variable BenchmarkingOrMeasuringMiners, ExitLoopMessage, FailedMiners, Interval, Message, Miner, NextLoop, RunningMiners, Sample, Samples -ErrorAction SilentlyContinue
+}
+Catch {
+    Start-Sleep 0
+}
     $Error.Clear()
 }

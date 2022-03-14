@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash Internal.ps1
-Version:        4.0.0.21 (RC21)
-Version date:   12 March 2022
+Version:        4.0.0.22 (RC22)
+Version date:   14 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -27,10 +27,10 @@ using module ..\Includes\Include.psm1
 $Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
 $PayoutCurrency = $Config.PoolsConfig.NiceHash.Variant.$Name.PayoutCurrency
 $Wallet = $Config.PoolsConfig.NiceHash.Variant.$Name.Wallets.$PayoutCurrency
-$Url = "https://www.nicehash.com/my/miner/$Wallet"
 $Key = $Config.NiceHashAPIKey
 $OrganizationID = $Config.NiceHashOrganizationID
 $Secret = $Config.NiceHashAPISecret
+$Url = "https://www.nicehash.com/my/miner/$Wallet"
 
 Function Get-NiceHashRequest { 
     Param(
@@ -64,37 +64,40 @@ Function Get-NiceHashRequest {
 }
 
 $RetryCount = 3
-$RetryDelay = 10
+$RetryDelay = 15
 
-While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and $Config.NiceHashAPISecret -and $Config.NiceHashOrganizationID) { 
-    $RetryCount--
-    Try { 
-        $Method = "GET"
-        $EndPoint = "/main/api/v2/accounting/account2/BTC/"
+$Method = "GET"
+$EndPoint = "/main/api/v2/accounting/account2/BTC/"
 
-        $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
+$Request = "https://api2.nicehash.com$($EndPoint)?extendedResponse=true"
 
-        If ($Config.LogBalanceAPIResponse -eq $true) { 
-            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
-        }
+While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and $Config.NiceHashAPISecret -and $Config.NiceHashOrganizationID) { 
 
-        If ($APIResponse.active) { 
-            [PSCustomObject]@{ 
-                DateTime   = (Get-Date).ToUniversalTime()
-                Pool       = $Name
-                Currency   = $PayoutCurrency
-                Wallet     = $Wallet
-                Pending    = [Double]($APIResponse.pending)
-                Balance    = [Double]($APIResponse.available)
-                Unpaid     = [Double]($APIResponse.totalBalance)
-                Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
-                #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
-                Url        = $Url
-            }
+    $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
+
+    If ($Config.LogBalanceAPIResponse -eq $true) { 
+        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+    }
+
+    If ($APIResponse.active) { 
+        [PSCustomObject]@{ 
+            DateTime   = (Get-Date).ToUniversalTime()
+            Pool       = $Name
+            Currency   = $PayoutCurrency
+            Wallet     = $Wallet
+            Pending    = [Double]($APIResponse.pending)
+            Balance    = [Double]($APIResponse.available)
+            Unpaid     = [Double]($APIResponse.totalBalance)
+            Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
+            #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
+            Url        = $Url
         }
     }
-    Catch { 
+    Else { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
+
+    $RetryCount--
 }

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash Internal.ps1
-Version:        4.0.0.21 (RC21)
-Version date:   12 March 2022
+Version:        4.0.0.22 (RC22)
+Version date:   14 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -30,36 +30,39 @@ $Wallet = $Config.PoolsConfig.NiceHash.Variant.$Name.Wallets.$PayoutCurrency
 $Url = "https://www.nicehash.com/my/miner/$Wallet"
 
 $RetryCount = 3
-$RetryDelay = 10
+$RetryDelay = 15
 
-While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
-    $RetryCount--
-    Try { 
-        $APIResponse = Invoke-RestMethod "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+$Request = "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2"
 
-        If ($Config.LogBalanceAPIResponse -eq $true) { 
-            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
-        }
+While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
-        $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
+    $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
 
-        If ($Sum -gt 0) { 
-            [PSCustomObject]@{ 
-                DateTime   = (Get-Date).ToUniversalTime()
-                Pool       = $Name
-                Currency   = $PayoutCurrency
-                Wallet     = $($Wallet)
-                Pending    = [Double]($APIResponse.unpaidAmount)
-                Balance    = [Double]($APIResponse.externalBalance)
-                Unpaid     = $Sum
-                #Total      = $Sum
-                Url        = $Url
-                NextPayout = $APIResponse.NextPayoutTimeStamp
-            }
+    If ($Config.LogBalanceAPIResponse -eq $true) { 
+        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+    }
+
+    $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
+
+    If ($Sum -gt 0) { 
+        [PSCustomObject]@{ 
+            DateTime   = (Get-Date).ToUniversalTime()
+            Pool       = $Name
+            Currency   = $PayoutCurrency
+            Wallet     = $($Wallet)
+            Pending    = [Double]($APIResponse.unpaidAmount)
+            Balance    = [Double]($APIResponse.externalBalance)
+            Unpaid     = $Sum
+            #Total      = $Sum
+            Url        = $Url
+            NextPayout = $APIResponse.NextPayoutTimeStamp
         }
     }
-    Catch { 
+    Else { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
+
+    $RetryCount--
 }

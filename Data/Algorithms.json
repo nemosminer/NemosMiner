@@ -113,8 +113,10 @@
   "kangaroo12": "Kangaroo",
   "kawpow": "KawPoW",
   "keccakc": "KeccakC",
+  "komodo": "Equihash",
   "lux": "Rx2",
   "luxcoin": "Rx2",
+  "luxcore": "Rx2",
   "lyra2": "Lyra2RE",
   "lyra2h": "Lyra2h",
   "lyra2re": "Lyra2RE",
@@ -220,5 +222,6 @@
   "yespowerurx": "YespowerUrx",
   "zelantus": "KawPoW",
   "zelhash": "Equihash1254",
+  "zcash": "Equihash",
   "zhash": "EquihashBTG"
 }

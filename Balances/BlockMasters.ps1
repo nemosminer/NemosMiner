@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlockMasters.ps1
-Version:        4.0.0.21 (RC21)
-Version date:   12 March 2022
+Version:        4.0.0.22 (RC22)
+Version date:   14 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -30,34 +30,37 @@ $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "http://blockmasters.co/?address=$Wallet"
 
 $RetryCount = 3
-$RetryDelay = 10
+$RetryDelay = 15
 
-While (-not ($APIResponse) -and $RetryCount -gt 0 -and $Wallet) { 
-    $RetryCount--
-    Try { 
-        $APIResponse = Invoke-RestMethod "http://blockmasters.co/api/wallet?address=$Wallet" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+$Request = "http://blockmasters.co/api/wallet?address=$Wallet"
 
-        If ($Config.LogBalanceAPIResponse -eq $true) { 
-            $APIResponse | Add-Member DateTime ((Get-Date).ToUniversalTime()) -Force
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
-        }
+While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
-        If ($APIResponse.currency) { 
-            [PSCustomObject]@{ 
-                DateTime = (Get-Date).ToUniversalTime()
-                Pool     = $Name
-                Currency = $APIResponse.currency
-                Wallet   = $Wallet
-                Pending  = [Double]($APIResponse.unsold) # Pending?
-                Balance  = [Double]($APIResponse.balance)
-                Unpaid   = [Double]($APIResponse.unpaid) # Balance + Unsold?
-                # Paid     = [Double]($APIResponse.paid24h) # Total paid?
-                # Total    = [Double]($APIResponse.total) # total unpaid + total paid
-                Url      = $Url
-            }
+    $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+
+    If ($Config.LogBalanceAPIResponse -eq $true) { 
+        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+    }
+
+    If ($APIResponse.currency) { 
+        [PSCustomObject]@{ 
+            DateTime = (Get-Date).ToUniversalTime()
+            Pool     = $Name
+            Currency = $APIResponse.currency
+            Wallet   = $Wallet
+            Pending  = [Double]($APIResponse.unsold) # Pending?
+            Balance  = [Double]($APIResponse.balance)
+            Unpaid   = [Double]($APIResponse.unpaid) # Balance + Unsold?
+            # Paid     = [Double]($APIResponse.paid24h) # Total paid?
+            # Total    = [Double]($APIResponse.total) # total unpaid + total paid
+            Url      = $Url
         }
     }
-    Catch { 
+    Else { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
+
+    $RetryCount--
 }

@@ -7,7 +7,7 @@ $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty
 $Path = ".\Bin\$($Name)\cpuminer.exe"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "rx2"; MinerSet = 0; WarmupTimes = @(105, 15); Arguments = " --algo rx2" }
+    [PSCustomObject]@{ Algorithm = "Rx2"; MinerSet = 0; WarmupTimes = @(105, 15); Arguments = " --algo rx2" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

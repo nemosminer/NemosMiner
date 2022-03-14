@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.21 (RC21)
-Version date:   12 March 2022
+Version:        4.0.0.22 (RC22)
+Version date:   14 March 2022
 #>
 
 # Start transcript log
@@ -80,9 +80,7 @@ While ($true) {
         # Fetch balances data from pools
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -ne "ProHashing" -or $_.DateTime -gt $Now.AddHours((Get-TimeZone -ID "Eastern Standard Time").BaseUtcOffset.totalhours).Date }) # ProHashing does not send balance if all is paid -> remove from balances
         If ($PoolsToTrack) { Write-Message "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..." }
-        $PoolsToTrack | ForEach-Object { 
-            $BalanceObjects += @(& ".\Balances\$($_).ps1")
-        }
+        $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
 
         # Keep most recent balance objects, keep empty balances for 7 days
         $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or (($_.Pending -gt 0 -or $_.Balance -gt 0) -and $_.DateTime -gt $Now.AddDays(-7)) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
@@ -190,7 +188,7 @@ While ($true) {
                     }
                 }
                 ElseIf ($PoolBalanceObject.Pool -match "^ProHashing.*") { 
-                    # Pool never reduces earnings
+                    # ProHashing never reduces earnings
                     $Delta = $PoolBalanceObject.Balance - ($PoolBalanceObjects | Select-Object -Last 1).Balance
                     If ($PoolBalanceObject.Unpaid -lt ($PoolBalanceObjects | Select-Object -Last 1).Unpaid) { 
                         # Payout occured
@@ -387,7 +385,6 @@ While ($true) {
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
     }
-
 }
 
 Write-Message -Level INFO "Balances Tracker stopped."
