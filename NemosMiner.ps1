@@ -54,7 +54,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
     [Parameter(Mandatory = $false)]
-    [Boolean]$DeductRejectedShares = $true, # If true will ignore rejected shares when measuring hashrates
+    [Boolean]$DeductRejectedShares = $true, # If true will deduct rejected shares when calculating effective hashrates
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 0, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
@@ -109,7 +109,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$MinerSet = 1, # 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device;
     [Parameter(Mandatory = $false)]
-    [Double]$MinerSwitchingThreshold = 10, # As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
+    [Double]$MinerSwitchingThreshold = 10, # Will not switch miners unless another miner has n% higher earnings / profit
     [Parameter(Mandatory = $false)]
     [Switch]$MineWhenIdle = $false, # If true will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
