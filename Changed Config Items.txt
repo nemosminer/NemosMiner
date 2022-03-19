@@ -24,6 +24,9 @@ New Config Items
 # Process priority for CPU miners
   "CPUMinerProcessPriority": -2,
 
+# If true, NM will ignore rejected shares when measuring hashrates
+  "DeductRejectedShares": true, 
+
 # If true NemosMiner will not use any single algo miners
   "DisableSingleAlgoMining": false,
 
@@ -68,9 +71,6 @@ New Config Items
 
 # If true, NM will ignore power cost in best miner selection, instead miners with best earnings will be selected
   "IgnorePowerCost": false,
-
-# If true, NM will ignore rejected shares when measuring hashrates
-  "IgnoreRejectedShares": true, 
 
 # If true, use the miners in the 'LegacyMiners' directory (Miners based on the original MultiPoolMiner format)
   "IncludeLegacyMiners": true,
@@ -268,12 +268,11 @@ New Config Items
 
 Removed Config Items
 ====================
-# AMD/NVIDIA/CPU, replaced with per device configuration option "ExcludeDeviceName"
-
   "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
-  "GPUCount": 1, (Replaced by device config in Web GUI)
+  "GPUCount": 1, obsolete
   "HideConsole": false, obsolete
   "MarginOfError": 0,4, obsolete
+  "RunningMinerGainPct": Renamed to "MinerSwitchingThreshold" 
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SSL": obsolete (only NiceHash supports SSL & non-SSL connections on some algorithms)
@@ -282,7 +281,7 @@ Removed Config Items
   "TypeCPU": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "TypeNVIDIA": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "UserName": "", (Replaced with NiceHashUserName & ProHashingUsername)
-  "Wallet": [BTC Address]; replaces with "Wallets.BTC"
+  "Wallet": [BTC Address]; replaced with "Wallets.BTC"
 
 NiceHash pool Config:
 =====================
