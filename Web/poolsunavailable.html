@@ -84,6 +84,26 @@
               $table.bootstrapTable('hideColumn', 'EstimateFactor');
             }
 
+            $table.on('all.bs.table', function () {
+              try {
+                if ($table.bootstrapTable('getSelections').length >= 1) {
+                  document.getElementById('reset-data').disabled = false;
+                  document.getElementById('remove-watchdog').disabled = false;
+                  document.getElementById('enable').disabled = false;
+                  document.getElementById('disable').disabled = false;
+                } else {
+                  document.getElementById('reset-data').disabled = true;
+                  document.getElementById('remove-watchdog').disabled = true;
+                  document.getElementById('enable').disabled = true;
+                  document.getElementById('disable').disabled = true;
+                }
+              } catch {}
+            });
+
+            $("#pools thead tr th").each(function () {
+              $(this).addClass('align-top');
+            });
+
             $(document).ready(function () {
               $('#remove-watchdog').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
@@ -163,22 +183,6 @@
                     $table.bootstrapTable('refresh');
                   }
                 }
-              });
-
-              $table.on('all.bs.table', function () {
-                try {
-                  if ($table.bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('reset-data').disabled = false;
-                    document.getElementById('remove-watchdog').disabled = false;
-                    document.getElementById('enable').disabled = false;
-                    document.getElementById('disable').disabled = false;
-                  } else {
-                    document.getElementById('reset-data').disabled = true;
-                    document.getElementById('remove-watchdog').disabled = true;
-                    document.getElementById('enable').disabled = true;
-                    document.getElementById('disable').disabled = true;
-                  }
-                } catch {}
               });
             });
           </script>

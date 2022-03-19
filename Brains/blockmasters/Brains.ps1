@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.22 (RC22)
+version:        4.0.0.23
 version date:   14 March 2022
 #>
 
@@ -75,7 +75,7 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-While (Test-Path ".\BrainConfig.xml") { 
+While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) { 
     $Config = Import-Clixml ".\BrainConfig.xml"
     $SampleSizeMinutes = $Config.SampleSizeMinutes
     $SampleHalfPower = $Config.SampleHalfPower
@@ -120,7 +120,7 @@ While (Test-Path ".\BrainConfig.xml") {
                 Fees               = $AlgoData.$Algo.Fees
                 Hashrate           = $AlgoData.$Algo.Hashrate
                 Workers            = $AlgoData.$Algo.Workers
-                estimate_current   = [Double]($AlgoData.$Algo.estimate_current)
+                estimate_current   = $AlgoData.$Algo.estimate_current -as [Double]
                 estimate_last24h   = $AlgoData.$Algo.estimate_last24h
                 actual_last24h     = $BasePrice
                 hashrate_last24h   = $AlgoData.$Algo.hashrate_last24h

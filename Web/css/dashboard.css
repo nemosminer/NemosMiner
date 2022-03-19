@@ -171,7 +171,7 @@ legend {
   background-color: rgb(255, 241, 195);
 }
 .miner-failed {
-  background-color: rgb(255, 224, 224);
+  background-color: rgb(255, 230, 230);
 }
 .miner-idle {
   background-color: rgb(230, 248, 252);

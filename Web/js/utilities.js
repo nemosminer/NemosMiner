@@ -110,7 +110,7 @@ function formatTime(seconds) {
   return formattedtime.trim()
 }
 
-function formatHashRateValue(value) {
+function formatHashrateValue(value) {
   if (value == null) return ''
   if (value === 0) return '0 H/s'
   if (value > 0) {
@@ -124,9 +124,9 @@ function formatHashRateValue(value) {
   return 'N/A';
 };
 
-function formatHashRate(value) {
+function formatHashrate(value) {
   const values = value.split('<br/>')
-  return values.map(formatHashRate).toString();
+  return values.map(formatHashrate).toString();
 }
 
 function formatmBTC(value) {

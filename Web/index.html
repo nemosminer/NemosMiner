@@ -51,15 +51,15 @@
                 <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
                 <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
-                <th data-field="tPrimarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Live Hashrate</th>
-                <th data-field="tPrimarySpeed" data-sortable="true" data-formatter="formatHashRateValue" data-filter-strict-search="true">Benchmarked Hashrate</th>
+                <th data-field="tPrimarySpeedLive" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Live<br>Hashrate</th>
+                <th data-field="tPrimarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" data-filter-strict-search="true">Benchmarked<br>Hashrate</th>
                 <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
                 <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
                 <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Miner Fee</th>
                 <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
-                <th data-field="tSecondarySpeedLive" data-sortable="true" data-formatter="formatHashRateValue">Live Hashrate</th>
-                <th data-field="tSecondarySpeed" data-sortable="true" data-formatter="formatHashRateValue">Benchmarked Hashrate</th>
-                <th data-field="tSecondaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
+                <th data-field="tSecondarySpeedLive" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Live<br>Hashrate</th>
+                <th data-field="tSecondarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Benchmarked<br>Hashrate</th>
+                <th data-field="tSecondaryPool" data-align="right" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
                 <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Pool Fee</th>
                 <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Algorithm Miner Fee</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
@@ -174,11 +174,11 @@
               return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: 7 }).format(value * rates[thresholdcurrency][maincurrency]));
             });
 
-            $('#miners tr:eq(0) th:eq(5)').html("Earning (" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(6)').html("Earning Bias (" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(7)').html("Profit (" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(8)').html("Profit Bias (" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(9)').html("Power Cost (" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(5)').html("Earning<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(6)').html("Earning Bias<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(7)').html("Profit<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(8)').html("Profit Bias<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(9)').html("Power Cost<br>(" + maincurrency + ")");
 
             $(document).ready(function () {
               $(function(){
@@ -210,7 +210,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=HashRate";
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + "&Type=Hashrate";
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#re-benchmark').text());
                       $('#myModal').modal({show:true});
@@ -246,7 +246,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
                   else {
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=0";
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=Hashrate&Value=0";
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#failed').text());
                       $('#myModal').modal({show:true});
@@ -264,7 +264,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
                   else {
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=HashRate&Value=-1";
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + "&Type=Hashrate&Value=-1";
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#disable').text());
                       $('#myModal').modal({show:true});
@@ -290,20 +290,24 @@
                 }
               } catch {}
 
+              $('#miners thead tr th').each(function () {
+                $(this).addClass('align-top align-left');
+              });
+
               if (config.WebGUIUseColor == true) {
-                $("#miners td:nth-child(5)").each(function () {
+                $('#miners td:nth-child(5)').each(function () {
                   switch(this.innerText) {
                     case this.innerText.match(/^Mining/)?.input:
-                      $(this).parent("tr").addClass('miner-running');
+                      $(this).parent('tr').addClass('miner-running');
                       break;
                     case this.innerText.match(/^Warming/)?.input:
-                      $(this).parent("tr").addClass('miner-warmingup');
+                      $(this).parent('tr').addClass('miner-warmingup');
                       break;
                     case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
-                      $(this).parent("tr").addClass('miner-measuring');
+                      $(this).parent('tr').addClass('miner-measuring');
                       break;
                     case this.innerText.match(/^Failed/)?.input:
-                      $(this).parent("tr").addClass('miner-failed');
+                      $(this).parent('tr').addClass('miner-failed');
                       break;
                   };
                 });

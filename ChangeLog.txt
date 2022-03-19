@@ -6,10 +6,38 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.23 19.03.2022
+========================================
+
+Changes:
+- Changed config item 'IgnoreRejectedShares' to 'IgnoreRejectedShares'
+- Changed config item 'RunningMinerGainPct' to 'MinerSwitchingThreshold'
+- Rename function 'Get-PoolName' to 'Get-PoolBaseName'
+
+Enhancements:
+- Core: Improve 'Start|Pause|Stop' button handling
+- Legacy GUI: Use same colors for rig status as in Web GUI
+- Web GUI / Switching log: Added column 'Reason'
+- Web GUI / Rig Monitor: Change input logic
+- Web GUI / Rig Monitor: Use colors for rig status
+
+Fixes
+- Core: 'DataCollectInterval' not set to 1 second in some benchmark / power usage measurement scenarios
+- TeamRedMiner-v0.9.4.2 miner: Fix ethash miner fee
+
+Miner changes:
+- TeamBlackMiner-v1.61
+- Trex-v0.25.9
+- Wildrig-v0.31.3: Fix 'HeavyHash' fee for nvidia rigs (2%)
+
+Pool changes:
+- NLPool: Change URLs to use https://
+
+
 Changelog NemosMiner 4.0.0.22 (RC22) 14.03.2022
 ===============================================
 
-Core:
+Changes:
 - Miners: Added 'EnvVars' property
 - Added more algorithms to unprofitable algorithms list (UnprofitableAlgorithms.json)
 

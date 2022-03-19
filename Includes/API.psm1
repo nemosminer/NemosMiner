@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.22 (RC22)
+Version:        4.0.0.23
 Version date:   14 March 2022
 #>
 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.4.0"
+    $APIVersion = "0.4.5.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
 
@@ -299,8 +299,8 @@ Function Start-APIServer {
                         If ($Variables.MiningStatus -ne "Paused") { 
                             $Variables.NewMiningStatus = "Paused"
                             $Data = "Mining is being paused...`n$(If ($Variables.BalancesTrackerPollInterval -gt 0) { If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting..." } Else { "Balances Tracker running." } })"
+                            $Variables.RestartCycle = $true
                         }
-                        $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
@@ -308,8 +308,8 @@ Function Start-APIServer {
                         If ($Variables.MiningStatus -ne "Running") { 
                             $Variables.NewMiningStatus = "Running"
                             $Data = "Mining processes starting...`n$(If ($Variables.BalancesTrackerPollInterval -gt 0) { If (-not $Variables.BalancesTrackerRunspace) { "Balances Tracker starting..." } Else { "Balances Tracker running." } })"
+                            $Variables.RestartCycle = $true
                         }
-                        $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
@@ -317,8 +317,8 @@ Function Start-APIServer {
                         If ($Variables.MiningStatus -ne "Idle") { 
                             $Variables.NewMiningStatus = "Idle"
                             $Data = "$($Variables.CurrentProduct) is getting idle...`n"
+                            $Variables.RestartCycle = $true
                         }
-                        $Variables.RestartCycle = $true
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
@@ -327,16 +327,17 @@ Function Start-APIServer {
                             $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
                             $Pools = @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Sort-Object Name, Algorithm -Unique)
                             $Pools | Group-Object Name | ForEach-Object { 
-                                $PoolName = $_.Name
+                                $PoolName = $_.Name -replace " External$| Internal$"
+                                $PoolBaseName = (Get-PoolBaseName $PoolName)
 
-                                $PoolConfig = If ($PoolsConfig.$PoolName) { $PoolsConfig.$PoolName } Else { [PSCustomObject]@{ } }
+                                $PoolConfig = If ($PoolsConfig.$PoolBaseName) { $PoolsConfig.$PoolBaseName } Else { [PSCustomObject]@{ } }
                                 [System.Collections.ArrayList]$AlgorithmList = @(($PoolConfig.Algorithm -replace " ") -split ',')
 
                                 ForEach ($Algorithm in $_.Group.Algorithm) { 
                                     $AlgorithmList.Remove("+$Algorithm")
                                     If (-not ($AlgorithmList -match "\+.+") -and $AlgorithmList -notcontains "-$Algorithm") { $AlgorithmList += "-$Algorithm" }
 
-                                    $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolName pool config)"
+                                    $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolBaseName pool config)"
                                     $Variables.Pools | Where-Object BaseName -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
                                         $_.Reason = @($_.Reason | Where-Object { $_ -notmatch $Reason })
                                         $_.Reason += $Reason
@@ -346,7 +347,7 @@ Function Start-APIServer {
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
-                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
+                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolBaseName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
                             }
                             $DisabledPoolsCount = $Pools.Count
                             If ($DisabledPoolsCount -gt 0) { 
@@ -364,16 +365,17 @@ Function Start-APIServer {
                             $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
                             $Pools = @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Sort-Object Name, Algorithm -Unique)
                             $Pools | Group-Object Name | ForEach-Object { 
-                                $PoolName = $_.Name
+                                $PoolName = $_.Name -replace " External$| Internal$"
+                                $PoolBaseName = (Get-PoolBaseName $PoolName)
 
-                                $PoolConfig = If ($PoolsConfig.$PoolName) { $PoolsConfig.$PoolName } Else { [PSCustomObject]@{ } }
+                                $PoolConfig = If ($PoolsConfig.$PoolBaseName) { $PoolsConfig.$PoolBaseName } Else { [PSCustomObject]@{ } }
                                 [System.Collections.ArrayList]$AlgorithmList = @(($PoolConfig.Algorithm -replace " ") -split ',')
 
                                 ForEach ($Algorithm in $_.Group.Algorithm) { 
                                     $AlgorithmList.Remove("-$Algorithm")
                                     If ($AlgorithmList -match "\+.+" -and $AlgorithmList -notcontains "+$Algorithm") { $AlgorithmList += "+$Algorithm" }
 
-                                    $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolName pool config)"
+                                    $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolBaseName pool config)"
                                     $Variables.Pools | Where-Object BaseName -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
                                         $_.Reason = @($_.Reason | Where-Object { $_ -ne $Reason })
                                         If (-not $_.Reason) { $_.Available = $true }
@@ -382,7 +384,7 @@ Function Start-APIServer {
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
-                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
+                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolBaseName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
                             }
                             $EnabledPoolsCount = $Pools.Count
                             If ($EnabledPoolsCount -gt 0) { 
@@ -411,7 +413,16 @@ Function Start-APIServer {
                         Else { 
                             $Data = "`nNo matching stats found."
                         }
-                    Break
+                        Break
+                    }
+                    "/functions/removeorphanedminerstats" { 
+                        If ($StatNames = Remove-OrphanedMinerStats) { 
+                            $Data = $StatNames | ConvertTo-Json
+                        }
+                        Else { 
+                            $Data = "`nNo matching stats found."
+                        }
+                        Break
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Pools) { 
@@ -442,9 +453,7 @@ Function Start-APIServer {
                                     $_.Activated = 0 # To allow 3 attempts
                                     $_.Disabled = $false
                                     $_.Benchmark = $true
-                                    $_.Data = @()
-                                    $_.Speed = @()
-                                    $_.SpeedLive = @()
+                                    $_.Restart = $true
                                     $_.Workers | ForEach-Object { $_.Speed = [Double]::NaN }
                                     $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
                                     ForEach ($Algorithm in $_.Algorithm) { 
@@ -459,9 +468,7 @@ Function Start-APIServer {
                                     $_.Reason = @($_.Reason | Where-Object { $_ -ne "0 H/s Stat file" })
                                     If (-not $_.Reason) { $_.Available = $true }
 
-                                    If ($_.Status -EQ [MinerStatus]::Running) { 
-                                        $Variables.EndLoopTime = Get-Date # End loop immediately
-                                    }
+                                    If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
                                 $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
@@ -484,10 +491,7 @@ Function Start-APIServer {
                                     Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
-                                    If ($_.Status -EQ [MinerStatus]::Running) { 
-                                        $_.Data = @()
-                                        $Variables.EndLoopTime = Get-Date # End loop immediately
-                                    }
+                                    If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose
                                 $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
@@ -689,7 +693,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/displayworkers" { 
-                        If ($Config.ReportToServer -and $Config.MonitoringUser -and $Config.MonitoringServer) { 
+                        If ($Config.MonitoringServer -and $Config.MonitoringUser -and $Config.ShowWorkerStatus) { 
                             Receive-MonitoringData
                             $DisplayWorkers = [System.Collections.ArrayList]@(
                                 $Variables.Workers | Select-Object @(
@@ -900,9 +904,7 @@ Function Start-APIServer {
                     }
                     Default { 
                         # Set index page
-                        If ($Path -eq "/") { 
-                            $Path = "/index.html"
-                        }
+                        If ($Path -eq "/") { $Path = "/index.html" }
 
                         # Check if there is a file with the requested path
                         $Filename = "$BasePath$Path"
@@ -961,6 +963,8 @@ Function Start-APIServer {
                 $Response.ContentLength64 = $ResponseBuffer.Length
                 $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
                 $Response.Close()
+
+                Remove-Variable AlgorithmList, BalanceDataEntries, ContentType, Data, DisabledPoolsCount, EnabledPoolsCount, File, DisplayWorkers, IncludeData, IncludeFile, IncludeRegex, Key, Lines, Message, MinerNames, Miners, Path, PoolConfig, PoolBaseName, PoolName, Pools, Reason, ResponseBuffer, Stat_Name, StatusCode, TempStats, Value, Values, WatchdogTimer, WatchdogTimers -ErrorAction SilentlyContinue
             }
             # Only gets here if something is wrong and the server couldn't start or stops listening
             $Server.Stop()

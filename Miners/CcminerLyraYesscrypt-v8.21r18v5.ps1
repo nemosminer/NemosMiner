@@ -26,7 +26,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-            If ($_.Algorithm -eq "Lyra2RE3" -and $Pools.($_.Algorithm).Name -like "MiningPoolHub*") { Return } # Temp fix
+            If ($_.Algorithm -eq "Lyra2RE3" -and $Pools.($_.Algorithm).BaseName -eq "MiningPoolHub") { Return } # Temp fix
             If ($_.Algorithm -eq "Yescrypt" -and $Pools.($_.Algorithm).Currency -ne "BSTY") { Return } # Temp fix
 
             $MinMemGB = $_.MinMemGB

@@ -123,7 +123,7 @@
                     <input type="number" id="MinInterval" name="MinInterval" min=1 max=10 value=0 step=1 size=2>
                     <label for="MinInterval">full Cycles before switching
                   </div>
-                  <div title="Default donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60 [default 13 &#8792; 0.9%] minutes)"> Donation Duration per Day
+                  <div title="Donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60 [default 13 &#8792; 0.9%] minutes)"> Donation Duration per Day
                     <input type="number" id="Donate" name="Donate" min=0 max=60 value=13> Minutes
                   </div>
                   <div style="line-height:50%;">
@@ -136,7 +136,7 @@
                     <br>
                   </div>
                   <div title="If ticked NemosMiner will open firewall ports for all miners&#10;Admin rights required (or you must accept the UAC prompts)">
-                    <input type="checkbox" id="OpenFirewallPorts" name="OpenFirewallPorts"> Open Firewall Ports
+                    <input type="checkbox" id="OpenFirewallPorts" name="OpenFirewallPorts"> Open Firewall Ports (Admin Rights required)
                   </div>
                   <div style="line-height:50%;">
                     <br>
@@ -149,8 +149,8 @@
                     <option value="Running" title="Initiate application and start mining&#10;&#10;Same as pressing the 'Start Mining' button">Running</option>
                   </select><label for="StartupMode" title="Defines NemosMiner startup mode"> mode</label>
 
-                  <div title="Mine only when system is idle, e.g. no mouse or keyboard activity is detected&#10;(min=0, max=3600 [default=120] seconds)">
-                    <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only when System is idle for
+                  <div title="Mine while system is idle, e.g. no mouse or keyboard activity is detected&#10;(min=0, max=3600 [default=120] seconds)">
+                    <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only while System is idle. Idle time
                     <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> Seconds
                   </div>
                   <div style="line-height:50%;">
@@ -242,7 +242,7 @@
                     <!-- Miner Selection -->
                     <legend class=h6><b>Miner Selection</b></legend>
 
-                    <div title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run in separate instances.">
+                    <div title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run as separate instances.">
                       <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run Miner Instance per GPU Device Model
                     </div>
                     <div title="NemosMiner will disable all miners which contain fees">
@@ -283,7 +283,7 @@
                       <input type="radio" id="MinerWindowStyleNormal" name="MinerWindowStyle" value="Normal"> Run in normal Window
                     </div>
                     <div title="This is helpful to check the miner output for errors">
-                      <input type="checkbox" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run in normal Window when benchmarking
+                      <input type="checkbox" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run in normal Window while benchmarking
                     </div>
                     <div style="line-height:50%;">
                       <br>
@@ -309,7 +309,7 @@
                       <label for="GPUMinerProcessPriority">process priority</label>
                     </div>
                     <div title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
-                      <input type="checkbox" id="UseMinerTweaks" name="UseMinerTweaks"> Enable Miner Tweaks (Admin rights required)
+                      <input type="checkbox" id="UseMinerTweaks" name="UseMinerTweaks"> Enable Miner Tweaks (Admin Rights required)
                     </div>
                     <div style="line-height:50%;">
                       <br>
@@ -367,11 +367,11 @@
                       <input type="number" step=1 min=0 max=25 value=10 size=3 id="MinWorker" name="MinWorker">
                       <label for="MinWorker">Workers at Pool</label>
                     </div>
-                    <div title="Allowed ratio of bad shares (total / bad) as reported by the miner.&#10;If the ratio exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])"> Allowed Ratio of bad Shares
+                    <div title="Acceptable bad shares (bad / total) as reported by the miner.&#10;If the percentage exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])"> Acceptable bad Shares
                       <input type="number" step=1 min=0 max=99 value=10 size=3 id="AllowedBadShareRatio" name="AllowedBadShareRatio"> %
                     </div>
-                    <div title="NemosMiner will ignore rejected shares when measuring hashrates&#10;This will increase earnings accuracy">
-                      <input type="checkbox" id="IgnoreRejectedShares" name="IgnoreRejectedShares"> Ignore rejected Shares
+                    <div title="NemosMiner will deduct rejected shares when calculating effective hashrates&#10;This will lower stored hashrates and increase earnings accuracy">
+                      <input type="checkbox" id="DeductRejectedShares" name="DeductRejectedShares"> Deduct rejected Shares
                     </div>
                     <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / actual price)&#10;to counter pool overestimated profitability">
                       <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
@@ -382,8 +382,8 @@
                     <div style="line-height:50%;">
                       <br>
                     </div>
-                    <div title="As long as no other miner has earning/profit that is&#10;n% higher than the running miner it will not switch.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100% [Default: 5%])" for="RunningMinerGainPct">Running Miner Gain
-                      <input type="number" id="RunningMinerGainPct" name="RunningMinerGainPct" min=0 max=100 value=5 step=0.1 size=3> %
+                    <div title="NemosMiner will not switch miners&#10;unless another miner has n% higher earnings / profit.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100% [Default: 5%])" for="MinerSwitchingThreshold">Miner Switching Threshold
+                      <input type="number" id="MinerSwitchingThreshold" name="MinerSwitchingThreshold" min=0 max=100 value=5 step=0.1 size=3> %
                     </div>
                     <div style="line-height:50%;">
                       <br>
@@ -394,9 +394,9 @@
                     <div title="NemosMiner will ignore the pool fee for earning & profit calculation">
                       <input type="checkbox" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore Pool Fees
                     </div>
-                    <div title="Defines the minimum number of data samples collected from the miner&#10;when benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100 [Default: 20] samples)" for="MinDataSamples">Minimum
+                    <div title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100 [Default: 20] samples)" for="MinDataSamples">Minimum
                       <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 size=4>
-                      <label for="MinDataSamples">data Samples when benchmarking</label>
+                      <label for="MinDataSamples">data Samples while benchmarking</label>
                     </div>
                     <div style="line-height:50%;">
                       <br>
@@ -404,7 +404,7 @@
 
                     <!-- Main Text Window Display Options -->
                     <legend class=h6 title="These options will not affect the information available in the in Web GUI"><b>Main Text Window Display Options</b></legend>
-                    <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except when benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle">
+                    <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle">
                       <label for="UIStyle">UI Style </label>
                       <select name="UIStyle" id="UIStyle">
                         <option value='Full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">Full</option>
@@ -423,7 +423,7 @@
                     <div title="Show the 'Profit Bias' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the text window while waiting for the next cycle&#10;">
                       <input type="checkbox" id="ShowProfitBias" name="ShowProfitBias"> Show Profit Bias in Main Text Window
                     </div>
-                    <div title="When unticked only the best 5 miners per device are shown&#10;except when not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle">
+                    <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle">
                       <input type="checkbox" id="ShowAllMiners" name="ShowAllMiners"> Show all Miners in Main Text Window
                     </div>
                     <div title="Show the 'Earning' column in the text window&#10;&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
@@ -450,8 +450,8 @@
 
                     <!-- Web GUI Display Options -->
                     <legend class=h6 title="Web GUI display options"><b>Web GUI Display Options</b></legend>
-                    <div title="Miners will be shown with colored background depending on status">
-                      <input type="checkbox" id="WebGUIUseColor" name="WebGUIUseColor"> Use Colors for Miner Status
+                    <div title="Miners and Rigs will be shown with colored background depending on status">
+                      <input type="checkbox" id="WebGUIUseColor" name="WebGUIUseColor"> Use Colors for Miner & Rig Status
                     </div>
                     <br>
                   </div>
@@ -784,8 +784,8 @@
               document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
               document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
               document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
-              document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
-              document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
+              document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\nNote: Data must be in compressed JSON format'
+              document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
                 document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
@@ -797,8 +797,8 @@
               $(document.getElementById('Currency')).change(function (event) {
                 document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
                 document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
-                document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\n(compressed JSON)'
-                document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nUse negative numbers to allow mining at loss"
+                document.getElementById('PowerPricekWhTitle').title = 'Price of power per kW⋅h, valid from HH:mm (24hr format)\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom midnight to noon: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom noon to midnight: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h\n\nNote: Data must be in compressed JSON format'
+                document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
               });
 
               // Calculation Options
@@ -807,11 +807,11 @@
               document.getElementById('UnrealMinerEarningFactor').value = parseFloat(config.UnrealMinerEarningFactor);
               document.getElementById('MinWorker').value = parseInt(config.MinWorker);
               document.getElementById('AllowedBadShareRatio').value = parseFloat(config.AllowedBadShareRatio) * 100;
-              if (config.IgnoreRejectedShares) document.getElementById('IgnoreRejectedShares').checked = true;
+              if (config.DeductRejectedShares) document.getElementById('DeductRejectedShares').checked = true;
               if (config.EstimateCorrection) document.getElementById('EstimateCorrection').checked = true;
               if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
               document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor);
-              document.getElementById('RunningMinerGainPct').value = parseFloat(config.RunningMinerGainPct);
+              document.getElementById('MinerSwitchingThreshold').value = parseFloat(config.MinerSwitchingThreshold);
               if (config.DisableMinersWithFee) document.getElementById('DisableMinersWithFee').checked = true;
               if (config.IgnorePoolFee) document.getElementById('IgnorePoolFee').checked = true;
               document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
@@ -964,7 +964,7 @@
                     required: true,
                     step: "0.01"
                   },
-                  RunningMinerGainPct: {
+                  MinerSwitchingThreshold: {
                     required: true,
                     step: "0.1"
                   },
@@ -1123,10 +1123,10 @@
                   config.MinAccuracy = parseFloat(document.getElementById('MinAccuracy').value) / 100;
                   config.MinWorker = parseInt(document.getElementById('MinWorker').value);
                   config.AllowedBadShareRatio = parseFloat(document.getElementById('AllowedBadShareRatio').value) / 100;
-                  config.IgnoreRejectedShares = document.getElementById('IgnoreRejectedShares').checked;
+                  config.DeductRejectedShares = document.getElementById('DeductRejectedShares').checked;
                   config.EstimateCorrection = document.getElementById('EstimateCorrection').checked;
                   config.EarningsAdjustmentFactor = parseFloat(document.getElementById('EarningsAdjustmentFactor').value);
-                  config.RunningMinerGainPct = parseFloat(document.getElementById('RunningMinerGainPct').value);
+                  config.MinerSwitchingThreshold = parseFloat(document.getElementById('MinerSwitchingThreshold').value);
                   config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
                   config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);

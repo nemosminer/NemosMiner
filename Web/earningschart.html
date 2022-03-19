@@ -130,13 +130,11 @@
                       enabled: true,
                       callbacks: {
                         label: function(context) {
-                          var label = context.dataset.label || '';
-                          var total = 0;
+                          let label = context.dataset.label || '';
 
                           if (label) {
                             label = " " + label + ": ";
                           }
-
                           if (context.parsed.y > 0) {
                             label += (context.parsed.y.toFixed(3) + " " + currency);
                             return label;

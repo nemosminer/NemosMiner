@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.0.22 (RC22)
+Version:        4.0.0.23
 Version date:   14 March 2022
 #>
 
@@ -33,7 +33,7 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolName $Name)
+$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 
 If ($PoolConfig.UserName) { 
     If ($PoolVariant -match "Coins$") { 
@@ -61,7 +61,7 @@ If ($PoolConfig.UserName) {
             # Temp fix
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
-                "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
+                # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
                 "Lyra2RE2" { $Current.host_list = $Current.host } # Error in API
                 "Skein"    { $Current.host_list = $Current.host } # Error in API
                 "VertHash" { $Current.host_list = $Current.host } # Error in API
@@ -116,7 +116,7 @@ If ($PoolConfig.UserName) {
             # Temp fix
             $PoolRegions = If ($Current.all_host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
-                "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
+                # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
                 "VertHash" { $Port = 20534 }
                 # Default    { $Port = $Current.algo_switch_port }
             }

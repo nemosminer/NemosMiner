@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.0.22 (RC22)
+Version:        4.0.0.23
 Version date:   14 March 2022
 #>
 
@@ -33,10 +33,10 @@ param(
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolName $Name)
+$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
-$PayoutCurrency = $PoolConfig.Wallets.PSObject.Properties.Name | Select-Object -First 1
+$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
 $Regions = If ($Config.UseAnycast -or $PoolConfig.UseAnycast) { "N/A (Anycast)" } Else { $PoolConfig.Region }
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 

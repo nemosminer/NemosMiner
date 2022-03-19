@@ -31,7 +31,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-#             If ($_.Algorithm -eq "Phi2" -and $Pools.($_.Algorithm).Name -like "ZergPool*") { Return }
+#             If ($_.Algorithm -eq "Phi2" -and $Pools.($_.Algorithm).BaseName -eq "ZergPool") { Return }
 
             $MinMemGB = $_.MinMemGB
 

@@ -59,6 +59,10 @@
               height: ($(window).height()) - $('h1').outerHeight(true) - 210
             });
 
+            $('#balanceobjects thead tr th').each(function () {
+              $(this).addClass('align-top');
+            });
+
             $(document).ready(function () {
               $('#remove-entry').click(function () {
                 var $data = $table.bootstrapTable('getSelections');

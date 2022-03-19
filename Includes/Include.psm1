@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.22 (RC22)
+Version:        4.0.0.23
 Version date:   14 March 2022
 #>
 
@@ -248,7 +248,7 @@ Class Miner {
                 While ($true) { 
                     $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
                     $Miner.GetMinerData()
-                    While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 100 }
+                    While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 50 }
                 }
             }
             Catch { 
@@ -316,6 +316,7 @@ Class Miner {
                 Profit         = $this.Profit
                 Profit_Bias    = $this.Profit_Bias
                 CommandLine    = $this.CommandLine
+                Reason         = ""
                 LastDataSample = $null
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
@@ -370,9 +371,12 @@ Class Miner {
     }
 
     hidden StopMining() { 
-        If ($this.GetStatus() -ne [MinerStatus]::Failed) { 
-            Write-Message "Stopping miner '$($this.Name) $($this.Info)'..."
-            $this.StatusMessage = "Stopping $($this.Info)"
+        If ($this.Status -eq [MinerStatus]::Running) { 
+            $this.StatusMessage = "Stopping miner '$($this.Name) $($this.Info)'..."
+            Write-Message -Level INFO $this.StatusMessage
+        }
+        Else { 
+            Write-Message -Level ERROR $this.StatusMessage
         }
 
         # Stop Miner data reader
@@ -392,7 +396,6 @@ Class Miner {
         }
 
         $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
-        $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
         $this.Devices | ForEach-Object { $_.Status = $this.Status }
         $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled} | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
@@ -412,8 +415,11 @@ Class Miner {
             Profit         = $this.Profit
             Profit_Bias    = $this.Profit_Bias
             CommandLine    = ""
+            Reason         = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
             LastDataSample = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
+
+        $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
     }
 
     [DateTime]GetActiveLast() { 
@@ -460,26 +466,26 @@ Class Miner {
         Return $TotalPowerUsage
     }
 
-    [Double[]]CollectHashRate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.Benchmark) { 
+    [Double[]]CollectHashrate([String]$Algorithm = [String]$this.Algorithm, [Boolean]$Safe = $this.Benchmark) { 
         # Returns an array of two values (safe, unsafe)
-        $HashRate_Average = [Double]0
-        $HashRate_Variance = [Double]0
+        $Hashrate_Average = [Double]0
+        $Hashrate_Variance = [Double]0
 
-        $HashRate_Samples = @($this.Data | Where-Object { $_.HashRate.$Algorithm }) # Do not use 0 valued samples
+        $Hashrate_Samples = @($this.Data | Where-Object { $_.Hashrate.$Algorithm }) # Do not use 0 valued samples
 
-        $HashRate_Average = $HashRate_Samples.HashRate.$Algorithm | Measure-Object -Average | Select-Object -ExpandProperty Average
-        $HashRate_Variance = $HashRate_Samples.HashRate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
+        $Hashrate_Average = $Hashrate_Samples.Hashrate.$Algorithm | Measure-Object -Average | Select-Object -ExpandProperty Average
+        $Hashrate_Variance = $Hashrate_Samples.Hashrate.$Algorithm | Measure-Object -Average -Minimum -Maximum | ForEach-Object { If ($_.Average) { ($_.Maximum - $_.Minimum) / $_.Average } }
 
         If ($Safe) { 
-            If ($HashRate_Samples.Count -lt 3 -or $HashRate_Variance -gt 0.1) { 
-                Return @(0, $HashRate_Average)
+            If ($Hashrate_Samples.Count -lt 3 -or $Hashrate_Variance -gt 0.1) { 
+                Return @(0, $Hashrate_Average)
             }
             Else { 
-                Return @(($HashRate_Average * (1 + $HashRate_Variance / 2)), $HashRate_Average)
+                Return @(($Hashrate_Average * (1 + $Hashrate_Variance / 2)), $Hashrate_Average)
             }
         }
         Else { 
-            Return @($HashRate_Average, $HashRate_Average)
+            Return @($Hashrate_Average, $Hashrate_Average)
         }
     }
 
@@ -527,7 +533,7 @@ Class Miner {
         $this.Profit_Bias = [Double]::NaN
 
         $this.Workers | ForEach-Object { 
-            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_HashRate") { 
+            If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
                 $_.Speed = $Stat.Hour
                 $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
@@ -729,6 +735,11 @@ Function Stop-Mining {
         $Variables.Summary = "Stopping mining processes..."
         Write-Message -Level Info $Variables.Summary
 
+         # Give core loop time to shut down gracefully
+         $Timestamp = (Get-Date).AddSeconds(30)
+         While ($Variables.CoreRunspace.Status -eq "Running" -and (Get-Date) -le $Timestamp) { 
+            Start-Sleep -Seconds 1
+        }
         $Variables.Miners | Where-Object ProcessID | ForEach-Object { 
             $_.SetStatus([MinerStatus]::Idle)
         }
@@ -746,12 +757,17 @@ Function Stop-Mining {
 
 Function Start-BrainJob { 
 
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String[]]$Jobs = (Get-PoolBaseName $Config.PoolName)
+    )
+
     # Starts Brains if necessary
     $JobNames = @()
 
-    $Config.PoolName | ForEach-Object { 
+    $Jobs | ForEach-Object { 
         If (-not $Variables.BrainJobs.$_) { 
-            $BrainPath = "$($Variables.MainPath)\Brains\$(Get-PoolName $_)"
+            $BrainPath = "$($Variables.MainPath)\Brains\$_"
             $BrainName = "$BrainPath\Brains.ps1"
             If (Test-Path $BrainName -PathType Leaf) { 
                 $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
@@ -853,7 +869,7 @@ Function Get-DefaultAlgorithm {
             $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
         }
     # }
-    If ($PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @(Get-PoolName $Config.PoolName)) { Return $PoolsAlgos.Value | Sort-Object -Unique }
+    If ($PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @(Get-PoolBaseName $Config.PoolName)) { Return $PoolsAlgos.Value | Sort-Object -Unique }
     Return
 }
 
@@ -973,7 +989,7 @@ Function Send-MonitoringData {
     If (-not $Config.MonitoringUser) { Return }
 
     $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
-    $Status = $Variables.MiningStatus
+    $Status = $Variables.NewMiningStatus
     $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
 
     # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
@@ -1169,11 +1185,11 @@ Function Read-Config {
                 }
                 "NiceHash" { 
                     If (-not $PoolConfig.Variant."Nicehash Internal".Wallets.BTC) { 
-                        If ($Local:Config.NiceHashWallet -and $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash Internal".Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
+                        If ($Local:Config.NiceHashWallet -and $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash Internal".Wallets = @{ "BTC" = $Local:Config.NiceHashWallet } }
                     }
                     If (-not $PoolConfig.Variant."Nicehash External".Wallets.BTC) { 
-                        If ($Local:Config.NiceHashWallet -and -not $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash External".Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.NiceHashWallet } }
-                        ElseIf ($Config.Wallets.BTC) { $PoolConfig.Variant."NiceHash External".Wallets = [PSCustomObject]@{ "BTC" = $Local:Config.Wallets.BTC } }
+                        If ($Local:Config.NiceHashWallet -and -not $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Local:Config.NiceHashWallet } }
+                        ElseIf ($Config.Wallets.BTC) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Local:Config.Wallets.BTC } }
                     }
                 }
                 "ProHashing" { 
@@ -1182,7 +1198,7 @@ Function Read-Config {
                 }
                 Default { 
                     If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Local:Config.PayoutCurrency }
-                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = [PSCustomObject]@{ "$($PoolConfig.PayoutCurrency)" = $($Local:Config.Wallets.($PoolConfig.PayoutCurrency)) } }
+                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Local:Config.Wallets.($PoolConfig.PayoutCurrency)) } }
                     $PoolConfig.Remove("PayoutCurrency")
                 }
             }
@@ -1342,7 +1358,7 @@ Function Set-Stat {
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
         If ($FaultDetection) { 
-            $FaultFactor = If ($Name -match ".+_HashRate$") { 0.1 } Else { 0.2 }
+            $FaultFactor = If ($Name -match ".+_Hashrate$") { 0.1 } Else { 0.2 }
             $ToleranceMin = $Stat.Week * (1 - $FaultFactor)
             $ToleranceMax = $Stat.Week * (1 + $FaultFactor)
         }
@@ -1354,18 +1370,19 @@ Function Set-Stat {
         Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
         If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
-            If ($Name -match ".+_HashRate$") { 
-                Write-Message -Level Warn "Failed saving hash rate for '$($Name -replace '_HashRate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', '') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+            If ($Name -match ".+_Hashrate$") { 
+                Write-Message -Level Warn "Error saving hash rate for '$($Name -replace '_Hashrate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', '') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
-                Write-Message -Level Warn "Failed saving power usage for '$($Name -replace '_PowerUsage$')'. $($Value.ToString("N2"))W is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Error saving power usage for '$($Name -replace '_PowerUsage$')'. $($Value.ToString("N2"))W is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
+            Return
         }
         Else { 
             If ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
                 If ($Value -gt 0 -and $Stat.ToleranceExceeded -ge $ToleranceExceeded) { 
-                    If ($Name -match ".+_HashRate$") { 
-                        Write-Message -Level Warn "HashRate '$($Name -replace '_HashRate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
+                    If ($Name -match ".+_Hashrate$") { 
+                        Write-Message -Level Warn "Hashrate '$($Name -replace '_Hashrate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
                     }
                     ElseIf ($Name -match ".+_PowerUsage$") { 
                         Write-Message -Level Warn "Power usage for '$($Name -replace '_PowerUsage$')' was forcefully updated. $($Value.ToString("N2"))W was outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W)$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
@@ -2488,10 +2505,10 @@ Function Get-CoinName {
     Return $null
 }
 
-Function Get-PoolName { 
+Function Get-PoolBaseName { 
 
     Param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [String[]]$PoolNames
     )
 
@@ -2619,7 +2636,7 @@ Function Initialize-Autoupdate {
     Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
     Remove-Item -Path "$($UpdateLog)_tmp" -Force
 
-    #Testing files are in a subdirectory
+    #Update files are in a subdirectory
     $UpdateFilePath = $UpdateFileName
     If ((Get-ChildItem -Path $UpdateFileName -Directory).Count -eq 1) { 
         $UpdateFilePath = "$UpdateFileName\$((Get-ChildItem -Path $UpdateFileName -Directory).Name)"
@@ -2647,6 +2664,9 @@ Function Initialize-Autoupdate {
         }
     }
 
+    # Remove OrphanedMinerStats; must be done after new miner files habe veen unpacked
+    Remove-OrphanedMinerStats | Out-Null
+
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
     Start-LogReader
 
@@ -2666,7 +2686,7 @@ Function Initialize-Autoupdate {
     If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
     If (Test-Path -Path ".\OptionalMiners" -PathType Container) { Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
     If (Test-Path -Path ".\Stats" -PathType Container) { 
-        Get-ChildItem -Path ".\Stats\*_HashRate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
+        Get-ChildItem -Path ".\Stats\*_Hashrate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
         Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8 -ErrorAction SilentlyContinue }
     }
 
@@ -2755,7 +2775,7 @@ Function Update-ConfigFile {
     # Changed config items
     $Config.GetEnumerator().Name | ForEach-Object { 
         Switch ($_) { 
-            "ActiveMinergain" { $Config.RunningMinerGainPct = $Config.$_; $Config.Remove($_) }
+            "ActiveMinergain" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
             "AutoStart" { 
                 If ($Config.$_ -eq $true) { 
                     If ($Config.StartPaused -eq $true) { $Config.StartupMode = "Paused" }
@@ -2768,6 +2788,7 @@ Function Update-ConfigFile {
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "BalancesTrackerConfigFile" { $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
+            "IgnoreRejectedShares" { $Config.DeductRejectedShares = $Config.$_; $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "MPHUserName"  { $Config.MiningPoolHubUserName = $Config.$_; $Config.Remove($_) }
@@ -2776,6 +2797,7 @@ Function Update-ConfigFile {
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
             "PricePenaltyFactor" { $Config.EarningsAdjustmentFactor = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
+            "RunningMinerGainPct" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindows" { $Config.MinerWindowStyle = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindowsNormalWhenBenchmarking" { $Config.MinerWindowStyleNormalWhenBenchmarking = $Config.$_; $Config.Remove($_) }
             "SSL" { $Config.Remove($_) }
@@ -2849,6 +2871,15 @@ Function Update-ConfigFile {
     Write-Config -ConfigFile $ConfigFile
     "Updated configuration file '$($ConfigFile)' to version $($Variables.CurrentVersion.ToString())." | Write-Message -Level Verbose 
     Remove-Variable New_Config_Items -ErrorAction Ignore
+}
+
+Function Remove-OrphanedMinerStats { 
+
+    $MinerNames = @(Get-ChildItem ".\Miners\*.ps1").BaseName
+    $TempStatNames = @($Stats.Keys | Where-Object { $_ -match "_Hashrate$|_PowerUsage$" } | Where-Object { (($_ -split "-" | Select-Object -First 2) -join "-") -notin $MinerNames})
+    If ($TempStatNames) { $TempStatNames | ForEach-Object { Remove-Stat $_ } }
+
+    $TempStatNames
 }
 
 Function Test-Prime { 

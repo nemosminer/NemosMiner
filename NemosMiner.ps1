@@ -21,7 +21,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.22 (RC22)
+Version:        4.0.0.23
 Version date:   14 March 2022
 #>
 
@@ -53,6 +53,8 @@ param(
     [Int]$CPUMinerProcessPriority = "-2", # Process priority for CPU miners
     [Parameter(Mandatory = $false)]
     [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
+    [Parameter(Mandatory = $false)]
+    [Boolean]$DeductRejectedShares = $true, # If true will ignore rejected shares when measuring hashrates
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 0, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
@@ -88,8 +90,6 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$IgnorePowerCost = $false, # If true ill ignore power cost in best miner selection, instead miners with best earnings will be selected
     [Parameter(Mandatory = $false)]
-    [Boolean]$IgnoreRejectedShares = $true, # If true will ignore rejected shares when measuring hashrates
-    [Parameter(Mandatory = $false)]
     [Int]$Interval = 90, # Average cycle loop duration (seconds), min 60, max 3600
     [Parameter(Mandatory = $false)]
     [Switch]$LogBalanceAPIResponse = $false, # If true will log the pool balance API data
@@ -108,6 +108,8 @@ param(
     [Switch]$MinerInstancePerDeviceModel = $true, # If true will create separate miner instances per device model. This will increase profitability. 
     [Parameter(Mandatory = $false)]
     [Int]$MinerSet = 1, # 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device;
+    [Parameter(Mandatory = $false)]
+    [Double]$MinerSwitchingThreshold = 10, # As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
     [Parameter(Mandatory = $false)]
     [Switch]$MineWhenIdle = $false, # If true will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
@@ -166,8 +168,6 @@ param(
     [String]$Region = "Europe West", # Used to determine pool nearest to you.
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, # I)f true will report worker status to central monitoring server
-    [Parameter(Mandatory = $false)]
-    [Double]$RunningMinerGainPct = 10, # As lang as no other miner has earning/profit that are n % higher than the current miner it will not switch
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
@@ -251,7 +251,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.22" #RC22
+    Version      = [System.Version]"4.0.0.23"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -305,7 +305,7 @@ $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolve
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
 # Verify donation data
-$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore -NoEnumerate
 If (-not $Variables.DonationData) { 
     Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
@@ -602,6 +602,8 @@ Function Get-Chart {
 
 Function Update-TabControl { 
 
+    $Mainform.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+
     Switch ($TabControl.SelectedTab.Text) { 
         "Run" { 
             If ($Variables.Miners) { 
@@ -712,9 +714,9 @@ Function Update-TabControl {
                 # Set row color
                 ForEach ($Row in $WorkersDGV.Rows) { 
                     $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
-                        "Offline" { [System.Drawing.Color]::FromArgb(255, 213, 142, 176) }
-                        "Paused"  { [System.Drawing.Color]::FromArgb(255, 247, 252, 168) }
-                        "Running" { [System.Drawing.Color]::FromArgb(255, 127, 191, 144) }
+                        "Offline" { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
+                        "Paused"  { [System.Drawing.Color]::FromArgb(255, 255, 241, 195) }
+                        "Running" { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
                         Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                     }
                 }
@@ -770,6 +772,9 @@ Function Update-TabControl {
             Else { $LabelBenchmarks.Text = "Waiting for data..." }
         }
     }
+
+    $Mainform.Cursor = [System.Windows.Forms.Cursors]::Normal
+
 }
 
 Function Global:TimerUITick { 
@@ -1229,9 +1234,7 @@ $TabControl.Name = "TabControl"
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $SwitchingPage, $MonitoringPage, $BenchmarksPage))
 
 $TabControl_SelectedIndexChanged = { 
-    $Mainform.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
     Update-TabControl
-    $Mainform.Cursor = [System.Windows.Forms.Cursors]::Normal
 }
 $TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
 
@@ -1539,22 +1542,28 @@ $TimerUI.Enabled = $false
 
 $ButtonPause.Add_Click(
     { 
-        $Variables.NewMiningStatus = "Paused"
-        $Variables.RestartCycle = $true
+        If ($Variables.NewMiningStatus -ne "Paused") { 
+            $Variables.NewMiningStatus = "Paused"
+            $Variables.RestartCycle = $true
+        }
     }
 )
 
 $ButtonStop.Add_Click(
     { 
-        $Variables.NewMiningStatus = "Idle"
-        $Variables.RestartCycle = $true
+        If ($Variables.NewMiningStatus -ne "Idle") { 
+            $Variables.NewMiningStatus = "Idle"
+            $Variables.RestartCycle = $true
+        }
     }
 )
 
 $ButtonStart.Add_Click(
     { 
-        $Variables.NewMiningStatus = "Running"
-        $Variables.RestartCycle = $true
+        If ($Variables.NewMiningStatus -ne "Running") { 
+            $Variables.NewMiningStatus = "Running"
+            $Variables.RestartCycle = $true
+        }
     }
 )
 

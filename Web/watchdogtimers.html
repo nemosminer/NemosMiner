@@ -63,6 +63,10 @@
                 }
               });
 
+            $('#watchdogtimers thead tr th').each(function () {
+              $(this).addClass('align-top');
+            });
+
               $("#removewatchdogs").click(function () {
                 $command = '/functions/watchdogtimers/reset';
                 $('.modal-body').load($command, function() {

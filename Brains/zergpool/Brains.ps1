@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.22 (RC22)
+version:        4.0.0.23
 version date:   14 March 2022
 #>
 
@@ -59,10 +59,10 @@ Function Get-Median {
     $NumberSeries += @()
     $NumberSeries += $Number
     $SortedNumbers = @($NumberSeries | Sort-Object)
-    If ($NumberSeries.Count % 2){ 
+    If ($NumberSeries.Count % 2) { 
         $SortedNumbers[($SortedNumbers.Count / 2) - 1]
     }
-    Else{ 
+    Else { 
         ($SortedNumbers[($SortedNumbers.Count / 2)] + $SortedNumbers[($SortedNumbers.Count / 2) - 1]) / 2
     }
 }
@@ -75,7 +75,7 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-While (Test-Path ".\BrainConfig.xml"){ 
+While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) { 
     $Config = Import-Clixml ".\BrainConfig.xml"
     $SampleSizeMinutes = $Config.SampleSizeMinutes
     $SampleHalfPower = $Config.SampleHalfPower
