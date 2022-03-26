@@ -4,6 +4,7 @@ If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
     { $_ -ge "10.0" } { "https://github.com/Minerx117/miners/releases/download/CryptoDredge/CryptoDredge_0.16.0_cuda_10.0_windows.zip"; Break }
+    { $_ -ge "9.2" } { "https://github.com/Minerx117/miners/releases/download/CryptoDredge/CryptoDredge_0.16.0_cuda_9.2_windows.zip"; Break }
     Default { Return }
 }
 $Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
@@ -31,11 +32,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-#             If ($_.Algorithm -eq "Phi2" -and $Pools.($_.Algorithm).BaseName -eq "ZergPool") { Return }
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
 
-            $MinMemGB = $_.MinMemGB
-
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }) { 
                 $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                 # Get arguments for available miner devices

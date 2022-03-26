@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.23
-Version date:   14 March 2022
+Version:        4.0.0.24
+Version date:   26 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -86,7 +86,7 @@ If ($Wallet) {
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
-                Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price peaks
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
                 Port                     = [UInt16]$Port

@@ -10,14 +10,14 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v6.0c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = 5; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " -algo KAWPOW -intensity 15" } # Trex-v0.25.9 is fastest
-    [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo PROGPOW" } # Sero
-    [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo UBQHASH -intensity 15" }
-    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 60); Arguments = " -algo PROGPOWZ" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = ($Pools."EtcHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v6.0c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = ($Pools."KawPoW".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " -algo KAWPOW -intensity 15" } # Trex-v0.25.9 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3;                                                      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = ($Pools."ProgPoW".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo PROGPOW" } # Sero
+    [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = ($Pools."UbqHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo UBQHASH -intensity 15" }
+    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(45, 60); Arguments = " -algo PROGPOWZ" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -30,13 +30,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-            $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
-
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 1GB -le 2 }) { $_.Arguments = $_.Arguments -replace " -intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $_.Arguments = $_.Arguments -replace " -intensity [0-9\.]+" }
 
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -49,7 +47,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 $_.Arguments += " -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -user $($Pools.($_.Algorithm).User)"
-                $_.Arguments += " -pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
+                $_.Arguments += " -pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name

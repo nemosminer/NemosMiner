@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.23
-Version date:   14 March 2022
+Version:        4.0.0.24
+Version date:   26 March 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -73,7 +73,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                 Currency                 = [String]$Currency
                 Price                    = [Double]$Stat.Live
                 StablePrice              = [Double]$Stat.Week
-                Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
                 Port                     = [UInt16]$PoolPort

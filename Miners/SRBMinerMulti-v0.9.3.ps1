@@ -11,39 +11,39 @@ $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs
 
 # Algorithm parameter values are case sensitive!
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "Argon2d16000";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm argon2d_16000 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm argon2d_dynamic --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm argon2id_chukwa --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa2";     Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm argon2id_chukwa2 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "AMD"; Fee = 0.02;   MinMemGB = 1; MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algorithm autolykos2 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Blake2b";           Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm blake2b --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Blake2s";           Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake2s --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Blake3";            Type = "AMD"; Fee = 0.01;   MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake3_alephium --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CircCash";          Type = "AMD"; Fee = 00085;  MinMemGB = 1; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm circcash --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_ccx --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm cryptonight_gpu --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightTalleo"; Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm cryptonight_talleo --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRedMiner-v0.9.4.1 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_turtle --gpu-intensity 31 --gpu-boost 50" } # TeamRedMiner-v0.9.4.1 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_xhv --gpu-intensity 31 --gpu-boost 50" }
-    # [PSCustomObject]@{ Algorithm = "DynamoCoin";        Type = "AMD"; Fee = 0.01;   MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
-    [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algorithm etchash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";            Type = "AMD"; Fee = 0.0065; MinMemGB = 4; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algorithm ethash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algorithm ethash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "FiroPoW";           Type = "AMD"; Fee = 0.0085; MinMemGB = 5; MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algorithm firopow --gpu-boost 50 --gpu-auto-tune 2" }
-    [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "AMD"; Fee = 0.01;   MinMemGB = 1; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm heavyhash --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm k12 --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";            Type = "AMD"; Fee = 0.085;  MinMemGB = 4; MinerSet = 0; WarmupTimes = @(40, 15); Arguments = " --algorithm kawpow --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Keccak";            Type = "AMD"; Fee = 0;      MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Lyra2v2Webchain";   Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm lyra2v2_webchain --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "ProgPoWEpic";       Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_epic --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "ProgPoWSero";       Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_sero --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "ProgPoWVeil";       Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_veil --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "ProgPoWVeriblock";  Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_veriblock --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "ProgPoWZano";       Type = "AMD"; Fee = 0.0065; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_zano --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm verushash --gpu-intensity 31 --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "VertHash";          Type = "AMD"; Fee = 0.0125; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm verthash --verthash-dat-path ..\..\Cache\VertHash.dat" }
-    [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Argon2d16000";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm argon2d_16000 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm argon2d_dynamic --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm argon2id_chukwa --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa2";     Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm argon2id_chukwa2 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "AMD"; Fee = 0.02;   MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algorithm autolykos2 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Blake2b";           Type = "AMD"; Fee = 0;      MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm blake2b --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Blake2s";           Type = "AMD"; Fee = 0;      MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake2s --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Blake3";            Type = "AMD"; Fee = 0.01;   MinMemGB = 1.95;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake3_alephium --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CircCash";          Type = "AMD"; Fee = 00085;  MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm circcash --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_ccx --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm cryptonight_gpu --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightTalleo"; Type = "AMD"; Fee = 0;      MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algorithm cryptonight_talleo --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_upx --gpu-intensity 31 --gpu-boost 50" } # TeamRedMiner-v0.9.4.1 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_turtle --gpu-intensity 31 --gpu-boost 50" } # TeamRedMiner-v0.9.4.1 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_xhv --gpu-intensity 31 --gpu-boost 50" }
+    # [PSCustomObject]@{ Algorithm = "DynamoCoin";        Type = "AMD"; Fee = 0.01;   MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
+    [PSCustomObject]@{ Algorithm = "EtcHash";           Type = "AMD"; Fee = 0.0065; MinMemGB = ($Pools."EtcHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algorithm etchash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";            Type = "AMD"; Fee = 0.0065; MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algorithm ethash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";      Type = "AMD"; Fee = 0.0065; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algorithm ethash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "FiroPoW";           Type = "AMD"; Fee = 0.0085; MinMemGB = 5;                                                      MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algorithm firopow --gpu-boost 50 --gpu-auto-tune 2" }
+    [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "AMD"; Fee = 0.01;   MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm heavyhash --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm k12 --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";            Type = "AMD"; Fee = 0.085;  MinMemGB = ($Pools."KawPoW".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; WarmupTimes = @(40, 15); Arguments = " --algorithm kawpow --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Keccak";            Type = "AMD"; Fee = 0;      MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "Lyra2v2Webchain";   Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm lyra2v2_webchain --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "ProgPoWEpic";       Type = "AMD"; Fee = 0.0065; MinMemGB = 1.95;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_epic --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "ProgPoWSero";       Type = "AMD"; Fee = 0.0065; MinMemGB = 1.95;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_sero --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "ProgPoWVeil";       Type = "AMD"; Fee = 0.0065; MinMemGB = 1.95;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_veil --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "ProgPoWVeriblock";  Type = "AMD"; Fee = 0.0065; MinMemGB = 1.95;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_veriblock --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "ProgPoWZano";       Type = "AMD"; Fee = 0.0065; MinMemGB = 1.95;                                                      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_zano --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "VerusHash";         Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm verushash --gpu-intensity 31 --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "VertHash";          Type = "AMD"; Fee = 0.0125; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm verthash --verthash-dat-path ..\..\Cache\VertHash.dat" }
+    [PSCustomObject]@{ Algorithm = "Yescrypt";          Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                                                      MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algorithm yescrypt --gpu-intensity 31 --gpu-boost 50" }
 
     [PSCustomObject]@{ Algorithm = "Argon2d16000";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algorithm argon2d_16000" }
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algorithm argon2d_dynamic" }
@@ -130,7 +130,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-            $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
+            $MinMemGB = $_.MinMemGB
 
             If ($_.Algorithm -eq "VertHash") { 
                 If (-not (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf )) { 
@@ -139,7 +139,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
             }
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGB -gt $MinMemGB }) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
@@ -154,7 +154,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 $_.Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User) --worker $($Config.Workername)"
-                $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" })"
+                $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" })"
 
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl true" }
                 If ($Pools.($_.Algorithm).DAGsize -ne $null -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }

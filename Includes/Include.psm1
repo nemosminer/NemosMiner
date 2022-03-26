@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.23
-Version date:   14 March 2022
+Version:        4.0.0.24
+Version date:   26 March 2022
 #>
 
 # Window handling
@@ -53,6 +53,7 @@ Class Device {
     [String]$Model
     [String]$Vendor
     [Int64]$Memory
+    [Double]$MemoryGB
     [String]$Type
     [PSCustomObject]$CIM
     [PSCustomObject]$PNP
@@ -277,7 +278,6 @@ Class Miner {
         $this.StatusMessage = "Starting $($this.Info)"
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
-        # $this.Intervals = @()
 
         Write-Message "Starting miner '$($this.Name) $($this.Info)'..."
 
@@ -302,22 +302,24 @@ Class Miner {
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                DateTime       = (Get-Date -Format o)
-                Action         = "Launched"
-                Name           = $this.Name
-                Device         = ($this.Devices.Name | Sort-Object) -join "; "
-                Type           = $this.Type
-                Account        = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-                Pool           = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-                Algorithm      = $this.Workers.Pool.Algorithm -join "; "
-                Duration       = ""
-                Earning        = $this.Earning
-                Earning_Bias   = $this.Earning_Bias
-                Profit         = $this.Profit
-                Profit_Bias    = $this.Profit_Bias
-                CommandLine    = $this.CommandLine
-                Reason         = ""
-                LastDataSample = $null
+                DateTime          = (Get-Date -Format o)
+                Action            = "Launched"
+                Name              = $this.Name
+                Device            = ($this.Devices.Name | Sort-Object) -join "; "
+                Type              = $this.Type
+                Account           = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+                Pool              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+                Algorithm         = $this.Workers.Pool.Algorithm -join "; "
+                Duration          = ""
+                Earning           = $this.Earning
+                Earning_Bias      = $this.Earning_Bias
+                Profit            = $this.Profit
+                Profit_Bias       = $this.Profit_Bias
+                CommandLine       = $this.CommandLine
+                Benchmark         = $this.Benchmark
+                MeasurePowerUsage = $this.MeasurePowerUsage
+                Reason            = ""
+                LastDataSample    = $null
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -401,22 +403,24 @@ Class Miner {
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            DateTime       = (Get-Date -Format o)
-            Action         = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
-            Name           = $this.Name
-            Device         = ($this.Devices.Name | Sort-Object) -join "; "
-            Type           = $this.Type
-            Account        = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-            Pool           = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm      = $this.WorkersRunning.Pool.Algorithm -join "; "
-            Duration       = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
-            Earning        = $this.Earning
-            Earning_Bias   = $this.Earning_Bias
-            Profit         = $this.Profit
-            Profit_Bias    = $this.Profit_Bias
-            CommandLine    = ""
-            Reason         = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
-            LastDataSample = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
+            DateTime          = (Get-Date -Format o)
+            Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
+            Name              = $this.Name
+            Device            = ($this.Devices.Name | Sort-Object) -join "; "
+            Type              = $this.Type
+            Account           = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            Pool              = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+            Algorithm         = $this.WorkersRunning.Pool.Algorithm -join "; "
+            Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
+            Earning           = $this.Earning
+            Earning_Bias      = $this.Earning_Bias
+            Profit            = $this.Profit
+            Profit_Bias       = $this.Profit_Bias
+            CommandLine       = ""
+            Benchmark         = $this.Benchmark
+            MeasurePowerUsage = $this.MeasurePowerUsage
+            Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
+            LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
@@ -588,18 +592,17 @@ Class Miner {
         }
     }
 }
-Function Start-IdleMining { 
+Function Start-IdleDetection { 
 
     # Function tracks how long the system has been idle and controls the paused state
     $IdleRunspace = [runspacefactory]::CreateRunspace()
     $IdleRunspace.Open()
-    Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
-        Try { 
-            $IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
-        }
-        Catch { }
-    }
+    $IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
+    $IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
     $IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+
+    $Variables.IdleRunspace = $IdleRunspace
+
     $PowerShell = [PowerShell]::Create()
     $PowerShell.Runspace = $IdleRunspace
     $PowerShell.AddScript(
@@ -608,6 +611,8 @@ Function Start-IdleMining {
             Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+            
+            $Variables.IdleRunspace | Add-Member NewMiningStatus "Idle" -Force
 
             # No native way to check how long the system has been idle in PowerShell. Have to use .NET code.
             Add-Type -TypeDefinition @'
@@ -655,41 +660,38 @@ namespace PInvoke.Win32 {
 '@
 
             $ProgressPreference = "SilentlyContinue"
-            Write-Message -Level Verbose "Started idle detection. $($Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
+            $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
+
+            Write-Message -Level Verbose "Started idle detection.$(If ($IdleSeconds -le $Config.IdleSec) { " $($Variables.CurrentProduct) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..." })"
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
-                # Pause if system has become active
-                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.CoreRunspace) { 
-                    Write-Message -Level Verbose "System activity detected. Stopping mining processes..."
-                    Stop-Mining
+                # Activity detected, pause mining
+                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.IdleRunspace.NewMiningStatus -ne "Idle") { 
+                    $Variables.IdleRunspace | Add-Member NewMiningStatus "Idle" -Force
 
-                    $LabelMiningStatus.Text = "Idle | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Idle | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
-
-                    Write-Message -Level Verbose "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
                 }
-                # Check if system has been idle long enough to unpause
-                If ($IdleSeconds -ge $Config.IdleSec -and -not $Variables.CoreRunspace) { 
-                    Write-Message -Level Verbose "System was idle for $IdleSeconds seconds, starting mining processes..."
-                    Start-Mining
 
-                    $LabelMiningStatus.Text = "Running | $($Branding.ProductLabel) $($Variables.CurrentVersion)"
+                # System has been idle long enough, start mining
+                If ($IdleSeconds -ge $Config.IdleSec -and $Variables.IdleRunspace.NewMiningStatus -ne "Mining") { 
+                    $Variables.IdleRunspace | Add-Member NewMiningStatus "Mining" -Force
+
+                    $LabelMiningStatus.Text = "Running | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
                 }
                 Start-Sleep -Seconds 1
             }
-            Return
         }
     ) | Out-Null
     $PowerShell.BeginInvoke()
 
-    $Variables.IdleRunspace = $IdleRunspace
     $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 }
 
-Function Stop-IdleMining { 
+Function Stop-IdleDetection { 
 
     If ($Variables.IdleRunspace) { 
         $Variables.IdleRunspace.Close()
@@ -716,12 +718,14 @@ Function Start-Mining {
         $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
         $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
         $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+
+        $Variables.CoreRunspace = $CoreRunspace
+
         $PowerShell = [PowerShell]::Create()
         $PowerShell.Runspace = $CoreRunspace
         $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
         $PowerShell.BeginInvoke()
 
-        $Variables.CoreRunspace = $CoreRunspace
         $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 
         $Variables.Summary = "Mining processes are running."
@@ -732,18 +736,11 @@ Function Start-Mining {
 Function Stop-Mining { 
 
     If ($Variables.CoreRunspace) { 
-        $Variables.Summary = "Stopping mining processes..."
-        Write-Message -Level Info $Variables.Summary
 
-         # Give core loop time to shut down gracefully
-         $Timestamp = (Get-Date).AddSeconds(30)
-         While ($Variables.CoreRunspace.Status -eq "Running" -and (Get-Date) -le $Timestamp) { 
-            Start-Sleep -Seconds 1
-        }
-        $Variables.Miners | Where-Object ProcessID | ForEach-Object { 
-            $_.SetStatus([MinerStatus]::Idle)
-        }
-        $Variables.WatchdogTimers = @()
+        If ($Variables.MiningStatus -eq "Running") { Write-Message -Level Info "Exiting cycle." }
+
+        Stop-MiningProcess
+
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.Remove("Timer")
@@ -754,6 +751,25 @@ Function Stop-Mining {
     }
 }
 
+Function Stop-MiningProcess { 
+
+    If ($Variables.Miners | Where-Object ProcessID) { 
+        $Variables.Summary = "Stopping mining processes..."
+        Write-Message -Level Info $Variables.Summary
+
+        # Give core loop time to shut down gracefully
+        $Timestamp = (Get-Date).AddSeconds(30)
+        While (($Variables.CoreRunspace.MiningStatus -eq "Running" -and -not $Variables.IdleRunspace) -and (Get-Date) -le $Timestamp) { 
+            Start-Sleep -Seconds 1
+        }
+        $Variables.Miners | Where-Object ProcessID | ForEach-Object { 
+            $_.Info = ""
+            $_.Best = $false
+            $_.SetStatus([MinerStatus]::Idle)
+        }
+        $Variables.WatchdogTimers = @()
+    }
+}
 
 Function Start-BrainJob { 
 
@@ -1893,7 +1909,8 @@ Function Get-Device {
         $PlatformId_Index = @{ }
         $Type_PlatformId_Index = @{ }
 
-        $UnsupportedVendorID = 100
+        $UnsupportedCPUVendorID = 100
+        $UnsupportedGPUVendorID = 100
 
         # Get WDDM data
         Try { 
@@ -1916,10 +1933,7 @@ Function Get-Device {
                         }
                     )
                     Memory = $null
-                }
-
-                If (-not $Type_Vendor_Id.($Device.Type)) { 
-                    $Type_Vendor_Id.($Device.Type) = @{ }
+                    MemoryGB = $null
                 }
 
                 $Device | Add-Member @{ 
@@ -1931,6 +1945,9 @@ Function Get-Device {
 
                 $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                 $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '  ', ' ').Trim()
+                If (-not $Type_Vendor_Id.($Device.Type)) { 
+                    $Type_Vendor_Id.($Device.Type) = @{ }
+                }
 
                 $Id++
                 $Vendor_Id.($Device.Vendor)++
@@ -1976,6 +1993,7 @@ Function Get-Device {
                             }
                         )
                         Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                        MemoryGB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
                     }
                 }
                 Else { 
@@ -1994,11 +2012,8 @@ Function Get-Device {
                             }
                         )
                         Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                        MemoryGB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
                     }
-                }
-
-                If (-not $Type_Vendor_Id.($Device.Type)) { 
-                    $Type_Vendor_Id.($Device.Type) = @{ }
                 }
 
                 $Device | Add-Member @{ 
@@ -2008,19 +2023,25 @@ Function Get-Device {
                     Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
                 }
                 #Unsupported devices start with DeviceID 100 (to not disrupt device order when running in a Citrix / RDP session)
-                If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { 
+                If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { 
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                 }
-                Else { 
-                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedVendorID++)"
-                    $Device.Bus = $null
+                ElseIf ($Device.Type -eq "CPU") { 
+                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedCPUVendorID++)"
                 }
-                $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.' -replace '  ', ' ').Trim()
+                Else { 
+                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID++)"
+                }
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
+
+                If (-not $Type_Vendor_Id.($Device.Type)) { 
+                    $Type_Vendor_Id.($Device.Type) = @{ }
+                }
 
                 $Id++
                 $Vendor_Id.($Device.Vendor)++
                 $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { $Type_Id.($Device.Type)++ }
+                If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { $Type_Id.($Device.Type)++ }
 
                 # Add raw data
                 $Device | Add-Member @{ 
@@ -2066,10 +2087,7 @@ Function Get-Device {
                             }
                         )
                         Memory = [UInt64]$Device_OpenCL.GlobalMemSize
-                    }
-
-                    If (-not $Type_Vendor_Id.($Device.Type)) { 
-                        $Type_Vendor_Id.($Device.Type) = @{ }
+                        MemoryGB = [Double]([Math]::Round($Device_OpenCL.GlobalMemSize / 0.05GB) / 20) # Round to nearest 50MB
                     }
 
                     $Device | Add-Member @{ 
@@ -2079,14 +2097,17 @@ Function Get-Device {
                         Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
                     }
                     #Unsupported devices get DeviceID 100 (to not disrupt device order when running in a Citrix / RDP session)
-                    If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { 
+                    If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { 
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                     }
-                    Else { 
-                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedVendorID++))"
-                        $Device.Bus = $null
+                    ElseIf ($Device.Type -eq "CPU") { 
+                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedCPUVendorID++)"
                     }
-                    $Device.Model = (((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([Int]($Device.Memory / 1GB))GB") + "$([Int]($Device.Memory / 1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9]\.' -replace '  ', ' ').Trim()
+                    Else { 
+                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID++)"
+                    }
+                    $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]'
+
 
                     If ($Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus) { 
                         $Device = $Variables.Devices | Where-Object Type -EQ $Device.Type | Where-Object Bus -EQ $Device.Bus
@@ -2094,17 +2115,14 @@ Function Get-Device {
                     ElseIf ($Device.Type -eq "GPU" -and ($Device.Vendor -eq "AMD" -or $Device.Vendor -eq "NVIDIA")) { 
                         $Variables.Devices += $Device
 
+                        If (-not $Type_Vendor_Id.($Device.Type)) { 
+                            $Type_Vendor_Id.($Device.Type) = @{ }
+                        }
+
                         $Id++
                         $Vendor_Id.($Device.Vendor)++
                         $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                        If ($Device.Vendor -in $Variables.SupportedDeviceVendors) { $Type_Id.($Device.Type)++ }
-                    }
-
-                    If (-not $Type_Vendor_Index.($Device.Type)) { 
-                        $Type_Vendor_Index.($Device.Type) = @{ }
-                    }
-                    If (-not $Type_PlatformId_Index.($Device.Type)) { 
-                        $Type_PlatformId_Index.($Device.Type) = @{ }
+                        $Type_Id.($Device.Type)++
                     }
 
                     # Add OpenCL specific data
@@ -2122,6 +2140,13 @@ Function Get-Device {
                     $Device | Add-Member @{ 
                         OpenCL = $Device_OpenCL
                     } -Force
+
+                    If (-not $Type_Vendor_Index.($Device.Type)) { 
+                        $Type_Vendor_Index.($Device.Type) = @{ }
+                    }
+                    If (-not $Type_PlatformId_Index.($Device.Type)) { 
+                        $Type_PlatformId_Index.($Device.Type) = @{ }
+                    }
 
                     $Index++
                     $Type_Index.($Device.Type)++
@@ -2502,6 +2527,7 @@ Function Get-CoinName {
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
     }
+
     Return $null
 }
 
@@ -2603,7 +2629,7 @@ Function Initialize-Autoupdate {
     #Stop all background processes
     Stop-Mining
     Stop-BrainJob
-    Stop-IdleMining
+    Stop-IdleDetection
     Stop-BalancesTracker
 
     If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 

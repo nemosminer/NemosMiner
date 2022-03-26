@@ -149,8 +149,8 @@
                     <option value="Running" title="Initiate application and start mining&#10;&#10;Same as pressing the 'Start Mining' button">Running</option>
                   </select><label for="StartupMode" title="Defines NemosMiner startup mode"> mode</label>
 
-                  <div title="Mine while system is idle, e.g. no mouse or keyboard activity is detected&#10;(min=0, max=3600 [default=120] seconds)">
-                    <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Mine only while System is idle. Idle time
+                  <div title="Start mining when system is idle, e.g. no mouse or keyboard activity is detected&#10;and stop mining when computer is used&#10;(min=0, max=3600 [default=120] seconds)">
+                    <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Start mining when System is idle for
                     <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 size=4> Seconds
                   </div>
                   <div style="line-height:50%;">

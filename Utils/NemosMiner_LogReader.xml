@@ -102,13 +102,13 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Loading pool information|Loading balances information|Getting miner information|Miner status reporting process|Reporting process exited|Processing pool data|Processing balances information</Keyword>
+          <Keyword>Started idle detection|Started idle detection|Mining is suspended until system is idle again|System was idle for</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
           <TextColoring>true</TextColoring>
           <AlertHighlight>false</AlertHighlight>
-          <TextColor>Silver</TextColor>
+          <TextColor>Gray</TextColor>
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
@@ -170,6 +170,16 @@
           <AlertHighlight>true</AlertHighlight>
           <TextColor>White</TextColor>
           <BackColor>Red</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Stopped idle detection</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>true</AlertHighlight>
+          <TextColor>White</TextColor>
+          <BackColor>Black</BackColor>
         </Keyword>
       </KeywordHighlight>
       <ExternalTools />
@@ -275,13 +285,13 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Loading pool information|Loading balances information|Getting miner information|Miner status reporting process|Reporting process exited|Processing pool data|Processing balances information</Keyword>
+          <Keyword>Started idle detection|Started idle detection|Mining is suspended until system is idle again|System was idle for</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
           <TextColoring>true</TextColoring>
           <AlertHighlight>false</AlertHighlight>
-          <TextColor>Silver</TextColor>
+          <TextColor>Gray</TextColor>
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
@@ -343,6 +353,16 @@
           <AlertHighlight>true</AlertHighlight>
           <TextColor>White</TextColor>
           <BackColor>Red</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Stopped idle detection</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>true</AlertHighlight>
+          <TextColor>White</TextColor>
+          <BackColor>Black</BackColor>
         </Keyword>
       </KeywordHighlight>
       <ExternalTools />
@@ -448,13 +468,13 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Loading pool information|Loading balances information|Getting miner information|Miner status reporting process|Reporting process exited|Processing pool data|Processing balances information</Keyword>
+          <Keyword>Started idle detection|Started idle detection|Mining is suspended until system is idle again|System was idle for</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
           <TextColoring>true</TextColoring>
           <AlertHighlight>false</AlertHighlight>
-          <TextColor>Silver</TextColor>
+          <TextColor>Gray</TextColor>
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
@@ -516,6 +536,16 @@
           <AlertHighlight>true</AlertHighlight>
           <TextColor>White</TextColor>
           <BackColor>Red</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Stopped idle detection</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>true</AlertHighlight>
+          <TextColor>White</TextColor>
+          <BackColor>Black</BackColor>
         </Keyword>
       </KeywordHighlight>
       <ExternalTools />

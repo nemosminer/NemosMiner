@@ -9,25 +9,25 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Ethash");                    Type = "AMD"; Fee = @(0.0065);    MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");              Type = "AMD"; Fee = @(0.0065);    MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
-    # [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake");       Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
-    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Handshake"); Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
+    [PSCustomObject]@{ Algorithm = @("Ethash");                    Type = "AMD"; Fee = @(0.0065);    MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @(@(), @()); Protocol = @(" -uri ethproxy") }
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");              Type = "AMD"; Fee = @(0.0065);    MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @(@(), @()); Protocol = @(" -uri ethproxy") }
+    # [PSCustomObject]@{ Algorithm = @("Ethash", "Handshake");       Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @(@(), @()); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Handshake"); Type = "AMD"; Fee = @(0.0065, 0); MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @(@(), @()); Protocol = @(" -uri ethproxy", " -uri2 handshake") } # Error flag -uri2: Unsupported scheme
 
-    [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri beam") } # NBMiner-v40.1 is faster but has 2% fee
-    [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri bfc") }
-    [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29m") }
-    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.89 is fastest
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckatoo31") }
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri cuckatoo32") }
-    [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri aeternity") }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -pers auto -uri equihash1445") } # MiniZ-v1.8x is fastest
-    [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri zhash") }
-    [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 5.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");  Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = 3.0; MinerSet = 1; WarmupTimes = @(45, 30); Protocol = @(" -uri ethproxy") }
-    # [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(60, 30); Protocol = @(" -uri raven") } # Error
-    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0; MinerSet = 1; WarmupTimes = @(45, 35); Protocol = @(" -uri conflux") } # NBMiner-v40.1 is faster is faster but has 2% fee
-    [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0; MinerSet = 1; WarmupTimes = @(45, 0);  Protocol = @(" -uri sero") }
+    [PSCustomObject]@{ Algorithm = @("BeamV3");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 5.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri beam") } # NBMiner-v40.1 is faster but has 2% fee
+    [PSCustomObject]@{ Algorithm = @("Cuckaroo29bfc"); Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 8.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri bfc") }
+    [PSCustomObject]@{ Algorithm = @("CuckarooM29");   Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 4.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri cuckaroo29m") }
+    [PSCustomObject]@{ Algorithm = @("CuckarooZ29");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@(), @());           Protocol = @(" -uri cuckaroo29z") } # GMiner-v2.90 is fastest
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo31");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@(), @());           Protocol = @(" -uri cuckatoo31") }
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo32");    Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri cuckatoo32") }
+    [PSCustomObject]@{ Algorithm = @("Cuckoo29");      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 6.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri aeternity") }
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");  Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -pers auto -uri equihash1445") } # MiniZ-v1.8x is fastest
+    [PSCustomObject]@{ Algorithm = @("EquihashBTG");   Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0;                                                    MinerSet = 1; WarmupTimes = @(45, 35); ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri zhash") }
+    [PSCustomObject]@{ Algorithm = @("Ethash");        Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @(@(), @());           Protocol = @(" -uri ethproxy") }
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");  Type = "NVIDIA"; Fee = @(0.0065); MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @(@(), @());           Protocol = @(" -uri ethproxy") }
+    # [PSCustomObject]@{ Algorithm = @("KawPoW");        Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = ($Pools."KawPoW".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri raven") } # Error
+    [PSCustomObject]@{ Algorithm = @("Octopus");       Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 6.0;                                                    MinerSet = 1; WarmupTimes = @(45, 35); ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri conflux") } # NBMiner-v40.1 is faster is faster but has 2% fee
+    [PSCustomObject]@{ Algorithm = @("Sero");          Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 2.0;                                                    MinerSet = 1; WarmupTimes = @(45, 0);  ExcludePool = @(@("Nicehash"), @()); Protocol = @(" -uri sero") }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -55,21 +55,21 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) * 2 + 1)
 
-        $Algorithms | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | Where-Object { $Pools.($_.Algorithm[0]).BaseName -notin $_.ExcludePool[0] } | Where-Object { $Pools.($_.Algorithm[1]).BaseName -notin $_.ExcludePool[1] } | ConvertTo-Json -Depth 3 | ConvertFrom-Json | ForEach-Object { 
 
-            $MinMemGB = If ($Pools.($_.Algorithm[0]).DAGSize -gt 0) { ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
+            $MinMemGB = $_.MinMemGB
 
-            $AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }
-            $AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object { -not $_.CIM.MaxRefreshRate -or $_.OpenCL.GlobalMemSize / 0.99GB - 0.5 -ge $MinMemGB } # Reserve 512 MB when GPU with connected monitor
-            # If ($_.Algorithm[0] -like "Ethash*") { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Ethash mining not supported on Navi
-            # If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
+            $AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $MinMemGB
+            $AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object { -not $_.CIM.MaxRefreshRate -or $_.MemoryGB - 0.5 -ge $MinMemGB } # Reserve 512 MB when GPU with connected monitor
+
+            If ($_.Algorithm[1]) { $AvailableMiner_Devices = @($AvailableMiner_Devices | Where-Object { $_.Model -notmatch "^Radeon RX 5[0-9]{3}.*" }) } # Dual mining not supported on Navi
 
             If ($AvailableMiner_Devices) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) + @($_.Intensity) | Select-Object) -join '-' -replace ' '
 
                 $Arguments = ""
-                $Pass = "$($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
+                $Pass = "$($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { $Pass += ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
 
                 If ($Pools.($_.Algorithm[0]).DAGsize -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Protocol[0] = $_.Protocol[0] -replace "ethproxy", "ethstratum" }
                 If ($Pools.($_.Algorithm[0]).SSL) { $_.Protocol[0] += "+ssl" }
@@ -84,6 +84,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Optionally disable dev fee mining
                 If ($Config.DisableMinerFee) { 
                     $Arguments += " -nofee"
+
                     $_.Fee = @(0) * ($_.Algorithm | Select-Object).count
                 }
 

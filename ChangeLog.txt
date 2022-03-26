@@ -6,11 +6,31 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.24 26.03.2022
+========================================
+
+Fixes:
+- Core: Donation not working for pools Blockmasters, NLPool, ZergPool & ZPool
+- Core / Pools: Fix negative accuracy
+- Core: Idle mining broken
+
+Miner changes:
+- All miners: Optimize miner code
+- GMiner-v2.90
+- Removed CudaMinerNeoScrypt-v1.0.1 (CryptoDredge-v0.16.0 & CcminerKlausT-v8.26x2 are faster)
+- SgMinerFancyIX-v0.9.1
+- NanoMiner: Fix Ethash stratum for ProHashing
+- NBMiner: Fix Ethash stratum for ProHashing
+
+Pool changes:
+- Nicehash: Protect against price spike trickery (e.g. very short period of high prices for an algorithm to trigger miners to go for it, then immediately after the price falls very low)
+
+
 Changelog NemosMiner 4.0.0.23 19.03.2022
 ========================================
 
 Changes:
-- Changed config item 'IgnoreRejectedShares' to 'IgnoreRejectedShares'
+- Changed config item 'IgnoreRejectedShares' to 'DeductRejectedShares'
 - Changed config item 'RunningMinerGainPct' to 'MinerSwitchingThreshold'
 - Rename function 'Get-PoolName' to 'Get-PoolBaseName'
 

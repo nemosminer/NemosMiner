@@ -9,27 +9,27 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Autolykos2");           Fee = @(0.02); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(45, 30);  Arguments = " --algo autolykos2 --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("Blake3");               Fee = @(0.02); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo blake3 --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Autolykos2"); Fee = @(0.01, 0.02); MinMemGB = 8;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo autolykos2 --lhr-tune -1 --lhr-autotune-interval 1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake3");     Fee = @(0.01, 0.01); MinMemGB = 5;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
-    [PSCustomObject]@{ Algorithm = @("EtcHash");              Fee = @(0.01); MinMemGB = 3;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --intensity 25" } # GMiner-v2.89 is fastest
-    [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.01); MinMemGB = 5;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v2.89 is fastest
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Fee = @(0.01); MinMemGB = 2;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = @("FiroPoW");              Fee = @(0.01); MinMemGB = 5;        MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo firopow --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("KawPoW");               Fee = @(0.01); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.16.3 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = @("Ethash", "FiroPoW");    Fee = @(0.01, 0.01); MinMemGB = 10; MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo firopow --lhr-tune -1" }
-    [PSCustomObject]@{ Algorithm = @("Ethash", "KawPoW");     Fee = @(0.01, 0.01); MinMemGB = 10; MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo kawpow --lhr-tune -1" }
-    [PSCustomObject]@{ Algorithm = @("MTP");                  Fee = @(0.01); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo mtp --intensity 21" }
-    [PSCustomObject]@{ Algorithm = @("MTPTcr");               Fee = @(0.01); MinMemGB = 3;        MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo mtp-tcr --intensity 21" }
-    [PSCustomObject]@{ Algorithm = @("Multi");                Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo multi --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("Octopus");              Fee = @(0.02); MinMemGB = 6.1;      MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo octopus" } # 6GB is not enough
-    [PSCustomObject]@{ Algorithm = @("Ethash", "Octopus");    Fee = @(0.01, 0.02); MinMemGB = 8;  MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo octopus --lhr-tune -1" }
-    [PSCustomObject]@{ Algorithm = @("ProgPoW");              Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow" }
-    [PSCustomObject]@{ Algorithm = @("Tensority");            Fee = @(0.03); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo tensority --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("Veil");                 Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veil --intensity 24" }
-    [PSCustomObject]@{ Algorithm = @("VeriBlock");            Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veriblock" }
-    [PSCustomObject]@{ Algorithm = @("Zano");                 Fee = @(0.01); MinMemGB = 2;        MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpowz --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("Autolykos2");           Fee = @(0.02);       MinMemGB = 3;                                                      MinerSet = 0; WarmupTimes = @(45, 30);  Arguments = " --algo autolykos2 --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("Blake3");               Fee = @(0.02);       MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo blake3 --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("EtcHash");              Fee = @(0.01);       MinMemGB = ($Pools."EtcHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --intensity 25" } # GMiner-v2.90 is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash");               Fee = @(0.01);       MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v2.90 is fastest
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Autolykos2"); Fee = @(0.01, 0.02); MinMemGB = 8;                                                      MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo autolykos2 --lhr-tune -1 --lhr-autotune-interval 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Blake3");     Fee = @(0.01, 0.01); MinMemGB = ($Pools."EtHash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "FiroPoW");    Fee = @(0.01, 0.01); MinMemGB = 10;                                                     MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo firopow --lhr-tune -1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "KawPoW");     Fee = @(0.01, 0.01); MinMemGB = 10;                                                     MinerSet = 0; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo kawpow --lhr-tune -1" }
+    [PSCustomObject]@{ Algorithm = @("Ethash", "Octopus");    Fee = @(0.01, 0.02); MinMemGB = 8;                                                      MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo octopus --lhr-tune -1" }
+    [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Fee = @(0.01);       MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = @("FiroPoW");              Fee = @(0.01);       MinMemGB = 5;                                                      MinerSet = 1; WarmupTimes = @(60, 15);  Arguments = " --algo firopow --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("KawPoW");               Fee = @(0.01);       MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; WarmupTimes = @(45, 0);   Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.16.3 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = @("MTP");                  Fee = @(0.01);       MinMemGB = 3;                                                      MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo mtp --intensity 21" }
+    [PSCustomObject]@{ Algorithm = @("MTPTcr");               Fee = @(0.01);       MinMemGB = 3;                                                      MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo mtp-tcr --intensity 21" }
+    [PSCustomObject]@{ Algorithm = @("Multi");                Fee = @(0.01);       MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo multi --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("Octopus");              Fee = @(0.02);       MinMemGB = 6.1;                                                    MinerSet = 0; WarmupTimes = @(60, 15);  Arguments = " --algo octopus" } # 6GB is not enough
+    [PSCustomObject]@{ Algorithm = @("ProgPoW");              Fee = @(0.01);       MinMemGB = ($Pools."ProgPoW".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow" }
+    [PSCustomObject]@{ Algorithm = @("Tensority");            Fee = @(0.03);       MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo tensority --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("Veil");                 Fee = @(0.01);       MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veil --intensity 24" }
+    [PSCustomObject]@{ Algorithm = @("VeriBlock");            Fee = @(0.01);       MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veriblock" }
+    [PSCustomObject]@{ Algorithm = @("Zano");                 Fee = @(0.01);       MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);   Arguments = " --algo progpowz --intensity 25" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -42,13 +42,12 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
-            $MinMemGB = If ($Pools.($_.Algorithm[0]).DAGSize -gt 0 -and -not $_.Algorithm[1]) { ((($Pools.($_.Algorithm[0]).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
-
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) | Select-Object) -join '-' -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 1GB -le 2 }) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "dual-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
@@ -68,7 +67,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                 # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                 $User = If ($Pools.($_.Algorithm[0]).DAGsize -gt 0 -and ($Pools.($_.Algorithm[0]).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm[0]).BaseName -ne "MiningPoolHub") { " --user $($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -First 1) --worker $($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -Index 1)" } Else { " --user $($Pools.($_.Algorithm[0]).User)" }
-                $Pass = " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.OpenCL.GlobalMemSize | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" })"
+                $Pass = " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum -$DAGmemReserve) / 1GB)" })"
 
                 If ($_.Algorithm[1]) { $_.Arguments += " --url2 $(If ($Pools.($_.Algorithm[1]).SSL) { "stratum+ssl://" } Else { "stratum+tcp://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) --user2 $($Pools.($_.Algorithm[1]).User) --pass2 $($Pools.($_.Algorithm[1]).Pass)" }
 

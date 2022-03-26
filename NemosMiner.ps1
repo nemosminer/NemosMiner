@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.23
-Version date:   14 March 2022
+Version:        4.0.0.24
+Version date:   26 March 2022
 #>
 
 [CmdletBinding()]
@@ -71,6 +71,8 @@ param(
     [Double]$EarningsAdjustmentFactor = 1, # Default factor with which multiplies the prices reported by ALL pools. Allowed values: 0.0 - 1.0
     [Parameter(Mandatory = $false)]
     [Switch]$EstimateCorrection = $false, # If true will multiply the algorithm price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
+    [Parameter(Mandatory = $false)]
+    [Double]$EthashLowMemMinMemGB = 2GB, # Minimum EthashLowMem MinMem GB (sometimes Pool does not like GPUs with very little VRAM)
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), # Array of disabled devices, e.g. @("CPU# 00", "GPU# 02");  by default all devices are enabled
     [Parameter(Mandatory = $false)]
@@ -251,7 +253,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.23"
+    Version      = [System.Version]"4.0.0.24"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -381,7 +383,7 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
     $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." }
     Write-Message -Level Error "Please install the required runtime modules. Download and extract"
     Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
-    Write-Message -Level Error "and run 'install_all.bat'."
+    Write-Message -Level Error "and run 'install_all.bat' (Admin rights are required)."
     Start-Sleep -Seconds 10
     Exit
 }
@@ -422,9 +424,14 @@ If ($Config.WebGUI -eq $true) {
 $Variables.Summary = "Loading miner device information..."
 Write-Message -Level Verbose $Variables.Summary
 
-$Variables.SupportedDeviceVendors = @("AMD", "INTEL", "NVIDIA")
+$Variables.SupportedCPUDeviceVendors = @("AMD", "INTEL")
+$Variables.SupportedGPUDeviceVendors = @("AMD", "NVIDIA")
+
 $Variables.Devices = [Device[]](Get-Device -Refresh)
-$Variables.Devices | Where-Object { $_.Vendor -notin $Variables.SupportedDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
+
+$Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
+$Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
+
 $Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Object { $_.State -NE [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
 Write-Host "Setting variables..." -ForegroundColor Yellow
@@ -508,8 +515,9 @@ Function Get-Chart {
             [Parameter(Mandatory = $true)]
             [Int[]]$Factors
         )
+
         # Apply change Factor
-        0, 1, 2, 3 | ForEach-Object { 
+        0..($Colors.Count - 1) | ForEach-Object { 
             $Colors[$_] = [math]::Abs(($Colors[$_] + $Factors[$_]) % 256)
         }
         $Colors
@@ -584,7 +592,7 @@ Function Get-Chart {
 
         $EarningsChart2.Series.Clear()
         $Colors = @(255, 255, 255, 255) #"FFFFFF"
-        ForEach ($Pool in ($Datasource.Pool)) { 
+        ForEach ($Pool in $Datasource.Pool) { 
             $Colors = (Get-NextColor -Colors $Colors -Factors -0, -20, -20, -20)
 
             [Void]$EarningsChart2.Series.Add($Pool)
@@ -742,7 +750,7 @@ Function Update-TabControl {
         }
         "Benchmarks" { 
             If ($Variables.Miners) { 
-                If ($Variables.CalculatePowerCost -and (-not $Config.IgnorePowerCost)) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
+                If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
                 $BenchmarksDGV.DataSource = $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
                     @{ Name = "Miner"; Expression = { $_.Name } }, 
                     @{ Name = "Device(s)"; Expression = { $_.DeviceName -join '; ' } }, 
@@ -794,12 +802,12 @@ Function Global:TimerUITick {
 
             Switch ($Variables.NewMiningStatus) { 
                 "Idle" { 
-                    $Variables.Summary = "Stopping $($Variables.CurrentProduct)..."
+                    If ($Variables.MiningStatus) { $Variables.Summary = "Stopping $($Variables.CurrentProduct) ('Stop mining' button pressed)..." }
                     Write-Message -Level Info $Variables.Summary
 
                     Stop-Mining
                     Stop-BrainJob
-                    Stop-IdleMining
+                    Stop-IdleDetection
                     Stop-BalancesTracker
                     Send-MonitoringData
 
@@ -816,13 +824,13 @@ Function Global:TimerUITick {
                 "Paused" { 
                     $TimerUI.Stop
 
-                    $Variables.Summary = "Pausing $($Variables.CurrentProduct)..."
+                    If ($Variables.MiningStatus) { $Variables.Summary = "Pausing $($Variables.CurrentProduct) ('Pause mining' button pressed)..." }
                     Write-Message -Level Info $Variables.Summary
 
                     If ($Variables.MiningStatus -eq "Running") { 
                         Stop-Mining
                         Stop-BrainJob
-                        Stop-IdleMining
+                        Stop-IdleDetection
                     }
                     Else { 
                         Initialize-Application
@@ -841,7 +849,7 @@ Function Global:TimerUITick {
                     $ButtonStart.Enabled = $true
                 }
                 "Running" { 
-                    $Variables.Summary = "Starting $($Variables.CurrentProduct)..."
+                    If ($Variables.MiningStatus) { $Variables.Summary = "Starting $($Variables.CurrentProduct) ('Start mining' button pressed)..." }
                     Write-Message -Level Info $Variables.Summary
 
                     Initialize-Application
@@ -1560,7 +1568,7 @@ $ButtonStop.Add_Click(
 
 $ButtonStart.Add_Click(
     { 
-        If ($Variables.NewMiningStatus -ne "Running") { 
+        If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace -eq "Idle") { 
             $Variables.NewMiningStatus = "Running"
             $Variables.RestartCycle = $true
         }
@@ -1654,7 +1662,7 @@ $MainForm.Add_FormClosing(
         $TimerUI.Stop()
 
         Stop-Mining
-        Stop-IdleMining
+        Stop-IdleDetection
         Stop-BrainJob
         Stop-BalancesTracker
 

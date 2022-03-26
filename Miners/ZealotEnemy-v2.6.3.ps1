@@ -11,24 +11,24 @@ $Path = ".\Bin\$($Name)\z-enemy.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo aergo --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "BCD";        MinMemGB = 3; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo bcd" }
-    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo bitcore --intensity 22" }
-    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 3; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo c11 --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo hex --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = 3; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo kawpow --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 3; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo phi" }
-    [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo phi2" }
-    [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo poly" }
-#    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo skunk" } # No hashrate in time
-#    [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo sonoa" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo timetravel" }
-#    [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo tribus" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x16r" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo x16rv2" }
-    [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo x16s" }
-#    [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo x17" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo xevan --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo aergo --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "BCD";        MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo bcd" }
+    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo bitcore --intensity 22" }
+    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo c11 --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo hex --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = ($Pools."KawPoW".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi" }
+    [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi2" }
+    [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo poly" }
+    # [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo skunk" } # No hashrate in time
+    # [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo sonoa" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo timetravel" }
+    # [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo tribus" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x16r" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x16rv2" }
+    [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x16s" }
+    # [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x17" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo xevan --intensity 22" }
     )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -41,9 +41,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-            $MinMemGB = If ($Pools.($_.Algorithm).DAGSize -gt 0) { ((($Pools.($_.Algorithm).DAGSize + $DAGmemReserve) / 1GB), $_.MinMemGB | Measure-Object -Maximum).Maximum } Else { $_.MinMemGB }
-
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.OpenCL.GlobalMemSize / 0.99GB -ge $MinMemGB }) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 

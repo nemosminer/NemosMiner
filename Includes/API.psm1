@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.23
-Version date:   14 March 2022
+Version:        4.0.0.24
+Version date:   26 March 2022
 #>
 
 Function Initialize-API { 
@@ -268,6 +268,8 @@ Function Start-APIServer {
                             $Variables.ShowPowerUsage = $Config.ShowPowerUsage
                             $Variables.ShowProfit = $Config.ShowProfit
                             $Variables.ShowProfitBias = $Config.ShowProfitBias
+
+                            Read-Config -ConfigFile $Variables.ConfigFile
 
                             Write-Message -Level Verbose "Web GUI: Configuration applied."
                             $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
@@ -670,6 +672,10 @@ Function Start-APIServer {
                     }
                     "/dagdata" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.DAGdata | Select-Object)
+                        Break
+                    }
+                    "/dagdata2" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.DAGdata.Currency | Select-Object)
                         Break
                     }
                     "/devices" { 
