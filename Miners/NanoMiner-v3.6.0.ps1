@@ -72,7 +72,7 @@ powerLimits=0
 rigName=$($Config.WorkerName)
 rigPassword=$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 1.5GB) / 1GB)" })
 watchdog=false
-webPort=$($MinerAPIPort)
+webPort=$MinerAPIPort
 useSSL=$("$($Pools.($_.Algorithm).SSL)".toLower())
 
 coin=$($_.Coin)
