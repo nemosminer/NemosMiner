@@ -3,7 +3,7 @@ using module ..\Includes\Include.psm1
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.27/cpuminer-opt-win.zip"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-sse42.exe"
 
 $Algorithms = [PSCustomObject[]]@(
@@ -103,7 +103,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         [PSCustomObject]@{ 
             Name        = $Miner_Name
             DeviceName  = $AvailableMiner_Devices.Name
-            Type        = "CPU"
+            Type        = $AvailableMiner_Devices.Type
             Path        = $Path
             Arguments   = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --rig-id $($Config.WorkerName) --cpu-affinity AAAA --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
             Algorithm   = $_.Algorithm

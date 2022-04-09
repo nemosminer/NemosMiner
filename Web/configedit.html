@@ -112,13 +112,19 @@
                   <div style="line-height:50%;">
                     <br>
                   </div>
+                  <!-- <select name="" id="SSL">
+                    <option value="Never" title="Never use SSL for pool connections">Never use</option>
+                    <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
+                    <option value="Enforce" title="Enforce SSL for pool connections&#10;Pools that do not allow SSL are ignored">Enforce</option>
+                  </select>
+                  <label for="SSL"> SSL for Pool Connections</label> -->
                   <div title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600 [default 90] seconds)" for="Interval">Cycle Duration
                     <input type="number" id="Interval" name="Interval" min=30 max=3600 value=90> Seconds
                   </div>
                   <div style="line-height:50%;">
                     <br>
                   </div>
-                  <div title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=0, max=10 [Default: 0] cycles)" for="MinInterval">
+                  <div title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10 [Default: 1] cycles)" for="MinInterval">
                     <label for="MinInterval">Enforce mining for at least 
                     <input type="number" id="MinInterval" name="MinInterval" min=1 max=10 value=0 step=1 size=2>
                     <label for="MinInterval">full Cycles before switching
@@ -147,7 +153,8 @@
                     <option value="Idle" title="Initiate application, but do not start mining or run any background processes&#10;&#10;Same as pressing the 'Stop Mining' button">Idle</option>
                     <option value="Paused" title="Initiate application and run background processes, but do not start mining&#10;&#10;Same as pressing the 'Pause Mining' button">Paused</option>
                     <option value="Running" title="Initiate application and start mining&#10;&#10;Same as pressing the 'Start Mining' button">Running</option>
-                  </select><label for="StartupMode" title="Defines NemosMiner startup mode"> mode</label>
+                  </select>
+                  <label for="StartupMode" title="Defines NemosMiner startup mode"> mode</label>
 
                   <div title="Start mining when system is idle, e.g. no mouse or keyboard activity is detected&#10;and stop mining when computer is used&#10;(min=0, max=3600 [default=120] seconds)">
                     <input type="checkbox" id="MineWhenIdle" name="MineWhenIdle"> Start mining when System is idle for
@@ -594,12 +601,14 @@
                   }
                 });
               });
+              // if (config.SSL === "Never" || config.SSL === "Prefer" || config.SSL === "Enforce") document.getElementById('SSL').value = config.SSL;
+              // else document.getElementById('SSL').value = "Prefer";
               document.getElementById('Interval').value = parseInt(config.Interval);
               document.getElementById('MinInterval').value = parseInt(config.MinInterval);
               if (Number.isInteger(config.Donate)) document.getElementById('Donate').value = parseInt(config.Donate);
               // Donation nag
               if (parseInt(document.getElementById('Donate').value) <= 0) {
-                $('.modal-title').html('Donation duration set to 0 minutes  &#128546');
+                $('.modal-title').html('&#128546  Donation duration set to 0 minutes  &#128546');
                 $('.modal-body').html('Please help support the great team behind NemosMiner by leaving mining donations turned on.&#10;&#10;Thank you!');
                 $('#myModal').modal({ 
                   show: true
@@ -1049,9 +1058,11 @@
                   config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
 
                   // Runtime options
+                  config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(',');
+                  // if (document.getElementById('SSL').value.match("Never|Prefer|Enforce")) config.SSL = document.getElementById('SSL').value;
+                  // else config.SSL = "Prefer";
                   config.Interval = parseInt(document.getElementById('Interval').value);
                   config.MinInterval = parseInt(document.getElementById('MinInterval').value);
-                  config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(',');
                   config.Donate = parseInt(document.getElementById('Donate').value);
                   config.Proxy = document.getElementById('Proxy').value;
                   config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;

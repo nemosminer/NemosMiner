@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.24
-version date:   26 March 2022
+version:        4.0.0.25
+version date:   09 April 2022
 #>
 
 Set-Location ($args[0])
@@ -90,18 +90,18 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
     $CurDate = (Get-Date).ToUniversalTime()
     $RetryInterval = 0
 
-    Try{ 
-        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck
-        If ($args[1] -match "Coins(|Plus)$"){ 
+    Try { 
+        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } # -SkipCertificateCheck
+        If ($true -or $args[1] -match "Coins(|Plus)$"){ 
             $AlgoData = [PSCustomObject]@{ }
             $CurrenciesArray = @()
             # Add currency and convert to array for easy sorting
-            $CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | ForEach-Object{ 
+            ($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object{ 
                 $CurrenciesData.$_ | Add-Member -Force @{ currency = If ($CurrenciesData.$_.Symbol) { $CurrenciesData.$_.Symbol -replace '-.+' } Else { $_ -replace '-.+'} }
                 $CurrenciesArray += $CurrenciesData.$_
             }
 
-            $CurrenciesArray | Group-Object algo | ForEach-Object{ 
+            $CurrenciesArray | Group-Object algo | ForEach-Object { 
                 $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -First 1)
                 $BestCurrency | Add-Member coinname ($BestCurrency.name -replace 'coin$', 'Coin' -replace 'hash$', 'Hash') -Force
                 $BestCurrency | Add-Member name $BestCurrency.algo -Force
@@ -117,14 +117,14 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
         }
         $APICallFails = 0
     }
-    Catch{ 
+    Catch { 
         $APICallFails++
         $RetryInterval = $Interval * [math]::max(0, $APICallFails - $AllowedAPIFailureCount)
     }
 
-    ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)){ 
+    ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
         If (-not $AlgoData.$Algo.currency){ 
-            $Currencies = @($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
+            $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
             $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
             $AlgoData.$Algo | Add-Member @{ currency = ($Currency -replace '-.+').Trim() }
         }
@@ -141,6 +141,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
             Name               = $AlgoData.$Algo.name
             Port               = $AlgoData.$Algo.port
             coins              = $AlgoData.$Algo.coins
+            CoinName           = $AlgoData.$Algo.CoinName
             Fees               = $AlgoData.$Algo.Fees
             Hashrate           = $AlgoData.$Algo.Hashrate
             Workers            = $AlgoData.$Algo.Workers
@@ -166,7 +167,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
     $GroupMedSampleSizeHalf = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizeHalfts) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
     $GroupMedSampleSizeNoPercent = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24Drift } }
 
-    ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)){ 
+    ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)) { 
         $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
         $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
         $Penalty = ($PenaltySampleSizeHalf * $SampleHalfPower + $PenaltySampleSizeNoPercent) / ($SampleHalfPower + 1)
@@ -182,7 +183,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
         $AlgoData.$Name | Add-Member -Force @{ Plus_Price = $Price }
     }
 
-    $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object{ 
+    ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
         If ([Double]($AlgoData.$_.actual_last24h_shared) -gt 0){ 
             $AlgoData.$_ | Add-Member Updated $CurDate -Force
         }
@@ -190,7 +191,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
             $AlgoData.PSObject.Properties.Remove($_)
         }
     }
-    ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+    ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
     # Limit to only sample size + 10 minutes min history
     $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinutes + 10)) }

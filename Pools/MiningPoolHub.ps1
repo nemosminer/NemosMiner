@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -56,17 +56,24 @@ If ($PoolConfig.UserName) {
             $Fee = [Decimal]($_.Fee / 100)
             $Port = $Current.port
 
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
+            # Add coin name to ".\Data\CoinNames.json"
+            If ($Current.coin_name -and -not (Get-CoinName $Currency)) { 
+                $Global:CoinNames | Add-Member $Currency "$($Current.coin_name)".Trim() -Force
+                $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\CoinNames.json" -Encoding utf8NoBOM -Force
+            }
+
+    $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
             # Temp fix
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
                 # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-                "Lyra2RE2" { $Current.host_list = $Current.host } # Error in API
-                "Skein"    { $Current.host_list = $Current.host } # Error in API
-                "VertHash" { $Current.host_list = $Current.host } # Error in API
-                "Yescrypt" { $Current.host_list = $Current.host } # Error in API
-                # Default    { $Port = $Current.port }
+                "Neoscrypt" { $Current.host_list = $Current.host } # Error in API
+                "Lyra2RE2"  { $Current.host_list = $Current.host } # Error in API
+                "Skein"     { $Current.host_list = $Current.host } # Error in API
+                "VertHash"  { $Current.host_list = $Current.host } # Error in API
+                "Yescrypt"  { $Current.host_list = $Current.host } # Error in API
+                # Default     { $Port = $Current.port }
             }
 
             ForEach ($Region in $PoolRegions) { 

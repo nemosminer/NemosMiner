@@ -3,28 +3,27 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -eq "NVIDIA")) { Return }
 
 $Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.8y4rc2_win-x64.zip"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
-$DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Fee = 0.02;                                                      MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v40.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=125,4 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=144,5 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=150,5 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.3; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=192,7 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=210,9 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Fee = 0.02;                                                      MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --par=96,5 --smart-pers --ocX" }
-    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
-    [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 3.0; Fee = 0.02;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=192,7 --pers ZcashPoW --ocX" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = ($Pools."EtcHash".DAGSize + $DAGmemReserve) / 1GB; Fee = 0.0075;      MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --par=EtcHash --ocX" }
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB; Fee = 0.0075;       MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --par=Ethash --ocX" }
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; Fee = 0.0075; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest (disabled; https://bitcointalk.org/index.php?topic=4767892.msg57522310#msg57522310)
-    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;                                                      MinerSet = 0; WarmupTimes = @(45, 35); Arguments = " --par=Kawpow --pers=RAVENCOINKAWPOW" }
-    [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=ProgPow --pers=veil --ocX" }
-    [PSCustomObject]@{ Algorithm = "Veriblock";    MinMemGB = 3.0; Fee = 0.01;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=ProgPowZ --pers=zano --ocX" }
-    [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;                                                      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
+    [PSCustomObject]@{ Algorithm = "BeamV3";       MinMemGB = 4.0; Fee = 0.02;                                              MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v40.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1254"; MinMemGB = 3.0; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=125,4 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1445"; MinMemGB = 2.0; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=144,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1505"; MinMemGB = 2.0; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=150,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; MinMemGB = 2.3; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=192,7 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash2109"; MinMemGB = 2.0; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=210,9 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "Equihash965";  MinMemGB = 2.0; Fee = 0.02;                                              MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --par=96,5 --smart-pers --ocX" }
+    [PSCustomObject]@{ Algorithm = "EquihashBTG";  MinMemGB = 3.0; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=144,5 --pers BgoldPoW --ocX" }
+    [PSCustomObject]@{ Algorithm = "EquihashZCL";  MinMemGB = 3.0; Fee = 0.02;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=192,7 --pers ZcashPoW --ocX" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      MinMemGB = ($Pools."EtcHash".DAGSize + 0.95GB) / 1GB; Fee = 0.0075;      MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --par=EtcHash --ocX" }
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + 0.95GB) / 1GB; Fee = 0.0075;       MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --par=Ethash --ocX" }
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + 0.95GB) / 1GB; Fee = 0.0075; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --par=Ethash --ocX" } # TTMiner-v5.0.3 is fastest (disabled; https://bitcointalk.org/index.php?topic=4767892.msg57522310#msg57522310)
+    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = 3.0; Fee = 0.01;                                              MinerSet = 0; WarmupTimes = @(45, 35); Arguments = " --par=Kawpow --pers=RAVENCOINKAWPOW" }
+    [PSCustomObject]@{ Algorithm = "Veil";         MinMemGB = 3.0; Fee = 0.01;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=ProgPow --pers=veil --ocX" }
+    [PSCustomObject]@{ Algorithm = "Veriblock";    MinMemGB = 3.0; Fee = 0.01;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=ProgPowZ --pers=zano --ocX" }
+    [PSCustomObject]@{ Algorithm = "Zano";         MinMemGB = 3.0; Fee = 0.01;                                              MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -45,14 +44,14 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("par", "pers", "ocX") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $_.Arguments += " --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" } )$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
-                $_.Arguments += " --pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
+                $_.Arguments += " --pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 1.5GB) / 1GB)" })"
 
                 If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += " --oc1" }
 
                 [PSCustomObject]@{ 
                     Name            = $Miner_Name
                     DeviceName      = $AvailableMiner_Devices.Name
-                    Type            = "NVIDIA"
+                    Type            = $AvailableMiner_Devices.Type
                     Path            = $Path
                     Arguments       = ("$($_.Arguments) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --all-shares --extra --tempunits C --show-pers --fee-time=60 --telemetry $MinerAPIPort --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithm       = $_.Algorithm

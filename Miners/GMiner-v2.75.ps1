@@ -3,13 +3,12 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq"NVIDIA" })) { Return }
 
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.75/gminer_2_75_windows64.zip"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
-$DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02; MinMemGB = 2.8; Type = "AMD"; Tuning = ""; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.46a is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02; MinMemGB = 2.8; Type = "AMD"; Tuning = ""; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 0 --opencl 1" } # lolMiner-v1.48 is fastest
 
     [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02; MinMemGB = 2.8; Type = "NVIDIA"; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo equihash192_7 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.8y4rc2 is fastest
 )
@@ -48,7 +47,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceName  = $AvailableMiner_Devices.Name
-                    Type        = $_.Type
+                    Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --api $MinerAPIPort --watchdog 0 --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithm   = $_.Algorithm

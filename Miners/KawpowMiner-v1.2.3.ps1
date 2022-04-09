@@ -3,12 +3,12 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
 $Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.3/kawpowminer-windows-1.2.3.zip"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = ($Pools."KawPoW".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 2; WarmupTimes = @(30, 15); Arguments = "" } # XmRig-v6.16.3 is faster
+    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = ($Pools."KawPoW".DAGSize + 0.95GB) / 1GB; MinerSet = 2; WarmupTimes = @(30, 15); Arguments = "" } # XmRig-v6.17.0 is faster
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -31,7 +31,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceName  = $AvailableMiner_Devices.Name
-                    Type        = "NVIDIA"
+                    Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("--pool stratum$(If ($Pools.($_.Algorithm).SSL) { "s" } )+tcp://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).Pass))@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithm   = $_.Algorithm

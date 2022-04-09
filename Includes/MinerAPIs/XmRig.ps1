@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           XmRig.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 class XmRig : Miner { 
@@ -34,7 +34,7 @@ class XmRig : Miner {
 
             If ($Parameters.ConfigFile.Content.threads) { 
                 #Write full config file, ignore possible hw change
-                $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
             else { 
                 #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
@@ -46,7 +46,7 @@ class XmRig : Miner {
                         Remove-Item "$(Split-Path $this.Path)\ThreadsConfig-$($this.Algorithm | Select-Object -First 1)-*.json" -Force -ErrorAction SilentlyContinue
                     }
                     #Temporarily start miner with pre-config file (without threads config). Miner will then update hw config file with threads info
-                    $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                    $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                     $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
                     If ($this.Process) { 
@@ -54,7 +54,7 @@ class XmRig : Miner {
                         For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
                             If ($ThreadsConfig = @(Get-Content $ThreadsConfigFile -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue).threads) { 
                                 If ($this.DeviceName -like "GPU#*") { 
-                                    ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                                    ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                                 }
                                 Else { 
                                     ConvertTo-Json -InputObject @($ThreadsConfig | Select-Object -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding -ErrorAction SilentlyContinue
@@ -84,7 +84,7 @@ class XmRig : Miner {
                             #CPU thread config does not contain index information
                             $Parameters.ConfigFile.Content | Add-Member threads ([Array]($ThreadsConfig * $Parameters.Threads)) -Force
                         }
-                        $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                        $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                     }
                     Else { 
                         Write-Message -Level Error "Error parsing threads config file - cannot create miner config files for '$($this.Info)' [Error: '$($Error | Select-Object -First 1)']."

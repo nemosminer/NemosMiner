@@ -1,27 +1,24 @@
 {
-  "Default": {
-    "PasswordCurrency": "BTC",
-    "PricePenaltyFactor": 1,
-    "UserName": "nemo",
-    "Wallets": {
-      "BTC": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE",
-      "ETC": "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f",
-      "ETH": "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"
-    },
-    "WorkerName": "NemosMiner"
-  },
   "Blockmasters" : {
     "Algorithm" : [
         "+m7m"
-    ]
+    ],
+    "Variant": {
+      "BlockmastersPlus": {
+      }
+    }
   },
   "MiningPoolHub": {
     "Algorithm" :[
         "+Ethash",
         "+KawPoW"
-    ]
+    ],
+    "Variant": {
+      "MiningPoolHubCoins": {
+      }
+    }
   },
-  "NiceHash External": {
+  "NiceHash": {
     "Algorithm": [
         "+Cuckaroom",
         "+Cuckaroo29bfc",
@@ -34,22 +31,11 @@
         "+Eaglesong",
         "+Ethash",
         "+Handshake"
-    ]
-  },
-  "NiceHash Internal": {
-    "Algorithm": [
-        "+Cuckaroom",
-        "+Cuckaroo29bfc",
-        "+Cuckarooz29",
-        "+Cuckoocycle",
-        "+Cuckaroo29",
-        "+Cuckarood29",
-        "+Cuckatoo31",
-        "+Cuckatoo32",
-        "+Eaglesong",
-        "+Ethash",
-        "+Handshake"
-    ]
+    ],
+    "Variant": {
+      "NiceHash External": {
+      }
+    }
   },
   "ZergPool": {
     "Algorithm": [
@@ -64,11 +50,16 @@
         "+VerusHash",
         "+YescryptR8g",
         "+Yespoweriots"
-    ]
+    ],
+    "Variant": {
+      "ZergPoolCoinsPlus": {
+      }
+    }
   },
   "ZPool": {
-      "Algorithm": [
-        "-VerusHash"
-    ]
+    "Variant": {
+      "ZPoolPlus": {
+      }
+    }
   }
 }

@@ -215,7 +215,7 @@ New Config Items
   "ShowPowerUsage": true,
 
 # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-   "SnakeTailExe": ".\Utils\SnakeTail.exe",
+  "SnakeTailExe": ".\Utils\SnakeTail.exe",
 
 # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
   "StartupMode": false,
@@ -275,7 +275,7 @@ Removed Config Items
   "RunningMinerGainPct": Renamed to "MinerSwitchingThreshold" 
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
-  "SSL": obsolete (only NiceHash supports SSL & non-SSL connections on some algorithms)
+  "SSL": not supported until a later release
   "Type": ["AMD", "CPU", "NVIDIA"],  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "TypeAMD": true, obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "TypeCPU": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"

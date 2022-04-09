@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 class Fireice : Miner { 
@@ -33,9 +33,9 @@ class Fireice : Miner {
             $ThreadsConfig = ""
 
             #Write pool config file, overwrite every time
-            ($Parameters.PoolFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$', ',' | Out-File -FilePath $PoolFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+            ($Parameters.PoolFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$', ',' | Out-File -FilePath $PoolFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             #Write config file, keep existing file to preserve user custom config
-            If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { ($Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue}
+            If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { ($Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue}
 
             #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
             If (-not (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
@@ -61,7 +61,7 @@ class Fireice : Miner {
                             #Keep one instance per gpu config
                             $ThreadsConfigJson | Add-Member gpu_threads_conf ($ThreadsConfigJson.gpu_threads_conf | Sort-Object -Property Index -Unique) -Force
                             #Write json file
-                            $ThreadsConfigJson | ConvertTo-Json -Depth 10 | Out-File -FilePath $PlatformThreadsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                            $ThreadsConfigJson | ConvertTo-Json -Depth 10 | Out-File -FilePath $PlatformThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                             Break
                         }
                         Start-Sleep -Milliseconds 500
@@ -82,7 +82,7 @@ class Fireice : Miner {
                 #Create correct numer of CPU threads
                 $ThreadsConfigJson | Add-Member cpu_threads_conf ([Array]$ThreadsConfigJson.cpu_threads_conf * $Parameters.Threads) -Force
                 #Write config file
-                ($ThreadsConfigJson | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $MinerThreadsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                ($ThreadsConfigJson | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $MinerThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
         }
         catch { 

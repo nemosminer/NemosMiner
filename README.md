@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
 
-Updated 17 March 2022
+Updated 31 March 2022
 
 
 Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
@@ -17,7 +17,7 @@ with a lot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosM
 
 NemosMiner code is partly based on
 
-- MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner
+- MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner (Project is no longer maintained)
 
 - NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
 
@@ -32,8 +32,8 @@ NemosMiner will automatically convert an existing configuration file.
 
 **Main features:**
    - GUI and easy configuration
-   - Auto Benchmarks Each algo to get optimal speeds 
-   - Fully automated 
+   - Auto Benchmarks each algo to get optimal speeds
+   - Fully automated
    - Auto Downloads Miners
    - Auto Updates
    - Monitoring
@@ -44,9 +44,9 @@ NemosMiner will automatically convert an existing configuration file.
 Easy configuration, easy start:
 
       Run NemosMiner.bat
-      1. Config tab
-      2. Set your Wallet address and Username
-      3. Select your pool 
+      1. Edit configuration (http://localhost:3999/configedit.html)
+      2. Set your Wallet address(es) and Username(s)
+      3. Select your pool(s)
       4. Save Config
       5. Start
 
@@ -91,41 +91,42 @@ Easy configuration, easy start:
 
 
    Developer/Contributors Donation: 
-      The list and wallets is publicly available at: https://nemosminer.com/data/devlist.json
+      The list and wallets is stored in [NemosMiner Directory]\Data\DonationData.json
 
       Donation Fee = 0.9%
       There is 13 minute per day default donation (0.9%),
-      which can be increased or decreased in the config tab, 
-      please help support the great team behind NemosMiner by leaving mining donations turned on.
+      which can be increased or decreased in the configuration editor.
+      Please help support the great team behind NemosMiner by leaving mining donations turned on.
       We want to stay completely transparent on the way fees are managed in the product.
-      Fees cycle occurs once every 24 hours for the selected amount of time (13 minutes). 
-      Donation start time is randomized each day.
-      If Interval is set higher than the donation time, the interval will prime.
+      Donation cycle occurs once in 24hrs (or once until midnight if NemosMiner has been running less than 24hrs).
+      Donation start time is randomized each time.
+      It will then mine for one randomly chosen developer / contributor for the configured duration.
+
       Example for default parameters (13 minutes):
       - NemosMiner was started at 10:00h
-      - First donation cycle starts somewhen beween 10:01h and 23:47h and will then donate for 13 minutes, then mine for you again until the next donation run. 
+      - First donation cycle starts somewhen beween 10:01h and 23:47h and will then donate for 13 minutes, then mine for you again until the next donation run.
       - After 00:00h the donation start time is randomized again. 
       - When donation start time is reached it will then donate for 13 minutes, then mine for you again until the next donation run.
-      All donation time and addresses are recorded in the logs folder.
+      All donation time and addresses are recorded in the logs files.
 
    NemosMiner Monitoring Server: https://nemosminer.com
 
       Keep tabs on all your mining rigs from one place
-      You can now optionally monitor all your workers remotely, both in the GUI and via https://nemosminer.com  
-      Monitoring setup instructions https://nemosminer.com/setup.php 
+      You can now optionally monitor all your workers remotely, both in the GUI and via https://nemosminer.com
+      Monitoring setup instructions https://nemosminer.com/setup.php
 
    GUI
 
       Since version 3.9.9.x (Beta) NemosMiner has a Web GUI making it easy to configure and run.
       NemosMiner relies on config files. No need to edit bat files. Simply run NemosMiner.bat
-      Set the config in the Web GUI, apply & start mining
+      Set the config in the Web GUI (http://localhost:3999/configedit.html), apply & start mining
 
    Pause mining
 
       Ability to pause miners while keeping other jobs running (pause button)
       This will stop mining activity
       BrainPlus will still run in the background avoiding the learning phase on resume
-      EarningTracker will still run in the background avoiding the learning phase on resume
+      EarningTracker will still run in the background to keep the pool balances up to date
 
    PreRun
 
@@ -133,20 +134,21 @@ Easy configuration, easy start:
       The prerun scripts can be used to set per miner/algorithm OC via nvidiaInspector or OverdriveNTool.
       Before starting a miner executable NemosMiner is trying to launch one of the following 3 prerun scripts (in this order):
       1. <MinerName>_<Algorithm>.bat
-         Simply create a file named <MinerName>_<AlgorithmName>.bat in prerun folder, e.g. 'Bminer-v16.3.1-1xRadeonRX5808GB-Handshake-10.bat' or 'CcminerMTP-v1.3.2-1xGTX10606GB_MTP.bat'
+         Simply create a file named <MinerName>_<AlgorithmName>.bat in prerun folder, e.g. 'Bminer-v16.4.11-1xRadeonRX5808GB-Handshake-10.bat' or 'CcminerMTP-v1.3.2-1xGTX10606GB_MTP.bat'
       2. <Algorithm>.bat
          Simply create a file named <AlgorithmName>.bat in prerun folder, e.g. 'Ethash.bat'
       3. default.bat
          If neither of the two above exist, NemosMiner will try to launch prerun\default.bat
       Use overclock with caution
 
-   Per pools config (Advanced)
+   Per pool config (Advanced)
 
       **This is for advanced users. Do not use if you do not know what you are doing.**
 
-      The file Config\PoolsConfig.json contains configuration details.
-      There is a separate section for each configured pool. If a pool is listed in this file,
+      The file Config\PoolsConfig.json contains configuration details for the pools.
+      A separate section can be added for each pool base name. If a pool is listed in this file,
       the specific settings will be taken into account. If not, the built in default values will be used.
+      See \Data\PoolData.json for the basic structure of the file Config\PoolsConfig.json
 
       You can set specific options per pool. For example, you can mine NiceHash on the internal wallet and other pools on a valid wallet. This configuration is provided as an example in Config\PoolsConfig-NHInternal.json
 
@@ -164,16 +166,18 @@ Easy configuration, easy start:
             - The name must be the pool base name (omit *24hrs or *Coins), e.g ZergPool (even if you have configured ZergPoolCoins in the pool list)
             - (**careful with json formating ;)**
 
-      Note that the GUI only updates default values (valid for ALL pools unless there is pool specific configuration setting defined in PoolConfig.json). Any other changes need to be done manually.
+      Note that the GUI only updates default values (valid for ALL pools unless there is pool specific configuration setting defined in 'Config\PoolConfig.json'). Any other changes need to be done manually.
 
    PricePenaltyFactor
 
-      When using advanced per pool configuration, it is possible to add a penalty factor for a specific pool. This simply adds as a multiplicator on estimations presented by the pool.
+      When using advanced per pool configuration, it is possible to add a penalty factor for a specific pool. This simply adds a multiplicator on estimations presented by the pool.
 
       Example scenario:
          - You feel like a pool is exaggerating its estimations by 10% - Set PricePenaltyFactor to 0.9
 
-   AHashPool/BlockMasters/NLPool/ZergPool/Zpool
+   Pool Variants
+
+   Poolnames ending in *Plus
 
       Uses calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
       Includes some trust index based on past 1hr current estimate variation from 24hr.
@@ -183,7 +187,7 @@ Easy configuration, easy start:
 
    Balances Tracking
 
-      Displays BTC/h and BTC/d as well a estimation of when the pool payment threshold will be reached.
+      Displays BTC/h and BTC/d and an estimation of when the pool payment threshold will be reached.
       Supported pools:
          - AHashPool
          - BlockMasters
@@ -194,22 +198,15 @@ Easy configuration, easy start:
          - ProHashing
          - ZergPool
          - Zpool
-      If mining more than one pool, NemosMiner shows stats for any supported pool.
+      If mining more than one pool, NemosMiner shows stats for all supported pools.
       Press key 'b' in the console window to show/hide earnings.
 
-   Support for running multiple instances
+   Support for running multiple instances (not recommended)
 
       **Experimental**
       More than one instance of NemosMiner can run on the same rig
       Each instance must be placed in its own directory
       Miner has to be started prior the launch of the next instance
-
-   Optional miners (Advanced)
-
-      These are closed source and therefore not enabled in NemosMiner by default.
-      Use at your own risk.
-
-      For advanced users, check the Optional Miners checkbox on the Config tab to enable these miners.
 
    CustomMiners (Advanced)
 
@@ -229,11 +226,22 @@ Easy configuration, easy start:
       UIStyle automatically switches to Full during benchmarking.
       Press key 's' in the console window to switch UIStyle.
 
-   In session console display toggle
+   In session console the following keys are supported
 
-      Press key 'a' in the window to show/hide all avaialable miners 
-      Press key 'b' in the window to show/hide pool balances
-      Press key 's' in the window to switch between light and full display
+      a: Toggle Accuracy column
+      b: Toggle Pool Balances
+      c: Toggle Cost column
+      e: Toggle Earnings column
+      i: Toggle Earning Bias column
+      l: Toggle listing all available miners
+      m: Toggle Miner Fees column
+      n: Toggle Coin Name column
+      p: Toggle Pool Fees column
+      r: Toggle Profit Bias column
+      s: Toggle Style (full or light)
+      t: Toggle Profit column
+      u: Toggle Power Usage column
+      y: Toggle Currency column
       Will toggle display at next refresh
 
    New version notification (Available since version 3.9.9.10)

@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.24
-version date:   26 March 2022
+version:        4.0.0.25
+version date:   09 April 2022
 #>
 
 Set-Location ($args[0])
@@ -102,8 +102,8 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
     }
 
     If ($AlgoData -and $CurrenciesData) { 
-        ForEach ($Algo in ($AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name)) { 
-            $Currencies = @($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore | Select-Object -ExpandProperty Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
+        ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
+            $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
             $Currency = If ($Currencies.Count -eq 1) { $Currencies[0] -replace '-.+'} Else { "" }
             $AlgoData.$Algo | Add-Member @{ currency = $Currency.Trim() }
 
@@ -158,7 +158,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
             $AlgoData.($Name) | Add-Member -Force @{ Plus_Price = $Price }
         }
 
-        $AlgoData | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
+        ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
             If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
                 $AlgoData.$_ | Add-Member Updated $CurDate -Force
             }
@@ -166,7 +166,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
                 $AlgoData.PSObject.Properties.Remove($_)
             }
         }
-        ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         # Limit to only sample size + 10 minutes min history
         $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($SampleSizeMinutes + 10)) }

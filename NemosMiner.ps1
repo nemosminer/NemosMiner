@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 [CmdletBinding()]
@@ -78,7 +78,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeMinerName = @(), # List of miners to be excluded; Either specify miner short name, e.g. "PhoenixMiner" (without '-v...') to exclude any version of the miner, or use the full miner name incl. version information
     [Parameter(Mandatory = $false)]
-    [String[]]$ExtraCurrencies = @("USD", "ETC", "mBTC"), # Extra currencies used in balances summary, Enter 'real-world' or crypto currencies, mBTC (milli BTC) is also allowed
+    [String[]]$ExtraCurrencies = @("ETC", "ETH", "mBTC"), # Extra currencies used in balances summary, Enter 'real-world' or crypto currencies, mBTC (milli BTC) is also allowed
     [Parameter(Mandatory = $false)]
     [Int]$GPUMinerProcessPriority = "-1", # Process priority for GPU miners
     [Parameter(Mandatory = $false)]
@@ -253,7 +253,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.24"
+    Version      = [System.Version]"4.0.0.25"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -453,7 +453,7 @@ $Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA
 # Driver version have changed
 If ((Get-Content -Path ".\Data\DriverVersion.json" -ErrorAction Ignore | ConvertFrom-Json | ConvertTo-Json -compress) -ne ($Variables.DriverVersion | ConvertTo-Json -compress)) { 
     If (Test-Path -Path ".\Data\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-download all binaries." }
-    $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Data\DriverVersion.json" -Encoding utf8 -ErrorAction Ignore -Force
+    $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Data\DriverVersion.json" -Encoding utf8NoBOM -ErrorAction Ignore -Force
 }
 
 $Variables.BrainJobs = @{ }
@@ -1667,7 +1667,7 @@ $MainForm.Add_FormClosing(
         Stop-BalancesTracker
 
         # Save window settings
-        $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         Write-Message -Level Info "$($Variables.CurrentProduct) has shut down."
 

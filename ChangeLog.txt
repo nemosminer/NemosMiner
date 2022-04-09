@@ -6,6 +6,39 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.25 09.04.2022
+========================================
+
+Balances:
+- Fix getting balances if HiveOn API is down
+
+Improvements:
+- Core: Auto-add coin names to 'Data\CoinNames.json' (data taken from pool API)
+- Core: Use cached BTC rate data if CryptoCompare API is down
+- Web GUI / Running Config: Added 'Edit Configuration File' & 'Edit PoolsConfig File' buttons
+
+Core:
+- Minor code improvements & speed ups
+
+Miner changes:
+- CryptoDredge-v0.27.0
+- EthashLowMem: Incorrect max. DAG size calculated in some scenarios
+- Remove BMiner (not best miner for any algorithm)
+- GMiner-v2.91
+- JayddeeCpu-v3.19.6
+- lolMiner-v1.48
+- NanoMiner-v3.6.0
+- NsgMiner-v0.9.4
+- SgMinerFancyIX-v0.9.2
+- SRBMinerMulti-v0.9.4
+- TeamBlackMiner-v1.62
+- Wildrig-v0.31.3 (Fix SSL mining)
+- XmRig-v6.17.0
+
+API:
+- Add '/wallets' url
+
+
 Changelog NemosMiner 4.0.0.24 26.03.2022
 ========================================
 
@@ -23,7 +56,7 @@ Miner changes:
 - NBMiner: Fix Ethash stratum for ProHashing
 
 Pool changes:
-- Nicehash: Protect against price spike trickery (e.g. very short period of high prices for an algorithm to trigger miners to go for it, then immediately after the price falls very low)
+- NiceHash: Protect against price spike trickery (e.g. very short period of high prices for an algorithm to trigger miners to go for it, then immediately after the price falls very low)
 
 
 Changelog NemosMiner 4.0.0.23 19.03.2022

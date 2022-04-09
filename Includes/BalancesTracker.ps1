@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 # Start transcript log
@@ -326,7 +326,7 @@ While ($true) {
             $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = ($Variables.PoolsLastEarnings.($_ -replace ' \(.+'), $Balances.$_.LastEarnings | Measure-Object -Maximum).Maximum
         }
         $Variables.PoolsLastEarnings = $Variables.PoolsLastEarnings | Get-SortedObject
-        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastEarnings.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastEarnings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         # Build chart data (used in Web GUI) for last 30 days
         $PoolChartData = [PSCustomObject]@{ }
@@ -357,7 +357,7 @@ While ($true) {
             Earnings = $PoolChartData
         }
 
-        $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         # At least 31 days are needed for Growth720
         If ($AllBalanceObjects.Count -gt 1) { 
@@ -377,10 +377,8 @@ While ($true) {
             Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."
         }
 
-        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue }
+        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
         $Variables.BalanceData = $AllBalanceObjects
-
-        If ($ReadBalances) { Return } # Debug stuff
 
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }

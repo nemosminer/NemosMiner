@@ -3,20 +3,19 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
 $Uri = "https://github.com/Minerx117/ethminer/releases/download/v0.19.0-r5.57/ethminer0190r57.7z"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\ethminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
-$DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
 
 # AMD miners may need https://github.com/ethereum-mining/ethminer/issues/2001
 # NVIDIA Enable Hardware-Accelerated GPU Scheduling
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB; Type = "AMD";          MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; Type = "AMD";    MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + 0.95GB) / 1GB; Type = "AMD";       MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + 0.95GB) / 1GB; Type = "AMD"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB; Type = "NVIDIA";       MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.0c is fastest but has dev fee
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + 0.95GB) / 1GB; Type = "NVIDIA";       MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.0c is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + 0.95GB) / 1GB; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -40,14 +39,14 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 Else { $Protocol = "--pool stratum+tcp" }
                 If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace "tcp", "ssl" }
 
-                $Pass = "$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
+                $Pass = "$($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 1.5GB) / 1GB)" })"
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceName  = $AvailableMiner_Devices.Name
-                    Type        = $_.Type
+                    Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
-                    Arguments   = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$($Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments   = ("$($Protocol)://$([System.Web.HttpUtility]::UrlEncode($Pools.($_.Algorithm).User)):$($Pass)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithm   = $_.Algorithm
                     API         = "EthMiner"
                     Port        = $MinerAPIPort

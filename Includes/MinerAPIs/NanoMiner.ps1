@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 class NanoMiner : Miner { 
@@ -30,7 +30,7 @@ class NanoMiner : Miner {
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             #Write config files. Do not overwrite existing files to preserve optional manual customization
             If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
-                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
         }
         Catch { 
@@ -62,7 +62,7 @@ class NanoMiner : Miner {
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
-        $Data.Algorithms | ForEach-Object { $_ | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name } | Select-Object -Unique | ForEach-Object { 
+        $Data.Algorithms | ForEach-Object { ($_ | Get-Member -MemberType NoteProperty).Name } | Select-Object -Unique | ForEach-Object { 
             $HashRate_Value = [Double]($Data.Algorithms.$_.Total.Hashrate | Measure-Object -Sum).Sum
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 

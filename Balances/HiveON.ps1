@@ -18,15 +18,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveON.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 using module ..\Includes\Include.psm1
 
-$Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 
-$Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
+($Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty).Name | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
 
     $APIResponse = $null
     $Currency = $_.ToUpper()
@@ -42,9 +42,9 @@ $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select
         $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
 
         If ($Config.LogBalanceAPIResponse -eq $true) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
 
         If ($APIResponse.earningStats) { 
@@ -64,7 +64,8 @@ $Config.PoolsConfig.$Name.Wallets | Get-Member -MemberType NoteProperty | Select
         Else { 
             Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
         }
-    }
 
-    $RetryCount--
+        $RetryCount--
+    }
 }
+

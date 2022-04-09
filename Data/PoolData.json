@@ -58,7 +58,6 @@
     ],
     "Variant": {
       "HiveON": {
-        "PoolFileName": "HiveON.ps1"
       }
     }
   },

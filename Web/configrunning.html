@@ -3,28 +3,75 @@
             <h1 id="title" data-navbaractive="navconfigrunning" class="h2">Running Configuration</h1>
           </div>
 
-          <div id="poolsconfigfilename" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
-          <pre id="configrunning">
+          <div id="configrunning" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
+          <button type="button" id="editconfig-button" name="editconfig-button" title="Edit configuration file&#10;It will become active in next cycle.">Edit Configuration File</button>
+          <button type="button" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit pools config file&#10;It will become active in next cycle.">Edit PoolsConfig File</button>
+          <div style="line-height:100%;">
+            <br>
+          </div>
+          <pre id="config">
           </pre>
 <!-- Start of page scripts 'configrunning.html' -->
           <script type="text/javascript">
 
             $(document).ready(function () {
+              //Edit config file
+              $('#editconfig-button').click(function () {
+                document.getElementById('editconfig-button').disabled = true;
+                document.getElementById('editpoolsconfig-button').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + configfile, function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit Config file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                    $('#myModal').on('hidden.bs.modal', function () {
+                      location.reload(true);
+                    })
+                  }
+                  document.getElementById('editconfig-button').disabled = false;
+                  document.getElementById('editpoolsconfig-button').disabled = false;
+                });
+              });
+
+              //Edit poolsconfig file
+              $('#editpoolsconfig-button').click(function () {
+                document.getElementById('editconfig-button').disabled = true;
+                document.getElementById('editpoolsconfig-button').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + poolsconfigfile, function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit PoolsConfig file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                  }
+                  document.getElementById('editconfig-button').disabled = false;
+                  document.getElementById('editpoolsconfig-button').disabled = false;
+                });
+              });
+
               // Get config file names
               $.ajax({
-                url: '/poolsconfigfile',
+                url: '/configfile',
                 async: false,
                 success: function (result) {
-                  poolsconfigfile = result;
-                  $('#poolsconfigfilename').text("This is the full configuration NemosMiner is currently using (including 'PoolsConfig' built from the optional '" + poolsconfigfile + "' file)");
+                  configfile = result;
+                  $.ajax({
+                    url: '/poolsconfigfile',
+                    async: false,
+                    success: function (result) {
+                      poolsconfigfile = result;
+                      $('#configrunning').text("This is the full configuration NemosMiner is currently using. (Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "')");
+                    }
+                  });
                 }
               });
 
               $(function() {
                 $.ajax({url: '/configrunning',
                   success: function(result) {
-                    $("#configrunning").empty();
-                    $("#configrunning").append(JSON.stringify(result, undefined, 4));
+                    $("#config").empty();
+                    $("#config").append(JSON.stringify(result, undefined, 4));
                   }
                 });
               });

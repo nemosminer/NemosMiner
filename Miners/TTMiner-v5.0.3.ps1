@@ -3,20 +3,19 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -lt 8.6 <# No response in API with RTX cards #>})) { Return }
 
 $Uri = "https://github.com/Minerx117/miner-binaries/releases/download/5.0.3/ttminer503.7z"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
-$DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs 
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo EAGLESONG" }
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = ($Pools."KawPoW".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; WarmupTimes = @(40, 15); Arguments = " -algo KAWPOW" }
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGB = 2;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo LYRA2V3" }
-    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGB = 3;                                                      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";      MinMemGB = ($Pools."ProgPoW".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo PROGPOW" } # Zano, Sero
-    [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGB = ($Pools."UbqHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " -algo UBQHASH -intensity 15" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGB = 2;                                              MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo EAGLESONG" }
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = ($Pools."Ethash".DAGSize + $1.5GB) / 1GB;       MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = ($Pools."EthashLowMem".DAGSize + $1.5GB) / 1GB; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "KawPoW";       MinMemGB = ($Pools."KawPoW".DAGSize + $1.5GB) / 1GB;       MinerSet = 0; WarmupTimes = @(40, 15); Arguments = " -algo KAWPOW" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGB = 2;                                              MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo LYRA2V3" }
+    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGB = 3;                                              MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";      MinMemGB = ($Pools."ProgPoW".DAGSize + $1.5GB) / 1GB;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -algo PROGPOW" } # Zano, Sero
+    [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGB = ($Pools."UbqHash".DAGSize + $1.5GB) / 1GB;      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " -algo UBQHASH -intensity 15" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -48,12 +47,12 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 $_.Arguments += " -pool stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -user $($Pools.($_.Algorithm).User)"
-                $_.Arguments += " -pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
+                $_.Arguments += " -pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - $1.5GB) / 1GB)" })"
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceName  = $AvailableMiner_Devices.Name
-                    Type        = "NVIDIA"
+                    Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) -PRT 1 -PRS 0 -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithm   = $_.Algorithm

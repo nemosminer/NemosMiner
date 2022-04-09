@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 Function Initialize-API { 
@@ -80,9 +80,9 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.5.0"
+    $APIVersion = "0.4.5.1"
 
-    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8 -Force }
+    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
     # Setup runspace to launch the API webserver in a separate thread
     $APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -138,7 +138,7 @@ Function Start-APIServer {
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
 
-                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)$($Request.Url.Query)" | Out-File $Config.APILogFile -Append -Encoding utf8 }
+                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)$($Request.Url.Query)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM }
 
                 # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                 $Parameters = @{ }
@@ -349,7 +349,7 @@ Function Start-APIServer {
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
-                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolBaseName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
+                                If (($PoolConfig | Get-Member -MemberType NoteProperty).Name) { $PoolsConfig | Add-Member $PoolBaseName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
                             }
                             $DisabledPoolsCount = $Pools.Count
                             If ($DisabledPoolsCount -gt 0) { 
@@ -386,7 +386,7 @@ Function Start-APIServer {
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
-                                If ($PoolConfig | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name) { $PoolsConfig | Add-Member $PoolBaseName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
+                                If (($PoolConfig | Get-Member -MemberType NoteProperty).Name) { $PoolsConfig | Add-Member $PoolBaseName $PoolConfig -Force } Else { $PoolsConfig.PSObject.Properties.Remove($PoolName) }
                             }
                             $EnabledPoolsCount = $Pools.Count
                             If ($EnabledPoolsCount -gt 0) { 
@@ -898,6 +898,10 @@ Function Start-APIServer {
                     }
                     "/watchdogtimers" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.WatchdogTimers | Select-Object)
+                        Break
+                    }
+                    "/wallets" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Config.Wallets | Select-Object)
                         Break
                     }
                     "/watchdogexpiration" { 

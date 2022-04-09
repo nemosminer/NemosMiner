@@ -17,8 +17,8 @@
       <S N="LogDataPath">.\BrainMemory-ZergPool.csv</S>
       <S N="TransferFile">.\zergpool.json</S>
       <S N="PoolName">zergpool</S>
-      <S N="PoolStatusUri">http://api.zergpool.com:8080/api/status</S>
-      <S N="PoolCurrenciesUri">http://api.zergpool.com:8080/api/currencies</S>
+      <S N="PoolStatusUri">https://api.zergpool.com:8443/api/status</S>
+      <S N="PoolCurrenciesUri">https://api.zergpool.com:8443/api/currencies</S>
     </MS>
   </Obj>
 </Objs>

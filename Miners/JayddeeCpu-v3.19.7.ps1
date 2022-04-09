@@ -2,8 +2,8 @@ using module ..\Includes\Include.psm1
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.6/cpuminer-opt-3.19.6-windows.zip"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.7/cpuminer-opt-3.19.7-windows.zip"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
 If ($AvailableMiner_Devices.CpuFeatures -match "sha")        { $Path = ".\Bin\$($Name)\cpuminer-Avx512-sha.exe" }
@@ -18,7 +18,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo hmq1725" }
     [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo lyra2z330" }
     [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "Sha3d";     MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo sha3d" }
+    [PSCustomObject]@{ Algorithm = "SHA3d";     MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo SHA3d" }
     [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo scrypt(N,1,1)" }
     [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo verthash" }
 )
@@ -52,7 +52,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         [PSCustomObject]@{ 
             Name        = $Miner_Name
             DeviceName  = $AvailableMiner_Devices.Name
-            Type        = "CPU"
+            Type        = $AvailableMiner_Devices.Type
             Path        = $Path
             Arguments   = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
             Algorithm   = $_.Algorithm

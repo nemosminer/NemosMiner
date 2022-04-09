@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           TonPool.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -57,6 +57,12 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet -and $Variables.Rates.BTC.T
     $Divisor = $DivisorMultiplier * $Variables.Rates.BTC.TON
     $Fee = 0
     $PoolPort = 4001
+
+    # Add coin name to ".\Data\CoinNames.json"
+    If ($CoinName -and -not (Get-CoinName $Currency)) { 
+        $Global:CoinNames | Add-Member $Currency "$($CoinName)".Trim() -Force
+        $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\CoinNames.json" -Encoding utf8NoBOM -Force
+    }
 
     $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$PriceField / $Divisor) -FaultDetection $false
 

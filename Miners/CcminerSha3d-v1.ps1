@@ -2,13 +2,13 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/Minerx117/ccminer-bsha3/releases/download/1.0/ccminersha3dV1.zip"
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Uri = "https://github.com/Minerx117/ccminer-bsha3/releases/download/1.0/ccminerSHA3dV1.zip"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Sha3d"; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo keccak --intensity 22 --statsavg 5" } # Keccak!!!
+    [PSCustomObject]@{ Algorithm = "SHA3d"; MinMemGB = 1; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo keccak --intensity 22 --statsavg 5" } # Keccak!!!
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host } | Where-Object { -not $Pools.($_.Algorithm).SSL }) { 
@@ -31,7 +31,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceName  = $AvailableMiner_Devices.Name
-                    Type        = "NVIDIA"
+                    Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithm   = $_.Algorithm

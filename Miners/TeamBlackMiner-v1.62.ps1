@@ -4,28 +4,26 @@ If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
     # { $_ -ge "11.6" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.58/TeamBlackMiner_1_58_cuda_11_6.7z"; Break }
-    { $_ -ge "11.5" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.61/TeamBlackMiner_1_61_cuda_11_5.7z"; Break }
-    { $_ -ge "11.4" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.61/TeamBlackMiner_1_61_cuda_11_4.7z"; Break }
+    { $_ -ge "11.5" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.62/TeamBlackMiner_1_62_cuda_11_5.7z"; Break }
+    { $_ -ge "11.4" } { "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.61/TeamBlackMiner_1_62_cuda_11_4.7z"; Break }
     Default { Return }
 }
-$Name = "$(Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName)"
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 
-# $DeviceEnumerator = "Type_Vendor_Id"
-$DAGmemReserve = [Math]::Pow(2, 23) * 18 # Number of epochs
 $DeviceSelector = @{ AMD = " --cl-devices"; NVIDIA = " --cuda-devices" }
 $DeviceEnumerator = @{ AMD = "Type_Vendor_Id"; NVIDIA = "Type_Vendor_Index" } # Device numeration seems to be mixed up with OpenCL
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.005; MinMemGB = ($Pools."EtcHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 30); Arguments = " --algo etchash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.005; MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.005; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; Tuning = ""; WarmupTimes = @(45, 30); Arguments = " --algo ethash"} # TTMiner-v5.0.3 is fastest
-    # [PSCustomObject]@{ Algorithm = "VertHash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0;                                                    MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 180); Arguments = " --algo vertcoin" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.005; MinMemGB = ($Pools."EtcHash".DAGSize + 0.95GB) / 1GB;      MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 30); Arguments = " --algo etchash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.005; MinMemGB = ($Pools."Ethash".DAGSize + 0.95GB) / 1GB;       MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.005; MinMemGB = ($Pools."EthashLowMem".DAGSize + 0.95GB) / 1GB; MinerSet = 1; Tuning = ""; WarmupTimes = @(45, 30); Arguments = " --algo ethash"} # TTMiner-v5.0.3 is fastest
+    # [PSCustomObject]@{ Algorithm = "VertHash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 4.0;                                            MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 180); Arguments = " --algo vertcoin" }
 
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.005; MinMemGB = ($Pools."EtcHash".DAGSize + $DAGmemReserve) / 1GB;      MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo etchash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.005; MinMemGB = ($Pools."Ethash".DAGSize + $DAGmemReserve) / 1GB;       MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.005; MinMemGB = ($Pools."EthashLowMem".DAGSize + $DAGmemReserve) / 1GB; MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
-    # [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0;                                                    MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 180); Arguments = " --algo vertcoin" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.005; MinMemGB = ($Pools."EtcHash".DAGSize + 0.95GB) / 1GB;      MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo etchash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.005; MinMemGB = ($Pools."Ethash".DAGSize + 0.95GB) / 1GB;       MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # PhoenixMiner-v6.0c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.005; MinMemGB = ($Pools."EthashLowMem".DAGSize + 0.95GB) / 1GB; MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 30); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
+    # [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 4.0;                                            MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 180); Arguments = " --algo vertcoin" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -46,7 +44,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $_.Arguments += " --hostname $($Pools.($_.Algorithm).Host) --port $($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User -split '\.' | Select-Object -First 1) --worker-name $($Config.Workername)"
-                $_.Arguments += " --server-passwd $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($Miner_Devices.Memory | Measure-Object -Minimum).Minimum - $DAGmemReserve) / 1GB)" })"
+                $_.Arguments += " --server-passwd $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 1.5GB) / 1GB)" })"
 
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl" }
 
@@ -56,7 +54,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceName  = $AvailableMiner_Devices.Name
-                    Type        = $_.Type
+                    Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --api --api-port $MinerAPIPort$($DeviceSelector.($_.Type)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($_.Type)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()
                     Algorithm   = $_.Algorithm

@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Zpool.ps1
-Version:        4.0.0.24
-Version date:   26 March 2022
+Version:        4.0.0.25
+Version date:   09 April 2022
 #>
 
 using module ..\Includes\Include.psm1
 
-$Name = Get-Item $MyInvocation.MyCommand.Path | Select-Object -ExpandProperty BaseName
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -First 1
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $Url = "https://zpool.ca/wallet/$Wallet"
@@ -39,9 +39,9 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) {
     $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
 
     If ($Config.LogBalanceAPIResponse -eq $true) { 
-        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
-        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
-        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8 -ErrorAction SilentlyContinue
+        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
 
     If ($APIResponse.currency) { 

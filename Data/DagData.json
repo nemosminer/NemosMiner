@@ -1,34 +1,34 @@
 {
   "Currency": {
     "ETH": {
-      "BlockHeight": 14458814,
+      "BlockHeight": 14550926,
       "CoinName": "Ethereum",
-      "DAGsize": 5108662144,
-      "Epoch": 481
+      "DAGsize": 5142215296,
+      "Epoch": 485
     },
     "EGEM": {
-      "BlockHeight": 10109815,
+      "BlockHeight": 10213247,
       "CoinName": "EtherGem",
-      "DAGsize": 3892313728,
-      "Epoch": 336
+      "DAGsize": 3925868416,
+      "Epoch": 340
     },
     "CLO": {
-      "BlockHeight": 9565711,
+      "BlockHeight": 9661206,
       "CoinName": "Callisto",
-      "DAGsize": 3741318016,
-      "Epoch": 318
+      "DAGsize": 3774872704,
+      "Epoch": 322
     },
     "QKC": {
-      "BlockHeight": 9341544,
+      "BlockHeight": 9466832,
       "CoinName": "QuarkChain",
-      "DAGsize": 3682597504,
-      "Epoch": 311
+      "DAGsize": 3716152448,
+      "Epoch": 315
     },
     "MOAC": {
-      "BlockHeight": 8843092,
+      "BlockHeight": 8938576,
       "CoinName": "Moac",
-      "DAGsize": 3539987072,
-      "Epoch": 294
+      "DAGsize": 3565157248,
+      "Epoch": 297
     },
     "ETHO": {
       "BlockHeight": 8709768,
@@ -37,10 +37,10 @@
       "Epoch": 290
     },
     "ETC": {
-      "BlockHeight": 14798686,
+      "BlockHeight": 14893919,
       "CoinName": "Ethereum Classic",
-      "DAGsize": 3137339264,
-      "Epoch": 246
+      "DAGsize": 3154109312,
+      "Epoch": 248
     },
     "NUKO": {
       "BlockHeight": 7217546,
@@ -55,28 +55,28 @@
       "Epoch": 237
     },
     "AKA": {
-      "BlockHeight": 6712383,
+      "BlockHeight": 6806727,
       "CoinName": "Akroma",
-      "DAGsize": 2944400768,
-      "Epoch": 223
+      "DAGsize": 2969565568,
+      "Epoch": 226
     },
     "ETP": {
-      "BlockHeight": 6432434,
+      "BlockHeight": 6486851,
       "CoinName": "Metaverse",
-      "DAGsize": 2868900992,
-      "Epoch": 214
+      "DAGsize": 2885676928,
+      "Epoch": 216
     },
     "ESN": {
-      "BlockHeight": 6338968,
+      "BlockHeight": 6340899,
       "CoinName": "EtherSocial",
       "DAGsize": 2843734144,
       "Epoch": 211
     },
     "NILU": {
-      "BlockHeight": 6141723,
+      "BlockHeight": 6151452,
       "CoinName": "Nilu",
-      "DAGsize": 2785017728,
-      "Epoch": 204
+      "DAGsize": 2793401984,
+      "Epoch": 205
     },
     "EXP": {
       "BlockHeight": 5890509,
@@ -85,31 +85,31 @@
       "Epoch": 196
     },
     "ATH": {
-      "BlockHeight": 5413119,
+      "BlockHeight": 5456355,
       "CoinName": "Atheios",
-      "DAGsize": 2583686528,
-      "Epoch": 180
+      "DAGsize": 2592073856,
+      "Epoch": 181
     },
     "ERG": {
-      "BlockHeight": 714577,
+      "BlockHeight": 724539,
       "CoinName": "Ergo",
-      "DAGsize": 1266673792,
-      "Epoch": 23
+      "DAGsize": 1275067264,
+      "Epoch": 24
     },
     "PGC": {
-      "BlockHeight": 4507059,
+      "BlockHeight": 4535974,
       "CoinName": "PegasCoin",
-      "DAGsize": 2332032128,
-      "Epoch": 150
+      "DAGsize": 2340420224,
+      "Epoch": 151
     },
     "UBQ": {
-      "BlockHeight": 2086978,
+      "BlockHeight": 2143970,
       "CoinName": "UBIQ",
-      "DAGsize": 1652555648,
-      "Epoch": 69
+      "DAGsize": 1669332608,
+      "Epoch": 71
     },
     "DBIX": {
-      "BlockHeight": 1687166,
+      "BlockHeight": 1701012,
       "CoinName": "DubaiCoin",
       "DAGsize": 1543503488,
       "Epoch": 56
@@ -121,18 +121,18 @@
       "Epoch": 16
     },
     "RVN": {
-      "BlockHeight": 2205009,
+      "BlockHeight": 2225657,
       "CoinName": "RavenCoin",
-      "DAGsize": 3539987072,
-      "Epoch": 294
+      "DAGsize": 3556763264,
+      "Epoch": 296
     },
     "*": {
-      "BlockHeight": 14798686,
+      "BlockHeight": 14893919,
       "CoinName": "*",
-      "DAGsize": 5108662144,
-      "Epoch": 481
+      "DAGsize": 5142215296,
+      "Epoch": 485
     }
   },
-  "Updated_Minerstat": "2022-03-26T01:19:54.8882235Z",
-  "Updated_Ravencoin": "2022-03-26T01:19:55.2816042Z"
+  "Updated_Minerstat": "2022-04-09T11:34:23.2165472Z",
+  "Updated_Ravencoin": "2022-04-09T11:34:23.5946719Z"
 }
