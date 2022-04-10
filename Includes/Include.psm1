@@ -2608,7 +2608,6 @@ Function Get-NMVersion {
     Try { 
         $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
 
-
         If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
             If ($UpdateVersion.AutoUpdate -eq $true) { 
                 If ($Config.AutoUpdate) { 
