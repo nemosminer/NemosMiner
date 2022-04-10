@@ -30,7 +30,7 @@ $Wallet = $Config.PoolsConfig.NiceHash.Variant.$Name.Wallets.$PayoutCurrency
 $Key = $Config.NiceHashAPIKey
 $OrganizationID = $Config.NiceHashOrganizationID
 $Secret = $Config.NiceHashAPISecret
-$Url = "https://www.nicehash.com/my/miner/$Wallet"
+$Url = "https://www.nicehash.com/my/mining/rigs/$($Config.PoolsConfig.NiceHash.WorkerName)"
 
 Function Get-NiceHashRequest { 
     Param(
