@@ -107,6 +107,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
             $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
             $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
             $AlgoData.$Algo | Add-Member @{ currency = $Currency.Trim() }
+            If ($CurrenciesData.$Currency.Name) { $AlgoData.$Algo | Add-Member @{ CoinName = $CurrenciesData.$Currency.Name } }
 
             $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
             If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]($AlgoData.$Algo.actual_last24h / 1000) }

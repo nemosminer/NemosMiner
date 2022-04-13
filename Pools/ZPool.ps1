@@ -60,10 +60,9 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
 
-        # Add coin name to ".\Data\CoinNames.json"
-        If ($Request.$_.CoinName -and -not (Get-CoinName $Currency)) { 
-            $Global:CoinNames | Add-Member $Currency "$($Request.$_.CoinName)".Trim() -Force
-            $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\CoinNames.json" -Encoding utf8NoBOM -Force
+        # Add coin name
+        If ($Request.$_.CoinName -and $Currency -and -not (Get-CoinName $Currency)) { 
+            Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false

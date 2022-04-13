@@ -56,13 +56,12 @@ If ($PoolConfig.UserName) {
             $Fee = [Decimal]($_.Fee / 100)
             $Port = $Current.port
 
-            # Add coin name to ".\Data\CoinNames.json"
-            If ($Current.coin_name -and -not (Get-CoinName $Currency)) { 
-                $Global:CoinNames | Add-Member $Currency "$($Current.coin_name)".Trim() -Force
-                $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\CoinNames.json" -Encoding utf8NoBOM -Force
+            # Add coin name
+            If ($Current.coin_name -and $Currency -and -not (Get-CoinName $Currency)) { 
+                Add-CoinName -Currency $Currency -CoinName $Current.coin_name
             }
 
-    $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
+            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
             # Temp fix
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }

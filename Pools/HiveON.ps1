@@ -50,10 +50,9 @@ If ($PoolConfig.Wallets) {
         $Workers = $Request.stats.($_.name).workers
         $_.Servers | ForEach-Object { $_.Region = $_.Region -replace 'all', 'N/A' }
 
-        # Add coin name to ".\Data\CoinNames.json"
-        If ($_.title -and -not (Get-CoinName $Currency)) { 
-            $Global:CoinNames | Add-Member $Currency $_.title -Force
-            $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\CoinNames.json" -Encoding utf8NoBOM -Force
+        # Add coin name
+        If ($_.title -and $Currency -and -not (Get-CoinName $Currency)) { 
+            Add-CoinName -Currency $Currency -CoinName $_.title
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false

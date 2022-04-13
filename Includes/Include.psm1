@@ -995,9 +995,9 @@ Function Write-Message {
     }
 
     If ($Variables.LogFile -and $Config.LogToFile -and $Level -in $Config.LogToFile) { 
-        # Get mutex named $($Variables.CurrentProduct)WriteLog. Mutexes are shared across all threads and processes. 
+        # Get mutex. Mutexes are shared across all threads and processes. 
         # This lets us ensure only one thread is trying to write to the file at a time. 
-        $Mutex = New-Object System.Threading.Mutex($false, "$($Variables.CurrentProduct)WriteMessage")
+        $Mutex = New-Object System.Threading.Mutex($false, "$($Variables.LogFile -replace '[^A-Z0-9]')")
 
         # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
         If ($Mutex.WaitOne(1000)) { 
@@ -1005,7 +1005,7 @@ Function Write-Message {
             $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
             "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $Mutex.ReleaseMutex()
+            [void]$Mutex.ReleaseMutex()
         }
         Else { 
             Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
@@ -1551,14 +1551,14 @@ Function Get-Stat {
         )
     )
 
+    If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
+        $Global:Stats = [Hashtable]::Synchronized(@{ })
+    }
+
     $Name | ForEach-Object { 
         $Stat_Name = $_
 
         If ($Stats.$Stat_Name -isnot [Hashtable] -or -not $Global:Stats.$Stat_Name.IsSynchronized) { 
-            If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
-                $Global:Stats = [Hashtable]::Synchronized(@{ })
-            }
-
             # Reduce number of errors
             If (-not (Test-Path -Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
                 If (-not (Test-Path -Path "Stats" -PathType Container)) { 
@@ -2560,12 +2560,35 @@ Function Get-Region {
     )
 
     If (-not (Test-Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
-        $Global:Regions = Get-Content ".\Data\Regions.json" | ConvertFrom-Json
+        $Global:Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
     }
 
     If ($List) { $Global:Regions.$Region }
     ElseIf ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -First 1) }
     Else { $Region }
+}
+
+Function Add-CoinName { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Currency,
+        [Parameter(Mandatory = $true)]
+        [String]$CoinName
+    )
+
+    # Get mutex. Mutexes are shared across all threads and processes. 
+    # This lets us ensure only one thread is trying to write to the file at a time. 
+    $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')DataCoinnames.json")
+
+    # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex. Otherwise, display an error. 
+    If ($Mutex.WaitOne(1000)) { 
+
+        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+        $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
+        $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+        [void]$Mutex.ReleaseMutex()
+    }
 }
 
 Function Get-CoinName { 
@@ -2576,16 +2599,15 @@ Function Get-CoinName {
     )
 
     If (-not (Test-Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
+        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
     }
 
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
     }
     If ($Currency) { 
-        $Global:CoinNames = Get-Content ".\Data\CoinNames.json" | ConvertFrom-Json
+        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
         If ($Global:CoinNames.$Currency) { 
-            Write-Message -Level INFO "CoinName '$($Global:CoinNames.$Currency)' added for Currency '$Currency' to CoinNames.json."
             Return $Global:CoinNames.$Currency
         }
     }

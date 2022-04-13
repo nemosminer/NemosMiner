@@ -58,10 +58,9 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet -and $Variables.Rates.BTC.T
     $Fee = 0
     $PoolPort = 4001
 
-    # Add coin name to ".\Data\CoinNames.json"
-    If ($CoinName -and -not (Get-CoinName $Currency)) { 
-        $Global:CoinNames | Add-Member $Currency "$($CoinName)".Trim() -Force
-        $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File ".\Data\CoinNames.json" -Encoding utf8NoBOM -Force
+    # Add coin name
+    If ($CoinName -and $Currency -and -not (Get-CoinName $Currency)) { 
+        Add-CoinName -Currency $Currency -CoinName $CoinName
     }
 
     $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$Request.$PriceField / $Divisor) -FaultDetection $false
