@@ -22,7 +22,8 @@ version:        4.0.0.26
 version date:   13 April 2022
 #>
 
-Set-Location ($args[0])
+#Set-Location ($args[0])
+Set-Location c:\Users\Stephan\Desktop\NemosMiner\Brains\ZPool\
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"

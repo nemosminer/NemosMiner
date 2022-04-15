@@ -272,7 +272,7 @@
       },
       "ZergPoolCoins": {
         "DivisorMultiplier": 1000000,
-        "PriceField": "plus_price"
+        "PriceField": "estimate_current"
       },
       "ZergPoolCoinsPlus": {
         "DivisorMultiplier": 1000000,
