@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.25
-Version date:   09 April 2022
+Version:        4.0.0.26
+Version date:   13 April 2022
 #>
 
 #using module ..\Includes\Include.psm1

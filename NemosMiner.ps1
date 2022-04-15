@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.25
-Version date:   09 April 2022
+Version:        4.0.0.26
+Version date:   13 April 2022
 #>
 
 [CmdletBinding()]
@@ -253,7 +253,7 @@ $Global:Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.25"
+    Version      = [System.Version]"4.0.0.26"
 }
 
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
@@ -306,31 +306,34 @@ $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProv
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
+# Read configuration
+Read-Config -ConfigFile $Variables.ConfigFile
+
 # Verify donation data
 $Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore -NoEnumerate
 If (-not $Variables.DonationData) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load coin names
 $Variables.CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.CoinNames) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
 $Variables.Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -339,7 +342,7 @@ $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Igno
 $Variables.PoolNames = @($Variables.PoolData.Keys)
 $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
 If (-not $Variables.PoolVariants) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue!`nFile '.\Data\PoolData.json' is not a valid $($Variables.CurrentProduct) JSON data file. Please restore it from your original download."
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.CurrentProduct) JSON data file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
@@ -357,9 +360,6 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorA
     If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
     Remove-Variable $_ -ErrorAction Ignore
 }
-
-# Read configuration
-Read-Config -ConfigFile $Variables.ConfigFile
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }

@@ -106,7 +106,7 @@
               else document.getElementById('workerlist').style.visibility="visible";
 
 
-              $(document.getElementById('MonitoringServer')).change(function (event) {
+              $(document.getElementById('MonitoringServer')).click(function (event) {
                 document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";

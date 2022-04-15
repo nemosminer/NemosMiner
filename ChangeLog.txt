@@ -6,6 +6,26 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+
+Changelog NemosMiner 4.0.0.26 15.04.2022
+========================================
+
+Balances:
+- NiceHash Internal: Fix dashboard url
+
+Improvements:
+- Core: Auto-add more coin names to 'Data\CoinNames.json' (data taken from pool API)
+
+Miner changes:
+- All EtcHash miners: Allow for larger DAG size
+- EthMiner-v0.19.0.18
+- PhoenixMiner-v6.1b
+
+Web GUI:
+- Config editor: Improve input validation
+- Update font-awesome to version 6.1.1
+
+
 Changelog NemosMiner 4.0.0.25 09.04.2022
 ========================================
 

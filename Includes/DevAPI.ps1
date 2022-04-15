@@ -46,9 +46,9 @@ Switch ($Path) {
         If ($Parameters.Data) { 
             $BalanceDataEntries = ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)
             $Variables.BalanceData = @((Compare-Object $Variables.BalanceData $BalanceDataEntries -PassThru -Property DateTime, Pool, Currency, Wallet) | Select-Object -ExcludeProperty SideIndicator)
-            $Variables.BalanceData | ConvertTo-Json | Out-File -FilePath ".\Logs\BalancesTrackerData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
+            $Variables.BalanceData | ConvertTo-Json | Out-File -FilePath ".\Logs\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             If ($BalanceDataEntries.Count -gt 0) { 
-                $Variables.BalanceData | ConvertTo-Json | Out-File -FilePath ".\Logs\BalancesTrackerData.json" -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                $Variables.BalanceData | ConvertTo-Json | Out-File -FilePath ".\Logs\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 $Message = "$($BalanceDataEntries.Count) $(If ($BalanceDataEntries.Count -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
                 Write-Message -Level Verbose "Web GUI: $Message"
                 $Data += "`n`n$Message"
@@ -224,7 +224,7 @@ Switch ($Path) {
             $DisabledPoolsCount = $Pools.Count
             If ($DisabledPoolsCount -gt 0) { 
                 # Write PoolsConfig
-                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 $Message = "$DisabledPoolsCount $(If ($DisabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) disabled."
                 Write-Message -Level Verbose "Web GUI: $Message"
                 $Data += "`n`n$Message"
@@ -260,7 +260,7 @@ Switch ($Path) {
             $EnabledPoolsCount = $Pools.Count
             If ($EnabledPoolsCount -gt 0) { 
                 # Write PoolsConfig
-                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8 -ErrorAction SilentlyContinue
+                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 $Message = "$EnabledPoolsCount $(If ($EnabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) enabled."
                 Write-Message -Level Verbose "Web GUI: $Message"
                 $Data += "`n`n$Message"
