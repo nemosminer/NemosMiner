@@ -16,7 +16,7 @@
               <tr style="vertical-align: top;">
                 <td>
                   <!-- Wallet addresses and User Names -->
-                  <legend class=h6><b>Wallet Addresses and User Names</b></legend>
+                  <legend title="Define your wallet and user names.&#10;All your earnings will be sent to the accounts defined here.&#10;Correct data is essential." class=h6><b>Wallet Addresses and User Names</b></legend>
                   <fieldset title="Set your wallet addresses&#10;To add more currencies you need to edit pools config file manually.">
                     <div id="Wallets"></div>
                   </fieldset>
@@ -103,8 +103,8 @@
                     <br>
                   </div>
 
-                  <!-- General Options -->
-                  <legend class=h6><b>General Options</b></legend>
+                  <!-- General Settings -->
+                  <legend class=h6><b>General Settings</b></legend>
                   <div title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Algorithms
                     <input type="text" id="Algorithm" name="Algorithm" size=64>
                     <button type="button" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load Default Algorithms</button>
@@ -188,9 +188,9 @@
                     <br>
                   </div>
 
-                  <!-- Balance Tracker Options -->
+                  <!-- Balance Tracker Settings -->
                   <fieldset>
-                    <legend class=h6><b>Balance Tracker Options</b></legend>
+                    <legend class=h6><b>Balance Tracker Settings</b></legend>
                     <div title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10; max=60; [Default: 15, 0 to disable] minutes)&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll Pools for Balances & Earnings every
                       <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> Minutes
                       <div title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
@@ -204,262 +204,247 @@
                 </td>
 
                 <td>
-                  <!-- Select Pools -->
                   <div class="col-md-12">
+                    <!-- Select Mining Devices -->
+                    <fieldset title="Enable / disable mining devices&#10;&#10;Unsupported devices are greyed out and cannot be enabled.">
+                      <legend class=h6><b>Select Mining Devices</b></legend>
+                      <div id="Devices"></div>
+                    </fieldset>
+                    <div style="line-height:100%;">
+                      <br>
+                    </div>
+
+                    <!-- Select Pools -->
                     <fieldset title="You cannot select multiple variants of the same pool">
                       <legend class=h6><b>Select Pools</b></legend>
                       <div id="Pools"></div>
                     </fieldset>
-                  </div>
-                  <div style="line-height:100%;">
-                    <br>
-                  </div>
+                    <div style="line-height:100%;">
+                      <br>
+                    </div>
 
-                  <!-- Select the Region closest to your Location -->
-                  <div class="col-md-12">
+                    <!-- Select the Region closest to your Location -->
                     <fieldset title="NemosMiner will prefer pools from the selected region">
                       <legend class=h6><b>Select the Region closest to your Location</b></legend>
                       <div id="Regions"></div>
                     </fieldset>
-                  </div>
-                  <div style="line-height:40%;">
-                    <br>
-                  </div>
-                  <div title="Pools establish shortest network route based on your GEO location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
-                    <input style="margin-left:15px" type="checkbox" id="UseAnycast" name="UseAnycast"> Use Anycast
-                  </div>
-                  <div style="line-height:100%;">
-                    <br>
-                  </div>
-
-                  <!-- Select Mining Devices -->
-                  <div class="col-md-12">
-                    <fieldset title="Enable / disable devices&#10;&#10;Unsupported devices are greyed out and cannot be enabled.">
-                      <legend class=h6><b>Select Mining Devices</b></legend>
-                      <div id="Devices"></div>
-                    </fieldset>
-                  </div>
-                  <div style="line-height:100%;">
-                    <br>
+                    <div style="line-height:40%;">
+                      <br>
+                    </div>
+                    <div title="Pools establish shortest network route based on your GEO location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                      <input type="checkbox" id="UseAnycast" name="UseAnycast"> Use Anycast
+                    </div>
+                    <div style="line-height:100%;">
+                      <br>
+                    </div>
                   </div>
                 </td>
 
                 <td>
-                  <div class="col-md-12">
-                    <!-- Miner Selection -->
-                    <legend class=h6><b>Miner Selection</b></legend>
+                  <!-- Miner Selection -->
+                  <legend title="" class=h6><b>Miner Selection</b></legend>
+                  <div title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run as separate instances.">
+                    <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run Miner Instance per GPU Device Model
+                  </div>
+                  <div title="NemosMiner will disable all miners which contain fees">
+                    <input type="checkbox" id="DisableMinersWithFee" name="DisableMinersWithFee"> Do not use Miners which contain Fees
+                  </div>
+                  <div title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
+                    <input type="checkbox" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable Dual Algorithm Miners
+                  </div>
+                  <div title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
+                    <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable Single Algorithm Miners
+                  </div>
+                  <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude Miners
+                    <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=64>
+                  </div>
+                  <div style="line-height:30%;">
+                    <br>
+                  </div>
+                  <div title="Select miner set to be used by NemosMiner">Use
+                    <select name="" id="MinerSet">
+                      <option title="The best miners chosen by the developers may not be the best miners for you" value=0>only best Miner per Algorithm and per Device</option>
+                      <option title="recommended, select to ensure best profitability" value=1>optimal Miners (more than one per Algorithm and Device)</option>
+                      <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all Miners per Algorithm and Device (incl. those in UnprofitableAlgorithms.json)</option>
+                    </select>
+                  </div>
+                  <div style="line-height:100%;">
+                    <br>
+                  </div>
 
-                    <div title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run as separate instances.">
-                      <input type="checkbox" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run Miner Instance per GPU Device Model
-                    </div>
-                    <div title="NemosMiner will disable all miners which contain fees">
-                      <input type="checkbox" id="DisableMinersWithFee" name="DisableMinersWithFee"> Do not use Miners which contain Fees
-                    </div>
-                    <div title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
-                      <input type="checkbox" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable Dual Algorithm Miners
-                    </div>
-                    <div title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
-                      <input type="checkbox" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable Single Algorithm Miners
-                    </div>
-                    <div title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude any version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude Miners
-                      <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=64>
-                    </div>
-                    <div style="line-height:30%;">
-                      <br>
-                    </div>
-                    <div title="Select miner set to be used by NemosMiner">Use
-                      <select name="" id="MinerSet">
-                        <option title="The best miners chosen by the developers may not be the best miners for you" value=0>only best Miner per Algorithm and per Device</option>
-                        <option title="recommended, select to ensure best profitability" value=1>optimal Miners (more than one per Algorithm and Device)</option>
-                        <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all Miners per Algorithm and Device (incl. those in UnprofitableAlgorithms.json)</option>
-                      </select>
-                    </div>
-                    <div style="line-height:100%;">
-                      <br>
-                    </div>
-
-                    <!-- Miners Runtime Options -->
-                    <legend class=h6><b>Miners Runtime Options</b></legend>
-                    <div title="Miners will run as a hidden background task and are not accessible (not recommended)">
-                      <input type="radio" id="MinerWindowStyleHidden" name="MinerWindowStyle" value="Hidden"> Run as hidden Background Task
-                    </div>
-                    <div title="Miner windows are minimized (default), but accessible">
-                      <input type="radio" id="MinerWindowStyleMinimized" name="MinerWindowStyle" value="Minimized"> Run in minimized Window
-                    </div>
-                    <div title="Miner windows are shown normally on desktop">
-                      <input type="radio" id="MinerWindowStyleNormal" name="MinerWindowStyle" value="Normal"> Run in normal Window
-                    </div>
-                    <div title="This is helpful to check the miner output for errors">
-                      <input type="checkbox" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run in normal Window while benchmarking
-                    </div>
-                    <div style="line-height:50%;">
-                      <br>
-                    </div>
+                  <!-- Miners Runtime Settings -->
+                  <legend titls="Miners Runtime Settings" class=h6><b>Miners Runtime Settings</b></legend>
+                  <div title="Miners will run as a hidden background task and are not accessible (not recommended)">
+                    <input type="radio" id="MinerWindowStyleHidden" name="MinerWindowStyle" value="Hidden"> Run as hidden Background Task
+                  </div>
+                  <div title="Miner windows are minimized (default), but accessible">
+                    <input type="radio" id="MinerWindowStyleMinimized" name="MinerWindowStyle" value="Minimized"> Run in minimized Window
+                  </div>
+                  <div title="Miner windows are shown normally on desktop">
+                    <input type="radio" id="MinerWindowStyleNormal" name="MinerWindowStyle" value="Normal"> Run in normal Window
+                  </div>
+                  <div title="This is helpful to check the miner output for errors">
+                    <input type="checkbox" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run in normal Window while benchmarking
+                  </div>
+                  <div style="line-height:50%;">
+                    <br>
+                  </div>
                     <div title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hash rates with GPU miners">
-                      <label for="CPUMinerProcessPriority">Run CPU miners with</label>
-                      <select name="" id="CPUMinerProcessPriority">
-                        <option value=1>Above Normal</option>
-                        <option value=0>Normal</option>
-                        <option value=-1>Below Normal</option>
-                        <option value=-2>Idle</option>
-                      </select>
-                      <label for="CPUMinerProcessPriority">process priority</label>
-                    </div>
-                    <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hash rates with CPU miners">
-                      <label for="GPUMinerProcessPriority">Run GPU miners with</label>
-                      <select name="" id="GPUMinerProcessPriority">
-                        <option value=1>Above Normal</option>
-                        <option value=0>Normal</option>
-                        <option value=-1>Below Normal</option>
-                        <option value=-2>Idle</option>
-                      </select>
-                      <label for="GPUMinerProcessPriority">process priority</label>
-                    </div>
-                    <div title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
-                      <input type="checkbox" id="UseMinerTweaks" name="UseMinerTweaks"> Enable Miner Tweaks (Admin Rights required)
-                    </div>
-                    <div style="line-height:50%;">
-                      <br>
-                    </div>
-                    <div title="NemosMiner will disable developer fee mining&#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate.&#10;For miners that do not allow to disable miner fees the effective fee will still be shown in the miner list.)">
-                      <input type="checkbox" id="DisableMinerFee" name="DisableMinerFee"> Disable Miner Fees
-                    </div>
-                    <div style="line-height:100%;">
-                      <br>
-                    </div>
+                    <label for="CPUMinerProcessPriority">Run CPU miners with</label>
+                    <select name="" id="CPUMinerProcessPriority">
+                      <option value=1>Above Normal</option>
+                      <option value=0>Normal</option>
+                      <option value=-1>Below Normal</option>
+                      <option value=-2>Idle</option>
+                    </select>
+                    <label for="CPUMinerProcessPriority">process priority</label>
+                  </div>
+                  <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hash rates with CPU miners">
+                    <label for="GPUMinerProcessPriority">Run GPU miners with</label>
+                    <select name="" id="GPUMinerProcessPriority">
+                      <option value=1>Above Normal</option>
+                      <option value=0>Normal</option>
+                      <option value=-1>Below Normal</option>
+                      <option value=-2>Idle</option>
+                    </select>
+                    <label for="GPUMinerProcessPriority">process priority</label>
+                  </div>
+                  <div title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
+                    <input type="checkbox" id="UseMinerTweaks" name="UseMinerTweaks"> Enable Miner Tweaks (Admin Rights required)
+                  </div>
+                  <div title="NemosMiner will disable developer fee mining&#10;(Note: not all miners support turning off their built in fees, others will reduce the hashrate.&#10;For miners that do not allow to disable miner fees the effective fee will still be shown in the miner list.)">
+                    <input type="checkbox" id="DisableMinerFee" name="DisableMinerFee"> Disable Miner Fees
+                  </div>
+                  <div style="line-height:100%;">
+                    <br>
+                  </div>
 
-                    <!-- Power Cost settings -->
-                    <legend class=h6><b>Power Cost Settings</b></legend>
-                    <div title="Calculate power cost, required for true profit calculation&#10;Requires extra configuration of HWiNFO64&#10;(See ConfigHWinfo64.pdf)">
-                      <input type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate Power Cost
-                    </div>
-                    <div id=PowerPricekWhTitle>
-                      <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
-                      <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
-                      <label id="PowerPricekWhCurrency" for="PowerPricekWh">
-                    </div>
-                    <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999 [Default: 60] W)">
-                      <label style="margin-left:20px" for="IdlePowerUsageW">Power Usage of idle System</label>
-                      <input type="number" step=1 min=0 max=999 value=60 size=3 id="IdlePowerUsageW" name="IdlePowerUsageW"> W
-                    </div>
-                    <div title="NemosMiner will ignore power cost in best miner selection&#10;instead miners with best earnings will be selected">
-                      <input style="margin-left:20px" type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost"
-                        title="Wallet is a NiceHash internal Wallet&#10;(lower pool fees)"> Ignore Power Cost
-                    </div>
-                    <div id="ProfitabilityThresholdTitle">
-                      <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
-                      <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold"
-                        name="ProfitabilityThreshold" value=0.0>
-                      <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
-                    </div>
-                    <div style="line-height:100%;">
-                      <br>
-                    </div>
+                  <!-- Power Cost settings -->
+                  <legend title="These settings are relevant for true profit calculation" class=h6><b>Power Cost Settings</b></legend>
+                  <div title="Calculate power cost, required for true profit calculation&#10;Requires extra configuration of HWiNFO64&#10;(See ConfigHWinfo64.pdf)">
+                    <input type="checkbox" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate Power Cost
+                  </div>
+                  <div id=PowerPricekWhTitle>
+                    <label style="margin-left:20px" for="PowerPricekWh">Power Price</label>
+                    <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
+                    <label id="PowerPricekWhCurrency" for="PowerPricekWh">
+                  </div>
+                  <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999 [Default: 60] W)">
+                    <label style="margin-left:20px" for="IdlePowerUsageW">Power Usage of idle System</label>
+                    <input type="number" step=1 min=0 max=999 value=60 size=3 id="IdlePowerUsageW" name="IdlePowerUsageW"> W
+                  </div>
+                  <div title="NemosMiner will ignore power cost in best miner selection&#10;and will select miners with best earnings (and not best profit)">
+                    <input style="margin-left:20px" type="checkbox" id="IgnorePowerCost" name="IgnorePowerCost"> Ignore Power Cost
+                  </div>
+                  <div id="ProfitabilityThresholdTitle">
+                    <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability Threshold</label>
+                    <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold"
+                      name="ProfitabilityThreshold" value=0.0>
+                    <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
+                  </div>
+                  <div style="line-height:100%;">
+                    <br>
+                  </div>
 
-                    <!-- Calculation Options -->
-                    <legend class=h6><b>Calculation Options</b></legend>
-                    <div title="Mark pool as unavailable if price is x times higher than the&#10;average price of all other pools with same algorithm & currency&#10;(min=1, max=10 [Default: 1.5; 1 disables this check])">
-                      <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
-                      <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
-                    </div>
-                    <div title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 99% [Default: 50%]">
-                      <label for="MinAccuracy">Minimum Accuracy</label>
-                      <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinAccuracy" name="MinAccuracy"> %
-                    </div>
-                    <div title="Mark miner as unavailable if earning is x times higher than the&#10;average earning of all other miners with same algorithm & currency&#10;(min=1, max=99 [Default: 5; 1 disables this check])">
-                      <label for="UnrealMinerEarningFactor">Unreal Miner Earning Factor</label>
-                      <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
-                    </div>
-                    <div title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99; [Default: 10; 0 disables this check] workers)"> Minimum
-                      <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker">
-                      <label for="MinWorker">Workers at Pool</label>
-                    </div>
-                    <div title="Acceptable bad shares (bad / total) as reported by the miner.&#10;If the percentage exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])"> Acceptable bad Shares
-                      <input type="number" step=1 min=0 max=99 value=10 size=3 id="AllowedBadShareRatio" name="AllowedBadShareRatio"> %
-                    </div>
-                    <div title="NemosMiner will deduct rejected shares when calculating effective hashrates&#10;This will lower stored hashrates and increase earnings accuracy">
-                      <input type="checkbox" id="DeductRejectedShares" name="DeductRejectedShares"> Deduct rejected Shares
-                    </div>
-                    <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / actual price)&#10;to counter pool overestimated profitability">
-                      <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
-                    </div>
-                    <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pool are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=1.00 [Default: 1.00])" for="EarningsAdjustmentFactor"> Earnings Adjustment Factor
-                      <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=1 value=1 step=0.01 size=4>
-                    </div>
-                    <div style="line-height:50%;">
-                      <br>
-                    </div>
-                    <div title="NemosMiner will not switch miners&#10;unless another miner has n% higher earnings / profit.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100% [Default: 5%])" for="MinerSwitchingThreshold">Miner Switching Threshold
-                      <input type="number" id="MinerSwitchingThreshold" name="MinerSwitchingThreshold" min=0 max=100 value=5 step=0.1 size=3> %
-                    </div>
-                    <div style="line-height:50%;">
-                      <br>
-                    </div>
+                  <!-- Calculation Settings -->
+                  <legend title="These settings are used to calculate the best miners" class=h6><b>Calculation Settings</b></legend>
+                  <div title="Mark pool as unavailable if price is x times higher than the&#10;average price of all other pools with same algorithm & currency&#10;(min=1, max=10 [Default: 1.5; 1 disables this check])">
+                    <label for="UnrealPoolPriceFactor">Unreal Pool Price Factor</label>
+                    <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+                  </div>
+                  <div title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 99% [Default: 50%]">
+                    <label for="MinAccuracy">Minimum Accuracy</label>
+                    <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinAccuracy" name="MinAccuracy"> %
+                  </div>
+                  <div title="Mark miner as unavailable if earning is x times higher than the&#10;average earning of all other miners with same algorithm & currency&#10;(min=1, max=99 [Default: 5; 1 disables this check])">
+                    <label for="UnrealMinerEarningFactor">Unreal Miner Earning Factor</label>
+                    <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
+                  </div>
+                  <div title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99; [Default: 10; 0 disables this check] workers)"> Minimum
+                    <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker">
+                    <label for="MinWorker">Workers at Pool</label>
+                  </div>
+                  <div title="Acceptable bad shares (bad / total) as reported by the miner.&#10;If the percentage exceeds the configured threshold then the miner will marked as failed.&#10;(min: 0%, max 99% [Default: 10%; 0% disables this check])"> Acceptable bad Shares
+                    <input type="number" step=1 min=0 max=99 value=10 size=3 id="AllowedBadShareRatio" name="AllowedBadShareRatio"> %
+                  </div>
+                  <div title="NemosMiner will deduct rejected shares when calculating effective hashrates&#10;This will lower stored hashrates and increase earnings accuracy">
+                    <input type="checkbox" id="DeductRejectedShares" name="DeductRejectedShares"> Deduct rejected Shares
+                  </div>
+                  <div title="NemosMiner will reduce the profitability (as reported by the pool) by&#10;a correction factor (actual_last24h / actual price)&#10;to counter pool overestimated profitability">
+                    <input type="checkbox" id="EstimateCorrection" name="EstimateCorrection"> Use Estimate Correction
+                  </div>
+                  <div title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pool are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=1.00 [Default: 1.00])" for="EarningsAdjustmentFactor"> Earnings Adjustment Factor
+                    <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=1 value=1 step=0.01 size=4>
+                  </div>
+                  <div title="NemosMiner will not switch miners&#10;unless another miner has n% higher earnings / profit.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100% [Default: 5%])" for="MinerSwitchingThreshold">Miner Switching Threshold
+                    <input type="number" id="MinerSwitchingThreshold" name="MinerSwitchingThreshold" min=0 max=100 value=5 step=0.1 size=3> %
+                  </div>
                     <div title="NemosMiner will ignore the miner fee for earning & profit calculation">
-                      <input type="checkbox" id="IgnoreMinerFee" name="IgnoreMinerFee"> Ignore Miner Fees
-                    </div>
-                    <div title="NemosMiner will ignore the pool fee for earning & profit calculation">
-                      <input type="checkbox" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore Pool Fees
-                    </div>
-                    <div title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100 [Default: 20] samples)" for="MinDataSamples">Minimum
-                      <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 step=1 size=4>
-                      <label for="MinDataSamples">data Samples while benchmarking</label>
-                    </div>
-                    <div style="line-height:50%;">
-                      <br>
-                    </div>
+                    <input type="checkbox" id="IgnoreMinerFee" name="IgnoreMinerFee"> Ignore Miner Fees
+                  </div>
+                  <div title="NemosMiner will ignore the pool fee for earning & profit calculation">
+                    <input type="checkbox" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore Pool Fees
+                  </div>
+                  <div title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100 [Default: 20] samples)" for="MinDataSamples">Minimum
+                    <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 step=1 size=4>
+                    <label for="MinDataSamples">data Samples while benchmarking</label>
+                  </div>
+                  <div style="line-height:50%;">
+                    <br>
+                  </div>
 
-                    <!-- Main Text Window Display Options -->
-                    <legend class=h6 title="These options will not affect the information available in the in Web GUI"><b>Main Text Window Display Options</b></legend>
-                    <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle">
-                      <label for="UIStyle">UI Style </label>
-                      <select name="UIStyle" id="UIStyle">
-                        <option value='Full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">Full</option>
-                        <option value='Light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">Light</option>
-                      </select>
-                    </div>
-                    <div title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in Main Text Window
-                    </div>
-                    <div title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowPowerUsage" name="ShowPowerUsage"> Show Power Usage in Main Text Window
-                    </div>
-                    <div title="Show the 'Profit' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 't' in the text window while waiting for the next cycle&#10;">
-                      <input type="checkbox" id="ShowProfit" name="ShowProfit"> Show Profit in Main Text Window
-                    </div>
-                    <div title="Show the 'Profit Bias' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the text window while waiting for the next cycle&#10;">
-                      <input type="checkbox" id="ShowProfitBias" name="ShowProfitBias"> Show Profit Bias in Main Text Window
-                    </div>
-                    <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowAllMiners" name="ShowAllMiners"> Show all Miners in Main Text Window
-                    </div>
-                    <div title="Show the 'Earning' column in the text window&#10;&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowEarning" name="ShowEarning"> Show Earning in Main Text Window
-                    </div>
-                    <div title="Show the 'Earning Bias' column in the text window&#10;&#10;Can be toggled by pressing 'i' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowEarningBias" name="ShowEarningBias"> Show Earning Bias in Main Text Window
-                    </div>
-                    <div title="Show the 'Accuracy' column in the text window&#10;&#10;Can be toggled by pressing 'a' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowAccuracy" name="ShowAccuracy"> Show Accuracy in Main Text Window
-                    </div>
-                    <div title="Show the 'CoinName' column in the text window&#10;&#10;Can be toggled by pressing 'n' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowCoinName" name="ShowCoinName"> Show CoinName in Main Text Window
-                    </div>
-                    <div title="Show the 'Currency' column in the text window&#10;&#10;Can be toggled by pressing 'y' in the text window while waiting for the next cycle">
-                      <input type="checkbox" id="ShowCurrency" name="ShowCurrency"> Show Currency in Main Text Window
-                    </div>
-                    <div title="Show the Pool Balances in the text windows&#10;(requires 'Poll Pools for Balances & Earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
-                      <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances" > Show Pool Balances in Main Text Window
-                    </div>
-                    <div style="line-height:100%;">
-                      <br>
-                    </div>
+                  <!-- Main Text Window Display Settings -->
+                  <legend class=h6 title="These Settings will not affect the information available in the in Web GUI"><b>Main Text Window Display Settings</b></legend>
+                  <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle">
+                    <label for="UIStyle">UI Style </label>
+                    <select name="UIStyle" id="UIStyle">
+                      <option value='Full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">Full</option>
+                      <option value='Light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">Light</option>
+                    </select>
+                  </div>
+                  <div title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowPowerCost" name="ShowPowerCost"> Show Power Cost in Main Text Window
+                  </div>
+                  <div title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowPowerUsage" name="ShowPowerUsage"> Show Power Usage in Main Text Window
+                  </div>
+                  <div title="Show the 'Profit' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 't' in the text window while waiting for the next cycle&#10;">
+                    <input type="checkbox" id="ShowProfit" name="ShowProfit"> Show Profit in Main Text Window
+                  </div>
+                  <div title="Show the 'Profit Bias' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the text window while waiting for the next cycle&#10;">
+                    <input type="checkbox" id="ShowProfitBias" name="ShowProfitBias"> Show Profit Bias in Main Text Window
+                  </div>
+                  <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowAllMiners" name="ShowAllMiners"> Show all Miners in Main Text Window
+                  </div>
+                  <div title="Show the 'Earning' column in the text window&#10;&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowEarning" name="ShowEarning"> Show Earning in Main Text Window
+                  </div>
+                  <div title="Show the 'Earning Bias' column in the text window&#10;&#10;Can be toggled by pressing 'i' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowEarningBias" name="ShowEarningBias"> Show Earning Bias in Main Text Window
+                  </div>
+                  <div title="Show the 'Accuracy' column in the text window&#10;&#10;Can be toggled by pressing 'a' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowAccuracy" name="ShowAccuracy"> Show Accuracy in Main Text Window
+                  </div>
+                  <div title="Show the 'CoinName' column in the text window&#10;&#10;Can be toggled by pressing 'n' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowCoinName" name="ShowCoinName"> Show CoinName in Main Text Window
+                  </div>
+                  <div title="Show the 'Currency' column in the text window&#10;&#10;Can be toggled by pressing 'y' in the text window while waiting for the next cycle">
+                    <input type="checkbox" id="ShowCurrency" name="ShowCurrency"> Show Currency in Main Text Window
+                  </div>
+                  <div title="Show the Pool Balances in the text windows&#10;(requires 'Poll Pools for Balances & Earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
+                    <input type="checkbox" id="ShowPoolBalances" name="ShowPoolBalances" > Show Pool Balances in Main Text Window
+                  </div>
+                  <div style="line-height:100%;">
+                    <br>
+                  </div>
 
-                    <!-- Web GUI Display Options -->
-                    <legend class=h6 title="Web GUI display options"><b>Web GUI Display Options</b></legend>
-                    <div title="Miners and Rigs will be shown with colored background depending on status">
-                      <input type="checkbox" id="WebGUIUseColor" name="WebGUIUseColor"> Use Colors for Miner & Rig Status
-                    </div>
+                  <!-- Web GUI Display Settings -->
+                  <legend class=h6 title="These Settings will not affect the information available in the in the main text window"><b>Web GUI Display Settings</b></legend>
+                  <div title="Miners and Rigs will be shown with colored background depending on status">
+                    <input type="checkbox" id="WebGUIUseColor" name="WebGUIUseColor"> Use Colors for Miner & Rig Status
+                  </div>
+                  <div style="line-height:200%;">
                     <br>
                   </div>
                 </td>
@@ -590,7 +575,7 @@
               if (config.UsemBTC) document.getElementById('UsemBTC').checked = true;
               document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
 
-              // General Runtime Options
+              // General Runtime Settings
               if (config.Algorithm) document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
               //Load default Algorithm list
               $('#DefaultAlgorithm').click(function () {
@@ -635,7 +620,7 @@
               if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
               if (config.Watchdog) document.getElementById('Watchdog').checked = true;
 
-              // Balance Tracker Options
+              // Balance Tracker Settings
               if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
               else document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
               // Poll Pools for Balances & Earnings
@@ -654,6 +639,25 @@
               }
               if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
               if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
+
+              // Select Mining Devices
+              $.ajax({
+                url: '/devices',
+                async: false,
+                success: function (result) {
+                  devices = result;
+                  $.each(devices, function (key, value) {
+                    $('<input/>', { type: 'checkbox', id: ('device-' + value.Name).toLowerCase(), value: value.Name }).appendTo(devicescontainer);
+                    $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model), style: "margin-left:4px" }).appendTo(devicescontainer);
+                    $('<br>').appendTo(devicescontainer);
+                    if (value.State == 0) document.getElementById(('device-' + value.Name).toLowerCase()).checked = true;
+                    if (value.State == 2) {
+                      document.getElementById(('device-' + value.Name).toLowerCase()).disabled = true;
+                      document.getElementById(('device-' + value.Name).toLowerCase()).checked = false;
+                    }
+                  })
+                }
+              });
 
               // Select Pools
               // Populate pool checkbox list
@@ -733,25 +737,6 @@
               document.getElementById(('region-' + config.Region).toLowerCase()).checked = "true";
               if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
 
-              // Select Mining Devices
-              $.ajax({
-                url: '/devices',
-                async: false,
-                success: function (result) {
-                  devices = result;
-                  $.each(devices, function (key, value) {
-                    $('<input/>', { type: 'checkbox', id: ('device-' + value.Name).toLowerCase(), value: value.Name }).appendTo(devicescontainer);
-                    $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model), style: "margin-left:4px" }).appendTo(devicescontainer);
-                    $('<br>').appendTo(devicescontainer);
-                    if (value.State == 0) document.getElementById(('device-' + value.Name).toLowerCase()).checked = true;
-                    if (value.State == 2) {
-                      document.getElementById(('device-' + value.Name).toLowerCase()).disabled = true;
-                      document.getElementById(('device-' + value.Name).toLowerCase()).checked = false;
-                    }
-                  })
-                }
-              });
-
               // Miner Selection
               if (config.MinerInstancePerDeviceModel) document.getElementById('MinerInstancePerDeviceModel').checked = true;
               if (config.DisableDualAlgoMining) document.getElementById('DisableDualAlgoMining').checked = true;
@@ -767,7 +752,7 @@
               if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 2) document.getElementById('MinerSet').value = config.MinerSet;
               else document.getElementById('MinerSet').value = 1;
 
-              // Miners Runtime Options
+              // Miners Runtime Settings
               if (config.MinerWindowStyle.toLowerCase() == "hidden") document.getElementById('MinerWindowStyleHidden').checked = true;
               if (config.MinerWindowStyle.toLowerCase() == "minimized") document.getElementById('MinerWindowStyleMinimized').checked = true;
               if (config.MinerWindowStyle.toLowerCase() == "normal") document.getElementById('MinerWindowStyleNormal').checked = true;
@@ -810,7 +795,7 @@
                 document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
               });
 
-              // Calculation Options
+              // Calculation Settings
               document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
               document.getElementById('MinAccuracy').value = parseFloat(config.MinAccuracy) * 100;
               document.getElementById('UnrealMinerEarningFactor').value = parseFloat(config.UnrealMinerEarningFactor);
@@ -825,7 +810,7 @@
               if (config.IgnorePoolFee) document.getElementById('IgnorePoolFee').checked = true;
               document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
 
-              // Main Text Window Display Options
+              // Main Text Window Display Settings
               if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').value = 'Full';
               else document.getElementById('UIStyle').value = 'Light';
               if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
@@ -854,7 +839,7 @@
                 document.getElementById('ShowProfit').disabled = true;
                 document.getElementById('ShowProfitBias').disabled = true;
               }
-              // Web GUI Display Options
+              // Web GUI Display Settings
               if (config.WebGUIUseColor) document.getElementById('WebGUIUseColor').checked = true;
 
               if (config && configfile && poolvariants && regions && devices) {
@@ -1126,7 +1111,7 @@
                   config.UsemBTC = document.getElementById('UsemBTC').checked;
                   config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
 
-                  // Runtime options
+                  // Runtime Settings
                   config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(',');
                   // if (document.getElementById('SSL').value.match("Never|Prefer|Enforce")) config.SSL = document.getElementById('SSL').value;
                   // else config.SSL = "Prefer";
@@ -1143,10 +1128,15 @@
                   config.AutoUpdate = document.getElementById('AutoUpdate').checked;
                   config.Watchdog = document.getElementById('Watchdog').checked;
 
-                  // Balance Tracker Options
+                  // Balance Tracker Settings
                   config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
                   config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
                   config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
+
+                  // Select mining devices
+                  $.each(devices, function (key, value) {
+                    if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) (config.ExcludeDeviceName).push(value.Name);
+                  });
 
                   // Select one or more pools
                   $.each(poolvariants, function (key, value) {
@@ -1159,11 +1149,6 @@
                   });
                   config.UseAnycast = document.getElementById('UseAnycast').checked;
 
-                  // Select mining devices
-                  $.each(devices, function (key, value) {
-                    if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) (config.ExcludeDeviceName).push(value.Name);
-                  });
-
                   // Miner selection
                   config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
                   config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
@@ -1172,7 +1157,7 @@
                   config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
                   config.MinerSet = parseInt(document.getElementById('MinerSet').value);
 
-                  // Miner Runtime Options
+                  // Miner Runtime Settings
                   if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";
                   if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = "minimized";
                   if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = "normal";
@@ -1197,7 +1182,7 @@
                   config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
                   config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
 
-                  // Calculation Options
+                  // Calculation Settings
                   config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
                   config.UnrealMinerEarningFactor = parseFloat(document.getElementById('UnrealMinerEarningFactor').value);
                   config.MinAccuracy = parseFloat(document.getElementById('MinAccuracy').value) / 100;
@@ -1211,7 +1196,7 @@
                   config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
 
-                  // Main Text Window display options
+                  // Main Text Window Display Settings
                   config.UIStyle = document.getElementById('UIStyle').value;
                   config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
                   config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
@@ -1225,7 +1210,7 @@
                   config.ShowCurrency =  document.getElementById('ShowCurrency').checked;
                   config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
 
-                  // Web GUI display options
+                  // Web GUI Display Settings
                   config.WebGUIUseColor = document.getElementById('WebGUIUseColor').checked;
 
                   //Write current config
